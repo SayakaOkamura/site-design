@@ -10,51 +10,53 @@
 </head>
 <body>
 
-<div class="stage">
+<!-- ============================================================
+     ファーストビュー。ここだけで「こんな会社」が伝わること。
+     プレゼンでスクロールはしないので、1画面に収める。
+     ============================================================ -->
+<section class="hero" id="hero">
 
   <header class="brand">
     <div class="name">ALTER DESIGN CONSULTING</div>
-    <div class="name-jp">株式会社アルターデザインコンサルティング</div>
-    <p class="tagline">
-      <em>AI × ローコード</em>で、<br>
-      「上流工程中心のシステム開発」に革新を
-    </p>
-
-    <!-- 何の会社かは最初に書く。ただし短く。
-         詳細（設立・資本金・株主）はページ末尾と / company に置く -->
-    <div class="lede">
-      <p>
-        要件を固めきってから作り始めるのではなく、<b>決めたことがそのまま動く状態</b>を先に作り、
-        そこから直していく。業務設計からエンジニアリングまでを一貫して行います。
-      </p>
-    </div>
+    <p class="tagline"><em>AI × ローコード</em>で、「上流工程中心のシステム開発」に革新を</p>
   </header>
 
-  <main id="main">
-    <!-- フェーズはここに積まれる -->
-  </main>
+  <div class="cols">
+    <!-- 左: AI が考えて作っているところ -->
+    <div class="col col-gen">
+      <div class="col-label">仕様</div>
+      <div id="gen" class="gen"></div>
+    </div>
 
-  <!-- ここから下は会社説明の本編。デモはこの説明の実演として上にある -->
+    <!-- 右: 出てきたもの -->
+    <div class="col col-app">
+      <div class="col-label">出てきたもの</div>
+      <div id="app" class="appwrap"></div>
+    </div>
+  </div>
 
-  <section class="doc">
+  <footer class="hero-foot">
+    <div id="closing" class="closing-line"></div>
+    <div id="choose" class="choose-line"></div>
+  </footer>
+
+</section>
+
+<!-- ============================================================
+     以下は補足。読みたい人が読む。
+     ============================================================ -->
+<div class="below">
+
+  <section class="doc" id="how">
     <h2>上流工程中心とは</h2>
     <p class="doc-lead">
       要件をすべて固めてから作り始めると、作っている間に前提が変わり、
       できたものが要件と合わなくなります。だから順序を変えます。
     </p>
     <ol class="steps-doc">
-      <li>
-        <span class="n">1</span>
-        <span class="t"><b>決める</b>業務の単位、画面、テーブル、業務ルールを決める。</span>
-      </li>
-      <li>
-        <span class="n">2</span>
-        <span class="t"><b>すぐ動かす</b>決めたことが、そのまま動く状態を作る。</span>
-      </li>
-      <li>
-        <span class="n">3</span>
-        <span class="t"><b>触って直す</b>動くものを触って、決めたことの間違いに気づく。</span>
-      </li>
+      <li><span class="n">1</span><span class="t"><b>決める</b>業務の単位、画面、テーブル、業務ルールを決める。</span></li>
+      <li><span class="n">2</span><span class="t"><b>すぐ動かす</b>決めたことが、そのまま動く状態を作る。</span></li>
+      <li><span class="n">3</span><span class="t"><b>触って直す</b>動くものを触って、決めたことの間違いに気づく。</span></li>
     </ol>
     <p class="doc-note">
       このページの上で見たのは 1 と 2 です。3 は実際の案件で、使う人と一緒に回します。
@@ -63,7 +65,7 @@
     </p>
   </section>
 
-  <section class="doc">
+  <section class="doc" id="services">
     <h2>サービス</h2>
     <div class="svc">
       <article>
@@ -90,7 +92,7 @@
     </div>
   </section>
 
-  <section class="doc">
+  <section class="doc" id="philosophy">
     <h2>企業理念</h2>
     <p class="creed">経営の力で<br>「遊ぶように働く世界」をデザインする</p>
     <p class="doc-note">
@@ -100,29 +102,43 @@
     </p>
   </section>
 
-  <section class="factsheet">
+  <section class="doc" id="why">
+    <h2>このページについて</h2>
+    <p class="doc-lead">
+      会社案内を読ませる代わりに、事業内容をその場で実演する作りにしました。
+      企業理念に「遊ぶように働く世界をデザインする」と書いてあるなら、
+      サイトも遊んでいるべきだと考えたからです。
+    </p>
+    <p class="doc-note">
+      マウスは要りません。矢印キーと Enter だけで進みます。
+      <span class="mono">/</span> を押すと、このページの中を移動できます。
+    </p>
+    <p class="doc-note">
+      実装は AI（Claude）が行いました。HTML / CSS / JavaScript だけで、
+      フレームワークもビルド工程もありません。仕様を決めて渡したら、動くものが出てきました。
+      なお、ページ内の「生成」はデモとして事前に用意した結果です。
+      その場で AI が推論しているわけではありません。実演したいのは推論そのものではなく、
+      <b>上流で決めたことが、そのまま動くものになる</b>という順序の方だからです。
+    </p>
+  </section>
+
+  <section class="factsheet" id="company">
+    <h2>会社概要</h2>
     <dl>
       <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
       <dt>設立</dt><dd>2025年6月</dd>
       <dt>資本金</dt><dd>6,000万円</dd>
       <dt>代表取締役</dt><dd>松岡 真功</dd>
       <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304</dd>
-      <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
       <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
+      <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
     </dl>
-
     <p class="contact-line">
       ご相談・お問い合わせは
       <a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a>
       のフォームから承っています。
     </p>
   </section>
-
-  <footer class="disclaimer" id="disclaimer">
-    このページの「生成」は、デモとして事前に用意した結果を出しています。
-    その場で AI が推論しているわけではありません。ページ自体の実装は AI（Claude）が行いました。
-    <br>現行サイト: <a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a>
-  </footer>
 
 </div>
 

@@ -1,262 +1,113 @@
 /* =========================================================
-   003 Alter Design Consulting — 仕様を入れたら、動くものが出てくる
-   体験が主。可読性は実験とトレードオフにしない。
+   003 Alter Design Consulting
+   ファーストビュー1画面で「こんな会社」が伝わること。
+   プレゼンでスクロールはしない。
+   左で考え、右に出てくる、という構図そのものをインパクトにする。
    ========================================================= */
 
 :root {
-  /* --- 色 ---
-     黒地は読みにくいので白基調にした。琥珀は残すが、白の上で
-     読める濃さまで落としている（#f2a63a は白地では判読できない）。
-     生成物は「白の上の白」を影と枠で浮かせて区別する。 */
-  --bg:        #f4f2ee;   /* 生成物（純白のカード）が浮くよう、舞台は一段落とす */
+  --bg:        #f4f2ee;
   --panel:     #ffffff;
-  --panel-2:   #f1efea;
-  --line:      #e1ddd5;
-  --line-soft: #eeebe5;
+  --panel-2:   #eae7e1;
+  --line:      #ddd8d0;
+  --line-soft: #e9e5df;
 
-  --fg:        #1c1a17;   /* 本文 */
-  --fg-2:      #45403a;   /* 副次テキスト */
-  --dim:       #6b6459;   /* 補助 */
-  --dimmer:    #938c80;   /* 注記 */
+  --fg:        #1c1a17;
+  --fg-2:      #45403a;
+  --dim:       #6b6459;
+  --dimmer:    #938c80;
 
-  --amber:     #b45309;   /* 白地で読める琥珀 */
+  --amber:     #b45309;
   --amber-2:   #92400e;
   --ok:        #4d7c2f;
   --warn:      #a1620c;
-  --err:       #b3402a;
 
-  /* --- タイポ --- */
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
           "Liberation Mono", "Courier New", monospace;
   --jp: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI",
         "Yu Gothic", Meiryo, sans-serif;
 
-  --fs-body: 15px;   /* 日本語本文。読ませる文字はここを基準に */
-  --fs-mono: 13.5px; /* 等幅で出す機械的な表示 */
-  --lh-body: 1.85;   /* 日本語はゆったり */
-}
-
-@media (max-width: 720px) {
-  :root { --fs-body: 14.5px; --fs-mono: 12px; --lh-body: 1.8; }
+  --fs-body: 15px;
+  --fs-mono: 13px;
+  --gut: clamp(20px, 4vw, 52px);
 }
 
 [hidden] { display: none !important; }
+.mono { font-family: var(--mono); }
 
 html { height: 100%; }
-
 body {
-  min-height: 100%;
   background: var(--bg);
   color: var(--fg);
   font-family: var(--jp);
   font-size: var(--fs-body);
-  line-height: var(--lh-body);
+  line-height: 1.8;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 機械が出す表示は等幅、人が読む文は日本語フォント */
-.mono { font-family: var(--mono); font-size: var(--fs-mono); }
+/* =====================================================
+   ファーストビュー
+   ===================================================== */
 
-/* =============== レイアウト =============== */
-
-.stage {
-  max-width: 76ch;
-  margin-inline: auto;
-  padding: clamp(24px, 6vh, 64px) clamp(18px, 5vw, 40px) 24px;
+.hero {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(10px, 1.6vh, 20px);
+  /* 下は keybar の高さ分だけ空ける */
+  padding: clamp(14px, 2.4vh, 28px) var(--gut) 40px;
+  box-sizing: border-box;
 }
 
-.brand { margin-bottom: clamp(32px, 7vh, 64px); }
+/* --- 表題 --- */
 .brand .name {
   font-family: var(--mono);
-  font-size: clamp(15px, 2.4vw, 19px);
-  letter-spacing: .14em;
+  font-size: clamp(12px, 1.5vw, 15px);
+  letter-spacing: .18em;
   color: var(--amber);
 }
-.brand .name-jp {
-  margin-top: .5em;
-  color: var(--dim);
-  font-size: .92em;
-}
 .brand .tagline {
-  margin-top: 1em;
-  font-size: clamp(21px, 3.8vw, 32px);
-  line-height: 1.5;
-  letter-spacing: -.01em;
-  color: var(--fg);
+  margin-top: .5em;
+  font-size: clamp(22px, 3.5vw, 40px);
+  line-height: 1.35;
+  letter-spacing: -.018em;
+  font-weight: 700;
+  max-width: 30em;
 }
 .brand .tagline em { color: var(--amber); font-style: normal; }
 
-.brand .lede { margin-top: 1.1em; max-width: 58ch; }
-.brand .lede p { color: var(--fg-2); }
-
-/* -----------------------------------------------------------
-   会社説明の本編。デモはこの説明の実演として上に置いてある。
-   体験を主役にすることと、会社説明の体裁を捨てることは別。
-   ----------------------------------------------------------- */
-.doc {
-  margin-top: clamp(44px, 8vh, 88px);
-  padding-top: clamp(24px, 4vh, 40px);
-  border-top: 1px solid var(--line);
-  max-width: 66ch;
+/* --- 2カラム --- */
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(16px, 2.6vw, 40px);
+  min-height: 0;
 }
-.doc h2 {
-  font-size: clamp(18px, 2.6vw, 23px);
-  letter-spacing: -.01em;
-  margin-bottom: .9em;
-}
-.doc-lead { color: var(--fg); }
-.doc-note { margin-top: 1.2em; color: var(--dim); font-size: .95em; }
+.col { display: flex; flex-direction: column; min-height: 0; }
 
-/* 上流工程中心の3ステップ */
-.steps-doc { margin-top: 1.4em; display: flex; flex-direction: column; gap: .7em; }
-.steps-doc li { display: grid; grid-template-columns: 3ch 1fr; gap: 1.5ch; }
-.steps-doc .n {
+.col-label {
   font-family: var(--mono);
-  color: var(--amber);
-  font-size: .95em;
-  padding-top: .1em;
-}
-.steps-doc .t { color: var(--fg-2); }
-.steps-doc .t b {
-  display: block;
-  color: var(--fg);
-  font-weight: 700;
-  margin-bottom: .1em;
-}
-
-/* サービス4本 */
-.svc { display: grid; gap: clamp(20px, 3vh, 30px); }
-@media (min-width: 780px) { .svc { grid-template-columns: 1fr 1fr; gap: 26px 40px; } }
-.svc h3 {
-  font-size: 1.02em;
-  color: var(--amber);
-  margin-bottom: .35em;
-  padding-bottom: .35em;
-  border-bottom: 1px solid var(--line);
-}
-.svc p { color: var(--fg-2); font-size: .95em; }
-
-/* 企業理念 */
-.creed {
-  font-size: clamp(19px, 3.2vw, 27px);
-  line-height: 1.55;
-  color: var(--fg);
-  letter-spacing: -.01em;
-}
-
-/* ページ末尾に置く会社の詳細 */
-.factsheet {
-  margin-top: clamp(44px, 8vh, 88px);
-  padding-top: clamp(24px, 4vh, 40px);
-  border-top: 1px solid var(--line);
-}
-.factsheet .contact-line {
-  margin-top: 1.4em;
-  color: var(--fg-2);
-  font-size: .95em;
-}
-.factsheet .contact-line a {
-  color: var(--amber);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.factsheet dl { display: grid; grid-template-columns: max-content 1fr; gap: .3em 2.5ch; }
-.factsheet dt { color: var(--dimmer); font-size: .88em; }
-.factsheet dd { color: var(--fg-2); font-size: .92em; }
-
-/* =============== 各段 =============== */
-
-.block { margin-bottom: clamp(28px, 5vh, 44px); }
-
-.ask {
-  font-size: clamp(16px, 2.6vw, 20px);
-  color: var(--fg);
-  margin-bottom: 1em;
-}
-.ask .hint {
-  display: block;
-  margin-top: .4em;
-  font-size: var(--fs-body);
-  color: var(--dim);
-}
-
-/* --- 選択肢 --- */
-
-.choices { display: flex; flex-direction: column; gap: 2px; }
-
-.choice {
-  display: flex;
-  align-items: baseline;
-  gap: 1ch;
-  width: 100%;
-  text-align: left;
-  font: inherit;
-  color: var(--fg-2);
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  padding: .5em .9em;
-  cursor: pointer;
-}
-.choice .caret { color: transparent; font-family: var(--mono); flex: none; }
-.choice .sub { color: var(--dimmer); font-size: .88em; }
-
-.choice[aria-selected="true"] {
-  color: var(--fg);
-  background: var(--panel-2);
-  border-color: var(--line);
-}
-.choice[aria-selected="true"] .caret { color: var(--amber); }
-.choice:focus-visible { outline: 2px solid var(--amber-2); outline-offset: 2px; }
-
-/* 決定済みの選択肢。畳んで 1 行だけ残す */
-.choice.chosen {
-  color: var(--dim);
-  background: none;
-  border-color: transparent;
-  padding-left: .9em;
-  cursor: default;
-}
-.choice.chosen .caret { color: var(--amber-2); }
-.choice.chosen b { font-weight: normal; }
-.choice.chosen .sub { display: none; }
-
-.ask.done {
-  font-size: var(--fs-body);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
   color: var(--dimmer);
-  margin-bottom: .2em;
+  padding-bottom: .5em;
+  margin-bottom: .7em;
+  border-bottom: 1px solid var(--line);
+  flex: none;
 }
 
-/* 自由入力の選択肢 */
-.choice.freeform .blanks { color: var(--dimmer); font-family: var(--mono); }
+.gen, .appwrap { flex: 1; min-height: 0; overflow: hidden; }
 
-/* 主導線ではない補助の選択肢（概要を見る） */
-.choice.aside { margin-top: .6em; }
-.choice.aside .sub { font-size: .95em; }
-.choice.aside[aria-selected="true"] .sub { color: var(--fg-2); }
+/* =====================================================
+   左カラム: 考えているところ
+   ===================================================== */
 
-.freebox { margin-top: .8em; padding-left: 2.2ch; }
-.freebox label { display: block; color: var(--dim); font-size: .9em; margin-bottom: .35em; }
-.freebox input {
-  width: min(100%, 44ch);
-  font-family: var(--jp);
-  font-size: var(--fs-body);
-  color: var(--fg);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: .5em .8em;
-}
-.freebox input:focus { outline: none; border-color: var(--amber-2); }
-.freebox .note { color: var(--dimmer); font-size: .85em; margin-top: .4em; }
-
-/* --- 進行表示 --- */
-
-.step { margin-bottom: 1.4em; }
+.step { margin-bottom: .8em; }
 .step-head {
   display: flex;
   align-items: baseline;
-  gap: 1.5ch;
+  gap: 1.2ch;
   font-family: var(--mono);
   font-size: var(--fs-mono);
   color: var(--dim);
@@ -266,105 +117,54 @@ body {
 .bar {
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  letter-spacing: -.05em;
+  letter-spacing: -.06em;
   color: var(--amber);
   white-space: pre;
-  margin-top: .2em;
+  overflow: hidden;
 }
-.bar .rest { color: #dcd7cf; }  /* 未進行部分。薄すぎると進捗が読めない */
-.substep {
-  font-family: var(--mono);
-  font-size: var(--fs-mono);
-  color: var(--dimmer);
-  padding-left: 2ch;
-}
+.bar .rest { color: #d3cec6; }
 
-/* -----------------------------------------------------------
-   考えていることを見せる。機械的なログでは「自動処理」に見えて
-   「AI」に見えない。断定しない口調で、推論の筋道を出す。
-   ----------------------------------------------------------- */
-.thoughts { margin: .6em 0 0; padding-left: 2ch; }
-
+.thoughts { margin: .3em 0 1em; }
 .thought {
   color: var(--fg-2);
-  padding: .1em 0;
-  min-height: 1.85em;
+  font-size: .95em;
+  line-height: 1.75;
+  padding: .06em 0;
 }
 .thought.notice { color: var(--amber); }
-
-/* 生成が終わったら畳む。スクロールせずに成果物を視界に入れるため */
-.folded { display: none; }
-
-.foldnote {
-  display: flex;
-  align-items: baseline;
-  gap: 1.5ch;
-  flex-wrap: wrap;
-  font-family: var(--mono);
-  font-size: var(--fs-mono);
-  color: var(--dim);
-  margin: .2em 0 1em;
-}
-.foldbtn {
-  font-family: var(--mono);
-  font-size: var(--fs-mono);
-  color: var(--amber);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid currentColor;
-  padding: 0;
-  cursor: pointer;
-}
-.foldbtn:focus-visible { outline: 2px solid var(--amber-2); outline-offset: 3px; }
-
-/* 打っている最中のカーソル */
 .thought.typing::after {
   content: "▌";
   margin-left: .1em;
   color: var(--amber);
   animation: blink 1s steps(1) infinite;
 }
+@keyframes blink { 50% { opacity: 0; } }
 
-@media (prefers-reduced-motion: reduce) {
-  .thought.typing::after { animation: none; }
-}
-
-/* --- 仕様の分解 --- */
-
+/* 仕様の分解 */
 .spec {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: .5em 2.5ch;
-  margin-top: .9em;
-  margin-bottom: 2em;   /* 次の [生成] とくっついて読めなくなるのを防ぐ */
+  gap: .35em 2ch;
+  margin: .2em 0 1em;
+  font-size: .95em;
 }
-.spec dt {
-  font-family: var(--mono);
-  font-size: var(--fs-mono);
-  color: var(--dim);
-  padding-top: .2em;
-}
-.spec dd { color: var(--fg); }
+.spec dt { font-family: var(--mono); font-size: var(--fs-mono); color: var(--dim); padding-top: .25em; }
 .spec dd .tag {
   display: inline-block;
   border: 1px solid var(--line);
   border-radius: 4px;
-  padding: 0 .6em;
-  margin: 0 .3em .3em 0;
-  font-size: .88em;
+  padding: 0 .55em;
+  margin: 0 .25em .25em 0;
+  font-size: .9em;
   color: var(--fg-2);
   background: var(--panel);
 }
 .spec dd.rule { color: var(--warn); }
 
-/* =============== 生成されたアプリ =============== */
+/* =====================================================
+   右カラム: 出てきたもの
+   ===================================================== */
 
-/* -----------------------------------------------------------
-   生成されたものは「明るい」。舞台（暗い＋琥珀）の上に、
-   出てきた業務システムが乗る。色が反転する瞬間が、
-   「出てきた」という体感そのものになる。
-   業務システムが黒地に琥珀では、現実のものに見えない。
-   ----------------------------------------------------------- */
 .app {
   --a-bg:      #ffffff;
   --a-panel:   #f4f2ed;
@@ -383,13 +183,12 @@ body {
   border: 1px solid var(--a-line);
   border-radius: 10px;
   overflow: hidden;
-  /* 白地の上に白いものを置くので、影で浮かせて「出てきた」ことを示す */
-  box-shadow: 0 1px 2px rgba(28,26,23,.06), 0 18px 44px rgba(28,26,23,.13);
-  animation: rise .52s cubic-bezier(.2,.85,.2,1) both;
+  box-shadow: 0 1px 2px rgba(28,26,23,.05), 0 14px 36px rgba(28,26,23,.11);
+  animation: rise .5s cubic-bezier(.2,.85,.2,1) both;
+  font-size: .94em;
 }
-
 @keyframes rise {
-  from { opacity: 0; transform: translateY(14px) scale(.985); }
+  from { opacity: 0; transform: translateY(10px) scale(.99); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -397,7 +196,7 @@ body {
   display: flex;
   align-items: center;
   gap: 1ch;
-  padding: .7em 1.1em;
+  padding: .5em .9em;
   background: var(--a-panel);
   border-bottom: 1px solid var(--a-line);
   font-family: var(--mono);
@@ -405,53 +204,44 @@ body {
   color: var(--a-dim);
 }
 .app-head .gen { margin-left: auto; color: var(--a-dimmer); font-size: .92em; }
-
-/* 成果物は 1 画面に収めたい。詰められるところは詰める */
-.app-body { padding: .9em 1.1em 1.1em; }
+.app-body { padding: .7em .9em .85em; }
 
 .field {
   display: grid;
-  grid-template-columns: 13ch 1fr;   /* 「リードタイム +」が折り返さない幅 */
-  gap: 1.5ch;
+  grid-template-columns: 12ch 1fr;
+  gap: 1.2ch;
   align-items: center;
-  padding: .22em 0;
+  padding: .16em 0;
 }
-.field > label { color: var(--a-dim); font-size: .92em; }
-.field input, .field select {
+.field > label { color: var(--a-dim); font-size: .9em; }
+.field input {
   width: 100%;
   font-family: var(--jp);
-  font-size: var(--fs-body);
+  font-size: .98em;
   color: var(--a-fg);
   background: #fff;
   border: 1px solid var(--a-line);
   border-radius: 5px;
-  padding: .4em .7em;
+  padding: .3em .6em;
 }
-.field input:focus, .field select:focus { outline: none; border-color: var(--a-accent); }
-
-/* AI が勝手に足したフィールドは、それと分かるようにする */
-.field.added > label::after {
-  content: " +";
-  color: var(--a-accent);
-  font-family: var(--mono);
-}
+.field input:focus { outline: none; border-color: var(--a-accent); }
+.field.added > label::after { content: " +"; color: var(--a-accent); font-family: var(--mono); }
 .field.added input { border-color: var(--a-accent); background: #f4f7fc; }
 
-.app hr { border: 0; border-top: 1px solid var(--a-line-2); margin: .7em 0; }
+.app hr { border: 0; border-top: 1px solid var(--a-line-2); margin: .55em 0; }
 
 .rows { width: 100%; font-size: .95em; }
 .rows th {
   text-align: left;
   font-weight: normal;
   color: var(--a-dimmer);
-  font-size: .88em;
-  padding-bottom: .3em;
+  font-size: .86em;
+  padding-bottom: .2em;
   border-bottom: 1px solid var(--a-line);
 }
-.rows th.num, .rows td.num { text-align: right; font-family: var(--mono); width: 10ch; }
+.rows th.num, .rows td.num { text-align: right; font-family: var(--mono); width: 9ch; }
 .rows th:first-child, .rows td:first-child { width: auto; }
-.rows td { padding: .28em 0; border-bottom: 1px solid var(--a-line-2); color: var(--a-fg); }
-/* 触れることが体験の核心なので、編集できる欄は常に枠を見せる */
+.rows td { padding: .2em 0; border-bottom: 1px solid var(--a-line-2); }
 .rows input {
   width: 100%;
   font-family: var(--mono);
@@ -461,7 +251,7 @@ body {
   background: #fbfaf8;
   border: 1px solid var(--a-line);
   border-radius: 4px;
-  padding: .15em .4em;
+  padding: .1em .35em;
 }
 .rows input:hover { border-color: var(--a-accent); }
 .rows input:focus { outline: none; border-color: var(--a-accent); box-shadow: 0 0 0 3px rgba(58,90,148,.12); }
@@ -469,106 +259,191 @@ body {
 .total {
   display: flex;
   align-items: baseline;
-  gap: 1.5ch;
-  margin-top: .7em;
-  padding-top: .55em;
+  gap: 1.2ch;
+  margin-top: .5em;
+  padding-top: .4em;
   border-top: 1px solid var(--a-line);
 }
-.total .lbl { color: var(--a-dim); font-size: .92em; }
-.total .val {
-  margin-left: auto;
-  font-family: var(--mono);
-  font-size: 1.3em;
-  color: var(--a-fg);
-}
+.total .lbl { color: var(--a-dim); font-size: .9em; }
+.total .val { margin-left: auto; font-family: var(--mono); font-size: 1.22em; }
 
+/* 1行に収める。2行×2本だと 1 画面に入らない */
 .alert {
   display: flex;
   gap: 1ch;
-  margin-top: .55em;
-  padding: .5em .85em;
+  margin-top: .4em;
+  padding: .3em .7em;
   border-radius: 6px;
-  font-size: .93em;
-  line-height: 1.65;
+  font-size: .88em;
+  line-height: 1.55;
   border: 1px solid transparent;
 }
 .alert .mark { flex: none; font-family: var(--mono); }
+.alert .src { margin-left: .6ch; }
 .alert.on  { color: var(--a-warn); border-color: #e8d3a8; background: var(--a-warn-bg); }
 .alert.off { color: var(--a-dimmer); border-color: var(--a-line-2); background: #fafaf8; }
 .alert .src { color: var(--a-dimmer); font-size: .88em; }
-
-/* AI が足したほうの気配り。仕様に無いことを隠さない */
 .alert.extra.on  { color: var(--a-accent); border-color: #c3d0e6; background: #f4f7fc; }
 .alert.extra .src { color: var(--a-accent); opacity: .75; }
 
-.actions { display: flex; gap: .7em; margin-top: .9em; flex-wrap: wrap; }
+.actions { display: flex; gap: .6em; margin-top: .7em; flex-wrap: wrap; }
 .btn {
   font-family: var(--jp);
-  font-size: var(--fs-body);
+  font-size: .95em;
   color: #fff;
   background: var(--a-accent);
   border: 1px solid var(--a-accent);
   border-radius: 6px;
-  padding: .45em 1.4em;
+  padding: .35em 1.2em;
   font-weight: 700;
   cursor: pointer;
 }
-.btn.ghost {
-  color: var(--a-fg-2);
-  background: transparent;
-  border-color: var(--a-line);
-  font-weight: normal;
-}
+.btn.ghost { color: var(--a-fg-2); background: transparent; border-color: var(--a-line); font-weight: normal; }
 .btn:focus-visible { outline: 2px solid var(--a-accent); outline-offset: 2px; }
 
-.applog {
-  margin-top: 1em;
-  font-family: var(--mono);
-  font-size: var(--fs-mono);
-  color: var(--a-dim);
-}
+.applog { margin-top: .5em; font-family: var(--mono); font-size: var(--fs-mono); color: var(--a-dim); }
 .applog .t { color: var(--a-dimmer); }
 
-@media (prefers-reduced-motion: reduce) {
-  .app { animation: none; }
-}
-
-/* =============== 締め =============== */
-
-.closing { border-top: 1px solid var(--line); padding-top: 1.6em; }
-.closing .lead {
-  font-size: clamp(16px, 2.5vw, 19px);
-  color: var(--fg);
-}
-.closing .lead strong { color: var(--amber); font-weight: 700; }
-.closing .body { color: var(--fg-2); margin-top: .8em; }
-.closing .body.dim-link { color: var(--dim); font-size: .93em; }
-.closing .slash { font-family: var(--mono); color: var(--dimmer); }
-
-.disclaimer {
-  margin-top: 2.4em;
-  padding-top: 1em;
-  border-top: 1px solid var(--line-soft);
+/* 生成前の待機表示 */
+.await {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
   color: var(--dimmer);
-  font-size: .85em;
+  font-family: var(--mono);
+  font-size: var(--fs-mono);
 }
-.disclaimer a { color: var(--dim); text-decoration: underline; text-underline-offset: 2px; }
 
-/* =============== 下部の操作ヒント =============== */
+/* =====================================================
+   下段: 締めと選択
+   ===================================================== */
+
+.hero-foot {
+  display: grid;
+  gap: .5em;
+  padding-top: clamp(8px, 1.4vh, 16px);
+  border-top: 1px solid var(--line);
+}
+
+.closing-line { font-size: clamp(15px, 1.9vw, 18px); line-height: 1.6; min-height: 1.6em; }
+.closing-line strong { color: var(--amber); }
+.closing-line .sub { color: var(--dim); font-size: .86em; }
+
+.choose-line { display: flex; align-items: baseline; gap: 1.6ch; flex-wrap: wrap; }
+.choose-line .ask { color: var(--dim); font-size: .93em; flex: none; }
+
+.choices { display: flex; gap: .4em; flex-wrap: wrap; }
+.choice {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .6ch;
+  font: inherit;
+  font-size: .95em;
+  color: var(--fg-2);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: .22em 1em;
+  cursor: pointer;
+}
+.choice .caret { color: transparent; font-family: var(--mono); font-size: .85em; }
+.choice[aria-selected="true"] {
+  color: var(--fg);
+  border-color: var(--amber);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(180,83,9,.1);
+}
+.choice[aria-selected="true"] .caret { color: var(--amber); }
+.choice.chosen { border-style: dashed; color: var(--dim); }
+.choice:focus-visible { outline: 2px solid var(--amber-2); outline-offset: 2px; }
+
+.freebox { display: flex; align-items: baseline; gap: 1ch; flex-wrap: wrap; }
+.freebox input {
+  font-family: var(--jp);
+  font-size: .95em;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: .22em .95em;
+  width: min(30ch, 60vw);
+}
+.freebox input:focus { outline: none; border-color: var(--amber); }
+.freebox .note { color: var(--dimmer); font-size: .85em; }
+
+.scroll-cue {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dimmer);
+  letter-spacing: .1em;
+}
+
+/* =====================================================
+   下の補足
+   ===================================================== */
+
+.below { padding: 0 var(--gut) clamp(64px, 10vh, 120px); }
+
+.doc, .factsheet {
+  max-width: 68ch;
+  margin-top: clamp(40px, 7vh, 76px);
+  padding-top: clamp(22px, 3.6vh, 36px);
+  border-top: 1px solid var(--line);
+}
+.doc h2, .factsheet h2 {
+  font-size: clamp(17px, 2.4vw, 22px);
+  letter-spacing: -.01em;
+  margin-bottom: .8em;
+}
+.doc-lead { color: var(--fg); }
+.doc-note { margin-top: 1.1em; color: var(--dim); font-size: .95em; }
+.doc-note .mono { color: var(--amber); }
+
+.steps-doc { margin-top: 1.3em; display: flex; flex-direction: column; gap: .6em; }
+.steps-doc li { display: grid; grid-template-columns: 3ch 1fr; gap: 1.4ch; }
+.steps-doc .n { font-family: var(--mono); color: var(--amber); font-size: .95em; padding-top: .1em; }
+.steps-doc .t { color: var(--fg-2); }
+.steps-doc .t b { display: block; color: var(--fg); font-weight: 700; }
+
+.svc { display: grid; gap: clamp(18px, 3vh, 28px); }
+@media (min-width: 760px) { .svc { grid-template-columns: 1fr 1fr; gap: 24px 36px; } }
+.svc h3 {
+  font-size: 1em;
+  color: var(--amber);
+  margin-bottom: .3em;
+  padding-bottom: .3em;
+  border-bottom: 1px solid var(--line);
+}
+.svc p { color: var(--fg-2); font-size: .95em; }
+
+.creed { font-size: clamp(19px, 3vw, 27px); line-height: 1.55; letter-spacing: -.01em; }
+
+.factsheet dl { display: grid; grid-template-columns: max-content 1fr; gap: .3em 2.5ch; }
+.factsheet dt { color: var(--dimmer); font-size: .88em; }
+.factsheet dd { color: var(--fg-2); font-size: .92em; }
+.factsheet .contact-line { margin-top: 1.3em; color: var(--fg-2); font-size: .95em; }
+.factsheet .contact-line a { color: var(--amber); text-decoration: underline; text-underline-offset: 3px; }
+
+/* =====================================================
+   キーバー
+   ===================================================== */
 
 .keybar {
-  position: sticky;
-  bottom: 0;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 5;
   display: flex;
-  gap: 1.6ch;
+  gap: 1.5ch;
   flex-wrap: wrap;
   align-items: center;
-  padding: .6em clamp(18px, 5vw, 40px);
+  padding: .45em var(--gut);
   background: rgba(244,242,238,.94);
   backdrop-filter: blur(6px);
   border-top: 1px solid var(--line);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--dimmer);
 }
 .keybar .grow { flex: 1; }
@@ -578,20 +453,26 @@ kbd {
   border: 1px solid var(--line);
   border-bottom-width: 2px;
   border-radius: 3px;
-  padding: 0 .45em;
-  margin-right: .25em;
+  padding: 0 .4em;
+  margin-right: .2em;
   color: var(--dim);
-  background: var(--panel-2);
+  background: var(--panel);
 }
+@media (hover: none) { .keybar .keys { display: none; } }
 
-/* タッチ端末ではキー表記を出さない（意味がないので） */
-@media (hover: none) {
-  .keybar .keys { display: none; }
+/* =====================================================
+   縦並びに落とす（狭い画面・低い画面）
+   ここでは1画面に収まらないので、素直に積む
+   ===================================================== */
+
+@media (max-width: 860px), (max-height: 560px) {
+  .hero { min-height: 0; grid-template-rows: none; }
+  .cols { grid-template-columns: 1fr; }
+  .appwrap, .gen { overflow: visible; }
+  .await { min-height: 90px; }
 }
-
-.caret-blink { animation: blink 1.05s steps(1) infinite; }
-@keyframes blink { 50% { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .caret-blink { animation: none; }
+  .app { animation: none; }
+  .thought.typing::after { animation: none; }
 }
