@@ -583,7 +583,21 @@ function renderChoose() {
   const list = el('div', 'choices');
   list.setAttribute('role', 'listbox');
 
-  const again = el('button', 'choice challenge');
+  // 漏れが残っていれば「直す」を先に出す。
+  // 指摘して終わりでは、上流工程の一般論にしかならない。
+  // 指摘 → その場で直る → 動くもので確かめる、までやるのが
+  // AI × ローコードの効きどころなので、ここを体験させる。
+  if (state.misses.length && !state.fixed) {
+    const fix = el('button', 'choice challenge');
+    fix.type = 'button';
+    fix.setAttribute('role', 'option');
+    fix.innerHTML = '<span class="caret">▸</span><span>指摘を反映して直す（' +
+                    state.misses.length + '件）</span>';
+    fix.addEventListener('click', fixAll);
+    list.appendChild(fix);
+  }
+
+  const again = el('button', 'choice');
   again.type = 'button';
   again.setAttribute('role', 'option');
   again.innerHTML = '<span class="caret">▸</span><span>別の決め方でもう一度</span>';
@@ -595,8 +609,22 @@ function renderChoose() {
     '↓ 上流工程中心とは・サービス・会社概要　　/ 移動'));
 
   paint(list);
-  keys([['Enter', 'もう一度'], ['/', '移動'], ['PgDn', '会社について']]);
+  keys([['↑', ''], ['↓', '選ぶ'], ['Enter', '決定'], ['/', '移動']]);
   say('');
+}
+
+/* 指摘を全部反映して作り直す。ここの速さが強みの中身。 */
+function fixAll() {
+  state.fixCount = state.misses.length;
+  state.answers.screens  = ['見積一覧', '見積入力', '承認', '月次集計'];
+  state.answers.approval = [2];
+  state.answers.threshold = [1000000];
+  state.answers.absent   = ['proxy'];
+  state.answers.revision = ['version'];
+  state.misses = [];
+  state.fixing = true;
+  state.fixT0 = performance.now();
+  buildFromAnswers();
 }
 
 function paint(list) {
@@ -617,6 +645,9 @@ function startChallenge() {
   state.answers = {};
   state.picked = {};
   state.misses = [];
+  state.fixing = false;
+  state.fixed = false;
+  state.fixCount = 0;
 
   genEl.innerHTML = '';
   appEl.innerHTML = '';
@@ -743,14 +774,21 @@ function buildFromAnswers() {
     tables: tables,
     threshold: ans.threshold[0] || base.spec.threshold
   });
-  custom.thoughts = [
+  custom.thoughts = state.fixing ? [
+    '指摘した ' + state.fixCount + ' 件を、仕様に反映します。',
+    '承認画面と月次集計を足し、不在時の代理と版管理を入れます。',
+    'このまま作り直します。前に作ったものは捨てます。'
+  ] : [
     'あなたが決めた仕様を読みます。画面 ' + ans.screens.length + ' つ、承認 ' +
       ans.approval[0] + ' 段。',
     '書かれていることは、そのまま作ります。書かれていないことは作りません。',
     n === 0 ? '……漏れは見つかりませんでした。お見事です。'
             : '……決められていないことが ' + n + ' つあります。あとで指摘します。'
   ];
-  custom.notices = n === 0
+  custom.notices = state.fixing
+    ? ['指摘した箇所は全部埋まりました。足すものはもうありません。',
+       'ここまでで、仕様を直してから動くものが出るまでが一周しました。']
+    : n === 0
     ? ['漏れがないので、足すものはありません。', 'この状態で運用に入れます。']
     : ['まず、決められたとおりに作りました。ここまでは仕様どおりです。',
        'そのうえで ' + n + ' つ、運用で詰まる箇所があります。下に出します。'];
@@ -782,7 +820,32 @@ function buildFromAnswers() {
 }
 
 /* 採点結果 */
+/* -----------------------------------------------------------
+   直したあと。ここが AI × ローコードの効きどころの説明になる。
+   「漏れを指摘できる」だけなら AI 単体、「作るのが速い」だけなら
+   ローコード単体の話。掛け算の中身は、指摘された漏れがその場で
+   直り、直った状態を触って確かめられること。
+   ----------------------------------------------------------- */
+function showFixed() {
+  const secs = Math.max(0.1, (performance.now() - state.fixT0) / 1000);
+  state.fixing = false;
+  state.fixed = true;
+
+  closeEl.innerHTML =
+    '<strong>' + state.fixCount + ' 件、直りました。' +
+    (Math.round(secs * 10) / 10) + ' 秒。</strong>' +
+    '<span class="sub">　仕様を直したら、動くものも直っています。右を触って確かめてください。' +
+    '<br>同じ直しを、要件を固めてから作る進め方でやると、' +
+    '漏れが見つかるのは結合テストです。設計まで戻って作り直しになります。' +
+    '<b>この差が、AI とローコードを組み合わせている理由です。</b></span>';
+
+  state.phase = 'choose';
+  renderChoose();
+}
+
 function showScore() {
+  // 直したあとは、採点ではなく「直るまでの速さ」を見せる
+  if (state.fixing) { showFixed(); return; }
   const n = state.misses.length;
   const total = CHALLENGE.reduce(function (a, s) {
     return a + s.opts.filter(function (o) { return o.miss; }).length;
