@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alter Design Consulting</title>
+<meta name="description" content="AI × ローコードで、「上流工程中心のシステム開発」に革新を。株式会社アルターデザインコンサルティング。">
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="crt">
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <main class="term">
+    <div class="titlebar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="titletext">alter-design — zsh</span>
+    </div>
+
+    <div class="screen" id="screen" role="log" aria-live="polite" aria-label="ターミナル出力"></div>
+
+    <div class="prompt" id="prompt" hidden>
+      <span class="ps1">alter-design<span class="sep">:</span><span class="path">~</span><span class="sigil">$</span></span>
+      <span><span id="inputEcho"></span><span class="cursor" id="cursor">█</span></span>
+    </div>
+
+    <div class="statusbar" id="statusbar" hidden>
+      <span><kbd>Tab</kbd>補完</span>
+      <span><kbd>↑</kbd><kbd>↓</kbd>履歴</span>
+      <span><kbd>?</kbd>ヘルプ</span>
+      <span><kbd>Ctrl</kbd><kbd>L</kbd>消去</span>
+      <span class="grow"></span>
+      <span class="hintmsg" id="hintmsg">マウスは要りません</span>
+    </div>
+  </main>
+
+  <div class="chips" id="chips" hidden></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
