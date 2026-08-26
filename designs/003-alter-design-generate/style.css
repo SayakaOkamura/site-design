@@ -4,23 +4,26 @@
    ========================================================= */
 
 :root {
-  /* --- 色 --- */
-  --bg:        #0b0a08;
-  --panel:     #14120f;
-  --panel-2:   #1b1815;
-  --line:      #2e2925;
-  --line-soft: #241f1b;
+  /* --- 色 ---
+     黒地は読みにくいので白基調にした。琥珀は残すが、白の上で
+     読める濃さまで落としている（#f2a63a は白地では判読できない）。
+     生成物は「白の上の白」を影と枠で浮かせて区別する。 */
+  --bg:        #f4f2ee;   /* 生成物（純白のカード）が浮くよう、舞台は一段落とす */
+  --panel:     #ffffff;
+  --panel-2:   #f1efea;
+  --line:      #e1ddd5;
+  --line-soft: #eeebe5;
 
-  --fg:        #f0ebe0;   /* 本文。002 より明るくした */
-  --fg-2:      #c9c1b4;   /* 副次テキスト */
-  --dim:       #a49a8b;   /* 補助。002 の #8d8577 では暗すぎた */
-  --dimmer:    #6f675d;   /* 注記 */
+  --fg:        #1c1a17;   /* 本文 */
+  --fg-2:      #45403a;   /* 副次テキスト */
+  --dim:       #6b6459;   /* 補助 */
+  --dimmer:    #938c80;   /* 注記 */
 
-  --amber:     #f2a63a;
-  --amber-2:   #c9821f;
-  --ok:        #93b571;
-  --warn:      #e3a94b;
-  --err:       #d96a4d;
+  --amber:     #b45309;   /* 白地で読める琥珀 */
+  --amber-2:   #92400e;
+  --ok:        #4d7c2f;
+  --warn:      #a1620c;
+  --err:       #b3402a;
 
   /* --- タイポ --- */
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
@@ -68,7 +71,6 @@ body {
   font-size: clamp(15px, 2.4vw, 19px);
   letter-spacing: .14em;
   color: var(--amber);
-  text-shadow: 0 0 16px rgba(242,166,58,.28);
 }
 .brand .name-jp {
   margin-top: .5em;
@@ -82,6 +84,20 @@ body {
   color: var(--fg);
 }
 .brand .tagline em { color: var(--amber); font-style: normal; }
+
+.brand .lede {
+  margin-top: 1.6em;
+  padding-top: 1.3em;
+  border-top: 1px solid var(--line);
+  max-width: 62ch;
+}
+.brand .lede p { color: var(--fg-2); }
+.brand .lede .meta {
+  margin-top: .9em;
+  color: var(--dimmer);
+  font-size: .86em;
+  line-height: 1.75;
+}
 
 /* =============== 各段 =============== */
 
@@ -190,7 +206,7 @@ body {
   white-space: pre;
   margin-top: .2em;
 }
-.bar .rest { color: #3c3630; }  /* --line だと暗すぎて進捗が読めない */
+.bar .rest { color: #dcd7cf; }  /* 未進行部分。薄すぎると進捗が読めない */
 .substep {
   font-family: var(--mono);
   font-size: var(--fs-mono);
@@ -235,8 +251,8 @@ body {
    業務システムが黒地に琥珀では、現実のものに見えない。
    ----------------------------------------------------------- */
 .app {
-  --a-bg:      #f7f6f3;
-  --a-panel:   #eceae4;
+  --a-bg:      #ffffff;
+  --a-panel:   #f4f2ed;
   --a-fg:      #1c1a17;
   --a-fg-2:    #46413a;
   --a-dim:     #6d675c;
@@ -252,7 +268,8 @@ body {
   border: 1px solid var(--a-line);
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 24px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04);
+  /* 白地の上に白いものを置くので、影で浮かせて「出てきた」ことを示す */
+  box-shadow: 0 1px 2px rgba(28,26,23,.06), 0 18px 44px rgba(28,26,23,.13);
   animation: rise .52s cubic-bezier(.2,.85,.2,1) both;
 }
 
@@ -277,7 +294,7 @@ body {
 
 .field {
   display: grid;
-  grid-template-columns: 11ch 1fr;
+  grid-template-columns: 13ch 1fr;   /* 「リードタイム +」が折り返さない幅 */
   gap: 1.5ch;
   align-items: center;
   padding: .35em 0;
@@ -324,7 +341,7 @@ body {
   font-size: .95em;
   text-align: right;
   color: var(--a-fg);
-  background: #fff;
+  background: #fbfaf8;
   border: 1px solid var(--a-line);
   border-radius: 4px;
   padding: .15em .4em;
@@ -427,7 +444,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   padding: .6em clamp(18px, 5vw, 40px);
-  background: rgba(11,10,8,.92);
+  background: rgba(244,242,238,.94);
   backdrop-filter: blur(6px);
   border-top: 1px solid var(--line);
   font-family: var(--mono);

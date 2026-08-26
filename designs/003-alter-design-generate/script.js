@@ -205,7 +205,7 @@ const SUBJECTS = [
       doneOff: '発注は不要です。',
       extra: {
         log: '発注してから届くまでの日数',
-        field: { label: '調達リードタイム', value: '冷媒 R32 は 10日' },
+        field: { label: 'リードタイム', value: '冷媒 R32 は 発注から10日' },
         note: '発注点を割った時点で、もう間に合わないものがあります。リードタイムを持たせました。',
         src: '仕様にはありません'
       }
@@ -330,7 +330,7 @@ function renderChoose(again) {
   block.appendChild(el('div', 'ask',
     (again ? 'では、次は何を作りますか？' : '何を作りますか？') +
     '<span class="hint">選ぶと、その場で作ります。' +
-    (again ? '' : '会社案内を読む必要はありません。') + '</span>'));
+    (again ? '' : '上に書いた進め方を、実際にやってみる方が早いはずです。') + '</span>'));
 
   const list = el('div', 'choices');
   list.setAttribute('role', 'listbox');
@@ -355,18 +355,8 @@ function renderChoose(again) {
   free.addEventListener('click', function () { state.sel = SUBJECTS.length; paintSel(list); openFree(); });
   list.appendChild(free);
 
-  // 「まず何の会社か知りたい」という真っ当な人の行き場。
-  // 主導線は上のままにして、ここは控えめに置く。
-  const intro = el('button', 'choice aside');
-  intro.type = 'button';
-  intro.dataset.idx = SUBJECTS.length + 1;
-  intro.setAttribute('role', 'option');
-  intro.innerHTML = '<span class="caret">▸</span><span class="sub">' +
-                    'その前に、この会社の概要を見る</span>';
-  intro.addEventListener('click', function () {
-    state.sel = SUBJECTS.length + 1; paintSel(list); showInfo('overview');
-  });
-  list.appendChild(intro);
+  // 会社の概要はページ冒頭に常時出してあるので、ここには置かない。
+  // 「まず概要を見る」を選ばせるのは、読みたい人に一手余分にかけさせるだけ。
 
   block.appendChild(list);
   mainEl.appendChild(block);
