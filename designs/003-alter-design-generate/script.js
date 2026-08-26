@@ -128,7 +128,7 @@ const SUBJECTS = [
     spec: {
       screens: ['見積一覧', '見積入力', '承認'],
       tables: ['見積ヘッダ', '見積明細', '承認履歴'],
-      rule: '合計 100万円以上は部長承認'
+      ruleBefore: '合計 ', ruleAfter: ' 円以上は部長承認', threshold: 1000000
     },
     thoughts: [
       '「見積作成」。明細を積み上げて合計を出す業務ですね。',
@@ -154,10 +154,10 @@ const SUBJECTS = [
       rowValue: function (r) { return r.qty * r.price; },
       totalLabel: '合計',
       fmt: yen,
-      over: function (t) { return t >= 1000000; },
-      onText:  function (t) { return yen(t) + ' → 100万円以上のため部長承認へ'; },
-      offText: function (t) { return yen(t) + ' → 課長承認で完了'; },
-      ruleSrc: '仕様: 合計 100万円以上は部長承認',
+      over: function (t, th) { return t >= th; },
+      onText:  function (t, th) { return yen(t) + ' → ' + yen(th) + '以上のため部長承認へ'; },
+      offText: function (t, th) { return yen(t) + ' → ' + yen(th) + '未満なので課長承認で完了'; },
+      ruleSrc: '仕様のルール',
       action: '申請する',
       doneOn:  '部長承認へ回しました。',
       doneOff: '課長承認へ回しました。',
@@ -177,7 +177,7 @@ const SUBJECTS = [
     spec: {
       screens: ['月次一覧', '勤怠入力', '承認'],
       tables: ['勤怠ヘッダ', '日次明細', '承認履歴'],
-      rule: '月の残業 45時間超で警告'
+      ruleBefore: '月の残業 ', ruleAfter: ' 時間超で警告', threshold: 45
     },
     thoughts: [
       '「勤怠管理」。日々の残業を積み上げて、月で締める業務ですね。',
@@ -205,10 +205,10 @@ const SUBJECTS = [
       display: 'plain',
       totalLabel: '月間残業',
       fmt: hours,
-      over: function (t) { return t > 45; },
-      onText:  function (t) { return hours(t) + ' → 45時間を超過。36協定の上限に触れます'; },
-      offText: function (t) { return hours(t) + ' → 上限内（45時間まで）'; },
-      ruleSrc: '仕様: 月の残業 45時間超で警告',
+      over: function (t, th) { return t > th; },
+      onText:  function (t, th) { return hours(t) + ' → ' + hours(th) + 'を超過。上限に触れます'; },
+      offText: function (t, th) { return hours(t) + ' → 上限内（' + hours(th) + 'まで）'; },
+      ruleSrc: '仕様のルール',
       action: '提出する',
       doneOn:  '警告付きで提出しました。',
       doneOff: '提出しました。',
@@ -234,7 +234,7 @@ const SUBJECTS = [
     spec: {
       screens: ['在庫一覧', '入出庫入力', '発注'],
       tables: ['品目マスタ', '在庫残高', '入出庫履歴'],
-      rule: '在庫が発注点を下回ったら発注対象'
+      ruleBefore: '発注点割れが ', ruleAfter: ' 件を超えたら通知', threshold: 0
     },
     thoughts: [
       '「在庫管理」。品目ごとに残高を持って、発注点と比べる業務ですね。',
@@ -262,10 +262,10 @@ const SUBJECTS = [
       display: 'flag',
       totalLabel: '発注が必要',
       fmt: count,
-      over: function (t) { return t > 0; },
-      onText:  function (t) { return count(t) + 'が発注点を下回っています'; },
+      over: function (t, th) { return t > th; },
+      onText:  function (t, th) { return count(t) + 'が発注点を下回っています（通知は' + count(th) + '超）'; },
       offText: function () { return 'すべて発注点を上回っています'; },
-      ruleSrc: '仕様: 在庫 < 発注点 なら発注対象',
+      ruleSrc: '仕様のルール',
       action: '発注をかける',
       doneOn:  '発注対象を購買へ回しました。',
       doneOff: '発注は不要です。',
@@ -289,7 +289,7 @@ const SUBJECTS = [
     spec: {
       screens: ['会議一覧', 'コスト計算', '振り返り'],
       tables: ['会議ヘッダ', '参加者明細', '決定事項'],
-      rule: '5万円超なら意思決定の場として扱う'
+      ruleBefore: '', ruleAfter: ' 円超なら意思決定の場として扱う', threshold: 50000
     },
     thoughts: [
       '「会議のコスト」。参加者の時間を金額に換算する業務ですね。',
@@ -315,10 +315,10 @@ const SUBJECTS = [
       rowValue: function (r) { return r.qty * r.price; },
       totalLabel: 'この会議',
       fmt: yen,
-      over: function (t) { return t >= 50000; },
-      onText:  function (t) { return yen(t) + ' → 5万円超。意思決定の場として扱います'; },
-      offText: function (t) { return yen(t) + ' → 情報共有の範囲'; },
-      ruleSrc: '仕様: 5万円超なら意思決定の場',
+      over: function (t, th) { return t >= th; },
+      onText:  function (t, th) { return yen(t) + ' → ' + yen(th) + '超。意思決定の場として扱います'; },
+      offText: function (t, th) { return yen(t) + ' → ' + yen(th) + '以下。情報共有の範囲'; },
+      ruleSrc: '仕様のルール',
       action: '記録する',
       doneOn:  '意思決定の場として記録しました。',
       doneOff: '記録しました。',
@@ -339,7 +339,7 @@ const SUBJECTS = [
     spec: {
       screens: ['機嫌一覧', '観測入力', '声かけ判定'],
       tables: ['観測ヘッダ', '観測明細', '声かけ履歴'],
-      rule: 'スコア3点以下なら声をかけない'
+      ruleBefore: 'スコア ', ruleAfter: ' 点以下なら声をかけない', threshold: 3
     },
     thoughts: [
       '「部長の機嫌」。……業務システムとして作ります。',
@@ -365,10 +365,10 @@ const SUBJECTS = [
       rowValue: function (r) { return r.qty * r.price; },
       totalLabel: '機嫌スコア',
       fmt: function (n) { return (Math.round(n * 10) / 10) + ' 点'; },
-      over: function (t) { return t <= 3; },
-      onText:  function (t) { return t + '点 → 3点以下。今日は話しかけないでください'; },
-      offText: function (t) { return t + '点 → 話しかけて大丈夫です'; },
-      ruleSrc: '仕様: 3点以下なら声をかけない',
+      over: function (t, th) { return t <= th; },
+      onText:  function (t, th) { return t + '点 → ' + th + '点以下。今日は話しかけないでください'; },
+      offText: function (t, th) { return t + '点 → ' + th + '点より上。話しかけて大丈夫です'; },
+      ruleSrc: '仕様のルール',
       action: '判定を出す',
       doneOn:  '「今日はやめておきましょう」と判定しました。',
       doneOff: '「大丈夫です」と判定しました。',
@@ -417,6 +417,8 @@ function start(subject, opts) {
   state.skipped = false;
   state.auto = !!opts.auto;
   state.rows = subject.app.rows.map(function (r) { return Object.assign({}, r); });
+  state.threshold = subject.spec.threshold;
+  state.recalc = null;
 
   genEl.innerHTML = '';
   appEl.innerHTML = '';
@@ -539,6 +541,11 @@ function start(subject, opts) {
   say(opts.auto ? '頼まれる前に作りはじめました' : '生成中');
 }
 
+/* -----------------------------------------------------------
+   仕様は読み物ではなく、書き換えられるものにする。
+   ルールの数値を触ると右の成果物の判定が変わる。
+   「上流で決めたことがそのまま動く」を、訪問者自身の手でやってもらう。
+   ----------------------------------------------------------- */
 function renderSpec(spec) {
   const dl = el('dl', 'spec');
   dl.innerHTML =
@@ -546,7 +553,17 @@ function renderSpec(spec) {
       return '<span class="tag">' + esc(s) + '</span>'; }).join('') + '</dd>' +
     '<dt>表</dt><dd>' + spec.tables.map(function (s) {
       return '<span class="tag">' + esc(s) + '</span>'; }).join('') + '</dd>' +
-    '<dt>ルール</dt><dd class="rule">' + esc(spec.rule) + '</dd>';
+    '<dt>ルール</dt><dd class="rule">' + esc(spec.ruleBefore) +
+      '<input type="number" step="any" class="th" data-th value="' + spec.threshold + '">' +
+      esc(spec.ruleAfter) + '</dd>';
+
+  const input = dl.querySelector('[data-th]');
+  input.addEventListener('input', function () {
+    const v = parseFloat(input.value);
+    state.threshold = isNaN(v) ? spec.threshold : v;
+    if (state.recalc) state.recalc();
+    say('仕様を書き換えました');
+  });
   return dl;
 }
 
@@ -675,10 +692,11 @@ function wireApp(app, subject) {
     });
 
     total.querySelector('[data-total]').textContent = a.fmt(t);
-    const on = a.over(t);
+    const th = state.threshold;
+    const on = a.over(t, th);
     alert.className = 'alert ' + (on ? 'on' : 'off');
     alert.querySelector('.mark').textContent = on ? '!' : '·';
-    alert.querySelector('[data-alert]').textContent = on ? a.onText(t) : a.offText(t);
+    alert.querySelector('[data-alert]').textContent = on ? a.onText(t, th) : a.offText(t, th);
 
     if (extraAlert) {
       const dyn = typeof a.extra.text === 'function';
@@ -698,6 +716,7 @@ function wireApp(app, subject) {
     log.innerHTML = '<span class="t">' + stamp + '</span>  ' + esc(r.on ? a.doneOn : a.doneOff);
   });
 
+  state.recalc = recalc;
   recalc();
 }
 
@@ -712,11 +731,12 @@ function finishRun(subject) {
         ? '頼まれる前に、勝手に作りました。<strong>' + secs + ' 秒</strong>。'
         : '<strong>' + secs + ' 秒</strong>で出てきました。');
 
+  // ここが体験の中心。左のルールを書き換えられることを必ず伝える。
   const sub = subject.joke
     ? '　冗談のような題材でも、工程は業務システムと同じです。' +
-      '仕様を分解し、ルールを配線し、触れるものにする。' +
-      '<b>頼んでいないもの</b>も1つ足しました。'
-    : '　数量を触ると仕様のルールが動きます。<b>頼んでいないもの</b>も1つ足しました。';
+      '<b>左のルールの数値を書き換えてください。</b>右の判定がその場で変わります。'
+    : '　<b>左のルールの数値を書き換えてください。</b>右の判定がその場で変わります。' +
+      '決めるのは人、作るのは AI です。';
 
   closeEl.innerHTML = head + '<span class="sub">' + sub + '</span>';
 

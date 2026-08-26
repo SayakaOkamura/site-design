@@ -161,6 +161,27 @@ body {
 }
 .spec dd.rule { color: var(--warn); }
 
+/* ルールの数値は書き換えられる。ここが体験の中心なので、明らかに入力欄に見せる */
+.spec dd.rule input.th {
+  font-family: var(--mono);
+  font-size: .95em;
+  width: 10ch;
+  text-align: right;
+  color: var(--amber);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-bottom: 2px solid var(--amber);
+  border-radius: 4px;
+  padding: 0 .35em;
+  margin: 0 .35em;
+}
+.spec dd.rule input.th:hover { border-color: var(--amber); }
+.spec dd.rule input.th:focus {
+  outline: none;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(180,83,9,.13);
+}
+
 /* =====================================================
    右カラム: 出てきたもの
    ===================================================== */
