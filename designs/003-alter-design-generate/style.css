@@ -425,8 +425,21 @@ body {
 .ok-line { font-size: .9em; color: var(--dim); line-height: 1.6; margin-top: .3em; }
 .ok-line b { color: var(--fg); }
 
-/* 訪問者が決めた仕様 */
+/* 訪問者が決める仕様。決まっていない項目も先に見せて、
+   何を決めなければいけないかを分からせる */
 .myspec dt { color: var(--amber); }
+.myspec dd.pending {
+  color: var(--dimmer);
+  font-size: .92em;
+  font-style: italic;
+}
+.myspec dd.filled { animation: partIn .3s ease both; }
+
+.await .rest-q {
+  display: inline-block;
+  margin-top: .4em;
+  color: var(--amber-2);
+}
 .choice:focus-visible { outline: 2px solid var(--amber-2); outline-offset: 2px; }
 
 .freebox { display: flex; align-items: baseline; gap: 1ch; flex-wrap: wrap; }

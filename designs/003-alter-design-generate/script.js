@@ -388,7 +388,7 @@ const SUBJECTS = [
    ----------------------------------------------------------- */
 const CHALLENGE = [
   {
-    key: 'screens',
+    key: 'screens', short: '画面',
     q: 'どの画面が必要ですか？',
     hint: '複数選べます。Enter で確定',
     multi: true,
@@ -402,7 +402,7 @@ const CHALLENGE = [
     ]
   },
   {
-    key: 'approval',
+    key: 'approval', short: '承認',
     q: '承認は何段階にしますか？',
     opts: [
       { label: '1段', v: 1,
@@ -413,7 +413,7 @@ const CHALLENGE = [
     ]
   },
   {
-    key: 'threshold',
+    key: 'threshold', short: '金額',
     q: '部長承認に上げる金額は？',
     opts: [
       { label: '100万円', v: 1000000 },
@@ -421,6 +421,28 @@ const CHALLENGE = [
         miss: '500万円は高すぎます。100〜500万円の案件が全部課長止まりになり、部長が把握できません。' },
       { label: '決めない', v: 0,
         miss: '閾値を決めないと、誰に上げるかを毎回人が判断します。判断のばらつきが残ります。' }
+    ]
+  },
+  {
+    key: 'absent', short: '不在時',
+    q: '承認する人が不在のときは？',
+    opts: [
+      { label: '代理を決めておく', v: 'proxy' },
+      { label: '戻ってくるまで待つ', v: 'wait',
+        miss: '承認者が休むたびに見積が止まります。月に数日は必ず止まる計算になります。' },
+      { label: '決めない', v: 'none',
+        miss: '不在時の扱いが決まっていません。現場がその場の判断で回避しはじめ、記録が残らなくなります。' }
+    ]
+  },
+  {
+    key: 'revision', short: '修正時',
+    q: '出した見積を直すときは？',
+    opts: [
+      { label: '版を分けて残す', v: 'version' },
+      { label: '上書きする', v: 'overwrite',
+        miss: '上書きすると前の見積が消えます。顧客と金額が食い違ったとき、出した証拠が残りません。' },
+      { label: '決めない', v: 'none',
+        miss: '修正の扱いが決まっていません。人によって上書きと再発行が混ざり、どれが最新か分からなくなります。' }
     ]
   }
 ];
@@ -794,7 +816,7 @@ function renderChoose() {
   state.sel = 0;
 
   chooseEl.appendChild(el('span', 'ask',
-    state.auto ? 'では、あなたは何を作りますか？' : '次は何を作りますか？'));
+    state.auto ? 'では、あなたは何を作りますか？' : '次は何を作りますか？（こちらが決めます）'));
   state.auto = false;
 
   const list = el('div', 'choices');
@@ -899,16 +921,21 @@ function startChallenge() {
 
   genEl.innerHTML = '';
   appEl.innerHTML = '';
-  appEl.appendChild(el('div', 'await', 'あなたの仕様を待っています'));
-  closeEl.innerHTML = '仕様を決めてください。<span class="sub">' +
-    '　決めたとおりに作ります。決めなかったことは、作られません。</span>';
+  appEl.appendChild(el('div', 'await', 'あなたの仕様を待っています<br><span class="rest-q">あと ' + CHALLENGE.length + ' 問</span>'));
+  closeEl.innerHTML = 'この会社の仕事を、やってみてください。<span class="sub">' +
+    '　仕様を決めると、そのとおりに作ります。決めなかったことは、作られません。</span>';
 
   const head = el('div', 'step');
   head.innerHTML = '<div class="step-head"><span class="label">[あなたの仕様]</span>' +
                    '<span class="pct" data-cpct>0 / ' + CHALLENGE.length + '</span></div>' +
                    '<div class="bar" data-cbar></div>';
   genEl.appendChild(head);
-  genEl.appendChild(el('dl', 'spec myspec'));
+  const dl = el('dl', 'spec myspec');
+  CHALLENGE.forEach(function (q) {
+    dl.innerHTML += '<dt>' + esc(q.short) + '</dt>' +
+                    '<dd class="pending" data-slot="' + q.key + '">まだ決まっていません</dd>';
+  });
+  genEl.appendChild(dl);
 
   askChallenge();
 }
@@ -980,14 +1007,18 @@ function answerChallenge(chosen) {
   }
 
   // 決めたことを左に積む
-  const dl = genEl.querySelector('.myspec');
-  dl.innerHTML += '<dt>' + esc(step.q.replace(/[はをか？]/g, '').slice(0, 8)) + '</dt><dd>' +
-                  chosen.map(function (o) {
-                    return '<span class="tag">' + esc(o.label) + '</span>';
-                  }).join('') + '</dd>';
+  const slot = genEl.querySelector('[data-slot="' + step.key + '"]');
+  if (slot) {
+    slot.className = 'filled';
+    slot.innerHTML = chosen.map(function (o) {
+      return '<span class="tag">' + esc(o.label) + '</span>';
+    }).join('');
+  }
 
   state.cstep++;
   state.picked = {};
+  const rest = appEl.querySelector('.rest-q');
+  if (rest) rest.textContent = 'あと ' + (CHALLENGE.length - state.cstep) + ' 問';
 
   if (state.cstep < CHALLENGE.length) { askChallenge(); return; }
 
@@ -1002,38 +1033,51 @@ function buildFromAnswers() {
   const ans = state.answers;
   const n = state.misses.length;
 
+  // 決めたことを仕様に反映する。決めなかったことは作られない。
+  const tables = base.spec.tables.slice();
+  if (ans.revision[0] === 'version') tables.push('見積版数');
+
   const custom = Object.assign({}, base);
   custom.fromChallenge = true;
   custom.spec = Object.assign({}, base.spec, {
     screens: ans.screens,
+    tables: tables,
     threshold: ans.threshold[0] || base.spec.threshold
   });
   custom.thoughts = [
     'あなたが決めた仕様を読みます。画面 ' + ans.screens.length + ' つ、承認 ' +
       ans.approval[0] + ' 段。',
-    '書かれていることは、そのまま作ります。',
+    '書かれていることは、そのまま作ります。書かれていないことは作りません。',
     n === 0 ? '……漏れは見つかりませんでした。お見事です。'
-            : '……書かれていないことが ' + n + ' つあります。あとで指摘します。'
+            : '……決められていないことが ' + n + ' つあります。あとで指摘します。'
   ];
   custom.notices = n === 0
     ? ['漏れがないので、足すものはありません。', 'この状態で運用に入れます。']
     : ['まず、決められたとおりに作りました。ここまでは仕様どおりです。',
        'そのうえで ' + n + ' つ、運用で詰まる箇所があります。下に出します。'];
 
-  custom.app = Object.assign({}, base.app);
-  if (ans.approval[0] < 2) {
-    custom.app = Object.assign({}, base.app, { extra: base.app.extra });
+  // 決めた内容に応じて、右の画面に出るものが変わる
+  let extra;
+  if (ans.absent[0] === 'proxy') {
+    extra = { log: '不在時の代理承認',
+              field: { label: '代理承認者', value: '（不在時: 設備部 次長）' },
+              note: '不在時は代理へ回す、と決められていたので用意しました。',
+              src: 'あなたの仕様どおり' };
+  } else if (ans.revision[0] === 'version') {
+    extra = { log: '版の管理',
+              field: { label: '版数', value: 'Rev.2（前版あり）' },
+              note: '版を分けて残す、と決められていたので用意しました。',
+              src: 'あなたの仕様どおり' };
+  } else if (ans.approval[0] >= 2) {
+    extra = { log: '2段目の承認者',
+              field: { label: '2段目の承認', value: '設備部 部長' },
+              note: '承認2段と決められていたので、2段目の欄を用意しました。',
+              src: 'あなたの仕様どおり' };
   } else {
-    // 2段承認を選んだ人には、代理承認を勝手に足さない（もう考慮済みだから）
-    custom.app = Object.assign({}, base.app, {
-      extra: {
-        log: '承認の並び順',
-        field: { label: '2段目の承認者', value: '設備部 部長' },
-        note: '2段にしたので、2段目の承認者欄を用意しました。',
-        src: 'あなたの仕様どおり'
-      }
-    });
+    // 何も決まっていないので、こちらで足す
+    extra = base.app.extra;
   }
+  custom.app = Object.assign({}, base.app, { extra: extra });
 
   start(custom, { fast: false, challenge: true });
 }
@@ -1171,4 +1215,4 @@ document.addEventListener('keydown', function (e) {
 
 /* ---------- 起動 ---------- */
 
-start(SUBJECTS[0], { fast: true, auto: true });
+startChallenge();
