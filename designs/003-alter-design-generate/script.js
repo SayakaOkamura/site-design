@@ -53,6 +53,55 @@ function scrollToEnd() {
   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
 
+/* 成果物を画面に収める。最下部まで飛ばすと、肝心の成果物が画面外へ消える。 */
+function revealApp(holder) {
+  const app = holder.querySelector('.app');
+  if (!app) return;
+  const r = app.getBoundingClientRect();
+  if (r.top >= 8 && r.bottom <= window.innerHeight - 56) return;   // すでに見えている
+  window.scrollTo({ top: window.scrollY + r.top - 28, behavior: 'smooth' });
+}
+
+function scrollBy(dir) {
+  window.scrollBy({ top: dir * window.innerHeight * 0.82, behavior: 'smooth' });
+}
+
+/* -----------------------------------------------------------
+   文字送り。AI が書いている感触は、この一手でかなり出る。
+   「AI のふり」ではなく表示演出なので、嘘にはならない。
+   ----------------------------------------------------------- */
+const typers = [];
+
+function typeInto(node, text, msPerChar) {
+  const job = { node: node, text: text, done: false };
+  typers.push(job);
+  node.classList.add('typing');
+
+  let t0 = null;
+  const frame = function (ts) {
+    if (job.done) return;
+    if (t0 === null) t0 = ts;
+    const n = Math.floor((ts - t0) / msPerChar);
+    node.textContent = text.slice(0, Math.min(text.length, n));
+    if (n >= text.length) { finishTyper(job); return; }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+  return job;
+}
+
+function finishTyper(job) {
+  if (job.done) return;
+  job.done = true;
+  job.node.textContent = job.text;
+  job.node.classList.remove('typing');
+}
+
+function finishAllTypers() {
+  typers.forEach(finishTyper);
+  typers.length = 0;
+}
+
 /* 経過時間ベースの進行。setTimeout はバックグラウンドタブで間引かれるため使わない。 */
 function timeline(steps, done) {
   let t0 = null, i = 0;
@@ -72,6 +121,7 @@ function timeline(steps, done) {
   return { total: total, skip: function () {
     state.skipped = true;
     while (i < steps.length) { steps[i].run(); i++; }
+    finishAllTypers();
     if (done) done();
   } };
 }
@@ -89,6 +139,17 @@ const SUBJECTS = [
       tables: ['見積ヘッダ', '見積明細', '承認履歴'],
       rule: '合計 100万円以上は部長承認が必要'
     },
+    /* 仕様を読んでいる間の思考 */
+    thoughts: [
+      '「見積作成システム」。明細を積み上げて合計を出す業務ですね。',
+      '金額の大小で承認者が変わるはずです。その閾値を探します。',
+      '建設業だと100万円で区切るのが一般的でした。これを採用します。'
+    ],
+    /* 生成しながら気づいたこと。ここが仕様に無いものを足す導線になる */
+    notices: [
+      'ここで一つ。部長が不在のとき、この見積は止まりますね。',
+      '代理承認を足しておきます。仕様には書かれていませんが、無いと運用で詰まります。'
+    ],
     app: {
       title: '見積入力',
       fields: [
@@ -131,6 +192,15 @@ const SUBJECTS = [
       tables: ['勤怠ヘッダ', '日次明細', '承認履歴'],
       rule: '月の残業 45時間超で警告（36協定）'
     },
+    thoughts: [
+      '「勤怠管理」。日々の残業を積み上げて、月で締める業務ですね。',
+      '上限は法律で決まっています。36協定なら月45時間です。',
+      'これを超えたら警告する、で合っていますか。そう仮定して進めます。'
+    ],
+    notices: [
+      'ただ、超えてから警告しても手遅れですね。もう働いてしまっています。',
+      '40時間で予告するようにしておきます。仕様にはありませんが、あった方がいい。'
+    ],
     app: {
       title: '勤怠入力',
       fields: [
@@ -179,6 +249,15 @@ const SUBJECTS = [
       tables: ['品目マスタ', '在庫残高', '入出庫履歴'],
       rule: '在庫が発注点を下回ったら発注対象にする'
     },
+    thoughts: [
+      '「在庫管理」。品目ごとに残高を持って、発注点と比べる業務ですね。',
+      '発注点を割ったら発注対象、が基本の判定になります。',
+      '品目マスタ、在庫残高、入出庫履歴の3つで足りるはずです。'
+    ],
+    notices: [
+      'ただ、発注してから届くまでに日数がかかりますね。',
+      'リードタイムを持たせます。発注点を割った時点で、もう間に合わないものがあるので。'
+    ],
     app: {
       title: '在庫一覧',
       fields: [
@@ -371,14 +450,19 @@ function renderChoose(again) {
   mainEl.appendChild(block);
   paintSel(list);
 
-  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ], [ 'Esc', '戻る' ]]);
+  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ],
+        [ 'Esc', '戻る' ], [ 'PgUp', '' ], [ 'PgDn', 'スクロール' ]]);
   say('マウスは要りません');
-  if (again) scrollToEnd();
+  // ここでは自動スクロールしない。成果物を画面から追い出してしまうため。
+  // 選択肢は ↓ を押せば scrollIntoView で視界に入る。
 }
 
-function paintSel(list) {
+function paintSel(list, scroll) {
   Array.prototype.forEach.call(list.children, function (c, i) {
-    c.setAttribute('aria-selected', i === state.sel ? 'true' : 'false');
+    const on = i === state.sel;
+    c.setAttribute('aria-selected', on ? 'true' : 'false');
+    // 選択肢が成果物の下にあっても、矢印キーだけで視界に入るようにする
+    if (on && scroll) c.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
 }
 
@@ -495,11 +579,11 @@ function start(subject, opts) {
   mainEl.appendChild(block);
 
   const s1 = el('div', 'step');
-  s1.innerHTML = '<div class="step-head"><span class="label">[仕様を解釈]</span>' +
+  s1.innerHTML = '<div class="step-head"><span class="label">[仕様を読む]</span>' +
                  '<span class="pct" data-pct>0%</span></div><div class="bar" data-bar></div>';
   block.appendChild(s1);
-  const sub1 = el('div', 'substep');
-  block.appendChild(sub1);
+  const think1 = el('div', 'thoughts');
+  block.appendChild(think1);
 
   const specHolder = el('div');
   block.appendChild(specHolder);
@@ -509,54 +593,54 @@ function start(subject, opts) {
   s2.innerHTML = '<div class="step-head"><span class="label">[生成]</span>' +
                  '<span class="pct" data-pct>0%</span></div><div class="bar" data-bar></div>';
   block.appendChild(s2);
-  const sub2 = el('div', 'substep');
-  sub2.hidden = true;
-  block.appendChild(sub2);
+  const think2 = el('div', 'thoughts');
+  block.appendChild(think2);
 
   const appHolder = el('div');
   appHolder.style.marginTop = '1.4em';
   block.appendChild(appHolder);
 
-  const setStep = function (step, pct, text, holder) {
+  const setStep = function (step, pct) {
     step.querySelector('[data-bar]').innerHTML = bar(pct);
     step.querySelector('[data-pct]').textContent = Math.round(pct * 100) + '%';
-    if (holder && text) holder.textContent = '└ ' + text;
   };
 
+  const cps = Math.max(8, Math.round(24 * rate));   // 1文字あたりのミリ秒
   const spec = subject.spec;
-  const steps = [
-    { at: 260, run: function () { setStep(s1, .25, '業務の単位を抽出', sub1); } },
-    { at: 300, run: function () { setStep(s1, .55, '画面を割り出す', sub1); } },
-    { at: 280, run: function () { setStep(s1, .8,  'テーブルを設計', sub1); } },
-    { at: 300, run: function () { setStep(s1, 1,   '業務ルールを抽出', sub1); } },
-    { at: 200, run: function () {
-        sub1.textContent = '';
-        specHolder.appendChild(renderSpec(spec));
-        s2.hidden = false; sub2.hidden = false;
-        scrollToEnd();
-      } },
-    { at: 300, run: function () { setStep(s2, .25, esc(spec.screens[0]) + ' を構築', sub2); } },
-    { at: 320, run: function () { setStep(s2, .45, esc(spec.screens[1]) + ' を構築', sub2); } },
-    { at: 300, run: function () { setStep(s2, .65, esc(spec.screens[2]) + ' を構築', sub2); } },
-    { at: 320, run: function () { setStep(s2, .82, '業務ルールを配線', sub2); } },
-    // 頼まれていないものを足す。ここが予想を裏切る一手。
-    { at: 420, run: function () {
-        setStep(s2, 1, null, null);
-        const x = subject.app.extra;
-        sub2.innerHTML = '└ <span style="color:var(--amber)">' + esc(x.log) + '</span>' +
-                         '　<span style="color:var(--dimmer)">' + esc(x.src) + 'が、足しました</span>';
-        scrollToEnd();
-      } },
-    { at: 260, run: function () {
-        sub2.textContent = '';
-        appHolder.appendChild(buildApp(subject));
-        state.phase = 'app';
-        scrollToEnd();
-      } }
-  ];
+  const steps = [];
 
-  // 自動デモは速度を上げる
-  steps.forEach(function (s) { s.at = Math.round(s.at * rate); });
+  /* 思考を1文ずつ流す。文の長さから次の間を決める */
+  const pushThoughts = function (lines, holder, step, cls, tail) {
+    lines.forEach(function (line, i) {
+      const wait = i === 0 ? Math.round(240 * rate)
+                           : lines[i - 1].length * cps + Math.round(300 * rate);
+      steps.push({ at: wait, run: function () {
+        setStep(step, (i + 1) / lines.length * (tail ? .9 : 1));
+        const row = el('div', 'thought' + (cls ? ' ' + cls : ''));
+        holder.appendChild(row);
+        typeInto(row, line, cps);
+      } });
+    });
+    // 最後の文を打ち終わるまで待つ
+    steps.push({ at: lines[lines.length - 1].length * cps + Math.round(260 * rate),
+                 run: function () { setStep(step, 1); } });
+  };
+
+  pushThoughts(subject.thoughts, think1, s1, null, false);
+
+  steps.push({ at: Math.round(200 * rate), run: function () {
+    specHolder.appendChild(renderSpec(spec));
+    s2.hidden = false;
+  } });
+
+  pushThoughts(subject.notices, think2, s2, 'notice', false);
+
+  steps.push({ at: Math.round(320 * rate), run: function () {
+    appHolder.appendChild(buildApp(subject));
+    state.phase = 'app';
+    // 成果物を画面に収める。最下部まで飛ばすと成果物が画面外へ消える。
+    revealApp(appHolder);
+  } });
 
   state.running = timeline(steps, function () {
     state.running = null;
@@ -776,9 +860,10 @@ function afterApp(block, subject) {
   state.actions = items.map(function (it) { return it[1]; });
   paintSel(list);
 
-  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ], [ 'Esc', '戻る' ]]);
+  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ],
+        [ 'Esc', '戻る' ], [ 'PgUp', '' ], [ 'PgDn', 'スクロール' ]]);
   say('');
-  scrollToEnd();
+  // ここでも最下部へ飛ばさない。成果物を見せたまま留める。
 }
 
 /* 冒頭の自動デモが終わったところ。ここから訪問者に渡す。 */
@@ -942,12 +1027,17 @@ document.addEventListener('keydown', function (e) {
   if (!list) return;
   const n = list.children.length;
 
+  if (e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); scrollBy(1); return; }
+  if (e.key === 'PageUp') { e.preventDefault(); scrollBy(-1); return; }
+  if (e.key === 'Home') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  if (e.key === 'End') { e.preventDefault(); scrollToEnd(); return; }
+
   if (e.key === 'ArrowDown' || e.key === 'j') {
     e.preventDefault();
-    state.sel = (state.sel + 1) % n; paintSel(list);
+    state.sel = (state.sel + 1) % n; paintSel(list, true);
   } else if (e.key === 'ArrowUp' || e.key === 'k') {
     e.preventDefault();
-    state.sel = (state.sel - 1 + n) % n; paintSel(list);
+    state.sel = (state.sel - 1 + n) % n; paintSel(list, true);
   } else if (e.key === 'Enter') {
     e.preventDefault();
     const btn = list.children[state.sel];

@@ -214,6 +214,31 @@ body {
   padding-left: 2ch;
 }
 
+/* -----------------------------------------------------------
+   考えていることを見せる。機械的なログでは「自動処理」に見えて
+   「AI」に見えない。断定しない口調で、推論の筋道を出す。
+   ----------------------------------------------------------- */
+.thoughts { margin: .6em 0 0; padding-left: 2ch; }
+
+.thought {
+  color: var(--fg-2);
+  padding: .1em 0;
+  min-height: 1.85em;
+}
+.thought.notice { color: var(--amber); }
+
+/* 打っている最中のカーソル */
+.thought.typing::after {
+  content: "▌";
+  margin-left: .1em;
+  color: var(--amber);
+  animation: blink 1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thought.typing::after { animation: none; }
+}
+
 /* --- 仕様の分解 --- */
 
 .spec {
@@ -290,14 +315,16 @@ body {
   color: var(--a-dim);
 }
 .app-head .gen { margin-left: auto; color: var(--a-dimmer); font-size: .92em; }
-.app-body { padding: 1.2em 1.2em 1.4em; }
+
+/* 成果物は 1 画面に収めたい。詰められるところは詰める */
+.app-body { padding: .9em 1.1em 1.1em; }
 
 .field {
   display: grid;
   grid-template-columns: 13ch 1fr;   /* 「リードタイム +」が折り返さない幅 */
   gap: 1.5ch;
   align-items: center;
-  padding: .35em 0;
+  padding: .22em 0;
 }
 .field > label { color: var(--a-dim); font-size: .92em; }
 .field input, .field select {
@@ -320,7 +347,7 @@ body {
 }
 .field.added input { border-color: var(--a-accent); background: #f4f7fc; }
 
-.app hr { border: 0; border-top: 1px solid var(--a-line-2); margin: 1em 0; }
+.app hr { border: 0; border-top: 1px solid var(--a-line-2); margin: .7em 0; }
 
 .rows { width: 100%; font-size: .95em; }
 .rows th {
@@ -333,7 +360,7 @@ body {
 }
 .rows th.num, .rows td.num { text-align: right; font-family: var(--mono); width: 10ch; }
 .rows th:first-child, .rows td:first-child { width: auto; }
-.rows td { padding: .35em 0; border-bottom: 1px solid var(--a-line-2); color: var(--a-fg); }
+.rows td { padding: .28em 0; border-bottom: 1px solid var(--a-line-2); color: var(--a-fg); }
 /* 触れることが体験の核心なので、編集できる欄は常に枠を見せる */
 .rows input {
   width: 100%;
@@ -353,8 +380,8 @@ body {
   display: flex;
   align-items: baseline;
   gap: 1.5ch;
-  margin-top: .9em;
-  padding-top: .7em;
+  margin-top: .7em;
+  padding-top: .55em;
   border-top: 1px solid var(--a-line);
 }
 .total .lbl { color: var(--a-dim); font-size: .92em; }
@@ -368,10 +395,11 @@ body {
 .alert {
   display: flex;
   gap: 1ch;
-  margin-top: .8em;
-  padding: .6em .9em;
+  margin-top: .55em;
+  padding: .5em .85em;
   border-radius: 6px;
   font-size: .93em;
+  line-height: 1.65;
   border: 1px solid transparent;
 }
 .alert .mark { flex: none; font-family: var(--mono); }
@@ -383,7 +411,7 @@ body {
 .alert.extra.on  { color: var(--a-accent); border-color: #c3d0e6; background: #f4f7fc; }
 .alert.extra .src { color: var(--a-accent); opacity: .75; }
 
-.actions { display: flex; gap: .7em; margin-top: 1.2em; flex-wrap: wrap; }
+.actions { display: flex; gap: .7em; margin-top: .9em; flex-wrap: wrap; }
 .btn {
   font-family: var(--jp);
   font-size: var(--fs-body);
