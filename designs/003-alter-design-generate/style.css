@@ -89,11 +89,76 @@ body {
 .brand .lede { margin-top: 1.1em; max-width: 58ch; }
 .brand .lede p { color: var(--fg-2); }
 
+/* -----------------------------------------------------------
+   会社説明の本編。デモはこの説明の実演として上に置いてある。
+   体験を主役にすることと、会社説明の体裁を捨てることは別。
+   ----------------------------------------------------------- */
+.doc {
+  margin-top: clamp(44px, 8vh, 88px);
+  padding-top: clamp(24px, 4vh, 40px);
+  border-top: 1px solid var(--line);
+  max-width: 66ch;
+}
+.doc h2 {
+  font-size: clamp(18px, 2.6vw, 23px);
+  letter-spacing: -.01em;
+  margin-bottom: .9em;
+}
+.doc-lead { color: var(--fg); }
+.doc-note { margin-top: 1.2em; color: var(--dim); font-size: .95em; }
+
+/* 上流工程中心の3ステップ */
+.steps-doc { margin-top: 1.4em; display: flex; flex-direction: column; gap: .7em; }
+.steps-doc li { display: grid; grid-template-columns: 3ch 1fr; gap: 1.5ch; }
+.steps-doc .n {
+  font-family: var(--mono);
+  color: var(--amber);
+  font-size: .95em;
+  padding-top: .1em;
+}
+.steps-doc .t { color: var(--fg-2); }
+.steps-doc .t b {
+  display: block;
+  color: var(--fg);
+  font-weight: 700;
+  margin-bottom: .1em;
+}
+
+/* サービス4本 */
+.svc { display: grid; gap: clamp(20px, 3vh, 30px); }
+@media (min-width: 780px) { .svc { grid-template-columns: 1fr 1fr; gap: 26px 40px; } }
+.svc h3 {
+  font-size: 1.02em;
+  color: var(--amber);
+  margin-bottom: .35em;
+  padding-bottom: .35em;
+  border-bottom: 1px solid var(--line);
+}
+.svc p { color: var(--fg-2); font-size: .95em; }
+
+/* 企業理念 */
+.creed {
+  font-size: clamp(19px, 3.2vw, 27px);
+  line-height: 1.55;
+  color: var(--fg);
+  letter-spacing: -.01em;
+}
+
 /* ページ末尾に置く会社の詳細 */
 .factsheet {
-  margin-top: 2em;
-  padding-top: 1.2em;
+  margin-top: clamp(44px, 8vh, 88px);
+  padding-top: clamp(24px, 4vh, 40px);
   border-top: 1px solid var(--line);
+}
+.factsheet .contact-line {
+  margin-top: 1.4em;
+  color: var(--fg-2);
+  font-size: .95em;
+}
+.factsheet .contact-line a {
+  color: var(--amber);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .factsheet dl { display: grid; grid-template-columns: max-content 1fr; gap: .3em 2.5ch; }
 .factsheet dt { color: var(--dimmer); font-size: .88em; }
@@ -452,6 +517,8 @@ body {
 }
 .closing .lead strong { color: var(--amber); font-weight: 700; }
 .closing .body { color: var(--fg-2); margin-top: .8em; }
+.closing .body.dim-link { color: var(--dim); font-size: .93em; }
+.closing .slash { font-family: var(--mono); color: var(--dimmer); }
 
 .disclaimer {
   margin-top: 2.4em;

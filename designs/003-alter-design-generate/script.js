@@ -104,9 +104,19 @@ function finishAllTypers() {
 
 /* 経過時間ベースの進行。setTimeout はバックグラウンドタブで間引かれるため使わない。 */
 function timeline(steps, done) {
-  let t0 = null, i = 0;
+  let t0 = null, i = 0, finished = false;
   const total = steps.reduce(function (a, s) { return a + s.at; }, 0);
+
+  // skip() で done を呼んだ直後に rAF がもう一度回って done が二重に走り、
+  // 締めと選択肢が 2 組できてしまっていた。一度だけ通す。
+  const finish = function () {
+    if (finished) return;
+    finished = true;
+    if (done) done();
+  };
+
   const frame = function (ts) {
+    if (finished) return;
     if (t0 === null) t0 = ts;
     const t = ts - t0;
     let acc = 0;
@@ -114,15 +124,17 @@ function timeline(steps, done) {
       acc += steps[k].at;
       if (i <= k && t >= acc) { steps[k].run(); i = k + 1; }
     }
-    if (i >= steps.length) { if (done) done(); return; }
+    if (i >= steps.length) { finish(); return; }
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
+
   return { total: total, skip: function () {
+    if (finished) return;
     state.skipped = true;
     while (i < steps.length) { steps[i].run(); i++; }
     finishAllTypers();
-    if (done) done();
+    finish();
   } };
 }
 
@@ -818,52 +830,20 @@ function afterApp(block, subject) {
 
   const c = el('section', 'block closing');
   c.innerHTML = lead +
-    '<p class="body">数字を変えてみてください。' +
+    '<p class="body">数量を変えてみてください。' +
       '<b>「' + esc(subject.spec.rule) + '」</b>が本当に効いています。' +
       '仕様に書いた一行が、そのまま動いている。</p>' +
     '<p class="body">そしてもう一つ、<b>頼んでいないものが足されています</b>。' +
       '「' + esc(subject.app.extra.log) + '」。仕様には書いていません。' +
       'これが無いと運用で必ず詰まるので、勝手に入れました。' +
-      '<br><br>上流工程で漏れるのは、たいていこの種のものです。' +
-      '仕様を書いた人が悪いのではなく、書いている時点では見えないだけです。' +
-      'ここを先に埋められるかどうかが、上流に張る意味だと考えています。</p>' +
-    '<p class="body">上流で決めたことが下流で作り直されず、そのまま動くものになる。' +
-      'AI とローコードは、その順序を守るための道具として使っています。</p>';
+      '上流工程で漏れるのは、たいていこの種のものです。</p>' +
+    '<p class="body dim-link">この進め方の説明・サービス・会社概要は、' +
+      'このまま下へ続きます。</p>';
   mainEl.appendChild(c);
 
-  const list = el('div', 'choices');
-  list.setAttribute('role', 'listbox');
-  const items = [
-    ['別のものを作る', function () { renderChoose(true); }],
-    ['この会社について', function () { showInfo('company'); }],
-    ['なぜこの作りなのか', function () { showInfo('why'); }],
-    ['AI との関係', function () { showInfo('ai'); }],
-    ['問い合わせ', function () { showInfo('contact'); }]
-  ];
-  items.forEach(function (it, i) {
-    const b = el('button', 'choice');
-    b.type = 'button';
-    b.dataset.idx = i;
-    b.setAttribute('role', 'option');
-    b.innerHTML = '<span class="caret">▸</span><span>' + esc(it[0]) + '</span>';
-    b.addEventListener('click', it[1]);
-    list.appendChild(b);
-  });
-  c.appendChild(list);
-
-  c.appendChild(el('p', null,
-    '<span style="color:var(--dimmer);font-size:.85em;font-family:var(--mono)">' +
-    '/ …</span>'));
-
+  // 会社情報はページ下部に本編として置いたので、ここでは選び直しだけを出す
   state.phase = 'closing';
-  state.sel = 0;
-  state.actions = items.map(function (it) { return it[1]; });
-  paintSel(list);
-
-  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ],
-        [ 'Esc', '戻る' ], [ 'PgUp', '' ], [ 'PgDn', 'スクロール' ]]);
-  say('');
-  // ここでも最下部へ飛ばさない。成果物を見せたまま留める。
+  renderChoose(true);
 }
 
 /* 冒頭の自動デモが終わったところ。ここから訪問者に渡す。 */
@@ -882,7 +862,9 @@ function afterAutoDemo(subject) {
       'この画面で実際に効いています。数量を変えると判定が変わります。触ってみてください。</p>' +
     '<p class="body">そして<b>頼んでいないものが1つ足されています</b>。' +
       '「' + esc(subject.app.extra.log) + '」。仕様には書いていません。' +
-      '上流工程で漏れるのは、たいていこの種のものです。</p>';
+      '上流工程で漏れるのは、たいていこの種のものです。</p>' +
+    '<p class="body dim-link">この進め方の説明・サービス・会社概要は、このまま下へ続きます。' +
+      '<span class="slash">（&nbsp;/&nbsp;…&nbsp;）</span></p>';
   mainEl.appendChild(c);
 
   state.phase = 'closing';
