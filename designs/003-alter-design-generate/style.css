@@ -393,6 +393,40 @@ body {
 }
 .choice[aria-selected="true"] .caret { color: var(--amber); }
 .choice.chosen { border-style: dashed; color: var(--dim); }
+
+/* 腕試しの入口 */
+.choice.challenge {
+  border-color: var(--amber-2);
+  color: var(--amber-2);
+}
+.choice.challenge[aria-selected="true"] { color: var(--fg); }
+
+/* 複数選択で選んだもの */
+.choice.picked {
+  background: #fff;
+  border-color: var(--amber);
+  color: var(--fg);
+}
+.choice.picked .caret { color: var(--amber); }
+.choice.picked .caret::after { content: "✓"; }
+.choice.go { font-weight: 700; }
+
+/* 採点結果 */
+.misses { margin-top: .5em; display: grid; gap: .25em; }
+.miss-line {
+  font-size: .9em;
+  color: var(--warn);
+  display: grid;
+  grid-template-columns: 2ch 1fr;
+  gap: .5ch;
+  line-height: 1.6;
+}
+.miss-line .mk { font-family: var(--mono); }
+.ok-line { font-size: .9em; color: var(--dim); line-height: 1.6; margin-top: .3em; }
+.ok-line b { color: var(--fg); }
+
+/* 訪問者が決めた仕様 */
+.myspec dt { color: var(--amber); }
 .choice:focus-visible { outline: 2px solid var(--amber-2); outline-offset: 2px; }
 
 .freebox { display: flex; align-items: baseline; gap: 1ch; flex-wrap: wrap; }

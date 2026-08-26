@@ -382,6 +382,49 @@ const SUBJECTS = [
   }
 ];
 
+/* -----------------------------------------------------------
+   腕試し。訪問者が仕様を決め、その仕様で作られ、漏れを指摘される。
+   上流工程の本質は「漏れなく決められるか」なので、それを挑戦にする。
+   ----------------------------------------------------------- */
+const CHALLENGE = [
+  {
+    key: 'screens',
+    q: 'どの画面が必要ですか？',
+    hint: '複数選べます。Enter で確定',
+    multi: true,
+    opts: [
+      { label: '見積一覧', v: '見積一覧' },
+      { label: '見積入力', v: '見積入力' },
+      { label: '承認',     v: '承認',
+        miss: '承認画面がありません。金額の大きい見積が、誰の確認も通らずに社外へ出ます。' },
+      { label: '月次集計', v: '月次集計',
+        miss: '月次集計がありません。月末に「今月いくら出したか」を数えられません。' }
+    ]
+  },
+  {
+    key: 'approval',
+    q: '承認は何段階にしますか？',
+    opts: [
+      { label: '1段', v: 1,
+        miss: '承認が1段だと、その人が不在のとき見積が止まります。代理を決める必要があります。' },
+      { label: '2段', v: 2 },
+      { label: '承認なし', v: 0,
+        miss: '承認がありません。金額に関わらず、担当者の判断だけで見積が出ます。' }
+    ]
+  },
+  {
+    key: 'threshold',
+    q: '部長承認に上げる金額は？',
+    opts: [
+      { label: '100万円', v: 1000000 },
+      { label: '500万円', v: 5000000,
+        miss: '500万円は高すぎます。100〜500万円の案件が全部課長止まりになり、部長が把握できません。' },
+      { label: '決めない', v: 0,
+        miss: '閾値を決めないと、誰に上げるかを毎回人が判断します。判断のばらつきが残ります。' }
+    ]
+  }
+];
+
 /* / で飛べる先。情報はページ内のセクションに一元化してある */
 const JUMPS = {
   how:        { desc: '上流工程中心とは', id: 'how' },
@@ -416,6 +459,7 @@ function start(subject, opts) {
   state.t0 = performance.now();
   state.skipped = false;
   state.auto = !!opts.auto;
+  state.challenge = !!opts.challenge;
   state.rows = subject.app.rows.map(function (r) { return Object.assign({}, r); });
   state.threshold = subject.spec.threshold;
   state.recalc = null;
@@ -534,7 +578,8 @@ function start(subject, opts) {
 
   state.running = timeline(steps, function () {
     state.running = null;
-    finishRun(subject);
+    if (state.challenge) showScore();
+    else finishRun(subject);
   });
 
   keys([['Enter', '飛ばす'], ['Esc', '戻る']]);
@@ -772,6 +817,14 @@ function renderChoose() {
   free.addEventListener('click', function () { state.sel = SUBJECTS.length; paint(list); openFree(); });
   list.appendChild(free);
 
+  // 腕試し: 訪問者が仕様を決める側になる
+  const ch = el('button', 'choice challenge');
+  ch.type = 'button';
+  ch.setAttribute('role', 'option');
+  ch.innerHTML = '<span class="caret">▸</span><span>仕様を自分で決める</span>';
+  ch.addEventListener('click', function () { state.sel = SUBJECTS.length + 1; paint(list); startChallenge(); });
+  list.appendChild(ch);
+
   chooseEl.appendChild(list);
   chooseEl.appendChild(el('span', 'scroll-cue', '↓ 会社概要・サービス　　/ 移動'));
 
@@ -831,6 +884,187 @@ function chooseFree(text) {
   const box = chooseEl.querySelector('.freebox');
   if (box) box.remove();
   start(hit);
+}
+
+/* -----------------------------------------------------------
+   腕試しモード
+   ----------------------------------------------------------- */
+
+function startChallenge() {
+  state.phase = 'challenge';
+  state.cstep = 0;
+  state.answers = {};
+  state.picked = {};
+  state.misses = [];
+
+  genEl.innerHTML = '';
+  appEl.innerHTML = '';
+  appEl.appendChild(el('div', 'await', 'あなたの仕様を待っています'));
+  closeEl.innerHTML = '仕様を決めてください。<span class="sub">' +
+    '　決めたとおりに作ります。決めなかったことは、作られません。</span>';
+
+  const head = el('div', 'step');
+  head.innerHTML = '<div class="step-head"><span class="label">[あなたの仕様]</span>' +
+                   '<span class="pct" data-cpct>0 / ' + CHALLENGE.length + '</span></div>' +
+                   '<div class="bar" data-cbar></div>';
+  genEl.appendChild(head);
+  genEl.appendChild(el('dl', 'spec myspec'));
+
+  askChallenge();
+}
+
+function askChallenge() {
+  const step = CHALLENGE[state.cstep];
+  const head = genEl.querySelector('.step');
+  head.querySelector('[data-cbar]').innerHTML = bar(state.cstep / CHALLENGE.length);
+  head.querySelector('[data-cpct]').textContent = state.cstep + ' / ' + CHALLENGE.length;
+
+  chooseEl.innerHTML = '';
+  state.sel = 0;
+
+  chooseEl.appendChild(el('span', 'ask', step.q));
+
+  const list = el('div', 'choices');
+  list.setAttribute('role', 'listbox');
+
+  step.opts.forEach(function (o, i) {
+    const b = el('button', 'choice');
+    b.type = 'button';
+    b.setAttribute('role', 'option');
+    b.innerHTML = '<span class="caret">▸</span><span>' + esc(o.label) + '</span>';
+    b.addEventListener('click', function () {
+      state.sel = i;
+      if (step.multi) {
+        state.picked[i] = !state.picked[i];
+        b.classList.toggle('picked', !!state.picked[i]);
+        paint(list);
+      } else {
+        answerChallenge([o]);
+      }
+    });
+    list.appendChild(b);
+  });
+
+  if (step.multi) {
+    const done = el('button', 'choice go');
+    done.type = 'button';
+    done.setAttribute('role', 'option');
+    done.innerHTML = '<span class="caret">▸</span><span>これで確定</span>';
+    done.addEventListener('click', function () {
+      const chosen = step.opts.filter(function (o, i) { return state.picked[i]; });
+      if (!chosen.length) { say('ひとつ以上選んでください'); return; }
+      answerChallenge(chosen);
+    });
+    list.appendChild(done);
+  }
+
+  chooseEl.appendChild(list);
+  if (step.hint) chooseEl.appendChild(el('span', 'scroll-cue', step.hint));
+
+  paint(list);
+  keys([['↑', ''], ['↓', '選ぶ'], ['Enter', step.multi ? '選択/確定' : '決定']]);
+  say('');
+}
+
+function answerChallenge(chosen) {
+  const step = CHALLENGE[state.cstep];
+  state.answers[step.key] = chosen.map(function (o) { return o.v; });
+
+  // 選ばなかったもの／選んだものに紐づく漏れを集める
+  if (step.multi) {
+    step.opts.forEach(function (o) {
+      if (o.miss && chosen.indexOf(o) < 0) state.misses.push(o.miss);
+    });
+  } else if (chosen[0].miss) {
+    state.misses.push(chosen[0].miss);
+  }
+
+  // 決めたことを左に積む
+  const dl = genEl.querySelector('.myspec');
+  dl.innerHTML += '<dt>' + esc(step.q.replace(/[はをか？]/g, '').slice(0, 8)) + '</dt><dd>' +
+                  chosen.map(function (o) {
+                    return '<span class="tag">' + esc(o.label) + '</span>';
+                  }).join('') + '</dd>';
+
+  state.cstep++;
+  state.picked = {};
+
+  if (state.cstep < CHALLENGE.length) { askChallenge(); return; }
+
+  genEl.querySelector('.step [data-cbar]').innerHTML = bar(1);
+  genEl.querySelector('.step [data-cpct]').textContent = CHALLENGE.length + ' / ' + CHALLENGE.length;
+  buildFromAnswers();
+}
+
+/* 回答から題材を組み立て、そのまま既存の生成フローに乗せる */
+function buildFromAnswers() {
+  const base = SUBJECTS[0];
+  const ans = state.answers;
+  const n = state.misses.length;
+
+  const custom = Object.assign({}, base);
+  custom.fromChallenge = true;
+  custom.spec = Object.assign({}, base.spec, {
+    screens: ans.screens,
+    threshold: ans.threshold[0] || base.spec.threshold
+  });
+  custom.thoughts = [
+    'あなたが決めた仕様を読みます。画面 ' + ans.screens.length + ' つ、承認 ' +
+      ans.approval[0] + ' 段。',
+    '書かれていることは、そのまま作ります。',
+    n === 0 ? '……漏れは見つかりませんでした。お見事です。'
+            : '……書かれていないことが ' + n + ' つあります。あとで指摘します。'
+  ];
+  custom.notices = n === 0
+    ? ['漏れがないので、足すものはありません。', 'この状態で運用に入れます。']
+    : ['まず、決められたとおりに作りました。ここまでは仕様どおりです。',
+       'そのうえで ' + n + ' つ、運用で詰まる箇所があります。下に出します。'];
+
+  custom.app = Object.assign({}, base.app);
+  if (ans.approval[0] < 2) {
+    custom.app = Object.assign({}, base.app, { extra: base.app.extra });
+  } else {
+    // 2段承認を選んだ人には、代理承認を勝手に足さない（もう考慮済みだから）
+    custom.app = Object.assign({}, base.app, {
+      extra: {
+        log: '承認の並び順',
+        field: { label: '2段目の承認者', value: '設備部 部長' },
+        note: '2段にしたので、2段目の承認者欄を用意しました。',
+        src: 'あなたの仕様どおり'
+      }
+    });
+  }
+
+  start(custom, { fast: false, challenge: true });
+}
+
+/* 採点結果 */
+function showScore() {
+  const n = state.misses.length;
+  const total = CHALLENGE.reduce(function (a, s) {
+    return a + s.opts.filter(function (o) { return o.miss; }).length;
+  }, 0);
+
+  const head = n === 0
+    ? '<strong>漏れなし</strong>。上流で全部決められています。'
+    : '見つかった漏れ <strong>' + n + ' 件</strong>　<span class="sub">（想定 ' + total + ' 件中）</span>';
+
+  let html = head + '<div class="misses">';
+  if (n === 0) {
+    html += '<p class="ok-line">この仕様なら、作ったものがそのまま使えます。' +
+            '上流で決めきるのは、実際にはこれくらい難しいことです。</p>';
+  } else {
+    state.misses.forEach(function (m) {
+      html += '<p class="miss-line"><span class="mk">!</span>' + esc(m) + '</p>';
+    });
+    html += '<p class="ok-line">上流で気づけば、直すのは今この場です。' +
+            '運用で気づくと、作り直しになります。<b>ここに張るのが私たちの仕事です。</b></p>';
+  }
+  html += '</div>';
+
+  closeEl.innerHTML = html;
+  state.phase = 'choose';
+  renderChoose();
 }
 
 /* ---------- / でページ内移動 ---------- */
@@ -923,6 +1157,7 @@ document.addEventListener('keydown', function (e) {
     state.sel = (state.sel - 1 + n) % n; paint(list);
   } else if (e.key === 'Enter') {
     e.preventDefault();
+    // 複数選択の問いは、最後の「これで確定」以外は選択のトグルになる
     const btn = list.children[state.sel];
     if (btn) btn.click();
   } else if (e.key === 'PageDown') {
