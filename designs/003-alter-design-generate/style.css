@@ -292,6 +292,31 @@ body {
 }
 .thought.notice { color: var(--amber); }
 
+/* 生成が終わったら畳む。スクロールせずに成果物を視界に入れるため */
+.folded { display: none; }
+
+.foldnote {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5ch;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: var(--fs-mono);
+  color: var(--dim);
+  margin: .2em 0 1em;
+}
+.foldbtn {
+  font-family: var(--mono);
+  font-size: var(--fs-mono);
+  color: var(--amber);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  padding: 0;
+  cursor: pointer;
+}
+.foldbtn:focus-visible { outline: 2px solid var(--amber-2); outline-offset: 3px; }
+
 /* 打っている最中のカーソル */
 .thought.typing::after {
   content: "▌";

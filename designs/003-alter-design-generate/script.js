@@ -53,13 +53,28 @@ function scrollToEnd() {
   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
 
-/* 成果物を画面に収める。最下部まで飛ばすと、肝心の成果物が画面外へ消える。 */
-function revealApp(holder) {
-  const app = holder.querySelector('.app');
-  if (!app) return;
-  const r = app.getBoundingClientRect();
-  if (r.top >= 8 && r.bottom <= window.innerHeight - 56) return;   // すでに見えている
-  window.scrollTo({ top: window.scrollY + r.top - 28, behavior: 'smooth' });
+/* -----------------------------------------------------------
+   生成が終わったら、思考と仕様を畳んで縦を詰める。
+   スクロールで成果物を追いかけると、読んでいる途中で
+   画面を動かされて読めなくなる。動かさずに縮める。
+   ----------------------------------------------------------- */
+function foldGeneration(nodes, before) {
+  nodes.forEach(function (n) { n.classList.add('folded'); });
+
+  const note = el('div', 'foldnote');
+  const label = el('span', null, '仕様を読んで、生成しました');
+  const btn = el('button', 'foldbtn');
+  btn.type = 'button';
+  btn.textContent = '考えたことを見る';
+  btn.addEventListener('click', function () {
+    const folded = nodes[0].classList.contains('folded');
+    nodes.forEach(function (n) { n.classList.toggle('folded', !folded); });
+    btn.textContent = folded ? '畳む' : '考えたことを見る';
+  });
+  note.appendChild(label);
+  note.appendChild(btn);
+
+  if (before && before.parentNode) before.parentNode.insertBefore(note, before);
 }
 
 function scrollBy(dir) {
@@ -648,10 +663,10 @@ function start(subject, opts) {
   pushThoughts(subject.notices, think2, s2, 'notice', false);
 
   steps.push({ at: Math.round(320 * rate), run: function () {
+    // 思考と仕様を畳んで縦を詰める。画面を動かさずに成果物が視界に入る。
+    foldGeneration([s1, think1, specHolder, s2, think2], appHolder);
     appHolder.appendChild(buildApp(subject));
     state.phase = 'app';
-    // 成果物を画面に収める。最下部まで飛ばすと成果物が画面外へ消える。
-    revealApp(appHolder);
   } });
 
   state.running = timeline(steps, function () {
@@ -662,7 +677,7 @@ function start(subject, opts) {
 
   keys([[ 'Enter', '飛ばす' ], [ 'Esc', '戻る' ]]);
   say(opts.auto ? '勝手に作りはじめました' : '生成中');
-  if (!opts.auto) scrollToEnd();
+  // 読んでいる最中に画面を動かさない。生成後は畳むので、そのままで見える。
 }
 
 function renderSpec(spec) {
