@@ -6,7 +6,7 @@
 
    - 積み上げず、決まった場所（左/右/下）に入れ替える
    - 自動スクロールは一切しない
-   - 選択式が主、打ち込みは隠し（/ でページ内移動）
+   - 題材を選ばせるデモは廃止。訪問者が仕様を決める問いだけにした
    - 生成結果はデモとして用意したもの。AI のふりはしない
    ========================================================= */
 'use strict';
@@ -168,217 +168,6 @@ const SUBJECTS = [
         src: '仕様にはありません'
       }
     }
-  },
-  {
-    id: 'attendance',
-    label: '勤怠管理',
-    sub: '残業を積み上げて上限を見張る',
-    words: ['勤怠', '出勤', '残業', '労務', '打刻', '休暇', '就業'],
-    spec: {
-      screens: ['月次一覧', '勤怠入力', '承認'],
-      tables: ['勤怠ヘッダ', '日次明細', '承認履歴'],
-      ruleBefore: '月の残業 ', ruleAfter: ' 時間超で警告', threshold: 45
-    },
-    thoughts: [
-      '「勤怠管理」。日々の残業を積み上げて、月で締める業務ですね。',
-      '上限は法律で決まっています。36協定なら月45時間です。',
-      'これを超えたら警告する、で合っていますか。そう仮定して進めます。'
-    ],
-    notices: [
-      'ただ、超えてから警告しても手遅れですね。もう働いてしまっています。',
-      '40時間で予告するようにしておきます。仕様にはありませんが、あった方がいい。'
-    ],
-    app: {
-      title: '勤怠入力',
-      fields: [
-        { label: '社員', value: '山田 太郎（設備部）' },
-        { label: '対象月', value: '2026年8月' }
-      ],
-      cols: ['期間', '残業', '', '時間'],
-      rows: [
-        { name: '第1週', qty: 12.0, price: 1 },
-        { name: '第2週', qty: 14.5, price: 1 },
-        { name: '第3週', qty: 11.0, price: 1 },
-        { name: '第4週', qty: 9.5,  price: 1 }
-      ],
-      rowValue: function (r) { return r.qty; },
-      display: 'plain',
-      totalLabel: '月間残業',
-      fmt: hours,
-      over: function (t, th) { return t > th; },
-      onText:  function (t, th) { return hours(t) + ' → ' + hours(th) + 'を超過。上限に触れます'; },
-      offText: function (t, th) { return hours(t) + ' → 上限内（' + hours(th) + 'まで）'; },
-      ruleSrc: '仕様のルール',
-      action: '提出する',
-      doneOn:  '警告付きで提出しました。',
-      doneOff: '提出しました。',
-      extra: {
-        log: '上限に近づいたときの予告',
-        note: '超えてから警告しても手遅れです。40時間で予告します。',
-        src: '仕様にはありません',
-        on: function (t) { return t > 40; },
-        text: function (t) {
-          if (t > 45) return '上限を超えています。40時間の時点で予告していました。';
-          if (t > 40) return '40時間を超えました。上限まで残り ' +
-                             (Math.round((45 - t) * 10) / 10) + ' 時間です。';
-          return '40時間を超えたら予告します。超えてから言っても遅いので。';
-        }
-      }
-    }
-  },
-  {
-    id: 'inventory',
-    label: '在庫管理',
-    sub: '発注点を割ったら知らせる',
-    words: ['在庫', '倉庫', '発注', '棚卸', '入出庫', '資材', '購買'],
-    spec: {
-      screens: ['在庫一覧', '入出庫入力', '発注'],
-      tables: ['品目マスタ', '在庫残高', '入出庫履歴'],
-      ruleBefore: '発注点割れが ', ruleAfter: ' 件を超えたら通知', threshold: 0
-    },
-    thoughts: [
-      '「在庫管理」。品目ごとに残高を持って、発注点と比べる業務ですね。',
-      '発注点を割ったら発注対象、が基本の判定になります。',
-      '品目マスタ、在庫残高、入出庫履歴の3つで足りるはずです。'
-    ],
-    notices: [
-      'ただ、発注してから届くまでに日数がかかりますね。',
-      'リードタイムを持たせます。発注点を割った時点で、もう間に合わないものがあるので。'
-    ],
-    app: {
-      title: '在庫一覧',
-      fields: [
-        { label: '倉庫', value: '東京第一倉庫' },
-        { label: '基準日', value: '2026年8月26日' }
-      ],
-      cols: ['品目', '在庫', '発注点', '判定'],
-      rows: [
-        { name: '空調フィルタ 400角', qty: 24,  price: 30 },
-        { name: '銅管 15mm',          qty: 120, price: 80 },
-        { name: '冷媒 R32 10kg',      qty: 6,   price: 10 }
-      ],
-      perRow: function (r) { return r.qty < r.price; },
-      rowValue: function (r) { return r.qty < r.price ? 1 : 0; },
-      display: 'flag',
-      totalLabel: '発注が必要',
-      fmt: count,
-      over: function (t, th) { return t > th; },
-      onText:  function (t, th) { return count(t) + 'が発注点を下回っています（通知は' + count(th) + '超）'; },
-      offText: function () { return 'すべて発注点を上回っています'; },
-      ruleSrc: '仕様のルール',
-      action: '発注をかける',
-      doneOn:  '発注対象を購買へ回しました。',
-      doneOff: '発注は不要です。',
-      extra: {
-        log: '調達リードタイム',
-        field: { label: 'リードタイム', value: '冷媒 R32 は 発注から10日' },
-        note: '発注点を割った時点で、もう間に合わないものがあります。',
-        src: '仕様にはありません'
-      }
-    }
-  },
-
-  /* --- ここから下は冗談。ただし作り方は業務システムと同じ。
-         同じ工程で何でも作れる、ということの証明も兼ねている。 --- */
-  {
-    id: 'meeting',
-    label: '会議のコスト',
-    sub: '参加者の時間を金額に換算する',
-    joke: true,
-    words: ['会議', 'ミーティング', '打ち合わせ', 'meeting', '打合せ'],
-    spec: {
-      screens: ['会議一覧', 'コスト計算', '振り返り'],
-      tables: ['会議ヘッダ', '参加者明細', '決定事項'],
-      ruleBefore: '', ruleAfter: ' 円超なら意思決定の場として扱う', threshold: 50000
-    },
-    thoughts: [
-      '「会議のコスト」。参加者の時間を金額に換算する業務ですね。',
-      '役職ごとに単価が違うはずです。人数 × 時給 で出せます。',
-      '幾らを超えたら問題視するか。5万円を目安にしておきます。'
-    ],
-    notices: [
-      'ところで、この会議で何が決まったかを記録する場所がありませんね。',
-      '「決まったこと」欄を足します。空欄なら、金額だけ払ったことになります。'
-    ],
-    app: {
-      title: '会議コスト',
-      fields: [
-        { label: '会議名', value: '週次進捗会議' },
-        { label: '所要時間', value: '60分' }
-      ],
-      cols: ['参加者', '人数', '時給', '金額'],
-      rows: [
-        { name: '部長', qty: 1, price: 12000 },
-        { name: '課長', qty: 2, price: 8000 },
-        { name: '担当', qty: 6, price: 4000 }
-      ],
-      rowValue: function (r) { return r.qty * r.price; },
-      totalLabel: 'この会議',
-      fmt: yen,
-      over: function (t, th) { return t >= th; },
-      onText:  function (t, th) { return yen(t) + ' → ' + yen(th) + '超。意思決定の場として扱います'; },
-      offText: function (t, th) { return yen(t) + ' → ' + yen(th) + '以下。情報共有の範囲'; },
-      ruleSrc: '仕様のルール',
-      action: '記録する',
-      doneOn:  '意思決定の場として記録しました。',
-      doneOff: '記録しました。',
-      extra: {
-        log: '「決まったこと」欄',
-        field: { label: '決まったこと', value: '（未記入）' },
-        note: '空欄です。決まっていないなら、金額だけ払ったことになります。',
-        src: '仕様にはありません'
-      }
-    }
-  },
-  {
-    id: 'mood',
-    label: '部長の機嫌',
-    sub: '観測して声をかける可否を決める',
-    joke: true,
-    words: ['機嫌', '部長', 'ムード', '空気', '顔色'],
-    spec: {
-      screens: ['機嫌一覧', '観測入力', '声かけ判定'],
-      tables: ['観測ヘッダ', '観測明細', '声かけ履歴'],
-      ruleBefore: 'スコア ', ruleAfter: ' 点以下なら声をかけない', threshold: 3
-    },
-    thoughts: [
-      '「部長の機嫌」。……業務システムとして作ります。',
-      '観測できる項目に重みを付けて、点数にします。',
-      '閾値を下回ったときの行動を決めておきます。3点にします。'
-    ],
-    notices: [
-      '機嫌が悪いときでも、止められない用件はありますね。',
-      '代わりに話す人を決めておきました。急ぎはその人へ回します。'
-    ],
-    app: {
-      title: '機嫌モニタ',
-      fields: [
-        { label: '対象', value: '設備部 部長' },
-        { label: '観測日', value: '2026年8月26日' }
-      ],
-      cols: ['観測項目', '値', '重み', '点'],
-      rows: [
-        { name: '朝の挨拶の声量', qty: 2, price: 2 },
-        { name: 'コーヒーの残量', qty: 1, price: 1 },
-        { name: '本日の会議数',   qty: 5, price: -1 }
-      ],
-      rowValue: function (r) { return r.qty * r.price; },
-      totalLabel: '機嫌スコア',
-      fmt: function (n) { return (Math.round(n * 10) / 10) + ' 点'; },
-      over: function (t, th) { return t <= th; },
-      onText:  function (t, th) { return t + '点 → ' + th + '点以下。今日は話しかけないでください'; },
-      offText: function (t, th) { return t + '点 → ' + th + '点より上。話しかけて大丈夫です'; },
-      ruleSrc: '仕様のルール',
-      action: '判定を出す',
-      doneOn:  '「今日はやめておきましょう」と判定しました。',
-      doneOff: '「大丈夫です」と判定しました。',
-      extra: {
-        log: '代理で話す人',
-        field: { label: '代理で話す人', value: '設備部 次長' },
-        note: '止められない用件は、この人へ回します。',
-        src: '仕様にはありません'
-      }
-    }
   }
 ];
 
@@ -480,8 +269,7 @@ function start(subject, opts) {
   state.phase = 'running';
   state.t0 = performance.now();
   state.skipped = false;
-  state.auto = !!opts.auto;
-  state.challenge = !!opts.challenge;
+  state.challenge = true;
   state.rows = subject.app.rows.map(function (r) { return Object.assign({}, r); });
   state.threshold = subject.spec.threshold;
   state.recalc = null;
@@ -600,8 +388,7 @@ function start(subject, opts) {
 
   state.running = timeline(steps, function () {
     state.running = null;
-    if (state.challenge) showScore();
-    else finishRun(subject);
+    showScore();
   });
 
   keys([['Enter', '飛ばす'], ['Esc', '戻る']]);
@@ -787,72 +574,29 @@ function wireApp(app, subject) {
   recalc();
 }
 
-/* ---------- 下段: 締めと選択 ---------- */
-
-function finishRun(subject) {
-  const secs = Math.round((performance.now() - (state.auto ? 0 : state.t0)) / 100) / 10;
-
-  const head = state.skipped
-    ? '飛ばしましたが、<strong>順序は同じ</strong>です。'
-    : (state.auto
-        ? '頼まれる前に、勝手に作りました。<strong>' + secs + ' 秒</strong>。'
-        : '<strong>' + secs + ' 秒</strong>で出てきました。');
-
-  // ここが体験の中心。左のルールを書き換えられることを必ず伝える。
-  const sub = subject.joke
-    ? '　冗談のような題材でも、工程は業務システムと同じです。' +
-      '<b>左のルールの数値を書き換えてください。</b>右の判定がその場で変わります。'
-    : '　<b>左のルールの数値を書き換えてください。</b>右の判定がその場で変わります。' +
-      '決めるのは人、作るのは AI です。';
-
-  closeEl.innerHTML = head + '<span class="sub">' + sub + '</span>';
-
-  state.phase = 'choose';
-  renderChoose();
-}
+/* ---------- 下段: 採点のあと ---------- */
 
 function renderChoose() {
   chooseEl.innerHTML = '';
   state.sel = 0;
 
-  chooseEl.appendChild(el('span', 'ask',
-    state.auto ? 'では、あなたは何を作りますか？' : '次は何を作りますか？（こちらが決めます）'));
-  state.auto = false;
-
   const list = el('div', 'choices');
   list.setAttribute('role', 'listbox');
 
-  SUBJECTS.forEach(function (s, i) {
-    const b = el('button', 'choice');
-    b.type = 'button';
-    b.setAttribute('role', 'option');
-    b.innerHTML = '<span class="caret">▸</span><span>' + esc(s.label) + '</span>';
-    if (state.subject && state.subject.id === s.id) b.classList.add('chosen');
-    b.addEventListener('click', function () { state.sel = i; paint(list); start(s); });
-    list.appendChild(b);
-  });
-
-  const free = el('button', 'choice');
-  free.type = 'button';
-  free.setAttribute('role', 'option');
-  free.innerHTML = '<span class="caret">▸</span><span>自分で書く</span>';
-  free.addEventListener('click', function () { state.sel = SUBJECTS.length; paint(list); openFree(); });
-  list.appendChild(free);
-
-  // 腕試し: 訪問者が仕様を決める側になる
-  const ch = el('button', 'choice challenge');
-  ch.type = 'button';
-  ch.setAttribute('role', 'option');
-  ch.innerHTML = '<span class="caret">▸</span><span>仕様を自分で決める</span>';
-  ch.addEventListener('click', function () { state.sel = SUBJECTS.length + 1; paint(list); startChallenge(); });
-  list.appendChild(ch);
+  const again = el('button', 'choice challenge');
+  again.type = 'button';
+  again.setAttribute('role', 'option');
+  again.innerHTML = '<span class="caret">▸</span><span>別の決め方でもう一度</span>';
+  again.addEventListener('click', startChallenge);
+  list.appendChild(again);
 
   chooseEl.appendChild(list);
-  chooseEl.appendChild(el('span', 'scroll-cue', '↓ 会社概要・サービス　　/ 移動'));
+  chooseEl.appendChild(el('span', 'scroll-cue',
+    '↓ 上流工程中心とは・サービス・会社概要　　/ 移動'));
 
   paint(list);
-  keys([['↑', ''], ['↓', '選ぶ'], ['Enter', '決定'], ['/', '移動']]);
-  say('マウスは要りません');
+  keys([['Enter', 'もう一度'], ['/', '移動'], ['PgDn', '会社について']]);
+  say('');
 }
 
 function paint(list) {
@@ -862,51 +606,6 @@ function paint(list) {
 }
 
 function currentList() { return chooseEl.querySelector('.choices'); }
-
-function openFree() {
-  if (chooseEl.querySelector('.freebox')) {
-    chooseEl.querySelector('.freebox input').focus();
-    return;
-  }
-  const box = el('div', 'freebox');
-  box.innerHTML = '<input type="text" autocomplete="off" placeholder="例: 発注管理、日報、経費精算 …">' +
-                  '<span class="note">Enter で決定</span>';
-  chooseEl.appendChild(box);
-  const input = box.querySelector('input');
-  input.focus();
-  input.addEventListener('keydown', function (e) {
-    e.stopPropagation();
-    if (e.key === 'Escape') { box.remove(); return; }
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-    chooseFree(input.value);
-  });
-  keys([['Enter', '決定'], ['Esc', 'やめる']]);
-}
-
-function chooseFree(text) {
-  const q = String(text || '').trim();
-  if (!q) return;
-
-  let hit = null;
-  for (const s of SUBJECTS) {
-    if (s.words.some(function (w) { return q.indexOf(w) >= 0; })) { hit = s; break; }
-  }
-
-  if (!hit) {
-    // 外したときに取り繕わない。ここで嘘をつくと全部が嘘になる。
-    closeEl.innerHTML = '「' + esc(q) + '」は、このデモに用意した題材にありません。' +
-      '<span class="sub">　適当な結果を出しても意味がないので、正直に止めます。' +
-      '実際の案件なら、まずこの要望を業務の単位に分解するところから始めます。</span>';
-    const box = chooseEl.querySelector('.freebox');
-    if (box) box.remove();
-    return;
-  }
-
-  const box = chooseEl.querySelector('.freebox');
-  if (box) box.remove();
-  start(hit);
-}
 
 /* -----------------------------------------------------------
    腕試しモード
