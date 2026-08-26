@@ -366,13 +366,64 @@ function start(subject, opts) {
     s2.hidden = false;
   } });
 
-  pushThoughts(subject.notices, think2, s2, 'notice');
+  /* --- ここから右カラムが組み上がる。左の思考と交互に進む --- */
+  let app = null, table = null;
+  const a = subject.app;
+  const beat = Math.round(150 * rate);
+  const genFrom = steps.length;   // ここから [作る] の進捗を割り振る
 
-  steps.push({ at: Math.round(300 * rate), run: function () {
+  steps.push({ at: beat, run: function () {
     appEl.innerHTML = '';
-    appEl.appendChild(buildApp(subject));
+    app = appShell(subject);
+    appEl.appendChild(app);
+  } });
+
+  a.fields.forEach(function (f) {
+    steps.push({ at: beat, run: function () { addField(app, f, false); } });
+  });
+
+  steps.push({ at: beat, run: function () { table = addTable(app, subject); } });
+
+  state.rows.forEach(function (r, i) {
+    steps.push({ at: Math.round(110 * rate), run: function () { addRow(table, r, i); } });
+  });
+
+  steps.push({ at: beat, run: function () { addTotal(app, subject); } });
+  steps.push({ at: beat, run: function () { addAlert(app, subject); } });
+
+  /* 気づきの1文目 */
+  steps.push({ at: Math.round(320 * rate), run: function () {
+    const row = el('div', 'thought notice');
+    think2.appendChild(row);
+    typeInto(row, subject.notices[0], cps);
+  } });
+
+  /* 2文目を言いながら、右にフィールドが挿入される */
+  steps.push({ at: subject.notices[0].length * cps + Math.round(240 * rate), run: function () {
+    const row = el('div', 'thought notice');
+    think2.appendChild(row);
+    typeInto(row, subject.notices[1], cps);
+    // 明細の上（フィールド群の末尾）に割り込ませる
+    if (a.extra && a.extra.field) addField(app, a.extra.field, true, app.querySelector('hr'));
+  } });
+
+  steps.push({ at: Math.round(subject.notices[1].length * cps * 0.55), run: function () {
+    if (a.extra) addExtraAlert(app, subject);
+  } });
+
+  steps.push({ at: Math.round(subject.notices[1].length * cps * 0.5), run: function () {
+    addActions(app, subject);
+    wireApp(app, subject);
     state.phase = 'app';
   } });
+
+  // 組み上げの各段階に [作る] の進捗を割り振る
+  const genCount = steps.length - genFrom;
+  for (let k = genFrom; k < steps.length; k++) {
+    const orig = steps[k].run;
+    const pct = (k - genFrom + 1) / genCount;
+    steps[k].run = function () { orig(); setStep(s2, pct); };
+  }
 
   state.running = timeline(steps, function () {
     state.running = null;
@@ -394,81 +445,101 @@ function renderSpec(spec) {
   return dl;
 }
 
-/* ---------- 右カラム: 成果物 ---------- */
+/* -----------------------------------------------------------
+   右カラム: 成果物
+   一気に出さず、部品ごとに組み上げる。左の思考と同期させ、
+   「代理承認を足します」と言った瞬間に右へフィールドが挿入される。
+   ----------------------------------------------------------- */
 
-function buildApp(subject) {
+function appShell(subject) {
   const a = subject.app;
   const wrap = el('div', 'app');
-
-  const head = el('div', 'app-head');
-  head.innerHTML = '<span>' + esc(a.title) + '</span><span class="gen">generated</span>';
+  const head = el('div', 'app-head part');
+  head.innerHTML = '<span>' + esc(a.title) + '</span><span class="gen">generating…</span>';
   wrap.appendChild(head);
+  wrap.appendChild(el('div', 'app-body'));
+  return wrap;
+}
 
-  const body = el('div', 'app-body');
-  wrap.appendChild(body);
+function appBody(app) { return app.querySelector('.app-body'); }
 
-  a.fields.forEach(function (f) {
-    const row = el('div', 'field');
-    row.innerHTML = '<label>' + esc(f.label) + '</label>' +
-                    '<input type="text" value="' + esc(f.value) + '">';
-    body.appendChild(row);
-  });
+function addField(app, f, added, before) {
+  const row = el('div', 'field part' + (added ? ' added' : ''));
+  row.innerHTML = '<label>' + esc(f.label) + '</label>' +
+                  '<input type="text" value="' + esc(f.value) + '">';
+  // 後から足すフィールドも、フォームとして正しい位置に差し込む。
+  // 末尾に付けると明細より下に来てしまい、様にならない。
+  if (before) appBody(app).insertBefore(row, before);
+  else appBody(app).appendChild(row);
+  return row;
+}
 
-  if (a.extra && a.extra.field) {
-    const row = el('div', 'field added');
-    row.innerHTML = '<label>' + esc(a.extra.field.label) + '</label>' +
-                    '<input type="text" value="' + esc(a.extra.field.value) + '">';
-    body.appendChild(row);
-  }
+function addTable(app, subject) {
+  const a = subject.app;
+  const body = appBody(app);
+  body.appendChild(el('hr', 'part'));
 
-  body.appendChild(el('hr'));
-
-  const table = el('table', 'rows');
+  const table = el('table', 'rows part');
   const thead = el('thead');
   thead.innerHTML = '<tr>' + a.cols.map(function (c, i) {
     return '<th class="' + (i > 0 ? 'num' : '') + '">' + esc(c) + '</th>';
   }).join('') + '</tr>';
   table.appendChild(thead);
-
-  const tbody = el('tbody');
-  state.rows.forEach(function (r, i) {
-    const tr = el('tr');
-    tr.dataset.i = i;
-    tr.innerHTML =
-      '<td>' + esc(r.name) + '</td>' +
-      '<td class="num"><input type="number" step="any" min="0" data-edit value="' + r.qty + '"></td>' +
-      '<td class="num" data-fixed></td>' +
-      '<td class="num" data-derived></td>';
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody);
+  table.appendChild(el('tbody'));
   body.appendChild(table);
+  return table;
+}
 
-  const total = el('div', 'total');
-  total.innerHTML = '<span class="lbl">' + esc(a.totalLabel) + '</span>' +
+function addRow(table, r, i) {
+  const tr = el('tr', 'part');
+  tr.dataset.i = i;
+  tr.innerHTML =
+    '<td>' + esc(r.name) + '</td>' +
+    '<td class="num"><input type="number" step="any" min="0" data-edit value="' + r.qty + '"></td>' +
+    '<td class="num" data-fixed></td>' +
+    '<td class="num" data-derived></td>';
+  table.querySelector('tbody').appendChild(tr);
+}
+
+function addTotal(app, subject) {
+  const total = el('div', 'total part');
+  total.innerHTML = '<span class="lbl">' + esc(subject.app.totalLabel) + '</span>' +
                     '<span class="val" data-total></span>';
-  body.appendChild(total);
+  appBody(app).appendChild(total);
+}
 
-  // 注記は改行せず同じ行に置く。2行×2本では 1 画面に入らない
-  const alert = el('div', 'alert');
+function addAlert(app, subject) {
+  const alert = el('div', 'alert part');
   alert.innerHTML = '<span class="mark">!</span><span><span data-alert></span>' +
-                    '<span class="src">' + esc(a.ruleSrc) + '</span></span>';
-  body.appendChild(alert);
+                    '<span class="src">' + esc(subject.app.ruleSrc) + '</span></span>';
+  appBody(app).appendChild(alert);
+}
 
-  let extraAlert = null;
-  if (a.extra) {
-    extraAlert = el('div', 'alert extra');
-    extraAlert.innerHTML = '<span class="mark">+</span><span><span data-extra></span>' +
-                           '<span class="src">' + esc(a.extra.src) + 'が足しました</span></span>';
-    body.appendChild(extraAlert);
-  }
+function addExtraAlert(app, subject) {
+  const x = el('div', 'alert extra part');
+  x.innerHTML = '<span class="mark">+</span><span><span data-extra></span>' +
+                '<span class="src">' + esc(subject.app.extra.src) + 'が足しました</span></span>';
+  appBody(app).appendChild(x);
+}
 
-  const actions = el('div', 'actions');
-  actions.innerHTML = '<button type="button" class="btn" data-go>' + esc(a.action) + '</button>';
-  body.appendChild(actions);
+function addActions(app, subject) {
+  const actions = el('div', 'actions part');
+  actions.innerHTML = '<button type="button" class="btn" data-go>' +
+                      esc(subject.app.action) + '</button>';
+  appBody(app).appendChild(actions);
+  appBody(app).appendChild(el('div', 'applog'));
+  app.querySelector('.app-head .gen').textContent = 'generated';
+}
 
-  const log = el('div', 'applog');
-  body.appendChild(log);
+/* 部品が揃ったところで計算とルールを配線する */
+function wireApp(app, subject) {
+  const a = subject.app;
+  const tbody = app.querySelector('tbody');
+  const total = app.querySelector('.total');
+  const alert = app.querySelector('.alert:not(.extra)');
+  const extraAlert = app.querySelector('.alert.extra');
+  const actions = app.querySelector('.actions');
+  const log = app.querySelector('.applog');
 
   const recalc = function () {
     let t = 0;
@@ -520,7 +591,6 @@ function buildApp(subject) {
   });
 
   recalc();
-  return wrap;
 }
 
 /* ---------- 下段: 締めと選択 ---------- */
