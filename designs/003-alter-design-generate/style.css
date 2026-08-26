@@ -223,7 +223,7 @@ body {
 
 .field {
   display: grid;
-  grid-template-columns: 12ch 1fr;
+  grid-template-columns: 15ch 1fr;   /* 「決まったこと +」が折り返さない幅 */
   gap: 1.2ch;
   align-items: center;
   padding: .16em 0;

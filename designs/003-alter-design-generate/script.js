@@ -202,6 +202,7 @@ const SUBJECTS = [
         { name: '第4週', qty: 9.5,  price: 1 }
       ],
       rowValue: function (r) { return r.qty; },
+      display: 'plain',
       totalLabel: '月間残業',
       fmt: hours,
       over: function (t) { return t > 45; },
@@ -258,6 +259,7 @@ const SUBJECTS = [
       ],
       perRow: function (r) { return r.qty < r.price; },
       rowValue: function (r) { return r.qty < r.price ? 1 : 0; },
+      display: 'flag',
       totalLabel: '発注が必要',
       fmt: count,
       over: function (t) { return t > 0; },
@@ -271,6 +273,109 @@ const SUBJECTS = [
         log: '調達リードタイム',
         field: { label: 'リードタイム', value: '冷媒 R32 は 発注から10日' },
         note: '発注点を割った時点で、もう間に合わないものがあります。',
+        src: '仕様にはありません'
+      }
+    }
+  },
+
+  /* --- ここから下は冗談。ただし作り方は業務システムと同じ。
+         同じ工程で何でも作れる、ということの証明も兼ねている。 --- */
+  {
+    id: 'meeting',
+    label: '会議のコスト',
+    sub: '参加者の時間を金額に換算する',
+    joke: true,
+    words: ['会議', 'ミーティング', '打ち合わせ', 'meeting', '打合せ'],
+    spec: {
+      screens: ['会議一覧', 'コスト計算', '振り返り'],
+      tables: ['会議ヘッダ', '参加者明細', '決定事項'],
+      rule: '5万円超なら意思決定の場として扱う'
+    },
+    thoughts: [
+      '「会議のコスト」。参加者の時間を金額に換算する業務ですね。',
+      '役職ごとに単価が違うはずです。人数 × 時給 で出せます。',
+      '幾らを超えたら問題視するか。5万円を目安にしておきます。'
+    ],
+    notices: [
+      'ところで、この会議で何が決まったかを記録する場所がありませんね。',
+      '「決まったこと」欄を足します。空欄なら、金額だけ払ったことになります。'
+    ],
+    app: {
+      title: '会議コスト',
+      fields: [
+        { label: '会議名', value: '週次進捗会議' },
+        { label: '所要時間', value: '60分' }
+      ],
+      cols: ['参加者', '人数', '時給', '金額'],
+      rows: [
+        { name: '部長', qty: 1, price: 12000 },
+        { name: '課長', qty: 2, price: 8000 },
+        { name: '担当', qty: 6, price: 4000 }
+      ],
+      rowValue: function (r) { return r.qty * r.price; },
+      totalLabel: 'この会議',
+      fmt: yen,
+      over: function (t) { return t >= 50000; },
+      onText:  function (t) { return yen(t) + ' → 5万円超。意思決定の場として扱います'; },
+      offText: function (t) { return yen(t) + ' → 情報共有の範囲'; },
+      ruleSrc: '仕様: 5万円超なら意思決定の場',
+      action: '記録する',
+      doneOn:  '意思決定の場として記録しました。',
+      doneOff: '記録しました。',
+      extra: {
+        log: '「決まったこと」欄',
+        field: { label: '決まったこと', value: '（未記入）' },
+        note: '空欄です。決まっていないなら、金額だけ払ったことになります。',
+        src: '仕様にはありません'
+      }
+    }
+  },
+  {
+    id: 'mood',
+    label: '部長の機嫌',
+    sub: '観測して声をかける可否を決める',
+    joke: true,
+    words: ['機嫌', '部長', 'ムード', '空気', '顔色'],
+    spec: {
+      screens: ['機嫌一覧', '観測入力', '声かけ判定'],
+      tables: ['観測ヘッダ', '観測明細', '声かけ履歴'],
+      rule: 'スコア3点以下なら声をかけない'
+    },
+    thoughts: [
+      '「部長の機嫌」。……業務システムとして作ります。',
+      '観測できる項目に重みを付けて、点数にします。',
+      '閾値を下回ったときの行動を決めておきます。3点にします。'
+    ],
+    notices: [
+      '機嫌が悪いときでも、止められない用件はありますね。',
+      '代わりに話す人を決めておきました。急ぎはその人へ回します。'
+    ],
+    app: {
+      title: '機嫌モニタ',
+      fields: [
+        { label: '対象', value: '設備部 部長' },
+        { label: '観測日', value: '2026年8月26日' }
+      ],
+      cols: ['観測項目', '値', '重み', '点'],
+      rows: [
+        { name: '朝の挨拶の声量', qty: 2, price: 2 },
+        { name: 'コーヒーの残量', qty: 1, price: 1 },
+        { name: '本日の会議数',   qty: 5, price: -1 }
+      ],
+      rowValue: function (r) { return r.qty * r.price; },
+      totalLabel: '機嫌スコア',
+      fmt: function (n) { return (Math.round(n * 10) / 10) + ' 点'; },
+      over: function (t) { return t <= 3; },
+      onText:  function (t) { return t + '点 → 3点以下。今日は話しかけないでください'; },
+      offText: function (t) { return t + '点 → 話しかけて大丈夫です'; },
+      ruleSrc: '仕様: 3点以下なら声をかけない',
+      action: '判定を出す',
+      doneOn:  '「今日はやめておきましょう」と判定しました。',
+      doneOff: '「大丈夫です」と判定しました。',
+      extra: {
+        log: '代理で話す人',
+        field: { label: '代理で話す人', value: '設備部 次長' },
+        note: '止められない用件は、この人へ回します。',
         src: '仕様にはありません'
       }
     }
@@ -549,19 +654,22 @@ function wireApp(app, subject) {
       const v = parseFloat(inp.value);
       r.qty = isNaN(v) ? 0 : v;
 
-      if (subject.id === 'quote') {
-        tr.querySelector('[data-fixed]').textContent = r.price.toLocaleString('ja-JP');
-        tr.querySelector('[data-derived]').textContent = a.rowValue(r).toLocaleString('ja-JP');
-      } else if (subject.id === 'attendance') {
-        tr.querySelector('[data-fixed]').textContent = '';
-        tr.querySelector('[data-derived]').textContent =
-          (Math.round(r.qty * 10) / 10).toLocaleString('ja-JP');
+      // 題材の id で分岐すると、題材を足すたびに壊れる。表示形式をデータで持つ。
+      const disp = a.display || 'unit';
+      const fixed = tr.querySelector('[data-fixed]');
+      const derived = tr.querySelector('[data-derived]');
+
+      if (disp === 'plain') {
+        fixed.textContent = '';
+        derived.textContent = (Math.round(r.qty * 10) / 10).toLocaleString('ja-JP');
+      } else if (disp === 'flag') {
+        fixed.textContent = r.price.toLocaleString('ja-JP');
+        const hit = a.perRow(r);
+        derived.textContent = hit ? '発注' : '—';
+        derived.style.color = hit ? 'var(--a-warn)' : 'var(--a-dimmer)';
       } else {
-        tr.querySelector('[data-fixed]').textContent = r.price.toLocaleString('ja-JP');
-        const short = a.perRow(r);
-        const cell = tr.querySelector('[data-derived]');
-        cell.textContent = short ? '発注' : '—';
-        cell.style.color = short ? 'var(--a-warn)' : 'var(--a-dimmer)';
+        fixed.textContent = r.price.toLocaleString('ja-JP');
+        derived.textContent = a.rowValue(r).toLocaleString('ja-JP');
       }
       t += a.rowValue(r);
     });
@@ -604,9 +712,13 @@ function finishRun(subject) {
         ? '頼まれる前に、勝手に作りました。<strong>' + secs + ' 秒</strong>。'
         : '<strong>' + secs + ' 秒</strong>で出てきました。');
 
-  closeEl.innerHTML = head +
-    '<span class="sub">　数量を触ると仕様のルールが動きます。' +
-    '<b>頼んでいないもの</b>も1つ足しました。</span>';
+  const sub = subject.joke
+    ? '　冗談のような題材でも、工程は業務システムと同じです。' +
+      '仕様を分解し、ルールを配線し、触れるものにする。' +
+      '<b>頼んでいないもの</b>も1つ足しました。'
+    : '　数量を触ると仕様のルールが動きます。<b>頼んでいないもの</b>も1つ足しました。';
+
+  closeEl.innerHTML = head + '<span class="sub">' + sub + '</span>';
 
   state.phase = 'choose';
   renderChoose();
