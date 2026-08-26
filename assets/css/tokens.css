@@ -1,0 +1,54 @@
+/* --- デザイントークン ---
+   色・余白・タイポをここで一元管理する。
+   各デザイン案の style.css からは var(--…) で参照すること。 */
+:root {
+  /* Color */
+  --c-bg:        #ffffff;
+  --c-surface:   #f6f7f9;
+  --c-border:    #e2e5ea;
+  --c-text:      #16191f;
+  --c-muted:     #5c636e;
+  --c-accent:    #2f6df6;
+  --c-accent-fg: #ffffff;
+
+  /* Typography */
+  --font-sans: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN",
+               "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --fs-xs:   0.75rem;
+  --fs-sm:   0.875rem;
+  --fs-base: 1rem;
+  --fs-lg:   1.25rem;
+  --fs-xl:   1.75rem;
+  --fs-2xl:  2.5rem;
+  --fs-3xl:  3.5rem;
+
+  /* Spacing (4px 基準) */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+  --sp-24: 6rem;
+
+  /* Layout */
+  --container: 1120px;
+  --radius: 10px;
+  --radius-lg: 18px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 8px 24px rgba(16, 24, 40, .06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --c-bg:      #101317;
+    --c-surface: #171b21;
+    --c-border:  #262c35;
+    --c-text:    #e8eaee;
+    --c-muted:   #9aa3ae;
+    --c-accent:  #6f9bff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+  }
+}

@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Node (使う場合のみ)
+node_modules/
+npm-debug.log*
+
+# 作業用
+*.local
+/tmp/

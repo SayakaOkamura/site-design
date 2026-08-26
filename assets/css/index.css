@@ -1,0 +1,53 @@
+/* --- デザイン案インデックスページ --- */
+body {
+  font-family: var(--font-sans);
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+.wrap {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding: var(--sp-16) var(--sp-6) var(--sp-24);
+}
+.site-head { margin-bottom: var(--sp-12); }
+.site-head h1 { font-size: var(--fs-2xl); letter-spacing: -.02em; }
+.site-head p { color: var(--c-muted); margin-top: var(--sp-3); }
+
+.grid {
+  display: grid;
+  gap: var(--sp-6);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.card {
+  display: block;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  padding: var(--sp-6);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.card .no {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  letter-spacing: .08em;
+}
+.card h2 { font-size: var(--fs-lg); margin-top: var(--sp-2); }
+.card p { font-size: var(--fs-sm); color: var(--c-muted); margin-top: var(--sp-2); }
+.tags { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-4); }
+.tag {
+  font-size: var(--fs-xs);
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  padding: 2px var(--sp-3);
+  color: var(--c-muted);
+  background: var(--c-bg);
+}
+.site-foot {
+  margin-top: var(--sp-16);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--c-border);
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+}

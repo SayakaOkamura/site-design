@@ -1,0 +1,14 @@
+/* --- このデザイン案だけのスタイル ---
+   色・余白は tokens.css の var(--…) を使う。直値はなるべく書かない。 */
+body { font-family: var(--font-sans); background: var(--c-bg); color: var(--c-text); }
+
+.container { max-width: var(--container); margin-inline: auto; padding-inline: var(--sp-6); }
+
+.hero { padding-block: var(--sp-24); background: var(--c-surface); border-bottom: 1px solid var(--c-border); }
+.hero h1 { font-size: var(--fs-3xl); letter-spacing: -.02em; }
+.hero .lead { margin-top: var(--sp-4); color: var(--c-muted); font-size: var(--fs-lg); }
+
+.section { padding-block: var(--sp-16); }
+.section h2 { font-size: var(--fs-xl); margin-bottom: var(--sp-4); }
+
+.footer { border-top: 1px solid var(--c-border); padding-block: var(--sp-8); color: var(--c-muted); font-size: var(--fs-sm); }
