@@ -149,6 +149,11 @@ body {
 /* 自由入力の選択肢 */
 .choice.freeform .blanks { color: var(--dimmer); font-family: var(--mono); }
 
+/* 主導線ではない補助の選択肢（概要を見る） */
+.choice.aside { margin-top: .6em; }
+.choice.aside .sub { font-size: .95em; }
+.choice.aside[aria-selected="true"] .sub { color: var(--fg-2); }
+
 .freebox { margin-top: .8em; padding-left: 2.2ch; }
 .freebox label { display: block; color: var(--dim); font-size: .9em; margin-bottom: .35em; }
 .freebox input {
@@ -223,29 +228,51 @@ body {
 
 /* =============== 生成されたアプリ =============== */
 
+/* -----------------------------------------------------------
+   生成されたものは「明るい」。舞台（暗い＋琥珀）の上に、
+   出てきた業務システムが乗る。色が反転する瞬間が、
+   「出てきた」という体感そのものになる。
+   業務システムが黒地に琥珀では、現実のものに見えない。
+   ----------------------------------------------------------- */
 .app {
-  border: 1px solid var(--line);
+  --a-bg:      #f7f6f3;
+  --a-panel:   #eceae4;
+  --a-fg:      #1c1a17;
+  --a-fg-2:    #46413a;
+  --a-dim:     #6d675c;
+  --a-dimmer:  #928b7e;
+  --a-line:    #dbd6cd;
+  --a-line-2:  #eae7e0;
+  --a-accent:  #3a5a94;
+  --a-warn:    #a1620c;
+  --a-warn-bg: #fdf5e5;
+
+  background: var(--a-bg);
+  color: var(--a-fg);
+  border: 1px solid var(--a-line);
   border-radius: 10px;
-  background: var(--panel);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  box-shadow: 0 24px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04);
+  animation: rise .52s cubic-bezier(.2,.85,.2,1) both;
 }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+
 .app-head {
   display: flex;
   align-items: center;
   gap: 1ch;
   padding: .7em 1.1em;
-  background: var(--panel-2);
-  border-bottom: 1px solid var(--line);
+  background: var(--a-panel);
+  border-bottom: 1px solid var(--a-line);
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  color: var(--dim);
+  color: var(--a-dim);
 }
-.app-head .gen {
-  margin-left: auto;
-  color: var(--dimmer);
-  font-size: .92em;
-}
+.app-head .gen { margin-left: auto; color: var(--a-dimmer); font-size: .92em; }
 .app-body { padding: 1.2em 1.2em 1.4em; }
 
 .field {
@@ -255,47 +282,55 @@ body {
   align-items: center;
   padding: .35em 0;
 }
-.field > label { color: var(--dim); font-size: .92em; }
+.field > label { color: var(--a-dim); font-size: .92em; }
 .field input, .field select {
   width: 100%;
   font-family: var(--jp);
   font-size: var(--fs-body);
-  color: var(--fg);
-  background: var(--bg);
-  border: 1px solid var(--line);
+  color: var(--a-fg);
+  background: #fff;
+  border: 1px solid var(--a-line);
   border-radius: 5px;
   padding: .4em .7em;
 }
-.field input:focus, .field select:focus { outline: none; border-color: var(--amber); }
-.field input[type="number"] { font-family: var(--mono); text-align: right; }
+.field input:focus, .field select:focus { outline: none; border-color: var(--a-accent); }
 
-.app hr { border: 0; border-top: 1px solid var(--line-soft); margin: 1em 0; }
+/* AI が勝手に足したフィールドは、それと分かるようにする */
+.field.added > label::after {
+  content: " +";
+  color: var(--a-accent);
+  font-family: var(--mono);
+}
+.field.added input { border-color: var(--a-accent); background: #f4f7fc; }
+
+.app hr { border: 0; border-top: 1px solid var(--a-line-2); margin: 1em 0; }
 
 .rows { width: 100%; font-size: .95em; }
 .rows th {
   text-align: left;
   font-weight: normal;
-  color: var(--dimmer);
+  color: var(--a-dimmer);
   font-size: .88em;
   padding-bottom: .3em;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--a-line);
 }
-.rows th.num, .rows td.num { text-align: right; font-family: var(--mono); }
-.rows td { padding: .35em 0; border-bottom: 1px solid var(--line-soft); }
+.rows th.num, .rows td.num { text-align: right; font-family: var(--mono); width: 10ch; }
+.rows th:first-child, .rows td:first-child { width: auto; }
+.rows td { padding: .35em 0; border-bottom: 1px solid var(--a-line-2); color: var(--a-fg); }
 /* 触れることが体験の核心なので、編集できる欄は常に枠を見せる */
 .rows input {
   width: 100%;
   font-family: var(--mono);
   font-size: .95em;
   text-align: right;
-  color: var(--fg);
-  background: rgba(242,166,58,.04);
-  border: 1px solid var(--line);
+  color: var(--a-fg);
+  background: #fff;
+  border: 1px solid var(--a-line);
   border-radius: 4px;
   padding: .15em .4em;
 }
-.rows input:hover { border-color: var(--amber-2); }
-.rows input:focus { outline: none; border-color: var(--amber); background: var(--bg); }
+.rows input:hover { border-color: var(--a-accent); }
+.rows input:focus { outline: none; border-color: var(--a-accent); box-shadow: 0 0 0 3px rgba(58,90,148,.12); }
 
 .total {
   display: flex;
@@ -303,52 +338,65 @@ body {
   gap: 1.5ch;
   margin-top: .9em;
   padding-top: .7em;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--a-line);
 }
-.total .lbl { color: var(--dim); font-size: .92em; }
+.total .lbl { color: var(--a-dim); font-size: .92em; }
 .total .val {
   margin-left: auto;
   font-family: var(--mono);
   font-size: 1.3em;
-  color: var(--fg);
+  color: var(--a-fg);
 }
 
 .alert {
   display: flex;
   gap: 1ch;
-  margin-top: .9em;
+  margin-top: .8em;
   padding: .6em .9em;
   border-radius: 6px;
   font-size: .93em;
   border: 1px solid transparent;
 }
 .alert .mark { flex: none; font-family: var(--mono); }
-.alert.on  { color: var(--warn); border-color: rgba(227,169,75,.35); background: rgba(227,169,75,.07); }
-.alert.off { color: var(--dimmer); border-color: var(--line-soft); }
-.alert .src { color: var(--dimmer); font-size: .88em; }
+.alert.on  { color: var(--a-warn); border-color: #e8d3a8; background: var(--a-warn-bg); }
+.alert.off { color: var(--a-dimmer); border-color: var(--a-line-2); background: #fafaf8; }
+.alert .src { color: var(--a-dimmer); font-size: .88em; }
+
+/* AI が足したほうの気配り。仕様に無いことを隠さない */
+.alert.extra.on  { color: var(--a-accent); border-color: #c3d0e6; background: #f4f7fc; }
+.alert.extra .src { color: var(--a-accent); opacity: .75; }
 
 .actions { display: flex; gap: .7em; margin-top: 1.2em; flex-wrap: wrap; }
 .btn {
   font-family: var(--jp);
   font-size: var(--fs-body);
-  color: var(--bg);
-  background: var(--amber);
-  border: 1px solid var(--amber);
+  color: #fff;
+  background: var(--a-accent);
+  border: 1px solid var(--a-accent);
   border-radius: 6px;
   padding: .45em 1.4em;
   font-weight: 700;
   cursor: pointer;
 }
-.btn.ghost { color: var(--fg-2); background: transparent; border-color: var(--line); font-weight: normal; }
-.btn:focus-visible { outline: 2px solid var(--amber-2); outline-offset: 2px; }
+.btn.ghost {
+  color: var(--a-fg-2);
+  background: transparent;
+  border-color: var(--a-line);
+  font-weight: normal;
+}
+.btn:focus-visible { outline: 2px solid var(--a-accent); outline-offset: 2px; }
 
 .applog {
   margin-top: 1em;
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  color: var(--dim);
+  color: var(--a-dim);
 }
-.applog .t { color: var(--dimmer); }
+.applog .t { color: var(--a-dimmer); }
+
+@media (prefers-reduced-motion: reduce) {
+  .app { animation: none; }
+}
 
 /* =============== 締め =============== */
 

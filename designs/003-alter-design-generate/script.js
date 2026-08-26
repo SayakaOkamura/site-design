@@ -111,7 +111,14 @@ const SUBJECTS = [
       ruleSrc: '仕様: 合計 100万円以上は部長承認',
       action: '申請する',
       doneOn:  '部長承認へ回しました。',
-      doneOff: '課長承認へ回しました。'
+      doneOff: '課長承認へ回しました。',
+      /* 頼まれていないが、上流で漏れると後で必ず困るもの */
+      extra: {
+        log: '承認者が不在のときの代理承認',
+        field: { label: '代理承認者', value: '（不在時: 設備部 次長）' },
+        note: '部長が不在のとき、この見積は止まります。代理承認を足しました。',
+        src: '仕様にはありません'
+      }
     }
   },
   {
@@ -147,7 +154,19 @@ const SUBJECTS = [
       ruleSrc: '仕様: 月の残業 45時間超で警告',
       action: '提出する',
       doneOn:  '警告付きで提出しました。上長の確認が必要です。',
-      doneOff: '提出しました。'
+      doneOff: '提出しました。',
+      extra: {
+        log: '上限に近づいたときの事前アラート',
+        note: '超えてから警告しても手遅れです。40時間で予告するようにしました。',
+        src: '仕様にはありません',
+        on: function (t) { return t > 40; },
+        text: function (t) {
+          if (t > 45) return '上限を超えています。40時間の時点で予告していました。';
+          if (t > 40) return '40時間を超えました。上限まで残り ' +
+                             (Math.round((45 - t) * 10) / 10) + ' 時間です。';
+          return '40時間を超えたら予告します。超えてから言っても遅いので。';
+        }
+      }
     }
   },
   {
@@ -183,13 +202,37 @@ const SUBJECTS = [
       ruleSrc: '仕様: 在庫 < 発注点 なら発注対象',
       action: '発注をかける',
       doneOn:  '発注対象を購買へ回しました。',
-      doneOff: '発注は不要です。'
+      doneOff: '発注は不要です。',
+      extra: {
+        log: '発注してから届くまでの日数',
+        field: { label: '調達リードタイム', value: '冷媒 R32 は 10日' },
+        note: '発注点を割った時点で、もう間に合わないものがあります。リードタイムを持たせました。',
+        src: '仕様にはありません'
+      }
     }
   }
 ];
 
 /* / で開く隠しコマンド。会社の情報はここから全部たどれる。 */
 const INFO = {
+  overview: {
+    desc: '概要',
+    run: function () {
+      return '<p class="closing body" style="margin-top:0">' +
+        '<b>株式会社アルターデザインコンサルティング</b>（2025年6月設立）。' +
+        'AI とローコードを組み合わせて、業務システムを<b>上流工程中心</b>で作る会社です。' +
+        '要件を固めてから作り始めるのではなく、決めたことがそのまま動く状態を先に作り、' +
+        'そこから直していきます。' +
+        '<br><br>' +
+        'コンサルティングによる業務設計から、エンジニアリングまでを一貫して行います。' +
+        '株主は BlueMeme、ハイ・アベイラビリティ・システムズ、サーバーワークス・キャピタル、リックソフトの4社。' +
+        '</p>' +
+        '<p class="closing body" style="color:var(--dim)">' +
+        'この先の「何を作りますか？」を選ぶと、その工程を実際に体験できます。' +
+        '詳しくは <span style="color:var(--amber);font-family:var(--mono)">/</span> から ' +
+        'philosophy / services / company。</p>';
+    }
+  },
   philosophy: {
     desc: '企業理念',
     run: function () {
@@ -282,6 +325,7 @@ function renderChoose(again) {
   state.sel = 0;
 
   const block = el('section', 'block');
+  block.dataset.kind = 'choose';
 
   block.appendChild(el('div', 'ask',
     (again ? 'では、次は何を作りますか？' : '何を作りますか？') +
@@ -311,11 +355,24 @@ function renderChoose(again) {
   free.addEventListener('click', function () { state.sel = SUBJECTS.length; paintSel(list); openFree(); });
   list.appendChild(free);
 
+  // 「まず何の会社か知りたい」という真っ当な人の行き場。
+  // 主導線は上のままにして、ここは控えめに置く。
+  const intro = el('button', 'choice aside');
+  intro.type = 'button';
+  intro.dataset.idx = SUBJECTS.length + 1;
+  intro.setAttribute('role', 'option');
+  intro.innerHTML = '<span class="caret">▸</span><span class="sub">' +
+                    'その前に、この会社の概要を見る</span>';
+  intro.addEventListener('click', function () {
+    state.sel = SUBJECTS.length + 1; paintSel(list); showInfo('overview');
+  });
+  list.appendChild(intro);
+
   block.appendChild(list);
   mainEl.appendChild(block);
   paintSel(list);
 
-  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ]]);
+  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ], [ 'Esc', '戻る' ]]);
   say('マウスは要りません');
   if (again) scrollToEnd();
 }
@@ -475,11 +532,19 @@ function start(subject) {
         s2.hidden = false; sub2.hidden = false;
         scrollToEnd();
       } },
-    { at: 300, run: function () { setStep(s2, .3, esc(spec.screens[0]) + ' を構築', sub2); } },
-    { at: 320, run: function () { setStep(s2, .55, esc(spec.screens[1]) + ' を構築', sub2); } },
-    { at: 300, run: function () { setStep(s2, .78, esc(spec.screens[2]) + ' を構築', sub2); } },
-    { at: 340, run: function () { setStep(s2, 1, '業務ルールを配線', sub2); } },
-    { at: 220, run: function () {
+    { at: 300, run: function () { setStep(s2, .25, esc(spec.screens[0]) + ' を構築', sub2); } },
+    { at: 320, run: function () { setStep(s2, .45, esc(spec.screens[1]) + ' を構築', sub2); } },
+    { at: 300, run: function () { setStep(s2, .65, esc(spec.screens[2]) + ' を構築', sub2); } },
+    { at: 320, run: function () { setStep(s2, .82, '業務ルールを配線', sub2); } },
+    // 頼まれていないものを足す。ここが予想を裏切る一手。
+    { at: 420, run: function () {
+        setStep(s2, 1, null, null);
+        const x = subject.app.extra;
+        sub2.innerHTML = '└ <span style="color:var(--amber)">' + esc(x.log) + '</span>' +
+                         '　<span style="color:var(--dimmer)">' + esc(x.src) + 'が、足しました</span>';
+        scrollToEnd();
+      } },
+    { at: 260, run: function () {
         sub2.textContent = '';
         appHolder.appendChild(buildApp(subject));
         state.phase = 'app';
@@ -531,6 +596,14 @@ function buildApp(subject) {
     body.appendChild(row);
   });
 
+  // 仕様に無いが足したフィールド。あることを隠さない
+  if (a.extra && a.extra.field) {
+    const row = el('div', 'field added');
+    row.innerHTML = '<label>' + esc(a.extra.field.label) + '</label>' +
+                    '<input type="text" value="' + esc(a.extra.field.value) + '">';
+    body.appendChild(row);
+  }
+
   body.appendChild(el('hr'));
 
   const table = el('table', 'rows');
@@ -563,6 +636,16 @@ function buildApp(subject) {
   alert.innerHTML = '<span class="mark">!</span><span><span data-alert></span>' +
                     '<br><span class="src">' + esc(a.ruleSrc) + '</span></span>';
   body.appendChild(alert);
+
+  // 足したほうの気配り。仕様のルールとは色で区別する
+  let extraAlert = null;
+  if (a.extra) {
+    extraAlert = el('div', 'alert extra');
+    extraAlert.innerHTML = '<span class="mark">+</span><span><span data-extra></span>' +
+                           '<br><span class="src">' + esc(a.extra.src) +
+                           'が、無いと困るので足しました</span></span>';
+    body.appendChild(extraAlert);
+  }
 
   const actions = el('div', 'actions');
   actions.innerHTML = '<button type="button" class="btn" data-go>' + esc(a.action) + '</button>' +
@@ -602,6 +685,15 @@ function buildApp(subject) {
     alert.className = 'alert ' + (on ? 'on' : 'off');
     alert.querySelector('.mark').textContent = on ? '!' : '·';
     alert.querySelector('[data-alert]').textContent = on ? a.onText(t) : a.offText(t);
+
+    if (extraAlert) {
+      const dyn = typeof a.extra.text === 'function';
+      const xon = dyn ? a.extra.on(t) : true;
+      extraAlert.className = 'alert extra ' + (xon ? 'on' : 'off');
+      extraAlert.querySelector('.mark').textContent = xon ? '+' : '·';
+      extraAlert.querySelector('[data-extra]').textContent = dyn ? a.extra.text(t) : a.extra.note;
+    }
+
     return { total: t, on: on };
   };
 
@@ -637,9 +729,15 @@ function afterApp(block, subject) {
   c.innerHTML = lead +
     '<p class="body">数字を変えてみてください。' +
       '<b>「' + esc(subject.spec.rule) + '」</b>が本当に効いています。' +
-      '仕様に書いた一行が、そのまま動いている。<br><br>' +
-      'これが「上流工程中心のシステム開発」です。上流で決めたことが下流で作り直されず、' +
-      'そのまま動くものになる。AI とローコードは、その順序を守るための道具として使っています。</p>';
+      '仕様に書いた一行が、そのまま動いている。</p>' +
+    '<p class="body">そしてもう一つ、<b>頼んでいないものが足されています</b>。' +
+      '「' + esc(subject.app.extra.log) + '」。仕様には書いていません。' +
+      'これが無いと運用で必ず詰まるので、勝手に入れました。' +
+      '<br><br>上流工程で漏れるのは、たいていこの種のものです。' +
+      '仕様を書いた人が悪いのではなく、書いている時点では見えないだけです。' +
+      'ここを先に埋められるかどうかが、上流に張る意味だと考えています。</p>' +
+    '<p class="body">上流で決めたことが下流で作り直されず、そのまま動くものになる。' +
+      'AI とローコードは、その順序を守るための道具として使っています。</p>';
   mainEl.appendChild(c);
 
   const list = el('div', 'choices');
@@ -688,10 +786,52 @@ function showInfo(key) {
   const info = INFO[key];
   if (!info) return;
   const b = el('section', 'block');
+  b.dataset.kind = 'info';
   b.innerHTML = '<div class="step-head" style="margin-bottom:.8em"><span class="label">' +
                 esc(info.desc) + '</span></div>' + info.run();
   mainEl.appendChild(b);
+  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ], [ 'Esc', '閉じる' ]]);
   scrollToEnd();
+}
+
+/* -----------------------------------------------------------
+   後戻り。一度進むと戻れないのが最大の欠点だったので、
+   Esc をどの場面でも効かせる。
+   ----------------------------------------------------------- */
+function back() {
+  if (cmdBox) { closeCommand(); return; }
+
+  // 情報ブロックが開いていれば、それだけ閉じる
+  const blocks = mainEl.querySelectorAll('section.block');
+  const last = blocks[blocks.length - 1];
+  if (last && last.dataset.kind === 'info') {
+    last.remove();
+    say('');
+    keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ], [ 'Esc', '戻る' ]]);
+    scrollToEnd();
+    return;
+  }
+
+  // 生成中・生成後は、その一連をまとめて捨てて選び直しに戻る
+  if (state.phase === 'running' || state.phase === 'app' || state.phase === 'closing') {
+    state.running = null;
+    let node = mainEl.lastElementChild;
+    while (node && node.dataset.kind !== 'choose') {
+      const prev = node.previousElementSibling;
+      node.remove();
+      node = prev;
+    }
+    if (node) reopenChoose(node);
+    discEl.hidden = true;
+    return;
+  }
+}
+
+/* 決定済みの選択ブロックを、選び直せる状態に戻す */
+function reopenChoose(block) {
+  block.remove();
+  state.phase = 'choose';
+  renderChoose(true);
 }
 
 /* ---------- 5. 隠しコマンド（/） ---------- */
@@ -756,8 +896,14 @@ document.addEventListener('keydown', function (e) {
   if (e.key === '/' && !typing) { e.preventDefault(); openCommand(); return; }
   if (typing) return;
 
+  if (e.key === 'Escape' || (e.key === 'Backspace' && state.phase !== 'choose')) {
+    e.preventDefault();
+    back();
+    return;
+  }
+
   if (state.phase === 'running') {
-    if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') {
+    if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       if (state.running) state.running.skip();
     }
