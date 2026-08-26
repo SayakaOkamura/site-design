@@ -13,7 +13,7 @@
 const mainEl  = document.getElementById('main');
 const keysEl  = document.getElementById('keys');
 const msgEl   = document.getElementById('msg');
-const discEl  = document.getElementById('disclaimer');
+/* 注記はページ末尾に常時置いてあるので JS からは触らない */
 
 /* ---------- 小道具 ---------- */
 
@@ -327,10 +327,19 @@ function renderChoose(again) {
   const block = el('section', 'block');
   block.dataset.kind = 'choose';
 
+  // 冒頭の自動デモ直後は主語を「あなた」にする
+  const fromDemo = state.auto;
+  state.auto = false;
+
+  const head = !again ? '何を作りますか？'
+             : fromDemo ? 'では、あなたは何を作りますか？'
+             : 'では、次は何を作りますか？';
+  const hint = fromDemo ? '同じ工程を、選んだ題材で走らせます。'
+             : again ? ''
+             : '選ぶと、その場で作ります。';
+
   block.appendChild(el('div', 'ask',
-    (again ? 'では、次は何を作りますか？' : '何を作りますか？') +
-    '<span class="hint">選ぶと、その場で作ります。' +
-    (again ? '' : '上に書いた進め方を、実際にやってみる方が早いはずです。') + '</span>'));
+    head + (hint ? '<span class="hint">' + hint + '</span>' : '')));
 
   const list = el('div', 'choices');
   list.setAttribute('role', 'listbox');
@@ -471,11 +480,15 @@ function choose(i) {
 
 /* ---------- 2. 解釈 → 生成 ---------- */
 
-function start(subject) {
+function start(subject, opts) {
+  opts = opts || {};
+  const rate = opts.fast ? 0.45 : 1;   // 冒頭の自動デモは駆け抜ける
+
   state.subject = subject;
   state.phase = 'running';
   state.t0 = performance.now();
   state.skipped = false;
+  state.auto = !!opts.auto;
   state.rows = subject.app.rows.map(function (r) { return Object.assign({}, r); });
 
   const block = el('section', 'block');
@@ -542,14 +555,18 @@ function start(subject) {
       } }
   ];
 
+  // 自動デモは速度を上げる
+  steps.forEach(function (s) { s.at = Math.round(s.at * rate); });
+
   state.running = timeline(steps, function () {
     state.running = null;
-    afterApp(block, subject);
+    if (opts.auto) afterAutoDemo(subject);
+    else afterApp(block, subject);
   });
 
-  keys([[ 'Enter', '飛ばす' ]]);
-  say('生成中');
-  scrollToEnd();
+  keys([[ 'Enter', '飛ばす' ], [ 'Esc', '戻る' ]]);
+  say(opts.auto ? '勝手に作りはじめました' : '生成中');
+  if (!opts.auto) scrollToEnd();
 }
 
 function renderSpec(spec) {
@@ -759,17 +776,32 @@ function afterApp(block, subject) {
   state.actions = items.map(function (it) { return it[1]; });
   paintSel(list);
 
-  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ]]);
+  keys([[ '↑', '' ], [ '↓', '選ぶ' ], [ 'Enter', '決定' ], [ 'Esc', '戻る' ]]);
   say('');
-
-  discEl.hidden = false;
-  discEl.innerHTML =
-    'このページの「生成」は、デモとして事前に用意した結果を出しています。' +
-    'その場で AI が推論しているわけではありません。' +
-    'ページ自体の実装は AI（Claude）が行いました。' +
-    '<br>現行サイト: <a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a>';
-
   scrollToEnd();
+}
+
+/* 冒頭の自動デモが終わったところ。ここから訪問者に渡す。 */
+function afterAutoDemo(subject) {
+  const secs = Math.round((performance.now() / 1000) * 10) / 10;
+
+  const lead = state.skipped
+    ? '<p class="lead">飛ばしましたが、<strong>順序は同じ</strong>です。' +
+      '仕様 → 画面・テーブル・ルール → 動くもの。</p>'
+    : '<p class="lead">頼まれる前に、勝手に作りました。' +
+      'このページを開いてから <strong>' + secs + ' 秒</strong>。</p>';
+
+  const c = el('section', 'block closing');
+  c.innerHTML = lead +
+    '<p class="body">仕様に出した<b>「' + esc(subject.spec.rule) + '」</b>が、' +
+      'この画面で実際に効いています。数量を変えると判定が変わります。触ってみてください。</p>' +
+    '<p class="body">そして<b>頼んでいないものが1つ足されています</b>。' +
+      '「' + esc(subject.app.extra.log) + '」。仕様には書いていません。' +
+      '上流工程で漏れるのは、たいていこの種のものです。</p>';
+  mainEl.appendChild(c);
+
+  state.phase = 'closing';
+  renderChoose(true);
 }
 
 function showInfo(key) {
@@ -812,7 +844,11 @@ function back() {
       node = prev;
     }
     if (node) reopenChoose(node);
-    discEl.hidden = true;
+    else {
+      // 冒頭の自動デモから戻った場合は、選択ブロックがまだ無い
+      state.phase = 'choose';
+      renderChoose(true);
+    }
     return;
   }
 }
@@ -919,6 +955,8 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
-/* ---------- 起動 ---------- */
+/* ---------- 起動 ----------
+   訪問者が何もしなくても、開いた瞬間に勝手に作りはじめる。
+   触らせないとインパクトが出ない構造だったのを、ここで解消する。 */
 
-renderChoose(false);
+start(SUBJECTS[0], { fast: true, auto: true });

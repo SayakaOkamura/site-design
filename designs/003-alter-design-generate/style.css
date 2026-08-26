@@ -78,26 +78,26 @@ body {
   font-size: .92em;
 }
 .brand .tagline {
-  margin-top: 1.1em;
-  font-size: clamp(17px, 3vw, 23px);
-  line-height: 1.6;
+  margin-top: 1em;
+  font-size: clamp(21px, 3.8vw, 32px);
+  line-height: 1.5;
+  letter-spacing: -.01em;
   color: var(--fg);
 }
 .brand .tagline em { color: var(--amber); font-style: normal; }
 
-.brand .lede {
-  margin-top: 1.6em;
-  padding-top: 1.3em;
-  border-top: 1px solid var(--line);
-  max-width: 62ch;
-}
+.brand .lede { margin-top: 1.1em; max-width: 58ch; }
 .brand .lede p { color: var(--fg-2); }
-.brand .lede .meta {
-  margin-top: .9em;
-  color: var(--dimmer);
-  font-size: .86em;
-  line-height: 1.75;
+
+/* ページ末尾に置く会社の詳細 */
+.factsheet {
+  margin-top: 2em;
+  padding-top: 1.2em;
+  border-top: 1px solid var(--line);
 }
+.factsheet dl { display: grid; grid-template-columns: max-content 1fr; gap: .3em 2.5ch; }
+.factsheet dt { color: var(--dimmer); font-size: .88em; }
+.factsheet dd { color: var(--fg-2); font-size: .92em; }
 
 /* =============== 各段 =============== */
 
