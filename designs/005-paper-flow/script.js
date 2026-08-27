@@ -216,8 +216,7 @@ function keys(){
     k.innerHTML = $('toRingi').disabled ? '' : '<kbd>Enter</kbd> 稟議に上げる';
   }
   if (stage === 3){
-    if (!$('hold').hidden) k.innerHTML = '<kbd>←</kbd> ここで決める　<kbd>→</kbd> 空欄のまま出す';
-    else k.innerHTML = '';
+    k.innerHTML = $('holdBtns').hidden ? '' : '<kbd>Enter</kbd> 決める';
   }
 }
 
@@ -312,45 +311,31 @@ addEventListener('keydown', function(e){
    「決めたことがそのまま形になる」は、動き自体で見せる。 */
 function buildApp(){
   $('appTitle').textContent = plan.title;
-  $('appSubmit').textContent = plan.verb;
   $('fields').innerHTML = '';
   $('rules').innerHTML = '';
-  $('rulesHead').textContent = 'この画面のきまり';
+  $('rulesHead').textContent = '決まったこと';
   $('toRingi').disabled = true;
   $('s2hint').textContent = '';
 
-  // 反応した語に印をつけた、書いた一行
-  const esc = written.replace(/[<>&]/g, '');
-  let html = esc;
-  plan.words.forEach(function(w){
-    html = html.replace(w, '<b class="w" data-w="' + w + '">' + w + '</b>');
-  });
-  $('from').innerHTML = '「' + html + '」から';
+  $('from').textContent = '「' + written + '」から';
 
-  // 一つずつ書き足していく
-  const steps = [];
-  plan.fields.forEach(function(f){ steps.push({kind:'f', d:f}); });
-  plan.rules.forEach(function(r){ steps.push({kind:'r', d:r}); });
+  // 入力欄は最初から出ている。機械的に決まるもので、決めごとではない。
+  plan.fields.forEach(function(f){ writeOne({kind:'f', d:f}); });
 
-  steps.forEach(function(s, i){
-    setTimeout(function(){ writeOne(s); }, 260 + i * 320);
-  });
+  // 決まったことは全部そろえて置いておき、斜めの一筆で一気に現す。
+  plan.rules.forEach(function(r){ writeOne({kind:'r', d:r}); });
+  const rs = $('rules');
+  rs.classList.remove('sweep');
+  void rs.offsetWidth;
+  setTimeout(function(){ rs.classList.add('sweep'); }, 420);
+
   setTimeout(function(){
     $('toRingi').disabled = false;
     keys();
-  }, 260 + steps.length * 320 + 200);
+  }, 420 + 1700 + 150);
 }
 
 function writeOne(s){
-  // 出どころの語を光らせてから、画面に足す
-  if (s.d.src){
-    const w = document.querySelector('.w[data-w="' + s.d.src + '"]');
-    if (w){
-      w.classList.add('lit');
-      setTimeout(function(){ w.classList.remove('lit'); }, 700);
-    }
-  }
-
   if (s.kind === 'f'){
     const dt = document.createElement('dt');
     dt.textContent = s.d.label;
@@ -361,9 +346,10 @@ function writeOne(s){
     dt.style.animation = dd.style.animation = 'rise .28s ease both';
     $('fields').appendChild(dt); $('fields').appendChild(dd);
   } else {
+    // 斜めの塗りつぶしで、左から現れる
     const li = document.createElement('li');
+    li.className = 'written';
     li.textContent = s.d.t;
-    li.style.animation = 'rise .28s ease both';
     $('rules').appendChild(li);
   }
 }
@@ -420,14 +406,17 @@ function hold(){
   fl.hidden = false;
   document.querySelector('.ringi').classList.add('folded', 'holding');
 
-  // 見つけたのが AI であることを、はっきり出す。
+  // 見つけたのが AI であることと、次に何を押すのかを、はっきり出す。
   $('holdLead').innerHTML = 'このままでは決裁できません。'
                           + '決裁の前に <b>AI が画面を見直し</b>、'
-                          + '<b>決まっていない欄を ' + plan.gaps.length + ' つ</b>見つけました。';
-  $('dFill').innerHTML = ''; $('dBlank').innerHTML = '';
+                          + '<b>決まっていない欄を ' + plan.gaps.length + ' つ</b>見つけました。'
+                          + '<br>ここで決めてください。';
   $('hold').hidden = false;
   $('holdBtns').hidden = false;
   $('hold').insertBefore($('app'), $('holdBtns'));   // 同じ画面が、そのまま添付になる
+  // 押すものは、空欄のすぐ下・画面の中に置く。外にあると押すべきものに見えない。
+  $('fillBtn').textContent = plan.gaps.length + ' 件 を 決 め る';
+  $('app').querySelector('.app-body').appendChild($('holdBtns'));
   $('app').classList.add('attached');
   addHoles();
   keys();
@@ -463,83 +452,40 @@ function addHoles(){
     fs.appendChild(dt); fs.appendChild(dd);
     holes.push({g:g, dt:dt, dd:dd});
   });
-  cur = 0;
-  setTimeout(focusHole, 450);
+  cur = 0;   // 押されるまで書き込まない
 }
 
-/* 選ぶ場所は、その行の上に置く。画面の下にボタンがあると、
-   どれに対する選択なのか分からない。 */
-function focusHole(){
-  holes.forEach(function(h, i){
-    const now = (i === cur);
-    h.dt.classList.toggle('now', now);
-    h.dd.classList.toggle('now', now);
-    const pick = h.dd.querySelector('.pick');
-    if (pick) pick.remove();
-    if (!now || h.dd.classList.contains('done')) return;
-
-    const p = document.createElement('span');
-    p.className = 'pick';
-    p.innerHTML = '<b data-a="1">← ここで決める</b><b data-a="0">空欄のまま出す →</b>';
-    p.querySelectorAll('b').forEach(function(b){
-      b.onclick = function(){ answer(b.dataset.a === '1'); };
-    });
-    h.dd.appendChild(p);
-  });
+/* 空欄は、押されてから順に書き込まれる。
+   一件ずつ選ばせない。決めるという一手だけを人が打つ。 */
+function startFill(){
+  if ($('holdBtns').hidden) return;
+  $('holdBtns').hidden = true;
+  $('holdLead').innerHTML = '決まっていなかったところを、書き込みます。';
+  keys();
+  fillNext();
 }
 
-function answer(decide){
-  if ($('hold').hidden || cur >= holes.length) return;
+function fillNext(){
+  if (cur >= holes.length){ setTimeout(settle, 450); return; }
   const h = holes[cur];
-  h.dt.classList.remove('now'); h.dd.classList.remove('now');
-  const pick = h.dd.querySelector('.pick');
-  if (pick) pick.remove();
+  h.dt.classList.add('now'); h.dd.classList.add('now');
 
-  // 決めたものは、画面から下の置き場へ落ちる。
-  // 何も動かないと、押した手応えが無い。
-  dropTo(h, decide ? $('dFill') : $('dBlank'));
-
-  if (decide){
-    h.dt.classList.add('done');
-    h.dd.classList.add('done');
+  setTimeout(function(){
+    h.dt.classList.remove('now'); h.dd.classList.remove('now');
+    h.dt.classList.add('done'); h.dd.classList.add('done');
+    h.dd.innerHTML = '<span class="box filled wrote">' + h.g.a + '</span>';
     filled.push(h.g.n);
-    h.dd.innerHTML = '<span class="box filled">' + h.g.a + '</span>';
-  } else {
-    h.dd.classList.add('left');
-    leftBlank.push(h.g.n);
-  }
-
-  cur++;
-  if (cur < holes.length) focusHole();
-  else setTimeout(settle, 600);
+    cur++;
+    setTimeout(fillNext, 340);
+  }, 380);
 }
 
-/* 欄の名前が、画面から置き場へ落ちる。位置を測ってから戻す。 */
-function dropTo(h, zone){
-  const chip = document.createElement('span');
-  chip.className = 'chip';
-  chip.textContent = h.g.n;
-  zone.appendChild(chip);
 
-  const from = h.dt.getBoundingClientRect();
-  const to = chip.getBoundingClientRect();
-  chip.style.transform = 'translate(' + (from.left - to.left) + 'px,'
-                                      + (from.top - to.top) + 'px)';
-  chip.style.opacity = '0.25';
-  requestAnimationFrame(function(){
-    chip.style.transition = 'transform .34s cubic-bezier(.3,.7,.3,1), opacity .34s ease';
-    chip.style.transform = 'translate(0,0)';
-    chip.style.opacity = '1';
-  });
-}
-
-/* 空欄の扱いが決まったら、決裁が下りる。「次へ」は置かない。 */
+/* 空欄が埋まったら、決裁が下りる。押すものは無い。 */
 function settle(){
   $('holdBtns').hidden = true;
   $('p2').classList.remove('stuck');
-  $('holdLead').innerHTML = leftBlank.length
-    ? '空欄が <b>' + leftBlank.length + '</b> つ残ったまま、決裁に回ります。'
-    : '空欄は、すべて埋まりました。';
+  $('holdLead').innerHTML = '<b>' + filled.length + ' 件</b>を決めました。決裁に回ります。';
   keys();
   setTimeout(function(){
     $('p2').classList.add('done');
@@ -558,17 +504,14 @@ function finish(){
   const fl = $('foldLine');
   fl.innerHTML = '件名：<b>' + written.replace(/[<>&]/g, '') + '</b>　／　'
                + plan.title + 'の画面'
-               + (leftBlank.length ? '・空欄 <b>' + leftBlank.length + '</b> 件' : '')
+               + (filled.length ? '・ここで決めた <b>' + filled.length + '</b> 件' : '')
                + '　／　<span class="ok">決 裁 済</span>';
 
-  let lead;
-  if (leftBlank.length > 0){
-    lead = leftBlank.map(function(g){ return '「' + g + '」'; }).join('、')
-         + 'は、空欄のまま通りました。';
-  } else {
-    lead = '空欄は、すべて埋まりました。';
-  }
-  $('doneLead').innerHTML = lead;
+  // 出したときには決まっていなかった。通す前に決まった。
+  $('doneLead').innerHTML = filled.length
+    ? '出したときは決まっていなかった <b>' + filled.length + ' 件</b>を、通す前に決めました。<br>'
+      + filled.map(function(g){ return '「' + g + '」'; }).join('、') + '。'
+    : '決めていないところは、ありませんでした。';
 
   const act = $('doneAct');
   act.innerHTML = '<a href="#" id="again">別の仕事で試す</a>'
@@ -584,12 +527,13 @@ function finish(){
 /* =========================================================
    キー操作。マウスなしで最後まで行ける。
    ========================================================= */
+$('fillBtn').onclick = function(){ startFill(); };
+
 addEventListener('keydown', function(e){
   if (stage === 2){
     if (e.key === 'Enter' && !$('toRingi').disabled){ e.preventDefault(); toRingi(); }
-  } else if (stage === 3 && !$('hold').hidden){
-    if (e.key === 'ArrowLeft'){ e.preventDefault(); answer(true); }
-    if (e.key === 'ArrowRight'){ e.preventDefault(); answer(false); }
+  } else if (stage === 3){
+    if (e.key === 'Enter' && !$('holdBtns').hidden){ e.preventDefault(); startFill(); }
   }
 });
 

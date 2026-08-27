@@ -617,3 +617,103 @@ button.ink.ghost:hover{background:var(--paper);color:var(--ink);border-color:var
 .dests{margin-top:8px}
 .dest .drop{min-height:40px}
 .hold-lead{margin-bottom:8px}
+
+/* =========================================================
+   決まったこと ＝ 会議で書き取られた記録。
+   画面全体が組み上がるのではなく、決まりだけが1行ずつ書き込まれる。
+   ========================================================= */
+.rules li.written{
+  display:block;white-space:nowrap;overflow:hidden;
+  color:#3d4757;font-size:12.5px;line-height:1.75;
+  transform:rotate(var(--tilt, 0deg));transform-origin:left center;
+  animation:write .52s steps(28, end) both;
+}
+.rules li.written::before{content:"・"}
+@keyframes write{ from{max-width:0} to{max-width:100%} }
+.rules li.written{line-height:1.6;font-size:12px}
+.rules{margin-top:8px;padding-top:7px}
+
+/* 決まったことは、斜めの塗りつぶしで現れる。
+   傾けない。動きだけが斜め。 */
+.rules li.written{
+  display:block;white-space:nowrap;overflow:visible;max-width:none;
+  color:#3d4757;font-size:12px;line-height:1.6;
+  transform:none;position:relative;
+  animation:swipe .46s cubic-bezier(.3,.7,.3,1) both;
+}
+@keyframes swipe{
+  from{ clip-path:polygon(0 0, 0 0, -14% 100%, -14% 100%) }
+  to  { clip-path:polygon(0 0, 114% 0, 100% 100%, -14% 100%) }
+}
+/* 塗りの先端。走って、消える。 */
+.rules li.written::after{
+  content:"";position:absolute;top:-1px;bottom:-1px;width:26px;
+  background:linear-gradient(100deg, transparent, #fbe3bf 45%, transparent);
+  animation:edge .46s cubic-bezier(.3,.7,.3,1) both;
+  pointer-events:none;
+}
+@keyframes edge{
+  from{ left:-26px; opacity:1 }
+  to  { left:100%;  opacity:0 }
+}
+
+/* 決まったことは、斜めの一筆で一気に現れる。
+   1行ずつ出さない。光らせない。 */
+.rules li.written{
+  display:block;white-space:nowrap;overflow:visible;max-width:none;
+  color:#3d4757;font-size:12px;line-height:1.6;transform:none;
+  animation:none;position:static;
+}
+.rules li.written::after{content:none}
+#rules{clip-path:polygon(0 0, 0 0, -18% 100%, -18% 100%)}
+#rules.sweep{animation:chalk .78s cubic-bezier(.35,.65,.3,1) both}
+@keyframes chalk{
+  from{ clip-path:polygon(0 0, 0 0, -18% 100%, -18% 100%) }
+  to  { clip-path:polygon(0 0, 118% 0, 100% 100%, -18% 100%) }
+}
+/* 一息に流すと「表示された」になる。刻んで進めると「書いている」になる。 */
+#rules.sweep{animation:chalk 1.7s steps(26, end) both}
+
+/* こちらで埋めた欄。人が決めたものと見分けがつくようにする。 */
+.fields .box.filled.auto{border-color:#e8c99a;background:#fff8f0;color:#8a5a1a}
+.fields dt.now, .fields dd.now .blank{background:#fff8f0}
+
+/* 決めた欄は、斜めに書き込まれる（段2 と同じ書き味）。 */
+.fields .box.filled.wrote{
+  border-color:#cfe0cb;background:#f2f7f1;
+  animation:chalk .5s steps(14, end) both;
+}
+.hold .btns{justify-content:center;margin-top:10px}
+
+/* 入力欄に見せない。触れないものを触れるように見せるのは嘘になる。
+   決まっている＝文字がある、決まっていない＝線だけ、という書き分けにする。 */
+.fields .box{
+  border:0;background:none;padding:2px 0;min-width:0;
+  font-size:12.5px;color:#16191f;
+}
+.app-foot .btn-app{
+  background:#eef1f6;color:#8a9099;border:1px solid #e2e5ea;
+}
+
+/* 段3 の「決める」は、このページで唯一押すもの。そう見えるようにする。 */
+.hold .btns{justify-content:center;margin-top:12px}
+.hold .btns button.ink{
+  background:var(--ink);color:var(--paper);border-color:var(--ink);
+  padding:12px 40px;letter-spacing:.3em;
+  animation:knock 1.6s ease-in-out infinite;
+}
+.hold .btns button.ink:hover{background:#000}
+@keyframes knock{
+  0%,100%{ box-shadow:0 0 0 0 rgba(180,83,9,.35) }
+  60%    { box-shadow:0 0 0 7px rgba(180,83,9,0) }
+}
+
+/* 押すものは画面の中、空欄のすぐ下に。外に置くと押すものに見えない。 */
+.app-body #holdBtns{
+  margin:14px 0 4px;display:flex;justify-content:center;
+  border-top:1px solid #eef0f3;padding-top:14px;
+}
+.app-body #holdBtns button.ink{
+  font-family:var(--gothic);font-size:13px;letter-spacing:.16em;
+  padding:11px 30px;cursor:pointer;
+}
