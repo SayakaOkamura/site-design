@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C｜現場 ↔ 経営、同じ案件を逆から</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:15px/1.8 "Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+     color:#16191f;background:#fff}
+.bar{border-bottom:1px solid #e2e5ea;padding:8px 20px;font-size:12px;color:#5c636e;display:flex;gap:16px}
+.bar a{color:#5c636e}
+.wrap{max-width:900px;margin:0 auto;padding:40px 24px 80px}
+.case{font-size:13px;color:#5c636e;margin-bottom:20px}
+.case b{color:#16191f}
+.sw{display:flex;border:1px solid #e2e5ea;margin-bottom:32px}
+.sw button{flex:1;font:inherit;background:#fff;border:0;padding:14px;cursor:pointer;color:#5c636e;
+           border-right:1px solid #e2e5ea;transition:.15s}
+.sw button:last-child{border-right:0}
+.sw button.on{background:#16191f;color:#fff}
+.sw button .k{font-family:ui-monospace,Consolas,monospace;font-size:11px;opacity:.6;margin-right:8px}
+.pane{display:none}
+.pane.on{display:block}
+
+/* --- 現場 --- */
+.memo{border-left:3px solid #b45309;padding:10px 16px;background:#fafbfc;margin-bottom:24px;font-size:14px}
+.memo .from{font-size:11px;color:#5c636e;display:block;margin-bottom:4px}
+.form{border:1px solid #e2e5ea;padding:24px}
+.row{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin-bottom:14px}
+.row label{font-size:13px;color:#5c636e}
+.row label .req{color:#b45309;margin-left:4px}
+.row input,.row select{font:inherit;padding:7px 9px;border:1px solid #e2e5ea;width:100%;background:#fff}
+.row input:disabled{background:#f6f7f9;color:#a8afba}
+.note{font-size:12px;color:#a8afba;grid-column:2}
+.err{color:#b45309;font-size:13px;margin-top:12px;min-height:1.8em}
+.submit{font:inherit;padding:10px 22px;border:1px solid #16191f;background:#16191f;color:#fff;cursor:pointer;margin-top:18px}
+
+/* --- 経営 --- */
+.req-list{display:flex;flex-direction:column;gap:12px}
+.card{border:1px solid #e2e5ea;padding:16px 18px}
+.card h3{font-size:15px;font-weight:600;margin-bottom:4px}
+.card p{font-size:13px;color:#5c636e;margin-bottom:12px}
+.card .btns{display:flex;gap:8px}
+.card button{font:inherit;font-size:13px;padding:6px 16px;border:1px solid #e2e5ea;background:#fff;cursor:pointer}
+.card button:hover{border-color:#b45309}
+.card.done{opacity:.5}
+.card.done .btns{display:none}
+.verdict{font-size:13px;color:#b45309}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #e2e5ea;margin-bottom:24px}
+.meters>div{padding:14px 16px;border-right:1px solid #e2e5ea}
+.meters>div:last-child{border-right:0}
+.meters .lab{font-size:11px;color:#5c636e}
+.meters .val{font-size:20px;font-weight:600;font-family:ui-monospace,Consolas,monospace}
+.meters .u{font-size:12px}
+.reveal{margin-top:36px;border-top:1px solid #e2e5ea;padding-top:24px;font-size:14px;line-height:1.9;color:#5c636e}
+.reveal b{color:#16191f}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <a href="./">← スケッチ一覧</a>
+  <span>C｜要素 7・8 — 同じ一件を、現場と経営の両側から見る</span>
+</div>
+
+<div class="wrap">
+
+  <p class="case">案件：<b>経費精算が月末に必ず詰まる</b>。この一件を、両側から見ます。</p>
+
+  <div class="sw">
+    <button id="sw1" class="on"><span class="k">1</span>現場で見る</button>
+    <button id="sw2"><span class="k">2</span>経営で見る</button>
+  </div>
+
+  <!-- ============ 現場 ============ -->
+  <section class="pane on" id="p1">
+    <div class="memo">
+      <span class="from">経営企画部より（3ヶ月前に決定）</span>
+      経費申請には、証憑の添付と、5,000円以上の場合の理由記入を必須とする。承認は所属長が行うこと。
+    </div>
+
+    <div class="form">
+      <div class="row"><label>申請者</label><input value="あなた" disabled></div>
+      <div class="row"><label>金額<span class="req">*</span></label><input id="amt" value="6,800"></div>
+      <div class="row"><label>費目<span class="req">*</span></label>
+        <select><option>交通費</option><option>会議費</option><option>その他</option></select></div>
+      <div class="row"><label>理由<span class="req">*</span></label><input id="why" placeholder="5,000円以上のため必須"></div>
+      <div class="row"><label>証憑<span class="req">*</span></label><input value="領収書_0831.pdf" disabled></div>
+      <div class="row"><label>承認者<span class="req">*</span></label><input value="所属長（出張中・9/4まで不在）" disabled></div>
+      <div class="note">承認者は変更できません。</div>
+      <button class="submit" id="go">申請する</button>
+      <p class="err" id="err"></p>
+    </div>
+
+    <div class="reveal hidden" id="rv1">
+      いま詰まったのは、<b>3ヶ月前の会議で決まったこと</b>です。<br>
+      その会議に、あなたはいませんでした。
+    </div>
+  </section>
+
+  <!-- ============ 経営 ============ -->
+  <section class="pane" id="p2">
+    <div class="meters">
+      <div><div class="lab">追加コスト</div><div class="val" id="mCost">0<span class="u">万円</span></div></div>
+      <div><div class="lab">納期</div><div class="val" id="mDay">0<span class="u">日</span></div></div>
+      <div><div class="lab">現場の待ち時間</div><div class="val" id="mWait">月 12<span class="u">時間</span></div></div>
+    </div>
+
+    <div class="req-list" id="reqs"></div>
+
+    <div class="reveal hidden" id="rv2">
+      いま却下したもの、保留にしたものは、<b>現場では「詰まったまま」として現れます</b>。<br>
+      上の <b>1</b> を押して、もう一度現場を見てください。同じ一件です。
+    </div>
+  </section>
+
+</div>
+
+<script>
+// --- 7: 現場側。降ってきた仕様に従わされる ---
+const err = document.getElementById('err');
+let tries = 0;
+document.getElementById('go').onclick = function(){
+  tries++;
+  if (!document.getElementById('why').value.trim()){
+    err.textContent = '理由が未入力です。5,000円以上の申請には理由が必要です。';
+    return;
+  }
+  err.textContent = '承認者が不在のため、申請を受け付けられません。9/4 以降に再度お試しください。';
+  if (tries >= 2) document.getElementById('rv1').classList.remove('hidden');
+};
+
+// --- 8: 経営側。上がってくる要望を捌く ---
+const REQS = [
+  { t:'承認者が不在のとき、代理に回せるようにしてほしい',
+    s:'現場：月末の申請がすべて止まっています。', cost:80, day:20 },
+  { t:'5,000円以上の理由記入をやめてほしい',
+    s:'現場：ほぼ全員が「業務のため」と書いています。', cost:10, day:3 },
+  { t:'証憑をスマホで撮って添付できるようにしてほしい',
+    s:'現場：一度PCに送ってから添付しています。', cost:150, day:35 }
+];
+var cost = 0, day = 0, wait = 12, decided = 0;
+const list = document.getElementById('reqs');
+
+REQS.forEach(function(r){
+  const c = document.createElement('div');
+  c.className = 'card';
+  c.innerHTML = '<h3></h3><p></p><div class="btns">'
+    + '<button data-v="ok">承認</button><button data-v="hold">保留</button><button data-v="no">却下</button>'
+    + '</div><div class="verdict"></div>';
+  c.querySelector('h3').textContent = r.t;
+  c.querySelector('p').textContent  = r.s;
+  c.querySelectorAll('button').forEach(function(b){
+    b.onclick = function(){
+      const v = b.dataset.v;
+      c.classList.add('done');
+      if (v === 'ok'){
+        cost += r.cost; day += r.day; wait = Math.max(0, wait - 4);
+        c.querySelector('.verdict').textContent = '承認。' + r.cost + '万円 / ' + r.day + '日。';
+      } else if (v === 'hold'){
+        c.querySelector('.verdict').textContent = '保留。現場は待ち続けます。';
+      } else {
+        c.querySelector('.verdict').textContent = '却下。現場は今のやり方を続けます。';
+      }
+      document.getElementById('mCost').innerHTML = cost + '<span class="u">万円</span>';
+      document.getElementById('mDay').innerHTML  = day  + '<span class="u">日</span>';
+      document.getElementById('mWait').innerHTML = '月 ' + wait + '<span class="u">時間</span>';
+      decided++;
+      if (decided === REQS.length) document.getElementById('rv2').classList.remove('hidden');
+    };
+  });
+  list.appendChild(c);
+});
+
+// --- 立場の切り替え ---
+function show(n){
+  document.getElementById('p1').classList.toggle('on', n === 1);
+  document.getElementById('p2').classList.toggle('on', n === 2);
+  document.getElementById('sw1').classList.toggle('on', n === 1);
+  document.getElementById('sw2').classList.toggle('on', n === 2);
+}
+document.getElementById('sw1').onclick = function(){ show(1); };
+document.getElementById('sw2').onclick = function(){ show(2); };
+addEventListener('keydown', function(e){
+  if (e.key === '1') show(1);
+  if (e.key === '2') show(2);
+});
+</script>
+</body>
+</html>

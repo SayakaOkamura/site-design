@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>004 要素スケッチ — 方向性の見直し用</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:15px/1.8 "Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+     color:#16191f;background:#fff}
+.wrap{max-width:860px;margin:0 auto;padding:56px 24px 90px}
+.back{font-size:12px;color:#5c636e;display:inline-block;margin-bottom:28px}
+h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin-bottom:10px}
+.lead{color:#5c636e;font-size:14px;margin-bottom:8px}
+.lead b{color:#16191f}
+.warn{font-size:13px;color:#5c636e;border-left:2px solid #b45309;padding:6px 0 6px 14px;margin:20px 0 40px}
+ul{list-style:none;display:flex;flex-direction:column;gap:0;border-top:1px solid #e2e5ea}
+li{border-bottom:1px solid #e2e5ea}
+a.card{display:grid;grid-template-columns:44px 1fr;gap:18px;padding:22px 8px;
+       text-decoration:none;color:inherit;transition:background .15s}
+a.card:hover{background:#fafbfc}
+.k{font-family:ui-monospace,Consolas,monospace;font-size:22px;color:#b45309;line-height:1.2}
+h2{font-size:17px;font-weight:600;margin-bottom:4px}
+.el{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:#a8afba;margin-bottom:8px}
+p{font-size:14px;color:#5c636e}
+.judge{font-size:13px;color:#16191f;margin-top:10px}
+.judge b{color:#b45309;font-weight:600;font-size:11px;font-family:ui-monospace,Consolas,monospace;
+         letter-spacing:.08em;margin-right:8px}
+.foot{margin-top:44px;font-size:13px;color:#5c636e;line-height:2}
+.foot b{color:#16191f}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="../../">← デザイン案一覧</a>
+
+  <h1>004 要素スケッチ</h1>
+  <p class="lead">003 の方向性を見直すための、<b>要素ごとのバラバラな試作</b>。
+     つながっている要素はまとめてある。</p>
+  <p class="lead">完成品ではなく、判断材料。共通CSSは使わず各ファイル自己完結。</p>
+
+  <p class="warn">
+    見るときの問い：<b>これは松岡さんに「面白い」と思われるか</b>／
+    自分がこの立場に置かれて手が動くか／説明なしで何をすればいいか分かるか。
+  </p>
+
+  <ul>
+
+    <li><a class="card" href="a-terminal.html">
+      <span class="k">A</span>
+      <div>
+        <h2>空の入力欄に書く</h2>
+        <div class="el">要素 12・13・58・60・61</div>
+        <p>真っ白な画面に一行だけ。書いたものが会話で返ってくる。マウス不要、ターミナル的な操作感。
+           擬似応答だが、本物のAPIに差し替える口をコードに開けてある。</p>
+        <div class="judge"><b>見どころ</b>選択肢を出さずに「書かせる」ことが成立するか。空欄で手が止まらないか。</div>
+      </div>
+    </a></li>
+
+    <li><a class="card" href="b-toi.html">
+      <span class="k">B</span>
+      <div>
+        <h2>正解のない問い</h2>
+        <div class="el">要素 17・18</div>
+        <p>3問。どちらを選んでも代償がある。最初の選択が、以降の評価軸そのものを書き換える。
+           点数は出さず、「手に入れたもの / 捨てたもの」の台帳だけが残る。</p>
+        <div class="judge"><b>見どころ</b>採点をやめても手応えが残るか。悩ませられているか。</div>
+      </div>
+    </a></li>
+
+    <li><a class="card" href="c-tachiba.html">
+      <span class="k">C</span>
+      <div>
+        <h2>現場 ↔ 経営</h2>
+        <div class="el">要素 7・8</div>
+        <p>同じ一件（経費精算が月末に詰まる）を両側から。現場では理不尽な入力をさせられ、
+           経営では要望を捌かされる。1 / 2 キーで切り替わり、噛み合っていないことが分かる。</p>
+        <div class="judge"><b>見どころ</b>社長層に見せるとき、現場側を体験させるのは失礼にならないか。切り替えは効くか。</div>
+      </div>
+    </a></li>
+
+    <li><a class="card" href="d-ringi.html">
+      <span class="k">D</span>
+      <div>
+        <h2>サイトそのものが稟議</h2>
+        <div class="el">要素 5・63</div>
+        <p>ページ全体が1枚の稟議書。起案 → 回覧 → 決裁 → 完了と進み、判子が押される。
+           会社概要は「完了通知の添付」として届く。明朝体・紙の質感。</p>
+        <div class="judge"><b>見どころ</b>紙のメタファーが古く見えないか。押印の気持ちよさがあるか。</div>
+      </div>
+    </a></li>
+
+    <li><a class="card" href="e-board.html">
+      <span class="k">E</span>
+      <div>
+        <h2>横に広がる付箋ボード</h2>
+        <div class="el">要素 57・64</div>
+        <p>付箋をドラッグして「決めた」「今回はやらない」に振り分ける。決めたものだけが右端に組み上がり、
+           やらなかったものは<b>穴</b>として残る。← → でボードを横に動かす。</p>
+        <div class="judge"><b>見どころ</b>マウス操作に戻る価値があるか。「穴が残る」表現は伝わるか。</div>
+      </div>
+    </a></li>
+
+    <li><a class="card" href="f-lp.html">
+      <span class="k">F</span>
+      <div>
+        <h2>製品LPに見せかけて落とす</h2>
+        <div class="el">要素 16・41</div>
+        <p>実在しない承認ワークフローSaaS「Sabaki」のLP。料金表まで作り込んである。
+           ボタンを押すと落ちる —— これは3行の仕様から出たもので、
+           <b>料金も日数もあなたは決めていない</b>。笑いではなく驚きで着地させる。</p>
+        <div class="judge"><b>見どころ</b>騙された感が不快にならないか。「決めていない所が勝手に埋まる」が刺さるか。</div>
+      </div>
+    </a></li>
+
+  </ul>
+
+  <p class="foot">
+    <b>この6枚の関係。</b>
+    A・B・C・E は「訪問者に何をさせるか」の候補で、<b>互いに排他</b>。D は構造、F は着地の作り方なので、
+    どれか一つの上に重ねられる。<br>
+    <b>まだ試していないもの。</b>
+    D の紙と A のターミナルは質感が正反対で、混ぜると壊れる。E の付箋は「キー操作のみ」を捨てることになる。
+  </p>
+
+</div>
+</body>
+</html>
