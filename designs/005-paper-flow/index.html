@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alter Design Consulting</title>
+<meta name="description" content="書く、決める、通す。上流工程中心のシステム開発。株式会社アルターデザインコンサルティング。">
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<!-- ?v= はキャッシュ避け。中身を変えたら番号を上げる -->
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+
+<!-- ============================================================
+     机の上。1画面で完結させる。スクロールはしない。
+     段1 書く → 段2 決める／捨てる → 段3 通す
+     ============================================================ -->
+<div class="desk" id="desk">
+
+  <header class="brand">
+    <div class="name">ALTER DESIGN CONSULTING</div>
+    <p class="tagline">決めていないことを、作る前に見つける。<em>一行だけ書いてみてください。</em></p>
+  </header>
+
+  <!-- 進み具合。3段しかない -->
+  <ol class="route">
+    <li class="on" id="r1"><span>一</span>書く</li>
+    <li id="r2"><span>二</span>決める</li>
+    <li id="r3"><span>三</span>通す</li>
+  </ol>
+
+  <!-- ============ 段1：白紙に書く ============ -->
+  <section class="stage on" id="s1">
+    <div class="sheet ruled">
+      <p class="field">つ く り た い も の</p>
+      <div class="writeline">
+        <input id="in" autocomplete="off" spellcheck="false">
+      </div>
+      <!-- 例。選ばせるのではなく、書く手がかりとして置く。押すと入力欄に入るだけで、直せる。 -->
+      <ul class="egs" id="egs"></ul>
+
+      <p class="foot-hint">Enter で確定します。空のまま押すと、いちばん上の例が入ります。マウスは要りません。</p>
+      <p class="reply" id="reply"></p>
+    </div>
+  </section>
+
+  <!-- ============ 段2：出てきたもの ============
+       言葉ではなく、触れる画面そのものを出す。ここでは穴を見せない。 -->
+  <section class="stage" id="s2">
+    <div class="app-wrap" id="appWrap">
+      <div class="app" id="app">
+        <div class="app-bar" id="appTitle">画面</div>
+        <div class="app-body">
+          <dl class="fields" id="fields"></dl>
+          <div class="rules">
+            <h4>この画面のきまり</h4>
+            <ul id="rules"></ul>
+          </div>
+        </div>
+        <div class="app-foot"><span class="btn-app" id="appSubmit">申請する</span></div>
+      </div>
+    </div>
+    <p class="stage-hint" id="s2hint"></p>
+    <div class="next-wrap"><button class="ink" id="toRingi">稟 議 に 上 げ る</button></div>
+  </section>
+
+  <!-- ============ 段3：稟議として通す ============ -->
+  <section class="stage" id="s3">
+    <div class="sheet ringi">
+      <h1>稟 議 書</h1>
+      <p class="sub">ALTER DESIGN CONSULTING　様式001　<span id="today"></span></p>
+
+      <table class="doc">
+        <tr><th>件名</th><td id="title">—</td></tr>
+        <tr><th>内容</th><td class="cell" id="keptList"></td></tr>
+        <tr id="blankRow" hidden><th>空欄のまま</th><td class="cell dim" id="dropList"></td></tr>
+      </table>
+
+      <div class="seals">
+        <div class="seal" id="p0"><span class="who">起案</span><div class="box"><div class="stamp">起案</div></div></div>
+        <div class="seal" id="p1"><span class="who">確認</span><div class="box"><div class="stamp">確認</div></div></div>
+        <div class="seal" id="p2"><span class="who">決裁</span><div class="box"><div class="stamp">決裁</div></div></div>
+      </div>
+
+      <div class="act">
+        <div class="btns">
+          <button class="ink" id="go" hidden>次 へ</button>
+        </div>
+        <p class="status" id="st"></p>
+      </div>
+
+      <p class="fold-line" id="foldLine" hidden></p>
+
+      <!-- 決裁で止まったあと。段2で見た画面がそのまま添付として降りてきて、
+           そこに空欄が現れる。穴は言葉ではなく、物の上に見える。 -->
+      <div class="hold" id="hold" hidden>
+        <p class="hold-lead" id="holdLead"></p>
+        <!-- ここに #app が移ってくる -->
+        <span id="holdBtns" hidden></span>
+      </div>
+
+      <div class="attach" id="attach" hidden>
+        <h2>添付：完了通知</h2>
+        <p class="done-lead" id="doneLead"></p>
+        <dl>
+          <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
+          <dt>代表取締役</dt><dd>松岡 真功</dd>
+          <dt>理念</dt><dd>経営の力で「遊ぶように働く世界」をデザインする</dd>
+        </dl>
+        <p class="done-act" id="doneAct"></p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============================================================
+     以下は補足。読みたい人が読む。
+     ============================================================ -->
+<div class="below">
+
+  <section class="doc-sec" id="how">
+    <h2>上流工程中心とは</h2>
+    <p class="lead">
+      要件をすべて固めてから作り始めると、作っている間に前提が変わり、
+      できたものが要件と合わなくなります。だから順序を変えます。
+    </p>
+    <ol class="steps">
+      <li><span class="n">一</span><span class="t"><b>決める</b>業務の単位、画面、テーブル、業務ルールを決める。</span></li>
+      <li><span class="n">二</span><span class="t"><b>すぐ動かす</b>決めたことが、そのまま動く状態を作る。</span></li>
+      <li><span class="n">三</span><span class="t"><b>触って直す</b>動くものを触って、決めたことの間違いに気づく。</span></li>
+    </ol>
+    <p class="note">
+      上で見たのは一と二です。三は実際の案件で、使う人と一緒に回します。
+      AI とローコードは、一から二までの距離を詰めるための道具として使っています。
+      道具が目的ではありません。
+    </p>
+  </section>
+
+  <section class="doc-sec" id="services">
+    <h2>サービス</h2>
+    <div class="svc">
+      <article><h3>次世代型業務システム開発</h3>
+        <p>ノーコード／ローコードを土台に、「使う人」を中心に据えて業務を再設計します。</p></article>
+      <article><h3>AIによる意思決定支援・事業変革</h3>
+        <p>企業に眠るデータ資産を、戦略と予測に変換します。</p></article>
+      <article><h3>自律共創型の組織デザイン</h3>
+        <p>個の自律とチームの協働を両立させる、フラットで柔軟な構造をつくります。</p></article>
+      <article><h3>地域のデジタル格差支援</h3>
+        <p>ノーコードとクラウドAI、DX人材の育成で、地域が自力で作れる状態をつくります。</p></article>
+    </div>
+  </section>
+
+  <section class="doc-sec" id="philosophy">
+    <h2>企業理念</h2>
+    <p class="creed">経営の力で<br>「遊ぶように働く世界」をデザインする</p>
+  </section>
+
+  <section class="doc-sec" id="why">
+    <h2>このページについて</h2>
+    <p class="lead">
+      会社案内を読ませる代わりに、事業内容をその場で通す作りにしました。
+      理念に「遊ぶように働く」と書いてあるなら、サイトも遊んでいるべきだからです。
+    </p>
+    <p class="note">
+      白紙に書いたことが付箋に分かれ、決めたものだけが稟議に載り、決裁されて完了しました。
+      <b>決めなかったものは、載っていません。</b>それがこの会社の扱っている問題です。<br>
+      実装は AI（Claude）が行いました。素の HTML / CSS / JavaScript のみ、ビルド工程なし。
+      なお付箋の切り出しはデモとして用意した結果で、その場で推論しているわけではありません。
+      実演したいのは推論ではなく、上流で決めたことがそのまま形になるという順序の方です。
+    </p>
+  </section>
+
+  <section class="factsheet" id="company">
+    <h2>会社概要</h2>
+    <dl>
+      <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
+      <dt>設立</dt><dd>2025年6月</dd>
+      <dt>資本金</dt><dd>6,000万円</dd>
+      <dt>代表取締役</dt><dd>松岡 真功</dd>
+      <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304</dd>
+      <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
+      <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
+    </dl>
+    <p class="contact">
+      ご相談・お問い合わせは
+      <a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a>
+      のフォームから承っています。
+    </p>
+  </section>
+
+</div>
+
+<div class="keybar"><span id="keys"></span><span class="grow"></span><span class="msg" id="msg"></span></div>
+
+<script src="script.js?v=1"></script>
+</body>
+</html>

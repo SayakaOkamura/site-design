@@ -1,0 +1,515 @@
+/* =========================================================
+   005 Alter Design Consulting — 書く／決める／通す
+   紙で統一する。明朝を主、ゴシックを注記に。
+   トークンは白基調のまま。琥珀 #b45309、朱 #8b2020。
+   ========================================================= */
+
+:root{
+  --paper:   #fdfcf8;
+  --desk:    #eceae4;
+  --rule:    #e6e2d6;
+  --line:    #cfcabb;
+  --ink:     #1a1a1a;
+  --sub:     #6b6659;
+  --faint:   #a29b8c;
+  --amber:   #b45309;
+  --seal:    #8b2020;
+  --mincho:  "Yu Mincho","YuMincho","Hiragino Mincho ProN","MS PMincho",serif;
+  --gothic:  "Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --mono:    ui-monospace,"SFMono-Regular",Consolas,monospace;
+}
+
+body{
+  font-family:var(--mincho);
+  font-size:16px;
+  line-height:2;
+  color:var(--ink);
+  background:var(--desk);
+}
+
+/* =========================================================
+   机（ファーストビュー）。1画面で完結させる。
+   ========================================================= */
+.desk{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  padding:16px 32px 62px;   /* 下はキーバーの高さぶん空ける。紙を潜り込ませない */
+}
+
+.brand{text-align:center;margin-bottom:8px}
+.brand .name{
+  font-family:var(--gothic);
+  font-size:12px;letter-spacing:.34em;color:var(--sub);
+}
+.brand .tagline{
+  font-size:20px;letter-spacing:.06em;margin-top:8px;
+}
+.brand .tagline em{
+  display:block;font-style:normal;font-size:13px;color:var(--sub);
+  letter-spacing:.02em;margin-top:4px;
+}
+
+/* 進み具合 */
+.route{
+  display:flex;justify-content:center;gap:0;
+  list-style:none;margin-bottom:10px;font-family:var(--gothic);font-size:12px;
+}
+.route li{
+  color:var(--faint);padding:0 26px 8px;border-bottom:2px solid var(--line);
+  transition:color .4s,border-color .4s;
+}
+.route li span{
+  font-family:var(--mincho);font-size:14px;margin-right:8px;
+}
+.route li.on{color:var(--ink);border-bottom-color:var(--seal)}
+.route li.done{color:var(--sub);border-bottom-color:var(--faint)}
+
+/* 段 */
+.stage{display:none;flex:1;min-height:0;flex-direction:column;justify-content:center;overflow:auto}
+.stage.on{display:flex;animation:rise .5s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+
+/* 紙 */
+.sheet{
+  background:var(--paper);
+  max-width:780px;width:100%;margin:0 auto;
+  padding:36px 56px 32px;
+  box-shadow:0 1px 0 var(--line),0 14px 34px rgba(0,0,0,.08);
+  position:relative;
+}
+.sheet::before{content:"";position:absolute;left:0;top:0;bottom:0;width:1px;background:var(--rule)}
+
+/* 罫線入りの白紙 */
+.ruled{
+  background-image:repeating-linear-gradient(
+    to bottom,transparent 0,transparent 43px,var(--rule) 43px,var(--rule) 44px);
+  background-position:0 60px;
+}
+
+/* --- 段1：書く --- */
+.ask{font-size:19px;letter-spacing:.04em;margin-bottom:26px}
+.writeline{position:relative;display:flex;align-items:baseline}
+#in{
+  font:inherit;font-size:22px;line-height:44px;
+  border:0;outline:0;background:transparent;width:100%;color:var(--ink);
+  letter-spacing:.04em;
+}
+#in::placeholder{color:#c9c3b2}
+.foot-hint{
+  font-family:var(--gothic);font-size:11px;color:var(--faint);
+  margin-top:14px;line-height:1.7;
+}
+.reply{
+  font-size:15px;color:var(--sub);margin-top:16px;min-height:1.6em;
+  border-left:2px solid var(--amber);padding-left:16px;
+}
+.reply:empty{border-left-color:transparent;min-height:0;margin-top:0}
+
+/* --- 段2：付箋 --- */
+.zones{
+  display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:14px;
+  max-width:1180px;width:100%;margin:0 auto;flex:1;min-height:0;
+}
+.zone{display:flex;flex-direction:column;min-height:0}
+.zone h3{
+  font-family:var(--gothic);font-size:11px;font-weight:400;letter-spacing:.14em;
+  color:var(--sub);padding-bottom:8px;
+}
+.zone .drop{
+  flex:1;min-height:0;border:1px dashed var(--line);padding:12px;
+  display:flex;flex-wrap:wrap;align-content:flex-start;gap:10px;
+  overflow:auto;background:rgba(253,252,248,.5);
+  transition:background .2s,border-color .2s;
+}
+.zone.mid .drop{border-style:solid;background:var(--paper)}
+.zone .drop.hot{border-color:var(--amber);background:#fff8f0}
+
+/* 付箋 */
+.zones .note{
+  width:200px;min-height:74px;padding:12px 14px 11px;
+  background:#fff6cc;box-shadow:2px 3px 0 rgba(0,0,0,.07);
+  font-family:var(--gothic);font-size:13px;line-height:1.6;
+  cursor:grab;user-select:none;touch-action:none;
+  transition:box-shadow .15s,background .3s,opacity .3s;
+}
+.zones .note:active{cursor:grabbing;box-shadow:6px 8px 0 rgba(0,0,0,.1)}
+.zones .note .tag{
+  display:block;font-size:9px;letter-spacing:.12em;color:#8a7a3d;margin-bottom:5px;
+}
+/* 書かなかったところ＝勝手に埋まる場所 */
+.zones .note.gap{background:#fff;border:1px solid var(--line);box-shadow:2px 3px 0 rgba(0,0,0,.04)}
+.zones .note.gap .tag{color:var(--amber)}
+.zones .note.dragging{opacity:.4}
+.zones .note.in-keep{background:#e8f0e6}
+.zones .note.in-drop{background:#eceff3;color:var(--faint);text-decoration:line-through}
+.zones .note.in-drop .tag{text-decoration:none}
+
+.stage-hint{
+  text-align:center;font-family:var(--gothic);font-size:12px;color:var(--faint);
+  margin-top:16px;min-height:1.8em;
+}
+.next-wrap{text-align:center;margin-top:6px}
+
+/* --- 段3：稟議 --- */
+.ringi h1{
+  font-size:20px;font-weight:400;text-align:center;letter-spacing:.42em;margin-bottom:3px;
+}
+.ringi .sub{
+  text-align:center;font-family:var(--gothic);font-size:10px;letter-spacing:.2em;
+  color:var(--faint);margin-bottom:18px;
+}
+table.doc{width:100%;border-collapse:collapse;margin-bottom:24px}
+table.doc th,table.doc td{
+  border:1px solid var(--line);padding:9px 14px;font-size:14px;vertical-align:top;line-height:1.9;
+}
+table.doc th{
+  width:150px;background:#f5f2e9;font-weight:400;color:var(--sub);text-align:left;
+  font-family:var(--gothic);font-size:12px;letter-spacing:.06em;
+}
+table.doc td.cell{font-size:13px;line-height:1.8}
+table.doc td.dim{color:var(--faint)}
+
+/* 判子 */
+.seals{display:flex;border:1px solid var(--line);margin-bottom:18px}
+.seal{flex:1;border-right:1px solid var(--line);text-align:center;padding:6px 0 10px}
+.seal:last-child{border-right:0}
+.seal .who{
+  display:block;font-family:var(--gothic);font-size:10px;letter-spacing:.14em;
+  color:var(--faint);margin-bottom:8px;
+}
+.seal .box{
+  width:46px;height:46px;margin:0 auto;border:1px dashed var(--rule);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.seal .stamp{
+  opacity:0;transform:scale(1.8) rotate(-20deg);
+  transition:.26s cubic-bezier(.2,1.5,.4,1);
+  width:42px;height:42px;border:2px solid var(--seal);border-radius:50%;color:var(--seal);
+  display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1.15;
+}
+.seal.done .box{border-color:transparent}
+.seal.done .stamp{opacity:.85;transform:scale(1) rotate(-8deg)}
+
+.act{text-align:center}
+button.ink{
+  font-family:var(--mincho);font-size:15px;line-height:1;letter-spacing:.22em;
+  padding:14px 40px;border:1px solid var(--ink);background:var(--paper);
+  cursor:pointer;color:var(--ink);transition:.15s;
+}
+button.ink:hover:not([disabled]){background:var(--ink);color:var(--paper)}
+button.ink[disabled]{opacity:.28;cursor:default}
+.status{
+  font-family:var(--gothic);font-size:12px;color:var(--sub);
+  min-height:2em;margin-top:14px;
+}
+
+/* 完了通知 */
+.attach{margin-top:36px;border-top:1px double var(--line);padding-top:26px;animation:rise .7s ease both}
+.attach h2{
+  font-family:var(--gothic);font-size:11px;font-weight:400;letter-spacing:.2em;
+  color:var(--faint);margin-bottom:16px;
+}
+.done-lead{font-size:15px;margin-bottom:18px}
+.done-lead b{color:var(--amber)}
+.attach dl{display:grid;grid-template-columns:100px 1fr;row-gap:4px;font-size:14px}
+.attach dt{color:var(--sub)}
+.done-note{
+  font-family:var(--gothic);font-size:12px;color:var(--faint);margin-top:20px;line-height:1.9;
+}
+
+/* =========================================================
+   以下、補足。紙から離れて読み物にする。
+   ========================================================= */
+.below{background:#fff;border-top:1px solid var(--line)}
+.doc-sec,.factsheet{max-width:780px;margin:0 auto;padding:64px 32px}
+.doc-sec+.doc-sec,.factsheet{border-top:1px solid #eceae4}
+.below h2{
+  font-family:var(--gothic);font-size:12px;font-weight:600;letter-spacing:.2em;
+  color:var(--amber);margin-bottom:20px;
+}
+.below h3{font-size:16px;margin-bottom:4px}
+.lead{font-size:17px;line-height:2.1;margin-bottom:22px}
+.below .note{
+  font-family:var(--gothic);font-size:13px;line-height:2;color:var(--sub);
+  border-left:2px solid var(--rule);padding-left:16px;
+}
+.below .note b{color:var(--ink)}
+.steps{list-style:none;margin-bottom:24px}
+.steps li{display:grid;grid-template-columns:44px 1fr;padding:10px 0;border-bottom:1px solid #f0eee8}
+.steps .n{color:var(--amber);font-size:15px}
+.steps .t b{display:block;font-size:16px;margin-bottom:2px}
+.steps .t{font-size:14px;color:var(--sub);line-height:1.9}
+.svc{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.svc p{font-size:14px;color:var(--sub);line-height:1.9}
+.creed{font-size:26px;line-height:2;letter-spacing:.1em;text-align:center;padding:20px 0}
+.factsheet dl{display:grid;grid-template-columns:120px 1fr;row-gap:8px;font-size:14px;line-height:1.9}
+.factsheet dt{color:var(--sub);font-family:var(--gothic);font-size:12px;padding-top:3px}
+.contact{font-size:14px;color:var(--sub);margin-top:26px}
+.contact a{color:var(--amber)}
+
+/* キーの案内 */
+.keybar{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  display:flex;align-items:center;gap:14px;
+  background:rgba(253,252,248,.94);border-top:1px solid var(--line);
+  padding:6px 18px;font-family:var(--gothic);font-size:11px;color:var(--faint);
+  backdrop-filter:blur(4px);
+}
+.keybar .grow{flex:1}
+.keybar .msg{color:var(--amber)}
+.keybar kbd{
+  font-family:var(--mono);font-size:10px;border:1px solid var(--line);
+  padding:1px 5px;margin:0 3px;background:#fff;color:var(--sub);
+}
+
+/* 狭い画面 */
+@media (max-width:900px){
+  .zones{grid-template-columns:1fr;max-height:none}
+  .sheet{padding:32px 24px}
+  .svc{grid-template-columns:1fr}
+  .desk{padding:20px 16px 44px}
+}
+
+/* 決裁が済んだら、用の済んだ部分を畳んで縦を詰める（003 と同じ方針） */
+.ringi.folded table.doc,
+.ringi.folded .seals,
+.ringi.folded .act{display:none}
+.fold-line{
+  font-family:var(--gothic);font-size:12px;color:var(--sub);
+  border:1px solid var(--line);padding:10px 14px;line-height:1.9;
+}
+.fold-line b{color:var(--ink)}
+.fold-line .ok{color:var(--seal);letter-spacing:.1em}
+.ringi.folded .attach{margin-top:24px}
+
+/* 稟議書だけは詰める。1画面に収める。 */
+.sheet.ringi{padding:30px 46px 26px}
+.ringi table.doc{margin-bottom:16px}
+.ringi table.doc th,.ringi table.doc td{padding:7px 12px}
+
+/* いまどれに手をかけているか。キー操作の的を見せる。 */
+.zones .drop .note.sel{
+  outline:0;
+  box-shadow:0 0 0 2px var(--amber),4px 6px 0 rgba(0,0,0,.08);
+  transform:translateY(-2px);
+}
+.zones .drop .note.sel::after{
+  content:"←  決める　　やらない  →";
+  display:block;margin-top:9px;padding-top:7px;border-top:1px solid #e8e2d0;
+  font-size:10px;letter-spacing:.04em;color:var(--amber);
+}
+/* 決め終わったものは、もう触らせない */
+.zone:not(.mid) .note{cursor:default}
+
+/* 完了通知の下。次にできることだけを置く。 */
+.done-act{margin-top:18px;font-family:var(--gothic);font-size:13px}
+.done-act a{color:var(--amber);margin-right:22px;text-decoration:none;border-bottom:1px solid #e8c99a}
+.done-act a:hover{border-bottom-color:var(--amber)}
+
+/* 左右に置いたものは短い札でよい。問いが並ぶ中央だけ幅を取る。 */
+.zones .zone:not(.mid) .note{width:150px;min-height:62px;padding:10px 12px 9px;font-size:12.5px}
+
+/* 段1の例。書く手がかり。選択肢ではないので、控えめに置く。 */
+.egs{list-style:none;margin-top:14px;display:flex;flex-direction:column}
+.egs li{display:grid;grid-template-columns:26px 1fr;align-items:center}
+.egs .k{
+  font-family:var(--mono);font-size:10px;color:var(--faint);
+  width:16px;height:16px;border:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:center;
+}
+.egs button{
+  font-family:var(--gothic);font-size:13px;line-height:1.7;color:var(--sub);
+  background:none;border:0;padding:2px 0;text-align:left;cursor:pointer;
+}
+.egs button:hover{color:var(--amber)}
+
+/* 書く場所。空の欄は初見で見つからないので、線だけ引く。 */
+.writeline{border-bottom:1px solid #dccfae;padding-bottom:2px}
+.writeline:focus-within{border-bottom-color:var(--amber)}
+
+/* 稟議書を1画面に収める。決裁が済んだら見出しも畳む。 */
+.sheet.ringi{padding:26px 46px 22px}
+.ringi.folded h1,
+.ringi.folded .sub{display:none}
+.ringi .sub{margin-bottom:14px}
+.ringi .seals{margin-bottom:14px}
+.ringi .seal{padding:5px 0 8px}
+.ringi .seal .who{margin-bottom:5px}
+.ringi .seal .box{width:40px;height:40px}
+.ringi .seal .stamp{width:36px;height:36px;font-size:12px}
+.ringi .attach{margin-top:22px;padding-top:18px}
+.ringi .done-lead{margin-bottom:14px}
+.ringi .done-note{margin-top:14px}
+.ringi .status{min-height:1.6em;margin-top:10px}
+.ringi table.doc th,
+.ringi table.doc td{padding:6px 12px;line-height:1.75}
+.ringi button.ink{padding:11px 34px}
+.ringi .status{min-height:1.3em;margin-top:8px}
+.ringi h1{font-size:18px;margin-bottom:2px}
+.ringi .sub{margin-bottom:10px}
+.ringi .seals{margin-bottom:10px}
+
+/* 進むか、戻るか。二つだけ。 */
+.act .btns{display:flex;gap:10px;justify-content:center}
+button.ink.ghost{
+  border-color:var(--line);color:var(--sub);letter-spacing:.14em;
+  font-size:13px;padding:11px 22px;
+}
+button.ink.ghost:hover{background:var(--paper);color:var(--ink);border-color:var(--ink)}
+
+/* 段1の欄名。書類の様式に見せる。段3の「件名」と同じ役まわり。 */
+.field{
+  font-family:var(--gothic);font-size:11px;letter-spacing:.18em;color:var(--faint);
+  margin-bottom:2px;
+}
+
+/* --- 決裁で止まったとき --- */
+.seal .stamp.x{display:none}
+.seal.stuck .box{border-color:var(--amber);border-style:solid}
+.stuck-mark{color:var(--amber);letter-spacing:.1em}
+.hold{margin-top:12px;animation:rise .4s ease both}
+.hold-lead{font-family:var(--gothic);font-size:13px;color:var(--sub);line-height:1.8;margin-bottom:10px}
+.hold-lead b{color:var(--amber)}
+.gap-card{
+  border:1px solid var(--line);background:#fff;padding:14px 18px;
+  font-size:17px;line-height:1.65;margin-bottom:12px;
+}
+.hold .btns{display:flex;gap:10px;justify-content:center}
+.hold-count{
+  font-family:var(--gothic);font-size:11px;color:var(--faint);
+  text-align:center;margin-top:7px;
+}
+/* 保留中は判子を残す。止まっている決裁が見えないと意味がない。 */
+.ringi.folded.holding .seals{display:flex;margin-top:10px;margin-bottom:0}
+/* 段2は一枠だけ。真ん中に置く。 */
+.zones.one{grid-template-columns:minmax(0,780px);justify-content:center}
+
+/* --- 空白の付箋を振り分ける盤 --- */
+.hold .pool{
+  border:0;padding:0;background:none;display:flex;gap:10px;
+  align-items:flex-start;justify-content:center;min-height:0;
+}
+.hold .note.gap{
+  width:226px;min-height:0;padding:12px 14px;font-size:13px;line-height:1.6;
+  background:#fff;border:1px solid var(--line);box-shadow:2px 3px 0 rgba(0,0,0,.05);
+  font-family:var(--gothic);cursor:grab;user-select:none;
+}
+.hold .note.gap.sel{
+  box-shadow:0 0 0 2px var(--amber),4px 6px 0 rgba(0,0,0,.07);
+  transform:translateY(-2px);
+}
+.hold .note.gap.dragging{opacity:.4}
+.hold .note.in-fill{background:#e8f0e6;border-color:#cfe0cb}
+.hold .note.in-blank{background:#f2f0ec;color:var(--faint)}
+.dests{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.dest h3{
+  font-family:var(--gothic);font-size:11px;font-weight:400;letter-spacing:.12em;
+  color:var(--sub);padding-bottom:5px;
+}
+.dest .drop{
+  min-height:64px;border:1px dashed var(--line);padding:8px;
+  display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;background:rgba(253,252,248,.6);
+}
+.dest .drop.hot{border-color:var(--amber);background:#fff8f0}
+.dest .note.gap{width:100%;font-size:12px;padding:8px 10px;box-shadow:none}
+
+/* =========================================================
+   出てきたもの ＝ 触れる画面。
+   紙の上に、ひとつだけ「画面」が乗っている見え方にする。
+   ========================================================= */
+.app-wrap{display:flex;justify-content:center;flex:1;min-height:0;align-items:center}
+.app{
+  width:100%;max-width:560px;background:#fff;border:1px solid #d7dae0;
+  box-shadow:0 10px 28px rgba(20,26,40,.10);
+  font-family:var(--gothic);
+}
+.app-bar{
+  background:#f6f7f9;border-bottom:1px solid #e2e5ea;
+  padding:9px 16px;font-size:13px;font-weight:600;color:#16191f;letter-spacing:.04em;
+}
+.app-body{padding:16px 18px 6px}
+.fields{display:grid;grid-template-columns:120px 1fr;row-gap:9px;align-items:center}
+.fields dt{font-size:12px;color:#5c636e}
+.fields dd{display:flex;align-items:center;gap:8px}
+.fields .box{
+  display:inline-block;min-width:150px;padding:5px 9px;
+  border:1px solid #dfe3e9;background:#fff;font-size:13px;color:#16191f;
+}
+.fields .unit{font-size:12px;color:#5c636e}
+.rules{margin-top:14px;border-top:1px solid #eef0f3;padding-top:10px}
+.rules h4{font-size:10px;font-weight:400;letter-spacing:.14em;color:#a8afba;margin-bottom:5px}
+.rules li{list-style:none;font-size:12.5px;color:#5c636e;line-height:1.8}
+.rules li::before{content:"・"}
+.app-foot{padding:10px 18px 14px;text-align:right}
+.btn-app{
+  display:inline-block;background:#2f6df6;color:#fff;font-size:13px;
+  padding:7px 20px;border-radius:4px;
+}
+
+/* --- 決裁で止まったあと、同じ画面が添付として降りてくる --- */
+.app.attached{max-width:100%;box-shadow:0 4px 14px rgba(20,26,40,.08)}
+.hold .app{margin-bottom:12px}
+
+/* 空欄。物の上に開いた穴。 */
+.fields dt.hole-k{color:var(--amber);font-size:12px}
+.fields dt.hole-k.done{color:#5c636e}
+.fields dd.hole-v .blank{
+  display:inline-block;min-width:150px;padding:5px 9px;
+  border-bottom:1px dashed var(--amber);color:var(--amber);letter-spacing:.1em;font-size:13px;
+}
+.fields dt.hole-k.now,
+.fields dd.hole-v.now .blank{
+  background:#fff8f0;
+}
+.fields dt.hole-k.now{box-shadow:-6px 0 0 #fff8f0,6px 0 0 #fff8f0}
+.fields dd.hole-v.now .blank{border-bottom-width:2px}
+.fields dd.hole-v.left .blank{border-bottom-color:#c9ccd2;color:#c2c8d0}
+.fields .box.filled{border-color:#cfe0cb;background:#f2f7f1}
+/* 段2に収める。画面は小さくてよい。物であることが伝わればいい。 */
+.app-wrap{display:block;flex:0 0 auto;margin:0 auto 10px}
+.app{max-width:520px;margin:0 auto}
+.app-body{padding:12px 16px 4px}
+.fields{grid-template-columns:110px 1fr;row-gap:6px}
+.fields .box{min-width:140px;padding:4px 8px;font-size:12.5px}
+.rules{margin-top:10px;padding-top:8px}
+.rules li{font-size:12px;line-height:1.7}
+.app-foot{padding:8px 16px 12px}
+.btn-app{font-size:12px;padding:6px 18px}
+.app-bar{padding:8px 16px;font-size:12.5px}
+/* body の line-height:2 を継ぐと画面が倍の高さになる。ここで断つ。 */
+.app{line-height:1.55}
+.stage-hint:empty{display:none;margin:0;min-height:0}
+.app-foot{padding:6px 16px 10px}
+/* 添付になったら、穴のある欄だけ残す。きまりと送信ボタンは畳む。 */
+.app.attached .rules,
+.app.attached .app-foot{display:none}
+.app.attached .app-body{padding:10px 16px 12px}
+.app.attached .fields{row-gap:5px}
+/* 添付中は縦を詰める。判子は小さく、欄は罫線だけにする。 */
+.ringi.folded.holding .seals{margin-top:8px;margin-bottom:10px}
+.ringi.folded.holding .seal{padding:3px 0 5px}
+.ringi.folded.holding .seal .who{margin-bottom:3px;font-size:9px}
+.ringi.folded.holding .seal .box{width:28px;height:28px}
+.ringi.folded.holding .seal .stamp{width:26px;height:26px;font-size:9px;border-width:1px}
+.app.attached .fields dd .box{border:0;background:none;padding:1px 0;min-width:0}
+.app.attached .fields{row-gap:2px}
+.app.attached .app-bar{padding:6px 16px;font-size:12px}
+.app.attached .fields dd.hole-v .blank{padding:2px 6px}
+/* 添付中は要約行を1行に。畳んだ見出し行は出さない（判子が状態を示す）。 */
+.ringi.holding .fold-line{display:none}
+.app.attached .fields dd.sum{font-size:12px;color:#5c636e;line-height:1.7}
+.hold{margin-top:8px}
+.hold .app{margin-bottom:8px}
+/* 空欄の見出しは折り返さないだけの幅を取る。 */
+.app.attached .fields{grid-template-columns:190px 1fr;row-gap:4px}
+.app.attached .fields dt{font-size:11.5px}
+
+/* 選択肢は空欄のとなりに置く。今どれを決めているかが、そこで分かる。 */
+.pick{display:inline-flex;gap:14px;margin-left:14px;vertical-align:middle}
+.pick b{
+  font-family:var(--gothic);font-size:11px;font-weight:400;letter-spacing:.04em;
+  color:var(--amber);border-bottom:1px solid #e8c99a;cursor:pointer;padding-bottom:1px;
+}
+.pick b:hover{border-bottom-color:var(--amber);color:#8a3f07}
+.fields dd.hole-v{flex-wrap:wrap}
