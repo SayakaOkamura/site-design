@@ -166,7 +166,22 @@ function extract(text){
     gaps.push(g);
   });
 
-  return { o:o, title:o + (flags.apply ? '申請' : ''), fields:fields.slice(0, 5), rules:rules.slice(0, 4), gaps:gaps };
+  // 画面の名前は、書かれた動作から付ける。「会議室」ではなく「会議室予約」。
+  // 対象語がすでにその語を含むときは足さない（請求書請求、にならないように）。
+  const SUFFIX = [['apply','申請','申請する'], ['book','予約','予約する'],
+                  ['bill','請求','発行する'], ['report','集計','集計する'],
+                  ['time','入力','登録する'], ['stock','管理','登録する'],
+                  ['crm','管理','登録する'], ['record','登録','登録する']];
+  let suffix = '', verb = '登録する';
+  for (let i = 0; i < SUFFIX.length; i++){
+    if (!flags[SUFFIX[i][0]]) continue;
+    suffix = o.indexOf(SUFFIX[i][1]) >= 0 ? '' : SUFFIX[i][1];
+    verb = SUFFIX[i][2];
+    break;
+  }
+
+  return { o:o, title:o + suffix, verb:verb,
+           fields:fields.slice(0, 5), rules:rules.slice(0, 4), gaps:gaps };
 }
 
 /* =========================================================
@@ -284,7 +299,8 @@ addEventListener('keydown', function(e){
    ========================================================= */
 function buildApp(){
   $('appTitle').textContent = plan.title;
-  $('appSubmit').textContent = plan.title.indexOf('申請') >= 0 ? '申請する' : '登録する';
+  $('from').textContent = '「' + written + '」から';
+  $('appSubmit').textContent = plan.verb;
 
   const fs = $('fields');
   fs.innerHTML = '';

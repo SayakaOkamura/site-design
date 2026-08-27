@@ -49,7 +49,11 @@
   <section class="stage" id="s2">
     <div class="app-wrap" id="appWrap">
       <div class="app" id="app">
-        <div class="app-bar" id="appTitle">画面</div>
+        <div class="app-bar">
+          <span id="appTitle">画面</span>
+          <!-- 出どころ。これが無いと、ただの予約画面に見える。 -->
+          <span class="from" id="from"></span>
+        </div>
         <div class="app-body">
           <dl class="fields" id="fields"></dl>
           <div class="rules">

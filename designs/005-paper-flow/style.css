@@ -513,3 +513,10 @@ button.ink.ghost:hover{background:var(--paper);color:var(--ink);border-color:var
 }
 .pick b:hover{border-bottom-color:var(--amber);color:#8a3f07}
 .fields dd.hole-v{flex-wrap:wrap}
+
+/* 画面の出どころ。題名の隣に小さく。縦は増やさない。 */
+.app-bar{display:flex;align-items:baseline;gap:12px}
+.app-bar .from{
+  margin-left:auto;font-size:10.5px;font-weight:400;color:#a8afba;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;
+}
