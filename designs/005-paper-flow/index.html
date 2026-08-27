@@ -47,6 +47,7 @@
   <!-- ============ 段2：出てきたもの ============
        言葉ではなく、触れる画面そのものを出す。ここでは穴を見せない。 -->
   <section class="stage" id="s2">
+    <!-- 見るものは画面ひとつ。決めるのも、その中でやる。 -->
     <div class="app-wrap" id="appWrap">
       <div class="app" id="app">
         <div class="app-bar">
@@ -57,7 +58,7 @@
         <div class="app-body">
           <dl class="fields" id="fields"></dl>
           <div class="rules">
-            <h4>この画面のきまり</h4>
+            <h4 id="rulesHead">この画面のきまり</h4>
             <ul id="rules"></ul>
           </div>
         </div>
@@ -65,7 +66,7 @@
       </div>
     </div>
     <p class="stage-hint" id="s2hint"></p>
-    <div class="next-wrap"><button class="ink" id="toRingi">稟 議 に 上 げ る</button></div>
+    <div class="next-wrap"><button class="ink" id="toRingi" disabled>稟 議 に 上 げ る</button></div>
   </section>
 
   <!-- ============ 段3：稟議として通す ============ -->
@@ -101,6 +102,11 @@
         <p class="hold-lead" id="holdLead"></p>
         <!-- ここに #app が移ってくる -->
         <span id="holdBtns" hidden></span>
+        <!-- 決めたものが、画面から下に落ちてくる置き場 -->
+        <div class="dests" id="dests">
+          <div class="dest"><h3>ここで決めた</h3><div class="drop" id="dFill"></div></div>
+          <div class="dest"><h3>空欄のまま出す</h3><div class="drop" id="dBlank"></div></div>
+        </div>
       </div>
 
       <div class="attach" id="attach" hidden>

@@ -140,25 +140,33 @@ function extract(text){
   const seen = {};
   const fields = [], rules = [];
 
+  const words = [];   // 反応した語。書いた文のどこから出たかを見せる。
+
   ACTIONS.forEach(function(a){
     if (!flags[a.f]) return;
+    let hit = '';
+    for (let i = 0; i < a.k.length; i++){
+      if (text.indexOf(a.k[i]) >= 0){ hit = a.k[i]; break; }
+    }
+    if (hit && words.indexOf(hit) < 0) words.push(hit);
+
     a.fl.forEach(function(x){
       const label = x[0].replace('{o}', o);
       if (seen['f:' + label]) return;
       seen['f:' + label] = 1;
-      fields.push({label:label, value:x[1], unit:x[2] || ''});
+      fields.push({label:label, value:x[1], unit:x[2] || '', src:hit});
     });
     a.rl.forEach(function(r){
       const t = r.replace('{o}', o);
       if (seen['r:' + t]) return;
       seen['r:' + t] = 1;
-      rules.push(t);
+      rules.push({t:t, src:hit});
     });
   });
 
   // 何も引っかからなくても、書いた語だけは形にする
-  if (fields.length === 0) fields.push({label:'内容', value:'', unit:''});
-  if (rules.length === 0)  rules.push(o + 'を記録に残す');
+  if (fields.length === 0) fields.push({label:'内容', value:'', unit:'', src:''});
+  if (rules.length === 0)  rules.push({t:o + 'を記録に残す', src:''});
 
   const gaps = [];
   GAPS.forEach(function(g){
@@ -180,7 +188,7 @@ function extract(text){
     break;
   }
 
-  return { o:o, title:o + suffix, verb:verb,
+  return { o:o, title:o + suffix, verb:verb, words:words,
            fields:fields.slice(0, 5), rules:rules.slice(0, 4), gaps:gaps };
 }
 
@@ -204,7 +212,9 @@ function goStage(n){
 function keys(){
   const k = $('keys');
   if (stage === 1) k.innerHTML = '<kbd>Enter</kbd> 確定';
-  if (stage === 2) k.innerHTML = '<kbd>Enter</kbd> 稟議に上げる';
+  if (stage === 2){
+    k.innerHTML = $('toRingi').disabled ? '' : '<kbd>Enter</kbd> 稟議に上げる';
+  }
   if (stage === 3){
     if (!$('hold').hidden) k.innerHTML = '<kbd>←</kbd> ここで決める　<kbd>→</kbd> 空欄のまま出す';
     else k.innerHTML = '';
@@ -297,37 +307,67 @@ addEventListener('keydown', function(e){
 
    ここでは穴を出さない。「これで通せる」と思わせる場面。
    ========================================================= */
+/* 書いた一行から、画面が書き上がっていく。
+   ここで人に選ばせない。選ばせても答えが一つしかない偽の選択になる。
+   「決めたことがそのまま形になる」は、動き自体で見せる。 */
 function buildApp(){
   $('appTitle').textContent = plan.title;
-  $('from').textContent = '「' + written + '」から';
   $('appSubmit').textContent = plan.verb;
+  $('fields').innerHTML = '';
+  $('rules').innerHTML = '';
+  $('rulesHead').textContent = 'この画面のきまり';
+  $('toRingi').disabled = true;
+  $('s2hint').textContent = '';
 
-  const fs = $('fields');
-  fs.innerHTML = '';
-  plan.fields.forEach(function(f, i){
-    const dt = document.createElement('dt');
-    dt.textContent = f.label;
-    const dd = document.createElement('dd');
-    const v = stamp(f.value);
-    dd.innerHTML = '<span class="box">' + (v || '&nbsp;') + '</span>'
-                 + (f.unit ? '<span class="unit">' + f.unit + '</span>' : '');
-    dt.style.animation = dd.style.animation = 'rise .3s ease both';
-    dt.style.animationDelay = dd.style.animationDelay = (i * 0.08) + 's';
-    fs.appendChild(dt); fs.appendChild(dd);
+  // 反応した語に印をつけた、書いた一行
+  const esc = written.replace(/[<>&]/g, '');
+  let html = esc;
+  plan.words.forEach(function(w){
+    html = html.replace(w, '<b class="w" data-w="' + w + '">' + w + '</b>');
   });
+  $('from').innerHTML = '「' + html + '」から';
 
-  const rs = $('rules');
-  rs.innerHTML = '';
-  plan.rules.forEach(function(r, i){
-    const li = document.createElement('li');
-    li.textContent = r;
-    li.style.animation = 'rise .3s ease both';
-    li.style.animationDelay = (0.3 + i * 0.08) + 's';
-    rs.appendChild(li);
+  // 一つずつ書き足していく
+  const steps = [];
+  plan.fields.forEach(function(f){ steps.push({kind:'f', d:f}); });
+  plan.rules.forEach(function(r){ steps.push({kind:'r', d:r}); });
+
+  steps.forEach(function(s, i){
+    setTimeout(function(){ writeOne(s); }, 260 + i * 320);
   });
-
-  $('s2hint').textContent = '';   // 画面そのものが説明になっている。文は要らない。
+  setTimeout(function(){
+    $('toRingi').disabled = false;
+    keys();
+  }, 260 + steps.length * 320 + 200);
 }
+
+function writeOne(s){
+  // 出どころの語を光らせてから、画面に足す
+  if (s.d.src){
+    const w = document.querySelector('.w[data-w="' + s.d.src + '"]');
+    if (w){
+      w.classList.add('lit');
+      setTimeout(function(){ w.classList.remove('lit'); }, 700);
+    }
+  }
+
+  if (s.kind === 'f'){
+    const dt = document.createElement('dt');
+    dt.textContent = s.d.label;
+    const dd = document.createElement('dd');
+    const v = stamp(s.d.value);
+    dd.innerHTML = '<span class="box">' + (v || '&nbsp;') + '</span>'
+                 + (s.d.unit ? '<span class="unit">' + s.d.unit + '</span>' : '');
+    dt.style.animation = dd.style.animation = 'rise .28s ease both';
+    $('fields').appendChild(dt); $('fields').appendChild(dd);
+  } else {
+    const li = document.createElement('li');
+    li.textContent = s.d.t;
+    li.style.animation = 'rise .28s ease both';
+    $('rules').appendChild(li);
+  }
+}
+
 
 $('toRingi').onclick = function(){ toRingi(); };
 
@@ -344,6 +384,7 @@ function toRingi(){
   $('title').textContent = written;
   const d = new Date();
   $('today').textContent = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  // 稟議に載るのは、人が入れると決めたきまりだけ。
   $('keptList').textContent = plan.title + 'の画面（入力欄 ' + plan.fields.length
                             + ' 件・きまり ' + plan.rules.length + ' 件）';
   $('blankRow').hidden = true;
@@ -379,8 +420,11 @@ function hold(){
   fl.hidden = false;
   document.querySelector('.ringi').classList.add('folded', 'holding');
 
+  // 見つけたのが AI であることを、はっきり出す。
   $('holdLead').innerHTML = 'このままでは決裁できません。'
-                          + '添付の画面に、<b>決まっていない欄が ' + plan.gaps.length + ' つ</b>あります。';
+                          + '決裁の前に <b>AI が画面を見直し</b>、'
+                          + '<b>決まっていない欄を ' + plan.gaps.length + ' つ</b>見つけました。';
+  $('dFill').innerHTML = ''; $('dBlank').innerHTML = '';
   $('hold').hidden = false;
   $('holdBtns').hidden = false;
   $('hold').insertBefore($('app'), $('holdBtns'));   // 同じ画面が、そのまま添付になる
@@ -399,11 +443,18 @@ function addHoles(){
   // 埋まっている欄は出さない。段2で見たものの繰り返しで、決める邪魔になる。
   // 添付に残すのは、画面の名前と、空いている欄だけ。
   fs.innerHTML = '';
+
+  // 誰が見つけたのかを、欄のすぐ上に置く。
+  const head = document.createElement('p');
+  head.className = 'ai-found';
+  head.textContent = 'AI が見つけた、決まっていない欄';
+  fs.parentElement.insertBefore(head, fs);
+
   holes = [];
   plan.gaps.forEach(function(g, i){
     const dt = document.createElement('dt');
     dt.className = 'hole-k';
-    dt.textContent = g.t;
+    dt.textContent = g.n;   // 欄の名前。付箋には場面の問いを書く。
     const dd = document.createElement('dd');
     dd.className = 'hole-v';
     dd.innerHTML = '<span class="blank">＿＿＿＿＿＿＿</span>';
@@ -441,17 +492,45 @@ function answer(decide){
   if ($('hold').hidden || cur >= holes.length) return;
   const h = holes[cur];
   h.dt.classList.remove('now'); h.dd.classList.remove('now');
+  const pick = h.dd.querySelector('.pick');
+  if (pick) pick.remove();
+
+  // 決めたものは、画面から下の置き場へ落ちる。
+  // 何も動かないと、押した手応えが無い。
+  dropTo(h, decide ? $('dFill') : $('dBlank'));
+
   if (decide){
-    h.dd.innerHTML = '<span class="box filled">' + h.g.a + '</span>';
     h.dt.classList.add('done');
+    h.dd.classList.add('done');
     filled.push(h.g.n);
+    h.dd.innerHTML = '<span class="box filled">' + h.g.a + '</span>';
   } else {
     h.dd.classList.add('left');
     leftBlank.push(h.g.n);
   }
+
   cur++;
   if (cur < holes.length) focusHole();
-  else setTimeout(settle, 500);
+  else setTimeout(settle, 600);
+}
+
+/* 欄の名前が、画面から置き場へ落ちる。位置を測ってから戻す。 */
+function dropTo(h, zone){
+  const chip = document.createElement('span');
+  chip.className = 'chip';
+  chip.textContent = h.g.n;
+  zone.appendChild(chip);
+
+  const from = h.dt.getBoundingClientRect();
+  const to = chip.getBoundingClientRect();
+  chip.style.transform = 'translate(' + (from.left - to.left) + 'px,'
+                                      + (from.top - to.top) + 'px)';
+  chip.style.opacity = '0.25';
+  requestAnimationFrame(function(){
+    chip.style.transition = 'transform .34s cubic-bezier(.3,.7,.3,1), opacity .34s ease';
+    chip.style.transform = 'translate(0,0)';
+    chip.style.opacity = '1';
+  });
 }
 
 /* 空欄の扱いが決まったら、決裁が下りる。「次へ」は置かない。 */
@@ -507,7 +586,7 @@ function finish(){
    ========================================================= */
 addEventListener('keydown', function(e){
   if (stage === 2){
-    if (e.key === 'Enter'){ e.preventDefault(); toRingi(); }
+    if (e.key === 'Enter' && !$('toRingi').disabled){ e.preventDefault(); toRingi(); }
   } else if (stage === 3 && !$('hold').hidden){
     if (e.key === 'ArrowLeft'){ e.preventDefault(); answer(true); }
     if (e.key === 'ArrowRight'){ e.preventDefault(); answer(false); }
