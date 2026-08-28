@@ -33,12 +33,15 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
 /* 引ききったときに出る、他の線。1本＝決まっていない欄ひとつ。
    ズーム自体はよくある仕掛けなので、引いたときに「量」が出るようにする。 */
 svg.field{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none;transition:opacity .6s ease}
-svg.field path{fill:none;stroke:#b9b3a6;stroke-width:1.4;opacity:.5}
+svg.field line{
+  stroke:#bdb7a9;stroke-width:3;stroke-dasharray:9 7;stroke-linecap:round;
+}
 
 /* 一本の線。ここが「地続き」の実体 */
 svg.thread{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none;z-index:1}
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
   stroke-dasharray:1600;stroke-dashoffset:1600;animation:draw 2.4s ease .3s forwards}
+svg.thread line.src{stroke:var(--amber);stroke-width:4;stroke-dasharray:9 7;stroke-linecap:round}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -141,6 +144,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
     <svg class="field" id="field" viewBox="0 0 2400 1500"></svg>
 
     <svg class="thread" viewBox="0 0 2400 1500">
+      <!-- 追いかける1つ。並んでいる欄のうち、これだけ先まで線が引いてある -->
+      <line class="src" x1="600" y1="640" x2="690" y2="640"/>
       <path d="M 700 640 C 800 640, 800 520, 890 520
                S 1420 560, 1500 560
                S 1960 690, 2020 690" />
@@ -151,9 +156,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
       <h1>止まっているのは、<br>ここだけではありません。</h1>
       <!-- 本数を実態の比率として語らないこと。画面上の本数は事実だが、
            「1社の1か月ぶん」は根拠が無い。実測を持つまで書かない。 -->
-      <p>線は 1 本につき、決まっていない欄ひとつ。<br>
-         濃い 1 本だけ、この先で追いかけます。</p>
-      <p class="tiny">何本あるかは、案件ごとに数えます。</p>
+      <p>並んでいるのは、決まっていない欄です。<br>
+         ひとつだけ、この先まで線が引いてあります。</p>
+      <p class="tiny">いくつあるかは、案件ごとに数えます。</p>
     </div>
 
     <!-- L1 経営が困っていること -->
@@ -227,23 +232,26 @@ const VIEWS = [
   { nm:'欄ひとつ', x:1990, y: 570, w: 340, h: 250 }
 ];
 
-/* 他の線。1本＝決まっていない欄ひとつ。
-   本数で殴るので、ここは見た目の量が全部。 */
+/* まわりに並んでいるもの。1つ＝決まっていない欄ひとつ。
+   曲線を何百本も引くとハッチングのノイズになって汚かったので、
+   欄そのもの（空欄）を整列させる。同じものが並ぶほうが量は伝わるし、
+   1つだけ違うものが即座に見つかる。 */
 (function field(){
-  const N = 260;
-  let d = '';
-  for (let i = 0; i < N; i++){
-    const y  = 40 + Math.random() * 1420;
-    const x  = -60 + Math.random() * 320;
-    const w  = 900 + Math.random() * 1500;
-    const a  = (Math.random() - .5) * 240;
-    const b  = (Math.random() - .5) * 240;
-    d += 'M ' + x.toFixed(0) + ' ' + y.toFixed(0)
-       + ' C ' + (x + w * .33).toFixed(0) + ' ' + (y + a).toFixed(0)
-       + ', '  + (x + w * .66).toFixed(0) + ' ' + (y + b).toFixed(0)
-       + ', '  + (x + w).toFixed(0) + ' ' + (y + a * .3).toFixed(0) + ' ';
+  const COLS = 13, ROWS = 8;
+  const X0 = 130, Y0 = 120, DX = (2400 - X0 * 2) / (COLS - 1), DY = (1500 - Y0 * 2) / (ROWS - 1);
+  let g = '';
+  for (let r = 0; r < ROWS; r++){
+    for (let c = 0; c < COLS; c++){
+      const jx = (Math.random() - .5) * 16;
+      const jy = (Math.random() - .5) * 12;
+      const x  = X0 + c * DX + jx;
+      const y  = Y0 + r * DY + jy;
+      const w  = 74 + Math.random() * 34;
+      g += '<line x1="' + x.toFixed(0) + '" y1="' + y.toFixed(0) + '" '
+         +       'x2="' + (x + w).toFixed(0) + '" y2="' + y.toFixed(0) + '"/>';
+    }
   }
-  document.getElementById('field').innerHTML = '<path d="' + d + '"/>';
+  document.getElementById('field').innerHTML = g;
 })();
 
 let cur = 0;
