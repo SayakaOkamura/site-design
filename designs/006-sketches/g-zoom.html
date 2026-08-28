@@ -29,16 +29,16 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
 
 #view{position:fixed;inset:0;overflow:hidden}
 #canvas{
-  position:absolute;top:0;left:0;width:3480px;height:1500px;
+  position:absolute;top:0;left:0;width:4560px;height:1500px;
   transform-origin:0 0;transition:transform .85s cubic-bezier(.5,.05,.2,1);
 }
 
 /* 一本の線。ここが「地続き」の実体 */
-svg.thread{position:absolute;top:0;left:0;width:3480px;height:1500px;pointer-events:none;z-index:1}
+svg.thread{position:absolute;top:0;left:0;width:4560px;height:1500px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2600;stroke-dashoffset:2600;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:2760;stroke-dashoffset:2760;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -101,11 +101,14 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   .n2 .cap2{font-size:12px}
 
   .nc{left:2540px;width:330px}
-  .nc h1{font-size:23px}
-  .nc p{font-size:13px}
-  .nc .cols{grid-template-columns:1fr;gap:18px}
-  .nc dl{grid-template-columns:64px 1fr;font-size:11.5px}
-  .nc ul.svc li{font-size:12.5px}
+  .nc h1{font-size:24px}
+  .nc p{font-size:13.5px}
+
+  .n5{left:3000px;width:330px}
+  .n5 h1{font-size:20px;margin-bottom:14px}
+  .n5 .cols{grid-template-columns:1fr;gap:18px}
+  .n5 dl{grid-template-columns:66px 1fr;font-size:11.5px}
+  .n5 ul.svc li{font-size:12.5px}
 }
 
 /* 二 例と、その中身 */
@@ -170,42 +173,49 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 四 見つけたあと。ここが無いと、空欄を見つけて終わりになる。
    決めるのは御社、作るのはうち。会社概要はその下に、小さく。 */
-.nc{left:2540px;top:400px;width:880px}
-/* 締めの一枚。サービスと会社概要を並べて、閉じられる形にする。
-   枠は中身に合わせて詰める。中身より大きい枠を取ると、そのぶん縮尺が下がって
-   最後だけ小さく見える（545px の枠に 360px の中身を入れていた）。 */
-.nc .cols{
-  display:grid;grid-template-columns:1fr 1.55fr;gap:34px;
-  margin-top:20px;border-top:1px solid var(--line);padding-top:16px;
-}
-.nc h2{
-  font-size:10px;font-weight:600;letter-spacing:.16em;color:var(--faint);
-  margin-bottom:8px;
-}
-.nc ul.svc{list-style:none}
-.nc ul.svc li{
-  font-size:12.5px;color:var(--ink);padding:4px 0 4px 13px;position:relative;line-height:1.6;
-}
-.nc ul.svc li::before{content:"—";position:absolute;left:0;color:var(--amber)}
+.nc{left:2540px;top:430px;width:820px}
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
-/* ここが山場。うちがしたことを、この段でいちばん大きく出す */
-.nc h1{font-size:34px;font-weight:600;line-height:1.45;margin:6px 0 14px;letter-spacing:.01em}
+/* ここが山場。うちがしたことを、この段でいちばん大きく出す。
+   会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
+.nc h1{font-size:36px;font-weight:600;line-height:1.45;margin:6px 0 16px;letter-spacing:.01em}
 .nc h1 b{color:var(--amber)}
-.nc p{font-size:14px;color:var(--sub);line-height:1.9;margin-bottom:8px}
+.nc p{font-size:15px;color:var(--sub);line-height:1.95;margin-bottom:10px}
 .nc p b{color:var(--ink)}
-/* 会社概要は責任の所在。小さすぎると読む気にならない。
-   縮尺は枠の高さで決まるので、横に広げるぶんには縮尺が下がらない。
-   だから幅を使って字を大きくする。 */
-.nc dl{
-  display:grid;grid-template-columns:74px 1fr;column-gap:14px;row-gap:5px;
+
+/* 五 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
+   別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
+.n5{left:3560px;top:450px;width:900px}
+.n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
+.n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
+.n5 .cols{
+  display:grid;grid-template-columns:1fr 1.35fr;gap:40px;
+  border-top:1px solid var(--line);padding-top:16px;
+}
+.n5 h2{
+  font-size:10px;font-weight:600;letter-spacing:.16em;color:var(--faint);
+  margin-bottom:9px;
+}
+/* サービスは名前だけだと何をする会社か伝わらない。一行ずつ中身を付ける */
+.n5 ul.svc{list-style:none}
+.n5 ul.svc li{
+  font-size:13px;color:var(--ink);padding:0 0 10px 13px;position:relative;line-height:1.55;
+}
+.n5 ul.svc li::before{content:"—";position:absolute;left:0;color:var(--amber)}
+.n5 ul.svc li span{display:block;font-size:11.5px;color:var(--sub);line-height:1.65}
+/* 会社概要は責任の所在。小さすぎると読む気にならない */
+.n5 dl{
+  display:grid;grid-template-columns:78px 1fr;column-gap:14px;row-gap:5px;
   font-size:11.5px;line-height:1.7;
 }
-.nc dt{color:var(--faint)}
-.nc dd{color:var(--sub)}
-.nc .ct{font-size:12px;color:var(--sub);margin-top:10px;line-height:1.7}
-.nc .ct a{color:var(--amber)}
-/* この形は1枚しか無いので、載らないものが必ず出る。無いことにせず、行き先を書く */
-.nc .more{font-size:11px;color:var(--faint);margin-top:4px;line-height:1.7}
+.n5 dt{color:var(--faint)}
+/* 社名の途中で折れると読みにくい（「株式会／社サーバーワークス」になっていた）。
+   keep-all で、区切りの ／ でだけ折る。 */
+.n5 dd{color:var(--sub);word-break:keep-all;overflow-wrap:anywhere}
+.n5 .ct{font-size:12.5px;color:var(--sub);margin-top:16px;line-height:1.7}
+.n5 .ct a{color:var(--amber)}
+/* 実績が無いことを、隠さずに書く。書けば、それ自体が会社の状態の説明になる。
+   読ませる気のない薄さにすると、隠しているのと同じになる */
+.n5 .none{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.7}
 
 /* ---------- 操作 ----------
    ボタンは置かない。押すものが並んでいると「操作盤」に見えて、
@@ -275,10 +285,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 <div id="view">
   <div id="canvas">
 
-    <svg class="thread" viewBox="0 0 3480 1500">
+    <svg class="thread" viewBox="0 0 4560 1500">
       <path d="M 860 640 C 940 640, 940 600, 1020 600
                S 1790 640, 1870 640
-               S 2500 700, 2570 700" />
+               S 2500 700, 2570 700
+               S 3470 650, 3540 650" />
     </svg>
 
     <!-- 一 うち。会社サイトの1枚目は、うちの主張から始める。
@@ -357,35 +368,45 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       <p class="r" style="--i:3">決めるのは御社の会議です。うちがするのは、
          <b>その会議の議題を、先に用意すること</b>です。</p>
 
-      <!-- 業務システム開発だけの会社に見えていた。実際は4本ある -->
+    </div>
+
+    <!-- 五 会社。締めの段に会社概要まで積むと、枠が縦にも横にも伸びて
+         そこだけ縮尺が落ちる（枠の高さと幅の両方が効くため）。
+         段を分ければ、締めは締めのまま大きく出せて、会社は会社で読める。
+         社名ボタンの行き先も、これでラベルどおり「会社概要」になる。 -->
+    <div class="node n5" data-l="4">
+      <div class="k" style="--i:0">会社</div>
+      <h1 class="r" style="--i:1">経営の力で「遊ぶように働く世界」をデザインする。</h1>
+
       <div class="cols">
-        <div class="r" style="--i:4">
+        <div class="r" style="--i:2">
           <h2>サービス</h2>
           <ul class="svc">
-            <li>次世代型業務システム開発</li>
-            <li>AIによる意思決定支援・事業変革</li>
-            <li>自律共創型の組織デザイン</li>
-            <li>地域のデジタル格差支援</li>
+            <li>次世代型業務システム開発<span>ノーコード／ローコードを土台に業務を再設計</span></li>
+            <li>AIによる意思決定支援・事業変革<span>データ資産を戦略と予測に変換</span></li>
+            <li>自律共創型の組織デザイン<span>個の自律とチームの協働を両立する構造</span></li>
+            <li>地域のデジタル格差支援<span>ノーコードとクラウドAI、DX人材の育成</span></li>
           </ul>
         </div>
-        <div class="r" style="--i:5">
+        <div class="r" style="--i:3">
           <h2>会社概要</h2>
-      <dl>
-        <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
-        <dt>設立</dt><dd>2025年6月</dd>
-        <dt>資本金</dt><dd>6,000万円</dd>
-        <dt>代表取締役</dt><dd>松岡 真功</dd>
-        <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304</dd>
-        <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／
-          株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
+          <dl>
+            <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
+            <dt>設立</dt><dd>2025年6月</dd>
+            <dt>資本金</dt><dd>6,000万円</dd>
+            <dt>代表取締役</dt><dd>松岡 真功</dd>
+            <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304</dd>
+            <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
+            <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
           </dl>
-          <p class="ct">ご相談は <a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから。</p>
-          <!-- この形は1枚に収まるぶんしか置けない。載らないものの行き先を書いておく。
-               採用・お知らせ・実績のページが実在するかは未確認なので、
-               個別のリンクは張らず、行き先だけ示す。実際の構成が決まったら差し替える。 -->
-          <p class="more">採用・お知らせ・実績など、このページに無いものも同じところに置きます。</p>
         </div>
       </div>
+
+      <p class="ct r" style="--i:4">ご相談は
+        <a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから。</p>
+      <!-- 実績が無いことを、別ページへの導線で隠さない。
+           2025年6月設立は事実。事例が無いのも事実。両方書けば、それで説明になる。 -->
+      <p class="none r" style="--i:5">掲載できる事例は、まだありません。2025年6月に始めた会社です。</p>
     </div>
 
   </div>
@@ -413,8 +434,10 @@ const VIEWS = [
   { nm:'うち',     sel:'.nu', x:  70, y: 400, w: 780, h: 520 },
   { nm:'ある会社', sel:'.n0', x: 870, y: 315, w: 700, h: 480 },
   { nm:'形',       sel:'.n2', x:1870, y: 395, w: 490, h: 430 },
-  /* 見つけたあと。ここが終わり。決めるのは御社、作るのはうち＋会社概要 */
-  { nm:"うちがしたこと", sel:".nc", x:2510, y: 370, w: 940, h: 420 }
+  /* 見つけたあと。ここが山場。決めるのは御社、作るのはうち */
+  { nm:'うちがしたこと', sel:'.nc', x:2510, y: 415, w: 880, h: 300 },
+  /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん枠は大きい */
+  { nm:'会社',     sel:'.n5', x:3530, y: 425, w: 960, h: 430 }
 ];
 
 let cur = 0, touched = false;
@@ -428,17 +451,16 @@ function apply(i){
      狭い画面：寄りをやめて、原寸のまま動かすだけ。
      横長の枠を幅 390 に合わせると字が読めなくなるので、
      縮小するくらいなら動かすだけにする。 */
-  let s, cx, cy;
-  if (vw < 760){
-    const el = document.querySelector(v.sel);
-    s  = Math.min(1, (vw - 28) / el.offsetWidth, vh / (el.offsetHeight + 24));
-    cx = el.offsetLeft + el.offsetWidth  / 2;
-    cy = el.offsetTop  + el.offsetHeight / 2;
-  } else {
-    s  = Math.min(vw / v.w, vh / v.h) * 0.86;
-    cx = v.x + v.w / 2;
-    cy = v.y + v.h / 2;
-  }
+  /* 真ん中は、枠ではなく実物で取る。
+     枠は「どこまで寄るか」を決めるためだけの数字で、中身の実寸とは一致しない。
+     枠で中央を取っていたら、形の段が 39px 下にずれて下の帯にかぶっていた。 */
+  const el = document.querySelector(v.sel);
+  const s  = vw < 760
+    ? Math.min(1, (vw - 28) / el.offsetWidth, vh / (el.offsetHeight + 24))
+    : Math.min(vw / v.w, vh / v.h) * 0.86;
+  const cx = el.offsetLeft + el.offsetWidth  / 2;
+  const cy = el.offsetTop  + el.offsetHeight / 2;
+
   const x = vw / 2 - cx * s;
   const y = vh / 2 - cy * s;
 
