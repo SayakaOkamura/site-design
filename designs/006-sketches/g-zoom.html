@@ -48,7 +48,8 @@ svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;str
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
 .node.hide{opacity:.14}
-.node.gone{opacity:0}
+.node.gone{opacity:0;pointer-events:none}
+.node.hide{pointer-events:none}
 
 /* L0 全体。引ききったところ。
    線の上に字が乗るので、地を敷かないと読めない。 */
@@ -57,10 +58,17 @@ svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;str
   background:radial-gradient(ellipse at center,
     rgba(242,241,236,.97) 0%, rgba(242,241,236,.93) 62%, rgba(242,241,236,0) 100%);
 }
-.nf h1{font-size:76px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin-bottom:18px}
+.nf .who{font-size:21px;letter-spacing:.16em;color:var(--sub);margin-bottom:14px}
+.nf h1{font-size:70px;font-weight:600;line-height:1.42;letter-spacing:.02em;margin-bottom:20px}
 .nf p{font-size:25px;color:var(--sub);line-height:1.9}
-.nf p b{color:var(--amber);font-family:var(--mono);font-size:30px}
-.nf .tiny{font-size:18px;color:var(--faint);margin-top:16px}
+.nf p b{color:var(--amber)}
+/* 何をすればいいかを、押せるもので示す。ボタンが5つ並んでいるだけでは伝わらない */
+.nf .go{
+  margin-top:26px;font:inherit;font-size:24px;font-weight:600;letter-spacing:.14em;
+  padding:16px 42px;border:0;border-radius:10px;cursor:pointer;
+  background:var(--ink);color:#fff;
+}
+.nf .go:hover{background:#000}
 
 /* 追いかける1つの名前。空欄のすぐ上に置く */
 .tag0{
@@ -159,14 +167,15 @@ svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;str
                S 1960 690, 2020 690" />
     </svg>
 
-    <!-- L0 全体。引ききったときだけ出る -->
+    <!-- L0 全体。開いた瞬間の画面。
+         ここで自己紹介と、何をすればいいかを済ませる。主張はそのあと。 -->
     <div class="node nf" data-l="0">
-      <h1>止まっているのは、<br>ここだけではありません。</h1>
-      <!-- 本数を実態の比率として語らないこと。画面上の本数は事実だが、
-           「1社の1か月ぶん」は根拠が無い。実測を持つまで書かない。 -->
-      <p>並んでいるのは、決まっていない欄です。<br>
-         ひとつだけ、この先まで線が引いてあります。</p>
-      <p class="tiny">いくつあるかは、案件ごとに数えます。</p>
+      <div class="who">株式会社アルターデザインコンサルティング</div>
+      <h1>決めていないことを、<br>作る前に見つけます。</h1>
+      <!-- 本数を実態の比率として語らないこと。実測を持つまで書かない。 -->
+      <p>並んでいるのは、ある会社の<b>決まっていない欄</b>です。<br>
+         ひとつだけ名前が付いています。寄ってみてください。</p>
+      <button class="go" id="go">寄 る　→</button>
     </div>
 
     <!-- 追いかける1つが何なのか。名前が無いと、ただの色つきの線になる -->
@@ -317,6 +326,8 @@ addEventListener('keydown', function(e){
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); apply(cur + 1); }
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'){   e.preventDefault(); apply(cur - 1); }
 });
+
+document.getElementById('go').onclick = function(){ apply(1); };
 
 addEventListener('resize', function(){ apply(cur); });
 apply(0);
