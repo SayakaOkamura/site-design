@@ -719,23 +719,12 @@ button.ink.ghost:hover{background:var(--paper);color:var(--ink);border-color:var
 }
 
 /* =========================================================
-   差戻し、打合せ、再提出
+   差戻し、打合せ、決裁
    AI は「決まっていない」と指摘しただけ。値は人が持ち寄る。
    ========================================================= */
 
-/* 決裁の枠に「差戻」を押す。止まったことは、消さずに紙に残す。 */
-.seal .stamp.back{display:none;border-color:var(--amber);color:var(--amber)}
-.seal.stuck .stamp:not(.back){display:none}
-.seal.stuck .stamp.back{display:flex;opacity:.85;transform:scale(1) rotate(-8deg)}
-
-/* 二列目。名前は繰り返さない。同じ紙が、もう一周したという形だけ。 */
-/* .seals の display:flex と、保留中に判子を出す規則が [hidden] に勝つ。
-   出す側の規則すべてを :not([hidden]) で抑える。 */
-.seals[hidden],
-.ringi.folded.holding .seals[hidden]{display:none}
-.seals.second{border-top:0;margin-top:-1px}
-.seals.second .seal{padding-top:10px}
-.ringi.folded.holding .seals.second:not([hidden]){display:flex;margin-top:-1px}
+/* 差戻しの印は押さない。実務では、判子が押されていないことが差戻しそのもの。
+   押し直しも二列目も無い。決裁欄だけが空のまま琥珀で残る（.seal.stuck）。 */
 
 /* 打合せで持ち寄られた答えには、出どころを付ける。
    これが無いと、AI が勝手に決めたように見える。 */

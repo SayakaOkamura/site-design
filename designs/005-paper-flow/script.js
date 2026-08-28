@@ -388,9 +388,6 @@ const SEALS = ['p0', 'p1', 'p2'];
 
 function roll(){
   SEALS.forEach(function(id){ $(id).classList.remove('done', 'stuck'); });
-  // 二列目は、差戻しがあってから出る。最初から見えていては意味がない。
-  $('seals2').hidden = true;
-  ['q0','q1','q2'].forEach(function(id){ $(id).classList.remove('done'); });
   $('st').textContent = '';
   setTimeout(function(){ $('p0').classList.add('done'); }, 345);
   setTimeout(function(){ $('p1').classList.add('done'); }, 690);
@@ -406,7 +403,7 @@ function hold(){
   const fl = $('foldLine');
   fl.innerHTML = '件名：<b>' + written.replace(/[<>&]/g, '') + '</b>　／　'
                + plan.title + 'の画面　／　'
-               + '<span class="stuck-mark">決裁 保留</span>';
+               + '<span class="stuck-mark">決裁 差戻し</span>';
   fl.hidden = false;
   document.querySelector('.ringi').classList.add('folded', 'holding');
 
@@ -484,20 +481,18 @@ function fillNext(){
 }
 
 
-/* 決まったら、同じ紙がもう一周する。判子の列が二列になる。
-   差戻しの印は消さない。一度戻ったことも、紙に残る。 */
+/* 決まったら、空のままだった決裁欄に、ようやく判子が入る。
+   起案と確認は押し直さない。紙は同じ、押されていなかったのは決裁だけ。 */
 function settle(){
   $('holdBtns').hidden = true;
-  $('holdLead').innerHTML = '打合せで <b>' + filled.length + ' 件</b>が決まりました。もう一度回します。';
+  $('p2').classList.remove('stuck');
+  $('holdLead').innerHTML = '打合せで <b>' + filled.length + ' 件</b>が決まりました。決裁に戻します。';
   keys();
-  $('seals2').hidden = false;
-  setTimeout(function(){ $('q0').classList.add('done'); }, 300);
-  setTimeout(function(){ $('q1').classList.add('done'); }, 620);
   setTimeout(function(){
-    $('q2').classList.add('done');
+    $('p2').classList.add('done');
     $('st').textContent = '決裁されました。';
-  }, 940);
-  setTimeout(finish, 1900);
+  }, 420);
+  setTimeout(finish, 1350);
 }
 
 /* =========================================================

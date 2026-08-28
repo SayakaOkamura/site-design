@@ -7,7 +7,7 @@
 <meta name="description" content="書く、決める、通す。上流工程中心のシステム開発。株式会社アルターデザインコンサルティング。">
 <link rel="stylesheet" href="../../assets/css/reset.css">
 <!-- ?v= はキャッシュ避け。中身を変えたら番号を上げる -->
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -80,20 +80,12 @@
         <tr id="blankRow" hidden><th>空欄のまま</th><td class="cell dim" id="dropList"></td></tr>
       </table>
 
-      <div class="seals" id="seals1">
+      <!-- 差戻しは、判子が押されないことそのもの。決裁欄は空のまま返ってくる。
+           押し直しも二列目も、実務には無い。 -->
+      <div class="seals">
         <div class="seal" id="p0"><span class="who">起案</span><div class="box"><div class="stamp">起案</div></div></div>
         <div class="seal" id="p1"><span class="who">確認</span><div class="box"><div class="stamp">確認</div></div></div>
-        <div class="seal" id="p2"><span class="who">決裁</span><div class="box">
-          <div class="stamp">決裁</div><div class="stamp back">差戻</div>
-        </div></div>
-      </div>
-
-      <!-- 二列目。打合せのあと、同じ紙がもう一周する。
-           言葉は足さない。判子が二列あることが、戻ったという事実そのもの。 -->
-      <div class="seals second" id="seals2" hidden>
-        <div class="seal" id="q0"><div class="box"><div class="stamp">起案</div></div></div>
-        <div class="seal" id="q1"><div class="box"><div class="stamp">確認</div></div></div>
-        <div class="seal" id="q2"><div class="box"><div class="stamp">決裁</div></div></div>
+        <div class="seal" id="p2"><span class="who">決裁</span><div class="box"><div class="stamp">決裁</div></div></div>
       </div>
 
       <div class="act">
@@ -209,6 +201,6 @@
 
 <div class="keybar"><span id="keys"></span><span class="grow"></span><span class="msg" id="msg"></span></div>
 
-<script src="script.js?v=2"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>
