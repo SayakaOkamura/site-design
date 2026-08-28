@@ -7,7 +7,7 @@
 <meta name="description" content="書く、決める、通す。上流工程中心のシステム開発。株式会社アルターデザインコンサルティング。">
 <link rel="stylesheet" href="../../assets/css/reset.css">
 <!-- ?v= はキャッシュ避け。中身を変えたら番号を上げる -->
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -174,10 +174,21 @@
     </p>
     <p class="note">
       決めていないところは、いつか必ず出てきます。<b>問題は、いつ出てくるかです。</b>
-      作る前なら打合せ一回で済み、作ったあとなら作り直しになります。
-      上で出てきたのは、作る前でした。
     </p>
-    <p class="note">
+
+    <!-- 論の骨は「前か、あとか」の二択。散文に混ぜると目で拾えないので表に出す。 -->
+    <ul class="when">
+      <li class="before">
+        <span class="w">作る前</span>
+        <span class="t">打合せ一回で済みます。<em>上で出てきたのは、こちらです。</em></span>
+      </li>
+      <li class="after">
+        <span class="w">作ったあと</span>
+        <span class="t">作り直しになります。</span>
+      </li>
+    </ul>
+    <!-- 断り書き。主張と同じ重さで置かない -->
+    <p class="note fine">
       実装は AI（Claude）が行いました。素の HTML / CSS / JavaScript のみ、ビルド工程なし。
       画面の切り出しはあらかじめ用意した規則によるもので、その場で推論しているわけではありません。
       実演したいのは推論ではなく、この順序です。
@@ -206,6 +217,6 @@
 
 <div class="keybar"><span id="keys"></span><span class="grow"></span><span class="msg" id="msg"></span></div>
 
-<script src="script.js?v=8"></script>
+<script src="script.js?v=9"></script>
 </body>
 </html>
