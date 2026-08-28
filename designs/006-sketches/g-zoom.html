@@ -7,13 +7,16 @@
 <link rel="stylesheet" href="../../assets/css/reset.css">
 <style>
 /* =========================================================
-   006-G ページが無い（1枚をズームする）
+   006-G ページが無い（1枚を辿る）
 
-   一言：「あそこのサイト、ページが無いんですよ。1枚を寄っていくだけ」
+   一言：「あそこのサイト、ページが無いんですよ。1枚を辿っていくだけ」
 
    変な理由：経営の一言と、画面の一欄が、地続きだから。
-   引くと経営の話、寄ると欄ひとつ。同じ1枚の上にある。
+   ページも、押すボタンも無い。左から右へ、1枚の上を移動するだけ。
+   経営は大きい字、欄はごく小さい字。その縮尺の差が「地続き」の実体。
    「経営の力で」を、遷移ではなく距離で見せる。
+
+   引き（全体を俯瞰する段）は置かない。1枚だと分かればいい。
    ========================================================= */
 :root{
   --bg:#f2f1ec; --ink:#14161a; --sub:#5d6673; --faint:#9aa2ae;
@@ -30,53 +33,18 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
   transform-origin:0 0;transition:transform .85s cubic-bezier(.5,.05,.2,1);
 }
 
-/* 引ききったときに出る、他の線。1本＝決まっていない欄ひとつ。
-   ズーム自体はよくある仕掛けなので、引いたときに「量」が出るようにする。 */
-svg.field{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none;transition:opacity .6s ease}
-svg.field line{
-  stroke:#bdb7a9;stroke-width:3;stroke-dasharray:9 7;stroke-linecap:round;
-}
-
 /* 一本の線。ここが「地続き」の実体 */
 svg.thread{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   stroke-dasharray:1600;stroke-dashoffset:1600;animation:draw 2.4s ease .3s forwards}
-svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;stroke-linecap:round}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
-.node.hide{opacity:.14}
-.node.gone{opacity:0;pointer-events:none}
-.node.hide{pointer-events:none}
+.node.hide{opacity:.14;pointer-events:none}
 
-/* L0 全体。引ききったところ。
-   線の上に字が乗るので、地を敷かないと読めない。 */
-.nf{
-  left:660px;top:120px;width:1080px;text-align:center;padding:44px 40px 40px;
-  background:radial-gradient(ellipse at center,
-    rgba(242,241,236,.97) 0%, rgba(242,241,236,.93) 62%, rgba(242,241,236,0) 100%);
-}
-.nf .who{font-size:21px;letter-spacing:.16em;color:var(--sub);margin-bottom:14px}
-.nf h1{font-size:70px;font-weight:600;line-height:1.42;letter-spacing:.02em;margin-bottom:20px}
-.nf p{font-size:25px;color:var(--sub);line-height:1.9}
-.nf p b{color:var(--amber)}
-/* 何をすればいいかを、押せるもので示す。ボタンが5つ並んでいるだけでは伝わらない */
-.nf .go{
-  margin-top:26px;font:inherit;font-size:24px;font-weight:600;letter-spacing:.14em;
-  padding:16px 42px;border:0;border-radius:10px;cursor:pointer;
-  background:var(--ink);color:#fff;
-}
-.nf .go:hover{background:#000}
-
-/* 追いかける1つの名前。空欄のすぐ上に置く */
-.tag0{
-  left:596px;top:566px;width:760px;
-  font-size:31px;font-weight:600;color:var(--amber);letter-spacing:.02em;
-}
-
-/* L0 経営 */
+/* 一 経営 */
 .n0{left:90px;top:520px;width:620px}
 .n0 .k{font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--amber)}
 .n0 h1{font-size:62px;font-weight:600;line-height:1.35;letter-spacing:.02em;margin:8px 0 14px}
@@ -122,67 +90,66 @@ svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;str
 .n3 .by{font-size:8.5px;color:var(--faint);margin-top:3px}
 .n3 .cap{font-size:8px;color:var(--sub);margin-top:8px;line-height:1.8}
 
-/* ---------- 操作 ---------- */
+/* ---------- 操作 ----------
+   ボタンは置かない。押すものが並んでいると「操作盤」に見えて、
+   1枚を辿っているという形が消える。
+   進み具合だけ、細い線で出す。 */
 .hud{
-  position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;
-  padding:12px 18px;background:rgba(242,241,236,.94);border-top:1px solid var(--line);
-  backdrop-filter:blur(6px);
+  position:fixed;left:0;right:0;bottom:0;
+  padding:0 22px 16px;pointer-events:none;
 }
-.hud .brand{font-size:10.5px;letter-spacing:.2em;color:var(--sub)}
-.hud .grow{flex:1}
-.steps{display:flex;gap:4px}
-.steps button{
-  font:inherit;font-size:12px;padding:6px 13px;border:1px solid var(--line);
-  background:var(--paper);color:var(--sub);border-radius:6px;cursor:pointer;
+.rail{
+  height:2px;background:var(--line);position:relative;border-radius:2px;
 }
-.steps button.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
-.steps button:hover{border-color:var(--amber);color:var(--amber)}
-.steps button.on:hover{color:#fff}
-.hint{font-size:11px;color:var(--faint)}
+.rail i{
+  position:absolute;top:0;left:0;height:2px;background:var(--amber);
+  border-radius:2px;transition:width .85s cubic-bezier(.5,.05,.2,1);
+}
+.rail b{
+  position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;
+  background:var(--amber);transform:translateX(-4px);
+  transition:left .85s cubic-bezier(.5,.05,.2,1);
+}
+.foot{
+  display:flex;align-items:baseline;gap:12px;margin-top:9px;
+  font-size:10.5px;letter-spacing:.16em;color:var(--faint);
+}
+.foot .grow{flex:1}
+/* 最初だけ出る手がかり。触ったら消える */
+.hint{
+  font-size:11px;letter-spacing:.08em;color:var(--sub);
+  transition:opacity .5s ease;
+}
+.hint.off{opacity:0}
 
-.title{
-  position:fixed;top:16px;left:20px;font-size:10.5px;letter-spacing:.2em;color:var(--sub);
-}
+/* 会社の名乗り。開いた瞬間から出しておく */
+.title{position:fixed;top:18px;left:22px;line-height:1.7}
+.title .nm{font-size:10.5px;letter-spacing:.2em;color:var(--sub);display:block}
+.title .tg{font-size:14px;color:var(--ink);display:block;margin-top:2px}
 .depth{
-  position:fixed;top:14px;right:20px;font-family:var(--mono);font-size:11px;color:var(--faint);
+  position:fixed;top:20px;right:22px;font-family:var(--mono);font-size:10.5px;color:var(--faint);
 }
 </style>
 </head>
 <body>
 
-<div class="title">ALTER DESIGN CONSULTING</div>
+<div class="title">
+  <span class="nm">ALTER DESIGN CONSULTING</span>
+  <span class="tg">決めていないことを、作る前に見つけます。</span>
+</div>
 <div class="depth" id="depth">×1</div>
 
 <div id="view">
   <div id="canvas">
 
-    <!-- 引ききると、同じ線が何百本もある。1件の裏に、毎日これがある。 -->
-    <svg class="field" id="field" viewBox="0 0 2400 1500"></svg>
-
     <svg class="thread" viewBox="0 0 2400 1500">
-      <!-- 追いかける1つ。並んでいる欄のうち、これだけ先まで線が引いてある -->
-      <line class="src" x1="600" y1="640" x2="690" y2="640"/>
       <path d="M 700 640 C 800 640, 800 520, 890 520
                S 1420 560, 1500 560
                S 1960 690, 2020 690" />
     </svg>
 
-    <!-- L0 全体。開いた瞬間の画面。
-         ここで自己紹介と、何をすればいいかを済ませる。主張はそのあと。 -->
-    <div class="node nf" data-l="0">
-      <div class="who">株式会社アルターデザインコンサルティング</div>
-      <h1>決めていないことを、<br>作る前に見つけます。</h1>
-      <!-- 本数を実態の比率として語らないこと。実測を持つまで書かない。 -->
-      <p>並んでいるのは、ある会社の<b>決まっていない欄</b>です。<br>
-         ひとつだけ名前が付いています。寄ってみてください。</p>
-      <button class="go" id="go">寄 る　→</button>
-    </div>
-
-    <!-- 追いかける1つが何なのか。名前が無いと、ただの色つきの線になる -->
-    <div class="node tag0" data-l="0">承認者が不在のときの扱い</div>
-
-    <!-- L1 経営が困っていること -->
-    <div class="node n0" data-l="1">
+    <!-- 経営が困っていること。開いた瞬間はここ -->
+    <div class="node n0" data-l="0">
       <div class="k">経営</div>
       <h1>月末に、<br>経理が止まる。</h1>
       <p>人手が足りないから止まる、とは限りません。<br>
@@ -190,7 +157,7 @@ svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;str
     </div>
 
     <!-- L1 決めること -->
-    <div class="node n1" data-l="2">
+    <div class="node n1" data-l="1">
       <div class="k">決めること</div>
       <h2>止まっている中身</h2>
       <ul>
@@ -203,7 +170,7 @@ svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;str
     </div>
 
     <!-- L2 画面 -->
-    <div class="node n2" data-l="3">
+    <div class="node n2" data-l="2">
       <div class="k">形にすると</div>
       <div class="win">
         <div class="wb">経費申請</div>
@@ -218,7 +185,7 @@ svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;str
     </div>
 
     <!-- L3 欄ひとつ -->
-    <div class="node n3" data-l="4">
+    <div class="node n3" data-l="3">
       <div class="k">欄ひとつ</div>
       <div class="box">
         <div class="lbl">承認者が不在のときの扱い</div>
@@ -235,51 +202,33 @@ svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;str
 </div>
 
 <div class="hud">
-  <span class="brand">ALTER DESIGN CONSULTING</span>
-  <span class="grow"></span>
-  <span class="hint">ページはありません。寄るだけです。</span>
-  <div class="steps" id="steps"></div>
+  <div class="rail"><i id="bar"></i><b id="dot"></b></div>
+  <div class="foot">
+    <span class="hint" id="hint">スクロールすると、右へ寄っていきます</span>
+    <span class="grow"></span>
+    <span id="where">経営</span>
+  </div>
 </div>
 
 <script>
-/* 5つの見え方。同じ1枚を、どこまで寄って見るか。
-   0 だけ意味が違う —— 引ききって、他の線が全部見えるところ。 */
+/* 4つの停留所。同じ1枚を、左から右へ辿る。
+   引き（全体を俯瞰する段）は置かない。寄りだけ残す。
+   経営は大きい字、欄はごく小さい字。その差が「地続き」の実体。 */
 const VIEWS = [
-  { nm:'全体',     x:   0, y:   0, w:2400, h:1500 },
   { nm:'経営',     x:  60, y: 440, w: 700, h: 420 },
-  { nm:'決める',   x: 850, y: 360, w: 530, h: 460 },
+  /* 高さを詰めてある。ここだけ縦長だと縮尺が一度下がって、
+     寄っている感じが途切れる（×1.16 → 1.06 → 1.43 になっていた） */
+  { nm:'決めること', x: 850, y: 385, w: 530, h: 395 },
   { nm:'形',       x:1460, y: 400, w: 470, h: 340 },
   { nm:'欄ひとつ', x:1990, y: 570, w: 340, h: 250 }
 ];
 
-/* まわりに並んでいるもの。1つ＝決まっていない欄ひとつ。
-   曲線を何百本も引くとハッチングのノイズになって汚かったので、
-   欄そのもの（空欄）を整列させる。同じものが並ぶほうが量は伝わるし、
-   1つだけ違うものが即座に見つかる。 */
-(function field(){
-  const COLS = 13, ROWS = 8;
-  const X0 = 130, Y0 = 120, DX = (2400 - X0 * 2) / (COLS - 1), DY = (1500 - Y0 * 2) / (ROWS - 1);
-  let g = '';
-  for (let r = 0; r < ROWS; r++){
-    for (let c = 0; c < COLS; c++){
-      const jx = (Math.random() - .5) * 16;
-      const jy = (Math.random() - .5) * 12;
-      const x  = X0 + c * DX + jx;
-      const y  = Y0 + r * DY + jy;
-      const w  = 74 + Math.random() * 34;
-      g += '<line x1="' + x.toFixed(0) + '" y1="' + y.toFixed(0) + '" '
-         +       'x2="' + (x + w).toFixed(0) + '" y2="' + y.toFixed(0) + '"/>';
-    }
-  }
-  document.getElementById('field').innerHTML = g;
-})();
-
-let cur = 0;
+let cur = 0, touched = false;
 
 function apply(i){
   cur = Math.max(0, Math.min(VIEWS.length - 1, i));
   const v = VIEWS[cur];
-  const vw = innerWidth, vh = innerHeight - 52;   // HUD ぶん除く
+  const vw = innerWidth, vh = innerHeight - 64;   // 下の帯ぶん除く
   const s  = Math.min(vw / v.w, vh / v.h) * 0.86;
   const x  = vw / 2 - (v.x + v.w / 2) * s;
   const y  = vh / 2 - (v.y + v.h / 2) * s;
@@ -288,46 +237,46 @@ function apply(i){
     'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
 
   // いま見ているところ以外は薄くする。1枚であることは保ったまま。
-  // ただし全体（0）の見出しは、寄ったら完全に消す。邪魔になるので。
   document.querySelectorAll('.node').forEach(function(n){
-    const mine = +n.dataset.l === cur;
-    n.classList.toggle('hide', !mine);
-    n.classList.toggle('gone', !mine && +n.dataset.l === 0);
+    n.classList.toggle('hide', +n.dataset.l !== cur);
   });
-  // 他の線は、寄るほど引っ込む。近くで見ると邪魔なので。
-  document.getElementById('field').style.opacity = cur === 0 ? 1 : (cur === 1 ? .35 : .12);
 
+  // 進み具合。押すものではなく、どこまで来たかを示すだけ。
+  const p = cur / (VIEWS.length - 1) * 100;
+  document.getElementById('bar').style.width = p + '%';
+  document.getElementById('dot').style.left  = p + '%';
+  document.getElementById('where').textContent = v.nm;
   document.getElementById('depth').textContent = '×' + s.toFixed(2);
-  document.querySelectorAll('#steps button').forEach(function(b, j){
-    b.classList.toggle('on', j === cur);
-  });
 }
 
-(function hud(){
-  const box = document.getElementById('steps');
-  VIEWS.forEach(function(v, i){
-    const b = document.createElement('button');
-    b.textContent = v.nm;
-    b.onclick = function(){ apply(i); };
-    box.appendChild(b);
-  });
-})();
+function move(d){
+  if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
+  apply(cur + d);
+}
 
-// ホイールでも寄れる。ページ送りではなく、寄る／引く。
+// スクロールで右へ。ページ送りではなく、1枚の上を移動する。
 let lock = false;
 addEventListener('wheel', function(e){
   if (lock) return;
   lock = true;
-  setTimeout(function(){ lock = false; }, 620);
-  apply(cur + (e.deltaY > 0 ? 1 : -1));
+  setTimeout(function(){ lock = false; }, 640);
+  move(e.deltaY > 0 || e.deltaX > 0 ? 1 : -1);
 }, { passive:true });
 
 addEventListener('keydown', function(e){
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); apply(cur + 1); }
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'){   e.preventDefault(); apply(cur - 1); }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); move(1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'){   e.preventDefault(); move(-1); }
 });
 
-document.getElementById('go').onclick = function(){ apply(1); };
+// 触って動かせるように（スマホ・トラックパッド）
+let sx = null;
+addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, { passive:true });
+addEventListener('touchend', function(e){
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx;
+  if (Math.abs(dx) > 40) move(dx < 0 ? 1 : -1);
+  sx = null;
+}, { passive:true });
 
 addEventListener('resize', function(){ apply(cur); });
 apply(0);
