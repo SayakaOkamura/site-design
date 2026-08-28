@@ -736,3 +736,11 @@ button.ink.ghost:hover{background:var(--paper);color:var(--ink);border-color:var
 
 /* 押し終えたら消す。.app-body #holdBtns の display が [hidden] に勝つため。 */
 .app-body #holdBtns[hidden]{display:none}
+
+/* 「決まったこと」の余白。上の入力欄が 1行 29px で進むのに、
+   ここだけ 19px で詰まっていて、最後の行が紙の縁から 5px しかなかった。
+   段3（.app.attached）ではこの欄を出さないので、そちらの高さには効かない。 */
+.app-body{padding-bottom:14px}
+.rules{margin-top:15px;padding-top:12px}
+.rules h4{margin-bottom:9px}
+.rules li.written{line-height:1.95}
