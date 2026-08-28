@@ -752,20 +752,3 @@ button.ink.ghost:hover{background:var(--paper);color:var(--ink);border-color:var
   font-size:12px;color:var(--faint);line-height:1.95;
 }
 
-/* 「前か、あとか」。この二択が論の骨なので、散文に混ぜず表に出す。
-   上の .steps と同じ組み方にして、ページの中で語彙を揃える。 */
-.when{list-style:none;margin:18px 0 0}
-.when li{
-  display:grid;grid-template-columns:132px 1fr;align-items:baseline;
-  padding:12px 0;border-bottom:1px solid #f0eee8;
-}
-.when .w{font-size:17px;letter-spacing:.04em}
-.when .t{font-family:var(--gothic);font-size:13px;color:var(--sub);line-height:1.9}
-.when .before .w{color:var(--amber)}
-.when .after  .w{color:var(--seal)}
-/* 見たものがどちらだったか。punchline を文末に置かず、その行に付ける。 */
-.when .t em{
-  font-style:normal;display:block;font-size:11.5px;color:var(--amber);
-  letter-spacing:.06em;margin-top:1px;
-}
-.when .t em::before{content:"↑ "}
