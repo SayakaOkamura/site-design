@@ -7,7 +7,7 @@
 <meta name="description" content="書く、決める、通す。上流工程中心のシステム開発。株式会社アルターデザインコンサルティング。">
 <link rel="stylesheet" href="../../assets/css/reset.css">
 <!-- ?v= はキャッシュ避け。中身を変えたら番号を上げる -->
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 
@@ -77,7 +77,6 @@
       <table class="doc">
         <tr><th>件名</th><td id="title">—</td></tr>
         <tr><th>内容</th><td class="cell" id="keptList"></td></tr>
-        <tr id="blankRow" hidden><th>空欄のまま</th><td class="cell dim" id="dropList"></td></tr>
       </table>
 
       <!-- 差戻しは、判子が押されないことそのもの。決裁欄は空のまま返ってくる。
@@ -89,9 +88,6 @@
       </div>
 
       <div class="act">
-        <div class="btns">
-          <button class="ink" id="go" hidden>次 へ</button>
-        </div>
         <p class="status" id="st"></p>
       </div>
 
@@ -139,9 +135,7 @@
       <li><span class="n">三</span><span class="t"><b>触って直す</b>動くものを触って、決めたことの間違いに気づく。</span></li>
     </ol>
     <p class="note">
-      上で見たのは一と二、それに三の入口です。稟議で止まったところが、
-      動くものを前にして決めていなかったことに気づく場面にあたります。
-      三の本番は実際の案件で、使う人と一緒に回します。
+      上で見たのは一と二です。三は実際の案件で、使う人と一緒に回します。
       AI とローコードは、一から二までの距離を詰めるための道具として使っています。
       道具が目的ではありません。
     </p>
@@ -205,6 +199,6 @@
 
 <div class="keybar"><span id="keys"></span><span class="grow"></span><span class="msg" id="msg"></span></div>
 
-<script src="script.js?v=12"></script>
+<script src="script.js?v=13"></script>
 </body>
 </html>
