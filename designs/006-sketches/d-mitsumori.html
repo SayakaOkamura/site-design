@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>006-D 見積もりが先に出ている</title>
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<style>
+/* =========================================================
+   006-D 見積もりが先に出ている
+
+   一言：「何も入れてないのに、見積書が出てくるんですよ」
+
+   開いた瞬間に山がある。操作は「根拠」を押すだけ。
+   005 と主張は同じだが、尺が 10 秒。雑談で出せる。
+   すごさは要らない。数字が勝手に入っていることが変。
+   ========================================================= */
+:root{
+  --paper:#fdfcf9; --bg:#eceae4; --ink:#14161a; --sub:#5f6875; --faint:#a0a6b0;
+  --line:#d8d3c8; --rule:#ebe7dd; --amber:#b45309; --seal:#8b2020;
+  --ui:-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.8;
+     padding:22px 16px 60px}
+
+.sheet{
+  max-width:600px;margin:0 auto;background:var(--paper);
+  border:1px solid var(--line);border-radius:4px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+  padding:30px 30px 26px;
+}
+
+.hd{display:flex;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:10px}
+.hd h1{font-size:19px;font-weight:600;letter-spacing:.22em}
+.hd .grow{flex:1}
+.hd .no{font-family:var(--mono);font-size:11px;color:var(--faint)}
+
+.to{margin-top:18px;font-size:15px}
+.to .nm{font-size:17px;font-weight:600;border-bottom:1px solid var(--line);padding-bottom:3px;display:inline-block;min-width:230px}
+.to .sm{font-size:11.5px;color:var(--faint);margin-top:4px}
+
+/* ---------- 合計 ---------- */
+.total{
+  margin-top:20px;border:1px solid var(--line);background:#fff;border-radius:8px;
+  padding:14px 18px;display:flex;align-items:baseline;gap:10px;
+}
+.total .k{font-size:11px;letter-spacing:.14em;color:var(--faint)}
+.total .v{font-family:var(--mono);font-size:31px;font-weight:600;margin-left:auto}
+.total .y{font-size:14px;color:var(--sub)}
+
+/* ---------- 明細 ---------- */
+table{width:100%;border-collapse:collapse;margin-top:18px;font-size:13.5px}
+th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--rule)}
+th{font-size:10.5px;font-weight:600;letter-spacing:.1em;color:var(--faint)}
+td.num{text-align:right;font-family:var(--mono);white-space:nowrap}
+tr.q td{cursor:pointer}
+tr.q:hover td{background:#fffaf3}
+.why{
+  display:block;font-size:11.5px;color:var(--amber);margin-top:3px;
+}
+.why::before{content:"？ "}
+tr.open .why{color:var(--sub)}
+tr.open .why::before{content:"→ ";color:var(--amber)}
+
+/* ---------- 落ち ---------- */
+.punch{
+  margin-top:22px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:14.5px;line-height:1.9;
+}
+.punch b{color:var(--seal)}
+.punch .c{
+  font-family:var(--mono);color:var(--amber);
+}
+.act{margin-top:20px;display:flex;gap:9px;flex-wrap:wrap}
+.act button{
+  font:inherit;font-size:13px;padding:9px 16px;border-radius:7px;cursor:pointer;
+  border:1px solid var(--line);background:#fff;color:var(--sub);
+}
+.act button.main{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+.act button:hover{border-color:var(--amber);color:var(--amber)}
+.act button.main:hover{background:#000;color:#fff}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="hd">
+    <h1>御 見 積 書</h1>
+    <span class="grow"></span>
+    <span class="no" id="no">—</span>
+  </div>
+
+  <div class="to">
+    <div class="nm" id="to">御中</div>
+    <div class="sm">株式会社アルターデザインコンサルティング</div>
+  </div>
+
+  <div class="total">
+    <span class="k">御 見 積 金 額</span>
+    <span class="v" id="sum">0</span><span class="y">円</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>項目</th><th class="num">数量</th><th class="num">金額</th></tr>
+    </thead>
+    <tbody id="tb"></tbody>
+  </table>
+
+  <div class="punch" id="punch"></div>
+
+  <div class="act">
+    <button class="main" id="all">根拠を全部ひらく</button>
+    <button id="again">別の会社で出す</button>
+  </div>
+</div>
+
+<script>
+/* 見積書は、聞く前に出る。数字は全部こちらが置いたもの。
+   「？」を押すと、その数字がどこから来たかが出る。 */
+const LINES = [
+  { k:'要件定義',        q:'一式', v:1200000,
+    why:'期間を伺っていないので、標準の 3 週間で置きました。' },
+  { k:'画面設計・DB設計', q:'12 画面', v:1440000,
+    why:'画面数を伺っていないので、この規模でよくある 12 画面で置きました。' },
+  { k:'開発',            q:'一式', v:1800000,
+    why:'既存システムとの連携有無を伺っていないので、無しで置きました。' },
+  { k:'テスト',          q:'一式',  v:600000,
+    why:'受入テストを御社でやるかどうか伺っていないので、こちらで持つ前提です。' },
+  { k:'運用支援',        q:'6 か月', v:720000,
+    why:'期間を伺っていないので、6 か月で置きました。' }
+];
+
+const NAMES = ['株式会社','有限会社','', '合同会社'];
+const HEADS = ['丸紅','東和','日進','大同','三宝','光陽','昭和','明和','翔栄'];
+const TAILS = ['製作所','商事','工業','物流','食品','電機','建設','産業'];
+
+function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
+function comma(n){ return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+function fresh(){
+  // 宛名も番号も、勝手に埋まっている
+  const nm = pick(NAMES) + pick(HEADS) + pick(TAILS);
+  document.getElementById('to').textContent = nm + '　御中';
+
+  const d = new Date();
+  document.getElementById('no').textContent =
+    'No. ' + d.getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+
+  const sum = LINES.reduce(function(a, l){ return a + l.v; }, 0);
+  document.getElementById('sum').textContent = comma(sum);
+
+  document.getElementById('tb').innerHTML = LINES.map(function(l, i){
+    return '<tr class="q" data-i="' + i + '">'
+      + '<td>' + l.k + '<span class="why" hidden>' + l.why + '</span></td>'
+      + '<td class="num">' + l.q + '</td>'
+      + '<td class="num">' + comma(l.v) + '</td></tr>';
+  }).join('');
+
+  document.querySelectorAll('tr.q').forEach(function(tr){
+    tr.onclick = function(){ open(tr); };
+  });
+
+  document.getElementById('punch').innerHTML = '';
+  shown = 0;
+}
+
+let shown = 0;
+
+function open(tr){
+  const w = tr.querySelector('.why');
+  if (!w.hidden) return;
+  w.hidden = false;
+  tr.classList.add('open');
+  shown++;
+  if (shown >= LINES.length) punch();
+}
+
+function punch(){
+  document.getElementById('punch').innerHTML =
+      'この見積書には、<span class="c">' + LINES.length + ' 個</span>の数字が入っています。'
+    + '<br>そのうち、あなたが決めたものは <b>0 個</b>です。'
+    + '<br>まだ何も聞いていないので。';
+}
+
+document.getElementById('all').onclick = function(){
+  document.querySelectorAll('tr.q').forEach(open);
+};
+document.getElementById('again').onclick = fresh;
+
+fresh();
+</script>
+</body>
+</html>

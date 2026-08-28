@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>006-C 値切れる</title>
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<style>
+/* =========================================================
+   006-C 値切れる
+
+   一言：「サイトで値切れるんですよ。値切ると自分の仕事が増える」
+
+   社長がいちばん慣れている行為を、そのまま置く。
+   安くするほど「決めるのはあなた」の範囲が増えていって、
+   最後まで値切ると自分で全部やることになる。
+   すごさではなく、経営判断が体で分かること。
+   ========================================================= */
+:root{
+  --bg:#f6f5f1; --panel:#fff; --ink:#14161a; --sub:#606a78; --faint:#9aa2ae;
+  --line:#e2ded6; --amber:#b45309; --seal:#8b2020; --ok:#2f7d4f;
+  --ui:-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.8}
+
+.top{padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel)}
+.top .name{font-size:11px;letter-spacing:.2em;color:var(--sub)}
+
+.wrap{max-width:620px;margin:0 auto;padding:34px 22px 90px}
+h1{font-size:23px;font-weight:600;letter-spacing:.02em;margin-bottom:6px}
+.sub{font-size:13.5px;color:var(--sub);margin-bottom:26px}
+
+/* ---------- 金額 ---------- */
+.price{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:22px 24px 18px;
+}
+.amount{
+  font-family:var(--mono);font-size:40px;font-weight:600;letter-spacing:-.01em;
+  line-height:1.2;display:flex;align-items:baseline;gap:6px;
+}
+.amount .yen{font-size:17px;font-weight:400;color:var(--sub)}
+.term{font-size:12.5px;color:var(--faint);margin-top:2px}
+
+/* つまみ。触れることが分かる見た目にする */
+.slider{margin-top:20px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:4px;
+  background:linear-gradient(90deg,var(--amber) var(--p,50%),#e6e2da var(--p,50%));
+  border-radius:99px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:var(--panel);border:2px solid var(--amber);cursor:grab;
+  box-shadow:0 2px 6px rgba(0,0,0,.14);
+}
+input[type=range]::-moz-range-thumb{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--panel);border:2px solid var(--amber);cursor:grab;
+}
+.ends{display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-top:8px}
+
+/* ---------- 誰がやるか ---------- */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px 16px}
+.col h2{font-size:10.5px;font-weight:600;letter-spacing:.14em;margin-bottom:10px}
+.col.us h2{color:var(--amber)}
+.col.you h2{color:var(--sub)}
+.col ul{list-style:none}
+.col li{
+  font-size:13px;padding:5px 0;border-bottom:1px solid #f2efe9;color:var(--sub);
+  animation:in .22s ease both;
+}
+.col li:last-child{border-bottom:0}
+.col.us li{color:var(--ink)}
+.col ul:empty::after{content:"なし";font-size:12.5px;color:#c3c8d0}
+@keyframes in{from{opacity:0;transform:translateY(-4px)}}
+
+/* ---------- 落ち ---------- */
+.verdict{
+  margin-top:18px;border:1px solid var(--line);background:var(--panel);
+  border-radius:10px;padding:16px 18px;font-size:14.5px;line-height:1.85;
+}
+.verdict b{color:var(--amber)}
+.verdict.zero{border-color:#e2c9c9;background:#fdf7f7}
+.verdict.zero b{color:var(--seal)}
+
+.foot{margin-top:26px;font-size:12.5px;color:var(--faint);line-height:1.9}
+</style>
+</head>
+<body>
+
+<div class="top"><span class="name">ALTER DESIGN CONSULTING</span></div>
+
+<div class="wrap">
+  <h1>お見積り</h1>
+  <p class="sub">業務システム 1 本ぶん。値切れます。つまみを動かしてください。</p>
+
+  <div class="price">
+    <div class="amount"><span id="amt">480</span><span class="yen">万円</span></div>
+    <div class="term" id="term">— 週間</div>
+
+    <div class="slider">
+      <input type="range" id="rng" min="0" max="5" step="1" value="5">
+      <div class="ends"><span>ぜんぶ自分でやる</span><span>ぜんぶ任せる</span></div>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="col us"><h2>うちがやる</h2><ul id="us"></ul></div>
+    <div class="col you"><h2>あなたがやる</h2><ul id="you"></ul></div>
+  </div>
+
+  <div class="verdict" id="verdict"></div>
+
+  <p class="foot">
+    値引きは、こちらの取り分が減ることではありません。<br>
+    あなたの仕事が増えることです。だから、どこまで値切るかは経営判断です。
+  </p>
+</div>
+
+<script>
+/* 上から順に、値切ると先に手放していくもの。
+   最後に残るのが「決める」——手放したら、そもそも頼む意味がなくなる。 */
+const TASKS = [
+  '運用して、直しつづける',
+  'テストして、直す',
+  '作る',
+  '画面とデータの形を決める',
+  '業務のルールを決める',
+  '何を作るかを決める'
+];
+
+const STEPS = [
+  { amt:  0, wk:'0',     v:'これは、うちに頼んでいません。<br><b>ご自分でどうぞ。</b>' },
+  { amt: 90, wk:'2',     v:'決めるところは、全部あなたです。<br>うちは<b>手を動かすだけ</b>になります。' },
+  { amt:190, wk:'4',     v:'形は一緒に決めます。<br>ただ<b>業務のルールは、あなたが決めます</b>。' },
+  { amt:290, wk:'7',     v:'作るところから任せていただきます。<br>決めるのは、まだ半分あなたです。' },
+  { amt:380, wk:'10',    v:'テストまで引き取ります。<br>あなたが決めるのは<b>何を作るか</b>だけ。' },
+  { amt:480, wk:'12',    v:'運用まで引き取ります。<br>あなたが決めるのは<b>何を作るか</b>だけ。' }
+];
+
+const rng = document.getElementById('rng');
+
+function draw(){
+  const n = +rng.value;
+  const s = STEPS[n];
+
+  rng.style.setProperty('--p', (n / 5 * 100) + '%');
+  document.getElementById('amt').textContent = s.amt;
+  document.getElementById('term').textContent = s.wk === '0' ? '—' : s.wk + ' 週間';
+
+  // 上から n 個が「うち」、残りが「あなた」
+  const us  = TASKS.slice(0, n);
+  const you = TASKS.slice(n);
+  document.getElementById('us').innerHTML  = us.map(li).join('');
+  document.getElementById('you').innerHTML = you.map(li).join('');
+
+  const v = document.getElementById('verdict');
+  v.innerHTML = s.v;
+  v.className = 'verdict' + (n === 0 ? ' zero' : '');
+}
+function li(t){ return '<li>' + t + '</li>'; }
+
+rng.addEventListener('input', draw);
+draw();
+</script>
+</body>
+</html>
