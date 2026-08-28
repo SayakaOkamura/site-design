@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>006-E サイトが設計図</title>
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<style>
+/* =========================================================
+   006-E サイトが設計図
+
+   一言：「あそこのサイト、設計図なんですよ」
+
+   中身ではなくフォーマットで勝負する案。
+   上流工程中心の会社なので、図面という体裁に意味がある。
+   しかも面積がそのまま主張になる —— 「決める」の部屋が一番広い。
+   ========================================================= */
+:root{
+  --ink:#0d2136;        /* 青焼きの地 */
+  --line:#7fb2d9;       /* 図面の線 */
+  --thin:#3f6f9c;
+  --paper:#e8f1f8;      /* 図面の文字 */
+  --amber:#f0a44a;      /* 強調（朱の代わり。青地では琥珀が映える） */
+  --mono:ui-monospace,SFMono-Regular,Consolas,"Yu Gothic",monospace;
+  --ui:-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+}
+body{
+  background:var(--ink);color:var(--paper);
+  font-family:var(--ui);line-height:1.7;
+  /* 方眼 */
+  background-image:
+    linear-gradient(rgba(127,178,217,.09) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(127,178,217,.09) 1px,transparent 1px),
+    linear-gradient(rgba(127,178,217,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(127,178,217,.045) 1px,transparent 1px);
+  background-size:80px 80px,80px 80px,16px 16px,16px 16px;
+  padding:26px 20px 40px;
+  min-height:100vh;
+}
+
+.sheet{max-width:900px;margin:0 auto;position:relative}
+
+/* 図面の外枠 */
+.frame{border:2px solid var(--line);padding:26px 26px 0;position:relative}
+
+.cap{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--thin);
+  position:absolute;top:-8px;left:18px;background:var(--ink);padding:0 8px;
+}
+
+h1{font-size:20px;font-weight:600;letter-spacing:.14em;margin-bottom:3px}
+.sub{font-family:var(--mono);font-size:11px;color:var(--thin);margin-bottom:22px}
+
+/* ---------- 部屋割り。面積が主張になる ---------- */
+.plan{
+  display:grid;
+  grid-template-columns:2.2fr 1fr 1fr;
+  grid-template-rows:auto auto;
+  gap:0;border:1px solid var(--line);margin-bottom:4px;
+}
+.rm{border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:14px 15px 16px;position:relative;min-height:96px}
+.rm:nth-child(3),.rm:nth-child(5){border-right:0}
+.rm .n{font-family:var(--mono);font-size:10px;color:var(--thin);letter-spacing:.1em}
+.rm h2{font-size:15.5px;font-weight:600;margin:3px 0 5px;letter-spacing:.04em}
+.rm p{font-size:12px;color:#b9d3e6;line-height:1.8}
+.rm .area{
+  position:absolute;right:10px;bottom:8px;
+  font-family:var(--mono);font-size:9.5px;color:var(--thin);
+}
+
+/* 一番広い部屋。ここが主張 */
+.rm.main{grid-row:span 2;background:rgba(240,164,74,.07);border-right:1px solid var(--amber)}
+.rm.main h2{color:var(--amber);font-size:19px}
+.rm.main .n{color:var(--amber)}
+.rm.main p{color:#dbe9f4;font-size:12.5px}
+
+/* ---------- 寸法線 ---------- */
+.dim{display:flex;align-items:center;gap:8px;margin:8px 0 20px;
+     font-family:var(--mono);font-size:10px;color:var(--thin)}
+.dim .bar{flex:1;height:1px;background:var(--thin);position:relative}
+.dim .bar::before,.dim .bar::after{
+  content:"";position:absolute;top:-3px;width:1px;height:7px;background:var(--thin);
+}
+.dim .bar::before{left:0} .dim .bar::after{right:0}
+
+/* ---------- 注記・凡例 ---------- */
+.two{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin-bottom:22px}
+h3{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--thin);
+   border-bottom:1px solid var(--thin);padding-bottom:5px;margin-bottom:9px}
+.notes{list-style:none;font-size:12.5px;color:#c5dbeb}
+.notes li{display:grid;grid-template-columns:24px 1fr;gap:4px;padding:3px 0}
+.notes .m{font-family:var(--mono);font-size:10px;color:var(--amber)}
+dl.spec{font-size:12px;display:grid;grid-template-columns:74px 1fr;row-gap:4px;color:#c5dbeb}
+dl.spec dt{font-family:var(--mono);font-size:10.5px;color:var(--thin)}
+
+/* ---------- 表題欄。図面のお約束。右下に置く ---------- */
+.title-block{
+  border-top:2px solid var(--line);display:grid;
+  grid-template-columns:1fr 1fr 1fr 1.3fr;
+  font-family:var(--mono);font-size:10.5px;
+}
+.title-block div{border-right:1px solid var(--thin);padding:9px 12px 11px}
+.title-block div:last-child{border-right:0}
+.title-block .k{display:block;font-size:9px;color:var(--thin);letter-spacing:.12em;margin-bottom:2px}
+.title-block b{font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:.04em}
+
+.after{
+  max-width:900px;margin:14px auto 0;font-family:var(--mono);
+  font-size:10.5px;color:var(--thin);display:flex;gap:14px;flex-wrap:wrap;
+}
+.after a{color:var(--line)}
+
+@media (max-width:760px){
+  .plan{grid-template-columns:1fr}
+  .rm.main{grid-row:auto}
+  .rm{border-right:0!important}
+  .two{grid-template-columns:1fr}
+  .title-block{grid-template-columns:1fr 1fr}
+  .title-block div{border-bottom:1px solid var(--thin)}
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="frame">
+    <span class="cap">A-01　業務システム構築　工程配分図</span>
+
+    <h1>株式会社アルターデザインコンサルティング</h1>
+    <p class="sub">SCALE 1:1　／　この図は、うちが何にどれだけ面積を使うかを示す</p>
+
+    <!-- 面積がそのまま主張。「決める」が一番広い -->
+    <div class="plan">
+      <div class="rm main">
+        <span class="n">R-01</span>
+        <h2>決める</h2>
+        <p>業務の単位、画面、テーブル、業務ルール。<br>
+           誰が・いくらから・いつまで。<br><br>
+           ここが決まっていないまま先へ進むと、
+           全部あとで壊れます。だから、ここに一番広く取ってあります。</p>
+        <span class="area">57%</span>
+      </div>
+
+      <div class="rm">
+        <span class="n">R-02</span>
+        <h2>形にする</h2>
+        <p>決めたことを、その場で目に見える形に。</p>
+        <span class="area">18%</span>
+      </div>
+
+      <div class="rm">
+        <span class="n">R-03</span>
+        <h2>作る</h2>
+        <p>AI とローコード。ここは道具の仕事。</p>
+        <span class="area">10%</span>
+      </div>
+
+      <div class="rm">
+        <span class="n">R-04</span>
+        <h2>直す</h2>
+        <p>使う人と一緒に回す。</p>
+        <span class="area">12%</span>
+      </div>
+
+      <div class="rm">
+        <span class="n">R-05</span>
+        <h2>待つ</h2>
+        <p>決裁待ち。ここは減らせます。</p>
+        <span class="area">3%</span>
+      </div>
+    </div>
+
+    <div class="dim">
+      <span>全工程</span><span class="bar"></span><span>100%</span>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>注 記</h3>
+        <ul class="notes">
+          <li><span class="m">※1</span><span>面積は工数比ではなく、<b>神経を使う量</b>の比です。</span></li>
+          <li><span class="m">※2</span><span>R-03「作る」が 10% なのは、道具が良くなったからです。誇っていません。</span></li>
+          <li><span class="m">※3</span><span>R-01 を削って安くすることはできます。そのぶん R-04 が膨らみます。</span></li>
+          <li><span class="m">※4</span><span>この図に「営業」の部屋はありません。</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>仕 様</h3>
+        <dl class="spec">
+          <dt>設立</dt><dd>2025年6月</dd>
+          <dt>資本金</dt><dd>6,000万円</dd>
+          <dt>代表</dt><dd>松岡 真功</dd>
+          <dt>所在地</dt><dd>東京都港区西新橋3-23-5</dd>
+          <dt>理念</dt><dd>経営の力で「遊ぶように働く世界」をデザインする</dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- 表題欄 -->
+    <div class="title-block">
+      <div><span class="k">図面名</span><b>工程配分図</b></div>
+      <div><span class="k">図番</span><b>A-01</b></div>
+      <div><span class="k">縮尺</span><b>1:1</b></div>
+      <div><span class="k">設計</span><b>ALTER DESIGN CONSULTING</b></div>
+    </div>
+  </div>
+
+  <p class="after">
+    <span>A-01 工程配分図</span>
+    <span>A-02 決めていないことの一覧（未発行）</span>
+    <span>A-03 見積内訳（未発行）</span>
+    <span><a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">問い合わせ</a></span>
+  </p>
+</div>
+
+</body>
+</html>

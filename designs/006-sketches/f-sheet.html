@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>006-F サイトが表計算</title>
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<style>
+/* =========================================================
+   006-F サイトが表計算
+
+   一言：「あそこのサイト、全部スプレッドシートなんですよ」
+
+   フォーマットで勝負する案その二。
+   皮肉が効く：Excel 業務をシステム化する会社のサイトが、Excel でできている。
+   セルを押すと数式バーに中身が出る。理念は数式で書いてある。
+   ========================================================= */
+:root{
+  --line:#d4d7dc; --head:#f1f3f5; --sel:#1a73e8; --ink:#1f2328; --sub:#5f6773;
+  --amber:#b45309; --ok:#188038;
+  --ui:-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+body{font-family:var(--ui);color:var(--ink);background:#fff;font-size:13px;
+     height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ---------- 上の帯 ---------- */
+.bar{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--line)}
+.bar .fn{font-size:13.5px;font-weight:600}
+.bar .sv{font-size:11px;color:var(--sub)}
+.bar .grow{flex:1}
+.bar .who{font-size:11px;color:var(--sub)}
+
+/* 数式バー。ここが仕掛け */
+.fx{display:flex;align-items:stretch;border-bottom:1px solid var(--line);background:#fff}
+.fx .ref{
+  width:64px;border-right:1px solid var(--line);display:flex;align-items:center;
+  justify-content:center;font-family:var(--mono);font-size:11.5px;color:var(--sub);
+}
+.fx .ic{width:30px;display:flex;align-items:center;justify-content:center;
+        border-right:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--sub)}
+.fx .val{
+  flex:1;padding:7px 10px;font-family:var(--mono);font-size:12.5px;
+  white-space:nowrap;overflow-x:auto;color:var(--ink);
+}
+.fx .val.formula{color:var(--ok)}
+
+/* ---------- 表 ---------- */
+.grid-wrap{flex:1;overflow:auto}
+table{border-collapse:collapse;table-layout:fixed}
+th,td{border:1px solid var(--line);padding:0;height:26px;vertical-align:middle}
+th{
+  background:var(--head);font-weight:400;font-size:11px;color:var(--sub);
+  text-align:center;position:sticky;top:0;z-index:2;
+}
+th.rw{width:38px;left:0;z-index:3;position:sticky}
+td.rw{
+  background:var(--head);font-size:11px;color:var(--sub);text-align:center;
+  position:sticky;left:0;z-index:1;width:38px;
+}
+td .c{
+  display:block;padding:3px 7px;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;cursor:cell;height:26px;line-height:20px;
+}
+td.on{outline:2px solid var(--sel);outline-offset:-2px;position:relative;z-index:1}
+.b   .c{font-weight:600}
+.h   .c{font-weight:600;font-size:14.5px}
+.dim .c{color:var(--sub)}
+.num .c{text-align:right;font-family:var(--mono)}
+.amb .c{color:var(--amber);font-weight:600}
+.ok  .c{color:var(--ok)}
+.link .c{color:var(--sel);text-decoration:underline}
+
+/* 列幅 */
+col.a{width:132px} col.b{width:230px} col.c{width:150px}
+col.d{width:150px} col.e{width:120px} col.f{width:120px}
+
+/* ---------- シートタブ ---------- */
+.tabs{display:flex;align-items:center;gap:2px;border-top:1px solid var(--line);
+      padding:4px 8px;background:#f8f9fa;overflow-x:auto}
+.tabs button{
+  font:inherit;font-size:12px;padding:5px 14px;border:0;background:none;
+  color:var(--sub);cursor:pointer;border-radius:5px 5px 0 0;white-space:nowrap;
+}
+.tabs button.on{background:#fff;color:var(--ink);font-weight:600;
+                box-shadow:0 -1px 0 var(--line),1px 0 0 var(--line),-1px 0 0 var(--line)}
+.tabs button:hover{background:#eceff1}
+.tabs .grow{flex:1}
+.tabs .hint{font-size:10.5px;color:#9aa2ae;padding-right:6px;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span class="fn">株式会社アルターデザインコンサルティング.xlsx</span>
+  <span class="sv">保存済み</span>
+  <span class="grow"></span>
+  <span class="who">閲覧のみ</span>
+</div>
+
+<div class="fx">
+  <span class="ref" id="ref">A1</span>
+  <span class="ic">fx</span>
+  <span class="val" id="val"></span>
+</div>
+
+<div class="grid-wrap">
+  <table id="grid"></table>
+</div>
+
+<div class="tabs" id="tabs">
+  <span class="grow"></span>
+  <span class="hint">セルを押すと、上に中身が出ます</span>
+</div>
+
+<script>
+/* セル = [表示, クラス, 数式（あれば）]
+   数式を持つセルは、押したときだけ正体が出る。 */
+const F = function(t, cls, formula){ return { t:t, cls:cls || '', f:formula || null }; };
+
+const SHEETS = {
+  '会社概要': {
+    cols:['a','b','c','d'],
+    rows:[
+      [F('株式会社アルターデザインコンサルティング','h'), F(''), F(''), F('')],
+      [F('')],
+      [F('設立','dim'),   F('2025年6月')],
+      [F('資本金','dim'), F('60,000,000','num'), F('円','dim')],
+      [F('代表取締役','dim'), F('松岡 真功','b')],
+      [F('所在地','dim'), F('東京都港区西新橋3-23-5 ANYZ304')],
+      [F('')],
+      [F('事業内容','dim'), F('AI技術を活用した組織最適化に関するコンサルティング事業')],
+      [F(''),             F('AIとローコードを組み合わせた次世代型のシステム開発事業')],
+      [F('')],
+      [F('株主','dim'),   F('株式会社BlueMeme')],
+      [F(''),             F('株式会社ハイ・アベイラビリティ・システムズ')],
+      [F(''),             F('株式会社サーバーワークス・キャピタル')],
+      [F(''),             F('リックソフト株式会社')],
+      [F('')],
+      [F('社歴','dim'),   F('1','num','=DATEDIF(DATE(2025,6,1),TODAY(),"Y")'), F('年','dim')],
+      [F('')],
+      [F('問い合わせ','dim'), F('alt-dsgn.co.jp','link','=HYPERLINK("https://alt-dsgn.co.jp/","フォーム")')]
+    ]
+  },
+
+  '理念': {
+    cols:['a','b','c','d'],
+    rows:[
+      [F('経営の力で「遊ぶように働く世界」をデザインする','h')],
+      [F('')],
+      [F('','dim'), F('','dim'), F('現状','dim'), F('目標','dim')],
+      [F('決めるのにかかる時間','dim'), F(''), F('数か月','num'), F('その場','num','=IF(決まっている, "その場", "数か月")')],
+      [F('決めていないところ','dim'),   F(''), F('作った後に判明','num'), F('作る前に判明','num')],
+      [F('働く時間','dim'),             F(''), F('全部','num'), F('平日 9-18','num')],
+      [F('')],
+      [F('遊ぶように働く','b'), F('','', ), F('','')],
+      [F('','dim'), F('= 面白がれる状態で働く','ok','=決めることが面白い + 待たされない + 手が空く')],
+      [F('','dim'), F('≠ 遊んでいる','dim')],
+      [F('')],
+      [F('この表について','dim'), F('現状の欄は、うちが案件で見てきた範囲の話です。','dim')],
+      [F('','dim'),               F('統計ではありません。','dim')]
+    ]
+  },
+
+  'サービス': {
+    cols:['a','b','c','d'],
+    rows:[
+      [F('サービス','dim'), F('内容','dim'), F('うちがやる','dim'), F('あなたが決める','dim')],
+      [F('次世代型業務システム開発','b'), F('ノーコード／ローコードを土台に業務を再設計'), F('作る・直す','ok'), F('業務のルール','amb')],
+      [F('AIによる意思決定支援','b'),     F('データ資産を戦略と予測に変換'),             F('出す','ok'),       F('何を見たいか','amb')],
+      [F('自律共創型の組織デザイン','b'), F('個の自律とチームの協働を両立する構造'),     F('設計する','ok'),   F('誰に任せるか','amb')],
+      [F('地域のデジタル格差支援','b'),   F('ノーコードとクラウドAI、DX人材の育成'),     F('教える','ok'),     F('誰を育てるか','amb')],
+      [F('')],
+      [F('','dim'), F('右の列は、値引きしても、うちには移りません。','dim')]
+    ]
+  },
+
+  '決めていないこと': {
+    cols:['a','b','c','d'],
+    rows:[
+      [F('このシートは、案件が始まると埋まります。','h')],
+      [F('')],
+      [F('欄','dim'), F('決まっているか','dim'), F('決める人','dim'), F('期限','dim')],
+      [F('承認者が不在のときの扱い'), F('未','amb'), F(''), F('')],
+      [F('決裁を分ける金額の基準'),   F('未','amb'), F(''), F('')],
+      [F('提出後の取り下げ'),         F('未','amb'), F(''), F('')],
+      [F('記録の保存期間'),           F('未','amb'), F(''), F('')],
+      [F('閲覧できる人の範囲'),       F('未','amb'), F(''), F('')],
+      [F('')],
+      [F('未決','dim'), F('5','num','=COUNTIF(B4:B8,"未")'), F('件','dim')],
+      [F('')],
+      [F('','dim'), F('作る前にこれが埋まっていれば、作り直しは起きません。','dim')]
+    ]
+  }
+};
+
+const COLNAME = ['A','B','C','D','E','F'];
+let cur = '会社概要';
+
+function draw(){
+  const sh = SHEETS[cur];
+  const cols = sh.cols;
+  let h = '<colgroup><col style="width:38px">'
+        + cols.map(function(c){ return '<col class="' + c + '">'; }).join('')
+        + '</colgroup>';
+
+  h += '<thead><tr><th class="rw"></th>'
+     + cols.map(function(c, i){ return '<th>' + COLNAME[i] + '</th>'; }).join('')
+     + '</tr></thead><tbody>';
+
+  const N = Math.max(sh.rows.length, 22);
+  for (let r = 0; r < N; r++){
+    h += '<tr><td class="rw">' + (r + 1) + '</td>';
+    for (let c = 0; c < cols.length; c++){
+      const cell = (sh.rows[r] || [])[c] || F('');
+      h += '<td class="' + cell.cls + '" data-r="' + r + '" data-c="' + c + '">'
+         + '<span class="c">' + esc(cell.t) + '</span></td>';
+    }
+    h += '</tr>';
+  }
+  document.getElementById('grid').innerHTML = h + '</tbody>';
+
+  document.querySelectorAll('#grid td[data-r]').forEach(function(td){
+    td.onclick = function(){ pick(td); };
+  });
+  pickAt(0, 0);
+}
+
+function pick(td){
+  document.querySelectorAll('#grid td.on').forEach(function(x){ x.classList.remove('on'); });
+  td.classList.add('on');
+  const r = +td.dataset.r, c = +td.dataset.c;
+  const cell = (SHEETS[cur].rows[r] || [])[c] || F('');
+  document.getElementById('ref').textContent = COLNAME[c] + (r + 1);
+  const v = document.getElementById('val');
+  v.textContent = cell.f || cell.t;
+  v.className = 'val' + (cell.f ? ' formula' : '');
+}
+function pickAt(r, c){
+  const td = document.querySelector('#grid td[data-r="' + r + '"][data-c="' + c + '"]');
+  if (td) pick(td);
+}
+
+function esc(s){
+  return String(s).replace(/[<>&]/g, function(c){
+    return { '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c];
+  });
+}
+
+/* シートタブ */
+(function tabs(){
+  const box = document.getElementById('tabs');
+  Object.keys(SHEETS).forEach(function(k){
+    const b = document.createElement('button');
+    b.textContent = k;
+    b.onclick = function(){
+      cur = k;
+      box.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x === b); });
+      draw();
+    };
+    box.insertBefore(b, box.querySelector('.grow'));
+  });
+  box.querySelector('button').classList.add('on');
+})();
+
+draw();
+</script>
+</body>
+</html>
