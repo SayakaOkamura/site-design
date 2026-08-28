@@ -24,6 +24,9 @@
   --mono:ui-monospace,SFMono-Regular,Consolas,"Yu Gothic",monospace;
   --ui:-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
 }
+/* 図面は 1 枚。スクロールする図面は無いので、紙の寸法を固定して、
+   画面に収まるよう縮尺のほうを合わせる。実物の図面を見るときと同じ。 */
+html,body{height:100%;overflow:hidden}
 body{
   background:var(--ink);color:var(--paper);
   font-family:var(--ui);line-height:1.7;
@@ -34,14 +37,19 @@ body{
     linear-gradient(rgba(127,178,217,.045) 1px,transparent 1px),
     linear-gradient(90deg,rgba(127,178,217,.045) 1px,transparent 1px);
   background-size:80px 80px,80px 80px,16px 16px,16px 16px;
-  padding:26px 20px 40px;
-  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
 }
 
-.sheet{max-width:900px;margin:0 auto;position:relative}
+/* 紙の寸法。A3 横に近い比率で固定する */
+.sheet{
+  width:1240px;height:812px;position:relative;flex:0 0 auto;
+  transform-origin:center center;
+  display:flex;flex-direction:column;
+}
+.frame{flex:1;display:flex;flex-direction:column}
 
 /* 図面の外枠 */
-.frame{border:2px solid var(--line);padding:26px 26px 0;position:relative}
+.frame{border:2px solid var(--line);padding:24px 26px 0;position:relative}
 
 .cap{
   font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--thin);
@@ -55,8 +63,9 @@ h1{font-size:20px;font-weight:600;letter-spacing:.14em;margin-bottom:3px}
 .plan{
   display:grid;
   grid-template-columns:2.2fr 1fr 1fr;
-  grid-template-rows:auto auto;
+  grid-template-rows:1fr 1fr;
   gap:0;border:1px solid var(--line);margin-bottom:4px;
+  flex:1;                /* 面積が主張なので、ここが一番大きくなる */
 }
 .rm{border-right:1px solid var(--line);border-bottom:1px solid var(--line);
     padding:14px 15px 16px;position:relative;min-height:96px}
@@ -85,7 +94,7 @@ h1{font-size:20px;font-weight:600;letter-spacing:.14em;margin-bottom:3px}
 .dim .bar::before{left:0} .dim .bar::after{right:0}
 
 /* ---------- 注記・凡例 ---------- */
-.two{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin-bottom:22px}
+.two{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin:0 0 20px;flex:0 0 auto}
 h3{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--thin);
    border-bottom:1px solid var(--thin);padding-bottom:5px;margin-bottom:9px}
 .notes{list-style:none;font-size:12.5px;color:#c5dbeb}
@@ -105,19 +114,17 @@ dl.spec dt{font-family:var(--mono);font-size:10.5px;color:var(--thin)}
 .title-block .k{display:block;font-size:9px;color:var(--thin);letter-spacing:.12em;margin-bottom:2px}
 .title-block b{font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:.04em}
 
+/* 図面の外。他の図の一覧。紙の外に置く（実物でいう図面袋の見出し） */
 .after{
-  max-width:900px;margin:14px auto 0;font-family:var(--mono);
-  font-size:10.5px;color:var(--thin);display:flex;gap:14px;flex-wrap:wrap;
+  margin-top:12px;font-family:var(--mono);flex:0 0 auto;
+  font-size:10.5px;color:var(--thin);display:flex;gap:16px;
 }
 .after a{color:var(--line)}
 
-@media (max-width:760px){
-  .plan{grid-template-columns:1fr}
-  .rm.main{grid-row:auto}
-  .rm{border-right:0!important}
-  .two{grid-template-columns:1fr}
-  .title-block{grid-template-columns:1fr 1fr}
-  .title-block div{border-bottom:1px solid var(--thin)}
+/* 縮尺の表示。実物の図面と同じで、いま何分の一で見ているか出す */
+.zoom{
+  position:fixed;right:16px;bottom:14px;font-family:var(--mono);
+  font-size:10.5px;color:var(--thin);letter-spacing:.1em;
 }
 </style>
 </head>
@@ -128,7 +135,7 @@ dl.spec dt{font-family:var(--mono);font-size:10.5px;color:var(--thin)}
     <span class="cap">A-01　業務システム構築　工程配分図</span>
 
     <h1>株式会社アルターデザインコンサルティング</h1>
-    <p class="sub">SCALE 1:1　／　この図は、うちが何にどれだけ面積を使うかを示す</p>
+    <p class="sub">この図は、うちが何にどれだけ面積を使うかを示す</p>
 
     <!-- 面積がそのまま主張。「決める」が一番広い -->
     <div class="plan">
@@ -214,5 +221,27 @@ dl.spec dt{font-family:var(--mono);font-size:10.5px;color:var(--thin)}
   </p>
 </div>
 
+<div class="zoom" id="zoom">SCALE —</div>
+
+<script>
+/* 図面は 1 枚。スクロールさせずに、画面のほうに縮尺を合わせる。
+   実物の図面を「A3 を A4 に縮小して見る」のと同じ扱い。 */
+const SHEET = { w:1240, h:812 };
+
+function fit(){
+  const pad = 34;
+  const s = Math.min((innerWidth - pad * 2) / SHEET.w,
+                     (innerHeight - pad * 2) / SHEET.h);
+  document.querySelector('.sheet').style.transform = 'scale(' + s + ')';
+
+  // 縮尺は、実物の図面と同じように分数で出す
+  const d = (1 / s);
+  document.getElementById('zoom').textContent =
+    'SCALE 1:' + (d < 1.02 ? '1' : d.toFixed(2));
+}
+
+addEventListener('resize', fit);
+fit();
+</script>
 </body>
 </html>
