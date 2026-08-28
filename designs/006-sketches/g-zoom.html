@@ -411,24 +411,33 @@ function move(d){
      ・回し続けると、静止しないので永久に解けず、途中で止まる
      ・ゆっくり回すと、閾値に届く前に溜めが捨てられて、いつまでも進まない
    静止を待つのをやめて、時間で切る。 */
-const STEP = 70;          // これだけ動かしたら、一段
-const LOCK = 620;         // 一段ぶんを消化する時間（慣性はここで飲む）
-const GAP  = 400;         // これ以上あいたら、別の操作として溜めを捨てる
-let acc = 0, lockUntil = 0, lastAt = 0;
+const STEP  = 70;    // これだけ動かしたら、一段
+const LOCK  = 560;   // 一段ぶんを消化する時間。慣性はここで飲む
+const GAP   = 400;   // これ以上あいたら、別の操作として溜めを捨てる
+const FLOOR = 5;     // これより小さい動き＝ひと振りが終わりかけている
+const WAIT  = 1100;  // 保険。ずっと動きが続いても、いつかは受け付ける
+
+let acc = 0, lastAt = 0, lockUntil = 0, armed = true;
 
 addEventListener('wheel', function(e){
   const now = performance.now();
   const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
 
-  if (now - lastAt > GAP) acc = 0;
+  if (now - lastAt > GAP){ acc = 0; armed = true; }   // 間があいた＝新しい操作
   lastAt = now;
 
-  if (now < lockUntil) return;      // 直前の一段を消化中。慣性はここで消える
+  // 次の一段は「ひと振りが終わってから」受け付ける。
+  // これが無いと、回し続けているあいだ勝手に進み続ける。
+  if (Math.abs(d) < FLOOR) armed = true;              // 動きが小さくなった
+  if (now > lockUntil + WAIT) armed = true;           // 保険。止まったままにしない
+
+  if (now < lockUntil || !armed) return;
 
   acc += d;
-  if (Math.abs(acc) < STEP) return; // 溜めは残す。ゆっくりでも届く
+  if (Math.abs(acc) < STEP) return;                   // 溜めは残す。ゆっくりでも届く
 
   lockUntil = now + LOCK;
+  armed = false;
   const dir = acc > 0 ? 1 : -1;
   acc = 0;
   move(dir);
