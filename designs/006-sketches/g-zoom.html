@@ -53,15 +53,20 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 /* 段の中で順に出す。
    スワイプの回数を減らすと1段の情報が増えるが、順に出れば目は散らない。
    出る順は --i で指定する。 */
-/* transition だと、段を行き来したときに途中で張り付いて出てこなくなった。
-   入ったら必ず再生させたいので animation にする（both で終端を保つ）。 */
-.node .r{opacity:0}
+/* 大事なところ：中身は既定で見えている。動きは飾りで、出す条件にしない。
+   opacity:0 を素の状態にすると、アニメーションが走らない環境
+   （動きを減らす設定、タブが裏にあるとき等）で中身が消える。
+   backwards なので、遅延の間だけ from が当たり、終われば素の状態に戻る。 */
 .node.on .r{
-  animation:revealIn .42s cubic-bezier(.2,.7,.3,1) calc(var(--i) * .13s + .25s) both;
+  animation:revealIn .42s cubic-bezier(.2,.7,.3,1) calc(var(--i) * .13s + .25s) backwards;
 }
 @keyframes revealIn{
   from{opacity:0;transform:translateY(10px)}
   to  {opacity:1;transform:none}
+}
+@media (prefers-reduced-motion: reduce){
+  .node.on .r{animation:none}
+  #canvas,.rail i,.rail b{transition:none}
 }
 
 /* 二 例と、その中身 */
@@ -72,15 +77,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
        color:var(--sub)}
 .n0 h1 q{quotes:"「" "」"}
 .n0 .by{font-size:14px;color:var(--faint);margin-bottom:18px;letter-spacing:.06em}
-.n0 .lead{font-size:19px;color:var(--ink);line-height:1.9;margin-bottom:12px}
+.n0 .lead{font-size:19px;color:var(--ink);line-height:1.9}
 .n0 .lead b{color:var(--amber)}
-.n0 ul{list-style:none}
-.n0 li{
-  font-size:17px;padding:9px 0 9px 20px;border-bottom:1px solid var(--line);
-  position:relative;color:var(--ink);
-}
-.n0 li::before{content:"□";position:absolute;left:0;color:var(--amber);font-size:14px}
-.n0 .note{font-size:13px;color:var(--faint);margin-top:12px;line-height:1.85}
 
 /* 三 形と、埋まる欄 */
 .n2{left:1900px;top:420px;width:430px}
@@ -96,21 +94,15 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 dl{display:grid;grid-template-columns:104px 1fr;row-gap:9px;padding:13px 15px 15px;font-size:13.5px}
 .n2 dt{color:var(--sub)}
 .n2 dd .v{border-bottom:1px solid var(--line);padding-bottom:1px}
-/* 空欄が、その場で埋まる。段を分けて拡大するより、画面の中で埋まるほうが正しい */
-.n2 dd.gap{position:relative}
-.n2 dd.gap .blank,.n2 dd.gap .filled{transition:opacity .45s ease}
+/* 決まっていないところは、空欄のまま残す。勝手に埋めない。
+   ここで埋めると「AI が決めた」に戻る。見つけるところまでがうちの仕事。 */
+.n2 dt.gk{color:var(--amber)}
 .n2 dd.gap .blank{
   border-bottom:1px dashed var(--amber);color:var(--amber);
   padding-bottom:1px;letter-spacing:.08em;
 }
-.n2 dd.gap .filled{
-  position:absolute;left:0;top:0;opacity:0;white-space:nowrap;
-  border-bottom:1px solid #cfe0cb;padding-bottom:1px;font-weight:600;
-}
-.n2 dd.gap .filled em{font-style:normal;font-weight:400;font-size:11px;color:var(--faint);margin-left:8px}
-.n2.done dd.gap .blank{opacity:0}
-.n2.done dd.gap .filled{opacity:1;transition-delay:.1s}
 .n2 .cap2{font-size:13px;color:var(--sub);margin-top:14px;line-height:1.85}
+.n2 .cap2 b{color:var(--amber)}
 
 /* 六 会社概要。責任の所在。書類の「仕様」欄と同じで、小さい字で細かく */
 .nc{left:2580px;top:556px;width:300px}
@@ -191,43 +183,42 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
          決まっていないところは、作ったあとに必ず出てきます。</p>
     </div>
 
-    <!-- 二 例と、その中身。段を分けると引用から3項目にいきなり飛ぶので、
-         同じ段に置いて、順に出す。橋渡しの一行は r4。 -->
+    <!-- 二 例。ここでは「決まっていない3つ」を先に言わない。
+         それを言うと、どうやって分かったのかが抜ける。
+         005 と同じ順（形にする → 足りないところが浮かぶ）に揃える。 -->
     <div class="node n0" data-l="1">
       <div class="k"    style="--i:0">ある会社で聞いた話</div>
       <h1 class="r"     style="--i:1"><q>月末に、経理が止まる。</q></h1>
       <div class="by r" style="--i:2">— 社長</div>
-      <p class="lead r" style="--i:3">人手が足りないからではありません。<br>
-         止まっているのは、<b>この3つが決まっていない</b>からです。</p>
-      <ul>
-        <li class="r" style="--i:4">誰が承認するか</li>
-        <li class="r" style="--i:5">いくらから上に上げるか</li>
-        <li class="r" style="--i:6">承認者が不在のとき、どうするか</li>
-      </ul>
-      <p class="note r" style="--i:7">3つとも、会議で 30 分あれば決まります。
-         決まっていないまま作ると、作り直しになります。</p>
+      <p class="lead r" style="--i:3">人手が足りないから、とは限りません。<br>
+         まず、言われたとおりに<b>形にしてみます</b>。</p>
     </div>
 
-    <!-- 三 形と、埋まる欄。ここも分けない。
-         欄は画面の中にあるので、画面の中で埋まるほうが正しい。 -->
+    <!-- 三 形にすると、足りないところが浮かぶ。
+         決まっているものが先に埋まり、決まっていないものが空欄で残る。
+         勝手に埋めない。見つけるところまでがうちの仕事で、決めるのは会議。 -->
     <div class="node n2" data-l="2">
-      <div class="k" style="--i:0">その3つを決めると、こうなります</div>
+      <div class="k" style="--i:0">形にすると</div>
       <div class="win r" style="--i:1">
         <div class="wb">経費申請</div>
         <dl>
-          <dt>申請者</dt><dd><span class="v">あなた</span></dd>
-          <dt>申請日</dt><dd><span class="v">8/28</span></dd>
-          <dt>金額</dt><dd><span class="v">48,000 円</span></dd>
-          <dt>承認者</dt><dd><span class="v">所属長</span></dd>
-          <dt>不在のとき</dt>
-          <dd class="gap">
-            <span class="blank">＿＿＿＿＿＿</span>
-            <span class="filled">代理者に自動で回す<em>— 総務</em></span>
-          </dd>
+          <dt>申請者</dt><dd class="r" style="--i:2"><span class="v">あなた</span></dd>
+          <dt>申請日</dt><dd class="r" style="--i:2"><span class="v">8/28</span></dd>
+          <dt>金額</dt><dd class="r" style="--i:3"><span class="v">48,000 円</span></dd>
+          <dt>承認者</dt><dd class="r" style="--i:3"><span class="v">所属長</span></dd>
+          <dt class="gk r" style="--i:5">不在のとき</dt>
+          <dd class="gap r" style="--i:5"><span class="blank">＿＿＿＿＿＿</span></dd>
+          <dt class="gk r" style="--i:6">上に上げる額</dt>
+          <dd class="gap r" style="--i:6"><span class="blank">＿＿＿＿＿＿</span></dd>
+          <dt class="gk r" style="--i:7">出したあとの取り下げ</dt>
+          <dd class="gap r" style="--i:7"><span class="blank">＿＿＿＿＿＿</span></dd>
         </dl>
       </div>
-      <p class="cap2 r" style="--i:6">
-        経営の「月末に止まる」は、最後はこの一行になります。ここまで地続きです。
+      <p class="cap2 r" style="--i:9">
+        決まっているところは、すぐ埋まります。<br>
+        <b>決まっていないところが、空欄で残ります。</b>
+        この3つは会議で 30 分あれば決まりますが、
+        作ってからだと作り直しになります。
       </p>
     </div>
 
@@ -279,7 +270,7 @@ const VIEWS = [
   { nm:'会社概要', x:2560, y: 545, w: 340, h: 250 }
 ];
 
-let cur = 0, touched = false, fillT = null;
+let cur = 0, touched = false;
 
 function apply(i){
   cur = Math.max(0, Math.min(VIEWS.length - 1, i));
@@ -297,18 +288,13 @@ function apply(i){
   document.querySelectorAll('.node').forEach(function(n){
     const mine = +n.dataset.l === cur;
     n.classList.toggle('hide', !mine);
-    if (!mine){ n.classList.remove('on', 'done'); }
+    if (!mine){ n.classList.remove('on'); }
   });
   // .on は一度外してから、レイアウトを挟んで付け直す。
   // そうしないと、戻ってきたときにアニメーションが再生されない。
   const here = document.querySelector('.node[data-l="' + cur + '"]');
   if (here){ void here.offsetWidth; here.classList.add('on'); }
 
-  // 画面の段では、最後に空欄がその場で埋まる
-  clearTimeout(fillT);
-  if (cur === 2){
-    fillT = setTimeout(function(){ document.querySelector('.n2').classList.add('done'); }, 1500);
-  }
 
   // 進み具合。押すものではなく、どこまで来たかを示すだけ。
   const p = cur / (VIEWS.length - 1) * 100;
