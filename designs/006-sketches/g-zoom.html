@@ -254,13 +254,30 @@ function move(d){
   apply(cur + d);
 }
 
-// スクロールで右へ。ページ送りではなく、1枚の上を移動する。
-let lock = false;
+/* スクロールで右へ。ページ送りではなく、1枚の上を移動する。
+
+   トラックパッドは1回のスワイプで wheel を何十回も出すので、
+   イベントごとに進めると一気に何段も飛ぶ。指を離したあとも慣性で
+   発火し続けるため、勝手に進んでいるようにも見える。
+   だから「イベント1回＝1段」ではなく「ひと振り＝1段」で数える。 */
+const STEP = 90;          // これだけ動かしたら、一段
+let cooling = false;      // ひと振りぶんを消化中
+let acc = 0, quiet = null;
+
 addEventListener('wheel', function(e){
-  if (lock) return;
-  lock = true;
-  setTimeout(function(){ lock = false; }, 640);
-  move(e.deltaY > 0 || e.deltaX > 0 ? 1 : -1);
+  const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+
+  // 動きが途切れて初めて、次のひと振りを受け付ける（慣性を飲み込む）
+  clearTimeout(quiet);
+  quiet = setTimeout(function(){ cooling = false; acc = 0; }, 260);
+
+  if (cooling) return;
+
+  acc += d;
+  if (Math.abs(acc) < STEP) return;
+  cooling = true;
+  acc = 0;
+  move(d > 0 ? 1 : -1);
 }, { passive:true });
 
 addEventListener('keydown', function(e){
