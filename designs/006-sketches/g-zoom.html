@@ -45,10 +45,14 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .node.hide{opacity:.14;pointer-events:none}
 
 /* 一 経営 */
-.n0{left:90px;top:520px;width:620px}
-.n0 .k{font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--amber)}
-.n0 h1{font-size:62px;font-weight:600;line-height:1.35;letter-spacing:.02em;margin:8px 0 14px}
-.n0 p{font-size:21px;color:var(--sub);line-height:1.9}
+.n0{left:90px;top:500px;width:620px}
+.n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
+/* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
+.n0 h1{font-size:58px;font-weight:600;line-height:1.35;letter-spacing:.02em;margin:8px 0 6px;
+       color:var(--sub)}
+.n0 h1 q{quotes:"「" "」"}
+.n0 .by{font-size:15px;color:var(--faint);margin-bottom:16px;letter-spacing:.06em}
+.n0 p{font-size:21px;color:var(--ink);line-height:1.9}
 
 /* L1 決めること */
 .n1{left:880px;top:400px;width:460px}
@@ -122,10 +126,14 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 }
 .hint.off{opacity:0}
 
-/* 会社の名乗り。開いた瞬間から出しておく */
-.title{position:fixed;top:18px;left:22px;line-height:1.7}
-.title .nm{font-size:10.5px;letter-spacing:.2em;color:var(--sub);display:block}
-.title .tg{font-size:14px;color:var(--ink);display:block;margin-top:2px}
+/* 会社の名乗り。引用より弱いと、例のほうが正体に見える。
+   一番大きい字は引用（薄い灰）、名乗りは小さくても濃い黒で立てる。 */
+.title{position:fixed;top:20px;left:24px;line-height:1.65;z-index:5}
+.title .nm{font-size:11px;letter-spacing:.2em;color:var(--faint);display:block}
+.title .tg{
+  font-size:19px;font-weight:600;color:var(--ink);display:block;margin-top:3px;
+  border-left:3px solid var(--amber);padding-left:11px;
+}
 .depth{
   position:fixed;top:20px;right:22px;font-family:var(--mono);font-size:10.5px;color:var(--faint);
 }
@@ -148,10 +156,13 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
                S 1960 690, 2020 690" />
     </svg>
 
-    <!-- 経営が困っていること。開いた瞬間はここ -->
+    <!-- 開いた瞬間はここ。
+         ここを地の文で書くと、一番大きい字が「経理が止まる」になって、
+         経理の会社に見える。他人の言葉として引用する。 -->
     <div class="node n0" data-l="0">
-      <div class="k">経営</div>
-      <h1>月末に、<br>経理が止まる。</h1>
+      <div class="k">ある会社で聞いた話</div>
+      <h1><q>月末に、<br>経理が止まる。</q></h1>
+      <div class="by">— 社長</div>
       <p>人手が足りないから止まる、とは限りません。<br>
          決まっていないことが、月末にまとめて表に出ることがあります。</p>
     </div>
