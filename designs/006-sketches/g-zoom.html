@@ -80,6 +80,34 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   #canvas,.rail i,.rail b{transition:none}
 }
 
+/* ---------- 縦長の画面 ----------
+   段の枠は横長で組んであるので、幅 390 だと幅が効いて潰れる
+   （本文 13.5px が 9.2px、会社概要が 4px まで縮んでいた）。
+   縦は余っているので、段を縦長に組み直して、寄りをやめる。
+   JS 側も、狭いときは縮尺 1 のまま動かすだけにしている。 */
+@media (max-width:760px){
+  .nu{left:120px;width:330px}
+  .nu h1{font-size:34px;margin:8px 0 14px}
+  .nu p{font-size:15px}
+  .nu .k{font-size:11px}
+
+  .n0{left:900px;width:330px}
+  .n0 h1{font-size:27px}
+  .n0 .by{font-size:12px;margin-bottom:14px}
+  .n0 .lead{font-size:15px}
+
+  .n2{left:1900px;width:330px}
+  .n2 dl{grid-template-columns:88px 1fr;font-size:12.5px;row-gap:8px}
+  .n2 .cap2{font-size:12px}
+
+  .nc{left:2540px;width:330px}
+  .nc h1{font-size:23px}
+  .nc p{font-size:13px}
+  .nc .cols{grid-template-columns:1fr;gap:18px}
+  .nc dl{grid-template-columns:64px 1fr;font-size:11.5px}
+  .nc ul.svc li{font-size:12.5px}
+}
+
 /* 二 例と、その中身 */
 .n0{left:900px;top:330px;width:640px}
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
@@ -176,6 +204,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .nc dd{color:var(--sub)}
 .nc .ct{font-size:12px;color:var(--sub);margin-top:10px;line-height:1.7}
 .nc .ct a{color:var(--amber)}
+/* この形は1枚しか無いので、載らないものが必ず出る。無いことにせず、行き先を書く */
+.nc .more{font-size:11px;color:var(--faint);margin-top:4px;line-height:1.7}
 
 /* ---------- 操作 ----------
    ボタンは置かない。押すものが並んでいると「操作盤」に見えて、
@@ -349,7 +379,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
         <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／
           株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
           </dl>
-          <p class="ct"><a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから承っています。</p>
+          <p class="ct">ご相談は <a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから。</p>
+          <!-- この形は1枚に収まるぶんしか置けない。載らないものの行き先を書いておく。
+               採用・お知らせ・実績のページが実在するかは未確認なので、
+               個別のリンクは張らず、行き先だけ示す。実際の構成が決まったら差し替える。 -->
+          <p class="more">採用・お知らせ・実績など、このページに無いものも同じところに置きます。</p>
         </div>
       </div>
     </div>
@@ -376,22 +410,37 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    そのままだと縮尺が下がって、寄っている感じが途切れる。
    前の段の枠をわざと高めに取って、0.94 → 1.02 → 1.13 → 1.95 と単調に上げる。 */
 const VIEWS = [
-  { nm:'うち',     x:  70, y: 400, w: 780, h: 520 },
-  { nm:'ある会社', x: 870, y: 315, w: 700, h: 480 },
-  { nm:'形',       x:1870, y: 395, w: 490, h: 430 },
+  { nm:'うち',     sel:'.nu', x:  70, y: 400, w: 780, h: 520 },
+  { nm:'ある会社', sel:'.n0', x: 870, y: 315, w: 700, h: 480 },
+  { nm:'形',       sel:'.n2', x:1870, y: 395, w: 490, h: 430 },
   /* 見つけたあと。ここが終わり。決めるのは御社、作るのはうち＋会社概要 */
-  { nm:"うちがしたこと", x:2510, y: 370, w: 940, h: 420 }
+  { nm:"うちがしたこと", sel:".nc", x:2510, y: 370, w: 940, h: 420 }
 ];
 
 let cur = 0, touched = false;
 
 function apply(i){
   cur = Math.max(0, Math.min(VIEWS.length - 1, i));
-  const v = VIEWS[cur];
+  const v  = VIEWS[cur];
   const vw = innerWidth, vh = innerHeight - 64;   // 下の帯ぶん除く
-  const s  = Math.min(vw / v.w, vh / v.h) * 0.86;
-  const x  = vw / 2 - (v.x + v.w / 2) * s;
-  const y  = vh / 2 - (v.y + v.h / 2) * s;
+
+  /* 広い画面：枠に合わせて寄る。段ごとの縮尺の差が「地続き」の実体。
+     狭い画面：寄りをやめて、原寸のまま動かすだけ。
+     横長の枠を幅 390 に合わせると字が読めなくなるので、
+     縮小するくらいなら動かすだけにする。 */
+  let s, cx, cy;
+  if (vw < 760){
+    const el = document.querySelector(v.sel);
+    s  = Math.min(1, (vw - 28) / el.offsetWidth, vh / (el.offsetHeight + 24));
+    cx = el.offsetLeft + el.offsetWidth  / 2;
+    cy = el.offsetTop  + el.offsetHeight / 2;
+  } else {
+    s  = Math.min(vw / v.w, vh / v.h) * 0.86;
+    cx = v.x + v.w / 2;
+    cy = v.y + v.h / 2;
+  }
+  const x = vw / 2 - cx * s;
+  const y = vh / 2 - cy * s;
 
   document.getElementById('canvas').style.transform =
     'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
