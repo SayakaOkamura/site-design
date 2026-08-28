@@ -82,48 +82,49 @@ const ACTIONS = [
 /* 書かれなかったところ。
    t = 空欄の見出し（画面の上に出る問い）
    n = 書類に載る言葉（名詞句）
-   a = 「ここで決める」を選んだときに、画面に入る答え */
+   a = 打合せで決まった答え
+   by = それを持ち帰った部署。誰が決めたのかが分かると、AI が決めたことにならない */
 const GAPS = [
   { when:function(f){ return f.approve; },
-    t:'承認する人が不在のとき', n:'承認者が不在のときの扱い', a:'代理者に自動で回す' },
+    t:'承認する人が不在のとき', n:'承認者が不在のときの扱い', a:'代理者に自動で回す', by:'総務' },
   { when:function(f){ return f.apply && !f.approve; },
-    t:'これを承認する人', n:'承認の要否と、その相手', a:'所属長が承認する' },
+    t:'これを承認する人', n:'承認の要否と、その相手', a:'所属長が承認する', by:'総務' },
   { when:function(f){ return f.money && f.approve; },
-    t:'決裁が上に上がる金額', n:'決裁を分ける金額の基準', a:'5万円以上は部長決裁' },
+    t:'決裁が上に上がる金額', n:'決裁を分ける金額の基準', a:'5万円以上は部長決裁', by:'経理' },
   { when:function(f){ return f.money && !f.approve; },
-    t:'本人の判断で通せる上限', n:'本人の判断で通せる上限', a:'1万円まで' },
+    t:'本人の判断で通せる上限', n:'本人の判断で通せる上限', a:'1万円まで', by:'経理' },
   { when:function(f){ return f.money; },
-    t:'金額を間違えたとき', n:'誤った金額の取り消し', a:'承認前なら取り消せる' },
+    t:'金額を間違えたとき', n:'誤った金額の取り消し', a:'承認前なら取り消せる', by:'経理' },
   { when:function(f){ return f.stock || f.book; },
-    t:'二人が同時に押さえたとき', n:'同時に取り合ったときの扱い', a:'先に押さえたほうが通る' },
+    t:'二人が同時に押さえたとき', n:'同時に取り合ったときの扱い', a:'先に押さえたほうが通る', by:'情シス' },
   { when:function(f){ return f.assign; },
-    t:'担当が抜けたとき', n:'担当が抜けたときの引き継ぎ', a:'上長がいったん引き取る' },
+    t:'担当が抜けたとき', n:'担当が抜けたときの引き継ぎ', a:'上長がいったん引き取る', by:'人事' },
   { when:function(f){ return f.bill; },
-    t:'出したあとに金額が変わったとき', n:'発行後に金額が変わったときの扱い', a:'出し直して番号を繋ぐ' },
+    t:'出したあとに金額が変わったとき', n:'発行後に金額が変わったときの扱い', a:'出し直して番号を繋ぐ', by:'経理' },
   { when:function(f){ return f.time; },
-    t:'月をまたいだ分', n:'月をまたぐ分の帰属', a:'着手した月に入れる' },
+    t:'月をまたいだ分', n:'月をまたぐ分の帰属', a:'着手した月に入れる', by:'経理' },
   { when:function(f){ return f.report; },
-    t:'数え方が分かれたとき', n:'集計の基準と、正とする値', a:'締め日の値を正とする' },
+    t:'数え方が分かれたとき', n:'集計の基準と、正とする値', a:'締め日の値を正とする', by:'経営企画' },
   { when:function(f){ return f.crm; },
-    t:'取引先が変わったとき', n:'取引先が変わったときの名寄せ', a:'新しい会社に寄せる' },
+    t:'取引先が変わったとき', n:'取引先が変わったときの名寄せ', a:'新しい会社に寄せる', by:'営業' },
   { when:function(f){ return f.list; },
-    t:'他の部署から見えるか', n:'他部署からの閲覧範囲', a:'自分の部署の分だけ見える' },
+    t:'他の部署から見えるか', n:'他部署からの閲覧範囲', a:'自分の部署の分だけ見える', by:'情シス' },
   { when:function(f){ return f.apply; },
-    t:'出したあとの取り下げ', n:'提出後の取り下げ', a:'承認前なら取り下げられる' },
+    t:'出したあとの取り下げ', n:'提出後の取り下げ', a:'承認前なら取り下げられる', by:'総務' },
   { when:function(f){ return f.record; },
-    t:'同じものが二度登録されたとき', n:'二重登録の扱い', a:'同じ名前なら警告を出す' },
+    t:'同じものが二度登録されたとき', n:'二重登録の扱い', a:'同じ名前なら警告を出す', by:'情シス' },
   { when:function(f){ return f.notify; },
-    t:'通知が届く範囲', n:'通知を出す範囲', a:'関係者だけに送る' },
+    t:'通知が届く範囲', n:'通知を出す範囲', a:'関係者だけに送る', by:'情シス' },
   { when:function(f){ return !f.notify; },
-    t:'終わったことの知らせ方', n:'完了の知らせ方', a:'申請者にだけ通知する' },
+    t:'終わったことの知らせ方', n:'完了の知らせ方', a:'申請者にだけ通知する', by:'総務' },
   { when:function(f){ return !f.due; },
-    t:'いつまでにやるか', n:'期限と、遅れたときの扱い', a:'月末締め。遅れたら翌月扱い' },
+    t:'いつまでにやるか', n:'期限と、遅れたときの扱い', a:'月末締め。遅れたら翌月扱い', by:'経理' },
   { when:function(){ return true; },
-    t:'入力を間違えたとき', n:'入力の訂正', a:'確定前なら直せる' },
+    t:'入力を間違えたとき', n:'入力の訂正', a:'確定前なら直せる', by:'情シス' },
   { when:function(){ return true; },
-    t:'記録を残す期間', n:'記録の保存期間', a:'7年間残す' },
+    t:'記録を残す期間', n:'記録の保存期間', a:'7年間残す', by:'法務' },
   { when:function(){ return true; },
-    t:'これを見られる人', n:'閲覧できる人の範囲', a:'本人と承認者だけ' }
+    t:'これを見られる人', n:'閲覧できる人の範囲', a:'本人と承認者だけ', by:'情シス' }
 ];
 
 function flagsOf(text){
@@ -216,7 +217,7 @@ function keys(){
     k.innerHTML = $('toRingi').disabled ? '' : '<kbd>Enter</kbd> 稟議に上げる';
   }
   if (stage === 3){
-    k.innerHTML = $('holdBtns').hidden ? '' : '<kbd>Enter</kbd> 決める';
+    k.innerHTML = $('holdBtns').hidden ? '' : '<kbd>Enter</kbd> 打合せを開く';
   }
 }
 
@@ -387,6 +388,9 @@ const SEALS = ['p0', 'p1', 'p2'];
 
 function roll(){
   SEALS.forEach(function(id){ $(id).classList.remove('done', 'stuck'); });
+  // 二列目は、差戻しがあってから出る。最初から見えていては意味がない。
+  $('seals2').hidden = true;
+  ['q0','q1','q2'].forEach(function(id){ $(id).classList.remove('done'); });
   $('st').textContent = '';
   setTimeout(function(){ $('p0').classList.add('done'); }, 345);
   setTimeout(function(){ $('p1').classList.add('done'); }, 690);
@@ -406,16 +410,14 @@ function hold(){
   fl.hidden = false;
   document.querySelector('.ringi').classList.add('folded', 'holding');
 
-  // 見つけたのが AI であることと、次に何を押すのかを、はっきり出す。
-  $('holdLead').innerHTML = 'このままでは決裁できません。'
-                          + '決裁の前に <b>AI が画面を見直し</b>、'
-                          + '<b>決まっていない欄を ' + plan.gaps.length + ' つ</b>見つけました。'
-                          + '<br>ここで決めてください。';
+  // 見つけたのは AI。決めるのは、この先の打合せ。
+  $('holdLead').innerHTML = '<b>AI が画面を見直し</b>、'
+                          + '<b>決まっていない欄を ' + plan.gaps.length + ' つ</b>見つけました。';
   $('hold').hidden = false;
   $('holdBtns').hidden = false;
   $('hold').insertBefore($('app'), $('holdBtns'));   // 同じ画面が、そのまま添付になる
   // 押すものは、空欄のすぐ下・画面の中に置く。外にあると押すべきものに見えない。
-  $('fillBtn').textContent = plan.gaps.length + ' 件 を 決 め る';
+  $('fillBtn').textContent = '打 合 せ を 開 く';
   $('app').querySelector('.app-body').appendChild($('holdBtns'));
   $('app').classList.add('attached');
   addHoles();
@@ -455,12 +457,12 @@ function addHoles(){
   cur = 0;   // 押されるまで書き込まない
 }
 
-/* 空欄は、押されてから順に書き込まれる。
-   一件ずつ選ばせない。決めるという一手だけを人が打つ。 */
+/* 打合せを開くと、決まったことが順に埋まる。
+   値には出どころを付ける。誰が持ち帰ったかが見えないと、AI が決めたことになる。 */
 function startFill(){
   if ($('holdBtns').hidden) return;
   $('holdBtns').hidden = true;
-  $('holdLead').innerHTML = '決まっていなかったところを、書き込みます。';
+  $('holdLead').innerHTML = '打合せの結果。';
   keys();
   fillNext();
 }
@@ -473,7 +475,8 @@ function fillNext(){
   setTimeout(function(){
     h.dt.classList.remove('now'); h.dd.classList.remove('now');
     h.dt.classList.add('done'); h.dd.classList.add('done');
-    h.dd.innerHTML = '<span class="box filled wrote">' + h.g.a + '</span>';
+    h.dd.innerHTML = '<span class="box filled wrote">' + h.g.a + '</span>'
+                   + '<span class="said">' + h.g.by + '</span>';
     filled.push(h.g.n);
     cur++;
     setTimeout(fillNext, 340);
@@ -481,17 +484,20 @@ function fillNext(){
 }
 
 
-/* 空欄が埋まったら、決裁が下りる。押すものは無い。 */
+/* 決まったら、同じ紙がもう一周する。判子の列が二列になる。
+   差戻しの印は消さない。一度戻ったことも、紙に残る。 */
 function settle(){
   $('holdBtns').hidden = true;
-  $('p2').classList.remove('stuck');
-  $('holdLead').innerHTML = '<b>' + filled.length + ' 件</b>を決めました。決裁に回ります。';
+  $('holdLead').innerHTML = '打合せで <b>' + filled.length + ' 件</b>が決まりました。もう一度回します。';
   keys();
+  $('seals2').hidden = false;
+  setTimeout(function(){ $('q0').classList.add('done'); }, 300);
+  setTimeout(function(){ $('q1').classList.add('done'); }, 620);
   setTimeout(function(){
-    $('p2').classList.add('done');
+    $('q2').classList.add('done');
     $('st').textContent = '決裁されました。';
-    setTimeout(finish, 800);
-  }, 300);
+  }, 940);
+  setTimeout(finish, 1900);
 }
 
 /* =========================================================
@@ -504,12 +510,12 @@ function finish(){
   const fl = $('foldLine');
   fl.innerHTML = '件名：<b>' + written.replace(/[<>&]/g, '') + '</b>　／　'
                + plan.title + 'の画面'
-               + (filled.length ? '・ここで決めた <b>' + filled.length + '</b> 件' : '')
+               + (filled.length ? '・差戻し <b>1</b> 回・打合せで決めた <b>' + filled.length + '</b> 件' : '')
                + '　／　<span class="ok">決 裁 済</span>';
 
-  // 出したときには決まっていなかった。通す前に決まった。
+  // 決めたのは打合せ。AI がしたのは、決まっていないところを先に見つけたこと。
   $('doneLead').innerHTML = filled.length
-    ? '出したときは決まっていなかった <b>' + filled.length + ' 件</b>を、通す前に決めました。<br>'
+    ? '出したときは決まっていなかった <b>' + filled.length + ' 件</b>を、打合せで決めました。<br>'
       + filled.map(function(g){ return '「' + g + '」'; }).join('、') + '。'
     : '決めていないところは、ありませんでした。';
 
