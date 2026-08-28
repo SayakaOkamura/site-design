@@ -29,12 +29,12 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
 
 #view{position:fixed;inset:0;overflow:hidden}
 #canvas{
-  position:absolute;top:0;left:0;width:3220px;height:1500px;
+  position:absolute;top:0;left:0;width:3480px;height:1500px;
   transform-origin:0 0;transition:transform .85s cubic-bezier(.5,.05,.2,1);
 }
 
 /* 一本の線。ここが「地続き」の実体 */
-svg.thread{position:absolute;top:0;left:0;width:3220px;height:1500px;pointer-events:none;z-index:1}
+svg.thread{position:absolute;top:0;left:0;width:3480px;height:1500px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
@@ -98,9 +98,15 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    ここで埋めると「AI が決めた」に戻る。見つけるところまでがうちの仕事。 */
 /* ここが山場。見つけた3つが、ひとかたまりに見えるように地を敷く。
    box-shadow で敷くので、桁がずれない。 */
-.n2 dt.gk,.n2 dd.gap{
+.n2 dt.gk,.n2 dd.gap,.n2 .found{
   background:#fdf3e6;box-shadow:0 0 0 5px #fdf3e6;border-radius:2px;
 }
+/* 見出し。この帯が誰の仕事かを、帯の中で言う */
+.n2 dd.found{
+  font-size:10px;letter-spacing:.12em;color:var(--amber);font-weight:600;
+  padding-top:4px;
+}
+.n2 dt.found{padding-top:4px}
 .n2 dt.gk{color:var(--amber);font-weight:600}
 .n2 dd.gap .blank{
   border-bottom:1px dashed var(--amber);color:var(--amber);
@@ -111,7 +117,22 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 四 見つけたあと。ここが無いと、空欄を見つけて終わりになる。
    決めるのは御社、作るのはうち。会社概要はその下に、小さく。 */
-.nc{left:2560px;top:480px;width:430px}
+.nc{left:2540px;top:400px;width:720px}
+/* 締めの一枚。ここだけ引く（寄り続けて終わるより、最後に全体を渡す）。
+   サービスと会社概要を並べて、閉じられる形にする。 */
+.nc .cols{
+  display:grid;grid-template-columns:1fr 1.25fr;gap:26px;
+  margin-top:20px;border-top:1px solid var(--line);padding-top:16px;
+}
+.nc h2{
+  font-size:10px;font-weight:600;letter-spacing:.16em;color:var(--faint);
+  margin-bottom:8px;
+}
+.nc ul.svc{list-style:none}
+.nc ul.svc li{
+  font-size:12.5px;color:var(--ink);padding:4px 0 4px 13px;position:relative;line-height:1.6;
+}
+.nc ul.svc li::before{content:"—";position:absolute;left:0;color:var(--amber)}
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す */
 .nc h1{font-size:34px;font-weight:600;line-height:1.45;margin:6px 0 14px;letter-spacing:.01em}
@@ -119,9 +140,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .nc p{font-size:14px;color:var(--sub);line-height:1.9;margin-bottom:8px}
 .nc p b{color:var(--ink)}
 .nc dl{
-  display:grid;grid-template-columns:66px 1fr;column-gap:10px;row-gap:3px;
-  font-size:10px;line-height:1.7;margin-top:16px;
-  border-top:1px solid var(--line);padding-top:10px;
+  display:grid;grid-template-columns:62px 1fr;column-gap:10px;row-gap:2px;
+  font-size:9.5px;line-height:1.65;
 }
 .nc dt{color:var(--faint)}
 .nc dd{color:var(--sub)}
@@ -179,7 +199,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 <div id="view">
   <div id="canvas">
 
-    <svg class="thread" viewBox="0 0 3220 1500">
+    <svg class="thread" viewBox="0 0 3480 1500">
       <path d="M 860 640 C 940 640, 940 600, 1020 600
                S 1790 640, 1870 640
                S 2500 700, 2570 700" />
@@ -219,6 +239,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
           <dt>申請日</dt><dd class="r" style="--i:2"><span class="v">8/28</span></dd>
           <dt>金額</dt><dd class="r" style="--i:3"><span class="v">48,000 円</span></dd>
           <dt>承認者</dt><dd class="r" style="--i:3"><span class="v">所属長</span></dd>
+          <!-- 誰が洗い出したのかを、ブロックに直接貼る。
+               下の説明文だけでは「勝手に空欄がある」に見える。 -->
+          <dt class="found r" style="--i:4"></dt>
+          <dd class="found r" style="--i:4">うちが洗い出したところ</dd>
           <dt class="gk r" style="--i:5">不在のとき</dt>
           <dd class="gap r" style="--i:5"><span class="blank">＿＿＿＿＿＿</span></dd>
           <dt class="gk r" style="--i:6">上に上げる額</dt>
@@ -249,18 +273,32 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       <p class="r" style="--i:2">作ったあとに出ていたら、できたものを作り直すことになります。</p>
       <p class="r" style="--i:3">決めるのは御社の会議です。うちがするのは、
          <b>その会議の議題を、作る前に用意すること</b>です。</p>
-      <dl class="r" style="--i:4">
+
+      <!-- 業務システム開発だけの会社に見えていた。実際は4本ある -->
+      <div class="cols">
+        <div class="r" style="--i:4">
+          <h2>サービス</h2>
+          <ul class="svc">
+            <li>次世代型業務システム開発</li>
+            <li>AIによる意思決定支援・事業変革</li>
+            <li>自律共創型の組織デザイン</li>
+            <li>地域のデジタル格差支援</li>
+          </ul>
+        </div>
+        <div class="r" style="--i:5">
+          <h2>会社概要</h2>
+      <dl>
         <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
         <dt>設立</dt><dd>2025年6月</dd>
         <dt>資本金</dt><dd>6,000万円</dd>
         <dt>代表取締役</dt><dd>松岡 真功</dd>
         <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304</dd>
-        <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／
-          AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
         <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／
           株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
-      </dl>
-      <p class="ct r" style="--i:5"><a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから承っています。</p>
+          </dl>
+          <p class="ct"><a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから承っています。</p>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -289,7 +327,7 @@ const VIEWS = [
   { nm:'ある会社', x: 870, y: 315, w: 700, h: 480 },
   { nm:'形',       x:1870, y: 395, w: 490, h: 430 },
   /* 見つけたあと。ここが終わり。決めるのは御社、作るのはうち＋会社概要 */
-  { nm:"うちがしたこと", x:2530, y: 440, w: 500, h: 440 }
+  { nm:"うちがしたこと", x:2510, y: 375, w: 790, h: 545 }
 ];
 
 let cur = 0, touched = false;
