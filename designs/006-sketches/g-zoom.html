@@ -104,17 +104,21 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 .cap2{font-size:13px;color:var(--sub);margin-top:14px;line-height:1.85}
 .n2 .cap2 b{color:var(--amber)}
 
-/* 六 会社概要。責任の所在。書類の「仕様」欄と同じで、小さい字で細かく */
-.nc{left:2580px;top:556px;width:300px}
-.nc .k{font-family:var(--mono);font-size:7px;letter-spacing:.2em;color:var(--amber)}
+/* 四 見つけたあと。ここが無いと、空欄を見つけて終わりになる。
+   決めるのは御社、作るのはうち。会社概要はその下に、小さく。 */
+.nc{left:2560px;top:480px;width:430px}
+.nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
+.nc h1{font-size:27px;font-weight:600;line-height:1.5;margin:6px 0 10px}
+.nc p{font-size:14px;color:var(--sub);line-height:1.9}
+.nc p b{color:var(--ink)}
 .nc dl{
-  display:grid;grid-template-columns:52px 1fr;column-gap:8px;row-gap:3px;
-  font-size:8px;line-height:1.65;margin-top:6px;
-  border-top:1px solid var(--line);padding-top:6px;
+  display:grid;grid-template-columns:66px 1fr;column-gap:10px;row-gap:3px;
+  font-size:10px;line-height:1.7;margin-top:16px;
+  border-top:1px solid var(--line);padding-top:10px;
 }
 .nc dt{color:var(--faint)}
-.nc dd{color:var(--ink)}
-.nc .ct{font-size:8px;color:var(--sub);margin-top:6px;line-height:1.7}
+.nc dd{color:var(--sub)}
+.nc .ct{font-size:10.5px;color:var(--sub);margin-top:8px;line-height:1.7}
 .nc .ct a{color:var(--amber)}
 
 /* ---------- 操作 ----------
@@ -178,9 +182,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
          ここを他人の愚痴にすると、引用と分かっても主張がぶれる。 -->
     <div class="node nu" data-l="0">
       <div class="k">株式会社アルターデザインコンサルティング</div>
-      <h1>決めていないことを、<br>作る前に見つけます。</h1>
-      <p>上流工程中心の、業務システム開発。<br>
-         決まっていないところは、作ったあとに必ず出てきます。</p>
+      <!-- 何を売っているかを先に言う。「決めていないことを見つける」だけだと、
+           コンサルなのか開発なのか分からない。 -->
+      <h1>業務システムを、<br>決めるところから作ります。</h1>
+      <p>決めていないところは、作ったあとに必ず出てきます。<br>
+         だから、<b>作る前に見つけます</b>。</p>
     </div>
 
     <!-- 二 例。ここでは「決まっていない3つ」を先に言わない。
@@ -214,20 +220,26 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
           <dd class="gap r" style="--i:7"><span class="blank">＿＿＿＿＿＿</span></dd>
         </dl>
       </div>
+      <!-- 誰が見つけたのかを書く。空欄が勝手にあるだけでは、
+           見つけてもらった感じにならない。 -->
       <p class="cap2 r" style="--i:9">
-        決まっているところは、すぐ埋まります。<br>
-        <b>決まっていないところが、空欄で残ります。</b>
-        この3つは会議で 30 分あれば決まりますが、
-        作ってからだと作り直しになります。
+        決まっているところは、そのまま埋まります。<br>
+        <b>決まっていないところを、うちが洗い出します。</b>
+        この画面では 3 つ残りました。
       </p>
     </div>
 
     <!-- 六 会社概要。責任の所在。
          書類でも「仕様」欄は小さい字で細かく書く。一番寄ったところに置いて、
          寄りの流れを崩さない。 -->
+    <!-- 四 形にしたあと。ここが無いと、空欄を見つけて終わりになる。
+         決めるのは御社、作るのはうち。そのうえで会社概要を小さく置く。 -->
     <div class="node nc" data-l="3">
-      <div class="k">この線を引いた会社</div>
-      <dl>
+      <div class="k" style="--i:0">見つけたあと</div>
+      <h1 class="r" style="--i:1">決めるのは、御社の会議です。</h1>
+      <p class="r" style="--i:2">3つとも、30 分あれば決まります。<br>
+         <b>決まったら、そのまま作ります。</b>作り直しは起きません。</p>
+      <dl class="r" style="--i:4">
         <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
         <dt>設立</dt><dd>2025年6月</dd>
         <dt>資本金</dt><dd>6,000万円</dd>
@@ -238,7 +250,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
         <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／
           株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
       </dl>
-      <p class="ct"><a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから承っています。</p>
+      <p class="ct r" style="--i:5"><a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから承っています。</p>
     </div>
 
   </div>
@@ -266,8 +278,8 @@ const VIEWS = [
   { nm:'うち',     x:  70, y: 400, w: 780, h: 520 },
   { nm:'ある会社', x: 870, y: 315, w: 700, h: 480 },
   { nm:'形',       x:1870, y: 395, w: 490, h: 430 },
-  /* 会社概要。責任の所在。書類の「仕様」欄と同じで、小さい字で細かく */
-  { nm:'会社概要', x:2560, y: 545, w: 340, h: 250 }
+  /* 見つけたあと。ここが終わり。決めるのは御社、作るのはうち＋会社概要 */
+  { nm:'見つけたあと', x:2530, y: 455, w: 490, h: 410 }
 ];
 
 let cur = 0, touched = false;
