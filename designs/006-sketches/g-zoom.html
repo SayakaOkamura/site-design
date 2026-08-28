@@ -411,11 +411,18 @@ function move(d){
      ・回し続けると、静止しないので永久に解けず、途中で止まる
      ・ゆっくり回すと、閾値に届く前に溜めが捨てられて、いつまでも進まない
    静止を待つのをやめて、時間で切る。 */
-const STEP  = 70;    // これだけ動かしたら、一段
-const LOCK  = 560;   // 一段ぶんを消化する時間。慣性はここで飲む
-const GAP   = 400;   // これ以上あいたら、別の操作として溜めを捨てる
-const FLOOR = 5;     // これより小さい動き＝ひと振りが終わりかけている
-const WAIT  = 1100;  // 保険。ずっと動きが続いても、いつかは受け付ける
+/* 合図は「間があいたこと」ひとつだけにする。
+
+   トラックパッドは指を離したあとも、減衰しながら 1〜2 秒 wheel を出し続ける。
+   時間で解除する保険を入れていたら、その慣性の途中で解除が効いて、
+   止まったあとに勝手に一段進んでいた。保険そのものが原因だった。
+
+   慣性は途切れずに来るので、「間があく」ことは絶対にない。
+   だから間だけを合図にすれば、慣性を一段と数えることがない。
+   そして止まって触り直せば必ず間があくので、詰まることもない。 */
+const STEP = 70;    // これだけ動かしたら、一段
+const LOCK = 520;   // 一段ぶんを消化する時間
+const NEW  = 150;   // これだけ間があいたら、新しいひと振りの始まり
 
 let acc = 0, lastAt = 0, lockUntil = 0, armed = true;
 
@@ -423,13 +430,8 @@ addEventListener('wheel', function(e){
   const now = performance.now();
   const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
 
-  if (now - lastAt > GAP){ acc = 0; armed = true; }   // 間があいた＝新しい操作
+  if (now - lastAt > NEW){ acc = 0; armed = true; }   // 触り直した
   lastAt = now;
-
-  // 次の一段は「ひと振りが終わってから」受け付ける。
-  // これが無いと、回し続けているあいだ勝手に進み続ける。
-  if (Math.abs(d) < FLOOR) armed = true;              // 動きが小さくなった
-  if (now > lockUntil + WAIT) armed = true;           // 保険。止まったままにしない
 
   if (now < lockUntil || !armed) return;
 
@@ -437,7 +439,7 @@ addEventListener('wheel', function(e){
   if (Math.abs(acc) < STEP) return;                   // 溜めは残す。ゆっくりでも届く
 
   lockUntil = now + LOCK;
-  armed = false;
+  armed = false;      // 次は、間があくまで受け付けない（慣性を全部捨てる）
   const dir = acc > 0 ? 1 : -1;
   acc = 0;
   move(dir);
