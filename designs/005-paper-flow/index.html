@@ -7,7 +7,7 @@
 <meta name="description" content="書く、決める、通す。上流工程中心のシステム開発。株式会社アルターデザインコンサルティング。">
 <link rel="stylesheet" href="../../assets/css/reset.css">
 <!-- ?v= はキャッシュ避け。中身を変えたら番号を上げる -->
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 
@@ -127,18 +127,21 @@
 
   <section class="doc-sec" id="how">
     <h2>上流工程中心とは</h2>
+    <!-- 主張は「順序を変える」ではない。それは反復開発の理屈で、デモが見せているのは
+         決め忘れのほう。デモと言っていることを揃える。 -->
     <p class="lead">
-      要件をすべて固めてから作り始めると、作っている間に前提が変わり、
-      できたものが要件と合わなくなります。だから順序を変えます。
+      できたものが要件と合わない原因は、たいてい決め忘れです。
+      作っている間は誰も気づかず、動かしてから出てきます。
+      だから、決めていないところを先に出します。
     </p>
     <ol class="steps">
-      <li><span class="n">一</span><span class="t"><b>決める</b>業務の単位、画面、テーブル、業務ルールを決める。</span></li>
-      <li><span class="n">二</span><span class="t"><b>すぐ動かす</b>決めたことが、そのまま動く状態を作る。</span></li>
-      <li><span class="n">三</span><span class="t"><b>触って直す</b>動くものを触って、決めたことの間違いに気づく。</span></li>
+      <li><span class="n">一</span><span class="t"><b>形にする</b>決めたことを、その場で目に見える形にする。</span></li>
+      <li><span class="n">二</span><span class="t"><b>足りないところを出す</b>形にすると、決めていなかったところが浮かぶ。</span></li>
+      <li><span class="n">三</span><span class="t"><b>決めてから進む</b>決まっていないまま、次に進ませない。</span></li>
     </ol>
     <p class="note">
-      上で見たのは一と二です。三は実際の案件で、使う人と一緒に回します。
-      AI とローコードは、一から二までの距離を詰めるための道具として使っています。
+      上で見たのは、その縮図です。実際の案件では、使う人と一緒に何度も回します。
+      AI とローコードは、決めたことを形にするまでの距離を詰めるための道具として使っています。
       道具が目的ではありません。
     </p>
   </section>
@@ -175,7 +178,7 @@
     <p class="note fine">
       実装は AI（Claude）が行いました。素の HTML / CSS / JavaScript のみ、ビルド工程なし。
       画面の切り出しはあらかじめ用意した規則によるもので、その場で推論しているわけではありません。
-      実演したいのは推論ではなく、決めていないことが作る前に見つかるという順序です。
+      実演したいのは推論ではなく、決めていないことが作る前に出てくることです。
     </p>
   </section>
 
@@ -201,6 +204,6 @@
 
 <div class="keybar"><span id="keys"></span><span class="grow"></span><span class="msg" id="msg"></span></div>
 
-<script src="script.js?v=15"></script>
+<script src="script.js?v=16"></script>
 </body>
 </html>
