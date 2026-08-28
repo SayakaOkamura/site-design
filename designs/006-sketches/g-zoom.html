@@ -29,16 +29,16 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
 
 #view{position:fixed;inset:0;overflow:hidden}
 #canvas{
-  position:absolute;top:0;left:0;width:3120px;height:1500px;
+  position:absolute;top:0;left:0;width:3900px;height:1500px;
   transform-origin:0 0;transition:transform .85s cubic-bezier(.5,.05,.2,1);
 }
 
 /* 一本の線。ここが「地続き」の実体 */
-svg.thread{position:absolute;top:0;left:0;width:3120px;height:1500px;pointer-events:none;z-index:1}
+svg.thread{position:absolute;top:0;left:0;width:3900px;height:1500px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2600;stroke-dashoffset:2600;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:3200;stroke-dashoffset:3200;animation:draw 3.1s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -98,7 +98,20 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n3 .lbl{font-size:9px;color:var(--sub)}
 .n3 .val{font-size:13px;font-weight:600;margin-top:2px}
 .n3 .by{font-size:8.5px;color:var(--faint);margin-top:3px}
-.n3 .cap{font-size:8px;color:var(--sub);margin-top:8px;line-height:1.8}
+.n3 .cap2{font-size:8px;color:var(--sub);margin-top:8px;line-height:1.8}
+
+/* 六 会社概要。責任の所在。書類の「仕様」欄と同じで、小さい字で細かく */
+.nc{left:3260px;top:566px;width:300px}
+.nc .k{font-family:var(--mono);font-size:7px;letter-spacing:.2em;color:var(--amber)}
+.nc dl{
+  display:grid;grid-template-columns:52px 1fr;column-gap:8px;row-gap:3px;
+  font-size:8px;line-height:1.65;margin-top:6px;
+  border-top:1px solid var(--line);padding-top:6px;
+}
+.nc dt{color:var(--faint)}
+.nc dd{color:var(--ink)}
+.nc .ct{font-size:8px;color:var(--sub);margin-top:6px;line-height:1.7}
+.nc .ct a{color:var(--amber)}
 
 /* ---------- 操作 ----------
    ボタンは置かない。押すものが並んでいると「操作盤」に見えて、
@@ -151,11 +164,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 <div id="view">
   <div id="canvas">
 
-    <svg class="thread" viewBox="0 0 3120 1500">
+    <svg class="thread" viewBox="0 0 3900 1500">
       <path d="M 830 630 C 910 630, 910 672, 990 672
                S 1560 622, 1640 622
                S 2200 662, 2280 662
-               S 2720 702, 2800 702" />
+               S 2720 702, 2800 702
+               S 3180 690, 3250 690" />
     </svg>
 
     <!-- 一 うち。会社サイトの1枚目は、うちの主張から始める。
@@ -213,10 +227,29 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
         <div class="val">代理者に自動で回す</div>
         <div class="by">— 総務</div>
       </div>
-      <p class="cap">
+      <p class="cap2">
         経営の「月末に止まる」は、<br>最後はこの一行になります。<br>
         ここまで地続きです。
       </p>
+    </div>
+
+    <!-- 六 会社概要。責任の所在。
+         書類でも「仕様」欄は小さい字で細かく書く。一番寄ったところに置いて、
+         寄りの流れを崩さない。 -->
+    <div class="node nc" data-l="5">
+      <div class="k">この線を引いた会社</div>
+      <dl>
+        <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
+        <dt>設立</dt><dd>2025年6月</dd>
+        <dt>資本金</dt><dd>6,000万円</dd>
+        <dt>代表取締役</dt><dd>松岡 真功</dd>
+        <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304</dd>
+        <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／
+          AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
+        <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／
+          株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
+      </dl>
+      <p class="ct"><a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから承っています。</p>
     </div>
 
   </div>
@@ -242,7 +275,9 @@ const VIEWS = [
      寄っている感じが途切れる（×1.16 → 1.06 → 1.43 になっていた） */
   { nm:'決めること', x:1620, y: 385, w: 530, h: 395 },
   { nm:'形',       x:2220, y: 400, w: 470, h: 340 },
-  { nm:'欄ひとつ', x:2740, y: 570, w: 340, h: 250 }
+  { nm:'欄ひとつ', x:2740, y: 570, w: 340, h: 250 },
+  /* 会社概要。前段と同じ縮尺にして、寄りの流れを崩さない */
+  { nm:'会社概要', x:3240, y: 555, w: 340, h: 250 }
 ];
 
 let cur = 0, touched = false;
