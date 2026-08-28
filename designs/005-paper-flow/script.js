@@ -217,7 +217,7 @@ function goStage(n){
 
 function keys(){
   const k = $('keys');
-  if (stage === 1) k.innerHTML = '<kbd>Enter</kbd> 確定';
+  if (stage === 1) k.innerHTML = '<kbd>↓</kbd> 例　<kbd>Enter</kbd> 確定';
   if (stage === 2){
     k.innerHTML = $('toRingi').disabled ? '' : '<kbd>Enter</kbd> 稟議に上げる';
   }
@@ -288,22 +288,49 @@ const EGS = [
     li.querySelector('.k').textContent = i + 1;
     const b = li.querySelector('button');
     b.textContent = t;
-    b.onclick = function(){ fillEg(t); };
+    b.onclick = function(){ pickEg(i); };
     ul.appendChild(li);
   });
 })();
 
-function fillEg(t){
-  inp.value = t;
-  inp.focus();
+/* 例は 白紙 → 1 → 2 → 3 → 4 → 白紙 と回る。
+   白紙も輪の中の一つの状態にする。戻れないと、例を見たら書けなくなる。
+   -1 が白紙。 */
+let egIdx = -1;
+
+function markEg(n){
+  const items = $('egs').children;
+  for (let i = 0; i < items.length; i++) items[i].classList.toggle('on', i === n);
 }
 
+function pickEg(n){
+  egIdx = n;
+  inp.value = n < 0 ? '' : EGS[n];
+  inp.focus();
+  markEg(n);
+}
+
+// 自分で書き足したら、輪から外れる。印を消すだけで、打った字には触らない。
+inp.addEventListener('input', function(){
+  if (egIdx >= 0 && inp.value !== EGS[egIdx]){ egIdx = -1; markEg(-1); }
+});
+
 addEventListener('keydown', function(e){
-  if (stage !== 1 || inp.disabled || inp.value !== '') return;
-  const n = parseInt(e.key, 10);
-  if (n >= 1 && n <= EGS.length){
+  if (stage !== 1 || inp.disabled) return;
+  const last = EGS.length - 1;
+
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    if (inp.value !== '' && inp.value !== EGS[egIdx]) return;   // 自分で書いたもの
     e.preventDefault();
-    fillEg(EGS[n - 1]);
+    if (e.key === 'ArrowDown') pickEg(egIdx >= last ? -1 : egIdx + 1);
+    else                       pickEg(egIdx < 0    ? last : egIdx - 1);
+    return;
+  }
+
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= EGS.length && (inp.value === '' || inp.value === EGS[egIdx])){
+    e.preventDefault();
+    pickEg(n - 1);
   }
 });
 

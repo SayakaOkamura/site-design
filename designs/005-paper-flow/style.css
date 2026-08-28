@@ -266,6 +266,9 @@ button.ink[disabled]{opacity:.28;cursor:default}
   background:none;border:0;padding:2px 0;text-align:left;cursor:pointer;
 }
 .egs button:hover{color:var(--amber)}
+/* ↓ でいま入っているもの。入力欄と例が繋がって見えないと、字が勝手に変わる。 */
+.egs li.on .k{border-color:var(--amber);color:var(--amber)}
+.egs li.on button{color:var(--ink)}
 
 /* 書く場所。空の欄は初見で見つからないので、線だけ引く。 */
 .writeline{border-bottom:1px solid #dccfae;padding-bottom:2px}
