@@ -29,16 +29,16 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
 
 #view{position:fixed;inset:0;overflow:hidden}
 #canvas{
-  position:absolute;top:0;left:0;width:3900px;height:1500px;
+  position:absolute;top:0;left:0;width:3220px;height:1500px;
   transform-origin:0 0;transition:transform .85s cubic-bezier(.5,.05,.2,1);
 }
 
 /* 一本の線。ここが「地続き」の実体 */
-svg.thread{position:absolute;top:0;left:0;width:3900px;height:1500px;pointer-events:none;z-index:1}
+svg.thread{position:absolute;top:0;left:0;width:3220px;height:1500px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:3200;stroke-dashoffset:3200;animation:draw 3.1s ease .3s forwards}
+  stroke-dasharray:2600;stroke-dashoffset:2600;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -50,58 +50,70 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .nu h1{font-size:62px;font-weight:600;line-height:1.36;letter-spacing:.02em;margin:10px 0 18px}
 .nu p{font-size:20px;color:var(--sub);line-height:1.95}
 
-/* 二 例（引用） */
-.n0{left:900px;top:500px;width:620px}
+/* 段の中で順に出す。
+   スワイプの回数を減らすと1段の情報が増えるが、順に出れば目は散らない。
+   出る順は --i で指定する。 */
+/* transition だと、段を行き来したときに途中で張り付いて出てこなくなった。
+   入ったら必ず再生させたいので animation にする（both で終端を保つ）。 */
+.node .r{opacity:0}
+.node.on .r{
+  animation:revealIn .42s cubic-bezier(.2,.7,.3,1) calc(var(--i) * .13s + .25s) both;
+}
+@keyframes revealIn{
+  from{opacity:0;transform:translateY(10px)}
+  to  {opacity:1;transform:none}
+}
+
+/* 二 例と、その中身 */
+.n0{left:900px;top:330px;width:640px}
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
 /* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
-.n0 h1{font-size:58px;font-weight:600;line-height:1.35;letter-spacing:.02em;margin:8px 0 6px;
+.n0 h1{font-size:46px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
        color:var(--sub)}
 .n0 h1 q{quotes:"「" "」"}
-.n0 .by{font-size:15px;color:var(--faint);margin-bottom:16px;letter-spacing:.06em}
-.n0 p{font-size:21px;color:var(--ink);line-height:1.9}
-
-/* L1 決めること */
-.n1{left:1650px;top:400px;width:460px}
-.n1 .k{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--amber)}
-.n1 h2{font-size:30px;font-weight:600;margin:6px 0 14px}
-.n1 ul{list-style:none}
-.n1 li{
-  font-size:17px;padding:11px 0 11px 20px;border-bottom:1px solid var(--line);
+.n0 .by{font-size:14px;color:var(--faint);margin-bottom:18px;letter-spacing:.06em}
+.n0 .lead{font-size:19px;color:var(--ink);line-height:1.9;margin-bottom:12px}
+.n0 .lead b{color:var(--amber)}
+.n0 ul{list-style:none}
+.n0 li{
+  font-size:17px;padding:9px 0 9px 20px;border-bottom:1px solid var(--line);
   position:relative;color:var(--ink);
 }
-.n1 li::before{content:"□";position:absolute;left:0;color:var(--amber);font-size:14px}
-.n1 .note{font-size:13.5px;color:var(--faint);margin-top:14px;line-height:1.9}
+.n0 li::before{content:"□";position:absolute;left:0;color:var(--amber);font-size:14px}
+.n0 .note{font-size:13px;color:var(--faint);margin-top:12px;line-height:1.85}
 
-/* L2 画面 */
-.n2{left:2250px;top:430px;width:400px}
-.n2 .k{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--amber)}
+/* 三 形と、埋まる欄 */
+.n2{left:1900px;top:420px;width:430px}
+.n2 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n2 .win{
-  background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-top:5px;
+  background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-top:8px;
   box-shadow:0 6px 20px rgba(0,0,0,.07);overflow:hidden;
 }
 .n2 .wb{
   background:#f7f8fa;border-bottom:1px solid var(--line);
-  padding:7px 12px;font-size:12px;font-weight:600;
+  padding:8px 13px;font-size:13px;font-weight:600;
 }
-.n2 dl{display:grid;grid-template-columns:120px 1fr;row-gap:7px;padding:12px 14px 14px;font-size:12.5px}
+.n2 dl{display:grid;grid-template-columns:104px 1fr;row-gap:9px;padding:13px 15px 15px;font-size:13.5px}
 .n2 dt{color:var(--sub)}
 .n2 dd .v{border-bottom:1px solid var(--line);padding-bottom:1px}
-.n2 dd.gap .v{border-bottom-style:dashed;border-bottom-color:var(--amber);color:var(--amber)}
-
-/* L3 欄ひとつ */
-.n3{left:2760px;top:600px;width:300px}
-.n3 .k{font-family:var(--mono);font-size:7px;letter-spacing:.2em;color:var(--amber)}
-.n3 .box{
-  background:var(--paper);border:1px solid var(--amber);border-radius:6px;
-  padding:10px 12px;margin-top:4px;
+/* 空欄が、その場で埋まる。段を分けて拡大するより、画面の中で埋まるほうが正しい */
+.n2 dd.gap{position:relative}
+.n2 dd.gap .blank,.n2 dd.gap .filled{transition:opacity .45s ease}
+.n2 dd.gap .blank{
+  border-bottom:1px dashed var(--amber);color:var(--amber);
+  padding-bottom:1px;letter-spacing:.08em;
 }
-.n3 .lbl{font-size:9px;color:var(--sub)}
-.n3 .val{font-size:13px;font-weight:600;margin-top:2px}
-.n3 .by{font-size:8.5px;color:var(--faint);margin-top:3px}
-.n3 .cap2{font-size:8px;color:var(--sub);margin-top:8px;line-height:1.8}
+.n2 dd.gap .filled{
+  position:absolute;left:0;top:0;opacity:0;white-space:nowrap;
+  border-bottom:1px solid #cfe0cb;padding-bottom:1px;font-weight:600;
+}
+.n2 dd.gap .filled em{font-style:normal;font-weight:400;font-size:11px;color:var(--faint);margin-left:8px}
+.n2.done dd.gap .blank{opacity:0}
+.n2.done dd.gap .filled{opacity:1;transition-delay:.1s}
+.n2 .cap2{font-size:13px;color:var(--sub);margin-top:14px;line-height:1.85}
 
 /* 六 会社概要。責任の所在。書類の「仕様」欄と同じで、小さい字で細かく */
-.nc{left:3260px;top:566px;width:300px}
+.nc{left:2580px;top:556px;width:300px}
 .nc .k{font-family:var(--mono);font-size:7px;letter-spacing:.2em;color:var(--amber)}
 .nc dl{
   display:grid;grid-template-columns:52px 1fr;column-gap:8px;row-gap:3px;
@@ -164,12 +176,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 <div id="view">
   <div id="canvas">
 
-    <svg class="thread" viewBox="0 0 3900 1500">
-      <path d="M 830 630 C 910 630, 910 672, 990 672
-               S 1560 622, 1640 622
-               S 2200 662, 2280 662
-               S 2720 702, 2800 702
-               S 3180 690, 3250 690" />
+    <svg class="thread" viewBox="0 0 3220 1500">
+      <path d="M 860 640 C 940 640, 940 600, 1020 600
+               S 1790 640, 1870 640
+               S 2500 700, 2570 700" />
     </svg>
 
     <!-- 一 うち。会社サイトの1枚目は、うちの主張から始める。
@@ -181,62 +191,50 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
          決まっていないところは、作ったあとに必ず出てきます。</p>
     </div>
 
-    <!-- 二 例。他人の言葉として引用する。
-         地の文で書くと、一番大きい字が「経理が止まる」になって経理の会社に見える。 -->
+    <!-- 二 例と、その中身。段を分けると引用から3項目にいきなり飛ぶので、
+         同じ段に置いて、順に出す。橋渡しの一行は r4。 -->
     <div class="node n0" data-l="1">
-      <div class="k">ある会社で聞いた話</div>
-      <h1><q>月末に、<br>経理が止まる。</q></h1>
-      <div class="by">— 社長</div>
-      <p>人手が足りないから止まる、とは限りません。<br>
-         決まっていないことが、月末にまとめて表に出ることがあります。</p>
-    </div>
-
-    <!-- L1 決めること -->
-    <div class="node n1" data-l="2">
-      <div class="k">決めること</div>
-      <h2>止まっている中身</h2>
+      <div class="k"    style="--i:0">ある会社で聞いた話</div>
+      <h1 class="r"     style="--i:1"><q>月末に、経理が止まる。</q></h1>
+      <div class="by r" style="--i:2">— 社長</div>
+      <p class="lead r" style="--i:3">人手が足りないからではありません。<br>
+         止まっているのは、<b>この3つが決まっていない</b>からです。</p>
       <ul>
-        <li>誰が承認するか</li>
-        <li>いくらから上に上げるか</li>
-        <li>承認者が不在のとき、どうするか</li>
+        <li class="r" style="--i:4">誰が承認するか</li>
+        <li class="r" style="--i:5">いくらから上に上げるか</li>
+        <li class="r" style="--i:6">承認者が不在のとき、どうするか</li>
       </ul>
-      <p class="note">3つとも、会議で 30 分あれば決まります。<br>
+      <p class="note r" style="--i:7">3つとも、会議で 30 分あれば決まります。
          決まっていないまま作ると、作り直しになります。</p>
     </div>
 
-    <!-- L2 画面 -->
-    <div class="node n2" data-l="3">
-      <div class="k">形にすると</div>
-      <div class="win">
+    <!-- 三 形と、埋まる欄。ここも分けない。
+         欄は画面の中にあるので、画面の中で埋まるほうが正しい。 -->
+    <div class="node n2" data-l="2">
+      <div class="k" style="--i:0">その3つを決めると、こうなります</div>
+      <div class="win r" style="--i:1">
         <div class="wb">経費申請</div>
         <dl>
           <dt>申請者</dt><dd><span class="v">あなた</span></dd>
           <dt>申請日</dt><dd><span class="v">8/28</span></dd>
           <dt>金額</dt><dd><span class="v">48,000 円</span></dd>
           <dt>承認者</dt><dd><span class="v">所属長</span></dd>
-          <dt>不在のとき</dt><dd class="gap"><span class="v">＿＿＿＿＿</span></dd>
+          <dt>不在のとき</dt>
+          <dd class="gap">
+            <span class="blank">＿＿＿＿＿＿</span>
+            <span class="filled">代理者に自動で回す<em>— 総務</em></span>
+          </dd>
         </dl>
       </div>
-    </div>
-
-    <!-- L3 欄ひとつ -->
-    <div class="node n3" data-l="4">
-      <div class="k">欄ひとつ</div>
-      <div class="box">
-        <div class="lbl">承認者が不在のときの扱い</div>
-        <div class="val">代理者に自動で回す</div>
-        <div class="by">— 総務</div>
-      </div>
-      <p class="cap2">
-        経営の「月末に止まる」は、<br>最後はこの一行になります。<br>
-        ここまで地続きです。
+      <p class="cap2 r" style="--i:6">
+        経営の「月末に止まる」は、最後はこの一行になります。ここまで地続きです。
       </p>
     </div>
 
     <!-- 六 会社概要。責任の所在。
          書類でも「仕様」欄は小さい字で細かく書く。一番寄ったところに置いて、
          寄りの流れを崩さない。 -->
-    <div class="node nc" data-l="5">
+    <div class="node nc" data-l="3">
       <div class="k">この線を引いた会社</div>
       <dl>
         <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
@@ -268,19 +266,20 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 /* 4つの停留所。同じ1枚を、左から右へ辿る。
    引き（全体を俯瞰する段）は置かない。寄りだけ残す。
    経営は大きい字、欄はごく小さい字。その差が「地続き」の実体。 */
+/* 4段。段を分けすぎるとスワイプ回数が増えて、1段あたりが薄くなる。
+   1段に情報を寄せて、段の中で順に出す（.node.on の --i）。 */
+/* 枠の高さで縮尺が決まる（横より縦が効く）。中身が増えた段は枠も高くなるので、
+   そのままだと縮尺が下がって、寄っている感じが途切れる。
+   前の段の枠をわざと高めに取って、0.94 → 1.02 → 1.13 → 1.95 と単調に上げる。 */
 const VIEWS = [
-  { nm:'うち',     x:  90, y: 440, w: 740, h: 430 },
-  { nm:'ある会社', x: 870, y: 470, w: 680, h: 400 },
-  /* 高さを詰めてある。ここだけ縦長だと縮尺が一度下がって、
-     寄っている感じが途切れる（×1.16 → 1.06 → 1.43 になっていた） */
-  { nm:'決めること', x:1620, y: 385, w: 530, h: 395 },
-  { nm:'形',       x:2220, y: 400, w: 470, h: 340 },
-  { nm:'欄ひとつ', x:2740, y: 570, w: 340, h: 250 },
-  /* 会社概要。前段と同じ縮尺にして、寄りの流れを崩さない */
-  { nm:'会社概要', x:3240, y: 555, w: 340, h: 250 }
+  { nm:'うち',     x:  70, y: 400, w: 780, h: 520 },
+  { nm:'ある会社', x: 870, y: 315, w: 700, h: 480 },
+  { nm:'形',       x:1870, y: 395, w: 490, h: 430 },
+  /* 会社概要。責任の所在。書類の「仕様」欄と同じで、小さい字で細かく */
+  { nm:'会社概要', x:2560, y: 545, w: 340, h: 250 }
 ];
 
-let cur = 0, touched = false;
+let cur = 0, touched = false, fillT = null;
 
 function apply(i){
   cur = Math.max(0, Math.min(VIEWS.length - 1, i));
@@ -294,9 +293,22 @@ function apply(i){
     'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
 
   // いま見ているところ以外は薄くする。1枚であることは保ったまま。
+  // いる段には .on を付けて、中身を順に出す。離れたら畳んで、戻ったらまた出す。
   document.querySelectorAll('.node').forEach(function(n){
-    n.classList.toggle('hide', +n.dataset.l !== cur);
+    const mine = +n.dataset.l === cur;
+    n.classList.toggle('hide', !mine);
+    if (!mine){ n.classList.remove('on', 'done'); }
   });
+  // .on は一度外してから、レイアウトを挟んで付け直す。
+  // そうしないと、戻ってきたときにアニメーションが再生されない。
+  const here = document.querySelector('.node[data-l="' + cur + '"]');
+  if (here){ void here.offsetWidth; here.classList.add('on'); }
+
+  // 画面の段では、最後に空欄がその場で埋まる
+  clearTimeout(fillT);
+  if (cur === 2){
+    fillT = setTimeout(function(){ document.querySelector('.n2').classList.add('done'); }, 1500);
+  }
 
   // 進み具合。押すものではなく、どこまで来たかを示すだけ。
   const p = cur / (VIEWS.length - 1) * 100;
