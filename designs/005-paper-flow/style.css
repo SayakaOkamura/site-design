@@ -744,3 +744,10 @@ button.ink.ghost:hover{background:var(--paper);color:var(--ink);border-color:var
 .rules{margin-top:15px;padding-top:12px}
 .rules h4{margin-bottom:9px}
 .rules li.written{line-height:1.95}
+
+/* 「このページについて」の2段落目は断り書き。主張と同じ重さで置かない。
+   罫を外し、一段落とす。1段落目（主張）だけが罫のついた引用になる。 */
+.below .note + .note{
+  margin-top:18px;border-left-color:transparent;
+  font-size:12px;color:var(--faint);line-height:1.95;
+}
