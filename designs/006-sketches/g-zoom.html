@@ -210,8 +210,21 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .hint.off{opacity:0}
 
 /* 社名だけ。一言は一枚目で名乗るので、ここでは繰り返さない */
-.title{position:fixed;top:20px;left:24px;z-index:5}
-.title .nm{font-size:11px;letter-spacing:.2em;color:var(--faint)}
+.title{
+  position:fixed;top:20px;left:24px;z-index:5;
+  font:inherit;background:none;border:0;padding:0;cursor:pointer;
+  display:flex;align-items:baseline;gap:12px;
+}
+.title .nm{font-size:11px;letter-spacing:.2em;color:var(--faint);transition:color .2s}
+/* 行き先を書いておく。ホバーの無い端末でも、押せることが分かるように常に出す */
+.title .go{
+  font-size:10.5px;letter-spacing:.1em;color:#c3bfb5;transition:color .2s;
+}
+.title .go::after{content:" →"}
+.title:hover .nm,.title:focus-visible .nm{color:var(--sub)}
+.title:hover .go,.title:focus-visible .go{color:var(--amber)}
+/* いま会社概要にいるときは、行き先として出さない */
+.title.here .go{visibility:hidden}
 .depth{
   position:fixed;top:20px;right:22px;font-family:var(--mono);font-size:10.5px;color:var(--faint);
 }
@@ -219,10 +232,14 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 </head>
 <body>
 
-<!-- 一枚目で名乗るので、ここは社名だけ。同じ一言を二度出さない -->
-<div class="title">
+<!-- 一枚目で名乗るので、ここは社名だけ。同じ一言を二度出さない。
+     押すと最後の段（会社概要）へ飛ぶ。下調べで来た人が、
+     スワイプ3回しないと責任の所在に辿り着けないのは遠すぎる。
+     ロゴを押す動作は誰でもやるので、ボタンを増やさずに済む。 -->
+<button class="title" id="toEnd">
   <span class="nm">ALTER DESIGN CONSULTING</span>
-</div>
+  <span class="go">会社概要</span>
+</button>
 <div class="depth" id="depth">×1</div>
 
 <div id="view">
@@ -398,6 +415,7 @@ function apply(i){
   document.getElementById('dot').style.left  = p + '%';
   document.getElementById('where').textContent = v.nm;
   document.getElementById('depth').textContent = '×' + s.toFixed(2);
+  document.getElementById('toEnd').classList.toggle('here', cur === VIEWS.length - 1);
 }
 
 function move(d){
@@ -463,6 +481,13 @@ addEventListener('touchend', function(e){
   if (Math.abs(dx) > 40) move(dx < 0 ? 1 : -1);
   sx = null;
 }, { passive:true });
+
+/* 社名 → 会社概要。飛ぶのではなく、1枚の上を滑って行く。
+   途中の段が流れて見えるので、同じ紙の上にいることが崩れない。 */
+document.getElementById('toEnd').onclick = function(){
+  if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
+  apply(VIEWS.length - 1);
+};
 
 addEventListener('resize', function(){ apply(cur); });
 apply(0);
