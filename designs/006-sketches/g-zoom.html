@@ -96,7 +96,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 dd .v{border-bottom:1px solid var(--line);padding-bottom:1px}
 /* 決まっていないところは、空欄のまま残す。勝手に埋めない。
    ここで埋めると「AI が決めた」に戻る。見つけるところまでがうちの仕事。 */
-.n2 dt.gk{color:var(--amber)}
+/* ここが山場。見つけた3つが、ひとかたまりに見えるように地を敷く。
+   box-shadow で敷くので、桁がずれない。 */
+.n2 dt.gk,.n2 dd.gap{
+  background:#fdf3e6;box-shadow:0 0 0 5px #fdf3e6;border-radius:2px;
+}
+.n2 dt.gk{color:var(--amber);font-weight:600}
 .n2 dd.gap .blank{
   border-bottom:1px dashed var(--amber);color:var(--amber);
   padding-bottom:1px;letter-spacing:.08em;
@@ -108,8 +113,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    決めるのは御社、作るのはうち。会社概要はその下に、小さく。 */
 .nc{left:2560px;top:480px;width:430px}
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
-.nc h1{font-size:27px;font-weight:600;line-height:1.5;margin:6px 0 10px}
-.nc p{font-size:14px;color:var(--sub);line-height:1.9}
+/* ここが山場。うちがしたことを、この段でいちばん大きく出す */
+.nc h1{font-size:34px;font-weight:600;line-height:1.45;margin:6px 0 14px;letter-spacing:.01em}
+.nc h1 b{color:var(--amber)}
+.nc p{font-size:14px;color:var(--sub);line-height:1.9;margin-bottom:8px}
 .nc p b{color:var(--ink)}
 .nc dl{
   display:grid;grid-template-columns:66px 1fr;column-gap:10px;row-gap:3px;
@@ -235,10 +242,13 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
     <!-- 四 形にしたあと。ここが無いと、空欄を見つけて終わりになる。
          決めるのは御社、作るのはうち。そのうえで会社概要を小さく置く。 -->
     <div class="node nc" data-l="3">
-      <div class="k" style="--i:0">見つけたあと</div>
-      <h1 class="r" style="--i:1">決めるのは、御社の会議です。</h1>
-      <p class="r" style="--i:2">3つとも、30 分あれば決まります。<br>
-         <b>決まったら、そのまま作ります。</b>作り直しは起きません。</p>
+      <!-- 「決めるのは御社です」を主役にすると丸投げに読める。
+           うちがしたこと（作る前に見つけた）を主語にする。 -->
+      <div class="k" style="--i:0">うちがしたこと</div>
+      <h1 class="r" style="--i:1"><b>作る前に</b>、3つ見つけました。</h1>
+      <p class="r" style="--i:2">作ったあとに出ていたら、できたものを作り直すことになります。</p>
+      <p class="r" style="--i:3">決めるのは御社の会議です。うちがするのは、
+         <b>その会議の議題を、作る前に用意すること</b>です。</p>
       <dl class="r" style="--i:4">
         <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
         <dt>設立</dt><dd>2025年6月</dd>
@@ -279,7 +289,7 @@ const VIEWS = [
   { nm:'ある会社', x: 870, y: 315, w: 700, h: 480 },
   { nm:'形',       x:1870, y: 395, w: 490, h: 430 },
   /* 見つけたあと。ここが終わり。決めるのは御社、作るのはうち＋会社概要 */
-  { nm:'見つけたあと', x:2530, y: 455, w: 490, h: 410 }
+  { nm:"うちがしたこと", x:2530, y: 440, w: 500, h: 440 }
 ];
 
 let cur = 0, touched = false;
