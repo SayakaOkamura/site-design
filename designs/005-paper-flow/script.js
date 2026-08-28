@@ -459,7 +459,8 @@ function addHoles(){
 function startFill(){
   if ($('holdBtns').hidden) return;
   $('holdBtns').hidden = true;
-  $('holdLead').innerHTML = '打合せの結果。';
+  // ここから先は何も書かない。AI が見つけたという一行だけ残す。
+  // 値が部署名つきで埋まり、決裁の判子が入る。見れば分かる。
   keys();
   fillNext();
 }
@@ -486,7 +487,6 @@ function fillNext(){
 function settle(){
   $('holdBtns').hidden = true;
   $('p2').classList.remove('stuck');
-  $('holdLead').innerHTML = '打合せで <b>' + filled.length + ' 件</b>が決まりました。決裁に戻します。';
   keys();
   setTimeout(function(){
     $('p2').classList.add('done');
