@@ -142,12 +142,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 四 見つけたあと。ここが無いと、空欄を見つけて終わりになる。
    決めるのは御社、作るのはうち。会社概要はその下に、小さく。 */
-.nc{left:2540px;top:400px;width:720px}
+.nc{left:2540px;top:400px;width:880px}
 /* 締めの一枚。サービスと会社概要を並べて、閉じられる形にする。
    枠は中身に合わせて詰める。中身より大きい枠を取ると、そのぶん縮尺が下がって
    最後だけ小さく見える（545px の枠に 360px の中身を入れていた）。 */
 .nc .cols{
-  display:grid;grid-template-columns:1fr 1.25fr;gap:26px;
+  display:grid;grid-template-columns:1fr 1.55fr;gap:34px;
   margin-top:20px;border-top:1px solid var(--line);padding-top:16px;
 }
 .nc h2{
@@ -165,13 +165,16 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .nc h1 b{color:var(--amber)}
 .nc p{font-size:14px;color:var(--sub);line-height:1.9;margin-bottom:8px}
 .nc p b{color:var(--ink)}
+/* 会社概要は責任の所在。小さすぎると読む気にならない。
+   縮尺は枠の高さで決まるので、横に広げるぶんには縮尺が下がらない。
+   だから幅を使って字を大きくする。 */
 .nc dl{
-  display:grid;grid-template-columns:62px 1fr;column-gap:10px;row-gap:2px;
-  font-size:9.5px;line-height:1.65;
+  display:grid;grid-template-columns:74px 1fr;column-gap:14px;row-gap:5px;
+  font-size:11.5px;line-height:1.7;
 }
 .nc dt{color:var(--faint)}
 .nc dd{color:var(--sub)}
-.nc .ct{font-size:10.5px;color:var(--sub);margin-top:8px;line-height:1.7}
+.nc .ct{font-size:12px;color:var(--sub);margin-top:10px;line-height:1.7}
 .nc .ct a{color:var(--amber)}
 
 /* ---------- 操作 ----------
@@ -360,7 +363,7 @@ const VIEWS = [
   { nm:'ある会社', x: 870, y: 315, w: 700, h: 480 },
   { nm:'形',       x:1870, y: 395, w: 490, h: 430 },
   /* 見つけたあと。ここが終わり。決めるのは御社、作るのはうち＋会社概要 */
-  { nm:"うちがしたこと", x:2510, y: 372, w: 780, h: 416 }
+  { nm:"うちがしたこと", x:2510, y: 370, w: 940, h: 420 }
 ];
 
 let cur = 0, touched = false;
