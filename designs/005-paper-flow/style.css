@@ -672,7 +672,7 @@ button.ink.ghost:hover{background:var(--paper);color:var(--ink);border-color:var
   to  { clip-path:polygon(0 0, 118% 0, 100% 100%, -18% 100%) }
 }
 /* 一息に流すと「表示された」になる。刻んで進めると「書いている」になる。 */
-#rules.sweep{animation:chalk 1.7s steps(26, end) both}
+#rules.sweep{animation:chalk 1.25s steps(24, end) both}
 
 /* こちらで埋めた欄。人が決めたものと見分けがつくようにする。 */
 .fields .box.filled.auto{border-color:#e8c99a;background:#fff8f0;color:#8a5a1a}

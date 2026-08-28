@@ -328,12 +328,13 @@ function buildApp(){
   const rs = $('rules');
   rs.classList.remove('sweep');
   void rs.offsetWidth;
-  setTimeout(function(){ rs.classList.add('sweep'); }, 420);
+  // 速度は3箇所（この 320・下の合計・CSS の #rules.sweep）を揃えること。
+  setTimeout(function(){ rs.classList.add('sweep'); }, 320);
 
   setTimeout(function(){
     $('toRingi').disabled = false;
     keys();
-  }, 420 + 1700 + 150);
+  }, 320 + 1250 + 130);
 }
 
 function writeOne(s){
@@ -505,12 +506,12 @@ function finish(){
   const fl = $('foldLine');
   fl.innerHTML = '件名：<b>' + written.replace(/[<>&]/g, '') + '</b>　／　'
                + plan.title + 'の画面'
-               + (filled.length ? '・差戻し <b>1</b> 回・打合せで決めた <b>' + filled.length + '</b> 件' : '')
+               + (filled.length ? '・差戻し <b>1</b> 回・決めた <b>' + filled.length + '</b> 件' : '')
                + '　／　<span class="ok">決 裁 済</span>';
 
   // 決めたのは打合せ。AI がしたのは、決まっていないところを先に見つけたこと。
   $('doneLead').innerHTML = filled.length
-    ? '出したときは決まっていなかった <b>' + filled.length + ' 件</b>を、打合せで決めました。<br>'
+    ? '出したときは、この <b>' + filled.length + ' 件</b>が決まっていませんでした。<br>'
       + filled.map(function(g){ return '「' + g + '」'; }).join('、') + '。'
     : '決めていないところは、ありませんでした。';
 
