@@ -149,17 +149,19 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
     <!-- L0 全体。引ききったときだけ出る -->
     <div class="node nf" data-l="0">
       <h1>止まっているのは、<br>ここだけではありません。</h1>
+      <!-- 本数を実態の比率として語らないこと。画面上の本数は事実だが、
+           「1社の1か月ぶん」は根拠が無い。実測を持つまで書かない。 -->
       <p>線は 1 本につき、決まっていない欄ひとつ。<br>
-         この画面に <b id="cnt">—</b> 本あります。1 社の 1 か月ぶんです。</p>
-      <p class="tiny">濃い 1 本だけ、この先で追いかけます。</p>
+         濃い 1 本だけ、この先で追いかけます。</p>
+      <p class="tiny">何本あるかは、案件ごとに数えます。</p>
     </div>
 
     <!-- L1 経営が困っていること -->
     <div class="node n0" data-l="1">
       <div class="k">経営</div>
       <h1>月末に、<br>経理が止まる。</h1>
-      <p>止まっている理由は、たいてい人手ではありません。<br>
-         決まっていないことが、月末にまとめて表に出るからです。</p>
+      <p>人手が足りないから止まる、とは限りません。<br>
+         決まっていないことが、月末にまとめて表に出ることがあります。</p>
     </div>
 
     <!-- L1 決めること -->
@@ -242,7 +244,6 @@ const VIEWS = [
        + ', '  + (x + w).toFixed(0) + ' ' + (y + a * .3).toFixed(0) + ' ';
   }
   document.getElementById('field').innerHTML = '<path d="' + d + '"/>';
-  document.getElementById('cnt').textContent = N + 1;
 })();
 
 let cur = 0;
