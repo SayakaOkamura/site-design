@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>006-H 書類しか置いていない</title>
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<style>
+/* =========================================================
+   006-H 書類しか置いていない
+
+   一言：「あそこのサイト、書類しか置いてないんですよ」
+
+   変な理由：上流工程の会社は、書類で仕事をするから。
+   会社説明を書かない。成果物を置く。読めば分かる。
+   形は変（会社案内が無い）だが、中身は真面目で読みやすい。
+   ========================================================= */
+:root{
+  --desk:#e9e6df; --paper:#fdfcf9; --ink:#14161a; --sub:#5d6673; --faint:#9aa2ae;
+  --line:#d5d0c5; --rule:#ece8de; --amber:#b45309; --seal:#8b2020;
+  --mincho:"Yu Mincho",YuMincho,"Hiragino Mincho ProN","MS PMincho",serif;
+  --ui:-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+body{font-family:var(--ui);color:var(--ink);background:var(--desk);line-height:1.8;
+     padding:26px 18px 70px}
+
+.hd{max-width:940px;margin:0 auto 20px;display:flex;align-items:baseline;gap:12px}
+.hd .brand{font-size:11px;letter-spacing:.2em;color:var(--sub)}
+.hd .grow{flex:1}
+.hd .say{font-size:12px;color:var(--faint)}
+
+/* ---------- 机の上に書類が並ぶ ---------- */
+.desk{
+  max-width:940px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:18px;
+}
+.doc{
+  background:var(--paper);border:1px solid var(--line);
+  aspect-ratio:1/1.414;                 /* A4 */
+  padding:15px 14px;cursor:pointer;position:relative;
+  box-shadow:0 2px 5px rgba(0,0,0,.07);
+  transition:.18s;display:flex;flex-direction:column;
+}
+.doc:hover{transform:translateY(-3px);box-shadow:0 9px 22px rgba(0,0,0,.12);border-color:var(--amber)}
+.doc .no{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--faint)}
+.doc h2{font-family:var(--mincho);font-size:15px;font-weight:500;letter-spacing:.1em;margin:5px 0 8px}
+.doc .sm{font-size:10.5px;color:var(--sub);line-height:1.75}
+.doc .grow{flex:1}
+.doc .ft{font-family:var(--mono);font-size:8.5px;color:var(--faint);border-top:1px solid var(--rule);padding-top:6px}
+.doc .tag{
+  position:absolute;top:14px;right:0;background:var(--seal);color:#fff;
+  font-size:8.5px;letter-spacing:.1em;padding:2px 8px 2px 9px;
+}
+.doc .tag.mi{background:var(--amber)}
+
+.note{max-width:940px;margin:24px auto 0;font-size:12.5px;color:var(--faint);line-height:1.95}
+
+/* ---------- 開いた書類 ---------- */
+.ov{
+  position:fixed;inset:0;background:rgba(20,22,26,.44);z-index:20;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:34px 16px;overflow:auto;
+}
+.ov[hidden]{display:none}
+.open{
+  background:var(--paper);max-width:620px;width:100%;
+  border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.28);
+  padding:34px 36px 30px;position:relative;
+  animation:up .22s ease both;
+}
+@keyframes up{from{opacity:0;transform:translateY(10px)}}
+.close{
+  position:absolute;top:12px;right:14px;font:inherit;font-size:12px;
+  background:none;border:1px solid var(--line);border-radius:5px;
+  padding:4px 11px;color:var(--sub);cursor:pointer;
+}
+.close:hover{border-color:var(--amber);color:var(--amber)}
+
+.open .no{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--faint)}
+.open h1{font-family:var(--mincho);font-size:21px;font-weight:500;letter-spacing:.2em;
+         margin:4px 0 3px;text-align:center}
+.open .sub{text-align:center;font-family:var(--mono);font-size:10px;color:var(--faint);
+           margin-bottom:20px;letter-spacing:.1em}
+.open table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+.open th,.open td{border:1px solid var(--line);padding:8px 11px;vertical-align:top;line-height:1.85}
+.open th{background:#f5f2eb;width:132px;font-weight:400;color:var(--sub);text-align:left;font-size:11.5px}
+.open td.num{text-align:right;font-family:var(--mono)}
+.open p.body{font-size:13.5px;line-height:2;margin-bottom:12px}
+.open p.body b{color:var(--amber)}
+.open ol,.open ul{font-size:13.5px;line-height:2;padding-left:1.3em;margin-bottom:12px}
+.open .sig{
+  margin-top:18px;border-top:1px solid var(--line);padding-top:12px;
+  font-family:var(--mono);font-size:10.5px;color:var(--faint);
+  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <span class="brand">ALTER DESIGN CONSULTING</span>
+  <span class="grow"></span>
+  <span class="say">会社案内はありません。書類を読んでください。</span>
+</div>
+
+<div class="desk" id="desk"></div>
+
+<p class="note">
+  ここにあるのは、うちが実際に作る書類の形です。会社概要は 05 に入っています。<br>
+  01 と 02 は、まだ中身が入っていません。案件が始まると埋まります。
+</p>
+
+<div class="ov" id="ov" hidden>
+  <div class="open" id="open"></div>
+</div>
+
+<script>
+const DOCS = [
+  {
+    no:'ADC-01', ttl:'決 定 事 項 一 覧', sm:'決まったこと。決めた人と日付つき。',
+    ft:'様式 01', tag:null,
+    html:
+      '<p class="sub">様式01　／　案件：（未着手）</p>'
+    + '<table>'
+    + '<tr><th>項目</th><td>決めた内容</td></tr>'
+    + '<tr><th>承認の要否</th><td>—</td></tr>'
+    + '<tr><th>決裁の基準額</th><td>—</td></tr>'
+    + '<tr><th>不在時の扱い</th><td>—</td></tr>'
+    + '<tr><th>保存期間</th><td>—</td></tr>'
+    + '</table>'
+    + '<p class="body">この書類は、案件が始まった日に作られて、'
+    + '終わるまでに<b>全部の欄が埋まります</b>。埋まらなかった欄は、'
+    + 'あとで必ず作り直しになります。</p>'
+  },
+  {
+    no:'ADC-02', ttl:'未 決 事 項 一 覧', sm:'まだ決まっていないこと。これが主役。',
+    ft:'様式 02', tag:'未決', tagCls:'mi',
+    html:
+      '<p class="sub">様式02　／　案件：（未着手）</p>'
+    + '<p class="body">うちの仕事は、この紙を<b>厚くすることから始まって、薄くすることで終わります</b>。'
+    + '着手時にいちばん厚く、納品時に 0 枚になります。</p>'
+    + '<table>'
+    + '<tr><th>未決の欄</th><td>決める人</td></tr>'
+    + '<tr><th>—</th><td>—</td></tr>'
+    + '</table>'
+    + '<p class="body">よく残るのは、この 5 つです。</p>'
+    + '<ul>'
+    + '<li>承認者が不在のときの扱い</li>'
+    + '<li>決裁を分ける金額の基準</li>'
+    + '<li>提出後の取り下げ</li>'
+    + '<li>記録の保存期間</li>'
+    + '<li>閲覧できる人の範囲</li>'
+    + '</ul>'
+  },
+  {
+    no:'ADC-03', ttl:'御 見 積 書', sm:'内訳と、その数字をどこから置いたか。',
+    ft:'様式 03', tag:null,
+    html:
+      '<p class="sub">様式03　／　業務システム 1 本ぶん</p>'
+    + '<table>'
+    + '<tr><th>要件定義</th><td class="num">1,200,000</td></tr>'
+    + '<tr><th>画面・DB設計</th><td class="num">1,440,000</td></tr>'
+    + '<tr><th>開発</th><td class="num">1,800,000</td></tr>'
+    + '<tr><th>テスト</th><td class="num">600,000</td></tr>'
+    + '<tr><th>運用支援</th><td class="num">720,000</td></tr>'
+    + '<tr><th>合計</th><td class="num">5,760,000</td></tr>'
+    + '</table>'
+    + '<p class="body">値引きはできます。ただし<b>こちらの取り分が減るのではなく、'
+    + 'あなたの仕事が増えます</b>。どこを引き取っていただくかを、'
+    + '先に決めてから金額を出します。</p>'
+  },
+  {
+    no:'ADC-04', ttl:'工 程 配 分 図', sm:'何にどれだけ面積を使うか。',
+    ft:'様式 04', tag:null,
+    html:
+      '<p class="sub">様式04　／　SCALE 1:1</p>'
+    + '<table>'
+    + '<tr><th>決める</th><td class="num">57 %</td></tr>'
+    + '<tr><th>形にする</th><td class="num">18 %</td></tr>'
+    + '<tr><th>作る</th><td class="num">10 %</td></tr>'
+    + '<tr><th>直す</th><td class="num">12 %</td></tr>'
+    + '<tr><th>待つ</th><td class="num">3 %</td></tr>'
+    + '</table>'
+    + '<p class="body">面積は工数比ではなく、<b>神経を使う量</b>の比です。'
+    + '「作る」が 10 % なのは道具が良くなったからで、誇っていません。'
+    + 'この表に「営業」の行はありません。</p>'
+  },
+  {
+    no:'ADC-05', ttl:'会 社 概 要', sm:'責任の所在。ここだけは普通の書類。',
+    ft:'様式 05', tag:null,
+    html:
+      '<p class="sub">様式05</p>'
+    + '<table>'
+    + '<tr><th>会社名</th><td>株式会社アルターデザインコンサルティング</td></tr>'
+    + '<tr><th>設立</th><td>2025年6月</td></tr>'
+    + '<tr><th>資本金</th><td>60,000,000 円</td></tr>'
+    + '<tr><th>代表取締役</th><td>松岡 真功</td></tr>'
+    + '<tr><th>所在地</th><td>東京都港区西新橋3-23-5 ANYZ304</td></tr>'
+    + '<tr><th>事業内容</th><td>AI技術を活用した組織最適化に関するコンサルティング事業／'
+    + 'AIとローコードを組み合わせた次世代型のシステム開発事業</td></tr>'
+    + '<tr><th>株主</th><td>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／'
+    + '株式会社サーバーワークス・キャピタル／リックソフト株式会社</td></tr>'
+    + '<tr><th>理念</th><td>経営の力で「遊ぶように働く世界」をデザインする</td></tr>'
+    + '</table>'
+    + '<p class="body">ご相談は '
+    + '<a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a>'
+    + ' のフォームから。</p>'
+  },
+  {
+    no:'ADC-06', ttl:'お 断 り 一 覧', sm:'受けない仕事と、その理由。',
+    ft:'様式 06', tag:'参考',
+    html:
+      '<p class="sub">様式06</p>'
+    + '<table>'
+    + '<tr><th>決まってから来てほしい</th><td>「とりあえず作って」は受けません。'
+    + '決めるところから一緒にやる場合は受けます。</td></tr>'
+    + '<tr><th>人手として</th><td>言われた通りに作る仕事は受けません。'
+    + 'それは、うちに頼む意味がないからです。</td></tr>'
+    + '<tr><th>期日だけ先に決まっている</th><td>決める時間が無い案件は、'
+    + '作り直しが必ず起きます。期日を動かせるなら受けます。</td></tr>'
+    + '</table>'
+    + '<p class="body">断った件数は、案件が増えたらこの紙に載せます。</p>'
+  }
+];
+
+/* 机に並べる */
+document.getElementById('desk').innerHTML = DOCS.map(function(d, i){
+  return '<div class="doc" data-i="' + i + '">'
+    + (d.tag ? '<span class="tag ' + (d.tagCls || '') + '">' + d.tag + '</span>' : '')
+    + '<div class="no">' + d.no + '</div>'
+    + '<h2>' + d.ttl + '</h2>'
+    + '<p class="sm">' + d.sm + '</p>'
+    + '<div class="grow"></div>'
+    + '<div class="ft">' + d.ft + '</div>'
+    + '</div>';
+}).join('');
+
+const ov = document.getElementById('ov'), open = document.getElementById('open');
+
+document.querySelectorAll('.doc').forEach(function(el){
+  el.onclick = function(){
+    const d = DOCS[+el.dataset.i];
+    open.innerHTML = '<button class="close">閉じる</button>'
+      + '<div class="no">' + d.no + '</div>'
+      + '<h1>' + d.ttl + '</h1>'
+      + d.html
+      + '<div class="sig"><span>ALTER DESIGN CONSULTING</span><span>' + d.ft + '</span></div>';
+    open.querySelector('.close').onclick = shut;
+    ov.hidden = false;
+  };
+});
+
+function shut(){ ov.hidden = true; }
+ov.onclick = function(e){ if (e.target === ov) shut(); };
+addEventListener('keydown', function(e){ if (e.key === 'Escape') shut(); });
+</script>
+</body>
+</html>

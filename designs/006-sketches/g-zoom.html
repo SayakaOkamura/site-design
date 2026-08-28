@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>006-G ページが無い</title>
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<style>
+/* =========================================================
+   006-G ページが無い（1枚をズームする）
+
+   一言：「あそこのサイト、ページが無いんですよ。1枚を寄っていくだけ」
+
+   変な理由：経営の一言と、画面の一欄が、地続きだから。
+   引くと経営の話、寄ると欄ひとつ。同じ1枚の上にある。
+   「経営の力で」を、遷移ではなく距離で見せる。
+   ========================================================= */
+:root{
+  --bg:#f2f1ec; --ink:#14161a; --sub:#5d6673; --faint:#9aa2ae;
+  --line:#d9d5cc; --amber:#b45309; --seal:#8b2020; --paper:#fff;
+  --ui:-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7}
+
+#view{position:fixed;inset:0;overflow:hidden}
+#canvas{
+  position:absolute;top:0;left:0;width:2400px;height:1500px;
+  transform-origin:0 0;transition:transform .85s cubic-bezier(.5,.05,.2,1);
+}
+
+/* 一本の線。ここが「地続き」の実体 */
+svg.thread{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none}
+svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
+  stroke-dasharray:1600;stroke-dashoffset:1600;animation:draw 2.4s ease .3s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.node{position:absolute;transition:opacity .5s ease}
+.node.hide{opacity:.14}
+
+/* L0 経営 */
+.n0{left:90px;top:520px;width:620px}
+.n0 .k{font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--amber)}
+.n0 h1{font-size:62px;font-weight:600;line-height:1.35;letter-spacing:.02em;margin:8px 0 14px}
+.n0 p{font-size:21px;color:var(--sub);line-height:1.9}
+
+/* L1 決めること */
+.n1{left:880px;top:400px;width:460px}
+.n1 .k{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--amber)}
+.n1 h2{font-size:30px;font-weight:600;margin:6px 0 14px}
+.n1 ul{list-style:none}
+.n1 li{
+  font-size:17px;padding:11px 0 11px 20px;border-bottom:1px solid var(--line);
+  position:relative;color:var(--ink);
+}
+.n1 li::before{content:"□";position:absolute;left:0;color:var(--amber);font-size:14px}
+.n1 .note{font-size:13.5px;color:var(--faint);margin-top:14px;line-height:1.9}
+
+/* L2 画面 */
+.n2{left:1490px;top:430px;width:400px}
+.n2 .k{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--amber)}
+.n2 .win{
+  background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-top:5px;
+  box-shadow:0 6px 20px rgba(0,0,0,.07);overflow:hidden;
+}
+.n2 .wb{
+  background:#f7f8fa;border-bottom:1px solid var(--line);
+  padding:7px 12px;font-size:12px;font-weight:600;
+}
+.n2 dl{display:grid;grid-template-columns:120px 1fr;row-gap:7px;padding:12px 14px 14px;font-size:12.5px}
+.n2 dt{color:var(--sub)}
+.n2 dd .v{border-bottom:1px solid var(--line);padding-bottom:1px}
+.n2 dd.gap .v{border-bottom-style:dashed;border-bottom-color:var(--amber);color:var(--amber)}
+
+/* L3 欄ひとつ */
+.n3{left:2010px;top:600px;width:300px}
+.n3 .k{font-family:var(--mono);font-size:7px;letter-spacing:.2em;color:var(--amber)}
+.n3 .box{
+  background:var(--paper);border:1px solid var(--amber);border-radius:6px;
+  padding:10px 12px;margin-top:4px;
+}
+.n3 .lbl{font-size:9px;color:var(--sub)}
+.n3 .val{font-size:13px;font-weight:600;margin-top:2px}
+.n3 .by{font-size:8.5px;color:var(--faint);margin-top:3px}
+.n3 .cap{font-size:8px;color:var(--sub);margin-top:8px;line-height:1.8}
+
+/* ---------- 操作 ---------- */
+.hud{
+  position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;
+  padding:12px 18px;background:rgba(242,241,236,.94);border-top:1px solid var(--line);
+  backdrop-filter:blur(6px);
+}
+.hud .brand{font-size:10.5px;letter-spacing:.2em;color:var(--sub)}
+.hud .grow{flex:1}
+.steps{display:flex;gap:4px}
+.steps button{
+  font:inherit;font-size:12px;padding:6px 13px;border:1px solid var(--line);
+  background:var(--paper);color:var(--sub);border-radius:6px;cursor:pointer;
+}
+.steps button.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+.steps button:hover{border-color:var(--amber);color:var(--amber)}
+.steps button.on:hover{color:#fff}
+.hint{font-size:11px;color:var(--faint)}
+
+.title{
+  position:fixed;top:16px;left:20px;font-size:10.5px;letter-spacing:.2em;color:var(--sub);
+}
+.depth{
+  position:fixed;top:14px;right:20px;font-family:var(--mono);font-size:11px;color:var(--faint);
+}
+</style>
+</head>
+<body>
+
+<div class="title">ALTER DESIGN CONSULTING</div>
+<div class="depth" id="depth">×1</div>
+
+<div id="view">
+  <div id="canvas">
+
+    <svg class="thread" viewBox="0 0 2400 1500">
+      <path d="M 700 640 C 800 640, 800 520, 890 520
+               S 1420 560, 1500 560
+               S 1960 690, 2020 690" />
+    </svg>
+
+    <!-- L0 経営が困っていること -->
+    <div class="node n0" data-l="0">
+      <div class="k">経営</div>
+      <h1>月末に、<br>経理が止まる。</h1>
+      <p>止まっている理由は、たいてい人手ではありません。<br>
+         決まっていないことが、月末にまとめて表に出るからです。</p>
+    </div>
+
+    <!-- L1 決めること -->
+    <div class="node n1" data-l="1">
+      <div class="k">決めること</div>
+      <h2>止まっている中身</h2>
+      <ul>
+        <li>誰が承認するか</li>
+        <li>いくらから上に上げるか</li>
+        <li>承認者が不在のとき、どうするか</li>
+      </ul>
+      <p class="note">3つとも、会議で 30 分あれば決まります。<br>
+         決まっていないまま作ると、作り直しになります。</p>
+    </div>
+
+    <!-- L2 画面 -->
+    <div class="node n2" data-l="2">
+      <div class="k">形にすると</div>
+      <div class="win">
+        <div class="wb">経費申請</div>
+        <dl>
+          <dt>申請者</dt><dd><span class="v">あなた</span></dd>
+          <dt>申請日</dt><dd><span class="v">8/28</span></dd>
+          <dt>金額</dt><dd><span class="v">48,000 円</span></dd>
+          <dt>承認者</dt><dd><span class="v">所属長</span></dd>
+          <dt>不在のとき</dt><dd class="gap"><span class="v">＿＿＿＿＿</span></dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- L3 欄ひとつ -->
+    <div class="node n3" data-l="3">
+      <div class="k">欄ひとつ</div>
+      <div class="box">
+        <div class="lbl">承認者が不在のときの扱い</div>
+        <div class="val">代理者に自動で回す</div>
+        <div class="by">— 総務</div>
+      </div>
+      <p class="cap">
+        経営の「月末に止まる」は、<br>最後はこの一行になります。<br>
+        ここまで地続きです。
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<div class="hud">
+  <span class="brand">ALTER DESIGN CONSULTING</span>
+  <span class="grow"></span>
+  <span class="hint">ページはありません。寄るだけです。</span>
+  <div class="steps" id="steps"></div>
+</div>
+
+<script>
+/* 4つの見え方。同じ1枚を、どこまで寄って見るか。 */
+const VIEWS = [
+  { nm:'経営',     x:  60, y: 440, w: 700, h: 420 },
+  { nm:'決める',   x: 850, y: 360, w: 530, h: 460 },
+  { nm:'形',       x:1460, y: 400, w: 470, h: 340 },
+  { nm:'欄ひとつ', x:1990, y: 570, w: 340, h: 250 }
+];
+
+let cur = 0;
+
+function apply(i){
+  cur = Math.max(0, Math.min(VIEWS.length - 1, i));
+  const v = VIEWS[cur];
+  const vw = innerWidth, vh = innerHeight - 52;   // HUD ぶん除く
+  const s  = Math.min(vw / v.w, vh / v.h) * 0.86;
+  const x  = vw / 2 - (v.x + v.w / 2) * s;
+  const y  = vh / 2 - (v.y + v.h / 2) * s;
+
+  document.getElementById('canvas').style.transform =
+    'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+
+  // いま見ているところ以外は薄くする。1枚であることは保ったまま。
+  document.querySelectorAll('.node').forEach(function(n){
+    n.classList.toggle('hide', +n.dataset.l !== cur);
+  });
+
+  document.getElementById('depth').textContent = '×' + s.toFixed(2);
+  document.querySelectorAll('#steps button').forEach(function(b, j){
+    b.classList.toggle('on', j === cur);
+  });
+}
+
+(function hud(){
+  const box = document.getElementById('steps');
+  VIEWS.forEach(function(v, i){
+    const b = document.createElement('button');
+    b.textContent = v.nm;
+    b.onclick = function(){ apply(i); };
+    box.appendChild(b);
+  });
+})();
+
+// ホイールでも寄れる。ページ送りではなく、寄る／引く。
+let lock = false;
+addEventListener('wheel', function(e){
+  if (lock) return;
+  lock = true;
+  setTimeout(function(){ lock = false; }, 620);
+  apply(cur + (e.deltaY > 0 ? 1 : -1));
+}, { passive:true });
+
+addEventListener('keydown', function(e){
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); apply(cur + 1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'){   e.preventDefault(); apply(cur - 1); }
+});
+
+addEventListener('resize', function(){ apply(cur); });
+apply(0);
+</script>
+</body>
+</html>
