@@ -30,14 +30,32 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
   transform-origin:0 0;transition:transform .85s cubic-bezier(.5,.05,.2,1);
 }
 
+/* 引ききったときに出る、他の線。1本＝決まっていない欄ひとつ。
+   ズーム自体はよくある仕掛けなので、引いたときに「量」が出るようにする。 */
+svg.field{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none;transition:opacity .6s ease}
+svg.field path{fill:none;stroke:#b9b3a6;stroke-width:1.4;opacity:.5}
+
 /* 一本の線。ここが「地続き」の実体 */
-svg.thread{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none}
+svg.thread{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none;z-index:1}
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
   stroke-dasharray:1600;stroke-dashoffset:1600;animation:draw 2.4s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
-.node{position:absolute;transition:opacity .5s ease}
+.node{position:absolute;transition:opacity .5s ease;z-index:2}
 .node.hide{opacity:.14}
+.node.gone{opacity:0}
+
+/* L0 全体。引ききったところ。
+   線の上に字が乗るので、地を敷かないと読めない。 */
+.nf{
+  left:660px;top:120px;width:1080px;text-align:center;padding:44px 40px 40px;
+  background:radial-gradient(ellipse at center,
+    rgba(242,241,236,.97) 0%, rgba(242,241,236,.93) 62%, rgba(242,241,236,0) 100%);
+}
+.nf h1{font-size:76px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin-bottom:18px}
+.nf p{font-size:25px;color:var(--sub);line-height:1.9}
+.nf p b{color:var(--amber);font-family:var(--mono);font-size:30px}
+.nf .tiny{font-size:18px;color:var(--faint);margin-top:16px}
 
 /* L0 経営 */
 .n0{left:90px;top:520px;width:620px}
@@ -119,14 +137,25 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
 <div id="view">
   <div id="canvas">
 
+    <!-- 引ききると、同じ線が何百本もある。1件の裏に、毎日これがある。 -->
+    <svg class="field" id="field" viewBox="0 0 2400 1500"></svg>
+
     <svg class="thread" viewBox="0 0 2400 1500">
       <path d="M 700 640 C 800 640, 800 520, 890 520
                S 1420 560, 1500 560
                S 1960 690, 2020 690" />
     </svg>
 
-    <!-- L0 経営が困っていること -->
-    <div class="node n0" data-l="0">
+    <!-- L0 全体。引ききったときだけ出る -->
+    <div class="node nf" data-l="0">
+      <h1>止まっているのは、<br>ここだけではありません。</h1>
+      <p>線は 1 本につき、決まっていない欄ひとつ。<br>
+         この画面に <b id="cnt">—</b> 本あります。1 社の 1 か月ぶんです。</p>
+      <p class="tiny">濃い 1 本だけ、この先で追いかけます。</p>
+    </div>
+
+    <!-- L1 経営が困っていること -->
+    <div class="node n0" data-l="1">
       <div class="k">経営</div>
       <h1>月末に、<br>経理が止まる。</h1>
       <p>止まっている理由は、たいてい人手ではありません。<br>
@@ -134,7 +163,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
     </div>
 
     <!-- L1 決めること -->
-    <div class="node n1" data-l="1">
+    <div class="node n1" data-l="2">
       <div class="k">決めること</div>
       <h2>止まっている中身</h2>
       <ul>
@@ -147,7 +176,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
     </div>
 
     <!-- L2 画面 -->
-    <div class="node n2" data-l="2">
+    <div class="node n2" data-l="3">
       <div class="k">形にすると</div>
       <div class="win">
         <div class="wb">経費申請</div>
@@ -162,7 +191,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
     </div>
 
     <!-- L3 欄ひとつ -->
-    <div class="node n3" data-l="3">
+    <div class="node n3" data-l="4">
       <div class="k">欄ひとつ</div>
       <div class="box">
         <div class="lbl">承認者が不在のときの扱い</div>
@@ -186,13 +215,35 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
 </div>
 
 <script>
-/* 4つの見え方。同じ1枚を、どこまで寄って見るか。 */
+/* 5つの見え方。同じ1枚を、どこまで寄って見るか。
+   0 だけ意味が違う —— 引ききって、他の線が全部見えるところ。 */
 const VIEWS = [
+  { nm:'全体',     x:   0, y:   0, w:2400, h:1500 },
   { nm:'経営',     x:  60, y: 440, w: 700, h: 420 },
   { nm:'決める',   x: 850, y: 360, w: 530, h: 460 },
   { nm:'形',       x:1460, y: 400, w: 470, h: 340 },
   { nm:'欄ひとつ', x:1990, y: 570, w: 340, h: 250 }
 ];
+
+/* 他の線。1本＝決まっていない欄ひとつ。
+   本数で殴るので、ここは見た目の量が全部。 */
+(function field(){
+  const N = 260;
+  let d = '';
+  for (let i = 0; i < N; i++){
+    const y  = 40 + Math.random() * 1420;
+    const x  = -60 + Math.random() * 320;
+    const w  = 900 + Math.random() * 1500;
+    const a  = (Math.random() - .5) * 240;
+    const b  = (Math.random() - .5) * 240;
+    d += 'M ' + x.toFixed(0) + ' ' + y.toFixed(0)
+       + ' C ' + (x + w * .33).toFixed(0) + ' ' + (y + a).toFixed(0)
+       + ', '  + (x + w * .66).toFixed(0) + ' ' + (y + b).toFixed(0)
+       + ', '  + (x + w).toFixed(0) + ' ' + (y + a * .3).toFixed(0) + ' ';
+  }
+  document.getElementById('field').innerHTML = '<path d="' + d + '"/>';
+  document.getElementById('cnt').textContent = N + 1;
+})();
 
 let cur = 0;
 
@@ -208,9 +259,14 @@ function apply(i){
     'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
 
   // いま見ているところ以外は薄くする。1枚であることは保ったまま。
+  // ただし全体（0）の見出しは、寄ったら完全に消す。邪魔になるので。
   document.querySelectorAll('.node').forEach(function(n){
-    n.classList.toggle('hide', +n.dataset.l !== cur);
+    const mine = +n.dataset.l === cur;
+    n.classList.toggle('hide', !mine);
+    n.classList.toggle('gone', !mine && +n.dataset.l === 0);
   });
+  // 他の線は、寄るほど引っ込む。近くで見ると邪魔なので。
+  document.getElementById('field').style.opacity = cur === 0 ? 1 : (cur === 1 ? .35 : .12);
 
   document.getElementById('depth').textContent = '×' + s.toFixed(2);
   document.querySelectorAll('#steps button').forEach(function(b, j){
