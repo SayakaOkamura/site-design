@@ -39,9 +39,11 @@ svg.field line{
 
 /* 一本の線。ここが「地続き」の実体 */
 svg.thread{position:absolute;top:0;left:0;width:2400px;height:1500px;pointer-events:none;z-index:1}
-svg.thread path{fill:none;stroke:var(--amber);stroke-width:2;opacity:.45;
+/* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
+   太さと濃さで、はっきり手前に出す。 */
+svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   stroke-dasharray:1600;stroke-dashoffset:1600;animation:draw 2.4s ease .3s forwards}
-svg.thread line.src{stroke:var(--amber);stroke-width:4;stroke-dasharray:9 7;stroke-linecap:round}
+svg.thread line.src{stroke:var(--amber);stroke-width:7;stroke-dasharray:11 8;stroke-linecap:round}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -59,6 +61,12 @@ svg.thread line.src{stroke:var(--amber);stroke-width:4;stroke-dasharray:9 7;stro
 .nf p{font-size:25px;color:var(--sub);line-height:1.9}
 .nf p b{color:var(--amber);font-family:var(--mono);font-size:30px}
 .nf .tiny{font-size:18px;color:var(--faint);margin-top:16px}
+
+/* 追いかける1つの名前。空欄のすぐ上に置く */
+.tag0{
+  left:596px;top:566px;width:760px;
+  font-size:31px;font-weight:600;color:var(--amber);letter-spacing:.02em;
+}
 
 /* L0 経営 */
 .n0{left:90px;top:520px;width:620px}
@@ -160,6 +168,9 @@ svg.thread line.src{stroke:var(--amber);stroke-width:4;stroke-dasharray:9 7;stro
          ひとつだけ、この先まで線が引いてあります。</p>
       <p class="tiny">いくつあるかは、案件ごとに数えます。</p>
     </div>
+
+    <!-- 追いかける1つが何なのか。名前が無いと、ただの色つきの線になる -->
+    <div class="node tag0" data-l="0">承認者が不在のときの扱い</div>
 
     <!-- L1 経営が困っていること -->
     <div class="node n0" data-l="1">

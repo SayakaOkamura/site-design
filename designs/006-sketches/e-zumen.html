@@ -50,7 +50,7 @@ body{
 .frame{flex:1;display:flex;flex-direction:column;min-height:0}
 
 /* 図面の外枠 */
-.frame{border:2px solid var(--line);padding:24px 26px 0;position:relative}
+.frame{border:2px solid var(--line);padding:20px 24px 0;position:relative}
 
 .cap{
   font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--thin);
@@ -58,7 +58,7 @@ body{
 }
 
 h1{font-size:20px;font-weight:600;letter-spacing:.14em;margin-bottom:3px}
-.sub{font-family:var(--mono);font-size:11px;color:var(--thin);margin-bottom:22px}
+.sub{font-family:var(--mono);font-size:11px;color:var(--thin);margin-bottom:12px}
 
 /* ---------- 部屋割り。面積が主張になる ---------- */
 .plan{
@@ -66,10 +66,10 @@ h1{font-size:20px;font-weight:600;letter-spacing:.14em;margin-bottom:3px}
   grid-template-columns:2.2fr 1fr 1fr;
   grid-template-rows:1fr 1fr;
   gap:0;border:1px solid var(--line);margin-bottom:4px;
-  flex:1;                /* 面積が主張なので、ここが一番大きくなる */
+  flex:1;min-height:0;   /* 面積が主張。min-height:0 が無いと縮まず下がはみ出す */
 }
 .rm{border-right:1px solid var(--line);border-bottom:1px solid var(--line);
-    padding:14px 15px 16px;position:relative;min-height:68px}
+    padding:12px 15px 15px;position:relative;min-height:64px;overflow:hidden}
 .rm:nth-child(3),.rm:nth-child(5){border-right:0}
 .rm .n{font-family:var(--mono);font-size:10px;color:var(--thin);letter-spacing:.1em}
 .rm h2{font-size:15.5px;font-weight:600;margin:3px 0 5px;letter-spacing:.04em}
@@ -86,7 +86,7 @@ h1{font-size:20px;font-weight:600;letter-spacing:.14em;margin-bottom:3px}
 .rm.main p{color:#dbe9f4;font-size:12.5px}
 
 /* ---------- 寸法線 ---------- */
-.dim{display:flex;align-items:center;gap:8px;margin:8px 0 20px;
+.dim{display:flex;align-items:center;gap:8px;margin:6px 0 12px;
      font-family:var(--mono);font-size:10px;color:var(--thin)}
 .dim .bar{flex:1;height:1px;background:var(--thin);position:relative}
 .dim .bar::before,.dim .bar::after{
@@ -95,7 +95,7 @@ h1{font-size:20px;font-weight:600;letter-spacing:.14em;margin-bottom:3px}
 .dim .bar::before{left:0} .dim .bar::after{right:0}
 
 /* ---------- 注記・凡例 ---------- */
-.two{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin:0 0 20px;flex:0 0 auto}
+.two{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin:0 0 14px;flex:0 0 auto}
 h3{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--thin);
    border-bottom:1px solid var(--thin);padding-bottom:5px;margin-bottom:9px}
 .notes{list-style:none;font-size:12.5px;color:#c5dbeb}
