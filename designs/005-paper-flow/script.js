@@ -443,7 +443,7 @@ function addHoles(){
   plan.gaps.forEach(function(g, i){
     const dt = document.createElement('dt');
     dt.className = 'hole-k';
-    dt.textContent = g.n;   // 欄の名前。付箋には場面の問いを書く。
+    dt.textContent = g.n;   // 欄の名前。
     const dd = document.createElement('dd');
     dd.className = 'hole-v';
     dd.innerHTML = '<span class="blank">＿＿＿＿＿＿＿</span>';
