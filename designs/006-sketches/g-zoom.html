@@ -64,8 +64,18 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   from{opacity:0;transform:translateY(10px)}
   to  {opacity:1;transform:none}
 }
+/* あとから足されたもの。まず画面が出そろって、間があってから入る。
+   同時に出ると「最初からあった」に見えて、洗い出した感が出ない。
+   横から入れて、出方も分ける。 */
+.node.on .add{
+  animation:addIn .5s cubic-bezier(.2,.8,.25,1) calc(var(--i) * .11s + 1.6s) backwards;
+}
+@keyframes addIn{
+  from{opacity:0;transform:translateX(-14px)}
+  to  {opacity:1;transform:none}
+}
 @media (prefers-reduced-motion: reduce){
-  .node.on .r{animation:none}
+  .node.on .r,.node.on .add{animation:none}
   #canvas,.rail i,.rail b{transition:none}
 }
 
@@ -211,9 +221,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       <div class="k">株式会社アルターデザインコンサルティング</div>
       <!-- 何を売っているかを先に言う。「決めていないことを見つける」だけだと、
            コンサルなのか開発なのか分からない。 -->
+      <!-- 「作る前に」は使わない。この先で画面を作って見せるので、
+           作る前と言うと矛盾して読める。実際に起きること（設計で先に出す）で言う。 -->
       <h1>業務システムを、<br>決めるところから作ります。</h1>
-      <p>決めていないところは、作ったあとに必ず出てきます。<br>
-         だから、<b>作る前に見つけます</b>。</p>
+      <p>決めていないところは、動かしてから出てきます。<br>
+         だから、<b>設計の段階で先に出します</b>。</p>
     </div>
 
     <!-- 二 例。ここでは「決まっていない3つ」を先に言わない。
@@ -241,19 +253,19 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
           <dt>承認者</dt><dd class="r" style="--i:3"><span class="v">所属長</span></dd>
           <!-- 誰が洗い出したのかを、ブロックに直接貼る。
                下の説明文だけでは「勝手に空欄がある」に見える。 -->
-          <dt class="found r" style="--i:4"></dt>
-          <dd class="found r" style="--i:4">うちが洗い出したところ</dd>
-          <dt class="gk r" style="--i:5">不在のとき</dt>
-          <dd class="gap r" style="--i:5"><span class="blank">＿＿＿＿＿＿</span></dd>
-          <dt class="gk r" style="--i:6">上に上げる額</dt>
-          <dd class="gap r" style="--i:6"><span class="blank">＿＿＿＿＿＿</span></dd>
-          <dt class="gk r" style="--i:7">出したあとの取り下げ</dt>
-          <dd class="gap r" style="--i:7"><span class="blank">＿＿＿＿＿＿</span></dd>
+          <dt class="found add" style="--i:0"></dt>
+          <dd class="found add" style="--i:0">うちが洗い出したところ</dd>
+          <dt class="gk add" style="--i:1">不在のとき</dt>
+          <dd class="gap add" style="--i:1"><span class="blank">＿＿＿＿＿＿</span></dd>
+          <dt class="gk add" style="--i:2">上に上げる額</dt>
+          <dd class="gap add" style="--i:2"><span class="blank">＿＿＿＿＿＿</span></dd>
+          <dt class="gk add" style="--i:3">出したあとの取り下げ</dt>
+          <dd class="gap add" style="--i:3"><span class="blank">＿＿＿＿＿＿</span></dd>
         </dl>
       </div>
       <!-- 誰が見つけたのかを書く。空欄が勝手にあるだけでは、
            見つけてもらった感じにならない。 -->
-      <p class="cap2 r" style="--i:9">
+      <p class="cap2 add" style="--i:5">
         決まっているところは、そのまま埋まります。<br>
         <b>決まっていないところを、うちが洗い出します。</b>
         この画面では 3 つ残りました。
@@ -267,12 +279,13 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
          決めるのは御社、作るのはうち。そのうえで会社概要を小さく置く。 -->
     <div class="node nc" data-l="3">
       <!-- 「決めるのは御社です」を主役にすると丸投げに読める。
-           うちがしたこと（作る前に見つけた）を主語にする。 -->
+           うちがしたこと（設計の段階で見つけた）を主語にする。 -->
       <div class="k" style="--i:0">うちがしたこと</div>
-      <h1 class="r" style="--i:1"><b>作る前に</b>、3つ見つけました。</h1>
-      <p class="r" style="--i:2">作ったあとに出ていたら、できたものを作り直すことになります。</p>
+      <h1 class="r" style="--i:1"><b>設計の段階で</b>、3つ見つけました。</h1>
+      <p class="r" style="--i:2">このまま作っていたら、動かしてから出てきます。
+         そのときは、できたものを作り直すことになります。</p>
       <p class="r" style="--i:3">決めるのは御社の会議です。うちがするのは、
-         <b>その会議の議題を、作る前に用意すること</b>です。</p>
+         <b>その会議の議題を、先に用意すること</b>です。</p>
 
       <!-- 業務システム開発だけの会社に見えていた。実際は4本ある -->
       <div class="cols">
