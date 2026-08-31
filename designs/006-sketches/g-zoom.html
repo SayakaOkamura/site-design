@@ -527,7 +527,7 @@ function buildViews(){
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      締めは引いて渡す（z を山場より下げる）。狭い画面では2回に分けて寄る。 */
   if (innerWidth >= 760){
-    V.push({ nm:'会社', node:3, sel:['.n5'], w: 960, h: 600, z: 1.00 });
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 910, h: 550, z: 0.95 });
   } else {
     V.push({ nm:'会社',     node:3, sel:['.n5 .head', '.n5 .p1'] });
     V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'] });
