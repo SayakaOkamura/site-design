@@ -511,22 +511,23 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    node は、どの段を濃く出すか（.node の data-l）。
    狭い画面では、会社の段だけ2つの view に割る。段の数は変えない。 */
 function buildViews(){
+  /* z は「寄り具合」。段どうしの比だけを決める数字で、実際の縮尺は measure() が出す。
+     縮尺を枠から出させていたら、幅で決まる段と高さで決まる段が混ざって、
+     窓の大きさによって山場が入れ替わっていた（背の高い窓では三段目が頂点になっていた）。
+     w / h は「この大きさに収まる」という上限だけを言う。中身＋余白で取る。 */
   const V = [
-    { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 480 },
+    { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 250, z: 0.92 },
     /* 形の段は2つに分けて寄る。段は増えるが、画面は出しっぱなしなので
        同じ紙の上にいることは崩れない。add が付いている view で帯を出す。 */
-    { nm:'形',       node:1, sel:['.n2'], w: 490, h: 430 },
-    { nm:'洗い出す', node:1, sel:['.n2'],                  w: 450, h: 400, add:true },
-    /* 行為とその理由。ここが山場。決めるのは御社、作るのはうち */
-    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 300 }
+    { nm:'形',       node:1, sel:['.n2'], w: 490, h: 320, z: 1.03 },
+    { nm:'洗い出す', node:1, sel:['.n2'], w: 800, h: 380, z: 1.14, add:true },
+    /* 行為とその理由。ここが山場。z がいちばん大きい */
+    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.25 }
   ];
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
-     狭い画面だと1枚に収まらず縮むので、そこだけ2回に分けて寄る。 */
+     締めは引いて渡す（z を山場より下げる）。狭い画面では2回に分けて寄る。 */
   if (innerWidth >= 760){
-    /* 会社は1回で渡す。理念・サービス・会社概要をまとめて出す。
-       3つに割ったこともあるが、山場のあとに3回スワイプさせることになって尾が長い。
-       字は割ったときに上げたまま残してある（会社概要 14px）。 */
-    V.push({ nm:'会社', node:3, sel:['.n5'], w: 1020, h: 470 });   /* 字を大きくしたぶん枠も要る */
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 960, h: 600, z: 1.00 });
   } else {
     V.push({ nm:'会社',     node:3, sel:['.n5 .head', '.n5 .p1'] });
     V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'] });
@@ -584,13 +585,27 @@ function measure(){
   marks = VIEWS.map(function(v){
     n2.classList.toggle("reveal", !!v.add);
     const bx = box(v.sel);
-    const s = vw < 760
-      ? Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24))
-      : Math.min(vw / v.w, vh / v.h) * 0.86;
-    return { s:s, cx:bx.x + bx.w / 2, cy:bx.y + bx.h / 2, nm:v.nm, node:v.node, add:v.add };
+    return {
+      z:   v.z || 1,
+      fit: Math.min(vw / v.w, vh / v.h),                        // これ以上寄るとはみ出す
+      tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
+      cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
+      nm: v.nm, node: v.node, add: v.add
+    };
   });
 
   n2.classList.toggle("reveal", was);
+
+  /* 寄り具合は z の比で決める。k は「どの段もはみ出さない」いちばん大きい倍率。
+     こうすると z の比がそのまま画面に出るので、窓が変わっても
+     進み方も順番も崩れない。枠は上限を言うだけで、進み方には口を出さない。 */
+  if (vw < 760){
+    marks.forEach(function(m){ m.s = m.tight; });
+  } else {
+    let k = Infinity;
+    marks.forEach(function(m){ k = Math.min(k, m.fit / m.z); });
+    marks.forEach(function(m){ m.s = k * m.z; });
+  }
 }
 
 /* スクロール位置が、そのまま「何段目か」。段と段のあいだは小数になるので、
