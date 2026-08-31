@@ -50,16 +50,16 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
 #track{height:100%;display:flex}
 #track .stop{flex:0 0 100%;height:100%;scroll-snap-align:start}
 #canvas{
-  position:absolute;top:0;left:0;width:4560px;height:1500px;
+  position:absolute;top:0;left:0;width:4800px;height:1500px;
   transform-origin:0 0;   /* スクロールに毎フレーム追従するので、transition は置かない */
 }
 
 /* 一本の線。ここが「地続き」の実体 */
-svg.thread{position:absolute;top:0;left:0;width:4560px;height:1500px;pointer-events:none;z-index:1}
+svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2540;stroke-dashoffset:2540;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:2790;stroke-dashoffset:2790;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -115,18 +115,24 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   .n0 .by{font-size:12px;margin-bottom:14px}
   .n0 .lead{font-size:15px}
 
+  /* 狭い画面では横に並べられないので、束はカードの下に戻す。
+     ここだけは縦に伸びるが、330px に横並びは入らない。 */
   .n2{left:1900px;width:330px}
+  .n2 .row{display:block}
+  .n2 .col,.n2 .win{width:330px}
+  .n2 .found{width:330px;margin-top:20px}
   .n2 dl{grid-template-columns:88px 1fr;font-size:12.5px;row-gap:8px}
+  .n2 .found dl{grid-template-columns:1fr}
   .n2 .cap2{font-size:12px}
 
-  .nc{left:2540px;width:330px}
+  .nc{left:2780px;width:330px}
   .nc h1{font-size:24px}
   .nc p{font-size:13.5px}
 
   /* 会社の段だけ、狭い画面では2つに割って寄る（JS 側で段を分けている）。
      縦に積むと下へ動くことになって、他の段と動きが食い違う。
      横に並べれば、割ったあとも左から右のまま。 */
-  .n5{left:3000px;width:700px}
+  .n5{left:3240px;width:700px}
   .n5 .head{width:330px}
   .n5 h1{font-size:20px;margin-bottom:14px}
   .n5 .cols{grid-template-columns:330px 330px;gap:40px}
@@ -146,7 +152,30 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n0 .lead b{color:var(--amber)}
 
 /* 二 形と、埋まる欄 */
-.n2{left:1900px;top:420px;width:430px}
+/* 幅は中身なり。洗い出した束を畳んだときは、カードのぶんだけになる。
+   固定幅にすると、畳んでいる間に右側の空きぶんだけ中央がずれる。 */
+.n2{left:1900px;top:420px;width:max-content}
+.n2 .row{display:flex;align-items:flex-start;gap:30px}
+.n2 .col{flex:none;width:430px}
+.n2 .win{width:430px}
+
+/* 洗い出した束。カードの外の右。
+   カードの罫線と揃う位置に置いて、同じ紙の続きに見えるようにする。 */
+.n2 .found{
+  flex:none;width:280px;margin-top:36px;
+  border-left:2px solid var(--amber);padding-left:18px;
+}
+.n2 .found .fh{
+  font-size:10px;letter-spacing:.12em;color:var(--amber);font-weight:600;
+  margin-bottom:14px;
+}
+.n2 .found dl{display:block;padding:0}
+.n2 .found dt{font-size:13.5px;margin-bottom:5px}
+/* 空欄そのもの。列いっぱいに引く */
+.n2 .found dd{
+  height:0;border-bottom:1px dashed var(--amber);margin-bottom:20px;
+}
+.n2 .found dd:last-child{margin-bottom:0}
 .n2 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n2 .win{
   background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-top:8px;
@@ -175,17 +204,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 dd .v{border-bottom:1px solid var(--line);padding-bottom:1px}
 /* 決まっていないところは、空欄のまま残す。勝手に埋めない。
    ここで埋めると「AI が決めた」に戻る。見つけるところまでがうちの仕事。 */
-/* ここが山場。見つけた3つが、ひとかたまりに見えるように地を敷く。
-   box-shadow で敷くので、桁がずれない。 */
-.n2 dt.gk,.n2 dd.gap,.n2 .found{
-  background:#fdf3e6;box-shadow:0 0 0 5px #fdf3e6;border-radius:2px;
-}
-/* 見出し。この帯が誰の仕事かを、帯の中で言う */
-.n2 dd.found{
-  font-size:10px;letter-spacing:.12em;color:var(--amber);font-weight:600;
-  padding-top:4px;
-}
-.n2 dt.found{padding-top:4px}
+/* カードの中に置いていた頃は、ひとかたまりに見せるために地を敷いていた。
+   外に出したので、罫と余白で足りる。 */
 .n2 dt.gk{color:var(--amber);font-weight:600}
 .n2 dd.gap .blank{
   border-bottom:1px dashed var(--amber);color:var(--amber);
@@ -195,7 +215,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
-.nc{left:2540px;top:430px;width:820px}
+.nc{left:2780px;top:430px;width:820px}
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す。
    会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
@@ -206,7 +226,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 四 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
    別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
-.n5{left:3560px;top:450px;width:900px}
+.n5{left:3800px;top:450px;width:900px}
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
 .n5 .cols{
@@ -306,10 +326,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 <div id="stage">
   <div id="canvas">
 
-    <svg class="thread" viewBox="0 0 4560 1500">
+    <svg class="thread" viewBox="0 0 4800 1500">
       <path d="M 1020 600 C 1300 600, 1590 640, 1870 640
-               S 2500 700, 2570 700
-               S 3470 650, 3540 650" />
+               S 2740 700, 2810 700
+               S 3710 650, 3780 650" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
@@ -342,6 +362,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
          勝手に埋めない。見つけるところまでがうちの仕事で、決めるのは会議。 -->
     <div class="node n2" data-l="1">
       <div class="k" style="--i:0">形にすると</div>
+      <div class="row">
+      <div class="col">
       <div class="win r" style="--i:1">
         <!-- 画面が出そろってから帯が入るまでの間を、無音にしない。
              何も起きない 0.5 秒は「読み込みが止まった」に見える。
@@ -353,16 +375,6 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
           <dt>申請日</dt><dd class="r" style="--i:2"><span class="v">8/28</span></dd>
           <dt>金額</dt><dd class="r" style="--i:3"><span class="v">48,000 円</span></dd>
           <dt>承認者</dt><dd class="r" style="--i:3"><span class="v">所属長</span></dd>
-          <!-- 誰が洗い出したのかを、ブロックに直接貼る。
-               下の説明文だけでは「勝手に空欄がある」に見える。 -->
-          <dt class="found add" style="--i:0"></dt>
-          <dd class="found add" style="--i:0">うちが洗い出したところ</dd>
-          <dt class="gk add" style="--i:1">不在のとき</dt>
-          <dd class="gap add" style="--i:1"><span class="blank">＿＿＿＿＿＿</span></dd>
-          <dt class="gk add" style="--i:2">上に上げる額</dt>
-          <dd class="gap add" style="--i:2"><span class="blank">＿＿＿＿＿＿</span></dd>
-          <dt class="gk add" style="--i:3">出したあとの取り下げ</dt>
-          <dd class="gap add" style="--i:3"><span class="blank">＿＿＿＿＿＿</span></dd>
         </dl>
       </div>
       <!-- 誰が見つけたのかを書く。空欄が勝手にあるだけでは、
@@ -372,8 +384,29 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
         <b>決まっていないところを、うちが洗い出します。</b>
         この画面では 3 つ残りました。
       </p>
+      </div>
+
+      <!-- 洗い出した3つは、カードの外の右に出す。
+           下に足すと縦に伸びることになって、全体が左から右へ動くのと食い違う。
+           狭い画面で会社の段を横に割ったのと同じ理由。
+           カードから琥珀の線が伸びて、この束に繋がる。地続きの実体をここでも使う。 -->
+      <!-- 空欄は字（＿＿＿）ではなく罫で出す。字だと幅が中身なりで短く、
+           欄に見えずただの点線になる。列いっぱいに引くと欄になる。 -->
+      <div class="found add" style="--i:0">
+        <div class="fh">うちが洗い出したところ</div>
+        <dl>
+          <dt class="gk add" style="--i:1">不在のとき</dt>
+          <dd class="gap add" style="--i:1"></dd>
+          <dt class="gk add" style="--i:2">上に上げる額</dt>
+          <dd class="gap add" style="--i:2"></dd>
+          <dt class="gk add" style="--i:3">出したあとの取り下げ</dt>
+          <dd class="gap add" style="--i:3"></dd>
+        </dl>
+      </div>
+      </div>
     </div>
 
+    <!-- ここは触っていない -->
     <!-- 会社概要。責任の所在。
          書類でも「仕様」欄は小さい字で細かく書く。一番寄ったところに置いて、
          寄りの流れを崩さない。 -->
