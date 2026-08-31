@@ -624,7 +624,7 @@ function measure(){
   } else {
     let k = Infinity;
     marks.forEach(function(m){ k = Math.min(k, m.fit / m.z); });
-    marks.forEach(function(m){ m.s = k * m.z; });
+    marks.forEach(function(m){ m.s = k * m.z * ROOM; });
   }
 }
 
@@ -633,6 +633,11 @@ function measure(){
 /* 画面の左には社名と進み具合の線があって、右には縮尺しかない。
    ちょうど真ん中に置くと、そのぶん左に寄って見えるので、少しだけ右へ。 */
 const NUDGE = 16;
+
+/* 全体の大きさ。1.0 だと、いちばん寄れない段が枠いっぱいになる。
+   下げると全部が一律に小さくなる。段どうしの比（z）は変わらない。
+   ここを触ると字の大きさが全部変わるので、まずここで合わせること。 */
+const ROOM = 0.90;
 
 function draw(){
   const vw = innerWidth, vh = innerHeight - 64;
