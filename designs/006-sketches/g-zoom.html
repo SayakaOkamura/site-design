@@ -79,18 +79,26 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   from{opacity:0;transform:translateY(10px)}
   to  {opacity:1;transform:none}
 }
-/* あとから足されたもの。まず画面が出そろって、間があってから入る。
-   同時に出ると「最初からあった」に見えて、洗い出した感が出ない。
-   横から入れて、出方も分ける。 */
-.node.on .add{
-  animation:addIn .5s cubic-bezier(.2,.8,.25,1) calc(var(--i) * .11s + 1.5s) backwards;
+/* あとから足されたもの。同時に出ると「最初からあった」に見えて、洗い出した感が出ない。
+   前は 1.5 秒の遅延で出していたが、一拍しかなくて速かった。
+   秒数で待たせるのをやめて、段を分けた。スクロールが引き金になるので、
+   速すぎ／遅すぎが原理的に無くなる。
+   既定では隠す。動きで出しているのではなく、寄る先で出しているので、
+   「動きは中身を出す条件にしない」には触れない（動きを切っても .reveal で見える）。 */
+/* opacity で隠すと場所だけ空いて、カードの下に空白が残る。
+   何か出ると先に分かってしまうので、畳んでおく。
+   寄るとカードが縦に伸びるので、伸びること自体が出来事になる。 */
+.n2 .add{display:none}
+.n2.reveal .add{
+  display:block;
+  animation:addIn .5s cubic-bezier(.2,.8,.25,1) calc(var(--i) * .11s) backwards;
 }
 @keyframes addIn{
   from{opacity:0;transform:translateX(-14px)}
   to  {opacity:1;transform:none}
 }
 @media (prefers-reduced-motion: reduce){
-  .node.on .r,.node.on .add,.node.on .scan{animation:none}
+  .node.on .r,.n2.reveal .add,.node.on .scan{animation:none}
   .n2 .scan{display:none}
   #canvas,.rail i,.rail b{transition:none}
 }
@@ -468,7 +476,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 function buildViews(){
   const V = [
     { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 480 },
+    /* 形の段は2つに分けて寄る。段は増えるが、画面は出しっぱなしなので
+       同じ紙の上にいることは崩れない。add が付いている view で帯を出す。 */
     { nm:'形',       node:1, sel:['.n2'], w: 490, h: 430 },
+    { nm:'洗い出す', node:1, sel:['.n2'],                  w: 450, h: 400, add:true },
     /* 行為とその理由。ここが山場。決めるのは御社、作るのはうち */
     { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 300 }
   ];
@@ -526,13 +537,19 @@ function measure(){
      横長の枠を幅 390 に合わせると字が読めなくなるので、縮小するくらいなら動かすだけにする。
      真ん中は、枠ではなく実物で取る。枠は「どこまで寄るか」を決めるためだけの数字で、
      中身の実寸とは一致しない（枠で取っていたら、形の段が 39px 下にずれていた）。 */
+  /* 帯を畳んだまま測ると、寄り先が畳んだときの大きさで決まってしまう。
+     出したときの姿で測る必要があるので、測る間だけ .reveal を当てる。 */
+  const n2 = document.querySelector(".n2");
+  const was = n2.classList.contains("reveal");
   marks = VIEWS.map(function(v){
+    n2.classList.toggle("reveal", !!v.add);
     const bx = box(v.sel);
     const s = vw < 760
       ? Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24))
       : Math.min(vw / v.w, vh / v.h) * 0.86;
-    return { s:s, cx:bx.x + bx.w / 2, cy:bx.y + bx.h / 2, nm:v.nm, node:v.node };
+    return { s:s, cx:bx.x + bx.w / 2, cy:bx.y + bx.h / 2, nm:v.nm, node:v.node, add:v.add };
   });
+  n2.classList.toggle("reveal", was);
 }
 
 /* スクロール位置が、そのまま「何段目か」。段と段のあいだは小数になるので、
@@ -572,6 +589,8 @@ function draw(){
     el.classList.toggle('hide', !mine);
     if (!mine) el.classList.remove('on');
   });
+  // 洗い出した帯は、そこに寄ったときに出す。戻れば畳む
+  document.querySelector('.n2').classList.toggle('reveal', !!m.add);
   // .on は一度外してから、レイアウトを挟んで付け直す。
   // そうしないと、戻ってきたときにアニメーションが再生されない。
   // 同じ段の中で寄る先だけ変わるときは .on が外れないので、出し直しも起きない。
