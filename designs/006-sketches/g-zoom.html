@@ -135,7 +135,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   .n5 .head{width:330px}
   .n5 h1{font-size:20px;margin-bottom:14px}
   .n5 .cols{grid-template-columns:330px 330px;gap:40px}
-  .n5 dl{grid-template-columns:66px 1fr;font-size:11.5px}
+  .n5 dl{grid-template-columns:66px 1fr;font-size:14px}
   .n5 ul.svc li{font-size:12.5px}
 }
 
@@ -216,13 +216,15 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n5{left:3800px;top:450px;width:900px}
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
+/* 3つに割って寄るので、ひとまとめで読ませる必要がない。
+   間を広げて、それぞれが枠に収まるようにする。 */
 .n5 .cols{
-  display:grid;grid-template-columns:1fr 1.35fr;gap:40px;
-  border-top:1px solid var(--line);padding-top:16px;
+  display:grid;grid-template-columns:1fr 1.3fr;gap:64px;
+  border-top:1px solid var(--line);padding-top:20px;
 }
 .n5 h2{
-  font-size:10px;font-weight:600;letter-spacing:.16em;color:var(--faint);
-  margin-bottom:9px;
+  font-size:11px;font-weight:600;letter-spacing:.16em;color:var(--faint);
+  margin-bottom:12px;
 }
 /* サービスは名前だけだと何をする会社か伝わらない。一行ずつ中身を付ける */
 .n5 ul.svc{list-style:none}
@@ -230,21 +232,21 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   font-size:13px;color:var(--ink);padding:0 0 10px 13px;position:relative;line-height:1.55;
 }
 .n5 ul.svc li::before{content:"—";position:absolute;left:0;color:var(--amber)}
-.n5 ul.svc li span{display:block;font-size:11.5px;color:var(--sub);line-height:1.65}
+.n5 ul.svc li span{display:block;font-size:13px;color:var(--sub);line-height:1.75}
 /* 会社概要は責任の所在。小さすぎると読む気にならない */
 .n5 dl{
-  display:grid;grid-template-columns:78px 1fr;column-gap:14px;row-gap:5px;
-  font-size:11.5px;line-height:1.7;
+  display:grid;grid-template-columns:92px 1fr;column-gap:16px;row-gap:7px;
+  font-size:14px;line-height:1.75;
 }
 .n5 dt{color:var(--faint)}
 /* 社名の途中で折れると読みにくい（「株式会／社サーバーワークス」になっていた）。
    keep-all で、区切りの ／ でだけ折る。 */
 .n5 dd{color:var(--sub);word-break:keep-all;overflow-wrap:anywhere}
-.n5 .ct{font-size:12.5px;color:var(--sub);margin-top:16px;line-height:1.7}
+.n5 .ct{font-size:13.5px;color:var(--sub);margin-top:18px;line-height:1.75}
 .n5 .ct a{color:var(--amber)}
 /* 実績が無いことを、隠さずに書く。書けば、それ自体が会社の状態の説明になる。
    読ませる気のない薄さにすると、隠しているのと同じになる */
-.n5 .none{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.7}
+.n5 .none{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.75}
 
 /* ---------- 操作 ----------
    ボタンは置かない。押すものが並んでいると「操作盤」に見えて、
@@ -502,7 +504,12 @@ function buildViews(){
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      狭い画面だと1枚に収まらず縮むので、そこだけ2回に分けて寄る。 */
   if (innerWidth >= 760){
-    V.push({ nm:'会社', node:3, sel:['.n5'], w: 960, h: 430 });
+    /* 会社の段は3つに割って寄る。段は増やさず、寄る先だけ分ける。
+       ひとまとめだと会社概要が 11.5px のままで、画面には余っているのに読めない。
+       割れば、それぞれ読める大きさで出せる。 */
+    V.push({ nm:'理念',     node:3, sel:['.n5 .head'], w: 1040, h: 300 });
+    V.push({ nm:'サービス', node:3, sel:['.n5 .p1'],   w:  640, h: 430 });
+    V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'],   w:  700, h: 450 });
   } else {
     V.push({ nm:'会社',     node:3, sel:['.n5 .head', '.n5 .p1'] });
     V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'] });
