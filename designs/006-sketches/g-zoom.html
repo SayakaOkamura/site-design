@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2790;stroke-dashoffset:2790;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:2960;stroke-dashoffset:2960;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -325,9 +325,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4800 1500">
-      <path d="M 1020 600 C 1300 600, 1590 640, 1870 640
-               S 2740 700, 2810 700
-               S 3710 650, 3780 650" />
+      <!-- 降りっぱなしの一本。折り返さない。
+           前は 600 → 640 → 700 → 650 で、最後に上がっていた。
+           その折り返しに理由が無く、角度が奇妙に見えていた。
+           傾きは 5 度から 11 度へ、ゆるく増えるだけ。どの段の下も通る。 -->
+      <path d="M 1020 620 C 1800 700, 3000 1060, 3900 1220" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
