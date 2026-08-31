@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2790;stroke-dashoffset:2790;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:3420;stroke-dashoffset:3420;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -124,7 +124,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   .n2{left:1900px;width:330px}
   .n2 .row{display:block}
   .n2 .col,.n2 .win{width:330px}
-  .n2 .found{width:330px;margin-top:20px}
+  /* 狭い画面では線が横に来ないので、ここだけ罫を引く */
+  .n2 .found{width:330px;margin-top:20px;border-left:2px solid var(--amber);padding-left:14px}
   .n2 dl{grid-template-columns:88px 1fr;font-size:12.5px;row-gap:8px}
   .n2 .found dl{grid-template-columns:1fr}
   .n2 .cap2{font-size:12px}
@@ -167,9 +168,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    カードの罫線と揃う位置に置いて、同じ紙の続きに見えるようにする。 */
 /* 束の1行目が、カードの1行目と同じ高さに来るようにする。
    見出し（うちが洗い出したところ）は、カードの見出しの横に並ぶ。 */
+/* 縦罫は引かない。琥珀の線がすき間に落ちてきて、そこが仕切りになる。 */
 .n2 .found{
   flex:none;width:280px;margin-top:40px;
-  border-left:2px solid var(--amber);padding-left:18px;
+  padding-left:18px;
 }
 .n2 .found .fh{
   font-size:10px;letter-spacing:.12em;color:var(--amber);font-weight:600;
@@ -208,7 +210,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
-.nc{left:2780px;top:300px;width:820px}
+.nc{left:2780px;top:880px;width:820px}
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す。
    会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
@@ -322,9 +324,14 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4800 1500">
-      <path d="M 1020 430 C 1400 430, 1660 1010, 2060 1010
-               C 2420 1010, 2560 500, 2920 500
-               C 3280 500, 3520 960, 3900 960" />
+      <!-- 道筋。曲げるのではなく、直角に落とす。
+           落ちる場所は、カード（言われたこと）と補足（言われていないこと）のすき間。
+           x=2345 はその中央。線が二つを分ける仕切りになり、
+           三段目では線の向こう側に補足が出てくる。 -->
+      <path d="M 1000 470
+               L 2210 470  Q 2345 470, 2345 605
+               L 2345 1080 Q 2345 1215, 2480 1215
+               L 3760 1215" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
