@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2900;stroke-dashoffset:2900;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:3480;stroke-dashoffset:3480;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -202,7 +202,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    ここで埋めると「AI が決めた」に戻る。見つけるところまでがうちの仕事。 */
 /* カードの中に置いていた頃は、ひとかたまりに見せるために地を敷いていた。
    外に出したので、罫と余白で足りる。 */
-.n2 dt.gk{color:var(--amber);font-weight:600}
+/* 項目の名前は黒。見出し（うちが洗い出したところ）と縦罫と空欄の罫は琥珀のまま。
+   琥珀が三つ重なると、どれが本体か分からなくなる。 */
+.n2 dt.gk{color:var(--ink);font-weight:600}
 .n2 dd.gap .blank{
   border-bottom:1px dashed var(--amber);color:var(--amber);
   padding-bottom:1px;letter-spacing:.08em;
@@ -228,13 +230,15 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    中身が 540 と高いので、下端で揃えると中心が上に寄って、
    ここへ来るときだけ縦に 329px 動いていた（他の段は 20〜90px）。
    線は会社の手前（x3760）で止めてあるので、中を突っ切ることもない。 */
-.n5{left:3800px;top:280px;width:900px}   /* 中心 550。他の段は 546〜590 */
+/* 横に広げて、縦を縮める。会社概要の折り返しが減って、段が低くなる。
+   縦が使える高さをほぼ埋めていると、上に余白が無くなってロゴと被る。 */
+.n5{left:3800px;top:317px;width:1130px}   /* 中身 466 → 中心 550。他の段の中心は 546〜590 */
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
 /* 3つに割って寄るので、ひとまとめで読ませる必要がない。
    間を広げて、それぞれが枠に収まるようにする。 */
 .n5 .cols{
-  display:grid;grid-template-columns:1fr 1.3fr;gap:64px;
+  display:grid;grid-template-columns:1fr 1.55fr;gap:72px;
   border-top:1px solid var(--line);padding-top:20px;
 }
 .n5 h2{
@@ -334,7 +338,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       <!-- 水平に一本。二段目では、カードと説明文のあいだを通る。
            カードの下端 634、説明文の上端 678。そのあいだ（656）を通す。上下とも 22px。
            カードが線の上、説明文が線の下になる。 -->
-      <path d="M 1020 656 L 3760 656" />
+      <path d="M 300 656 L 3760 656" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
@@ -534,7 +538,10 @@ function buildViews(){
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      締めは引いて渡す（z を山場より下げる）。狭い画面では2回に分けて寄る。 */
   if (innerWidth >= 760){
-    V.push({ nm:'会社', node:3, sel:['.n5'], w: 910, h: 565, z: 0.95 });
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 1180, h: 578, z: 0.80 });
+    /* 枠の高さ 578 は「中身 466 ＋ 上下の余白」。ここを詰めると段が縦いっぱいになって、
+       上の余白が消えてロゴと被る。z が他より低いのは、締めとして引くのと、
+       横に広いぶん同じ見た目の大きさでも縮尺が下がるため。 */
     /* 枠の高さ 565 は「中身 540 ＋ 線までの 11px ＋ 余白」。
        550 だと線（645）が画面の下から 6px はみ出して見えなくなる。
        この段は中身が高いので、線まで入れるには少しだけ引く必要がある。 */
