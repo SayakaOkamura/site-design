@@ -207,7 +207,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   border-bottom:1px dashed var(--amber);color:var(--amber);
   padding-bottom:1px;letter-spacing:.08em;
 }
-.n2 .cap2{font-size:13px;color:var(--sub);margin-top:22px;line-height:1.85}
+/* 線の上下を空ける。カードの下端 634 → 線 656 → 説明文 678。上下とも 22px。 */
+.n2 .cap2{font-size:13px;color:var(--sub);margin-top:44px;line-height:1.85}
 .n2 .cap2.sub{margin-top:10px}
 .n2 .cap2 b{color:var(--amber)}
 
@@ -223,7 +224,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 四 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
    別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
-.n5{left:3800px;top:94px;width:900px}    /* 中身 540 → 94+540=634 */
+/* 会社だけ、下端ではなく中心を他の段に揃える。
+   中身が 540 と高いので、下端で揃えると中心が上に寄って、
+   ここへ来るときだけ縦に 329px 動いていた（他の段は 20〜90px）。
+   線は会社の手前（x3760）で止めてあるので、中を突っ切ることもない。 */
+.n5{left:3800px;top:280px;width:900px}   /* 中心 550。他の段は 546〜590 */
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
 /* 3つに割って寄るので、ひとまとめで読ませる必要がない。
@@ -327,9 +332,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
     <svg class="thread" viewBox="0 0 4800 1500">
       <!-- 水平に一本。二段目では、カードと説明文のあいだを通る。
-           カードの下端 634、説明文の上端 656。その 11px 下（645）を通す。
+           カードの下端 634、説明文の上端 678。そのあいだ（656）を通す。上下とも 22px。
            カードが線の上、説明文が線の下になる。 -->
-      <path d="M 1020 645 L 3900 645" />
+      <path d="M 1020 656 L 3760 656" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
