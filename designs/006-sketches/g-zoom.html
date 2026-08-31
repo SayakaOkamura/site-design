@@ -98,8 +98,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   to  {opacity:1;transform:none}
 }
 @media (prefers-reduced-motion: reduce){
-  .node.on .r,.n2.reveal .add,.node.on .scan{animation:none}
-  .n2 .scan{display:none}
+  .node.on .r,.n2.reveal .add{animation:none}
   #canvas,.rail i,.rail b{transition:none}
 }
 
@@ -161,8 +160,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 洗い出した束。カードの外の右。
    カードの罫線と揃う位置に置いて、同じ紙の続きに見えるようにする。 */
+/* 束の1行目が、カードの1行目と同じ高さに来るようにする。
+   見出し（うちが洗い出したところ）は、カードの見出しの横に並ぶ。 */
 .n2 .found{
-  flex:none;width:280px;margin-top:36px;
+  flex:none;width:280px;margin-top:40px;
   border-left:2px solid var(--amber);padding-left:18px;
 }
 .n2 .found .fh{
@@ -181,20 +182,6 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-top:8px;
   box-shadow:0 6px 20px rgba(0,0,0,.07);overflow:hidden;position:relative;
 }
-/* 見直している線。間を無音にしないための動き。
-   これが走っている間に、下の帯が入ってくる。 */
-.n2 .scan{
-  position:absolute;left:0;right:0;top:0;height:2px;opacity:0;z-index:1;
-  background:linear-gradient(90deg,transparent,rgba(180,83,9,.85),transparent);
-  pointer-events:none;
-}
-.node.on .scan{animation:scan .66s ease 1.0s backwards}
-@keyframes scan{
-  0%  {opacity:0;   top:38px}
-  18% {opacity:.95}
-  82% {opacity:.95}
-  100%{opacity:0;   top:188px}
-}
 .n2 .wb{
   background:#f7f8fa;border-bottom:1px solid var(--line);
   padding:8px 13px;font-size:13px;font-weight:600;
@@ -211,7 +198,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   border-bottom:1px dashed var(--amber);color:var(--amber);
   padding-bottom:1px;letter-spacing:.08em;
 }
-.n2 .cap2{font-size:13px;color:var(--sub);margin-top:14px;line-height:1.85}
+.n2 .cap2{font-size:13px;color:var(--sub);margin-top:22px;line-height:1.85}
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
@@ -365,10 +352,6 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       <div class="row">
       <div class="col">
       <div class="win r" style="--i:1">
-        <!-- 画面が出そろってから帯が入るまでの間を、無音にしない。
-             何も起きない 0.5 秒は「読み込みが止まった」に見える。
-             見直している動きを入れて、間に意味を持たせる。 -->
-        <div class="scan"></div>
         <div class="wb">経費申請</div>
         <dl>
           <dt>申請者</dt><dd class="r" style="--i:2"><span class="v">あなた</span></dd>
@@ -380,7 +363,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       <!-- 誰が見つけたのかを書く。空欄が勝手にあるだけでは、
            見つけてもらった感じにならない。 -->
       <p class="cap2 add" style="--i:5">
-        決まっているところは、そのまま埋まります。<br>
+        決まっているところは、そのまま埋まります。
         <b>決まっていないところを、うちが洗い出します。</b>
         この画面では 3 つ残りました。
       </p>
