@@ -27,10 +27,29 @@
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7}
 
-#view{position:fixed;inset:0;overflow:hidden}
+/* 見る層。ここは触らせない（触るのは下の #view）。
+   ひとつだけ例外があって、問い合わせのリンクは押せるようにしてある。 */
+#stage{position:fixed;inset:0;overflow:hidden;z-index:2;pointer-events:none}
+#stage a{pointer-events:auto}
+
+/* 触る層。本物の横スクロール。
+   慣性の計算はブラウザに任せて、こちらは「いまどこまで来たか」を読むだけ。
+   ひと振りがどこで終わったかを推測しない。推測をやめたのが今回の要点。
+   4回作り直して全部外したので、当てにいく作りはもう置かない。 */
+#view{
+  position:fixed;inset:0;z-index:1;
+  overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#view::-webkit-scrollbar{display:none}
+/* 停留所。1つ＝1段ぶんの幅。中身は空でいい。ここに snap が吸い寄せる */
+#track{height:100%;display:flex}
+#track .stop{flex:0 0 100%;height:100%;scroll-snap-align:start}
 #canvas{
   position:absolute;top:0;left:0;width:4560px;height:1500px;
-  transform-origin:0 0;transition:transform .85s cubic-bezier(.5,.05,.2,1);
+  transform-origin:0 0;   /* スクロールに毎フレーム追従するので、transition は置かない */
 }
 
 /* 一本の線。ここが「地続き」の実体 */
@@ -226,7 +245,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    1枚を辿っているという形が消える。
    進み具合だけ、細い線で出す。 */
 .hud{
-  position:fixed;left:0;right:0;bottom:0;
+  position:fixed;left:0;right:0;bottom:0;z-index:5;
   padding:0 22px 16px;pointer-events:none;
 }
 .rail{
@@ -234,12 +253,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 }
 .rail i{
   position:absolute;top:0;left:0;height:2px;background:var(--amber);
-  border-radius:2px;transition:width .85s cubic-bezier(.5,.05,.2,1);
+  border-radius:2px;   /* 進み具合も連続で動くので、transition は置かない */
 }
 .rail b{
   position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;
   background:var(--amber);transform:translateX(-4px);
-  transition:left .85s cubic-bezier(.5,.05,.2,1);
 }
 .foot{
   display:flex;align-items:baseline;gap:12px;margin-top:9px;
@@ -270,7 +288,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 /* いま会社概要にいるときは、行き先として出さない */
 .title.here .go{visibility:hidden}
 .depth{
-  position:fixed;top:20px;right:22px;font-family:var(--mono);font-size:10.5px;color:var(--faint);
+  position:fixed;top:20px;right:22px;z-index:5;font-family:var(--mono);font-size:10.5px;color:var(--faint);
 }
 </style>
 </head>
@@ -286,7 +304,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 </button>
 <div class="depth" id="depth">×1</div>
 
-<div id="view">
+<div id="stage">
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4560 1500">
@@ -426,6 +444,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   </div>
 </div>
 
+<!-- 触る層。見た目には何も無い。スクロールを受けるためだけに置く -->
+<div id="view"><div id="track"></div></div>
+
 <div class="hud">
   <div class="rail"><i id="bar"></i><b id="dot"></b></div>
   <div class="foot">
@@ -482,134 +503,126 @@ function box(sels){
   return { x:l, y:t, w:r - l, h:b - t };
 }
 
-let cur = 0, touched = false;
+const view   = document.getElementById('view');
+const track  = document.getElementById('track');
+const canvas = document.getElementById('canvas');
 
-function apply(i){
-  cur = Math.max(0, Math.min(VIEWS.length - 1, i));
-  const v  = VIEWS[cur];
+let marks = [];    // 段ごとの寄り先（中心と縮尺）
+let here  = -1;    // いま濃く出している段
+let touched = false;
+
+/* 停留所を、段の数だけ置く。1つ＝画面いっぱいの幅で、snap がここに吸い寄せる。 */
+function buildStops(){
+  track.innerHTML = '';
+  for (let i = 0; i < VIEWS.length; i++){
+    const d = document.createElement('div');
+    d.className = 'stop';
+    track.appendChild(d);
+  }
+}
+
+/* 寄り先は先に全部測っておく。スクロールのたびに測ると、
+   測っている先が動いてがくつく。 */
+function measure(){
   const vw = innerWidth, vh = innerHeight - 64;   // 下の帯ぶん除く
-
   /* 広い画面：枠に合わせて寄る。段ごとの縮尺の差が「地続き」の実体。
      狭い画面：寄りをやめて、原寸のまま動かすだけ。
-     横長の枠を幅 390 に合わせると字が読めなくなるので、
-     縮小するくらいなら動かすだけにする。 */
-  /* 真ん中は、枠ではなく実物で取る。
-     枠は「どこまで寄るか」を決めるためだけの数字で、中身の実寸とは一致しない。
-     枠で中央を取っていたら、形の段が 39px 下にずれて下の帯にかぶっていた。 */
-  const bx = box(v.sel);
-  const s  = vw < 760
-    ? Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24))
-    : Math.min(vw / v.w, vh / v.h) * 0.86;
-  const cx = bx.x + bx.w / 2;
-  const cy = bx.y + bx.h / 2;
+     横長の枠を幅 390 に合わせると字が読めなくなるので、縮小するくらいなら動かすだけにする。
+     真ん中は、枠ではなく実物で取る。枠は「どこまで寄るか」を決めるためだけの数字で、
+     中身の実寸とは一致しない（枠で取っていたら、形の段が 39px 下にずれていた）。 */
+  marks = VIEWS.map(function(v){
+    const bx = box(v.sel);
+    const s = vw < 760
+      ? Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24))
+      : Math.min(vw / v.w, vh / v.h) * 0.86;
+    return { s:s, cx:bx.x + bx.w / 2, cy:bx.y + bx.h / 2, nm:v.nm, node:v.node };
+  });
+}
 
-  const x = vw / 2 - cx * s;
-  const y = vh / 2 - cy * s;
+/* スクロール位置が、そのまま「何段目か」。段と段のあいだは小数になるので、
+   寄り先を混ぜて出す。段で切り替えるのではなく、1枚の上を滑って見える。 */
+function draw(){
+  const vw = innerWidth, vh = innerHeight - 64;
+  const stop = view.clientWidth || 1;
+  const last = marks.length - 1;
 
-  document.getElementById('canvas').style.transform =
-    'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+  let t = view.scrollLeft / stop;
+  t = Math.max(0, Math.min(last, t));
 
-  // いま見ているところ以外は薄くする。1枚であることは保ったまま。
-  // いる段には .on を付けて、中身を順に出す。離れたら畳んで、戻ったらまた出す。
-  document.querySelectorAll('.node').forEach(function(n){
-    const mine = +n.dataset.l === v.node;
-    n.classList.toggle('hide', !mine);
-    if (!mine){ n.classList.remove('on'); }
+  const i = Math.floor(t), j = Math.min(i + 1, last), f = t - i;
+  const A = marks[i], B = marks[j];
+  const sc = A.s  + (B.s  - A.s ) * f;
+  const cx = A.cx + (B.cx - A.cx) * f;
+  const cy = A.cy + (B.cy - A.cy) * f;
+
+  canvas.style.transform =
+    'translate(' + (vw / 2 - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
+
+  // 進み具合。押すものではなく、どこまで来たかを示すだけ
+  const pc = last ? t / last * 100 : 0;
+  document.getElementById('bar').style.width = pc + '%';
+  document.getElementById('dot').style.left  = pc + '%';
+  document.getElementById('depth').textContent = '×' + sc.toFixed(2);
+
+  // いちばん近い段を濃く出す。またいだときだけ入れ替える
+  const n = Math.round(t);
+  if (n === here) return;
+  here = n;
+  const m = marks[n];
+  document.getElementById('where').textContent = m.nm;
+  document.getElementById('toEnd').classList.toggle('here', n === last);
+  document.querySelectorAll('.node').forEach(function(el){
+    const mine = +el.dataset.l === m.node;
+    el.classList.toggle('hide', !mine);
+    if (!mine) el.classList.remove('on');
   });
   // .on は一度外してから、レイアウトを挟んで付け直す。
   // そうしないと、戻ってきたときにアニメーションが再生されない。
-  // 同じ段の中で寄る先だけ変えたときは .on が外れないので、出し直しも起きない。
-  const here = document.querySelector('.node[data-l="' + v.node + '"]');
-  if (here){ void here.offsetWidth; here.classList.add('on'); }
-
-
-  // 進み具合。押すものではなく、どこまで来たかを示すだけ。
-  const p = cur / (VIEWS.length - 1) * 100;
-  document.getElementById('bar').style.width = p + '%';
-  document.getElementById('dot').style.left  = p + '%';
-  document.getElementById('where').textContent = v.nm;
-  document.getElementById('depth').textContent = '×' + s.toFixed(2);
-  document.getElementById('toEnd').classList.toggle('here', cur === VIEWS.length - 1);
+  // 同じ段の中で寄る先だけ変わるときは .on が外れないので、出し直しも起きない。
+  const cel = document.querySelector('.node[data-l="' + m.node + '"]');
+  if (cel){ void cel.offsetWidth; cel.classList.add('on'); }
 }
 
-function move(d){
+/* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。
+   縦に回したぶんを横に流すのはブラウザがやる（横しかスクロールしない容器なので）。 */
+let ticking = false;
+view.addEventListener('scroll', function(){
   if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
-  apply(cur + d);
-}
-
-/* スクロールで右へ。ページ送りではなく、1枚の上を移動する。
-
-   トラックパッドは1回のスワイプで wheel を何十回も出すので、
-   イベントごとに進めると一気に何段も飛ぶ。指を離したあとも慣性で
-   発火し続けるため、勝手に進んでいるようにも見える。
-   だから「イベント1回＝1段」ではなく「ひと振り＝1段」で数える。 */
-/* 「静止するまで次を受け付けない」作りにしていたら、2通りに詰まった。
-     ・回し続けると、静止しないので永久に解けず、途中で止まる
-     ・ゆっくり回すと、閾値に届く前に溜めが捨てられて、いつまでも進まない
-   静止を待つのをやめて、時間で切る。 */
-/* 合図は「間があいたこと」ひとつだけにする。
-
-   トラックパッドは指を離したあとも、減衰しながら 1〜2 秒 wheel を出し続ける。
-   時間で解除する保険を入れていたら、その慣性の途中で解除が効いて、
-   止まったあとに勝手に一段進んでいた。保険そのものが原因だった。
-
-   慣性は途切れずに来るので、「間があく」ことは絶対にない。
-   だから間だけを合図にすれば、慣性を一段と数えることがない。
-   そして止まって触り直せば必ず間があくので、詰まることもない。 */
-const STEP = 70;    // これだけ動かしたら、一段
-const LOCK = 520;   // 一段ぶんを消化する時間
-const NEW  = 150;   // これだけ間があいたら、新しいひと振りの始まり
-
-let acc = 0, lastAt = 0, lockUntil = 0, armed = true;
-
-addEventListener('wheel', function(e){
-  const now = performance.now();
-  const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-
-  if (now - lastAt > NEW){ acc = 0; armed = true; }   // 触り直した
-  lastAt = now;
-
-  if (now < lockUntil || !armed) return;
-
-  acc += d;
-  if (Math.abs(acc) < STEP) return;                   // 溜めは残す。ゆっくりでも届く
-
-  lockUntil = now + LOCK;
-  armed = false;      // 次は、間があくまで受け付けない（慣性を全部捨てる）
-  const dir = acc > 0 ? 1 : -1;
-  acc = 0;
-  move(dir);
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(function(){ ticking = false; draw(); });
 }, { passive:true });
+
+function goTo(n){
+  const last = marks.length - 1;
+  view.scrollTo({ left: Math.max(0, Math.min(last, n)) * view.clientWidth, behavior:'smooth' });
+}
+function at(){ return Math.round(view.scrollLeft / (view.clientWidth || 1)); }
 
 addEventListener('keydown', function(e){
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); move(1); }
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'){   e.preventDefault(); move(-1); }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); goTo(at() + 1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'){   e.preventDefault(); goTo(at() - 1); }
 });
-
-// 触って動かせるように（スマホ・トラックパッド）
-let sx = null;
-addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, { passive:true });
-addEventListener('touchend', function(e){
-  if (sx === null) return;
-  const dx = e.changedTouches[0].clientX - sx;
-  if (Math.abs(dx) > 40) move(dx < 0 ? 1 : -1);
-  sx = null;
-}, { passive:true });
 
 /* 社名 → 会社概要。飛ぶのではなく、1枚の上を滑って行く。
    途中の段が流れて見えるので、同じ紙の上にいることが崩れない。 */
-document.getElementById('toEnd').onclick = function(){
-  if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
-  apply(VIEWS.length - 1);
-};
+document.getElementById('toEnd').onclick = function(){ goTo(marks.length - 1); };
 
-/* 幅が 760 をまたぐと、会社の段が割れたり戻ったりして view の数が変わる。
-   組み直してから、いまの位置を収まる範囲に丸める。 */
+/* 幅が 760 をまたぐと、会社の段が割れたり戻ったりして段の数が変わる。
+   停留所を置き直して、いまの位置を収まる範囲に丸める。 */
 addEventListener('resize', function(){
+  const n = at();
   VIEWS = buildViews();
-  apply(Math.min(cur, VIEWS.length - 1));
+  buildStops();
+  measure();
+  view.scrollLeft = Math.min(n, marks.length - 1) * view.clientWidth;
+  here = -1;
+  draw();
 });
-apply(0);
+
+buildStops();
+measure();
+draw();
 </script>
 </body>
 </html>
