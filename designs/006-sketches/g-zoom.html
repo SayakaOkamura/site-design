@@ -17,6 +17,8 @@
    「経営の力で」を、遷移ではなく距離で見せる。
 
    引き（全体を俯瞰する段）は置かない。1枚だと分かればいい。
+   名乗りの段も置かない。開いた瞬間に会社が自分の説明を始めると、
+   雑談で開いたのに営業を受ける構えになる。依頼から始めて、うちは3行目で出る。
    ========================================================= */
 :root{
   --bg:#f2f1ec; --ink:#14161a; --sub:#5d6673; --faint:#9aa2ae;
@@ -57,17 +59,11 @@ svg.thread{position:absolute;top:0;left:0;width:4560px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2760;stroke-dashoffset:2760;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:2540;stroke-dashoffset:2540;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
 .node.hide{opacity:.14;pointer-events:none}
-
-/* 一 うち。会社サイトの1枚目は、うちの主張から始める */
-.nu{left:120px;top:470px;width:680px}
-.nu .k{font-size:12px;letter-spacing:.18em;color:var(--faint)}
-.nu h1{font-size:62px;font-weight:600;line-height:1.36;letter-spacing:.02em;margin:10px 0 18px}
-.nu p{font-size:20px;color:var(--sub);line-height:1.95}
 
 /* 段の中で順に出す。
    スワイプの回数を減らすと1段の情報が増えるが、順に出れば目は散らない。
@@ -105,10 +101,6 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    縦は余っているので、段を縦長に組み直して、寄りをやめる。
    JS 側も、狭いときは縮尺 1 のまま動かすだけにしている。 */
 @media (max-width:760px){
-  .nu{left:120px;width:330px}
-  .nu h1{font-size:34px;margin:8px 0 14px}
-  .nu p{font-size:15px}
-  .nu .k{font-size:11px}
 
   .n0{left:900px;width:330px}
   .n0 h1{font-size:27px}
@@ -134,7 +126,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   .n5 ul.svc li{font-size:12.5px}
 }
 
-/* 二 例と、その中身 */
+/* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
 .n0{left:900px;top:330px;width:640px}
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
 /* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
@@ -145,7 +137,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n0 .lead{font-size:19px;color:var(--ink);line-height:1.9}
 .n0 .lead b{color:var(--amber)}
 
-/* 三 形と、埋まる欄 */
+/* 二 形と、埋まる欄 */
 .n2{left:1900px;top:420px;width:430px}
 .n2 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n2 .win{
@@ -194,8 +186,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 .cap2{font-size:13px;color:var(--sub);margin-top:14px;line-height:1.85}
 .n2 .cap2 b{color:var(--amber)}
 
-/* 四 見つけたあと。ここが無いと、空欄を見つけて終わりになる。
-   決めるのは御社、作るのはうち。会社概要はその下に、小さく。 */
+/* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
 .nc{left:2540px;top:430px;width:820px}
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す。
@@ -205,7 +196,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .nc p{font-size:15px;color:var(--sub);line-height:1.95;margin-bottom:10px}
 .nc p b{color:var(--ink)}
 
-/* 五 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
+/* 四 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
    別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
 .n5{left:3560px;top:450px;width:900px}
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
@@ -308,36 +299,22 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4560 1500">
-      <path d="M 860 640 C 940 640, 940 600, 1020 600
-               S 1790 640, 1870 640
+      <path d="M 1020 600 C 1300 600, 1590 640, 1870 640
                S 2500 700, 2570 700
                S 3470 650, 3540 650" />
     </svg>
 
-    <!-- 一 うち。会社サイトの1枚目は、うちの主張から始める。
-         ここを他人の愚痴にすると、引用と分かっても主張がぶれる。 -->
-    <div class="node nu" data-l="0">
-      <div class="k">株式会社アルターデザインコンサルティング</div>
-      <!-- 開いた瞬間に会社が自分の説明を始めると、雑談で開いたのに営業を受ける構えになる。
-           「業務システムを、決めるところから作ります」は売り文句なので、そこで身構える。
-           差別化はデモが見せるので、先に言葉で言う必要がない（一段目から筋を消したのと同じ）。
+    <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
+         招待（一件、つくってみます）は次の行の「まず、言われたとおりに形にしてみます」と
+         同じことを言っていた。段ごと畳んで、依頼から始める。
+         09eaa3c で「他人の愚痴から始めると主張がぶれる」として一段目を足したが、
+         あのときの一段目は主張だった。いまは引用にラベル（ある会社で聞いた話）が付いていて、
+         うちは3行目で出る。
 
-           却下リストの「抽象的な主張で始める」に当たるように見えるが、当たらない。
-           a07a21c で直したのは (1) 会社名を出す (2) 何をする会社かを出す の二つで、
-           (1) は左上のロゴと、この段のラベルが常時受けている。
-           「何をすればいいか分からない」も、招待と下の進み具合の線で解けている。
-
-           ただし説明を消すことと、何も言わないことは違う。「お見せします」だけだと
-           何の一件か分からない。動詞（つくる）で埋めると、説明せずに
-           何が起きるかが分かり、業種も匂う。二段目で依頼が来て三段目で本当に作るので、
-           予告と中身も一致する。 -->
-      <h1>一件、つくってみます。</h1>
-    </div>
-
-    <!-- 二 例。ここでは「決まっていない3つ」を先に言わない。
+         ここでは「決まっていない3つ」を先に言わない。
          それを言うと、どうやって分かったのかが抜ける。
          005 と同じ順（形にする → 足りないところが浮かぶ）に揃える。 -->
-    <div class="node n0" data-l="1">
+    <div class="node n0" data-l="0">
       <div class="k"    style="--i:0">ある会社で聞いた話</div>
       <!-- ここは謎ではなく、依頼。だから3つの空欄で解ける大きさかどうかを問われない。
            一言が短いほど効く（言われたのはこれだけ、が次の段の論拠になる）。
@@ -352,10 +329,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       <p class="lead r" style="--i:3">まず、言われたとおりに<b>形にしてみます</b>。</p>
     </div>
 
-    <!-- 三 形にすると、足りないところが浮かぶ。
+    <!-- 二 形にすると、足りないところが浮かぶ。
          決まっているものが先に埋まり、決まっていないものが空欄で残る。
          勝手に埋めない。見つけるところまでがうちの仕事で、決めるのは会議。 -->
-    <div class="node n2" data-l="2">
+    <div class="node n2" data-l="1">
       <div class="k" style="--i:0">形にすると</div>
       <div class="win r" style="--i:1">
         <!-- 画面が出そろってから帯が入るまでの間を、無音にしない。
@@ -389,12 +366,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       </p>
     </div>
 
-    <!-- 六 会社概要。責任の所在。
+    <!-- 会社概要。責任の所在。
          書類でも「仕様」欄は小さい字で細かく書く。一番寄ったところに置いて、
          寄りの流れを崩さない。 -->
-    <!-- 四 形にしたあと。ここが無いと、空欄を見つけて終わりになる。
-         決めるのは御社、作るのはうち。そのうえで会社概要を小さく置く。 -->
-    <div class="node nc" data-l="3">
+    <!-- 三 形にしたあと。ここが無いと、空欄を見つけて終わりになる。 -->
+    <div class="node nc" data-l="2">
       <!-- ここは「行為」と「その理由」を持つ。作用（そのあとどうなるか）は書かない。
            「作り直しが、起きません」「止めていたのは、この3つでした」はどちらも
            踏み越えていた。前者は価値の説明で、しかもこの画面で作って見せている以上
@@ -419,11 +395,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
     </div>
 
-    <!-- 五 会社。締めの段に会社概要まで積むと、枠が縦にも横にも伸びて
+    <!-- 四 会社。締めの段に会社概要まで積むと、枠が縦にも横にも伸びて
          そこだけ縮尺が落ちる（枠の高さと幅の両方が効くため）。
          段を分ければ、締めは締めのまま大きく出せて、会社は会社で読める。
          社名ボタンの行き先も、これでラベルどおり「会社概要」になる。 -->
-    <div class="node n5" data-l="4">
+    <div class="node n5" data-l="3">
       <!-- 狭い画面では、この段だけ「会社」「会社概要」の2つに割って寄る。
            段を増やすのではなく、同じ段の中で寄る範囲を分ける。
            .head+.p1 で1つ、.p2 で1つ。JS 側が sel を複数取れる。 -->
@@ -491,19 +467,18 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    狭い画面では、会社の段だけ2つの view に割る。段の数は変えない。 */
 function buildViews(){
   const V = [
-    { nm:'うち',     node:0, sel:['.nu'], w: 780, h: 520 },
-    { nm:'ある会社', node:1, sel:['.n0'], w: 700, h: 480 },
-    { nm:'形',       node:2, sel:['.n2'], w: 490, h: 430 },
+    { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 480 },
+    { nm:'形',       node:1, sel:['.n2'], w: 490, h: 430 },
     /* 行為とその理由。ここが山場。決めるのは御社、作るのはうち */
-    { nm:'うちがしたこと', node:3, sel:['.nc'], w: 880, h: 300 }
+    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 300 }
   ];
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      狭い画面だと1枚に収まらず縮むので、そこだけ2回に分けて寄る。 */
   if (innerWidth >= 760){
-    V.push({ nm:'会社', node:4, sel:['.n5'], w: 960, h: 430 });
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 960, h: 430 });
   } else {
-    V.push({ nm:'会社',     node:4, sel:['.n5 .head', '.n5 .p1'] });
-    V.push({ nm:'会社概要', node:4, sel:['.n5 .p2'] });
+    V.push({ nm:'会社',     node:3, sel:['.n5 .head', '.n5 .p1'] });
+    V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'] });
   }
   return V;
 }
