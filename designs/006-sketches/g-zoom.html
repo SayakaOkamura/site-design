@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:3140;stroke-dashoffset:3140;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:3170;stroke-dashoffset:3170;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -328,8 +328,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
            落ちる場所は、カード（言われたこと）と補足（言われていないこと）のすき間。
            x=2345 はその中央。線が二つを分ける仕切りになり、
            三段目では線の向こう側に補足が出てくる。 -->
+      <!-- 曲線でつなぐと、曲がり方が途中で急に止まって気持ち悪い（曲率が切れる）。
+           直線と、はっきりした角だけで引く。角は接線が合うように取ってあるので、
+           折れて見えず、かつ「ここで曲がる」が読める。図面の線の引き方。 -->
       <path d="M 1000 470
-               C 1600 470, 2345 780, 2345 900
+               L 1420 470  Q 1520 470, 1580 494
+               L 2200 750  Q 2345 810, 2345 910
                L 2345 1080 Q 2345 1215, 2480 1215
                L 3760 1215" />
     </svg>
