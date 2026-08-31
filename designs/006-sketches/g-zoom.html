@@ -147,7 +147,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
 /* 主の中身の下端を 634 に揃える。線（645）はその 11px 下を通る。 */
-.n0{left:900px;top:458px;width:640px}   /* 中身 176 → 458+176=634 */
+/* 幅は中身なり。決め打ちにすると、余ったぶんだけ文字が左に寄って見える
+   （箱の中心で寄せているため）。 */
+.n0{left:900px;top:458px;width:max-content}   /* 中身 176 → 458+176=634 */
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
 /* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
 .n0 h1{font-size:46px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
@@ -215,7 +217,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
-.nc{left:2780px;top:473px;width:820px}   /* 中身 161 → 473+161=634 */
+.nc{left:2780px;top:473px;width:max-content}   /* 中身 161 → 473+161=634 */
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す。
    会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
