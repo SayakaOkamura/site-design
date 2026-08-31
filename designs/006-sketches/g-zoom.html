@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:3240;stroke-dashoffset:3240;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:2790;stroke-dashoffset:2790;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -325,13 +325,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4800 1500">
-      <!-- 降りっぱなしの一本に、ひと巻きだけ入れる。
-           動きは足さない。線の形そのものが少し遊んでいる、という状態にする。
-           巻くのは段と段のあいだの空いているところ（x1350–1900）。
-           制御点を左右入れ替えると輪ができる。 -->
-      <path d="M 1020 620 C 1220 645, 1400 660, 1560 672
-               C 1900 545, 1350 545, 1700 690
-               C 2100 760, 3000 1060, 3900 1220" />
+      <path d="M 1020 600 C 1300 600, 1590 640, 1870 640
+               S 2740 700, 2810 700
+               S 3710 650, 3780 650" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
