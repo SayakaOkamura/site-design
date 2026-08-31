@@ -635,71 +635,10 @@ function draw(){
 let ticking = false;
 view.addEventListener('scroll', function(){
   if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
-  whip();
   if (ticking) return;
   ticking = true;
   requestAnimationFrame(function(){ ticking = false; draw(); });
 }, { passive:true });
-
-/* 線を遊ばせる。
-
-   理念は「遊ぶように働く世界をデザインする」だが、デモは手戻りの話しかしていない。
-   言葉で繋ぐと講釈になるので、UI のほうを遊ばせる。
-   遊ぶ先が線であることには理由がある——あれは「地続き」の実体そのもので、
-   経営の一言と画面の一欄が繋がっていることを、形で言っている部分。
-   それが生きているように振る舞えば、理念は実演になる。
-
-   速く振れば大きくしなり、そっと動かせば静か。止まればばねで戻る。
-   動かすのは制御点だけで、両端（段に触れているところ）は動かさない。
-   canvas 本体は今までどおり厳密に追従させるので、字はぶれない。
-   押すものは増えないので、操作盤にもならない。 */
-const thread = document.querySelector('svg.thread path');
-const HEAD = [1020, 600];
-const ARC  = [
-  [[1300, 600], [1590, 640], [1870, 640]],
-  [[2150, 640], [2740, 700], [2810, 700]],
-  [[2880, 700], [3710, 650], [3780, 650]]
-];
-const GAIN = 26;    // 速さ（px/ms）を、たわみに換える倍率
-const MAX  = 90;    // たわみの上限。これ以上は曲がらない
-const PULL = 0.16;  // ばねの追従。大きいほど機敏
-const DAMP = 0.86;  // 速度の減衰
-const stillness = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-function curve(k){
-  let d = 'M ' + HEAD[0] + ' ' + HEAD[1];
-  for (let i = 0; i < ARC.length; i++){
-    const a = ARC[i];
-    d += ' C ' + a[0][0] + ' ' + (a[0][1] + k) +
-         ', '  + a[1][0] + ' ' + (a[1][1] + k) +
-         ', '  + a[2][0] + ' ' +  a[2][1];
-  }
-  return d;
-}
-
-let bend = 0, speed = 0, lastAt = 0, lastLeft = 0, spring = null;
-
-function settle(){
-  const want = Math.max(-MAX, Math.min(MAX, speed * GAIN));
-  bend += (want - bend) * PULL;
-  speed *= DAMP;
-  thread.setAttribute('d', curve(bend));
-  if (Math.abs(bend) > 0.4 || Math.abs(speed) > 0.02){
-    spring = requestAnimationFrame(settle);
-  } else {
-    bend = 0; speed = 0; spring = null;
-    thread.setAttribute('d', curve(0));
-  }
-}
-
-function whip(){
-  if (stillness) return;
-  const now = performance.now();
-  const gap = Math.max(8, now - lastAt);
-  speed = (view.scrollLeft - lastLeft) / gap;
-  lastAt = now; lastLeft = view.scrollLeft;
-  if (!spring) spring = requestAnimationFrame(settle);
-}
 
 function goTo(n){
   const last = marks.length - 1;
