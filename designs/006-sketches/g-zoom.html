@@ -17,6 +17,11 @@
    「経営の力で」を、遷移ではなく距離で見せる。
 
    引き（全体を俯瞰する段）は置かない。1枚だと分かればいい。
+
+   段は縦にも散らしてある。経営は上、画面の欄は下。
+   横に並べただけだと、辿っていても「次はこの右」と分かってしまって驚きがない。
+   上下に振ると、次がどこにあるか分からないまま連れて行かれる。
+   「経営の一言と画面の一欄が地続き」を、縮尺の差だけでなく、辿る距離そのもので出す。
    名乗りの段も置かない。開いた瞬間に会社が自分の説明を始めると、
    雑談で開いたのに営業を受ける構えになる。依頼から始めて、うちは3行目で出る。
    ========================================================= */
@@ -140,7 +145,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 }
 
 /* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
-.n0{left:900px;top:330px;width:640px}
+.n0{left:900px;top:240px;width:640px}
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
 /* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
 .n0 h1{font-size:46px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
@@ -153,7 +158,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 /* 二 形と、埋まる欄 */
 /* 幅は中身なり。洗い出した束を畳んだときは、カードのぶんだけになる。
    固定幅にすると、畳んでいる間に右側の空きぶんだけ中央がずれる。 */
-.n2{left:1900px;top:420px;width:max-content}
+.n2{left:1900px;top:820px;width:max-content}
 .n2 .row{display:flex;align-items:flex-start;gap:30px}
 .n2 .col{flex:none;width:430px}
 .n2 .win{width:430px}
@@ -203,7 +208,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
-.nc{left:2780px;top:430px;width:820px}
+.nc{left:2780px;top:300px;width:820px}
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す。
    会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
@@ -214,7 +219,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 四 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
    別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
-.n5{left:3800px;top:450px;width:900px}
+.n5{left:3800px;top:620px;width:900px}
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
 /* 3つに割って寄るので、ひとまとめで読ませる必要がない。
@@ -317,9 +322,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4800 1500">
-      <path d="M 1020 600 C 1300 600, 1590 640, 1870 640
-               S 2740 700, 2810 700
-               S 3710 650, 3780 650" />
+      <path d="M 1020 430 C 1400 430, 1660 1010, 2060 1010
+               C 2420 1010, 2560 500, 2920 500
+               C 3280 500, 3520 960, 3900 960" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
