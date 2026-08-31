@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:3170;stroke-dashoffset:3170;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:2790;stroke-dashoffset:2790;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -146,7 +146,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 }
 
 /* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
-.n0{left:900px;top:240px;width:640px}
+.n0{left:900px;top:330px;width:640px}
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
 /* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
 .n0 h1{font-size:46px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
@@ -159,7 +159,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 /* 二 形と、埋まる欄 */
 /* 幅は中身なり。洗い出した束を畳んだときは、カードのぶんだけになる。
    固定幅にすると、畳んでいる間に右側の空きぶんだけ中央がずれる。 */
-.n2{left:1900px;top:820px;width:max-content}
+.n2{left:1900px;top:420px;width:max-content}
 .n2 .row{display:flex;align-items:flex-start;gap:30px}
 .n2 .col{flex:none;width:430px}
 .n2 .win{width:430px}
@@ -168,10 +168,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    カードの罫線と揃う位置に置いて、同じ紙の続きに見えるようにする。 */
 /* 束の1行目が、カードの1行目と同じ高さに来るようにする。
    見出し（うちが洗い出したところ）は、カードの見出しの横に並ぶ。 */
-/* 縦罫は引かない。琥珀の線がすき間に落ちてきて、そこが仕切りになる。 */
 .n2 .found{
   flex:none;width:280px;margin-top:40px;
-  padding-left:18px;
+  border-left:2px solid var(--amber);padding-left:18px;
 }
 .n2 .found .fh{
   font-size:10px;letter-spacing:.12em;color:var(--amber);font-weight:600;
@@ -210,7 +209,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
-.nc{left:2780px;top:880px;width:820px}
+.nc{left:2780px;top:430px;width:820px}
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す。
    会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
@@ -221,7 +220,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 四 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
    別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
-.n5{left:3800px;top:620px;width:900px}
+.n5{left:3800px;top:450px;width:900px}
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
 /* 3つに割って寄るので、ひとまとめで読ませる必要がない。
@@ -324,18 +323,13 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4800 1500">
-      <!-- 道筋。曲げるのではなく、直角に落とす。
-           落ちる場所は、カード（言われたこと）と補足（言われていないこと）のすき間。
-           x=2345 はその中央。線が二つを分ける仕切りになり、
-           三段目では線の向こう側に補足が出てくる。 -->
-      <!-- 曲線でつなぐと、曲がり方が途中で急に止まって気持ち悪い（曲率が切れる）。
-           直線と、はっきりした角だけで引く。角は接線が合うように取ってあるので、
-           折れて見えず、かつ「ここで曲がる」が読める。図面の線の引き方。 -->
-      <path d="M 1000 470
-               L 1420 470  Q 1520 470, 1580 494
-               L 2200 750  Q 2345 810, 2345 910
-               L 2345 1080 Q 2345 1215, 2480 1215
-               L 3760 1215" />
+      <!-- 一本の道。区切りの役目は持たせない。
+           カードと補足のあいだを縦に落として仕切りにしようとしたが、そのために
+           横 → 角 → 斜め → 角 → 縦 と折る必要があって、形が不自然になった。
+           線は素直に一本、段の下を通っていく。斜めに横切るのはかまわない。 -->
+      <path d="M 1020 600 C 1300 600, 1590 640, 1870 640
+               S 2740 700, 2810 700
+               S 3710 650, 3780 650" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
