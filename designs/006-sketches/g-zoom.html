@@ -128,15 +128,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   .nc h1{font-size:24px}
   .nc p{font-size:13.5px}
 
-  /* 会社の段だけ、狭い画面では2つに割って寄る（JS 側で段を分けている）。
-     縦に積むと下へ動くことになって、他の段と動きが食い違う。
-     横に並べれば、割ったあとも左から右のまま。 */
-  .n5{left:3240px;width:700px}
-  .n5 .head{width:330px}
-  .n5 h1{font-size:20px;margin-bottom:14px}
-  .n5 .cols{grid-template-columns:330px 330px;gap:40px}
-  .n5 dl{grid-template-columns:66px 1fr;font-size:14px}
-  .n5 ul.svc li{font-size:12.5px}
+  .n5{left:3240px;width:330px}
+  .n5 dl{grid-template-columns:74px 1fr;font-size:12.5px}
 }
 
 /* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
@@ -215,24 +208,6 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
 .n5{left:3800px;top:450px;width:900px}
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
-.n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
-/* 3つに割って寄るので、ひとまとめで読ませる必要がない。
-   間を広げて、それぞれが枠に収まるようにする。 */
-.n5 .cols{
-  display:grid;grid-template-columns:1fr 1.3fr;gap:64px;
-  border-top:1px solid var(--line);padding-top:20px;
-}
-.n5 h2{
-  font-size:11px;font-weight:600;letter-spacing:.16em;color:var(--faint);
-  margin-bottom:12px;
-}
-/* サービスは名前だけだと何をする会社か伝わらない。一行ずつ中身を付ける */
-.n5 ul.svc{list-style:none}
-.n5 ul.svc li{
-  font-size:13px;color:var(--ink);padding:0 0 10px 13px;position:relative;line-height:1.55;
-}
-.n5 ul.svc li::before{content:"—";position:absolute;left:0;color:var(--amber)}
-.n5 ul.svc li span{display:block;font-size:13px;color:var(--sub);line-height:1.75}
 /* 会社概要は責任の所在。小さすぎると読む気にならない */
 .n5 dl{
   display:grid;grid-template-columns:92px 1fr;column-gap:16px;row-gap:7px;
@@ -426,26 +401,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
          段を分ければ、締めは締めのまま大きく出せて、会社は会社で読める。
          社名ボタンの行き先も、これでラベルどおり「会社概要」になる。 -->
     <div class="node n5" data-l="3">
-      <!-- 狭い画面では、この段だけ「会社」「会社概要」の2つに割って寄る。
-           段を増やすのではなく、同じ段の中で寄る範囲を分ける。
-           .head+.p1 で1つ、.p2 で1つ。JS 側が sel を複数取れる。 -->
-      <div class="head">
-        <div class="k" style="--i:0">会社</div>
-        <h1 class="r" style="--i:1">経営の力で「遊ぶように働く世界」をデザインする。</h1>
-      </div>
-
-      <div class="cols">
-        <div class="p1 r" style="--i:2">
-          <h2>サービス</h2>
-          <ul class="svc">
-            <li>次世代型業務システム開発<span>ノーコード／ローコードを土台に業務を再設計</span></li>
-            <li>AIによる意思決定支援・事業変革<span>データ資産を戦略と予測に変換</span></li>
-            <li>自律共創型の組織デザイン<span>個の自律とチームの協働を両立する構造</span></li>
-            <li>地域のデジタル格差支援<span>ノーコードとクラウドAI、DX人材の育成</span></li>
-          </ul>
-        </div>
-        <div class="p2 r" style="--i:3">
-          <h2>会社概要</h2>
+      <!-- 理念とサービスは落とした。どちらも説明で、理念はデモ全体が実演している。
+           残すのは事実だけ——責任の所在。ここは見れば分かる類のものではない。
+           一段目から売り文句を消したのと、同じ理屈。 -->
+      <div class="k" style="--i:0">会社</div>
+      <div class="p2 r" style="--i:1">
           <dl>
             <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
             <dt>設立</dt><dd>2025年6月</dd>
@@ -460,7 +420,6 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
           <!-- 実績が無いことを、別ページへの導線で隠さない。
                2025年6月設立は事実。事例が無いのも事実。両方書けば、それで説明になる。 -->
           <p class="none">掲載できる事例は、まだありません。2025年6月に始めた会社です。</p>
-        </div>
       </div>
     </div>
 
@@ -504,15 +463,9 @@ function buildViews(){
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      狭い画面だと1枚に収まらず縮むので、そこだけ2回に分けて寄る。 */
   if (innerWidth >= 760){
-    /* 会社の段は3つに割って寄る。段は増やさず、寄る先だけ分ける。
-       ひとまとめだと会社概要が 11.5px のままで、画面には余っているのに読めない。
-       割れば、それぞれ読める大きさで出せる。 */
-    V.push({ nm:'理念',     node:3, sel:['.n5 .head'], w: 1040, h: 300 });
-    V.push({ nm:'サービス', node:3, sel:['.n5 .p1'],   w:  640, h: 430 });
-    V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'],   w:  700, h: 450 });
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 700, h: 450 });
   } else {
-    V.push({ nm:'会社',     node:3, sel:['.n5 .head', '.n5 .p1'] });
-    V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'] });
+    V.push({ nm:'会社', node:3, sel:['.n5'] });
   }
   return V;
 }
