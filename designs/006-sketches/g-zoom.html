@@ -146,7 +146,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 }
 
 /* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
-.n0{left:900px;top:330px;width:640px}
+/* 主の中身の下端を 634 に揃える。線（645）はその 11px 下を通る。 */
+.n0{left:900px;top:458px;width:640px}   /* 中身 176 → 458+176=634 */
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
 /* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
 .n0 h1{font-size:46px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
@@ -211,7 +212,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
-.nc{left:2780px;top:430px;width:820px}
+.nc{left:2780px;top:473px;width:820px}   /* 中身 161 → 473+161=634 */
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す。
    会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
@@ -222,7 +223,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 四 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
    別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
-.n5{left:3800px;top:450px;width:900px}
+.n5{left:3800px;top:94px;width:900px}    /* 中身 540 → 94+540=634 */
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
 /* 3つに割って寄るので、ひとまとめで読ませる必要がない。
@@ -528,7 +529,10 @@ function buildViews(){
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      締めは引いて渡す（z を山場より下げる）。狭い画面では2回に分けて寄る。 */
   if (innerWidth >= 760){
-    V.push({ nm:'会社', node:3, sel:['.n5'], w: 910, h: 550, z: 0.95 });
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 910, h: 565, z: 0.95 });
+    /* 枠の高さ 565 は「中身 540 ＋ 線までの 11px ＋ 余白」。
+       550 だと線（645）が画面の下から 6px はみ出して見えなくなる。
+       この段は中身が高いので、線まで入れるには少しだけ引く必要がある。 */
   } else {
     V.push({ nm:'会社',     node:3, sel:['.n5 .head', '.n5 .p1'] });
     V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'] });
