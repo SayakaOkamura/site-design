@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:3470;stroke-dashoffset:3470;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:2790;stroke-dashoffset:2790;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -162,7 +162,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2{left:1900px;top:420px;width:max-content}
 /* 束は右下へ落とす。線が斜めに抜けられるだけの間を空ける。
    横に並べて 30px のすき間では、斜めの線はどちらかに刺さる。 */
-.n2 .row{display:flex;align-items:flex-start;gap:100px}
+.n2 .row{display:flex;align-items:flex-start;gap:30px}
 .n2 .col{flex:none;width:430px}
 .n2 .win{width:430px}
 
@@ -325,14 +325,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4800 1500">
-      <!-- 一本の道。カードと束のあいだを、急な角度で落ちる。
-           縦にすると角度が不自然になり、ゆるい斜めだと二つを離さないと通れない。
-           線を立てれば、二つを近いままにしたまま、あいだを抜けられる。
-           落ちるところは 80 度近い。上のゆるい区間から、そこへ滑らかに繋ぐ。 -->
-      <path d="M 1020 250 C 1750 250, 2300 260, 2350 430
-               C 2380 530, 2410 700, 2440 900
-               C 2480 1030, 2800 1080, 3300 1090
-               S 3900 1095, 3980 1095" />
+      <path d="M 1020 600 C 1300 600, 1590 640, 1870 640
+               S 2740 700, 2810 700
+               S 3710 650, 3780 650" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
@@ -558,7 +553,6 @@ function box(sels){
 const view   = document.getElementById('view');
 const track  = document.getElementById('track');
 const canvas = document.getElementById('canvas');
-const thread = document.querySelector('svg.thread path');
 
 let marks = [];    // 段ごとの寄り先（中心と縮尺）
 let here  = -1;    // いま濃く出している段
@@ -596,24 +590,6 @@ function measure(){
     return { s:s, cx:bx.x + bx.w / 2, cy:bx.y + bx.h / 2, nm:v.nm, node:v.node, add:v.add };
   });
 
-  /* 段ごとに、線のどのあたりにいるかを拾っておく。
-     線は 400 点に刻んで、いちばん近い点の長さを採る。毎フレーム探すと重い。 */
-  const total = thread.getTotalLength();
-  const dots = [];
-  for (let k = 0; k <= 400; k++){
-    const at = total * k / 400;
-    const q = thread.getPointAtLength(at);
-    dots.push({ at: at, x: q.x, y: q.y });
-  }
-  marks.forEach(function(m){
-    let best = 0, near = Infinity;
-    for (let k = 0; k < dots.length; k++){
-      const dx = dots[k].x - m.cx, dy = dots[k].y - m.cy;
-      const d2 = dx * dx + dy * dy;
-      if (d2 < near){ near = d2; best = dots[k].at; }
-    }
-    m.at = best;
-  });
   n2.classList.toggle("reveal", was);
 }
 
@@ -631,22 +607,8 @@ function draw(){
   const A = marks[i], B = marks[j];
   const sc = A.s + (B.s - A.s) * f;
 
-  /* 段と段のあいだは、線の上をなぞって移動する。
-     まっすぐ結ぶと、線が曲がって落ちているところを 目 が突っ切ってしまう。
-     段そのものには正確に着けたいので、線の上の点に「段の中心とのずれ」を足す。
-     ずれは段から段へ薄まっていくので、停留所ではぴったり段の中心に戻る。 */
-  let cx, cy;
-  if (i === j || !A.at && A.at !== 0){
-    cx = A.cx; cy = A.cy;
-  } else {
-    const pa = thread.getPointAtLength(A.at);
-    const pb = thread.getPointAtLength(B.at);
-    const q  = thread.getPointAtLength(A.at + (B.at - A.at) * f);
-    const ax = A.cx - pa.x, ay = A.cy - pa.y;
-    const bx = B.cx - pb.x, by = B.cy - pb.y;
-    cx = q.x + ax + (bx - ax) * f;
-    cy = q.y + ay + (by - ay) * f;
-  }
+  const cx = A.cx + (B.cx - A.cx) * f;
+  const cy = A.cy + (B.cy - A.cy) * f;
 
   canvas.style.transform =
     'translate(' + (vw / 2 - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
