@@ -199,6 +199,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   padding-bottom:1px;letter-spacing:.08em;
 }
 .n2 .cap2{font-size:13px;color:var(--sub);margin-top:22px;line-height:1.85}
+.n2 .cap2.sub{margin-top:10px}
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
@@ -362,10 +363,17 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
           <dt>承認者</dt><dd class="r" style="--i:3"><span class="v">所属長</span></dd>
         </dl>
       </div>
+      <!-- 形にした段階で、これで足りるとは言わない。
+           「全部入っています」だと、漏らさず入れたという報告になる。
+           入れる中身を出したのは社長のほうなので、手柄ではない。
+           主語を画面にして、事実だけにする。「だけ」で限界が出て、
+           四段目の「言われていないことを、3つ見つけました」と対になる。 -->
+      <p class="cap2 r" style="--i:2">入っているのは、言われたことだけです。</p>
       <!-- 誰が見つけたのかを書く。空欄が勝手にあるだけでは、
-           見つけてもらった感じにならない。 -->
-      <p class="cap2 add" style="--i:5">
-        決まっているところは、そのまま埋まります。
+           見つけてもらった感じにならない。
+           一行目（決まっているところは、そのまま埋まります）は
+           上の行と同じことを言うので落とした。 -->
+      <p class="cap2 sub add" style="--i:5">
         <b>決まっていないところを、うちが洗い出します。</b>
         この画面では 3 つ残りました。
       </p>
