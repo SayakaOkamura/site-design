@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:3420;stroke-dashoffset:3420;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:3140;stroke-dashoffset:3140;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -329,7 +329,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
            x=2345 はその中央。線が二つを分ける仕切りになり、
            三段目では線の向こう側に補足が出てくる。 -->
       <path d="M 1000 470
-               L 2210 470  Q 2345 470, 2345 605
+               C 1600 470, 2345 780, 2345 900
                L 2345 1080 Q 2345 1215, 2480 1215
                L 3760 1215" />
     </svg>
