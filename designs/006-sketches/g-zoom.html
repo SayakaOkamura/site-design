@@ -557,6 +557,7 @@ function box(sels){
 const view   = document.getElementById('view');
 const track  = document.getElementById('track');
 const canvas = document.getElementById('canvas');
+const thread = document.querySelector('svg.thread path');
 
 let marks = [];    // 段ごとの寄り先（中心と縮尺）
 let here  = -1;    // いま濃く出している段
@@ -593,6 +594,25 @@ function measure(){
       : Math.min(vw / v.w, vh / v.h) * 0.86;
     return { s:s, cx:bx.x + bx.w / 2, cy:bx.y + bx.h / 2, nm:v.nm, node:v.node, add:v.add };
   });
+
+  /* 段ごとに、線のどのあたりにいるかを拾っておく。
+     線は 400 点に刻んで、いちばん近い点の長さを採る。毎フレーム探すと重い。 */
+  const total = thread.getTotalLength();
+  const dots = [];
+  for (let k = 0; k <= 400; k++){
+    const at = total * k / 400;
+    const q = thread.getPointAtLength(at);
+    dots.push({ at: at, x: q.x, y: q.y });
+  }
+  marks.forEach(function(m){
+    let best = 0, near = Infinity;
+    for (let k = 0; k < dots.length; k++){
+      const dx = dots[k].x - m.cx, dy = dots[k].y - m.cy;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < near){ near = d2; best = dots[k].at; }
+    }
+    m.at = best;
+  });
   n2.classList.toggle("reveal", was);
 }
 
@@ -608,9 +628,24 @@ function draw(){
 
   const i = Math.floor(t), j = Math.min(i + 1, last), f = t - i;
   const A = marks[i], B = marks[j];
-  const sc = A.s  + (B.s  - A.s ) * f;
-  const cx = A.cx + (B.cx - A.cx) * f;
-  const cy = A.cy + (B.cy - A.cy) * f;
+  const sc = A.s + (B.s - A.s) * f;
+
+  /* 段と段のあいだは、線の上をなぞって移動する。
+     まっすぐ結ぶと、線が曲がって落ちているところを 目 が突っ切ってしまう。
+     段そのものには正確に着けたいので、線の上の点に「段の中心とのずれ」を足す。
+     ずれは段から段へ薄まっていくので、停留所ではぴったり段の中心に戻る。 */
+  let cx, cy;
+  if (i === j || !A.at && A.at !== 0){
+    cx = A.cx; cy = A.cy;
+  } else {
+    const pa = thread.getPointAtLength(A.at);
+    const pb = thread.getPointAtLength(B.at);
+    const q  = thread.getPointAtLength(A.at + (B.at - A.at) * f);
+    const ax = A.cx - pa.x, ay = A.cy - pa.y;
+    const bx = B.cx - pb.x, by = B.cy - pb.y;
+    cx = q.x + ax + (bx - ax) * f;
+    cy = q.y + ay + (by - ay) * f;
+  }
 
   canvas.style.transform =
     'translate(' + (vw / 2 - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
