@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2970;stroke-dashoffset:2970;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:2900;stroke-dashoffset:2900;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -325,10 +325,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4800 1500">
-      <!-- まっすぐ一本の斜め。どの段にもかからない高さを通す。
-           段の下端は .n0 506 / .n2 738（帯を出した状態）/ .nc 591 / .n5 990。
-           .n2 は帯が出ると下に伸びるので、そこを基準に傾きを決めている。 -->
-      <path d="M 1020 560 L 3900 1210" />
+      <!-- 水平に一本。二段目では、カードと説明文のあいだを通る。
+           カードの下端 634、説明文の上端 656。その 11px 下（645）を通す。
+           カードが線の上、説明文が線の下になる。 -->
+      <path d="M 1020 645 L 3900 645" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
