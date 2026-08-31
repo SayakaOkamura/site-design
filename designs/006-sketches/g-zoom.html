@@ -64,7 +64,7 @@ svg.thread{position:absolute;top:0;left:0;width:4800px;height:1500px;pointer-eve
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:2790;stroke-dashoffset:2790;animation:draw 2.8s ease .3s forwards}
+  stroke-dasharray:3010;stroke-dashoffset:3010;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
 .node{position:absolute;transition:opacity .5s ease;z-index:2}
@@ -160,7 +160,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 /* 幅は中身なり。洗い出した束を畳んだときは、カードのぶんだけになる。
    固定幅にすると、畳んでいる間に右側の空きぶんだけ中央がずれる。 */
 .n2{left:1900px;top:420px;width:max-content}
-.n2 .row{display:flex;align-items:flex-start;gap:30px}
+/* 束は右下へ落とす。線が斜めに抜けられるだけの間を空ける。
+   横に並べて 30px のすき間では、斜めの線はどちらかに刺さる。 */
+.n2 .row{display:flex;align-items:flex-start;gap:110px}
 .n2 .col{flex:none;width:430px}
 .n2 .win{width:430px}
 
@@ -169,7 +171,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 /* 束の1行目が、カードの1行目と同じ高さに来るようにする。
    見出し（うちが洗い出したところ）は、カードの見出しの横に並ぶ。 */
 .n2 .found{
-  flex:none;width:280px;margin-top:40px;
+  flex:none;width:280px;margin-top:520px;
   border-left:2px solid var(--amber);padding-left:18px;
 }
 .n2 .found .fh{
@@ -323,13 +325,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   <div id="canvas">
 
     <svg class="thread" viewBox="0 0 4800 1500">
-      <!-- 一本の道。区切りの役目は持たせない。
-           カードと補足のあいだを縦に落として仕切りにしようとしたが、そのために
-           横 → 角 → 斜め → 角 → 縦 と折る必要があって、形が不自然になった。
-           線は素直に一本、段の下を通っていく。斜めに横切るのはかまわない。 -->
-      <path d="M 1020 600 C 1300 600, 1590 640, 1870 640
-               S 2740 700, 2810 700
-               S 3710 650, 3780 650" />
+      <!-- 一本の道。落ちるところは、カード（言われたこと）と
+           束（言われていないこと）のあいだ。縦に落とすと角度が不自然になるので、
+           斜めのまま抜ける。束を右下へ落としてあるので、斜めでも二つを分けられる。 -->
+      <path d="M 1020 620 C 1500 620, 1950 800, 2385 860
+               S 3150 990, 3550 1000
+               S 3850 1008, 3980 1010" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
@@ -517,8 +518,8 @@ function buildViews(){
     { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 480 },
     /* 形の段は2つに分けて寄る。段は増えるが、画面は出しっぱなしなので
        同じ紙の上にいることは崩れない。add が付いている view で帯を出す。 */
-    { nm:'形',       node:1, sel:['.n2'], w: 490, h: 430 },
-    { nm:'洗い出す', node:1, sel:['.n2'],                  w: 450, h: 400, add:true },
+    { nm:'形',       node:1, sel:['.n2 .col'],   w: 520, h: 445 },
+    { nm:'洗い出す', node:1, sel:['.n2 .found'], w: 600, h: 420, add:true },
     /* 行為とその理由。ここが山場。決めるのは御社、作るのはうち */
     { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 300 }
   ];
