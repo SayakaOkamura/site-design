@@ -147,9 +147,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
 /* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
 /* 主の中身の下端を 634 に揃える。線（645）はその 11px 下を通る。 */
-/* 幅は中身なり。決め打ちにすると、余ったぶんだけ文字が左に寄って見える
-   （箱の中心で寄せているため）。 */
-.n0{left:900px;top:458px;width:max-content}   /* 中身 176 → 458+176=634 */
+.n0{left:900px;top:458px;width:640px}   /* 中身 176 → 458+176=634 */
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
 /* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
 .n0 h1{font-size:46px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
@@ -212,12 +210,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   padding-bottom:1px;letter-spacing:.08em;
 }
 /* 線の上下を空ける。カードの下端 634 → 線 656 → 説明文 678。上下とも 22px。 */
-.n2 .cap2{font-size:13px;color:var(--sub);margin-top:44px;line-height:1.85}
+.n2 .cap2{font-size:13px;color:var(--sub);margin-top:80px;line-height:1.85}
 .n2 .cap2.sub{margin-top:10px}
 .n2 .cap2 b{color:var(--amber)}
 
 /* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
-.nc{left:2780px;top:473px;width:max-content}   /* 中身 161 → 473+161=634 */
+.nc{left:2780px;top:473px;width:820px}   /* 中身 161 → 473+161=634 */
 .nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 /* ここが山場。うちがしたことを、この段でいちばん大きく出す。
    会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
@@ -234,13 +232,16 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    線は会社の手前（x3760）で止めてあるので、中を突っ切ることもない。 */
 /* 横に広げて、縦を縮める。会社概要の折り返しが減って、段が低くなる。
    縦が使える高さをほぼ埋めていると、上に余白が無くなってロゴと被る。 */
-.n5{left:3800px;top:317px;width:1130px}   /* 中身 466 → 中心 550。他の段の中心は 546〜590 */
+.n5{left:3800px;top:317px;width:930px}   /* 中身 466 → 中心 550。他の段の中心は 546〜590 */
 .n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
 .n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
 /* 3つに割って寄るので、ひとまとめで読ませる必要がない。
    間を広げて、それぞれが枠に収まるようにする。 */
 .n5 .cols{
-  display:grid;grid-template-columns:1fr 1.55fr;gap:72px;
+  /* サービス側は 300px で足りる（いちばん長い行が 273px）。
+     会社概要側は 570px 必要（それ未満だと事業内容と株主が折り返して段が高くなる）。
+     広げすぎると二つのあいだが空いて、間延びして見える。 */
+  display:grid;grid-template-columns:300px 1fr;gap:56px;
   border-top:1px solid var(--line);padding-top:20px;
 }
 .n5 h2{
@@ -338,9 +339,9 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 
     <svg class="thread" viewBox="0 0 4800 1500">
       <!-- 水平に一本。二段目では、カードと説明文のあいだを通る。
-           カードの下端 634、説明文の上端 678。そのあいだ（656）を通す。上下とも 22px。
+           カードの下端 634、説明文の上端 714。そのあいだ（674）を通す。上下とも 40px。
            カードが線の上、説明文が線の下になる。 -->
-      <path d="M 300 656 L 3760 656" />
+      <path d="M 620 674 L 3760 674" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
@@ -529,18 +530,18 @@ function buildViews(){
      窓の大きさによって山場が入れ替わっていた（背の高い窓では三段目が頂点になっていた）。
      w / h は「この大きさに収まる」という上限だけを言う。中身＋余白で取る。 */
   const V = [
-    { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 250, z: 0.92 },
+    { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 250, z: 0.92, dx: -70 },
     /* 形の段は2つに分けて寄る。段は増えるが、画面は出しっぱなしなので
        同じ紙の上にいることは崩れない。add が付いている view で帯を出す。 */
     { nm:'形',       node:1, sel:['.n2'], w: 490, h: 320, z: 1.03 },
     { nm:'洗い出す', node:1, sel:['.n2'], w: 800, h: 380, z: 1.14, add:true },
     /* 行為とその理由。ここが山場。z がいちばん大きい */
-    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.25 }
+    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.25, dx: 20 }
   ];
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      締めは引いて渡す（z を山場より下げる）。狭い画面では2回に分けて寄る。 */
   if (innerWidth >= 760){
-    V.push({ nm:'会社', node:3, sel:['.n5'], w: 1180, h: 578, z: 0.80 });
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 980, h: 578, z: 0.80, dx: 45 });
     /* 枠の高さ 578 は「中身 466 ＋ 上下の余白」。ここを詰めると段が縦いっぱいになって、
        上の余白が消えてロゴと被る。z が他より低いのは、締めとして引くのと、
        横に広いぶん同じ見た目の大きさでも縮尺が下がるため。 */
@@ -609,7 +610,7 @@ function measure(){
       fit: Math.min(vw / v.w, vh / v.h),                        // これ以上寄るとはみ出す
       tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
       cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
-      nm: v.nm, node: v.node, add: v.add
+      nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0
     };
   });
 
@@ -629,6 +630,10 @@ function measure(){
 
 /* スクロール位置が、そのまま「何段目か」。段と段のあいだは小数になるので、
    寄り先を混ぜて出す。段で切り替えるのではなく、1枚の上を滑って見える。 */
+/* 画面の左には社名と進み具合の線があって、右には縮尺しかない。
+   ちょうど真ん中に置くと、そのぶん左に寄って見えるので、少しだけ右へ。 */
+const NUDGE = 16;
+
 function draw(){
   const vw = innerWidth, vh = innerHeight - 64;
   const stop = view.clientWidth || 1;
@@ -640,12 +645,13 @@ function draw(){
   const i = Math.floor(t), j = Math.min(i + 1, last), f = t - i;
   const A = marks[i], B = marks[j];
   const sc = A.s + (B.s - A.s) * f;
+  const dx = A.dx + (B.dx - A.dx) * f;   // 段ごとの左右の寄せ
 
   const cx = A.cx + (B.cx - A.cx) * f;
   const cy = A.cy + (B.cy - A.cy) * f;
 
   canvas.style.transform =
-    'translate(' + (vw / 2 - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
+    'translate(' + (vw / 2 + NUDGE + dx - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
 
   // 進み具合。押すものではなく、どこまで来たかを示すだけ
   const pc = last ? t / last * 100 : 0;
