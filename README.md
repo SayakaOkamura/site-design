@@ -16,7 +16,9 @@ GitHub Pages でそのまま公開する前提の構成。
 │   │   └── index.css       インデックスページ専用
 │   └── img/                画像
 ├── designs/
-│   └── 001-sample-lp/      デザイン案（1案 = 1ディレクトリ）
+│   ├── IDEAS.md            消した案の記録（実物は git 履歴にある）
+│   ├── 005-paper-flow/     デザイン案（1案 = 1ディレクトリ）
+│   └── 006-sketches/       試作は 1案 = 1ファイルのこともある
 └── templates/
     └── _template/          新規案の雛形
 ```
