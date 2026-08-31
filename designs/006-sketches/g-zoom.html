@@ -156,6 +156,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n2{left:1900px;top:420px;width:max-content}
 .n2 .row{display:flex;align-items:flex-start;gap:30px}
 .n2 .col{flex:none;width:430px}
+.n2 .lift{width:430px}
 .n2 .win{width:430px}
 
 /* 洗い出した束。カードの外の右。
@@ -354,6 +355,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
       <div class="k" style="--i:0">形にすると</div>
       <div class="row">
       <div class="col">
+      <!-- 傾きは外（.lift）、登場アニメは内（.win.r）。
+           同じ要素の transform を二人で取り合うと、寄った直後の 0.7 秒——
+           まさにスクロールしている瞬間——傾きが潰される。 -->
+      <div class="lift">
       <div class="win r" style="--i:1">
         <div class="wb">経費申請</div>
         <dl>
@@ -362,6 +367,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
           <dt>金額</dt><dd class="r" style="--i:3"><span class="v">48,000 円</span></dd>
           <dt>承認者</dt><dd class="r" style="--i:3"><span class="v">所属長</span></dd>
         </dl>
+      </div>
       </div>
       <!-- 形にした段階で、これで足りるとは言わない。
            「全部入っています」だと、漏らさず入れたという報告になる。
@@ -641,69 +647,40 @@ view.addEventListener('scroll', function(){
   requestAnimationFrame(function(){ ticking = false; draw(); });
 }, { passive:true });
 
-/* 遊ばせる。
+/* 紙を遊ばせる。
 
    理念は「遊ぶように働く世界をデザインする」だが、デモは手戻りの話しかしていない。
    言葉で繋ぐと講釈になるので、UI のほうを遊ばせる。
+   一度は線をしならせたが、跳ねているだけで見にくく、線である意味も無かった。
 
-   二度外している。
-   ・線を丸ごとしならせた  跳ねているだけで見にくく、線である意味も無かった
-   ・カードを回した        物が動くのは自然だが、遊ばせたいのは線のほうだった
-
-   いまは、線の上を波が走る。スクロールした量が波の位相になるので、
-   辿るほど波が進む。速く振れば大きくうねり、止まれば静かに戻って元の線になる。
-   両端は段に触れたままにする（tapered）ので、繋がりは崩れない。
-   線は背景の細い一本なので、うねっても字は読みにくくならない。
-
-   カードは回さない。影だけ、動きの向きに流す。 */
-const live  = document.querySelector('svg.thread path');
-const card  = document.querySelector('.n2 .win');
-
-const SPAN = 64;    // 線を刻む数。多いほど滑らか
-const AMP  = 9;     // 速さ（px/ms）あたりのうねりの高さ
-const AMAX = 30;    // うねりの上限
-const LOOP = 7;     // 線の上に乗る波の数
-const TURN = 0.014; // スクロール量を位相に換える倍率
+   回すのはカードだけ。画面上で唯一の「物」なので、そこが動くのが自然になる。
+   速く振れば傾いて影が伸び、止まればゆっくり戻る。机の上で紙を滑らせたときの動き。
+   字がぶれない範囲（最大 5 度）に抑える。 */
+const sheet = document.querySelector('.n2 .lift');  // 傾ける外側
+const card  = document.querySelector('.n2 .win');   // 影はカードに付ける
+const TILT = 1.8;   // 速さ（px/ms）あたりの傾き（度）
+const TMAX = 5.0;   // 傾きの上限。これ以上は読みにくくなる
 const CAST = 7;     // 速さあたりの影のずれ
-const CMAX = 30;    // 影のずれの上限
-const EASE = 0.24;  // ばねの追従
-const FADE = 0.90;  // 速度の減衰
+const CMAX = 34;    // 影のずれの上限
+const EASE = 0.28;  // ばねの追従。遅いと速度が先に落ちて、傾く前に終わる
+const FADE = 0.91;  // 速度の減衰
 const quiet = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* もとの線の形は、読み込み時に一度だけ点で拾っておく。
-   毎回 getPointAtLength を呼ぶと、うねらせた線から拾うことになって形が壊れる。 */
-const spine = [];
-(function(){
-  const len = live.getTotalLength();
-  for (let i = 0; i <= SPAN; i++) spine.push(live.getPointAtLength(len * i / SPAN));
-})();
-
-function ripple(amp, phase){
-  let d = '';
-  for (let i = 0; i <= SPAN; i++){
-    const t = i / SPAN;
-    const hold = Math.sin(Math.PI * t);   // 両端は動かさない
-    const y = spine[i].y + amp * hold * Math.sin(t * Math.PI * LOOP + phase);
-    d += (i ? ' L ' : 'M ') + spine[i].x.toFixed(1) + ' ' + y.toFixed(1);
-  }
-  return d;
-}
-
-let swell = 0, rush = 0, tAt = 0, tLeft = 0, swing = null;
+let lean = 0, rush = 0, tAt = 0, tLeft = 0, swing = null;
 
 function paint(){
-  const want = Math.max(-AMAX, Math.min(AMAX, rush * AMP));
-  swell += (want - swell) * EASE;
+  const want = Math.max(-TMAX, Math.min(TMAX, rush * TILT));
+  lean += (want - lean) * EASE;
   rush *= FADE;
-  live.setAttribute('d', ripple(swell, view.scrollLeft * TURN));
-  const cast = Math.max(-CMAX, Math.min(CMAX, -swell / AMAX * CMAX));
+  const cast = Math.max(-CMAX, Math.min(CMAX, -lean / TMAX * CMAX));
+  sheet.style.transform = 'rotate(' + lean.toFixed(3) + 'deg)';
   card.style.boxShadow = cast.toFixed(1) + 'px ' + (6 + Math.abs(cast) * .25).toFixed(1) +
-                         'px ' + (20 + Math.abs(cast)).toFixed(0) + 'px rgba(0,0,0,.07)';
-  if (Math.abs(swell) > 0.05 || Math.abs(rush) > 0.02){
+                          'px ' + (20 + Math.abs(cast)).toFixed(0) + 'px rgba(0,0,0,.07)';
+  if (Math.abs(lean) > 0.01 || Math.abs(rush) > 0.02){
     swing = requestAnimationFrame(paint);
   } else {
-    swell = 0; rush = 0; swing = null;
-    live.setAttribute('d', ripple(0, 0));
+    lean = 0; rush = 0; swing = null;
+    sheet.style.transform = '';
     card.style.boxShadow = '';
   }
 }
