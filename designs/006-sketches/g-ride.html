@@ -641,7 +641,7 @@ function buildStops(){
   for (let i = 0; i < VIEWS.length; i++){
     const d = document.createElement('div');
     d.className = 'stop';
-    d.style.flexBasis = ((SPANS[i] || 1) * 100) + '%';
+    d.style.flexBasis = ((SPANS[i] || 1) * SLOW * 100) + '%';
     track.appendChild(d);
   }
 }
@@ -811,7 +811,12 @@ const ROOM = 1.00;
    狭い画面では会社の段が2つに割れて6停留所になる。足りないぶんは 1 として扱う。 */
 const SPANS = [3, 2, 2, 2, 1];
 
-function spanOf(i){ return (view.clientWidth || 1) * (SPANS[i] || 1); }
+/* 全体をどれだけゆっくりにするか。上の SPANS 全部に掛かる。
+   1 で 0.48、2 で 0.24（画面の流れ。1.0 が指と同じ速さ）。
+   上げるほど、1段進むのに要るスクロールが増える。 */
+const SLOW = 2;
+
+function spanOf(i){ return (view.clientWidth || 1) * (SPANS[i] || 1) * SLOW; }
 
 /* 段 i の始まりが、スクロールでどこか */
 function stopAt(i){
