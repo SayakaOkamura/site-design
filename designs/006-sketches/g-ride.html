@@ -70,27 +70,20 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   stroke-dasharray:3520;stroke-dashoffset:3520;animation:draw 2.8s ease .3s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 
-.node{position:absolute;transition:opacity .5s ease;z-index:2}
-.node.hide{opacity:.14;pointer-events:none}
+.node{position:absolute;z-index:2}
+/* 濃さは JS が毎フレーム入れる（draw() → shade()）。
+   段に着いてから出すのをやめて、**進み具合そのものに濃さを繋いだ。**
+   移りはじめた時点でもう濃くなるので、薄いままの時間が無い。
+   transition は置かない（指の動きと二重になって、追従が鈍る）。
+   素の状態は opacity 1。JS が動かなければ全段が濃く見えるだけで、中身は消えない。
+   .hide に残っているのは、触らせないためだけ。 */
+.node.hide{pointer-events:none}
 
 /* 段の中で順に出す。
    スワイプの回数を減らすと1段の情報が増えるが、順に出れば目は散らない。
-   出る順は --i で指定する。 */
-/* 大事なところ：中身は既定で見えている。動きは飾りで、出す条件にしない。
-   opacity:0 を素の状態にすると、アニメーションが走らない環境
-   （動きを減らす設定、タブが裏にあるとき等）で中身が消える。
-   backwards なので、遅延の間だけ from が当たり、終われば素の状態に戻る。 */
-.node.on .r{
-  animation:revealIn .42s cubic-bezier(.2,.7,.3,1) calc(var(--i) * .13s + .25s) backwards;
-}
-/* 出だしを 0 にしないこと。**着く前の段は .hide で opacity .14 で薄く見えている。**
-   そこから 0 で出し直すと、いったん暗くなってから出る（会社概要の列は
-   遅延が 0.64秒あるので、そのぶん長く消えて見えた）。
-   薄く見えていた状態より暗くしない。 */
-@keyframes revealIn{
-  from{opacity:.14;transform:translateY(10px)}
-  to  {opacity:1;transform:none}
-}
+   出る順は --i で指定する。**秒ではなく、進み具合で数える**（shade()）。
+   秒で出していた頃は、着いた瞬間から遅延のぶんだけ薄いままだった。
+   中身は既定で見えている。動きは飾りで、出す条件にしない。 */
 /* あとから足されたもの。同時に出ると「最初からあった」に見えて、洗い出した感が出ない。
    前は 1.5 秒の遅延で出していたが、一拍しかなくて速かった。
    秒数で待たせるのをやめて、段を分けた。スクロールが引き金になるので、
@@ -110,7 +103,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   to  {opacity:1;transform:none}
 }
 @media (prefers-reduced-motion: reduce){
-  .node.on .r,.n2.reveal .add{animation:none}
+  .n2.reveal .add{animation:none}
   #canvas,.rail i,.rail b{transition:none}
 }
 
@@ -493,7 +486,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
          そこだけ縮尺が落ちる（枠の高さと幅の両方が効くため）。
          段を分ければ、締めは締めのまま大きく出せて、会社は会社で読める。
          社名ボタンの行き先も、これでラベルどおり「会社概要」になる。 -->
-    <div class="node n5" data-l="3">
+    <!-- data-rise="0" ＝ **この段だけ動かさない。濃さだけで出す。**
+         中身が段の半分ずつある塊で、区切りの線も含めて動かしても、
+         面積が大きいぶん「読むもの」が上下することになって落ち着かなかった。
+         20px まで上げてから、動かさないほうが座って見えると判断した。
+         ほかの段は行が 24〜56px なので、10px の下げがそのまま効いている。 -->
+    <div class="node n5" data-l="3" data-rise="0">
       <!-- 狭い画面では、この段だけ「会社」「会社概要」の2つに割って寄る。
            段を増やすのではなく、同じ段の中で寄る範囲を分ける。
            .head+.p1 で1つ、.p2 で1つ。JS 側が sel を複数取れる。 -->
@@ -512,7 +510,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
             <li>地域のデジタル格差支援<span>ノーコードとクラウドAI、DX人材の育成</span></li>
           </ul>
         </div>
-        <div class="p2 r" style="--i:3">
+        <!-- サービスと会社概要は --i を揃える。**どちらも 359px あって、段の半分ずつ。**
+             順に出すと、行が順に出るのではなく「画面が半分ずつ出る」に見えて、
+             会社の段だけ読み込み中のように写った（ほかの段の行は 24〜56px）。
+             理念（--i:1）→ 中身2枚（--i:2）の2拍で渡す。 -->
+        <div class="p2 r" style="--i:2">
           <h2>会社概要</h2>
           <dl>
             <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
@@ -855,6 +857,131 @@ function lenAt(i, j, f){
   return even + (byX - even) * FALL;
 }
 
+/* ---------- 濃さ ----------
+   前は「段に着いたら出す」だった。着くまで薄いまま、着いてからも遅延のぶん薄い。
+   進み具合（t）から決めれば、移りはじめた時点でもう濃くなる。
+   戻せば薄くなるので、行きと帰りで同じ見え方になる。
+   秒を持たないので、速すぎ／遅すぎの調整が要らない（.add と同じ考え方）。 */
+const DIM  = .14;   // 停留所から1つ離れたときの濃さ。.hide が持っていた数字
+const LAG  = .16;   // 行が1つ後ろになるごとに、どれだけ遅れて濃くなるか（進み具合で数える）
+/* 行が濃くなりはじめる地点。0 だと隣の段を離れた瞬間から出はじめて、
+   **着く前にもう出終わっていた**（出てくる感じがしない）。
+   上げると、出るのが着く手前に寄る。段そのもの（とラベル）は 0 から濃くなるので、
+   「移りはじめた時点でもう色が付いている」は保たれる。 */
+const RSTART = .45;
+/* 濃さだけ、位置に**遅れて追いつかせる**。
+   位置をそのまま使うと、濃くなる速さがスワイプの速さになる。速く振ると
+   着く前に出終わるどころか、数フレームで終わって**出てくる動きが見えない**。
+   ST は毎フレーム t へ寄っていくだけなので、待つ時間は無い（動きはじめは指と同時）。
+   スワイプを速くしても、出る速さは変わらない。**遅延ではなく、追従の速さ。**
+   秒で数えるのは、画面が 60Hz でも 120Hz でも同じ速さにするため。 */
+const HALF = .10;   // 残りの半分を詰めるのにかかる秒数。大きいほどゆっくり出る
+let ST = null;      // 濃さが見ている位置（t に遅れて付いてくる）
+let STt = 0;        // 前に呼ばれた時刻
+function follow(t){
+  const now = performance.now();
+  const dt = Math.min(.05, ST === null ? 0 : (now - STt) / 1000);   // タブが裏から戻った直後に飛ばない
+  STt = now;
+  /* 段をまたぐ大跳び（resize で位置を置き直す等）は、追わずに合わせる */
+  if (ST === null || Math.abs(t - ST) > 1.2) ST = t;
+  else ST += (t - ST) * (1 - Math.pow(.5, dt / HALF));
+  /* 残りが目に出ない差になったら、そこで合わせて回すのをやめる。
+     .002 まで追うと、見えない 5% のために 2秒ほど rAF を回し続けていた。 */
+  if (Math.abs(t - ST) < .01) ST = t;
+  return ST;
+}
+/* 追いつくまで、スクロールが止まっても回し続ける */
+let spinning = false;
+function spin(){
+  spinning = true;
+  requestAnimationFrame(function(){ spinning = false; draw(); });
+}
+const RISE = 10;    // 出るまえ、段をどれだけ下に置くか（px。1枚の座標なので縮尺が掛かる）
+                    // 段ごとに変えたいときは、その段に data-rise を書く。
+                    // 0 と書けば、その段は動かさない（濃さだけで出す。例：.n5）
+
+let SHADE = null;
+function shadeSetup(){
+  SHADE = [].map.call(document.querySelectorAll('.node'), function(el){
+    const rows = [].map.call(el.querySelectorAll('.r'), function(r){
+      return { el:r, i: parseFloat(r.style.getPropertyValue('--i')) || 0, o:1, up:null };
+    });
+    /* 入れ子の行（欄は .win の中にある）は、外側の行を覚えておく。
+       opacity は掛け算になるので、あとで割って戻す。割らないと奥の行だけ二重に薄くなる。 */
+    rows.forEach(function(r){
+      let a = r.el.parentElement;
+      while (a && a !== el){
+        const hit = rows.filter(function(o){ return o.el === a; })[0];
+        if (hit){ r.up = hit; break; }
+        a = a.parentElement;
+      }
+    });
+    let imax = 0;
+    rows.forEach(function(r){ imax = Math.max(imax, r.i); });
+    /* いちばん後ろの行が、停留所に着いたところでちょうど濃くなりきるように割る */
+    /* 下げは段ごとに変えられる。**0 と書けば、その段は動かさない。**
+       `+el.dataset.rise || RISE` と書くと 0 が既定値に落ちてしまうので、
+       書いてあるかどうかで分ける。 */
+    return { el:el, l:+el.dataset.l, rows:rows, seen:false,
+             rise: 'rise' in el.dataset ? +el.dataset.rise || 0 : RISE,
+             span: Math.max(.2, 1 - LAG * imax) };
+  });
+}
+
+function shade(t){
+  if (!SHADE) shadeSetup();
+  SHADE.forEach(function(N){
+    /* この段の停留所。**続いている停留所（形 → 洗い出す）は、間もこの段にいる**ので
+       ひとまとめに見る。1つずつ見ると、同じ段を2回見る途中で薄くなってしまう。 */
+    const runs = [];
+    marks.forEach(function(m, k){
+      if (m.node !== N.l) return;
+      const r = runs[runs.length - 1];
+      if (r && r[1] === k - 1) r[1] = k; else runs.push([k, k]);
+    });
+    let d = 9;
+    runs.forEach(function(r){
+      d = Math.min(d, t < r[0] ? r[0] - t : (t > r[1] ? t - r[1] : 0));
+    });
+    const p = 1 - Math.min(1, d);          // 0（隣の段）→ 1（この段）
+    /* 濃さは「1枚に対する絶対の濃さ」で持ち、入れ子のぶんは割って戻す。
+       opacity は掛け算になるので、割らないと**離れた段の奥の行だけ二重に薄くなる**
+       （開いた瞬間に右端へ薄く覗く次の段が、そこだけ消えてしまう）。
+       行は段より遅れて濃くなるだけで、離れているあいだは段と同じ濃さ（DIM）。 */
+    const ao = DIM + (1 - DIM) * p;        // 段そのものの濃さ
+    N.el.style.opacity = ao;
+    /* 行だけ、RSTART から着くまでの区間に詰めて出す */
+    const b = Math.max(0, (p - RSTART) / (1 - RSTART));
+    /* **動きは段そのものに入れる。行に入れてはいけない。**
+       行だけ動かすと、ラベル（.k）と区切りの線（.n5 .cols の border-top）は
+       止まったままなので、止まっているものの横で中身が上下する。
+       出てくるというより**動かされている**に見える。会社の段は塊が 359px × 2枚 で
+       線がその上に引いてあるぶん、そこがいちばん出ていた。
+       段ごと動かせば、線もラベルも一緒に動いて、着いたところで
+       線の上の定位置（seat() が決めた位置）に座る。
+       濃さだけが行ごとに遅れる＝**動くものは1つ、拍は複数**。
+       RSTART までは 0 から RISE まで寄っていくだけ。離れた段は 0＝素の位置で、
+       薄く覗いている段が線から浮いて座ることはない（線との空き 65px は動かさない）。 */
+    /* **登場は一度だけ。**一度着いた段は、もう下げない。
+       位置で決めているので、そのままだと戻るたび・通るたびに上下して、
+       段が座っていないように見える（濃さは毎回そのまま効かせる。あれは状態で、登場ではない）。
+       着いた時点で ny はすでに 0 なので、切り替わりは見えない。
+       ——「戻ってきたときにアニメーションを再生し直す」ようにしていたのは、
+       出す条件が「着いたこと」だった頃の名残（.on の付け直し）。いまは条件が位置なので、
+       再生し直す必要がない。 */
+    if (p > .999) N.seen = true;
+    const ny = N.seen ? 0
+      : N.rise * (1 - b) * Math.min(1, p / Math.max(RSTART, .001));
+    N.el.style.transform = ny > .01 ? 'translateY(' + ny.toFixed(2) + 'px)' : '';
+    N.rows.forEach(function(r){
+      const q = Math.max(0, Math.min(1, (b - LAG * r.i) / N.span));
+      r.o = DIM + (1 - DIM) * q;           // その行の絶対の濃さ
+      const up = r.up;
+      r.el.style.opacity = r.o / (up ? up.o : ao);
+    });
+  });
+}
+
 function draw(){
   const vw = innerWidth, vh = innerHeight - 64;
   const last = marks.length - 1;
@@ -879,6 +1006,10 @@ function draw(){
   canvas.style.transform =
     'translate(' + (aimX() + dx - cx * sc) + 'px,' + (aimY() - cy * sc) + 'px) scale(' + sc + ')';
 
+  // 段と行の濃さ。進み具合から決めるが、濃さだけは少し遅れて追いつく（follow）
+  shade(follow(t));
+  if (ST !== t && !spinning) spin();
+
   // 進み具合。押すものではなく、どこまで来たかを示すだけ
   const pc = last ? t / last * 100 : 0;
   document.getElementById('bar').style.width = pc + '%';
@@ -892,18 +1023,12 @@ function draw(){
   const m = marks[n];
   document.getElementById('where').textContent = m.nm;
   document.getElementById('toEnd').classList.toggle('here', n === last);
+  // .hide は触らせないためだけ。濃さは shade() が毎フレーム持つ
   document.querySelectorAll('.node').forEach(function(el){
-    const mine = +el.dataset.l === m.node;
-    el.classList.toggle('hide', !mine);
-    if (!mine) el.classList.remove('on');
+    el.classList.toggle('hide', +el.dataset.l !== m.node);
   });
   // 洗い出した帯は、そこに寄ったときに出す。戻れば畳む
   document.querySelector('.n2').classList.toggle('reveal', !!m.add);
-  // .on は一度外してから、レイアウトを挟んで付け直す。
-  // そうしないと、戻ってきたときにアニメーションが再生されない。
-  // 同じ段の中で寄る先だけ変わるときは .on が外れないので、出し直しも起きない。
-  const cel = document.querySelector('.node[data-l="' + m.node + '"]');
-  if (cel){ void cel.offsetWidth; cel.classList.add('on'); }
 }
 
 /* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。
