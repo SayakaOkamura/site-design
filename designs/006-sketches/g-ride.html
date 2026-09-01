@@ -161,11 +161,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .n0{left:900px;top:204px;width:640px}   /* 中身 176 → 下端 380。線は 420 */
 .n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
 /* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
-.n0 h1{font-size:46px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
+.n0 h1{font-size:40px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
        color:var(--sub)}
 .n0 h1 q{quotes:"「" "」"}
 .n0 .by{font-size:14px;color:var(--faint);margin-bottom:18px;letter-spacing:.06em}
-.n0 .lead{font-size:19px;color:var(--ink);line-height:1.9}
+.n0 .lead{font-size:17.5px;color:var(--ink);line-height:1.9}
 .n0 .lead b{color:var(--amber)}
 
 /* 二 形と、埋まる欄 */
@@ -223,7 +223,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 /* 線の上下を空ける。カードの下端 1110 → 線 1175 → 説明文 1240。上下とも 65px。
    上（カードと線）は SEAT_GAP、下（線と説明文）はこの margin-top で決まる。
    片方だけ変えると、線が真ん中に来なくなる。 */
-.n2 .cap2{font-size:13px;color:var(--sub);margin-top:130px;line-height:1.85}
+.n2 .cap2{font-size:15px;color:var(--sub);margin-top:130px;line-height:1.85}
 .n2 .cap2.sub{margin-top:10px}
 .n2 .cap2 b{color:var(--amber)}
 
@@ -560,7 +560,9 @@ function buildViews(){
      窓の大きさによって山場が入れ替わっていた（背の高い窓では三段目が頂点になっていた）。
      w / h は「この大きさに収まる」という上限だけを言う。中身＋余白で取る。 */
   const V = [
-    { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 250, z: 1.04, dx: -217 },
+    /* dx は「真ん中からどれだけ左右へずらすか」（画面の px）。
+       既定は 0＝真ん中。一段目だけ、開いた瞬間なので左に寄せる。 */
+    { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 250, z: 1.04, dx: -130 },
     /* 形の段は2つに分けて寄る。段は増えるが、画面は出しっぱなしなので
        同じ紙の上にいることは崩れない。add が付いている view で帯を出す。 */
     { nm:'形',       node:1, sel:['.n2'], w: 490, h: 320, z: 1.15 },
@@ -569,12 +571,12 @@ function buildViews(){
        寄りを揃えても寄せ（中心の移動）は起きる。 */
     { nm:'洗い出す', node:1, sel:['.n2'], w: 800, h: 380, z: 1.15, add:true },
     /* 行為とその理由。ここが山場。z がいちばん大きい */
-    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.40, dx: 20 }
+    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.40 }
   ];
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      締めは引いて渡す（z を山場より下げる）。狭い画面では2回に分けて寄る。 */
   if (innerWidth >= 760){
-    V.push({ nm:'会社', node:3, sel:['.n5'], w: 980, h: 578, z: 1.00, dx: 45 });
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 980, h: 578, z: 1.00 });
     /* 枠の高さ 578 は「中身 466 ＋ 上下の余白」。ここを詰めると段が縦いっぱいになって、
        上の余白が消えてロゴと被る。z が他より低いのは、締めとして引くのと、
        横に広いぶん同じ見た目の大きさでも縮尺が下がるため。 */
@@ -866,10 +868,11 @@ function draw(){
   const cx = q.x + off[i][0] + (off[j][0] - off[i][0]) * f;
   const cy = q.y + off[i][1] + (off[j][1] - off[i][1]) * f;
 
-  /* 中身の外形の中心を、使える範囲の中心に置く。
-     手で書いたずらし（dx や NUDGE）は使わない。真ん中は計算で出す。 */
+  /* 中身の外形の中心を、使える範囲の中心に置く。真ん中は計算で出す。
+     dx は、そこから意図してずらすぶんだけ（既定 0）。 */
+  const dx = A.dx + (B.dx - A.dx) * f;
   canvas.style.transform =
-    'translate(' + (aimX() - cx * sc) + 'px,' + (aimY() - cy * sc) + 'px) scale(' + sc + ')';
+    'translate(' + (aimX() + dx - cx * sc) + 'px,' + (aimY() - cy * sc) + 'px) scale(' + sc + ')';
 
   // 進み具合。押すものではなく、どこまで来たかを示すだけ
   const pc = last ? t / last * 100 : 0;
