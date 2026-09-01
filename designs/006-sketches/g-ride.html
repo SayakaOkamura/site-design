@@ -688,6 +688,8 @@ function measure(){
      前後（寄り引き）の動きは、それ自体が酔いのもとなので置かない。動くのは平面だけ。
      いちばん寄れない段（＝いちばん大きい段）に合わせる。実寸で取っているので、
      ここを上げたければ、どこかの段を小さくするしかない。 */
+  let up = 0, down = 0, alone = 0;
+
   if (vw < 760){
     FLAT = Math.min.apply(null, marks.map(function(m){ return m.tight; }));
   } else {
@@ -699,7 +701,6 @@ function measure(){
        カメラの縦を一定にした（段の真ん中に合わせない）ので、
        上に出る量と下に出る量を足したものが、画面に収まらないといけない。
        高さで測ると、真ん中に来る前提の数字になって、背の高い段が下へはみ出す。 */
-    let up = 0, down = 0, alone = 0;
     marks.forEach(function(m){
       if (m.node === 3){ alone = Math.max(alone, m.h); return; }   // 会社は線に乗っていない
       const ly = lineYAt(m.cx);
@@ -711,6 +712,22 @@ function measure(){
     /* 線を、上の出っ張りが収まる高さに置く。
        画面の中央からどれだけずらすか、で持つ（カメラは中央を見るので）。 */
     SEATY = (vh / 2 - (PAD_TOP + up * FLAT)) / FLAT;
+
+    /* 会社の段も、カメラを動かさずに収める。
+       線に乗っている段のうち、いちばん上に出ているぶん（up）と上端を揃えると、
+       この段でもカメラの縦は同じ位置で足りる（動かす必要が無くなる）。
+       線が会社の手前で終わっているので、線の高さはその終点の高さになる。 */
+    const n5 = document.querySelector('.n5');
+    if (n5){
+      n5.style.top = Math.round(lineYAt(n5.offsetLeft + n5.offsetWidth / 2) - up) + 'px';
+      /* 動かしたので、会社の寄り先だけ測り直す */
+      marks.forEach(function(m, i){
+        if (m.node !== 3) return;
+        const bx = box(VIEWS[i].sel);
+        m.cx = bx.x + bx.w / 2; m.cy = bx.y + bx.h / 2;
+        m.w = bx.w; m.h = bx.h; m.top = bx.y; m.bottom = bx.y + bx.h;
+      });
+    }
   }
   marks.forEach(function(m){ m.s = FLAT; });
 
@@ -778,16 +795,9 @@ function survey(){
      線が平らな区間でもカメラが上下する（実測で 3→4 が 55px 動いていた）。
      段は線に乗っているのだから、縦は線が決めるのが筋。
      どこを見ていても線が同じ高さに来るよう、ひとつの値（SEATY）に揃える。
-     会社の段だけは線から外れた場所にあるので、そのままにする。 */
-  marks.forEach(function(m, i){ if (m.node !== 3) off[i][1] = SEATY; });
-
-  /* 会社の段は線に乗っていないので、線ではなく画面の余白で置く。
-     上下の余白が違うぶん（ロゴを避けている）、真ん中より少し下に来る。 */
-  marks.forEach(function(m, i){
-    if (m.node !== 3) return;
-    const q = thread.getPointAtLength(stopLen[i]);
-    off[i][1] = (m.cy - (PAD_TOP - PAD_BOT) / (2 * FLAT)) - q.y;
-  });
+     会社の段も同じ値にする（そのために、上で段の位置をずらしてある）。
+     これでカメラの縦は、最初から最後まで一度も動かない。 */
+  off.forEach(function(o){ o[1] = SEATY; });
 }
 
 /* スクロール位置が、そのまま「何段目か」。段と段のあいだは小数になるので、
