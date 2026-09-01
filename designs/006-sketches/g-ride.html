@@ -220,8 +220,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   border-bottom:1px dashed var(--amber);color:var(--amber);
   padding-bottom:1px;letter-spacing:.08em;
 }
-/* 線の上下を空ける。カードの下端 634 → 線 656 → 説明文 678。上下とも 22px。 */
-.n2 .cap2{font-size:13px;color:var(--sub);margin-top:80px;line-height:1.85}
+/* 線の上下を空ける。カードの下端 1110 → 線 1175 → 説明文 1240。上下とも 65px。
+   上（カードと線）は SEAT_GAP、下（線と説明文）はこの margin-top で決まる。
+   片方だけ変えると、線が真ん中に来なくなる。 */
+.n2 .cap2{font-size:13px;color:var(--sub);margin-top:130px;line-height:1.85}
 .n2 .cap2.sub{margin-top:10px}
 .n2 .cap2 b{color:var(--amber)}
 
@@ -369,7 +371,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
              受け      半径 150 の円弧（角は x1883）
              平ら      y1150、x1970.5 から
            曲がる合計は 60.5×2 = 121度、つまり最小限ちょうど。 -->
-      <path d="M 900 420 L 1382.5 420 A 150 150 0 0 1 1513.1 496.1 L 1839.9 1073.9 A 150 150 0 0 0 1970.5 1150 L 3980 1150" />
+      <path d="M 900 445 L 1382.5 445 A 150 150 0 0 1 1513.1 521.1 L 1839.9 1098.9 A 150 150 0 0 0 1970.5 1175 L 3980 1175" />
     </svg>
 
     <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
@@ -692,7 +694,12 @@ function measure(){
    線の高さから毎回引き算する。乗る面は段によって違う：
    引用と4段目は段そのものの下端、二段目はカードの下端（説明文は線の下に続く）。 */
 const SEATS = [{ sel:'.n0' }, { sel:'.n2', on:'.n2 .win' }, { sel:'.nc' }];
-const SEAT_GAP = 40;
+
+/* 段と線の空き。ここを広げると段が上へ動くので、
+   段を動かさずに空きだけ広げたいときは、線のほうも同じだけ下げること
+   （40 → 65 にしたとき、線の高さも 420/1150 → 445/1175 にしてある）。
+   二段目は説明文が線の下に続くので、そちらの空き（.n2 .cap2 の margin-top）も揃える。 */
+const SEAT_GAP = 65;
 
 function seat(){
   SEATS.forEach(function(s){
