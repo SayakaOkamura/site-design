@@ -46,7 +46,14 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
 #view{
   position:fixed;inset:0;z-index:1;
   overflow-x:auto;overflow-y:hidden;
-  scroll-snap-type:x mandatory;
+  /* **snap は使わない。**停留所へ落ち着かせるのは scrollend でやる（下の JS）。
+     snap は programmatic な scrollLeft の代入にも効くので、ホイールを
+     自前で受けると毎回引き戻される。proximity でも足りなかった
+     （実測：段が画面幅ぴったりの g-zoom では、1目盛ぶん 320px の代入が
+     毎回 0 に戻って、まったく動かなかった。段が画面幅の6倍ある g-ride は
+     引き戻し範囲の外だったので動いていた＝ファイルによって挙動が違った）。
+     scroll-snap-align は、scrollend が無い環境の保険のために残してある。 */
+  scroll-snap-type:none;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
 }
@@ -312,6 +319,21 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   transition:opacity .5s ease;
 }
 .hint.off{opacity:0}
+/* 記号だけにした。文字を並べるより、何で動くかが一目で分かる。
+   線は currentColor なので、色は .hint の指定にそのまま従う。 */
+/* display:inline-block を明示する。**共有の reset.css が svg{display:block} を敷いている**
+   （assets/css/reset.css:6）。効かせたままだと記号が縦に積む。 */
+.hint svg{display:inline-block;height:13px;width:auto;vertical-align:-2.5px;
+  fill:none;stroke:currentColor;stroke-width:1.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.hint svg + svg{margin-left:6px}
+.hint .wide svg:first-child{margin-right:3px}   /* マウスと矢印キーのあいだ */
+/* 狭い画面にはマウスも矢印キーも無い。左右の矢印だけにする（指で動かす）。 */
+.hint .narrow{display:none}
+@media (max-width:760px){
+  .hint .wide{display:none}
+  .hint .narrow{display:inline}
+}
 
 /* 社名だけ。一言は一枚目で名乗るので、ここでは繰り返さない */
 .title{
@@ -545,7 +567,18 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 <div class="hud">
   <div class="rail"><i id="bar"></i><b id="dot"></b></div>
   <div class="foot">
-    <span class="hint" id="hint">スクロールすると、右へ寄っていきます</span>
+    <!-- **何で動くかを全部書く。ここは説明ではなく指示。**
+         開いた瞬間に「何をすればいいか」を言う場所なので、削らない（指針2）。
+         「スクロールすると」だとマウスとトラックパッドの話に読めていた。
+         ロゴ（会社概要 →）は入れていない。あれは動かすのではなく飛ぶもので、
+         それ自体にラベルが付いている。
+         「寄っていきます」は寄り（縮尺）の話で、読む人には何のことか分からない。
+         「進みます」はページを繰る言い方に読めるが、ここはページが無い。
+         この作品の一言（1枚を辿っていくだけ）に合わせて「辿ります」にした。 -->
+    <span class="hint" id="hint">
+      <span class="wide" role="img" aria-label="ホイールか矢印キーで、1枚を右へ辿ります"><svg viewBox="0 0 12 18" aria-hidden="true"><rect x="1" y="1" width="10" height="16" rx="5"/><line x1="6" y1="4.6" x2="6" y2="7.6"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M9.3 5.2 6.5 8 9.3 10.8"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M6.7 5.2 9.5 8 6.7 10.8"/></svg></span>
+      <span class="narrow" role="img" aria-label="指で左右に動かすと、1枚を辿ります"><svg viewBox="0 0 26 12" aria-hidden="true"><path d="M4.5 2.5 1.5 6 4.5 9.5"/><line x1="1.5" y1="6" x2="24.5" y2="6"/><path d="M21.5 2.5 24.5 6 21.5 9.5"/></svg></span>
+    </span>
     <span class="grow"></span>
     <span id="where">経営</span>
   </div>
@@ -1033,8 +1066,7 @@ function draw(){
   document.querySelector('.n2').classList.toggle('reveal', !!m.add);
 }
 
-/* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。
-   縦に回したぶんを横に流すのはブラウザがやる（横しかスクロールしない容器なので）。 */
+/* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
 let ticking = false;
 view.addEventListener('scroll', function(){
   if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
@@ -1042,6 +1074,53 @@ view.addEventListener('scroll', function(){
   ticking = true;
   requestAnimationFrame(function(){ ticking = false; draw(); });
 }, { passive:true });
+
+/* マウスのホイール。**縦に回しても横に流れなかった。**
+   NOTES の「まだ確かめていないこと：縦に回して横に進むか」がこれで、
+   実機で確かめたら効いていなかった（横にしかスクロールしない容器でも、
+   ブラウザは縦の delta を横へ回してくれない）。
+   **1対1で横へ渡すだけ。閾値も、時間も、ひと振りの終わりも見ない。**
+   ここで「1イベント＝1段」や「静止するまで受け付けない」をやると、
+   4回作って4回壊れた形に戻る（NOTES の表を参照）。
+   snap は proximity に落としてある。理由は #view のところに書いた。 */
+const NOTCH_PX = 120;   // ホイール1目盛の、だいたいの px（環境で違う）
+const NOTCH    = 4;     // 段ひとつを、だいたい何目盛で渡るか
+view.addEventListener('wheel', function(e){
+  // 横に振ったぶん（トラックパッド等）は、そのままブラウザに任せる
+  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+  e.preventDefault();
+  /* deltaMode は環境で違う。行（Firefox 等）とページを px に直す。
+     40 は「1目盛＝3行」を Chrome の1目盛（120px）に合わせた数字。
+     16 だと Firefox だけ 2.5倍 重くなる。 */
+  const k = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? view.clientWidth : 1;
+  /* **px をそのまま足さない。**停留所の幅は画面幅の 1〜2倍あるので、
+     1対1で足すと段ひとつに 11〜21目盛かかって回しきれない。
+     段の幅に対する比で渡す。停留所の幅は段によって違うので、
+     行き来する範囲を停留所の数で割って出す。
+     倍率であって、閾値でも時間でもない。ひと振りの終わりは見ていない。 */
+  const span = (view.scrollWidth - view.clientWidth) / Math.max(1, marks.length - 1);
+  view.scrollLeft += e.deltaY * k / NOTCH_PX * (span / NOTCH);
+}, { passive:false });
+
+/* 停留所へ落ち着かせる。**snap から scrollend に移した。**
+   scrollend は「慣性まで含めてスクロールが終わった」というブラウザ側の合図。
+   NOTES に「wheel には指が離れたことを表す標準の情報が無い」と書いたのは、
+   当時それが無かったから。いまはある（Chrome 114 / Firefox 109 / Safari 18）。
+   **ひと振りの終わりを推測しない**という結論はそのままで、推測の代わりに
+   合図を使う形になった。閾値も時間も持たない。
+   無い環境では snap を mandatory に戻す。触る操作はそれで効く
+   （ホイールは効かないが、それは元の状態）。 */
+if ('onscrollend' in window){
+  view.addEventListener('scrollend', function(){
+    /* 停留所の位置。g-ride は段ごとに幅が違うので stopAt、
+       g-zoom は画面幅ぴったりなので掛け算で出す。 */
+    const to = (typeof stopAt === 'function') ? stopAt(at()) : at() * view.clientWidth;
+    // すでに停留所にいるなら何もしない（自分で寄せたあとの scrollend で回らないように）
+    if (Math.abs(view.scrollLeft - to) > 1) view.scrollTo({ left: to, behavior:'smooth' });
+  });
+} else {
+  view.style.scrollSnapType = 'x mandatory';
+}
 
 function goTo(n){
   const last = marks.length - 1;
