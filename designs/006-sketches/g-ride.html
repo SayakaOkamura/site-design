@@ -697,12 +697,14 @@ function measure(){
   const roomH = vh - PAD_TOP - PAD_BOT;
   if (vw < 760){
     FLAT = Math.min.apply(null, marks.map(function(m){ return m.tight; }));
+    marks.forEach(function(m){ m.s = FLAT; });
   } else {
     let f = Infinity;
     marks.forEach(function(m){ f = Math.min(f, roomW / m.w, roomH / m.h); });
     FLAT = f * ROOM;
+    /* 会社だけ少し引く。ほかは FLAT のまま。 */
+    marks.forEach(function(m){ m.s = f * (m.node === 3 ? ROOM_N5 : ROOM); });
   }
-  marks.forEach(function(m){ m.s = FLAT; });
 
   survey();
 }
@@ -776,7 +778,12 @@ const NUDGE = 16;
 /* 全体の大きさ。1.0 だと、いちばん大きい段（会社）が使える範囲いっぱいになって、
    上下の余りが 0 になる。下げると全部が一律に小さくなって、そのぶん余白がつく。
    ここを触ると字の大きさが全部変わるので、まずここで合わせること。 */
-const ROOM = 0.95;
+const ROOM = 1.00;
+
+/* 会社の段だけ、少し引く。1.0 のままだと使える範囲いっぱいで詰まって見える。
+   ほかの段は ROOM のまま。この差のぶん、最後の移り（会社へ入るとき）で
+   縮尺が 2.5% 変わる。前後の動きとしては、ほぼ出ない量。 */
+const ROOM_N5 = 0.975;
 
 /* 1回の移りに、画面を何枚ぶんスクロールさせるか。移りごとに決める。
    画面の上での速さは、これに反比例してそのまま下がる。
