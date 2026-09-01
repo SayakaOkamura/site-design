@@ -83,8 +83,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 .node.on .r{
   animation:revealIn .42s cubic-bezier(.2,.7,.3,1) calc(var(--i) * .13s + .25s) backwards;
 }
+/* 出だしを 0 にしないこと。**着く前の段は .hide で opacity .14 で薄く見えている。**
+   そこから 0 で出し直すと、いったん暗くなってから出る（会社概要の列は
+   遅延が 0.64秒あるので、そのぶん長く消えて見えた）。
+   薄く見えていた状態より暗くしない。 */
 @keyframes revealIn{
-  from{opacity:0;transform:translateY(10px)}
+  from{opacity:.14;transform:translateY(10px)}
   to  {opacity:1;transform:none}
 }
 /* あとから足されたもの。同時に出ると「最初からあった」に見えて、洗い出した感が出ない。
