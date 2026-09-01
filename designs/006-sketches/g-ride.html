@@ -708,18 +708,23 @@ function measure(){
       down = Math.max(down, m.bottom - ly);
     });
     const room = vh - PAD_TOP - PAD_BOT;
+    const mid = (PAD_TOP + (vh - PAD_BOT)) / 2;   // 使える範囲の、上下の真ん中
+    /* 入らなければ引く。縦は二通りの縛りがある：
+       線に乗る段のかたまり（up+down）と、会社の段の高さ（alone）。 */
     FLAT = Math.min(hFit, room / (up + down), room / alone) * ROOM;
-    /* 線を、上の出っ張りが収まる高さに置く。
-       画面の中央からどれだけずらすか、で持つ（カメラは中央を見るので）。 */
-    SEATY = (vh / 2 - (PAD_TOP + up * FLAT)) / FLAT;
 
-    /* 会社の段も、カメラを動かさずに収める。
-       線に乗っている段のうち、いちばん上に出ているぶん（up）と上端を揃えると、
-       この段でもカメラの縦は同じ位置で足りる（動かす必要が無くなる）。
-       線が会社の手前で終わっているので、線の高さはその終点の高さになる。 */
+    /* 線に乗る段のかたまりを、真ん中に置く。
+       線はその中で、上の出っ張りぶんだけ下にある。 */
+    const lineScreenY = mid - (up + down) * FLAT / 2 + up * FLAT;
+    SEATY = (vh / 2 - lineScreenY) / FLAT;
+
+    /* 会社の段も同じ真ん中に置く。線に乗っていないので、
+       カメラではなく段のほうを動かして合わせる（カメラの縦は最後まで動かさない）。 */
     const n5 = document.querySelector('.n5');
     if (n5){
-      n5.style.top = Math.round(lineYAt(n5.offsetLeft + n5.offsetWidth / 2) - up) + 'px';
+      const lineY5 = lineYAt(n5.offsetLeft + n5.offsetWidth / 2);
+      const wantTop = mid - alone * FLAT / 2;          // 画面での上端
+      n5.style.top = Math.round(lineY5 + (wantTop - lineScreenY) / FLAT) + 'px';
       /* 動かしたので、会社の寄り先だけ測り直す */
       marks.forEach(function(m, i){
         if (m.node !== 3) return;
