@@ -15,3 +15,9 @@ npm-debug.log*
 # 作業用
 *.local
 /tmp/
+
+# 線の調整画面（道具であって案ではない。公開すると来た人が線を動かせる）
+designs/006-sketches/g-line.html
+designs/006-sketches/_line-tuner.js
+designs/006-sketches/_line-camera.js
+designs/006-sketches/g-line.html.bak
