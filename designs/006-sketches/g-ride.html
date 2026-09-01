@@ -613,6 +613,11 @@ const thread = document.querySelector('svg.thread path');
 let marks = [];    // 段ごとの寄り先（中心）
 let here  = -1;    // いま濃く出している段
 let FLAT  = 1;     // 縮尺。1つに固定して動かさない
+let SEATY = 0;     // 線を画面のどの高さに置くか（段の真ん中には合わせない）
+
+/* 画面の上下に空けるぶん。上は左上のロゴ（下端 39）を避ける量。
+   下は進み具合の帯のぶんが、すでに vh から引かれている。 */
+const PAD_TOP = 50, PAD_BOT = 14;
 let stopLen = [];  // 段が、線に沿って何 px 目にあるか
 let off = [];      // 段の真ん中と、線の上の点とのずれ
 let TAB = [];      // 線を刻んだ表 [x, 線に沿った長さ]
@@ -665,10 +670,14 @@ function measure(){
     n2.classList.toggle("reveal", !!v.add);
     const bx = box(v.sel);
     return {
-      z:   v.z || 1,
-      fit: Math.min(vw / v.w, vh / v.h),                        // これ以上寄るとはみ出す
+      z:   v.z || 1,   /* 段ごとに寄りを変えるのをやめたので、いまは使っていない */
+      /* これ以上寄るとはみ出す倍率。**枠（v.w/v.h）ではなく実寸で取る。**
+         枠は手で書いた上限で、中身とは合っていない（会社は枠 578 に対して中身 466）。
+         枠で取ると、合っていないぶんだけ全段の字が小さくなる。 */
+      fit: Math.min((vw - 40) / bx.w, vh / (bx.h + 30)),
       tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
       cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
+      w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
       nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0
     };
   });
@@ -677,11 +686,31 @@ function measure(){
 
   /* 縮尺は1つに固定する。段ごとに寄りを変えない。
      前後（寄り引き）の動きは、それ自体が酔いのもとなので置かない。動くのは平面だけ。
-     どの段もはみ出さない、いちばん大きいところを選ぶ。 */
+     いちばん寄れない段（＝いちばん大きい段）に合わせる。実寸で取っているので、
+     ここを上げたければ、どこかの段を小さくするしかない。 */
   if (vw < 760){
     FLAT = Math.min.apply(null, marks.map(function(m){ return m.tight; }));
   } else {
-    FLAT = Math.min.apply(null, marks.map(function(m){ return m.fit; })) * ROOM;
+    /* 横は、いちばん幅のある段で決まる。 */
+    let hFit = Infinity;
+    marks.forEach(function(m){ hFit = Math.min(hFit, (vw - 40) / m.w); });
+
+    /* 縦は、段の高さではなく「線から上へどれだけ／下へどれだけ」で決まる。
+       カメラの縦を一定にした（段の真ん中に合わせない）ので、
+       上に出る量と下に出る量を足したものが、画面に収まらないといけない。
+       高さで測ると、真ん中に来る前提の数字になって、背の高い段が下へはみ出す。 */
+    let up = 0, down = 0, alone = 0;
+    marks.forEach(function(m){
+      if (m.node === 3){ alone = Math.max(alone, m.h); return; }   // 会社は線に乗っていない
+      const ly = lineYAt(m.cx);
+      up   = Math.max(up,   ly - m.top);
+      down = Math.max(down, m.bottom - ly);
+    });
+    const room = vh - PAD_TOP - PAD_BOT;
+    FLAT = Math.min(hFit, room / (up + down), room / alone) * ROOM;
+    /* 線を、上の出っ張りが収まる高さに置く。
+       画面の中央からどれだけずらすか、で持つ（カメラは中央を見るので）。 */
+    SEATY = (vh / 2 - (PAD_TOP + up * FLAT)) / FLAT;
   }
   marks.forEach(function(m){ m.s = FLAT; });
 
@@ -748,13 +777,17 @@ function survey(){
      段によって背の高さが違うので、段の真ん中に合わせると、
      線が平らな区間でもカメラが上下する（実測で 3→4 が 55px 動いていた）。
      段は線に乗っているのだから、縦は線が決めるのが筋。
-     ひとつの値（線に乗っている段の平均）に揃える。
+     どこを見ていても線が同じ高さに来るよう、ひとつの値（SEATY）に揃える。
      会社の段だけは線から外れた場所にあるので、そのままにする。 */
-  const onLine = off.slice(0, -1);
-  if (onLine.length){
-    const avg = onLine.reduce(function(s, o){ return s + o[1]; }, 0) / onLine.length;
-    onLine.forEach(function(o){ o[1] = avg; });
-  }
+  marks.forEach(function(m, i){ if (m.node !== 3) off[i][1] = SEATY; });
+
+  /* 会社の段は線に乗っていないので、線ではなく画面の余白で置く。
+     上下の余白が違うぶん（ロゴを避けている）、真ん中より少し下に来る。 */
+  marks.forEach(function(m, i){
+    if (m.node !== 3) return;
+    const q = thread.getPointAtLength(stopLen[i]);
+    off[i][1] = (m.cy - (PAD_TOP - PAD_BOT) / (2 * FLAT)) - q.y;
+  });
 }
 
 /* スクロール位置が、そのまま「何段目か」。段と段のあいだは小数になるので、
@@ -834,7 +867,9 @@ function draw(){
   const i = at0.i, j = Math.min(i + 1, last), f = at0.f;
   const t = i + f;
   const A = marks[i], B = marks[j];
-  const sc = FLAT;                        // 縮尺は動かさない
+  /* 線に乗っている4段は同じ縮尺なので、ここは動かない。
+     会社へ入る最後の移りだけ、引きが入る。 */
+  const sc = A.s + (B.s - A.s) * f;
   const dx = A.dx + (B.dx - A.dx) * f;    // 段ごとの左右の寄せ
 
   /* 段の中心どうしを結ぶのではなく、線の上を進む。
