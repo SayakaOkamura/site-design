@@ -115,16 +115,20 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
    （本文 13.5px が 9.2px、会社概要が 4px まで縮んでいた）。
    縦は余っているので、段を縦長に組み直して、寄りをやめる。
    JS 側も、狭いときは縮尺 1 のまま動かすだけにしている。 */
+/* **ここで left は触らない。**段の横の位置は、幅が変わっても同じ。
+   触ると、線（x を決め打ちで引いてある）から段が外れる。
+   実際、輪を外して4段目を右へ送ったとき、ここだけ古い x が残って
+   会社の段が線の真上に来ていた。縦は JS が線から計算して座らせる。 */
 @media (max-width:760px){
 
-  .n0{left:900px;width:330px}
+  .n0{width:330px}
   .n0 h1{font-size:27px}
   .n0 .by{font-size:12px;margin-bottom:14px}
   .n0 .lead{font-size:15px}
 
   /* 狭い画面では横に並べられないので、束はカードの下に戻す。
      ここだけは縦に伸びるが、330px に横並びは入らない。 */
-  .n2{left:1900px;width:330px}
+  .n2{width:330px}
   .n2 .row{display:block}
   .n2 .col,.n2 .win{width:330px}
   /* 狭い画面では線が横に来ないので、ここだけ罫を引く */
@@ -133,20 +137,24 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   .n2 .found dl{grid-template-columns:1fr}
   .n2 .cap2{font-size:12px}
 
-  .nc{left:2780px;width:330px}
+  .nc{width:330px}
   .nc h1{font-size:24px}
   .nc p{font-size:13.5px}
 
   /* 会社の段だけ、狭い画面では2つに割って寄る（JS 側で段を分けている）。
      縦に積むと下へ動くことになって、他の段と動きが食い違う。
      横に並べれば、割ったあとも左から右のまま。 */
-  .n5{left:3240px;width:700px}
+  .n5{width:700px}
   .n5 .head{width:330px}
   .n5 h1{font-size:20px;margin-bottom:14px}
   .n5 .cols{grid-template-columns:330px 330px;gap:40px}
   .n5 dl{grid-template-columns:66px 1fr;font-size:14px}
   .n5 ul.svc li{font-size:12.5px}
 }
+
+/* **以下の top は、読み込み時に JS（seat）が線から計算して上書きする。**
+   ここに書いてあるのは、その前に一瞬だけ効く初期値。
+   手で合わせ直さないこと。合わせるなら SEAT_GAP（線との空き 40px）のほう。 */
 
 /* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
 /* 主の中身の下端を 634 に揃える。線（645）はその 11px 下を通る。 */
@@ -644,6 +652,13 @@ function measure(){
      出したときの姿で測る必要があるので、測る間だけ .reveal を当てる。 */
   const n2 = document.querySelector(".n2");
   const was = n2.classList.contains("reveal");
+
+  /* 寄り先を測る前に、段を線の上に座らせておく。
+     順序が逆だと、座る前の位置で寄り先が決まる。 */
+  n2.classList.add("reveal");   // 帯を出した姿でカードの位置を測る
+  seat();
+  n2.classList.toggle("reveal", was);
+
   marks = VIEWS.map(function(v){
     n2.classList.toggle("reveal", !!v.add);
     const bx = box(v.sel);
@@ -669,6 +684,38 @@ function measure(){
   marks.forEach(function(m){ m.s = FLAT; });
 
   survey();
+}
+
+/* 段を、線の上に座らせる。
+   top を数字で決め打ちすると、幅が変わって段の高さが変わったとたんにずれる
+   （狭い画面では段が縦長になるので、必ずずれていた）。
+   線の高さから毎回引き算する。乗る面は段によって違う：
+   引用と4段目は段そのものの下端、二段目はカードの下端（説明文は線の下に続く）。 */
+const SEATS = [{ sel:'.n0' }, { sel:'.n2', on:'.n2 .win' }, { sel:'.nc' }];
+const SEAT_GAP = 40;
+
+function seat(){
+  SEATS.forEach(function(s){
+    const el = document.querySelector(s.sel);
+    if (!el) return;
+    el.style.top = '0px';                       // 測る前に戻す
+    const on = s.on ? document.querySelector(s.on) : null;
+    const bottom = on ? (on.offsetTop + on.offsetHeight) : el.offsetHeight;
+    const cx = el.offsetLeft + el.offsetWidth / 2;
+    el.style.top = Math.round(lineYAt(cx) - SEAT_GAP - bottom) + 'px';
+  });
+}
+
+/* 線の、その x での高さ */
+function lineYAt(x){
+  const L = thread.getTotalLength();
+  let best = null, bd = Infinity;
+  for (let i = 0; i <= 400; i++){
+    const q = thread.getPointAtLength(L * i / 400);
+    const d = Math.abs(q.x - x);
+    if (d < bd){ bd = d; best = q; }
+  }
+  return best.y;
 }
 
 /* ---- 線の上をなぞるための下ごしらえ ------------------------------------
@@ -720,7 +767,8 @@ const ROOM = 1.00;
 
    落下（1→2）だけ長いのは、そこだけ縦に 730px 動くぶん、
    同じ長さだと画面の流れが速くなるため（2枚だと 0.60、3枚で 0.40）。
-   最後の数字は、最後の段そのものの幅（そこから先へは進まない）。 */
+   最後の数字は、最後の段そのものの幅（そこから先へは進まない）。
+   狭い画面では会社の段が2つに割れて6停留所になる。足りないぶんは 1 として扱う。 */
 const SPANS = [3, 2, 2, 2, 1];
 
 function spanOf(i){ return (view.clientWidth || 1) * (SPANS[i] || 1); }
