@@ -217,10 +217,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   border-bottom:1px dashed var(--amber);color:var(--amber);
   padding-bottom:1px;letter-spacing:.08em;
 }
-/* 線の上下を空ける。カードの下端 1110 → 線 1175 → 説明文 1240。上下とも 65px。
-   上（カードと線）は SEAT_GAP、下（線と説明文）はこの margin-top で決まる。
-   片方だけ変えると、線が真ん中に来なくなる。 */
-.n2 .cap2{font-size:15px;color:var(--sub);margin-top:130px;line-height:1.85}
+/* 線の上下を空ける。カードの下端 1110 → 線 1175 → 説明文 1220。
+   上（カードと線）は SEAT_GAP の 65、下（線と説明文）はこの margin-top から 45。
+   **上下は揃えていない。**説明文を上げるために 130 → 110 にしたので、
+   線は真ん中ではなく上寄りにいる。揃え直すなら 130 に戻す（2 × SEAT_GAP）。
+   字は 15 → 16。 */
+.n2 .cap2{font-size:16px;color:var(--sub);margin-top:110px;line-height:1.85}
 .n2 .cap2.sub{margin-top:10px}
 .n2 .cap2 b{color:var(--amber)}
 
