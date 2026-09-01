@@ -615,9 +615,15 @@ let here  = -1;    // いま濃く出している段
 let FLAT  = 1;     // 縮尺。1つに固定して動かさない
 let SEATY = 0;     // 線を画面のどの高さに置くか（段の真ん中には合わせない）
 
-/* 画面の上下に空けるぶん。上は左上のロゴ（下端 39）を避ける量。
-   下は進み具合の帯のぶんが、すでに vh から引かれている。 */
-const PAD_TOP = 50, PAD_BOT = 14;
+/* 画面の「使える範囲」。ここに中身の外形を収めて、その中心に置く。
+   上は左上のロゴと右上の縮尺（どちらも下端 39）を避けるぶん。
+   下は進み具合の帯（vh から 64 引いてある）の内側に、もう少しだけ。
+   左右は対称。ここを触ると、全段の大きさと位置がまとめて動く。 */
+const PAD_TOP = 50, PAD_BOT = 14, PAD_L = 20, PAD_R = 20;
+
+/* 使える範囲の中心（画面の座標） */
+function aimX(){ return (PAD_L + (innerWidth - PAD_R)) / 2; }
+function aimY(){ return (PAD_TOP + (innerHeight - 64 - PAD_BOT)) / 2; }
 let stopLen = [];  // 段が、線に沿って何 px 目にあるか
 let off = [];      // 段の真ん中と、線の上の点とのずれ
 let TAB = [];      // 線を刻んだ表 [x, 線に沿った長さ]
@@ -684,55 +690,17 @@ function measure(){
 
   n2.classList.toggle("reveal", was);
 
-  /* 縮尺は1つに固定する。段ごとに寄りを変えない。
-     前後（寄り引き）の動きは、それ自体が酔いのもとなので置かない。動くのは平面だけ。
-     いちばん寄れない段（＝いちばん大きい段）に合わせる。実寸で取っているので、
-     ここを上げたければ、どこかの段を小さくするしかない。 */
-  let up = 0, down = 0, alone = 0;
-
+  /* 縮尺は1つに固定する。段ごとに寄りを変えない（前後の動きは酔いのもと）。
+     どの段も「使える範囲」に収まる、いちばん大きい倍率を選ぶ。
+     中身の外形（実寸）で取る。枠の数字は使わない。 */
+  const roomW = vw - PAD_L - PAD_R;
+  const roomH = vh - PAD_TOP - PAD_BOT;
   if (vw < 760){
     FLAT = Math.min.apply(null, marks.map(function(m){ return m.tight; }));
   } else {
-    /* 横は、いちばん幅のある段で決まる。 */
-    let hFit = Infinity;
-    marks.forEach(function(m){ hFit = Math.min(hFit, (vw - 40) / m.w); });
-
-    /* 縦は、段の高さではなく「線から上へどれだけ／下へどれだけ」で決まる。
-       カメラの縦を一定にした（段の真ん中に合わせない）ので、
-       上に出る量と下に出る量を足したものが、画面に収まらないといけない。
-       高さで測ると、真ん中に来る前提の数字になって、背の高い段が下へはみ出す。 */
-    marks.forEach(function(m){
-      if (m.node === 3){ alone = Math.max(alone, m.h); return; }   // 会社は線に乗っていない
-      const ly = lineYAt(m.cx);
-      up   = Math.max(up,   ly - m.top);
-      down = Math.max(down, m.bottom - ly);
-    });
-    const room = vh - PAD_TOP - PAD_BOT;
-    const mid = (PAD_TOP + (vh - PAD_BOT)) / 2;   // 使える範囲の、上下の真ん中
-    /* 入らなければ引く。縦は二通りの縛りがある：
-       線に乗る段のかたまり（up+down）と、会社の段の高さ（alone）。 */
-    FLAT = Math.min(hFit, room / (up + down), room / alone) * ROOM;
-
-    /* 線に乗る段のかたまりを、真ん中に置く。
-       線はその中で、上の出っ張りぶんだけ下にある。 */
-    const lineScreenY = mid - (up + down) * FLAT / 2 + up * FLAT;
-    SEATY = (vh / 2 - lineScreenY) / FLAT;
-
-    /* 会社の段も同じ真ん中に置く。線に乗っていないので、
-       カメラではなく段のほうを動かして合わせる（カメラの縦は最後まで動かさない）。 */
-    const n5 = document.querySelector('.n5');
-    if (n5){
-      const lineY5 = lineYAt(n5.offsetLeft + n5.offsetWidth / 2);
-      const wantTop = mid - alone * FLAT / 2;          // 画面での上端
-      n5.style.top = Math.round(lineY5 + (wantTop - lineScreenY) / FLAT) + 'px';
-      /* 動かしたので、会社の寄り先だけ測り直す */
-      marks.forEach(function(m, i){
-        if (m.node !== 3) return;
-        const bx = box(VIEWS[i].sel);
-        m.cx = bx.x + bx.w / 2; m.cy = bx.y + bx.h / 2;
-        m.w = bx.w; m.h = bx.h; m.top = bx.y; m.bottom = bx.y + bx.h;
-      });
-    }
+    let f = Infinity;
+    marks.forEach(function(m){ f = Math.min(f, roomW / m.w, roomH / m.h); });
+    FLAT = f * ROOM;
   }
   marks.forEach(function(m){ m.s = FLAT; });
 
@@ -789,20 +757,14 @@ function survey(){
     return best;
   };
   stopLen = marks.map(function(m){ return lenNear(m.cx); });
-  /* 段の真ん中と、線の上の点とのずれ。停留所ではこれを足す。 */
+  /* 段の外形の中心と、線の上の点とのずれ。
+     カメラはこれを足して、段の中心を「使える範囲」の中心に置く。
+     縦も段ごとに合わせる（＝その段の中身だけで真ん中を取る）。
+     線の高さは段によって変わるので、そのぶん移りの途中でカメラが縦にも動く。 */
   off = marks.map(function(m, i){
     const q = thread.getPointAtLength(stopLen[i]);
     return [m.cx - q.x, m.cy - q.y];
   });
-
-  /* 縦だけは、段ごとに変えない。
-     段によって背の高さが違うので、段の真ん中に合わせると、
-     線が平らな区間でもカメラが上下する（実測で 3→4 が 55px 動いていた）。
-     段は線に乗っているのだから、縦は線が決めるのが筋。
-     どこを見ていても線が同じ高さに来るよう、ひとつの値（SEATY）に揃える。
-     会社の段も同じ値にする（そのために、上で段の位置をずらしてある）。
-     これでカメラの縦は、最初から最後まで一度も動かない。 */
-  off.forEach(function(o){ o[1] = SEATY; });
 }
 
 /* スクロール位置が、そのまま「何段目か」。段と段のあいだは小数になるので、
@@ -890,7 +852,6 @@ function draw(){
   /* 線に乗っている4段は同じ縮尺なので、ここは動かない。
      会社へ入る最後の移りだけ、引きが入る。 */
   const sc = A.s + (B.s - A.s) * f;
-  const dx = A.dx + (B.dx - A.dx) * f;    // 段ごとの左右の寄せ
 
   /* 段の中心どうしを結ぶのではなく、線の上を進む。
      線が落ちるところでは、カメラも一緒に落ちる。 */
@@ -898,8 +859,10 @@ function draw(){
   const cx = q.x + off[i][0] + (off[j][0] - off[i][0]) * f;
   const cy = q.y + off[i][1] + (off[j][1] - off[i][1]) * f;
 
+  /* 中身の外形の中心を、使える範囲の中心に置く。
+     手で書いたずらし（dx や NUDGE）は使わない。真ん中は計算で出す。 */
   canvas.style.transform =
-    'translate(' + (vw / 2 + NUDGE + dx - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
+    'translate(' + (aimX() - cx * sc) + 'px,' + (aimY() - cy * sc) + 'px) scale(' + sc + ')';
 
   // 進み具合。押すものではなく、どこまで来たかを示すだけ
   const pc = last ? t / last * 100 : 0;
