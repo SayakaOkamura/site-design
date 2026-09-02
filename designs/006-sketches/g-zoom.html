@@ -1120,7 +1120,10 @@ function glide(to, secs){
   gliding = true;
   (function step(){
     const x = Math.min(1, (performance.now() - t0) / 1000 / dur);
-    view.scrollLeft = from + (to - from) * (x * x * (3 - 2 * x));
+    /* **止まり方を寝かせる。**smoothstep（x²(3-2x)）は端で速度が 0 になるが、
+       減速が最後に寄っていて、着くところが急に見えた。
+       smootherstep（x³(6x²-15x+10)）は加速度も 0 で終わるので、すっと止まる。 */
+    view.scrollLeft = from + (to - from) * (x * x * x * (x * (x * 6 - 15) + 10));
     if (x < 1){ anim = requestAnimationFrame(step); }
     else { view.scrollLeft = to; gliding = false; }   // 端数を残さない
   })();
