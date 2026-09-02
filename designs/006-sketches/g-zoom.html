@@ -1027,7 +1027,6 @@ view.addEventListener('scroll', function(){
 const NOTCH_PX = 120;   // ホイール1目盛の、だいたいの px（環境で違う）
 const NOTCH    = 4;     // 段ひとつを、だいたい何目盛で渡るか
 view.addEventListener("wheel", function(e){
-  stopGlide();   // 手が動いたら、寄せ直しは捨てる
   // 横に振ったぶん（トラックパッド等）は、そのままブラウザに任せる
   if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
   e.preventDefault();
@@ -1058,45 +1057,17 @@ if ('onscrollend' in window){
        g-zoom は画面幅ぴったりなので掛け算で出す。 */
     const to = (typeof stopAt === 'function') ? stopAt(at()) : at() * view.clientWidth;
     // すでに停留所にいるなら何もしない（自分で寄せたあとの scrollend で回らないように）
-    if (!gliding && Math.abs(view.scrollLeft - to) > 1) glide(to);
+    if (Math.abs(view.scrollLeft - to) > 1) view.scrollTo({ left: to, behavior:'smooth' });
   });
 } else {
   view.style.scrollSnapType = 'x mandatory';
 }
 
-/* 段から段への移り。**ブラウザ任せ（behavior:'smooth'）だと速すぎる。**
-   あちらは速さをこちらで持てないので、自前で動かす。
-   丸め方は紙・線と同じ smoothstep。止まった状態から始まって、止まって終わる。
-   **手で振っているあいだは触らない**（ホイール・トラックパッド・指）。あれは手の速さで、
-   そこに秒を持ち込むと、4回作って4回壊した形に戻る。ここが動かすのは、
-   矢印キー・社名から飛ぶとき・停留所への寄せ直しだけ。 */
-const STEP = .9;    // 段ひとつを渡るのにかかる秒数
-                    // **落ちる移りを長くする仕掛けは g-ride にある**（線の上をカメラが
-                    // 進む案なので、そこだけ縦に 700px 下りる）。この案の線は平ら。
-let anim = 0, gliding = false;
-/* **自分が起こしたスクロールで、自分を呼び直さないこと。**
-   glide は毎フレーム scrollLeft を書くので、そのたびに scroll が飛び、終われば scrollend も飛ぶ。
-   scrollend で無条件に glide を呼ぶと、寄せ直しが延々と再起動して**手で振っても即座に戻される**
-   （矢印もトラックパッドも効かなくなる）。走っているあいだは寄せ直さない。
-   手で触られたら、走っているぶんは捨てて手に渡す。 */
-function stopGlide(){ cancelAnimationFrame(anim); gliding = false; }
-view.addEventListener("pointerdown", stopGlide, { passive:true });
-view.addEventListener("touchstart",  stopGlide, { passive:true });
-function glide(to){   // 名前は glide。draw() の中の slide（紙の横のずれ）と別物
-  const from = view.scrollLeft, t0 = performance.now();
-  cancelAnimationFrame(anim);
-  (function step(){
-    const x = Math.min(1, (performance.now() - t0) / 1000 / STEP);
-    view.scrollLeft = from + (to - from) * (x * x * (3 - 2 * x));
-    if (x < 1){ anim = requestAnimationFrame(step); }
-    else { view.scrollLeft = to; gliding = false; }   // 端数を残さない（残すとまた寄せ直しが走る）
-  })();
-}
-
 function goTo(n){
   const last = marks.length - 1;
-  glide(Math.max(0, Math.min(last, n)) * view.clientWidth);
+  view.scrollTo({ left: Math.max(0, Math.min(last, n)) * view.clientWidth, behavior:'smooth' });
 }
+
 function at(){ return Math.round(view.scrollLeft / (view.clientWidth || 1)); }
 
 addEventListener('keydown', function(e){
