@@ -415,14 +415,14 @@ function runQueue(){
   put(step, function(){ meter(); runQueue(); });
 }
 
-function ask(n){
+function ask(n, quiet){
   const t = T[n];
   if (!t) return;
   /* **流れている途中でも選べる。**押しても何も起きないと、壊れて見える。
      途中のぶんは最後まで出してから、次の話題に移る。 */
   if (busyNow) rest();
   busyNow = true;
-  mark(n);
+  if (!quiet) mark(n);
   /* 問いを下の枠に打ってから、上へ送る（打っているのが見えるのが Claude Code） */
   const send = function(){
     typed.textContent = '';
@@ -471,8 +471,10 @@ again.addEventListener('click', function(){ location.reload(); });
 
 /* 開いた瞬間に、サービスだけ出しておく。**真っ暗な画面から始めない。**
    あとは選んでもらう。 */
+/* 開いた瞬間は 1 だけ流す。**印は付けない**
+   （開いた直後に ✓ が付いていると、押していないのに済に見える）。 */
 meter();
-ask(0);
+ask(0, true);
 </script>
 </body>
 </html>

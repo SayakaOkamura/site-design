@@ -225,27 +225,35 @@ body{
    Claude Code の / の候補一覧の形で、聞けることを常に出しておく。 */
 .menu{
   max-width:90ch;margin:0 auto 8px;border:1px solid var(--line);border-radius:8px;
-  background:var(--panel);overflow:auto;
-  /* 背の低い窓では一覧が場所を取りすぎる。log の場所を残す */
-  max-height:40vh;
+  background:var(--panel);
+  /* 内側で巻かせない（枠の中に別のスクロールが出ると、壊れて見える）。
+     行は9つで高さが読めているので、そのまま置く。 */
 }
 .menu .mh{
   padding:7px 14px;border-bottom:1px solid var(--line);
   font-size:11.5px;color:var(--faint);letter-spacing:.04em;
 }
 .menu .mh b{color:var(--orange);font-weight:400}
-.menu ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:0}
+.menu ul{list-style:none;display:grid;grid-template-columns:1fr 1fr}
 @media (max-width:720px){ .menu ul{grid-template-columns:1fr} }
-.menu li{border-top:1px solid transparent}
+/* **区切りを見えるようにする。**透明の罫だと、2列が揃っていないように見えた */
+.menu li{border-top:1px solid var(--line)}
+.menu li:nth-child(2n){border-left:1px solid var(--line)}
+@media (max-width:720px){ .menu li:nth-child(2n){border-left:0} }
 .menu button{
   width:100%;text-align:left;font:inherit;font-size:13px;cursor:pointer;
   background:none;border:0;padding:7px 14px;color:var(--sub);
   display:flex;gap:10px;align-items:baseline;
+  /* **min-width:0 が要る。**無いと、長い文が flex から溢れて隣の列にかぶる */
+  min-width:0;
 }
 .menu button:hover,.menu button:focus-visible{background:rgba(217,119,87,.10);color:var(--ink);outline:none}
 .menu button .k{color:var(--faint);flex:none;width:1.2em}
-.menu button .c{color:var(--ink)}
-.menu button .n{color:var(--faint);margin-left:auto;font-size:11.5px}
+.menu button .c{color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menu button .n{
+  color:var(--faint);margin-left:auto;font-size:11.5px;flex:none;
+  max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 /* 一度聞いたものは印を付けるが、**押せるままにする**（戻れることが要点） */
 .menu button.seen .c{color:var(--sub)}
 .menu button.seen .n::after{content:" ✓"; color:var(--green)}
