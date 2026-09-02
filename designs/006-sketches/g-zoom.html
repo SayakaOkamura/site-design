@@ -1073,7 +1073,10 @@ if ('onscrollend' in window){
    書くので、そのたびに scroll が飛び、終われば scrollend も飛ぶ。そこで無条件に呼び直すと
    寄せ直しが再起動し続けて、**手で振っても即座に戻される**（矢印もトラックパッドも効かない）。
    走っているあいだは寄せ直さない。手で触られたら、走っているぶんは捨てて手に渡す。 */
-const STEP = .6;    // 段ひとつを渡るのにかかる秒数（ブラウザ任せは 0.3〜0.5秒くらい）
+const STEP = 1.0;   // 段ひとつを渡るのにかかる秒数
+                    // **ブラウザ任せは距離で時間が伸びる。**g-ride は停留所どうしが
+                    // 画面 6枚ぶんほど離れているので、あちらは 1秒近くかかっていた。
+                    // そこに固定 0.6秒を当てたら、ゆっくりにしたつもりで速くなった。
 let anim = 0, gliding = false;
 function stopGlide(){ cancelAnimationFrame(anim); gliding = false; }
 view.addEventListener('pointerdown', stopGlide, { passive:true });
