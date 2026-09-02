@@ -313,6 +313,10 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
   stroke-linecap:round;stroke-linejoin:round}
 .hint svg + svg{margin-left:6px}
 .hint .wide svg:first-child{margin-right:3px}   /* マウスと矢印キーのあいだ */
+/* 記号に続く一言。**記号と同じ濃さで置く**（薄くすると、読ませる気のない注記に見える）。
+   ここだけは開いた瞬間に読ませたい。記号ごと、触れば一緒に消える。
+   **空きは 5px。**記号がそのまま文の主語なので、離すと一文に見えず、注記に見える。 */
+.hint .use{margin-left:5px}
 /* 狭い画面にはマウスも矢印キーも無い。左右の矢印だけにする（指で動かす）。 */
 .hint .narrow{display:none}
 @media (max-width:760px){
@@ -535,17 +539,26 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
 <div class="hud">
   <div class="rail"><i id="bar"></i><b id="dot"></b></div>
   <div class="foot">
-    <!-- **何で動くかを全部書く。ここは説明ではなく指示。**
+    <!-- **記号は道具、言葉はそれで何ができるか。**
          開いた瞬間に「何をすればいいか」を言う場所なので、削らない（指針2）。
+         入力の名前は記号が言う。**言葉には戻さない。**文字で並べると 396px になり、
          「スクロールすると」だとマウスとトラックパッドの話に読めていた。
+         **向きの話もしない。**「右へ辿ります」と書いていたが、それは動きの説明で、
+         記号を見た人に要るのは「それを使えば辿れる」のほう。
+         **記号を主語にして、そのまま一文にする。**「これで辿れます」の「これ」は
+         記号を指し直しているだけで、要らない。記号＋「で辿れます」で文になる。
          ロゴ（会社概要 →）は入れていない。あれは動かすのではなく飛ぶもので、
          それ自体にラベルが付いている。
          「寄っていきます」は寄り（縮尺）の話で、読む人には何のことか分からない。
          「進みます」はページを繰る言い方に読めるが、ここはページが無い。
-         この作品の一言（1枚を辿っていくだけ）に合わせて「辿ります」にした。 -->
+         この作品の一言（1枚を辿っていくだけ）に合わせて「辿ります」にした。
+         aria-label は入力の名前だけ持つ。続く「で辿れます」と繋がって
+         「ホイールか矢印キーで辿れます」と読み上がる。狭い画面は「指の左右で辿れます」。
+         **名詞で終える。**「指で左右に動かす」だと、続く「で」が繋がらない。 -->
     <span class="hint" id="hint">
-      <span class="wide" role="img" aria-label="ホイールか矢印キーで、1枚を右へ辿ります"><svg viewBox="0 0 12 18" aria-hidden="true"><rect x="1" y="1" width="10" height="16" rx="5"/><line x1="6" y1="4.6" x2="6" y2="7.6"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M9.3 5.2 6.5 8 9.3 10.8"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M6.7 5.2 9.5 8 6.7 10.8"/></svg></span>
-      <span class="narrow" role="img" aria-label="指で左右に動かすと、1枚を辿ります"><svg viewBox="0 0 26 12" aria-hidden="true"><path d="M4.5 2.5 1.5 6 4.5 9.5"/><line x1="1.5" y1="6" x2="24.5" y2="6"/><path d="M21.5 2.5 24.5 6 21.5 9.5"/></svg></span>
+      <span class="wide" role="img" aria-label="ホイールか矢印キー"><svg viewBox="0 0 12 18" aria-hidden="true"><rect x="1" y="1" width="10" height="16" rx="5"/><line x1="6" y1="4.6" x2="6" y2="7.6"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M9.3 5.2 6.5 8 9.3 10.8"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M6.7 5.2 9.5 8 6.7 10.8"/></svg></span>
+      <span class="narrow" role="img" aria-label="指の左右"><svg viewBox="0 0 26 12" aria-hidden="true"><path d="M4.5 2.5 1.5 6 4.5 9.5"/><line x1="1.5" y1="6" x2="24.5" y2="6"/><path d="M21.5 2.5 24.5 6 21.5 9.5"/></svg></span>
+      <span class="use">で辿れます</span>
     </span>
     <span class="grow"></span>
     <span id="where">経営</span>
