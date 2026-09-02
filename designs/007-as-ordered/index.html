@@ -69,7 +69,7 @@
     <span class="typed" id="typed"></span><span class="cur" id="cur"></span>
   </div>
   <div class="hint">
-    <span><b>enter</b> 進める</span>
+    <span><b>enter</b> 送る</span>
     <span><b>esc</b> 最後まで</span>
     <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
@@ -241,19 +241,10 @@ function think(s, end){
 
 function put(s, end){
   if (s.t === 'you'){
-    /* 人の行は、下の枠に打ってから上へ送る。**打っているのが見える**のが Claude Code */
-    const finish = function(){
-      typed.textContent = '';
-      el('row you', '<span>&gt;</span> ' + s.x);
-      bottom(); end();
-    };
-    if (STILL){ finish(); return; }
-    let i = 0;
-    (function tick(){
-      typed.textContent = s.x.slice(0, ++i);
-      bottom();
-      if (i < s.x.length) setTimeout(tick, 34); else setTimeout(finish, 260);
-    })();
+    /* 送るだけ。**打つのは typeYou()。**打ち終わったところで enter を待つ */
+    typed.textContent = '';
+    el('row you', '<span>&gt;</span> ' + s.x);
+    bottom(); end();
     return;
   }
 
@@ -332,22 +323,72 @@ function put(s, end){
   end();
 }
 
-/* 進める。**一手ずつ。**自動では流さない。 */
-function step(){
+/* =====================================================================
+   進め方。**エンターを押すのは、人の行だけ。**
+
+   前は一手ずつエンターで、26回押すことになっていた。多すぎた。
+   いまは Claude 側（ツール・地の文・diff・一覧）が**自動で続けて出る**。
+   その turn が終わると、**次の注文が下の枠に打たれて止まる。**
+   そこでエンターを押すと送られて、また Claude 側が自動で流れる。押すのは4回。
+
+   自動で流すのは Claude 側だけ。**人の行は自動で送らない。**
+   送ってしまうと、読んでいる途中で話が進む。 */
+let waiting = false;   // 人の行を打ち終えて、enter を待っている
+const hintEl = document.querySelector('.hint');
+
+/* 人の行を、下の枠に打つ。打ち終わったら止まって待つ */
+function typeYou(){
+  const s = S[at];
+  waiting = false;
+  if (STILL){ typed.textContent = s.x; waiting = true; mark(); return; }
+  let i = 0;
+  (function tick(){
+    typed.textContent = s.x.slice(0, ++i);
+    bottom();
+    if (i < s.x.length) setTimeout(tick, 34);
+    else { waiting = true; mark(); }
+  })();
+}
+
+/* 待っているあいだだけ、下の合図を変える */
+function mark(){
+  hintEl.firstElementChild.innerHTML = waiting
+    ? '<b>enter</b> 送る'
+    : '<b>enter</b> 進める';
+}
+
+/* Claude 側を、止まるまで自動で流す */
+function run(){
   if (busy || done) return;
+  if (at >= S.length){ finish(); return; }
+  if (S[at].t === 'you'){ typeYou(); return; }   // 人の番。ここで止まる
   busy = true;
   put(S[at], function(){
     at += 1; busy = false; meter();
-    if (at >= S.length){
-      done = true;
-      typed.textContent = '';
-      cur.style.display = 'none';
-    }
+    run();
   });
+}
+
+function send(){
+  if (!waiting) return;
+  waiting = false; mark();
+  busy = true;
+  put(S[at], function(){
+    at += 1; busy = false; meter();
+    run();
+  });
+}
+
+function finish(){
+  done = true;
+  typed.textContent = '';
+  cur.style.display = 'none';
+  hintEl.firstElementChild.innerHTML = '<b>おわり</b>';
 }
 
 /* esc で最後まで。打つ動きは飛ばして中身だけ置く */
 function rest(){
+  busy = false; waiting = false;
   while (at < S.length){
     const s = S[at];
     if (s.t === 'you') el('row you', '<span>&gt;</span> ' + s.x);
@@ -359,28 +400,28 @@ function rest(){
       el('row tool', '<span class="b">⏺</span> <span class="nm">Bash</span>(' + s.x + ')');
       el('out', s.o.join('\n'));
     }
-    else { put(s, function(){}); }
+    else put(s, function(){});
     at += 1;
   }
-  done = true; busy = false; meter();
-  typed.textContent = ''; cur.style.display = 'none';
-  bottom();
+  meter(); finish(); bottom();
 }
 
 addEventListener('keydown', function(e){
-  if (e.key === 'Enter'){ e.preventDefault(); step(); }
+  if (e.key === 'Enter'){ e.preventDefault(); send(); }
   if (e.key === 'Escape'){ e.preventDefault(); rest(); }
 });
-view.addEventListener('click', step);
+/* 触る操作でも送れる。スマホはキーが無い */
+view.addEventListener('click', send);
 document.querySelector('.foot').addEventListener('click', function(e){
   if (e.target === again) return;
-  step();
+  send();
 });
 again.addEventListener('click', function(){ location.reload(); });
 
-/* 最初の一手だけ出しておく。**真っ暗な画面から始めない。** */
-meter();
-if (STILL) rest(); else step();
+/* 開いた瞬間に、最初の注文が打たれる。**送るのは人。**
+   ここを自動で送ると、何が起きているのか分からないまま流れていく。 */
+meter(); mark();
+if (STILL) rest(); else run();
 </script>
 </body>
 </html>
