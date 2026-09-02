@@ -1268,24 +1268,28 @@ view.addEventListener('scroll', function(){
    ここで「1イベント＝1段」や「静止するまで受け付けない」をやると、
    4回作って4回壊れた形に戻る（NOTES の表を参照）。
    snap は proximity に落としてある。理由は #view のところに書いた。 */
-const NOTCH_PX = 120;   // ホイール1目盛の、だいたいの px（環境で違う）
-const NOTCH    = 4;     // 段ひとつを、だいたい何目盛で渡るか
+/* **触った時点で、次の段へ。**トラックパッドの小さな押しでも一段進む。
+   前は指の動きぶんだけ紙を送って、手を離してから停留所へ寄せていた。
+   トラックパッドだと押しが小さいので、送っても同じ段に戻され、動かないように見えた。
+
+   **これは NOTES に「4回作って4回壊れた」と書いてある形（1イベント＝1段）に、
+   意図して戻したもの。**壊れ方は決まっていて、慣性の余りで二段三段と飛ぶ。
+   なので**進んでいるあいだと、その直後（LOCK_TAIL）は受け付けない。**
+   ここを外すと、また同じ壊れ方をする。
+
+   縦に回しても横に進む（ホイール）。横に振ったぶんも同じに扱う（トラックパッド）。
+   どちらも大きいほうの向きだけ見る。ブラウザに素のスクロールはさせない。 */
+const LOCK_TAIL = .15;   // 進んだあと、慣性を捨てる秒数
+const NUDGE_MIN = 2;     // これ未満の押しは、触っていないものとして捨てる
+let lockUntil = 0;
 view.addEventListener("wheel", function(e){
-  stopGlide();   // 手が動いたら、寄せ直しは捨てる
-  // 横に振ったぶん（トラックパッド等）は、そのままブラウザに任せる
-  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
   e.preventDefault();
-  /* deltaMode は環境で違う。行（Firefox 等）とページを px に直す。
-     40 は「1目盛＝3行」を Chrome の1目盛（120px）に合わせた数字。
-     16 だと Firefox だけ 2.5倍 重くなる。 */
-  const k = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? view.clientWidth : 1;
-  /* **px をそのまま足さない。**停留所の幅は画面幅の 1〜2倍あるので、
-     1対1で足すと段ひとつに 11〜21目盛かかって回しきれない。
-     段の幅に対する比で渡す。停留所の幅は段によって違うので、
-     行き来する範囲を停留所の数で割って出す。
-     倍率であって、閾値でも時間でもない。ひと振りの終わりは見ていない。 */
-  const span = (view.scrollWidth - view.clientWidth) / Math.max(1, marks.length - 1);
-  view.scrollLeft += e.deltaY * k / NOTCH_PX * (span / NOTCH);
+  const now = performance.now();
+  if (gliding || now < lockUntil) return;
+  const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  if (Math.abs(d) < NUDGE_MIN) return;
+  goTo(at() + (d > 0 ? 1 : -1));
+  lockUntil = now + (STEP + LOCK_TAIL) * 1000;
 }, { passive:false });
 
 /* 停留所へ落ち着かせる。**snap から scrollend に移した。**
