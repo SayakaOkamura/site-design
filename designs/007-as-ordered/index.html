@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>007 注文どおり — アルターデザインコンサルティング</title>
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- =====================================================================
+     007 注文どおり — Claude Code から入ってもらう
+
+     一言：「あそこのサイト、ふつうなんですよ。ふつうなんだけど、
+             仕事の実物がそのまま置いてある」
+
+     **狙いは「入ってもらうこと」。**G（ページが無い）は開いた瞬間から変で、
+     雑談で刺すためのもの。こちらは逆で、**初見はいきなり飛ばさない。**
+     まず注文どおりのコーポレートサイトとして成立させて、
+     押した人にだけ実物（作業画面）を見せる。段階を踏む。
+
+     守った却下（IDEAS.md / 005・006 の NOTES）
+     - **黒地にしない。**002 のターミナル案は「読みにくい」で却下、白基調で確定。
+       等幅・行番号・プロンプト・diff という語彙だけ借りて、地は白のまま。
+     - **このページ自体を生成物として見せない**（自己言及は 003 で却下）。
+       作業画面の題材は顧客の経費申請。このサイトの作り方は一度も出さない。
+     - AI の口調にユーモアを混ぜない。丁寧・有能のまま。
+     - 生成を失敗させない。触ると極端な値にツッコむ、もしない。
+
+     G と同じ素材を使う（経費申請／不在のとき・上に上げる額・取り下げ）。
+     案が3本並ぶので、**素材を変えると比べられなくなる。**
+     ===================================================================== -->
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">株式会社アルターデザインコンサルティング<span>ALTER DESIGN CONSULTING</span></div>
+    <nav class="nav">
+      <a href="#service">サービス</a>
+      <a href="#company">会社概要</a>
+      <a href="#contact">お問い合わせ</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ヒーロー。理念をそのまま置く。ここで変わったことをしない。
+     「注文どおりだな」と思ってもらうのが、この画面の仕事。 -->
+<section class="hero">
+  <div class="wrap">
+    <h1>経営の力で<b>「遊ぶように働く世界」</b>をデザインする。</h1>
+    <p>ノーコード／ローコードと AI を土台に、業務そのものを設計し直します。
+       決めるところから、動くものまで。</p>
+    <div class="cta">
+      <a class="btn fill" href="#service">サービスを見る</a>
+      <a class="btn" href="#contact">相談する</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="service">
+  <div class="wrap">
+    <div class="lbl">SERVICE</div>
+    <h2>4つの領域</h2>
+    <p class="note">受託開発ではなく、決める工程から入ります。作るものが決まっていない状態から始められます。</p>
+
+    <div class="svc">
+      <article>
+        <span class="no">01</span>
+        <h3>次世代型業務システム開発</h3>
+        <p>ノーコード／ローコードを土台に業務を再設計します。要件が固まる前から手を動かし、
+           足りない決めごとを先に洗い出します。</p>
+      </article>
+      <article>
+        <span class="no">02</span>
+        <h3>AI による意思決定支援・事業変革</h3>
+        <p>データ資産を戦略と予測に変換します。持っている数字が、判断に使える形になっているかから見ます。</p>
+      </article>
+      <article>
+        <span class="no">03</span>
+        <h3>自律共創型の組織デザイン</h3>
+        <p>個の自律とチームの協働を両立する構造をつくります。仕組みと権限の設計まで含みます。</p>
+      </article>
+      <article>
+        <span class="no">04</span>
+        <h3>地域のデジタル格差支援</h3>
+        <p>ノーコードとクラウド AI、DX 人材の育成。地域の企業と自治体が自分で回せる状態を目標にします。</p>
+      </article>
+    </div>
+
+    <!-- ここが段の変わり目。**押した人にだけ出す。**
+         文言で「すごい」を言わない。何が見られるかだけ書く。 -->
+    <div class="open">
+      <p><b>01 の実物を置いています。</b>ある会社から届いた一行の依頼を、そのまま形にしたときの記録です。
+         3分ほど、7手で終わります。</p>
+      <button id="go" type="button">実物を見る</button>
+    </div>
+
+    <!-- 作業画面。**自動では動かない。**進めるのは人。
+         初見で勝手に流れると、注文どおりのサイトに見えなくなる。 -->
+    <div class="work" id="work">
+      <div class="term">
+        <div class="bar">
+          <i></i>
+          <span class="path">keihi-shinsei / 経費申請ワークフロー</span>
+          <span class="right" id="clock">手 0 / 7</span>
+        </div>
+        <div class="body" id="log"></div>
+      </div>
+
+      <div class="step">
+        <button id="next" type="button">次へ</button>
+        <button id="all" type="button">最後まで</button>
+        <span id="hint">Enter でも進みます</span>
+        <span class="dots" id="dots"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec about" id="company">
+  <div class="wrap">
+    <div class="lbl">COMPANY</div>
+    <h2>会社概要</h2>
+    <dl>
+      <dt>会社名</dt>      <dd>株式会社アルターデザインコンサルティング</dd>
+      <dt>設立</dt>        <dd>2025年6月</dd>
+      <dt>資本金</dt>      <dd>6,000万円</dd>
+      <dt>代表取締役</dt>  <dd>松岡 真功</dd>
+      <dt>所在地</dt>      <dd>東京都港区西新橋3-23-5 ANYZ304</dd>
+      <dt>事業内容</dt>    <dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
+      <dt>株主</dt>        <dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
+    </dl>
+    <!-- 事例が無いことを隠さない。G と同じ扱い。書けば、それ自体が会社の状態の説明になる -->
+    <p class="none">掲載できる事例は、まだありません。2025年6月に始めた会社です。</p>
+  </div>
+</section>
+
+<section class="sec contact" id="contact">
+  <div class="wrap">
+    <div class="lbl">CONTACT</div>
+    <h2>お問い合わせ</h2>
+    <div class="box">
+      <p>決まっていない状態からで構いません。「何を決めればいいか分からない」という相談が、いちばん多いです。</p>
+      <a class="btn fill" href="mailto:info@alter-dsgn.co.jp">info@alter-dsgn.co.jp</a>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">© 2026 株式会社アルターデザインコンサルティング</div>
+</footer>
+
+<script>
+/* 作業画面の中身。**7手。**手で進める。
+   1手＝1つの意味。行数ではなく、意味の数で切る。
+
+   diff は「足した／消した」を色帯と薄い地で出す。記号（+ -）も残す。
+   色だけに意味を持たせない（色が見えない環境で読めなくなる）。 */
+const STEPS = [
+  /* 1手目：依頼。**一行しかない**ことが、あとで効く */
+  [
+    ['cmd', '<b>&gt;</b> 月末に、経理が止まる。なんとかしてほしい'],
+    ['say', '   — 依頼（ある会社の社長より）'],
+  ],
+  /* 2手目：まず見に行く。聞いて回るのではなく、現に動いているものを見る */
+  [
+    ['blank', ''],
+    ['cmd', '<b>/</b>read 経費申請の運用'],
+    ['say', '   月末に集中する処理を3つ見つけました。うち1つが申請の差し戻しです。'],
+    ['say', '   紙の申請書と Excel の集計が二重に走っています。'],
+  ],
+  /* 3手目：注文どおりに作ると宣言する。ここが「注文どおり」の肝。
+     勝手に良くしない。言われたものを、言われたとおりに出す */
+  [
+    ['blank', ''],
+    ['cmd', '<b>/</b>plan 申請から承認までを1本にする'],
+    ['say', '   言われたとおりに形にします。足す機能はありません。'],
+    ['say', '   画面1つ、決まっている欄だけ埋めます。'],
+  ],
+  /* 4手目：作る。diff で出す。**動くものが先に出る** */
+  [
+    ['blank', ''],
+    ['cmd', '<b>/</b>apply'],
+    ['add', '+ 申請フォーム（申請者・申請日・金額・承認者）'],
+    ['add', '+ 承認画面（承認 / 差し戻し）'],
+    ['add', '+ 集計（月次・部門別）'],
+    ['del', '- Excel の月次集計（二重に走っていたもの）'],
+  ],
+  /* 5手目：動いた、と言い切る。ここで終われば「注文どおり」で完成 */
+  [
+    ['blank', ''],
+    ['ok', '<b>✓</b> 動いています。保存され、承認が回り、閉じて開いても残ります。'],
+    ['say', '   入っているのは、言われたことだけです。'],
+  ],
+  /* 6手目：**ここから先が、うちの仕事。**
+     形にして初めて浮かぶものを出す。順序は 005 と同じ
+     （形にする → 足りないところが浮かぶ）。逆にはしない */
+  [
+    ['blank', ''],
+    ['cmd', '<b>/</b>check 決まっていないところ'],
+    ['say', '   作るのに足りない情報が3つ残りました。'],
+  ],
+  /* 7手目：3つを出す。**埋めない。**勝手に埋めると「AI が決めた」に戻る */
+  [
+    ['todo'],
+  ],
+];
+
+const log   = document.getElementById('log');
+const work  = document.getElementById('work');
+const go    = document.getElementById('go');
+const next  = document.getElementById('next');
+const all   = document.getElementById('all');
+const dots  = document.getElementById('dots');
+const clock = document.getElementById('clock');
+const hint  = document.getElementById('hint');
+
+let at = 0, n = 0;
+
+/* 行番号は、出した行に連番で振る。ターミナルの語彙のひとつ。
+   意味は無いが、これがあると「作業の記録」に見える。 */
+function put(kind, html){
+  const el = document.createElement('div');
+  if (kind === 'blank'){ el.className = 'ln blank'; log.appendChild(el); return; }
+  el.className = 'ln ' + kind;
+  n += 1;
+  el.innerHTML = '<span class="n">' + n + '</span><span class="t">' + html + '</span>';
+  log.appendChild(el);
+}
+
+/* 未決の3つ。**罫で出す。**字（＿＿＿）だと幅が中身なりで短く、欄に見えない。
+   G で同じことをしていて、そこでの結論をそのまま使う。 */
+function putTodo(){
+  const box = document.createElement('div');
+  box.className = 'todo';
+  box.innerHTML =
+    '<div class="h">うちが洗い出したところ</div>' +
+    '<dl>' +
+      '<dt>不在のとき</dt><dd></dd>' +
+      '<dt>上に上げる額</dt><dd></dd>' +
+      '<dt>出したあとの取り下げ</dt><dd></dd>' +
+    '</dl>' +
+    '<div class="end">聞いて集めても、これは出てきません。<b>まだ誰も困っていないからです。</b><br>' +
+    '先に形にすると、困る前に出てきます。決めるのは御社の会議です。</div>';
+  log.appendChild(box);
+}
+
+function draw(){
+  for (let i = 0; i < STEPS.length; i++){
+    const d = dots.children[i];
+    if (d) d.className = i < at ? 'on' : '';
+  }
+  clock.textContent = '手 ' + at + ' / ' + STEPS.length;
+  next.disabled = all.disabled = at >= STEPS.length;
+  if (at >= STEPS.length) hint.textContent = 'ここまでが、うちの仕事です';
+}
+
+function step(){
+  if (at >= STEPS.length) return;
+  STEPS[at].forEach(function(row){
+    if (row[0] === 'todo') putTodo(); else put(row[0], row[1]);
+  });
+  at += 1;
+  draw();
+}
+
+for (let i = 0; i < STEPS.length; i++) dots.appendChild(document.createElement('i'));
+draw();
+
+/* **自動で開かない。**押した人にだけ出す。開いたら1手目まで出しておく
+   （空の画面を見せると、何が起きるのか分からない）。 */
+go.addEventListener('click', function(){
+  work.classList.add('on');
+  go.closest('.open').style.display = 'none';
+  if (at === 0) step();
+  work.scrollIntoView({ behavior:'smooth', block:'center' });
+});
+
+next.addEventListener('click', step);
+all.addEventListener('click', function(){ while (at < STEPS.length) step(); });
+
+/* Enter / Space でも進む。**作業画面を開いたあとだけ受ける。**
+   ページを開いた時点でキーを奪うと、ふつうのサイトとして読めなくなる。 */
+addEventListener('keydown', function(e){
+  if (!work.classList.contains('on')) return;
+  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); step(); }
+});
+</script>
+</body>
+</html>
