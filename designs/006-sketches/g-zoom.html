@@ -681,7 +681,7 @@ function measure(){
       fit: Math.min(vw / v.w, vh / v.h),                        // これ以上寄るとはみ出す
       tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
       cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
-      nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0
+      nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0, dy: v.dy || 0
     };
   });
 
@@ -957,7 +957,8 @@ function draw(){
 
   const i = Math.floor(t), j = Math.min(i + 1, last), f = t - i;
   const A = marks[i], B = marks[j];
-  const dx = A.dx + (B.dx - A.dx) * f;   // 段ごとの左右の寄せ
+  const dx = A.dx + (B.dx - A.dx) * f;
+  const dy = A.dy + (B.dy - A.dy) * f;   // 段ごとの上下の寄せ（既定 0）
 
   const cx = A.cx + (B.cx - A.cx) * f;
   const cy = A.cy + (B.cy - A.cy) * f;
@@ -983,7 +984,7 @@ function draw(){
   const sc = A.s + (B.s - A.s) * f;
 
   canvas.style.transform =
-    'translate(' + (vw / 2 + NUDGE + dx - slide - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
+    'translate(' + (vw / 2 + NUDGE + dx - slide - cx * sc) + 'px,' + (vh / 2 + dy - cy * sc) + 'px) scale(' + sc + ')';
 
   shade(st);
 

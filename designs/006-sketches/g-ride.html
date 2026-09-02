@@ -650,7 +650,9 @@ function buildViews(){
        寄りを揃えても寄せ（中心の移動）は起きる。 */
     { nm:'洗い出す', node:1, sel:['.n2'], w: 800, h: 380, z: 1.15, add:true, dx: -25 },
     /* 行為とその理由。ここが山場。z がいちばん大きい */
-    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.40 }
+    /* **dy は上下の寄せ**（画面の px。既定 0＝中身の外形を真ん中に置く）。
+       三段目は中身が薄いので、外形で真ん中に置くと下に沈んで見えた。少し上げる。 */
+    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.40, dy: -30 }
   ];
   /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
      締めは引いて渡す（z を山場より下げる）。狭い画面では2回に分けて寄る。 */
@@ -768,7 +770,7 @@ function measure(){
       tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
       cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
       w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
-      nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0
+      nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0, dy: v.dy || 0
     };
   });
 
@@ -1208,8 +1210,9 @@ function draw(){
   /* 中身の外形の中心を、使える範囲の中心に置く。真ん中は計算で出す。
      dx は、そこから意図してずらすぶんだけ（既定 0）。 */
   const dx = A.dx + (B.dx - A.dx) * f;
+  const dy = A.dy + (B.dy - A.dy) * f;   // 段ごとの上下の寄せ（既定 0）
   canvas.style.transform =
-    'translate(' + (aimX() + dx - slide - cx * sc) + 'px,' + (aimY() - cy * sc) + 'px) scale(' + sc + ')';
+    'translate(' + (aimX() + dx - slide - cx * sc) + 'px,' + (aimY() + dy - cy * sc) + 'px) scale(' + sc + ')';
 
   shade(st);
 
