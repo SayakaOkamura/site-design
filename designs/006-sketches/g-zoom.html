@@ -716,9 +716,12 @@ const RSTART = .45;
 const HALF = .10;   // 残りの半分を詰めるのにかかる秒数。大きいほどゆっくり出る
 /* 出だしだけ、寄る速さを別に持つ。**手が動かしていないから。**
    ふだんの HALF は「スワイプに遅れて付いてくる」速さで、手が先に動いている前提の数字。
-   開いたところは動かしているものが無く、同じ速さだと現れ方が急に見える。 */
+   開いたところは動かしているものが無く、同じ速さだと現れ方が急に見える。
+   **触られたら HALF に戻す。**手が動いているなら、待たせる理由が無い。
+   ただし intro は下ろさない。下ろすと下の「無から」が途中で切れて、紙が飛び出す。 */
 const INTRO = .24;
-let intro = false;  // 出だしのあいだだけ真。触るか、寄りきれば下ろす
+let intro = false;  // 出だしのあいだだけ真。寄りきったら下ろす
+let KUP = 0;        // 出だしの倍率。上がるだけ（下げない）
 let ST = null;      // 濃さが見ている位置（t に遅れて付いてくる）
 let STt = 0;        // 前に呼ばれた時刻
 function follow(t){
@@ -727,7 +730,7 @@ function follow(t){
   STt = now;
   /* 段をまたぐ大跳び（resize で位置を置き直す等）は、追わずに合わせる */
   if (ST === null || Math.abs(t - ST) > 1.2) ST = t;
-  else ST += (t - ST) * (1 - Math.pow(.5, dt / (intro ? INTRO : HALF)));
+  else ST += (t - ST) * (1 - Math.pow(.5, dt / (intro && !touched ? INTRO : HALF)));
   /* 残りが目に出ない差になったら、そこで合わせて回すのをやめる。
      .002 まで追うと、見えない 5% のために 2秒ほど rAF を回し続けていた。 */
   if (Math.abs(t - ST) < .01){ ST = t; intro = false; }
@@ -771,7 +774,13 @@ function shadeSetup(){
   });
 }
 
-function shade(t){
+/* k は出だしの一回だけ効く倍率。ふだんは 1。
+   **線は無から引かれるのに、文字は薄く在るところから始まっていた。**
+   同じ紙の上で、片方は無から・片方は在るところから、が揃わない。
+   出だしのあいだだけ、段まるごとに掛けて 0 から持ち上げる。
+   **掛けるのは段（.node）だけ。**行の濃さは親で割って持たせてあるので、
+   段に掛ければ中身へそのまま乗る。行に掛けると二重になる。 */
+function shade(t, k){
   if (!SHADE) shadeSetup();
   SHADE.forEach(function(N){
     /* この段の停留所。**続いている停留所（形 → 洗い出す）は、間もこの段にいる**ので
@@ -792,7 +801,7 @@ function shade(t){
        （開いた瞬間に右端へ薄く覗く次の段が、そこだけ消えてしまう）。
        行は段より遅れて濃くなるだけで、離れているあいだは段と同じ濃さ（DIM）。 */
     const ao = DIM + (1 - DIM) * p;        // 段そのものの濃さ
-    N.el.style.opacity = ao;
+    N.el.style.opacity = ao * k;           // k は出だしだけ 0→1。ふだんは 1
     /* 行だけ、RSTART から着くまでの区間に詰めて出す */
     const b = Math.max(0, (p - RSTART) / (1 - RSTART));
     /* **動きは段そのものに入れる。行に入れてはいけない。**
@@ -844,8 +853,15 @@ function draw(){
   canvas.style.transform =
     'translate(' + (vw / 2 + NUDGE + dx - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
 
-  // 段と行の濃さ。進み具合から決めるが、濃さだけは少し遅れて追いつく（follow）
-  shade(follow(t));
+  /* 段と行の濃さ。進み具合から決めるが、濃さだけは少し遅れて追いつく（follow）。
+     出だしのあいだは、残っている隔たりをそのまま倍率にする（1段離れ＝0、着けば 1）。
+     線が引かれていくのと同じで、紙の上には何も無いところから出る。 */
+  const st = follow(t);
+  /* **上がるだけにする。**出だしの途中で振られると隔たりが開いて、紙全体が一度沈む。
+     いちばん上がったところを覚えて、そこから下げない。 */
+  const k = intro ? Math.max(KUP, Math.min(1, 1 - Math.abs(t - st))) : 1;
+  KUP = k;
+  shade(st, k);
   if (ST !== t && !spinning) spin();
 
   // 進み具合。押すものではなく、どこまで来たかを示すだけ
@@ -872,8 +888,8 @@ function draw(){
 /* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
 let ticking = false;
 view.addEventListener('scroll', function(){
-  // 触られたら、出だしは終わり。以降は手に付いてくる速さ（HALF）に戻す
-  if (!touched){ touched = true; intro = false; document.getElementById('hint').classList.add('off'); }
+  // 触られたら、寄る速さだけ HALF に戻す（intro は寄りきるまで下ろさない）
+  if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
   if (ticking) return;
   ticking = true;
   requestAnimationFrame(function(){ ticking = false; draw(); });
