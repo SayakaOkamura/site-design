@@ -760,7 +760,24 @@ let intro = false;  // 出だしのあいだだけ真。触るか、寄りきれ
    1.14秒（DIP 0 なら DRAW 5.4 で 1.15秒。どちらでも見え方の速さは同じ）。
    落ちるのに使う時間は、DIP 0 で 0.90秒、いま 1.05秒。
    **カーブを変えたら、必ずこの時刻で測り直すこと。**秒数だけ見ても合わない。 */
-const DRAW = 3.0;   // 紙の端から端まで、線を引き終わるまでの秒数（落ちても伸びない）
+const DRAW  = 2.8;  // 紙の端から端まで、線を引き終わるまでの秒数
+const DELAY = .3;   // 引きはじめるまでの待ち
+/* **元の CSS と同じカーブ（cubic-bezier(.25,.1,.25,1)＝ ease）。**
+   一定の速さでも丸めても、落ちるところが落下に見えなかった。ease は中盤がいちばん速く、
+   落ちる区間がそこに当たる。**それが「自然落下みたい」の中身。**
+   x（時間の割合）から y（進み具合）を、二分ではなくニュートン法で解く。 */
+function curve(t){
+  const cx = .75, bx = -.75, ax = 1;      // x1=.25, x2=.25
+  const cy = .3,  by = 2.4,  ay = -1.7;   // y1=.1,  y2=1
+  let u = t;
+  for (let i = 0; i < 8; i++){
+    const x = ((ax * u + bx) * u + cx) * u - t;
+    const d = (3 * ax * u + 2 * bx) * u + cx;
+    if (Math.abs(d) < 1e-6) break;
+    u -= x / d;
+  }
+  return ((ay * u + by) * u + cy) * u;
+}
 const THREAD = document.querySelector('svg.thread path');
 let TLEN = 0;       // 線の実測長。下の init で入れる
 let TSTART = 0;     // 引きはじめた時刻
@@ -937,8 +954,8 @@ function draw(){
      **開いた瞬間に一番大きく動いて、急に見える。**動きはじめを寝かせ、着くところも寝かせる。
      却下：**行き過ぎて戻る**（SWING）。動き自体は増えるが、予想外の動きは入れない。 */
   const rem = Math.max(0, Math.min(1, Math.abs(t - st)));
-  const p = 1 - rem, ease = p * p * (3 - 2 * p);
-  const slide = intro ? SLIDE * Math.min(1, vw / 1280) * (1 - ease) : 0;
+  const p = 1 - rem, soft = p * p * (3 - 2 * p);
+  const slide = intro ? SLIDE * Math.min(1, vw / 1280) * (1 - soft) : 0;
   const sc = A.s + (B.s - A.s) * f;
 
   canvas.style.transform =
@@ -949,9 +966,9 @@ function draw(){
   /* 線。文字と同じ瞬間に始めて、紙と同じ丸め方で引く。
      引く長さは TMAP を通す。**落ちるところは、同じ長さでも時間をかける。** */
   if (TLEN){
-    const x = Math.min(1, (performance.now() - TSTART) / 1000 / DRAW);
+    const x = Math.min(1, Math.max(0, ((performance.now() - TSTART) / 1000 - DELAY) / DRAW));
     if (x < 1){
-      const e = x;   // **一定の速さ。**丸めない（丸めると落ちるところが落下に見えなくなる）
+      const e = curve(x);   // 元の CSS と同じ ease
       let l = TLEN * e;
       if (TMAP){
         const u = e * (TMAP.length - 1), i0 = Math.floor(u), i1 = Math.min(TMAP.length - 1, i0 + 1);
