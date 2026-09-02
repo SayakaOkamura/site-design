@@ -924,6 +924,11 @@ const RSTART = .45;
    スワイプを速くしても、出る速さは変わらない。**遅延ではなく、追従の速さ。**
    秒で数えるのは、画面が 60Hz でも 120Hz でも同じ速さにするため。 */
 const HALF = .10;   // 残りの半分を詰めるのにかかる秒数。大きいほどゆっくり出る
+/* 出だしだけ、寄る速さを別に持つ。**手が動かしていないから。**
+   ふだんの HALF は「スワイプに遅れて付いてくる」速さで、手が先に動いている前提の数字。
+   開いたところは動かしているものが無く、同じ速さだと現れ方が急に見える。 */
+const INTRO = .24;
+let intro = false;  // 出だしのあいだだけ真。触るか、寄りきれば下ろす
 let ST = null;      // 濃さが見ている位置（t に遅れて付いてくる）
 let STt = 0;        // 前に呼ばれた時刻
 function follow(t){
@@ -932,10 +937,10 @@ function follow(t){
   STt = now;
   /* 段をまたぐ大跳び（resize で位置を置き直す等）は、追わずに合わせる */
   if (ST === null || Math.abs(t - ST) > 1.2) ST = t;
-  else ST += (t - ST) * (1 - Math.pow(.5, dt / HALF));
+  else ST += (t - ST) * (1 - Math.pow(.5, dt / (intro ? INTRO : HALF)));
   /* 残りが目に出ない差になったら、そこで合わせて回すのをやめる。
      .002 まで追うと、見えない 5% のために 2秒ほど rAF を回し続けていた。 */
-  if (Math.abs(t - ST) < .01) ST = t;
+  if (Math.abs(t - ST) < .01){ ST = t; intro = false; }
   return ST;
 }
 /* 追いつくまで、スクロールが止まっても回し続ける */
@@ -1082,7 +1087,8 @@ function draw(){
 /* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
 let ticking = false;
 view.addEventListener('scroll', function(){
-  if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
+  // 触られたら、出だしは終わり。以降は手に付いてくる速さ（HALF）に戻す
+  if (!touched){ touched = true; intro = false; document.getElementById('hint').classList.add('off'); }
   if (ticking) return;
   ticking = true;
   requestAnimationFrame(function(){ ticking = false; draw(); });
@@ -1174,6 +1180,7 @@ measure();
    **スクロール位置そのものは動かさない。**動かすと、進み具合の帯や縮尺まで動いてしまう。
    ST を直に置くので、follow の「大跳びは追わずに合わせる」（1.2 超）に掛からないよう、
    離すのは 1段ぶんだけ。読み込み時に位置が復元されていても、そこから 1段前に置く。 */
+intro = true;
 ST  = view.scrollLeft / (view.clientWidth || 1) - 1;
 STt = performance.now();
 
