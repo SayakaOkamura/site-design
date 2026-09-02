@@ -117,6 +117,22 @@ git checkout g-setsumei        -- designs/006-sketches/g-zoom.html   一段目�
 git checkout g-shoutai         -- designs/006-sketches/g-zoom.html   一段目が招待だった頃（5段）
 ```
 
+**落ちる線（g-ride）の、動きの改良前後。**2026-09-02 に一日かけて詰めたので、
+前後で見比べられるように置いてある。
+
+```
+git checkout g-ride-born   -- designs/006-sketches/g-ride.html   落ちる線を作った日（2026-09-01）
+git checkout g-ride-before -- designs/006-sketches/g-ride.html   改良に入る前（9/1 の最後）
+git checkout g-ride-after  -- designs/006-sketches/g-ride.html   改良のあと（9/2）
+```
+
+| | 改良前（`g-ride-before`） | 改良後（`g-ride-after`） |
+| --- | --- | --- |
+| 線 | CSS の `animation: draw 2.8s ease .3s`。長さは直値 3520（実測 3473 とずれ） | JS。長さは実測。**画面に入っている範囲を 0.75秒で引き終える**（窓の大きさから逆算） |
+| 一段目 | 出方を見せずに、出終わった姿で始まる | 左から 45px 入ってきて、行が一斉に濃くなる（上下には動かさない） |
+| 段の移り | ブラウザ任せ（距離で伸びる） | 1.0秒 |
+| 帯 | 記号だけ | 記号＋「で辿れます」 |
+
 ## 8枚
 
 中身は `index.html` に書いてある。ここには生死だけ残す。
