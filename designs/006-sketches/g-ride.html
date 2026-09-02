@@ -73,9 +73,12 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
 svg.thread{position:absolute;top:0;left:0;width:5200px;height:1600px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
-svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
-  stroke-dasharray:3520;stroke-dashoffset:3520;animation:draw 2.8s ease .3s forwards}
-@keyframes draw{to{stroke-dashoffset:0}}
+svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
+/* 引く動きは JS が持つ（THREAD / DRAW）。**ここに長さを直値で書かない。**
+   書いてあった数字は、実際の長さと合っていなかった。長すぎると、その差のぶん
+   何も出ない時間になる（線だけ遅れて出ていた）。短ければ逆に、端が引かれずに残る。
+   線の形を変えるたびに必ずずれるので、実測（getTotalLength）に任せる。
+   素の状態は引ききった線。JS が動かなければ、線は最初から出ているだけ。 */
 
 .node{position:absolute;z-index:2}
 /* 濃さは JS が毎フレーム入れる（draw() → shade()）。
@@ -932,6 +935,15 @@ const HALF = .10;   // 残りの半分を詰めるのにかかる秒数。大き
 const INTRO = .24;
 let intro = false;  // 出だしのあいだだけ真。寄りきったら下ろす
 let KUP = 0;        // 出だしの倍率。上がるだけ（下げない）
+/* 線。**引きはじめは、文字と同じ瞬間。**前は CSS 側で 0.3秒待ってから引いていて、
+   文字だけ先に動いていた。加えて、長さの直値が実測とずれていたぶんも待ちになっていた。
+   **速さは一定（linear）。**ease だと出だしだけ速く、画面に入っている範囲が
+   すぐ引き終わる。一定なら、見えている範囲は「見えている割合 × DRAW」で引き終わり、
+   文字の出だし（INTRO）と同じころに揃う。 */
+const DRAW = 2.8;   // 紙の端から端まで、線を引くのにかかる秒数
+const THREAD = document.querySelector('svg.thread path');
+let TLEN = 0;       // 線の実測長。下の init で入れる
+let TSTART = 0;     // 引きはじめた時刻（文字の出だしと同じ）
 let ST = null;      // 濃さが見ている位置（t に遅れて付いてくる）
 let STt = 0;        // 前に呼ばれた時刻
 function follow(t){
@@ -1077,6 +1089,21 @@ function draw(){
   const k = intro ? Math.max(KUP, Math.min(1, 1 - Math.abs(t - st))) : 1;
   KUP = k;
   shade(st, k);
+
+  /* 線。文字と同じ瞬間に始めて、一定の速さで引く */
+  if (TLEN){
+    const e = Math.min(1, (performance.now() - TSTART) / 1000 / DRAW);
+    if (e < 1){
+      THREAD.style.strokeDashoffset = (TLEN * (1 - e)).toFixed(1);
+      if (!spinning) spin();
+    } else {
+      /* 引き終わったら、破線の指定ごと外す。**残すと、あとで線の形を変えたときに
+         実測長とずれて端が欠ける**（線の調整画面は d を書き換える）。 */
+      THREAD.style.strokeDasharray = 'none';
+      THREAD.style.strokeDashoffset = '0';
+      TLEN = 0;
+    }
+  }
   if (ST !== t && !spinning) spin();
 
   // 進み具合。押すものではなく、どこまで来たかを示すだけ
@@ -1199,6 +1226,13 @@ measure();
 intro = true;
 ST  = view.scrollLeft / (view.clientWidth || 1) - 1;
 STt = performance.now();
+/* 線も同じ瞬間から。長さは実測して、そこから引きはじめる */
+if (THREAD){
+  TLEN = THREAD.getTotalLength();
+  THREAD.style.strokeDasharray  = TLEN;
+  THREAD.style.strokeDashoffset = TLEN;
+}
+TSTART = STt;
 
 draw();
 </script>
