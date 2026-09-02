@@ -149,3 +149,37 @@ body{
 @media (prefers-reduced-motion:reduce){
   .cur{animation:none}
 }
+
+/* ---------- 本物の見た目に近づけた部品（2026-09-02 追加） ---------- */
+
+/* 考えている表示。**回る記号＋経過秒＋esc to interrupt。**
+   Claude Code でいちばん特徴的な一行なので、ここは動かす。
+   終わったら静かな一行に置き換える（回りっぱなしにしない）。 */
+.think .g{color:var(--orange);display:inline-block;width:1em}
+.think .sec{color:var(--faint)}
+
+/* ツールの結果に付く折りたたみのヒント */
+.res .exp{color:var(--faint)}
+
+/* 変更のまとめ行（⎿ Updated ... with N additions and M removals） */
+.sum{color:var(--sub);margin-top:2px}
+.sum .n{color:var(--green)}
+.sum .m{color:var(--red)}
+
+/* diff の文脈行。足しても消してもいない行 */
+.diff .ctx .t{color:var(--faint)}
+
+/* Bash の出力。等幅のまま、地を少し落とす */
+.out{
+  margin:8px 0 6px;padding:8px 12px;border-left:2px solid var(--line);
+  color:var(--faint);font-size:12.5px;white-space:pre-wrap;
+}
+.out b{color:var(--green);font-weight:400}
+
+/* 下の枠のまわり。実物と同じ並びにする */
+.meta{
+  max-width:90ch;margin:7px auto 0;display:flex;gap:18px;
+  font-size:11.5px;color:var(--faint);flex-wrap:wrap;
+}
+.meta .r{margin-left:auto}
+@media (max-width:700px){ .meta .r{margin-left:0} }
