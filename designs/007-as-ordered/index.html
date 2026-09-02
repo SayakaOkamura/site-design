@@ -464,7 +464,10 @@ function ask(n){
   let i = 0;
   (function tick(){
     typed.textContent = t.q.slice(0, ++i);
-    if (i < t.q.length) setTimeout(tick, 34); else setTimeout(send, 240);
+    /* **打ち終わってから、読める間を置いて送る。**
+       最初の形は enter 待ちだったので読めていた。自動で進むようにしたら
+       240ms で送られて、打った文字が見えなくなっていた（2026-09-02）。 */
+    if (i < t.q.length) setTimeout(tick, 38); else setTimeout(send, 900);
   })();
 }
 
