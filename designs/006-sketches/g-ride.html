@@ -743,6 +743,7 @@ function buildStops(){
 
 /* 寄り先は先に全部測っておく。スクロールのたびに測ると、
    測っている先が動いてがくつく。 */
+const ALIGN_MIX = .5;   // align をどれだけ効かせるか（1 で完全に揃う／0 で効かない）
 function measure(){
   const vw = innerWidth, vh = innerHeight - 64;   // 下の帯ぶん除く
   /* 広い画面：枠に合わせて寄る。段ごとの縮尺の差が「地続き」の実体。
@@ -805,7 +806,9 @@ function measure(){
     if (!r) return;
     const at = function(k){ return lineYAt(marks[k].cx); };
     const ref = (r.dy || 0) + (at(m.align) - r.cy) * r.s;
-    m.dy = ref - (at(i) - m.cy) * m.s;
+    /* **全部合わせると下がりすぎて、下の線に被る。**半分だけ効かせる。
+       1 で完全に揃う（被る）、0 で効かない（外形のまま＝下にずれて見える）。 */
+    m.dy = (ref - (at(i) - m.cy) * m.s) * ALIGN_MIX;
   });
 
   survey();
