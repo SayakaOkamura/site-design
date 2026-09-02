@@ -182,6 +182,18 @@ const ctxEl = document.getElementById('ctx');
    動かない環境で中身が消えてはいけない。 */
 const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* **間は、ここだけで決める。**「一気に出てくると読みにくい」（2026-09-02）。
+   前は地の文 16ms／ツールのあと 240ms／塊のあと 300ms で、
+   turn がまるごと数秒で流れ切っていた。読む時間が無い。
+
+   ch    地の文の1文字
+   res   ⎿ の1文字（結果は短いので、地の文より少し速い）
+   tool  ツールの行を出したあと、結果を出すまで
+   block 一覧・diff・ファイルを出したあと
+   turn  Claude 側が終わってから、次の注文を打ちはじめるまで
+         **ここがいちばん効く。**読み終わる前に次の行が打たれると、目が戻る */
+const PACE = { ch:28, res:18, tool:620, block:820, turn:1100 };
+
 let at = 0, busy = false, done = false;
 
 function el(cls, html){
@@ -244,6 +256,24 @@ function think(s, end){
   })();
 }
 
+/* 塊の中の行を、1本ずつ出す。**面は先に置く**（面ごと出すと画面が跳ねる）。
+   dl は dt と dd を対で出す（片方だけ出ると意味にならない）。 */
+function reveal(box, per, end){
+  const kids = [].slice.call(box.children);
+  box.classList.add('stagger');
+  if (STILL){ kids.forEach(function(k){ k.classList.add('in'); }); end(); return; }
+  let i = 0;
+  (function tick(){
+    if (i >= kids.length){ setTimeout(end, PACE.block / 2); return; }
+    kids[i].classList.add('in');
+    /* dt のときは dd も一緒に */
+    if (kids[i].tagName === 'DT' && kids[i + 1]) kids[++i].classList.add('in');
+    i += 1;
+    bottom();
+    setTimeout(tick, per);
+  })();
+}
+
 function put(s, end){
   if (s.t === 'you'){
     /* 送るだけ。**打つのは typeYou()。**打ち終わったところで enter を待つ */
@@ -255,7 +285,7 @@ function put(s, end){
 
   if (s.t === 'say'){
     const n = el('row say' + (s.dim ? ' dim' : ''), '');
-    type(n, s.x, 16, end);
+    type(n, s.x, PACE.ch, end);
     return;
   }
 
@@ -263,13 +293,13 @@ function put(s, end){
 
   if (s.t === 'tool'){
     el('row tool', '<span class="b">⏺</span> <span class="nm">' + s.x + '</span>(' + s.a + ')');
-    bottom(); setTimeout(end, STILL ? 0 : 240); return;
+    bottom(); setTimeout(end, STILL ? 0 : PACE.tool); return;
   }
 
   if (s.t === 'res'){
     const n = el('row res', '');
     const tail = s.exp ? ' <span class="exp">(ctrl+r to expand)</span>' : '';
-    type(n, '  ⎿ <span class="a">' + s.x + '</span>' + tail, 10, end);
+    type(n, '  ⎿ <span class="a">' + s.x + '</span>' + tail, PACE.res, end);
     return;
   }
 
@@ -281,7 +311,7 @@ function put(s, end){
     (function tick(){
       out.innerHTML = s.o.slice(0, ++i).join('\n');
       bottom();
-      if (i < s.o.length) setTimeout(tick, 380); else end();
+      if (i < s.o.length) setTimeout(tick, 520); else end();
     })();
     return;
   }
@@ -289,12 +319,12 @@ function put(s, end){
   if (s.t === 'todo'){
     /* 実物は一覧を書き換えるツールとして出る。見出しを付けて、⎿ の下にぶら下げる */
     el('row tool', '<span class="b">⏺</span> <span class="nm">Update Todos</span>');
-    el('todo', s.x.map(function(r){
+    reveal(el('todo', s.x.map(function(r){
       const m = r[0] === 'done' ? '☒' : '☐';
       const inner = r[0] === 'done' ? '<s>' + r[1] + '</s>' : r[1];
       return '<div class="' + r[0] + '">  ⎿ <span class="mark">' + m + '</span> ' + inner + '</div>';
-    }).join(''));
-    bottom(); setTimeout(end, STILL ? 0 : 320); return;
+    }).join('')), 240, end);
+    return;
   }
 
   if (s.t === 'diff'){
@@ -306,48 +336,50 @@ function put(s, end){
     if (a) w.push('<span class="n">' + a + ' addition' + (a > 1 ? 's' : '') + '</span>');
     if (d) w.push('<span class="m">' + d + ' removal' + (d > 1 ? 's' : '') + '</span>');
     el('row res sum', '  ⎿ Updated ' + s.f + ' with ' + w.join(' and '));
-    el('diff',
+    reveal(el('diff',
       s.l.map(function(r, i){
         const sign = r[0] === 'add' ? '+' : r[0] === 'del' ? '−' : ' ';
         return '<div class="l ' + r[0] + '"><span class="n">' + (s.at + i) + '</span>' +
                '<span class="t">' + sign + ' ' + r[1] + '</span></div>';
-      }).join(''));
-    bottom(); setTimeout(end, STILL ? 0 : 300); return;
+      }).join('')), 200, end);
+    return;
   }
 
   if (s.t === 'list'){
     /* Glob の結果。**ファイル名で並べる。**説明は薄い字で右に付ける */
-    el('list', s.x.map(function(r){
+    reveal(el('list', s.x.map(function(r){
       return '<div>  ⎿ <span class="fn">' + r[0] + '</span>' +
              '<span class="d">' + r[1] + '</span></div>';
-    }).join(''));
-    bottom(); setTimeout(end, STILL ? 0 : 320); return;
+    }).join('')), 220, end);
+    return;
   }
 
   if (s.t === 'md'){
     /* 箇条書きのファイル。**中身をそのまま見せる**（要約しない） */
-    el('file',
+    const box = el('file',
       '<div class="f">' + s.f + '</div><div class="body md">' +
       s.x.map(function(t){ return '<div>- ' + t + '</div>'; }).join('') +
       '</div>');
-    bottom(); setTimeout(end, STILL ? 0 : 300); return;
+    reveal(box.querySelector('.md'), 300, end);
+    return;
   }
 
   if (s.t === 'quote'){
     /* 理念。**枠に入れて、大きめに置く。**ここだけ声の大きさを変える */
     const n = el('quote', '');
-    type(n, s.x, 34, end);
+    type(n, s.x, 40, end);
     return;
   }
 
   if (s.t === 'file'){
     el('row tool', '<span class="b">⏺</span> <span class="nm">Write</span>(' + s.f + ')');
     el('row res sum', '  ⎿ Wrote ' + ABOUT.length + ' lines to ' + s.f);
-    el('file',
+    const f = el('file',
       '<div class="f">' + s.f + '</div><div class="body"><dl>' +
       ABOUT.map(function(r){ return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') +
       '</dl></div>');
-    bottom(); setTimeout(end, STILL ? 0 : 300); return;
+    reveal(f.querySelector('dl'), 260, end);
+    return;
   }
 
   end();
@@ -391,7 +423,12 @@ function mark(){
 function run(){
   if (busy || done) return;
   if (at >= S.length){ finish(); return; }
-  if (S[at].t === 'you'){ typeYou(); return; }   // 人の番。ここで止まる
+  if (S[at].t === 'you'){
+    /* **読み終わる時間を置いてから打ちはじめる。**すぐ打つと目が下に引かれる */
+    busy = true;
+    setTimeout(function(){ busy = false; typeYou(); }, STILL ? 0 : PACE.turn);
+    return;
+  }
   busy = true;
   put(S[at], function(){
     at += 1; busy = false; meter();

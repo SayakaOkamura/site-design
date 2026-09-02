@@ -207,3 +207,12 @@ body{
   font-size:17px;line-height:1.7;color:var(--ink);
 }
 @media (max-width:700px){ .quote{font-size:15px;padding:14px 16px} }
+
+/* ---------- 塊は、行を1本ずつ出す（2026-09-02） ----------
+   一覧・diff・ファイルを丸ごと一度に出すと、読む前に次が来る。
+   **面は先に置いて、中の行だけ順に出す。**（面ごと出すと画面が跳ねる） */
+.stagger > *{opacity:0}
+.stagger > *.in{opacity:1;transition:opacity .2s ease}
+@media (prefers-reduced-motion:reduce){
+  .stagger > *{opacity:1}
+}
