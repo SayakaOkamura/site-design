@@ -5,286 +5,317 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>007 注文どおり — アルターデザインコンサルティング</title>
 <link rel="stylesheet" href="../../assets/css/reset.css">
-<link rel="stylesheet" href="../../assets/css/tokens.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <!-- =====================================================================
-     007 注文どおり — Claude Code から入ってもらう
+     007 注文どおり — Claude Code そのもの
 
-     一言：「あそこのサイト、ふつうなんですよ。ふつうなんだけど、
-             仕事の実物がそのまま置いてある」
+     一言：「あそこのサイト、Claude Code なんですよ。
+             開くと、うちへの注文がそのまま流れてる」
 
-     **狙いは「入ってもらうこと」。**G（ページが無い）は開いた瞬間から変で、
-     雑談で刺すためのもの。こちらは逆で、**初見はいきなり飛ばさない。**
-     まず注文どおりのコーポレートサイトとして成立させて、
-     押した人にだけ実物（作業画面）を見せる。段階を踏む。
+     **サイトがまるごと Claude Code のセッション。**会社概要も理念もサービスも、
+     全部このセッションの中で出てくる。別に用意した「ふつうのサイト」は無い。
 
-     守った却下（IDEAS.md / 005・006 の NOTES）
-     - **黒地にしない。**002 のターミナル案は「読みにくい」で却下、白基調で確定。
-       等幅・行番号・プロンプト・diff という語彙だけ借りて、地は白のまま。
-     - **このページ自体を生成物として見せない**（自己言及は 003 で却下）。
-       作業画面の題材は顧客の経費申請。このサイトの作り方は一度も出さない。
-     - AI の口調にユーモアを混ぜない。丁寧・有能のまま。
-     - 生成を失敗させない。触ると極端な値にツッコむ、もしない。
+     ── 外した縛り（2026-09-02、本人の指示）────────────────────────
+     「最初の話は ClaudeCode 感だから、そっちメイン。
+       別に今まで作ったルールも使わなくていい」
 
-     G と同じ素材を使う（経費申請／不在のとき・上に上げる額・取り下げ）。
-     案が3本並ぶので、**素材を変えると比べられなくなる。**
+     1. **白基調で確定**（002 のターミナル案が「読みにくい」で却下）→ 地を暗くした
+     2. **自己言及は却下**（003）→ 自己言及にした。このページ自身が成果物として流れる
+
+     忘れて外したのではなく、言われて外した。**戻すときは 005・006 の NOTES を読む。**
+     読みにくさへの手当てだけは残してある（本文 14px・行間 1.85・対比 13:1・幅 90ch）。
+
+     ── 残した前提 ────────────────────────────────────────────────
+     - **注文どおり。**注文は一行。言われたとおりに作って、動かして見せる
+     - **形にする → 足りないところが浮かぶ**（005 と同じ順。逆にしない）
+     - 未決の3つは**埋めない**（埋めると「AI が決めた」に戻る）
+     - 事例が無いことを隠さない
+     - 素材は G と同じ（経費申請／不在のとき・上に上げる額・取り下げ）。
+       3本並べて比べるので、替えるときは3本まとめて
+     - 動きを切る指定があるときは流さず全部出す（指針4）
      ===================================================================== -->
 
-<header class="top">
-  <div class="wrap">
-    <div class="brand">株式会社アルターデザインコンサルティング<span>ALTER DESIGN CONSULTING</span></div>
-    <nav class="nav">
-      <a href="#service">サービス</a>
-      <a href="#company">会社概要</a>
-      <a href="#contact">お問い合わせ</a>
-    </nav>
-  </div>
-</header>
+<div class="head">
+  <span class="dot"></span>
+  <b>claude</b>
+  <span class="cwd">~/alter-design/keihi-shinsei</span>
+  <span class="right">
+    <span>opus 4.6</span>
+    <span>⏵⏵ auto-accept edits on</span>
+  </span>
+</div>
 
-<!-- ヒーロー。理念をそのまま置く。ここで変わったことをしない。
-     「注文どおりだな」と思ってもらうのが、この画面の仕事。 -->
-<section class="hero">
-  <div class="wrap">
-    <h1>経営の力で<b>「遊ぶように働く世界」</b>をデザインする。</h1>
-    <p>ノーコード／ローコードと AI を土台に、業務そのものを設計し直します。
-       決めるところから、動くものまで。</p>
-    <div class="cta">
-      <a class="btn fill" href="#service">サービスを見る</a>
-      <a class="btn" href="#contact">相談する</a>
+<div class="view" id="view">
+  <div class="session" id="log">
+    <!-- 起動直後の枠。ここだけ最初から出しておく（真っ暗な画面から始めない） -->
+    <div class="boot">
+      <b>✻</b> 株式会社アルターデザインコンサルティング
+      <span class="s">経営の力で「遊ぶように働く世界」をデザインする。／2025年6月設立</span>
     </div>
   </div>
-</section>
+</div>
 
-<section class="sec" id="service">
-  <div class="wrap">
-    <div class="lbl">SERVICE</div>
-    <h2>4つの領域</h2>
-    <p class="note">受託開発ではなく、決める工程から入ります。作るものが決まっていない状態から始められます。</p>
-
-    <div class="svc">
-      <article>
-        <span class="no">01</span>
-        <h3>次世代型業務システム開発</h3>
-        <p>ノーコード／ローコードを土台に業務を再設計します。要件が固まる前から手を動かし、
-           足りない決めごとを先に洗い出します。</p>
-      </article>
-      <article>
-        <span class="no">02</span>
-        <h3>AI による意思決定支援・事業変革</h3>
-        <p>データ資産を戦略と予測に変換します。持っている数字が、判断に使える形になっているかから見ます。</p>
-      </article>
-      <article>
-        <span class="no">03</span>
-        <h3>自律共創型の組織デザイン</h3>
-        <p>個の自律とチームの協働を両立する構造をつくります。仕組みと権限の設計まで含みます。</p>
-      </article>
-      <article>
-        <span class="no">04</span>
-        <h3>地域のデジタル格差支援</h3>
-        <p>ノーコードとクラウド AI、DX 人材の育成。地域の企業と自治体が自分で回せる状態を目標にします。</p>
-      </article>
-    </div>
-
-    <!-- ここが段の変わり目。**押した人にだけ出す。**
-         文言で「すごい」を言わない。何が見られるかだけ書く。 -->
-    <div class="open">
-      <p><b>01 の実物を置いています。</b>ある会社から届いた一行の依頼を、そのまま形にしたときの記録です。
-         3分ほど、7手で終わります。</p>
-      <button id="go" type="button">実物を見る</button>
-    </div>
-
-    <!-- 作業画面。**自動では動かない。**進めるのは人。
-         初見で勝手に流れると、注文どおりのサイトに見えなくなる。 -->
-    <div class="work" id="work">
-      <div class="term">
-        <div class="bar">
-          <i></i>
-          <span class="path">keihi-shinsei / 経費申請ワークフロー</span>
-          <span class="right" id="clock">手 0 / 7</span>
-        </div>
-        <div class="body" id="log"></div>
-      </div>
-
-      <div class="step">
-        <button id="next" type="button">次へ</button>
-        <button id="all" type="button">最後まで</button>
-        <span id="hint">Enter でも進みます</span>
-        <span class="dots" id="dots"></span>
-      </div>
-    </div>
+<div class="foot">
+  <div class="box">
+    <span class="p">&gt;</span>
+    <span class="typed" id="typed"></span><span class="cur" id="cur"></span>
   </div>
-</section>
-
-<section class="sec about" id="company">
-  <div class="wrap">
-    <div class="lbl">COMPANY</div>
-    <h2>会社概要</h2>
-    <dl>
-      <dt>会社名</dt>      <dd>株式会社アルターデザインコンサルティング</dd>
-      <dt>設立</dt>        <dd>2025年6月</dd>
-      <dt>資本金</dt>      <dd>6,000万円</dd>
-      <dt>代表取締役</dt>  <dd>松岡 真功</dd>
-      <dt>所在地</dt>      <dd>東京都港区西新橋3-23-5 ANYZ304</dd>
-      <dt>事業内容</dt>    <dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
-      <dt>株主</dt>        <dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
-    </dl>
-    <!-- 事例が無いことを隠さない。G と同じ扱い。書けば、それ自体が会社の状態の説明になる -->
-    <p class="none">掲載できる事例は、まだありません。2025年6月に始めた会社です。</p>
+  <div class="hint">
+    <span><b>enter</b> 進める</span>
+    <span><b>esc</b> 最後まで</span>
+    <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
-</section>
-
-<section class="sec contact" id="contact">
-  <div class="wrap">
-    <div class="lbl">CONTACT</div>
-    <h2>お問い合わせ</h2>
-    <div class="box">
-      <p>決まっていない状態からで構いません。「何を決めればいいか分からない」という相談が、いちばん多いです。</p>
-      <a class="btn fill" href="mailto:info@alter-dsgn.co.jp">info@alter-dsgn.co.jp</a>
-    </div>
-  </div>
-</section>
-
-<footer class="foot">
-  <div class="wrap">© 2026 株式会社アルターデザインコンサルティング</div>
-</footer>
+</div>
 
 <script>
-/* 作業画面の中身。**7手。**手で進める。
-   1手＝1つの意味。行数ではなく、意味の数で切る。
+/* =====================================================================
+   セッションの中身。**流れは1本。**枝分かれは作らない。
+   出す単位は「意味」で切る。7つ。
 
-   diff は「足した／消した」を色帯と薄い地で出す。記号（+ -）も残す。
-   色だけに意味を持たせない（色が見えない環境で読めなくなる）。 */
-const STEPS = [
-  /* 1手目：依頼。**一行しかない**ことが、あとで効く */
-  [
-    ['cmd', '<b>&gt;</b> 月末に、経理が止まる。なんとかしてほしい'],
-    ['say', '   — 依頼（ある会社の社長より）'],
-  ],
-  /* 2手目：まず見に行く。聞いて回るのではなく、現に動いているものを見る */
-  [
-    ['blank', ''],
-    ['cmd', '<b>/</b>read 経費申請の運用'],
-    ['say', '   月末に集中する処理を3つ見つけました。うち1つが申請の差し戻しです。'],
-    ['say', '   紙の申請書と Excel の集計が二重に走っています。'],
-  ],
-  /* 3手目：注文どおりに作ると宣言する。ここが「注文どおり」の肝。
-     勝手に良くしない。言われたものを、言われたとおりに出す */
-  [
-    ['blank', ''],
-    ['cmd', '<b>/</b>plan 申請から承認までを1本にする'],
-    ['say', '   言われたとおりに形にします。足す機能はありません。'],
-    ['say', '   画面1つ、決まっている欄だけ埋めます。'],
-  ],
-  /* 4手目：作る。diff で出す。**動くものが先に出る** */
-  [
-    ['blank', ''],
-    ['cmd', '<b>/</b>apply'],
-    ['add', '+ 申請フォーム（申請者・申請日・金額・承認者）'],
-    ['add', '+ 承認画面（承認 / 差し戻し）'],
-    ['add', '+ 集計（月次・部門別）'],
-    ['del', '- Excel の月次集計（二重に走っていたもの）'],
-  ],
-  /* 5手目：動いた、と言い切る。ここで終われば「注文どおり」で完成 */
-  [
-    ['blank', ''],
-    ['ok', '<b>✓</b> 動いています。保存され、承認が回り、閉じて開いても残ります。'],
-    ['say', '   入っているのは、言われたことだけです。'],
-  ],
-  /* 6手目：**ここから先が、うちの仕事。**
-     形にして初めて浮かぶものを出す。順序は 005 と同じ
-     （形にする → 足りないところが浮かぶ）。逆にはしない */
-  [
-    ['blank', ''],
-    ['cmd', '<b>/</b>check 決まっていないところ'],
-    ['say', '   作るのに足りない情報が3つ残りました。'],
-  ],
-  /* 7手目：3つを出す。**埋めない。**勝手に埋めると「AI が決めた」に戻る */
-  [
-    ['todo'],
-  ],
+   種類
+     you   人の行（> で始まる）        typed に打ってから log へ送る
+     say   Claude の地の文             1文字ずつ出す
+     tool  ⏺ ツールの呼び出し
+     res   ⎿ その結果
+     todo  やることの一覧（☐ / ☒）
+     diff  行番号つきの diff
+     file  書き出したファイル（会社概要はこれで出す）
+     think 考えている表示
+   ===================================================================== */
+const S = [
+
+  /* 1. 注文。**一行しかない。**これが後半の論拠になる */
+  { t:'you',  x:'月末に、経理が止まる。なんとかしてほしい' },
+  { t:'say',  x:'承知しました。まず、いま動いているものを見ます。' },
+
+  /* 2. 聞いて回らない。現物を読む */
+  { t:'tool', x:'Read', a:'現行の運用（申請書・集計表・承認の履歴）' },
+  { t:'res',  x:'3つの処理が月末に集中。うち1つは申請の差し戻しでした。' },
+  { t:'res',  x:'紙の申請書と Excel の集計が、二重に走っています。' },
+
+  /* 3. 注文どおりに作ると宣言する。**勝手に良くしない** */
+  { t:'todo', x:[
+      ['now','言われたとおりに、申請から承認までを1本にする'],
+      ['open','動くところまで持っていく'],
+      ['open','作るのに足りない情報を洗い出す'],
+    ]},
+  { t:'say',  x:'足す機能はありません。<b>言われたことだけ</b>入れます。' },
+
+  /* 4. 作る。diff で出す */
+  { t:'tool', x:'Write', a:'keihi-shinsei/申請フォーム' },
+  { t:'diff', f:'keihi-shinsei/申請フォーム', l:[
+      ['add','申請者　　あなた'],
+      ['add','申請日　　8/28'],
+      ['add','金額　　　48,000 円'],
+      ['add','承認者　　所属長'],
+    ]},
+  { t:'tool', x:'Write', a:'keihi-shinsei/承認画面（承認 / 差し戻し）' },
+  { t:'tool', x:'Delete', a:'月次集計.xlsx（二重に走っていたもの）' },
+  { t:'diff', f:'運用', l:[
+      ['add','申請 → 承認 → 集計（この1本）'],
+      ['del','申請書（紙） → Excel 転記 → 月次集計.xlsx'],
+    ]},
+
+  /* 5. 動いた、と言い切る。**ここで終われば注文どおりで完成** */
+  { t:'todo', x:[
+      ['done','言われたとおりに、申請から承認までを1本にする'],
+      ['done','動くところまで持っていく'],
+      ['now','作るのに足りない情報を洗い出す'],
+    ]},
+  { t:'say',  x:'動いています。保存され、承認が回り、閉じて開き直しても残ります。' },
+  { t:'say',  x:'入っているのは、言われたことだけです。', dim:true },
+
+  /* 6. ここから先が、うちの仕事。**形にしたから浮かんだ**という順を守る */
+  { t:'you',  x:'それで足りてる？' },
+  { t:'think', x:'形にしたことで、決まっていないところが見えています' },
+  { t:'say',  x:'足りていません。<b>作るのに足りない情報が3つ</b>残りました。' },
+  { t:'todo', x:[
+      ['open','不在のとき'],
+      ['open','上に上げる額'],
+      ['open','出したあとの取り下げ'],
+    ]},
+  { t:'say',  x:'聞いて集めても、これは出てきません。<b>まだ誰も困っていないからです。</b>' },
+  { t:'say',  x:'先に形にすると、困る前に出てきます。決めるのは御社の会議です。', dim:true },
+
+  /* 7. 名乗り。**会社概要は成果物として書き出す。**別ページへ逃がさない */
+  { t:'you',  x:'あなたたちは？' },
+  { t:'tool', x:'Write', a:'会社概要.md' },
+  { t:'file', f:'会社概要.md' },
+  { t:'say',  x:'決まっていない状態からで構いません。' },
+  { t:'say',  x:'「何を決めればいいか分からない」という相談が、いちばん多いです。' },
+  { t:'you',  x:'info@alter-dsgn.co.jp' },
 ];
 
+const view  = document.getElementById('view');
 const log   = document.getElementById('log');
-const work  = document.getElementById('work');
-const go    = document.getElementById('go');
-const next  = document.getElementById('next');
-const all   = document.getElementById('all');
-const dots  = document.getElementById('dots');
-const clock = document.getElementById('clock');
-const hint  = document.getElementById('hint');
+const typed = document.getElementById('typed');
+const cur   = document.getElementById('cur');
+const again = document.getElementById('again');
 
-let at = 0, n = 0;
+/* 動きを切る指定があるときは、流さずに全部出す（指針4）。
+   動かない環境で中身が消えてはいけない。 */
+const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* 行番号は、出した行に連番で振る。ターミナルの語彙のひとつ。
-   意味は無いが、これがあると「作業の記録」に見える。 */
-function put(kind, html){
-  const el = document.createElement('div');
-  if (kind === 'blank'){ el.className = 'ln blank'; log.appendChild(el); return; }
-  el.className = 'ln ' + kind;
-  n += 1;
-  el.innerHTML = '<span class="n">' + n + '</span><span class="t">' + html + '</span>';
-  log.appendChild(el);
+let at = 0, busy = false, done = false;
+
+function el(cls, html){
+  const d = document.createElement('div');
+  d.className = cls;
+  d.innerHTML = html;
+  log.appendChild(d);
+  return d;
+}
+function bottom(){ view.scrollTop = view.scrollHeight; }
+
+/* 1文字ずつ。**速さは一定。**待たせる間は作らない */
+function type(node, text, per, end){
+  if (STILL){ node.innerHTML = text; end(); return; }
+  let i = 0;
+  (function tick(){
+    /* タグの途中で切ると崩れるので、< が来たら > まで一気に進める */
+    if (text[i] === '<'){ i = text.indexOf('>', i) + 1; }
+    else i += 1;
+    node.innerHTML = text.slice(0, i);
+    bottom();
+    if (i < text.length) setTimeout(tick, per); else end();
+  })();
 }
 
-/* 未決の3つ。**罫で出す。**字（＿＿＿）だと幅が中身なりで短く、欄に見えない。
-   G で同じことをしていて、そこでの結論をそのまま使う。 */
-function putTodo(){
-  const box = document.createElement('div');
-  box.className = 'todo';
-  box.innerHTML =
-    '<div class="h">うちが洗い出したところ</div>' +
-    '<dl>' +
-      '<dt>不在のとき</dt><dd></dd>' +
-      '<dt>上に上げる額</dt><dd></dd>' +
-      '<dt>出したあとの取り下げ</dt><dd></dd>' +
-    '</dl>' +
-    '<div class="end">聞いて集めても、これは出てきません。<b>まだ誰も困っていないからです。</b><br>' +
-    '先に形にすると、困る前に出てきます。決めるのは御社の会議です。</div>';
-  log.appendChild(box);
-}
+/* 会社概要。**成果物として書き出す。**事例が無いことも、ここに書く */
+const ABOUT = [
+  ['会社名', '株式会社アルターデザインコンサルティング'],
+  ['設立', '2025年6月'],
+  ['資本金', '6,000万円'],
+  ['代表取締役', '松岡 真功'],
+  ['所在地', '東京都港区西新橋3-23-5 ANYZ304'],
+  ['事業内容', 'AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業'],
+  ['株主', '株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社'],
+  ['サービス', '次世代型業務システム開発／AIによる意思決定支援・事業変革／自律共創型の組織デザイン／地域のデジタル格差支援'],
+  ['掲載できる事例', 'まだありません（2025年6月に始めた会社です）'],
+];
 
-function draw(){
-  for (let i = 0; i < STEPS.length; i++){
-    const d = dots.children[i];
-    if (d) d.className = i < at ? 'on' : '';
+function put(s, end){
+  if (s.t === 'you'){
+    /* 人の行は、下の枠に打ってから上へ送る。**打っているのが見える**のが Claude Code */
+    const finish = function(){
+      typed.textContent = '';
+      el('row you', '<span>&gt;</span> ' + s.x);
+      bottom(); end();
+    };
+    if (STILL){ finish(); return; }
+    let i = 0;
+    (function tick(){
+      typed.textContent = s.x.slice(0, ++i);
+      bottom();
+      if (i < s.x.length) setTimeout(tick, 34); else setTimeout(finish, 260);
+    })();
+    return;
   }
-  clock.textContent = '手 ' + at + ' / ' + STEPS.length;
-  next.disabled = all.disabled = at >= STEPS.length;
-  if (at >= STEPS.length) hint.textContent = 'ここまでが、うちの仕事です';
+
+  if (s.t === 'say'){
+    const n = el('row say' + (s.dim ? ' dim' : ''), '');
+    type(n, s.x, 16, end);
+    return;
+  }
+
+  if (s.t === 'tool'){
+    el('row tool', '<span class="b">⏺</span> <span class="nm">' + s.x + '</span>(' + s.a + ')');
+    bottom(); setTimeout(end, STILL ? 0 : 240); return;
+  }
+
+  if (s.t === 'res'){
+    const n = el('row res', '');
+    type(n, '  ⎿ <span class="a">' + s.x + '</span>', 10, end);
+    return;
+  }
+
+  if (s.t === 'think'){
+    const n = el('row think', '');
+    type(n, '✻ ' + s.x + '…', 18, end);
+    return;
+  }
+
+  if (s.t === 'todo'){
+    const box = el('todo', s.x.map(function(r){
+      const m = r[0] === 'done' ? '☒' : '☐';
+      const inner = r[0] === 'done' ? '<s>' + r[1] + '</s>' : r[1];
+      return '<div class="' + r[0] + '"><span class="mark">' + m + '</span> ' + inner + '</div>';
+    }).join(''));
+    bottom(); setTimeout(end, STILL ? 0 : 320); return;
+  }
+
+  if (s.t === 'diff'){
+    el('diff',
+      '<div class="f">' + s.f + '</div>' +
+      s.l.map(function(r, i){
+        const sign = r[0] === 'add' ? '+' : '−';
+        return '<div class="l ' + r[0] + '"><span class="n">' + (i + 1) + '</span>' +
+               '<span class="t">' + sign + ' ' + r[1] + '</span></div>';
+      }).join(''));
+    bottom(); setTimeout(end, STILL ? 0 : 300); return;
+  }
+
+  if (s.t === 'file'){
+    el('file',
+      '<div class="f">' + s.f + '</div><div class="body"><dl>' +
+      ABOUT.map(function(r){ return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') +
+      '</dl></div>');
+    bottom(); setTimeout(end, STILL ? 0 : 300); return;
+  }
+
+  end();
 }
 
+/* 進める。**一手ずつ。**押されたら次、esc で最後まで。
+   自動では流さない（勝手に流れると、読んでいる途中で置いていかれる）。 */
 function step(){
-  if (at >= STEPS.length) return;
-  STEPS[at].forEach(function(row){
-    if (row[0] === 'todo') putTodo(); else put(row[0], row[1]);
+  if (busy || done) return;
+  busy = true;
+  put(S[at], function(){
+    at += 1; busy = false;
+    if (at >= S.length){
+      done = true;
+      typed.textContent = '';
+      cur.style.display = 'none';
+    }
   });
-  at += 1;
-  draw();
+}
+function rest(){
+  const keep = STILL;
+  while (at < S.length){
+    /* 一気に出すときは、打つ動きを飛ばして中身だけ置く */
+    const s = S[at];
+    if (s.t === 'you') el('row you', '<span>&gt;</span> ' + s.x);
+    else if (s.t === 'say') el('row say' + (s.dim ? ' dim' : ''), s.x);
+    else if (s.t === 'res') el('row res', '  ⎿ <span class="a">' + s.x + '</span>');
+    else if (s.t === 'think') el('row think', '✻ ' + s.x + '…');
+    else { busy = false; put(s, function(){}); }
+    at += 1;
+  }
+  done = true; busy = false;
+  typed.textContent = ''; cur.style.display = 'none';
+  bottom();
 }
 
-for (let i = 0; i < STEPS.length; i++) dots.appendChild(document.createElement('i'));
-draw();
-
-/* **自動で開かない。**押した人にだけ出す。開いたら1手目まで出しておく
-   （空の画面を見せると、何が起きるのか分からない）。 */
-go.addEventListener('click', function(){
-  work.classList.add('on');
-  go.closest('.open').style.display = 'none';
-  if (at === 0) step();
-  work.scrollIntoView({ behavior:'smooth', block:'center' });
-});
-
-next.addEventListener('click', step);
-all.addEventListener('click', function(){ while (at < STEPS.length) step(); });
-
-/* Enter / Space でも進む。**作業画面を開いたあとだけ受ける。**
-   ページを開いた時点でキーを奪うと、ふつうのサイトとして読めなくなる。 */
 addEventListener('keydown', function(e){
-  if (!work.classList.contains('on')) return;
-  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); step(); }
+  if (e.key === 'Enter'){ e.preventDefault(); step(); }
+  if (e.key === 'Escape'){ e.preventDefault(); rest(); }
 });
+/* 触る操作でも進む。スマホはキーが無い */
+view.addEventListener('click', step);
+document.querySelector('.foot').addEventListener('click', function(e){
+  if (e.target === again) return;
+  step();
+});
+again.addEventListener('click', function(){
+  location.reload();
+});
+
+/* 最初の一手だけ出しておく。**真っ暗な画面から始めない。**
+   何が起きるのか分からないまま置かれると、押す手が動かない。 */
+if (STILL) rest(); else step();
 </script>
 </body>
 </html>
