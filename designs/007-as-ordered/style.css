@@ -124,6 +124,9 @@ body{
 
 /* ---------- 下の入力枠。Claude Code の顔 ---------- */
 .foot{flex:none;padding:8px 20px 14px}
+/* **本体の列に合わせる。**目次（236px）のぶん、下の枠も右へ寄せる。
+   揃っていないと、入力枠だけ目次の下に出て居場所を失う（2026-09-02）。 */
+@media (min-width:761px){ .foot{padding-left:256px} }
 .box{
   max-width:86ch;margin:0;border:1px solid var(--line);border-radius:8px;
   padding:9px 14px;display:flex;gap:10px;align-items:baseline;color:var(--faint);
