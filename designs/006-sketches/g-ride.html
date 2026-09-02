@@ -976,7 +976,28 @@ let intro = false;  // 出だしのあいだだけ真。触るか、寄りきれ
    1.14秒（DIP 0 なら DRAW 5.4 で 1.15秒。どちらでも見え方の速さは同じ）。
    落ちるのに使う時間は、DIP 0 で 0.90秒、いま 1.05秒。
    **カーブを変えたら、必ずこの時刻で測り直すこと。**秒数だけ見ても合わない。 */
-const DRAW  = 2.8;  // 紙の端から端まで、線を引き終わるまでの秒数
+/* **画面に入っている線を、文字が濃くなりきるころに引き終える。**
+   見えている割合は窓の大きさで変わる（狭い窓ほど、線は少ししか入らない）。
+   だから秒数を直値で持たず、**画面の右端が紙のどこに当たるかを測って、そこから解く。**
+   合わせる相手は文字。濃さは ST が一段前から寄ってくるので、INTRO .24 の追従だと
+   だいたい TEXT_DONE 秒で濃くなりきる。 */
+const TEXT_DONE = 1.1;   // 文字が濃くなりきるまでの秒
+let DRAW = 2.8;          // 下の fitDraw() が入れ直す（これは保険の初期値）
+function fitDraw(){
+  if (!TLEN || !marks.length) return;
+  const m = marks[0], sc = m.s || 1;
+  const edge = EDGE_X(m, sc);                     // 画面の右端が、紙のどこか
+  let vis = 1;
+  for (let i = 0; i <= 400; i++){
+    const l = TLEN * i / 400;
+    if (THREAD.getPointAtLength(l).x >= edge){ vis = l / TLEN; break; }
+  }
+  let lo = 0, hi = 1;                             // curve(x) = vis を解く
+  for (let k = 0; k < 40; k++){ const u = (lo + hi) / 2; if (curve(u) < vis) lo = u; else hi = u; }
+  const x = Math.max((lo + hi) / 2, .05);
+  DRAW = Math.max(.8, (TEXT_DONE - DELAY) / x);
+}
+function EDGE_X(m, sc){ return m.cx + (innerWidth - aimX() - (m.dx || 0)) / sc; }
 const DELAY = .3;   // 引きはじめるまでの待ち
 /* **元の CSS と同じカーブ（cubic-bezier(.25,.1,.25,1)＝ ease）。**
    一定の速さでも丸めても、落ちるところが落下に見えなかった。ease は中盤がいちばん速く、
@@ -1338,6 +1359,7 @@ addEventListener('resize', function(){
   measure();
   view.scrollLeft = stopAt(Math.min(n, marks.length - 1));
   here = -1;
+  fitDraw();   // 窓が変わると、線の見えている割合も変わる
   draw();
 });
 
@@ -1366,6 +1388,7 @@ if (THREAD){
   THREAD.style.strokeDasharray  = TLEN;
   THREAD.style.strokeDashoffset = TLEN;
   buildDraw();
+  fitDraw();
 }
 TSTART = STt;
 
