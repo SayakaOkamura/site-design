@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>006-G ページが無い</title>
+<link rel="stylesheet" href="../../assets/css/reset.css">
+<style>
+/* =========================================================
+   006-G ページが無い（1枚を辿る）
+
+   一言：「あそこのサイト、ページが無いんですよ。1枚を辿っていくだけ」
+
+   変な理由：経営の一言と、画面の一欄が、地続きだから。
+   ページも、押すボタンも無い。左から右へ、1枚の上を移動するだけ。
+   経営は大きい字、欄はごく小さい字。その縮尺の差が「地続き」の実体。
+   「経営の力で」を、遷移ではなく距離で見せる。
+
+   引き（全体を俯瞰する段）は置かない。1枚だと分かればいい。
+
+   段は縦にも散らしてある。経営は上、画面の欄は下。
+   横に並べただけだと、辿っていても「次はこの右」と分かってしまって驚きがない。
+   上下に振ると、次がどこにあるか分からないまま連れて行かれる。
+   「経営の一言と画面の一欄が地続き」を、縮尺の差だけでなく、辿る距離そのもので出す。
+   名乗りの段も置かない。開いた瞬間に会社が自分の説明を始めると、
+   雑談で開いたのに営業を受ける構えになる。依頼から始めて、うちは3行目で出る。
+   ========================================================= */
+:root{
+  --bg:#f2f1ec; --ink:#14161a; --sub:#5d6673; --faint:#9aa2ae;
+  --line:#d9d5cc; --amber:#b45309; --seal:#8b2020; --paper:#fff;
+  --ui:-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7}
+
+/* 見る層。ここは触らせない（触るのは下の #view）。
+   ひとつだけ例外があって、問い合わせのリンクは押せるようにしてある。 */
+#stage{position:fixed;inset:0;overflow:hidden;z-index:2;pointer-events:none}
+#stage a{pointer-events:auto}
+
+/* 触る層。本物の横スクロール。
+   慣性の計算はブラウザに任せて、こちらは「いまどこまで来たか」を読むだけ。
+   ひと振りがどこで終わったかを推測しない。推測をやめたのが今回の要点。
+   4回作り直して全部外したので、当てにいく作りはもう置かない。 */
+#view{
+  position:fixed;inset:0;z-index:1;
+  overflow-x:auto;overflow-y:hidden;
+  /* **snap は使わない。**停留所へ落ち着かせるのは scrollend でやる（下の JS）。
+     snap は programmatic な scrollLeft の代入にも効くので、ホイールを
+     自前で受けると毎回引き戻される。proximity でも足りなかった
+     （実測：段が画面幅ぴったりの g-zoom では、1目盛ぶん 320px の代入が
+     毎回 0 に戻って、まったく動かなかった。段が画面幅の6倍ある g-ride は
+     引き戻し範囲の外だったので動いていた＝ファイルによって挙動が違った）。
+     scroll-snap-align は、scrollend が無い環境の保険のために残してある。 */
+  scroll-snap-type:none;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#view::-webkit-scrollbar{display:none}
+/* 停留所。1つ＝1段ぶんの幅。中身は空でいい。ここに snap が吸い寄せる */
+#track{height:100%;display:flex}
+/* 1段ぶんの長さ。script の SPAN と同じ値にすること（いまは 2）。
+   長くすると、同じ移りをゆっくり通ることになる＝画面の流れが遅くなる。 */
+#track .stop{flex:0 0 200%;height:100%;scroll-snap-align:start}
+/* 線が落ちるぶん、紙は g-zoom.html より広い（4800×1500 → 5200×1600） */
+#canvas{
+  position:absolute;top:0;left:0;width:5200px;height:1600px;
+  transform-origin:0 0;   /* スクロールに毎フレーム追従するので、transition は置かない */
+}
+
+/* 一本の線。ここが「地続き」の実体 */
+svg.thread{position:absolute;top:0;left:0;width:5200px;height:1600px;pointer-events:none;z-index:1}
+/* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
+   太さと濃さで、はっきり手前に出す。 */
+svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85;
+  stroke-dasharray:3520;stroke-dashoffset:3520;animation:draw 2.8s ease .3s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.node{position:absolute;z-index:2}
+/* 濃さは JS が毎フレーム入れる（draw() → shade()）。
+   段に着いてから出すのをやめて、**進み具合そのものに濃さを繋いだ。**
+   移りはじめた時点でもう濃くなるので、薄いままの時間が無い。
+   transition は置かない（指の動きと二重になって、追従が鈍る）。
+   素の状態は opacity 1。JS が動かなければ全段が濃く見えるだけで、中身は消えない。
+   .hide に残っているのは、触らせないためだけ。 */
+.node.hide{pointer-events:none}
+
+/* 段の中で順に出す。
+   スワイプの回数を減らすと1段の情報が増えるが、順に出れば目は散らない。
+   出る順は --i で指定する。**秒ではなく、進み具合で数える**（shade()）。
+   秒で出していた頃は、着いた瞬間から遅延のぶんだけ薄いままだった。
+   中身は既定で見えている。動きは飾りで、出す条件にしない。 */
+/* あとから足されたもの。同時に出ると「最初からあった」に見えて、洗い出した感が出ない。
+   前は 1.5 秒の遅延で出していたが、一拍しかなくて速かった。
+   秒数で待たせるのをやめて、段を分けた。スクロールが引き金になるので、
+   速すぎ／遅すぎが原理的に無くなる。
+   既定では隠す。動きで出しているのではなく、寄る先で出しているので、
+   「動きは中身を出す条件にしない」には触れない（動きを切っても .reveal で見える）。 */
+/* opacity で隠すと場所だけ空いて、カードの下に空白が残る。
+   何か出ると先に分かってしまうので、畳んでおく。
+   寄るとカードが縦に伸びるので、伸びること自体が出来事になる。 */
+.n2 .add{display:none}
+.n2.reveal .add{
+  display:block;
+  animation:addIn .5s cubic-bezier(.2,.8,.25,1) calc(var(--i) * .11s) backwards;
+}
+@keyframes addIn{
+  from{opacity:0;transform:translateX(-14px)}
+  to  {opacity:1;transform:none}
+}
+@media (prefers-reduced-motion: reduce){
+  .n2.reveal .add{animation:none}
+  #canvas,.rail i,.rail b{transition:none}
+}
+
+/* ---------- 縦長の画面 ----------
+   段の枠は横長で組んであるので、幅 390 だと幅が効いて潰れる
+   （本文 13.5px が 9.2px、会社概要が 4px まで縮んでいた）。
+   縦は余っているので、段を縦長に組み直して、寄りをやめる。
+   JS 側も、狭いときは縮尺 1 のまま動かすだけにしている。 */
+/* **ここで left は触らない。**段の横の位置は、幅が変わっても同じ。
+   触ると、線（x を決め打ちで引いてある）から段が外れる。
+   実際、輪を外して4段目を右へ送ったとき、ここだけ古い x が残って
+   会社の段が線の真上に来ていた。縦は JS が線から計算して座らせる。 */
+@media (max-width:760px){
+
+  .n0{width:330px}
+  .n0 h1{font-size:27px}
+  .n0 .by{font-size:12px;margin-bottom:14px}
+  .n0 .lead{font-size:15px}
+
+  /* 狭い画面では横に並べられないので、束はカードの下に戻す。
+     ここだけは縦に伸びるが、330px に横並びは入らない。 */
+  .n2{width:330px}
+  .n2 .row{display:block}
+  .n2 .col,.n2 .win{width:330px}
+  /* 狭い画面では線が横に来ないので、ここだけ罫を引く */
+  .n2 .found{width:330px;margin-top:20px;border-left:2px solid var(--amber);padding-left:14px}
+  .n2 dl{grid-template-columns:88px 1fr;font-size:12.5px;row-gap:8px}
+  .n2 .found dl{grid-template-columns:1fr}
+  .n2 .cap2{font-size:12px}
+
+  .nc{width:330px}
+  .nc h1{font-size:24px}
+  .nc p{font-size:13.5px}
+
+  /* 会社の段だけ、狭い画面では2つに割って寄る（JS 側で段を分けている）。
+     縦に積むと下へ動くことになって、他の段と動きが食い違う。
+     横に並べれば、割ったあとも左から右のまま。 */
+  .n5{width:700px}
+  .n5 .head{width:330px}
+  .n5 h1{font-size:20px;margin-bottom:14px}
+  .n5 .cols{grid-template-columns:330px 330px;gap:40px}
+  .n5 dl{grid-template-columns:66px 1fr;font-size:14px}
+  .n5 ul.svc li{font-size:12.5px}
+}
+
+/* **以下の top は、読み込み時に JS（seat）が線から計算して上書きする。**
+   ここに書いてあるのは、その前に一瞬だけ効く初期値。
+   手で合わせ直さないこと。合わせるなら SEAT_GAP（線との空き 40px）のほう。 */
+
+/* 一 例と、その中身。ここから始める。名乗りは左上のロゴが常時受けている */
+/* 主の中身の下端を 634 に揃える。線（645）はその 11px 下を通る。 */
+.n0{left:900px;top:204px;width:640px}   /* 中身 176 → 下端 380。線は 420 */
+.n0 .k{font-size:13px;letter-spacing:.2em;color:var(--amber)}
+/* 引用として組む。地の文で書くと、これが会社の名乗りに見えてしまう */
+.n0 h1{font-size:40px;font-weight:600;line-height:1.4;letter-spacing:.02em;margin:8px 0 4px;
+       color:var(--sub)}
+.n0 h1 q{quotes:"「" "」"}
+.n0 .by{font-size:14px;color:var(--faint);margin-bottom:18px;letter-spacing:.06em}
+.n0 .lead{font-size:17.5px;color:var(--ink);line-height:1.9}
+.n0 .lead b{color:var(--amber)}
+
+/* 二 形と、埋まる欄 */
+/* 幅は中身なり。洗い出した束を畳んだときは、カードのぶんだけになる。
+   固定幅にすると、畳んでいる間に右側の空きぶんだけ中央がずれる。 */
+.n2{left:1900px;top:896px;width:max-content}   /* カード下端 1110。線は 1150 */
+/* 束は右下へ落とす。線が斜めに抜けられるだけの間を空ける。
+   横に並べて 30px のすき間では、斜めの線はどちらかに刺さる。 */
+.n2 .row{display:flex;align-items:flex-start;gap:30px}
+.n2 .col{flex:none;width:430px}
+.n2 .win{width:430px}
+
+/* 洗い出した束。カードの外の右。
+   カードの罫線と揃う位置に置いて、同じ紙の続きに見えるようにする。 */
+/* 束の1行目が、カードの1行目と同じ高さに来るようにする。
+   見出し（うちが洗い出したところ）は、カードの見出しの横に並ぶ。 */
+.n2 .found{
+  flex:none;width:280px;margin-top:40px;
+  border-left:2px solid var(--amber);padding-left:18px;
+}
+.n2 .found .fh{
+  font-size:10px;letter-spacing:.12em;color:var(--amber);font-weight:600;
+  margin-bottom:14px;
+}
+.n2 .found dl{display:block;padding:0}
+.n2 .found dt{font-size:13.5px;margin-bottom:5px}
+/* 空欄そのもの。列いっぱいに引く */
+.n2 .found dd{
+  height:0;border-bottom:1px dashed var(--amber);margin-bottom:20px;
+}
+.n2 .found dd:last-child{margin-bottom:0}
+.n2 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
+.n2 .win{
+  background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-top:8px;
+  box-shadow:0 6px 20px rgba(0,0,0,.07);overflow:hidden;position:relative;
+}
+.n2 .wb{
+  background:#f7f8fa;border-bottom:1px solid var(--line);
+  padding:8px 13px;font-size:13px;font-weight:600;
+}
+.n2 dl{display:grid;grid-template-columns:104px 1fr;row-gap:9px;padding:13px 15px 15px;font-size:13.5px}
+.n2 dt{color:var(--sub)}
+.n2 dd .v{border-bottom:1px solid var(--line);padding-bottom:1px}
+/* 決まっていないところは、空欄のまま残す。勝手に埋めない。
+   ここで埋めると「AI が決めた」に戻る。見つけるところまでがうちの仕事。 */
+/* カードの中に置いていた頃は、ひとかたまりに見せるために地を敷いていた。
+   外に出したので、罫と余白で足りる。 */
+/* 項目の名前は黒。見出し（うちが洗い出したところ）と縦罫と空欄の罫は琥珀のまま。
+   琥珀が三つ重なると、どれが本体か分からなくなる。 */
+.n2 dt.gk{color:var(--ink);font-weight:600}
+.n2 dd.gap .blank{
+  border-bottom:1px dashed var(--amber);color:var(--amber);
+  padding-bottom:1px;letter-spacing:.08em;
+}
+/* 線の上下を空ける。カードの下端 1110 → 線 1175 → 説明文 1220。
+   上（カードと線）は SEAT_GAP の 65、下（線と説明文）はこの margin-top から 45。
+   **上下は揃えていない。**説明文を上げるために 130 → 110 にしたので、
+   線は真ん中ではなく上寄りにいる。揃え直すなら 130 に戻す（2 × SEAT_GAP）。
+   字は 15 → 16。 */
+.n2 .cap2{font-size:16px;color:var(--sub);margin-top:110px;line-height:1.85}
+.n2 .cap2.sub{margin-top:10px}
+.n2 .cap2 b{color:var(--amber)}
+
+/* 三 見つけたあと。ここが無いと、空欄を見つけて終わりになる */
+.nc{left:3000px;top:949px;width:820px}   /* 中身 161 → 下端 1110。線は 1150 */
+.nc .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
+/* ここが山場。うちがしたことを、この段でいちばん大きく出す。
+   会社概要をここに積むと枠が伸びて、山場の縮尺が下がる。だから段を分けた。 */
+.nc h1{font-size:36px;font-weight:600;line-height:1.45;margin:6px 0 16px;letter-spacing:.01em}
+.nc h1 b{color:var(--amber)}
+.nc p{font-size:15px;color:var(--sub);line-height:1.95;margin-bottom:10px}
+.nc p b{color:var(--ink)}
+
+/* 四 会社。ここだけで会社サイトとして閉じられるように、実物を載せる。
+   別ページへのリンクで逃がすと、1枚で成り立つという形そのものが崩れる。 */
+/* 会社だけ、下端ではなく中心を他の段に揃える。
+   中身が 540 と高いので、下端で揃えると中心が上に寄って、
+   ここへ来るときだけ縦に 329px 動いていた（他の段は 20〜90px）。
+   線は会社の手前（x3760）で止めてあるので、中を突っ切ることもない。 */
+/* 横に広げて、縦を縮める。会社概要の折り返しが減って、段が低くなる。
+   縦が使える高さをほぼ埋めていると、上に余白が無くなってロゴと被る。 */
+.n5{left:4100px;top:800px;width:930px}   /* 中身 466 → 中心 1033。線の終わりは 1150 */
+.n5 .k{font-size:11px;letter-spacing:.14em;color:var(--amber)}
+.n5 h1{font-size:29px;font-weight:600;line-height:1.5;margin:6px 0 18px;letter-spacing:.01em}
+/* 3つに割って寄るので、ひとまとめで読ませる必要がない。
+   間を広げて、それぞれが枠に収まるようにする。 */
+.n5 .cols{
+  /* サービス側は 300px で足りる（いちばん長い行が 273px）。
+     会社概要側は 570px 必要（それ未満だと事業内容と株主が折り返して段が高くなる）。
+     広げすぎると二つのあいだが空いて、間延びして見える。 */
+  display:grid;grid-template-columns:300px 1fr;gap:56px;
+  border-top:1px solid var(--line);padding-top:20px;
+}
+.n5 h2{
+  font-size:11px;font-weight:600;letter-spacing:.16em;color:var(--faint);
+  margin-bottom:12px;
+}
+/* サービスは名前だけだと何をする会社か伝わらない。一行ずつ中身を付ける */
+.n5 ul.svc{list-style:none}
+.n5 ul.svc li{
+  font-size:13px;color:var(--ink);padding:0 0 10px 13px;position:relative;line-height:1.55;
+}
+.n5 ul.svc li::before{content:"—";position:absolute;left:0;color:var(--amber)}
+.n5 ul.svc li span{display:block;font-size:13px;color:var(--sub);line-height:1.75}
+/* 会社概要は責任の所在。小さすぎると読む気にならない */
+.n5 dl{
+  display:grid;grid-template-columns:92px 1fr;column-gap:16px;row-gap:7px;
+  font-size:14px;line-height:1.75;
+}
+.n5 dt{color:var(--faint)}
+/* 社名の途中で折れると読みにくい（「株式会／社サーバーワークス」になっていた）。
+   keep-all で、区切りの ／ でだけ折る。 */
+.n5 dd{color:var(--sub);word-break:keep-all;overflow-wrap:anywhere}
+.n5 .ct{font-size:13.5px;color:var(--sub);margin-top:18px;line-height:1.75}
+.n5 .ct a{color:var(--amber)}
+/* 実績が無いことを、隠さずに書く。書けば、それ自体が会社の状態の説明になる。
+   読ませる気のない薄さにすると、隠しているのと同じになる */
+.n5 .none{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.75}
+
+/* ---------- 操作 ----------
+   ボタンは置かない。押すものが並んでいると「操作盤」に見えて、
+   1枚を辿っているという形が消える。
+   進み具合だけ、細い線で出す。 */
+.hud{
+  position:fixed;left:0;right:0;bottom:0;z-index:5;
+  padding:0 22px 16px;pointer-events:none;
+}
+.rail{
+  height:2px;background:var(--line);position:relative;border-radius:2px;
+}
+.rail i{
+  position:absolute;top:0;left:0;height:2px;background:var(--amber);
+  border-radius:2px;   /* 進み具合も連続で動くので、transition は置かない */
+}
+.rail b{
+  position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;
+  background:var(--amber);transform:translateX(-4px);
+}
+.foot{
+  display:flex;align-items:baseline;gap:12px;margin-top:9px;
+  font-size:10.5px;letter-spacing:.16em;color:var(--faint);
+}
+.foot .grow{flex:1}
+/* 最初だけ出る手がかり。触ったら消える */
+.hint{
+  font-size:11px;letter-spacing:.08em;color:var(--sub);
+  transition:opacity .5s ease;
+}
+.hint.off{opacity:0}
+/* 記号だけにした。文字を並べるより、何で動くかが一目で分かる。
+   線は currentColor なので、色は .hint の指定にそのまま従う。 */
+/* display:inline-block を明示する。**共有の reset.css が svg{display:block} を敷いている**
+   （assets/css/reset.css:6）。効かせたままだと記号が縦に積む。 */
+.hint svg{display:inline-block;height:13px;width:auto;vertical-align:-2.5px;
+  fill:none;stroke:currentColor;stroke-width:1.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.hint svg + svg{margin-left:6px}
+.hint .wide svg:first-child{margin-right:3px}   /* マウスと矢印キーのあいだ */
+/* 狭い画面にはマウスも矢印キーも無い。左右の矢印だけにする（指で動かす）。 */
+.hint .narrow{display:none}
+@media (max-width:760px){
+  .hint .wide{display:none}
+  .hint .narrow{display:inline}
+}
+
+/* 社名だけ。一言は一枚目で名乗るので、ここでは繰り返さない */
+.title{
+  position:fixed;top:20px;left:24px;z-index:5;
+  font:inherit;background:none;border:0;padding:0;cursor:pointer;
+  display:flex;align-items:baseline;gap:12px;
+}
+.title .nm{font-size:11px;letter-spacing:.2em;color:var(--faint);transition:color .2s}
+/* 行き先を書いておく。ホバーの無い端末でも、押せることが分かるように常に出す */
+.title .go{
+  font-size:10.5px;letter-spacing:.1em;color:#c3bfb5;transition:color .2s;
+}
+.title .go::after{content:" →"}
+.title:hover .nm,.title:focus-visible .nm{color:var(--sub)}
+.title:hover .go,.title:focus-visible .go{color:var(--amber)}
+/* いま会社概要にいるときは、行き先として出さない */
+.title.here .go{visibility:hidden}
+.depth{
+  position:fixed;top:20px;right:22px;z-index:5;font-family:var(--mono);font-size:10.5px;color:var(--faint);
+}
+</style>
+</head>
+<body>
+
+<!-- 一枚目で名乗るので、ここは社名だけ。同じ一言を二度出さない。
+     押すと最後の段（会社概要）へ飛ぶ。下調べで来た人が、
+     スワイプ3回しないと責任の所在に辿り着けないのは遠すぎる。
+     ロゴを押す動作は誰でもやるので、ボタンを増やさずに済む。 -->
+<button class="title" id="toEnd">
+  <span class="nm">ALTER DESIGN CONSULTING</span>
+  <span class="go">会社概要</span>
+</button>
+<div class="depth" id="depth">×1</div>
+
+<div id="stage">
+  <div id="canvas">
+
+    <svg class="thread" viewBox="0 0 5200 1600">
+      <!-- 一本の線。ここでは水平ではなく、途中で落ちる。
+           引用の下は y420。1493 で縁を越えて、1903 で y1129 に着く（落差 709）。
+           以降は y1150 のまま、会社の手前（3980）で止まる。
+           二段目では、いままでどおりカード（下端 1110）と説明文（上端 1190）のあいだを通る。
+           始まりの x900 は一段目の左端。字の出だしと線の出だしが揃う。
+           カメラはこの線をなぞる（draw の中）。
+
+           **点を通す曲線（Catmull-Rom）はやめた。**両隣に引っ張られるので、
+           平らにしたいところが 17度ぶん揺れ、まっすぐ落としたいところが 28度ぶん揺れる。
+           曲がりの合計が 158度あって、要る最小限（121度）より 37度 余っていた。
+           それが「ぶよぶよ」の実体。
+
+           いまは 直線 → 円弧 → 直線 → 円弧 → 直線。道路や線路と同じ組み方で、
+           曲がるのは円弧の中だけ。直線のところは曲がりが 0 になる。
+             平ら      y420、x1382.5 まで
+             縁を越える 半径 150 の円弧（角は x1470）
+             まっすぐ   60.5度、x1513→1840
+             受け      半径 150 の円弧（角は x1883）
+             平ら      y1150、x1970.5 から
+           曲がる合計は 60.5×2 = 121度、つまり最小限ちょうど。 -->
+      <path d="M 900 445 L 1382.5 445 A 150 150 0 0 1 1513.1 521.1 L 1839.9 1098.9 A 150 150 0 0 0 1970.5 1175 L 3980 1175" />
+    </svg>
+
+    <!-- 一 例。ここから始める。うちの名乗りと招待を置いていたが、
+         招待（一件、つくってみます）は次の行の「まず、言われたとおりに形にしてみます」と
+         同じことを言っていた。段ごと畳んで、依頼から始める。
+         09eaa3c で「他人の愚痴から始めると主張がぶれる」として一段目を足したが、
+         あのときの一段目は主張だった。いまは引用にラベル（ある会社で聞いた話）が付いていて、
+         うちは3行目で出る。
+
+         ここでは「決まっていない3つ」を先に言わない。
+         それを言うと、どうやって分かったのかが抜ける。
+         005 と同じ順（形にする → 足りないところが浮かぶ）に揃える。 -->
+    <div class="node n0" data-l="0">
+      <div class="k"    style="--i:0">ある会社で聞いた話</div>
+      <!-- ここは謎ではなく、依頼。だから3つの空欄で解ける大きさかどうかを問われない。
+           一言が短いほど効く（言われたのはこれだけ、が次の段の論拠になる）。
+           そのことは次の行の「言われたとおりに」と、引用が一行しかないことで足りる。
+           「言われたのは、これだけです」と書き足すのは説明。 -->
+      <h1 class="r"     style="--i:1"><q>月末に、経理が止まる。</q></h1>
+      <div class="by r" style="--i:2">— 社長</div>
+      <!-- 「人手が足りないから、とは限りません」は読者の第一感を外す一行で、
+           謎解きの部品だった。謎解きをやめたので役目が無い。しかも四段目に
+           「聞いて集めるのではなく、先に形にします」が入ったので、
+           残すと方法の話が二箇所になる。 -->
+      <p class="lead r" style="--i:3">まず、言われたとおりに<b>形にしてみます</b>。</p>
+    </div>
+
+    <!-- 二 形にすると、足りないところが浮かぶ。
+         決まっているものが先に埋まり、決まっていないものが空欄で残る。
+         勝手に埋めない。見つけるところまでがうちの仕事で、決めるのは会議。 -->
+    <div class="node n2" data-l="1">
+      <div class="k" style="--i:0">形にすると</div>
+      <div class="row">
+      <div class="col">
+      <div class="win r" style="--i:1">
+        <div class="wb">経費申請</div>
+        <dl>
+          <dt>申請者</dt><dd class="r" style="--i:2"><span class="v">あなた</span></dd>
+          <dt>申請日</dt><dd class="r" style="--i:2"><span class="v">8/28</span></dd>
+          <dt>金額</dt><dd class="r" style="--i:3"><span class="v">48,000 円</span></dd>
+          <dt>承認者</dt><dd class="r" style="--i:3"><span class="v">所属長</span></dd>
+        </dl>
+      </div>
+      <!-- 形にした段階で、これで足りるとは言わない。
+           「全部入っています」だと、漏らさず入れたという報告になる。
+           入れる中身を出したのは社長のほうなので、手柄ではない。
+           主語を画面にして、事実だけにする。「だけ」で限界が出て、
+           四段目の「言われていないことを、3つ見つけました」と対になる。 -->
+      <p class="cap2 r" style="--i:2">入っているのは、言われたことだけです。</p>
+      <!-- 誰が見つけたのかを書く。空欄が勝手にあるだけでは、
+           見つけてもらった感じにならない。
+           一行目（決まっているところは、そのまま埋まります）は
+           上の行と同じことを言うので落とした。 -->
+      <!-- 束の最後（--i:3）のすぐ後ろに置く。5 だと 0.55秒で、待たされる感じが出た。 -->
+      <p class="cap2 sub add" style="--i:3.6">
+        <b>決まっていないところを、うちが洗い出します。</b>
+        この画面では 3 つ残りました。
+      </p>
+      </div>
+
+      <!-- 洗い出した3つは、カードの外の右に出す。
+           下に足すと縦に伸びることになって、全体が左から右へ動くのと食い違う。
+           狭い画面で会社の段を横に割ったのと同じ理由。
+           カードから琥珀の線が伸びて、この束に繋がる。地続きの実体をここでも使う。 -->
+      <!-- 空欄は字（＿＿＿）ではなく罫で出す。字だと幅が中身なりで短く、
+           欄に見えずただの点線になる。列いっぱいに引くと欄になる。 -->
+      <div class="found add" style="--i:0">
+        <div class="fh">うちが洗い出したところ</div>
+        <dl>
+          <dt class="gk add" style="--i:1">不在のとき</dt>
+          <dd class="gap add" style="--i:1"></dd>
+          <dt class="gk add" style="--i:2">上に上げる額</dt>
+          <dd class="gap add" style="--i:2"></dd>
+          <dt class="gk add" style="--i:3">出したあとの取り下げ</dt>
+          <dd class="gap add" style="--i:3"></dd>
+        </dl>
+      </div>
+      </div>
+    </div>
+
+    <!-- ここは触っていない -->
+    <!-- 会社概要。責任の所在。
+         書類でも「仕様」欄は小さい字で細かく書く。一番寄ったところに置いて、
+         寄りの流れを崩さない。 -->
+    <!-- 三 形にしたあと。ここが無いと、空欄を見つけて終わりになる。 -->
+    <div class="node nc" data-l="2">
+      <!-- ここは「行為」と「その理由」を持つ。作用（そのあとどうなるか）は書かない。
+           「作り直しが、起きません」「止めていたのは、この3つでした」はどちらも
+           踏み越えていた。前者は価値の説明で、しかもこの画面で作って見せている以上
+           作る／作り直すの線引きが初見に通じない。後者は3つで解決すると言い切っている。
+           劇的な前後は見せられないので、見せられるのは見つけたという行為だけ。
+
+           見出しは「依頼との差分」にする。三段目は画面の状態（空欄が3つ残った）、
+           四段目は依頼に無かったもの。視点が違うので、同じことを二度言わない。
+
+           理由の二行が中身。三段目で方法を実演済みなので、読者は見たあとで理由を読む。
+           説明の役目は、見たものの位置づけを言うこと（005 で説明段落を消したときの理屈）。
+
+           「決めるのは御社の会議です」は削った。G では空欄が埋まらないので、
+           決めたのがうちでないことは画面が既に言っている。005 で明示が要ったのは
+           あちらに空欄が埋まる演出があったから。丸投げに読める危険も一緒に消える。 -->
+      <div class="k" style="--i:0">うちがしたこと</div>
+      <!-- 見出しの主役は「見つけた」ではなく「形にした」。
+           見つけましたを先に出すと、うちの仕事が探し物に見える。
+           形にしたのがうちの行為で、見つかったのはその結果。 -->
+      <h1 class="r" style="--i:1"><b>先に形にして</b>、3つ見つけました。</h1>
+      <!-- 「決まったら、うちが作ります。」は削った。五段目のサービス（次世代型業務システム開発）が
+           受けているので、ここで役割を宣言し直す必要がない。 -->
+      <p class="r" style="--i:2">聞いて集めても、これは出てきません。<br>
+         まだ誰も困っていないからです。</p>
+
+    </div>
+
+    <!-- 四 会社。締めの段に会社概要まで積むと、枠が縦にも横にも伸びて
+         そこだけ縮尺が落ちる（枠の高さと幅の両方が効くため）。
+         段を分ければ、締めは締めのまま大きく出せて、会社は会社で読める。
+         社名ボタンの行き先も、これでラベルどおり「会社概要」になる。 -->
+    <!-- data-rise="0" ＝ **この段だけ動かさない。濃さだけで出す。**
+         中身が段の半分ずつある塊で、区切りの線も含めて動かしても、
+         面積が大きいぶん「読むもの」が上下することになって落ち着かなかった。
+         20px まで上げてから、動かさないほうが座って見えると判断した。
+         ほかの段は行が 24〜56px なので、10px の下げがそのまま効いている。 -->
+    <div class="node n5" data-l="3" data-rise="0">
+      <!-- 狭い画面では、この段だけ「会社」「会社概要」の2つに割って寄る。
+           段を増やすのではなく、同じ段の中で寄る範囲を分ける。
+           .head+.p1 で1つ、.p2 で1つ。JS 側が sel を複数取れる。 -->
+      <div class="head">
+        <div class="k" style="--i:0">会社</div>
+        <h1 class="r" style="--i:1">経営の力で「遊ぶように働く世界」をデザインする。</h1>
+      </div>
+
+      <div class="cols">
+        <div class="p1 r" style="--i:2">
+          <h2>サービス</h2>
+          <ul class="svc">
+            <li>次世代型業務システム開発<span>ノーコード／ローコードを土台に業務を再設計</span></li>
+            <li>AIによる意思決定支援・事業変革<span>データ資産を戦略と予測に変換</span></li>
+            <li>自律共創型の組織デザイン<span>個の自律とチームの協働を両立する構造</span></li>
+            <li>地域のデジタル格差支援<span>ノーコードとクラウドAI、DX人材の育成</span></li>
+          </ul>
+        </div>
+        <!-- サービスと会社概要は --i を揃える。**どちらも 359px あって、段の半分ずつ。**
+             順に出すと、行が順に出るのではなく「画面が半分ずつ出る」に見えて、
+             会社の段だけ読み込み中のように写った（ほかの段の行は 24〜56px）。
+             理念（--i:1）→ 中身2枚（--i:2）の2拍で渡す。 -->
+        <div class="p2 r" style="--i:2">
+          <h2>会社概要</h2>
+          <dl>
+            <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
+            <dt>設立</dt><dd>2025年6月</dd>
+            <dt>資本金</dt><dd>6,000万円</dd>
+            <dt>代表取締役</dt><dd>松岡 真功</dd>
+            <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304</dd>
+            <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
+            <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
+          </dl>
+          <p class="ct">ご相談は
+            <a href="https://alt-dsgn.co.jp/" target="_blank" rel="noopener">alt-dsgn.co.jp</a> のフォームから。</p>
+          <!-- 実績が無いことを、別ページへの導線で隠さない。
+               2025年6月設立は事実。事例が無いのも事実。両方書けば、それで説明になる。 -->
+          <p class="none">掲載できる事例は、まだありません。2025年6月に始めた会社です。</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 触る層。見た目には何も無い。スクロールを受けるためだけに置く -->
+<div id="view"><div id="track"></div></div>
+
+<div class="hud">
+  <div class="rail"><i id="bar"></i><b id="dot"></b></div>
+  <div class="foot">
+    <!-- **何で動くかを全部書く。ここは説明ではなく指示。**
+         開いた瞬間に「何をすればいいか」を言う場所なので、削らない（指針2）。
+         「スクロールすると」だとマウスとトラックパッドの話に読めていた。
+         ロゴ（会社概要 →）は入れていない。あれは動かすのではなく飛ぶもので、
+         それ自体にラベルが付いている。
+         「寄っていきます」は寄り（縮尺）の話で、読む人には何のことか分からない。
+         「進みます」はページを繰る言い方に読めるが、ここはページが無い。
+         この作品の一言（1枚を辿っていくだけ）に合わせて「辿ります」にした。 -->
+    <span class="hint" id="hint">
+      <span class="wide" role="img" aria-label="ホイールか矢印キーで、1枚を右へ辿ります"><svg viewBox="0 0 12 18" aria-hidden="true"><rect x="1" y="1" width="10" height="16" rx="5"/><line x1="6" y1="4.6" x2="6" y2="7.6"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M9.3 5.2 6.5 8 9.3 10.8"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M6.7 5.2 9.5 8 6.7 10.8"/></svg></span>
+      <span class="narrow" role="img" aria-label="指で左右に動かすと、1枚を辿ります"><svg viewBox="0 0 26 12" aria-hidden="true"><path d="M4.5 2.5 1.5 6 4.5 9.5"/><line x1="1.5" y1="6" x2="24.5" y2="6"/><path d="M21.5 2.5 24.5 6 21.5 9.5"/></svg></span>
+    </span>
+    <span class="grow"></span>
+    <span id="where">経営</span>
+  </div>
+</div>
+
+<script>
+/* 4つの停留所。同じ1枚を、左から右へ辿る。
+   引き（全体を俯瞰する段）は置かない。寄りだけ残す。
+   経営は大きい字、欄はごく小さい字。その差が「地続き」の実体。 */
+/* 4段。段を分けすぎるとスワイプ回数が増えて、1段あたりが薄くなる。
+   1段に情報を寄せて、段の中で順に出す（.node.on の --i）。 */
+/* 枠の高さで縮尺が決まる（横より縦が効く）。中身が増えた段は枠も高くなるので、
+   そのままだと縮尺が下がって、寄っている感じが途切れる。
+   前の段の枠をわざと高めに取って、0.94 → 1.02 → 1.13 → 1.95 と単調に上げる。 */
+/* sel は複数取れる。挙げたものを囲む箱が、寄る先になる。
+   node は、どの段を濃く出すか（.node の data-l）。
+   狭い画面では、会社の段だけ2つの view に割る。段の数は変えない。 */
+function buildViews(){
+  /* z は「寄り具合」。段どうしの比だけを決める数字で、実際の縮尺は measure() が出す。
+     縮尺を枠から出させていたら、幅で決まる段と高さで決まる段が混ざって、
+     窓の大きさによって山場が入れ替わっていた（背の高い窓では三段目が頂点になっていた）。
+     w / h は「この大きさに収まる」という上限だけを言う。中身＋余白で取る。 */
+  const V = [
+    /* dx は「真ん中からどれだけ左右へずらすか」（画面の px）。
+       既定は 0＝真ん中。一段目だけ、開いた瞬間なので左に寄せる。 */
+    { nm:'ある会社', node:0, sel:['.n0'], w: 700, h: 250, z: 1.04, dx: -130 },
+    /* 形の段は2つに分けて寄る。段は増えるが、画面は出しっぱなしなので
+       同じ紙の上にいることは崩れない。add が付いている view で帯を出す。 */
+    { nm:'形',       node:1, sel:['.n2'], w: 490, h: 320, z: 1.15 },
+    /* 形と同じ z にする。同じ段（.n2）を見ているので、寄りが変わると
+       「同じものが大きくなる」動きになる。帯が出たぶん箱が広がるので、
+       寄りを揃えても寄せ（中心の移動）は起きる。 */
+    { nm:'洗い出す', node:1, sel:['.n2'], w: 800, h: 380, z: 1.15, add:true },
+    /* 行為とその理由。ここが山場。z がいちばん大きい */
+    { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.40 }
+  ];
+  /* 会社。ここだけで会社サイトとして閉じる。実物を置いてあるぶん、中身が多い。
+     締めは引いて渡す（z を山場より下げる）。狭い画面では2回に分けて寄る。 */
+  if (innerWidth >= 760){
+    V.push({ nm:'会社', node:3, sel:['.n5'], w: 980, h: 578, z: 1.00 });
+    /* 枠の高さ 578 は「中身 466 ＋ 上下の余白」。ここを詰めると段が縦いっぱいになって、
+       上の余白が消えてロゴと被る。z が他より低いのは、締めとして引くのと、
+       横に広いぶん同じ見た目の大きさでも縮尺が下がるため。 */
+    /* 枠の高さ 565 は「中身 540 ＋ 線までの 11px ＋ 余白」。
+       550 だと線（645）が画面の下から 6px はみ出して見えなくなる。
+       この段は中身が高いので、線まで入れるには少しだけ引く必要がある。 */
+  } else {
+    V.push({ nm:'会社',     node:3, sel:['.n5 .head', '.n5 .p1'] });
+    V.push({ nm:'会社概要', node:3, sel:['.n5 .p2'] });
+  }
+  return V;
+}
+let VIEWS = buildViews();
+
+/* 挙げた要素をまとめて囲む箱を、1枚（#canvas）の座標で返す。
+   子要素の offsetLeft は親からの値なので、#canvas まで足し上げる。 */
+function box(sels){
+  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+  sels.forEach(function(s){
+    const el = document.querySelector(s);
+    if (!el) return;
+    let x = 0, y = 0, n = el;
+    while (n && n.id !== 'canvas'){ x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    l = Math.min(l, x); t = Math.min(t, y);
+    r = Math.max(r, x + el.offsetWidth); b = Math.max(b, y + el.offsetHeight);
+  });
+  return { x:l, y:t, w:r - l, h:b - t };
+}
+
+const view   = document.getElementById('view');
+const track  = document.getElementById('track');
+const canvas = document.getElementById('canvas');
+
+const thread = document.querySelector('svg.thread path');
+
+let marks = [];    // 段ごとの寄り先（中心）
+let here  = -1;    // いま濃く出している段
+let FLAT  = 1;     // 縮尺。1つに固定して動かさない
+let SEATY = 0;     // 線を画面のどの高さに置くか（段の真ん中には合わせない）
+
+/* 画面の「使える範囲」。ここに中身の外形を収めて、その中心に置く。
+   上は左上のロゴと右上の縮尺（どちらも下端 39）を避けるぶん。
+   下は進み具合の帯（vh から 64 引いてある）の内側に、もう少しだけ。
+   左右は対称。ここを触ると、全段の大きさと位置がまとめて動く。 */
+const PAD_TOP = 50, PAD_BOT = 14, PAD_L = 20, PAD_R = 20;
+
+/* 使える範囲の中心（画面の座標） */
+function aimX(){ return (PAD_L + (innerWidth - PAD_R)) / 2; }
+function aimY(){ return (PAD_TOP + (innerHeight - 64 - PAD_BOT)) / 2; }
+let stopLen = [];  // 段が、線に沿って何 px 目にあるか
+let off = [];      // 段の真ん中と、線の上の点とのずれ
+let TAB = [];      // 線を刻んだ表 [x, 線に沿った長さ]
+
+/* 動き方。等速だと、落ちるところも平らなところも画面の上では同じ速さで、
+   落ちているのに落ちた感じがしない。「線に乗っている」ではなく「引きずられている」になる。
+
+   そこで、**横に一定の速さで進む**ことにする。落ちるところは、同じ横幅ぶんで
+   縦にも動くぶん、画面の上では速くなる。＝線の形が速さを決める。
+   落ちる区間をまっすぐ（一定の傾き）にしてあるので、落下の中では速さも一定になる。
+
+   曲がりっぱなしの下りだったときは、これを全開にすると 1.53 まで跳ねたので
+   0.45 に薄めていた。直線にしたら全開でも 0.67 に収まったので、薄めるのをやめた。
+   0 にすると線に沿った等速に戻る。 */
+const FALL = 1;
+let touched = false;
+
+/* 停留所を、段の数だけ置く。幅は移りごと（SPANS）。snap がここに吸い寄せる。 */
+function buildStops(){
+  track.innerHTML = '';
+  for (let i = 0; i < VIEWS.length; i++){
+    const d = document.createElement('div');
+    d.className = 'stop';
+    d.style.flexBasis = ((SPANS[i] || 1) * SLOW * 100) + '%';
+    track.appendChild(d);
+  }
+}
+
+/* 寄り先は先に全部測っておく。スクロールのたびに測ると、
+   測っている先が動いてがくつく。 */
+function measure(){
+  const vw = innerWidth, vh = innerHeight - 64;   // 下の帯ぶん除く
+  /* 広い画面：枠に合わせて寄る。段ごとの縮尺の差が「地続き」の実体。
+     狭い画面：寄りをやめて、原寸のまま動かすだけ。
+     横長の枠を幅 390 に合わせると字が読めなくなるので、縮小するくらいなら動かすだけにする。
+     真ん中は、枠ではなく実物で取る。枠は「どこまで寄るか」を決めるためだけの数字で、
+     中身の実寸とは一致しない（枠で取っていたら、形の段が 39px 下にずれていた）。 */
+  /* 帯を畳んだまま測ると、寄り先が畳んだときの大きさで決まってしまう。
+     出したときの姿で測る必要があるので、測る間だけ .reveal を当てる。 */
+  const n2 = document.querySelector(".n2");
+  const was = n2.classList.contains("reveal");
+
+  /* 寄り先を測る前に、段を線の上に座らせておく。
+     順序が逆だと、座る前の位置で寄り先が決まる。 */
+  n2.classList.add("reveal");   // 帯を出した姿でカードの位置を測る
+  seat();
+  n2.classList.toggle("reveal", was);
+
+  marks = VIEWS.map(function(v){
+    n2.classList.toggle("reveal", !!v.add);
+    const bx = box(v.sel);
+    return {
+      z:   v.z || 1,   /* 段ごとに寄りを変えるのをやめたので、いまは使っていない */
+      /* これ以上寄るとはみ出す倍率。**枠（v.w/v.h）ではなく実寸で取る。**
+         枠は手で書いた上限で、中身とは合っていない（会社は枠 578 に対して中身 466）。
+         枠で取ると、合っていないぶんだけ全段の字が小さくなる。 */
+      fit: Math.min((vw - 40) / bx.w, vh / (bx.h + 30)),
+      tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
+      cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
+      w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
+      nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0
+    };
+  });
+
+  n2.classList.toggle("reveal", was);
+
+  /* 縮尺は1つに固定する。段ごとに寄りを変えない（前後の動きは酔いのもと）。
+     どの段も「使える範囲」に収まる、いちばん大きい倍率を選ぶ。
+     中身の外形（実寸）で取る。枠の数字は使わない。 */
+  const roomW = vw - PAD_L - PAD_R;
+  const roomH = vh - PAD_TOP - PAD_BOT;
+  if (vw < 760){
+    FLAT = Math.min.apply(null, marks.map(function(m){ return m.tight; }));
+    marks.forEach(function(m){ m.s = FLAT; });
+  } else {
+    let f = Infinity;
+    marks.forEach(function(m){ f = Math.min(f, roomW / m.w, roomH / m.h); });
+    FLAT = f * ROOM;
+    /* 会社だけ少し引く。ほかは FLAT のまま。 */
+    marks.forEach(function(m){ m.s = f * (m.node === 3 ? ROOM_N5 : ROOM); });
+  }
+
+  survey();
+}
+
+/* 段を、線の上に座らせる。
+   top を数字で決め打ちすると、幅が変わって段の高さが変わったとたんにずれる
+   （狭い画面では段が縦長になるので、必ずずれていた）。
+   線の高さから毎回引き算する。乗る面は段によって違う：
+   引用と4段目は段そのものの下端、二段目はカードの下端（説明文は線の下に続く）。 */
+const SEATS = [{ sel:'.n0' }, { sel:'.n2', on:'.n2 .win' }, { sel:'.nc' }];
+
+/* 段と線の空き。ここを広げると段が上へ動くので、
+   段を動かさずに空きだけ広げたいときは、線のほうも同じだけ下げること
+   （40 → 65 にしたとき、線の高さも 420/1150 → 445/1175 にしてある）。
+   二段目は説明文が線の下に続くので、そちらの空き（.n2 .cap2 の margin-top）も揃える。 */
+const SEAT_GAP = 65;
+
+function seat(){
+  SEATS.forEach(function(s){
+    const el = document.querySelector(s.sel);
+    if (!el) return;
+    el.style.top = '0px';                       // 測る前に戻す
+    const on = s.on ? document.querySelector(s.on) : null;
+    const bottom = on ? (on.offsetTop + on.offsetHeight) : el.offsetHeight;
+    const cx = el.offsetLeft + el.offsetWidth / 2;
+    el.style.top = Math.round(lineYAt(cx) - SEAT_GAP - bottom) + 'px';
+  });
+}
+
+/* 線の、その x での高さ */
+function lineYAt(x){
+  const L = thread.getTotalLength();
+  let best = null, bd = Infinity;
+  for (let i = 0; i <= 400; i++){
+    const q = thread.getPointAtLength(L * i / 400);
+    const d = Math.abs(q.x - x);
+    if (d < bd){ bd = d; best = q; }
+  }
+  return best.y;
+}
+
+/* ---- 線の上をなぞるための下ごしらえ ------------------------------------
+   段と段のあいだを、直線で結ばずに線に沿って動く。
+   そうしないと、線が落ちてもカメラだけ直進してしまう。 */
+function survey(){
+  const L = thread.getTotalLength();
+  TAB = [];
+  for (let i = 0; i <= 600; i++){ const q = thread.getPointAtLength(L * i / 600); TAB.push([q.x, L * i / 600]); }
+  const lenNear = function(cx){
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < TAB.length; i++){ const d = Math.abs(TAB[i][0] - cx); if (d < bd){ bd = d; best = TAB[i][1]; } }
+    return best;
+  };
+  stopLen = marks.map(function(m){ return lenNear(m.cx); });
+  /* 段の外形の中心と、線の上の点とのずれ。
+     カメラはこれを足して、段の中心を「使える範囲」の中心に置く。
+     縦も段ごとに合わせる（＝その段の中身だけで真ん中を取る）。
+     線の高さは段によって変わるので、そのぶん移りの途中でカメラが縦にも動く。 */
+  off = marks.map(function(m, i){
+    const q = thread.getPointAtLength(stopLen[i]);
+    return [m.cx - q.x, m.cy - q.y];
+  });
+}
+
+/* スクロール位置が、そのまま「何段目か」。段と段のあいだは小数になるので、
+   寄り先を混ぜて出す。段で切り替えるのではなく、1枚の上を滑って見える。 */
+/* 画面の左には社名と進み具合の線があって、右には縮尺しかない。
+   ちょうど真ん中に置くと、そのぶん左に寄って見えるので、少しだけ右へ。 */
+const NUDGE = 16;
+
+/* 全体の大きさ。1.0 だと、いちばん大きい段（会社）が使える範囲いっぱいになって、
+   上下の余りが 0 になる。下げると全部が一律に小さくなって、そのぶん余白がつく。
+   ここを触ると字の大きさが全部変わるので、まずここで合わせること。 */
+const ROOM = 1.00;
+
+/* 会社の段だけ、少し引く。1.0 のままだと使える範囲いっぱいで詰まって見える。
+   ほかの段は ROOM のまま。この差のぶん、最後の移り（会社へ入るとき）で
+   縮尺が 2.5% 変わる。前後の動きとしては、ほぼ出ない量。 */
+const ROOM_N5 = 0.975;
+
+/* 1回の移りに、画面を何枚ぶんスクロールさせるか。移りごとに決める。
+   画面の上での速さは、これに反比例してそのまま下がる。
+   吸着する場所は段のままで、そこへ着くまでの距離だけ伸びる。
+
+   落下（1→2）だけ長いのは、そこだけ縦に 730px 動くぶん、
+   同じ長さだと画面の流れが速くなるため（2枚だと 0.60、3枚で 0.40）。
+   最後の数字は、最後の段そのものの幅（そこから先へは進まない）。
+   狭い画面では会社の段が2つに割れて6停留所になる。足りないぶんは 1 として扱う。 */
+const SPANS = [3, 2, 2, 2, 1];
+
+/* 全体をどれだけゆっくりにするか。上の SPANS 全部に掛かる。
+   1 で 0.48、2 で 0.24（画面の流れ。1.0 が指と同じ速さ）。
+   上げるほど、1段進むのに要るスクロールが増える。 */
+const SLOW = 2;
+
+function spanOf(i){ return (view.clientWidth || 1) * (SPANS[i] || 1) * SLOW; }
+
+/* 段 i の始まりが、スクロールでどこか */
+function stopAt(i){
+  let x = 0;
+  for (let k = 0; k < i; k++) x += spanOf(k);
+  return x;
+}
+
+/* いまのスクロール位置を、「何段目 + どれだけ進んだか」に直す */
+function place(){
+  const last = marks.length - 1;
+  let x = view.scrollLeft;
+  for (let i = 0; i < last; i++){
+    const w = spanOf(i);
+    if (x < w) return { i: i, f: Math.max(0, x / w) };
+    x -= w;
+  }
+  return { i: last, f: 0 };
+}
+
+/* x から、線に沿った長さを引く（表を線で結ぶ） */
+function lenAtX(x){
+  if (!TAB.length) return 0;
+  if (x <= TAB[0][0]) return TAB[0][1];
+  if (x >= TAB[TAB.length-1][0]) return TAB[TAB.length-1][1];
+  for (let i = 1; i < TAB.length; i++){
+    if (TAB[i][0] >= x){
+      const t = (x - TAB[i-1][0]) / ((TAB[i][0] - TAB[i-1][0]) || 1);
+      return TAB[i-1][1] + (TAB[i][1] - TAB[i-1][1]) * t;
+    }
+  }
+  return TAB[TAB.length-1][1];
+}
+
+/* 段 i から j へ、f だけ進んだときに、線の上のどこにいるか。
+   ここが「動き方」。上の FALL 参照。
+   平らな区間では、横一定と線に沿った等速が一致するので、混ぜても何も変わらない。
+   差が出るのは落ちるところだけ。 */
+function lenAt(i, j, f){
+  const a = stopLen[i], b = stopLen[j];
+  const even = a + (b - a) * f;
+  if (!FALL) return even;
+  const xa = thread.getPointAtLength(a).x, xb = thread.getPointAtLength(b).x;
+  const byX = lenAtX(xa + (xb - xa) * f);
+  return even + (byX - even) * FALL;
+}
+
+/* ---------- 濃さ ----------
+   前は「段に着いたら出す」だった。着くまで薄いまま、着いてからも遅延のぶん薄い。
+   進み具合（t）から決めれば、移りはじめた時点でもう濃くなる。
+   戻せば薄くなるので、行きと帰りで同じ見え方になる。
+   秒を持たないので、速すぎ／遅すぎの調整が要らない（.add と同じ考え方）。 */
+const DIM  = .14;   // 停留所から1つ離れたときの濃さ。.hide が持っていた数字
+const LAG  = .16;   // 行が1つ後ろになるごとに、どれだけ遅れて濃くなるか（進み具合で数える）
+/* 行が濃くなりはじめる地点。0 だと隣の段を離れた瞬間から出はじめて、
+   **着く前にもう出終わっていた**（出てくる感じがしない）。
+   上げると、出るのが着く手前に寄る。段そのもの（とラベル）は 0 から濃くなるので、
+   「移りはじめた時点でもう色が付いている」は保たれる。 */
+const RSTART = .45;
+/* 濃さだけ、位置に**遅れて追いつかせる**。
+   位置をそのまま使うと、濃くなる速さがスワイプの速さになる。速く振ると
+   着く前に出終わるどころか、数フレームで終わって**出てくる動きが見えない**。
+   ST は毎フレーム t へ寄っていくだけなので、待つ時間は無い（動きはじめは指と同時）。
+   スワイプを速くしても、出る速さは変わらない。**遅延ではなく、追従の速さ。**
+   秒で数えるのは、画面が 60Hz でも 120Hz でも同じ速さにするため。 */
+const HALF = .10;   // 残りの半分を詰めるのにかかる秒数。大きいほどゆっくり出る
+let ST = null;      // 濃さが見ている位置（t に遅れて付いてくる）
+let STt = 0;        // 前に呼ばれた時刻
+function follow(t){
+  const now = performance.now();
+  const dt = Math.min(.05, ST === null ? 0 : (now - STt) / 1000);   // タブが裏から戻った直後に飛ばない
+  STt = now;
+  /* 段をまたぐ大跳び（resize で位置を置き直す等）は、追わずに合わせる */
+  if (ST === null || Math.abs(t - ST) > 1.2) ST = t;
+  else ST += (t - ST) * (1 - Math.pow(.5, dt / HALF));
+  /* 残りが目に出ない差になったら、そこで合わせて回すのをやめる。
+     .002 まで追うと、見えない 5% のために 2秒ほど rAF を回し続けていた。 */
+  if (Math.abs(t - ST) < .01) ST = t;
+  return ST;
+}
+/* 追いつくまで、スクロールが止まっても回し続ける */
+let spinning = false;
+function spin(){
+  spinning = true;
+  requestAnimationFrame(function(){ spinning = false; draw(); });
+}
+const RISE = 10;    // 出るまえ、段をどれだけ下に置くか（px。1枚の座標なので縮尺が掛かる）
+                    // 段ごとに変えたいときは、その段に data-rise を書く。
+                    // 0 と書けば、その段は動かさない（濃さだけで出す。例：.n5）
+
+let SHADE = null;
+function shadeSetup(){
+  SHADE = [].map.call(document.querySelectorAll('.node'), function(el){
+    const rows = [].map.call(el.querySelectorAll('.r'), function(r){
+      return { el:r, i: parseFloat(r.style.getPropertyValue('--i')) || 0, o:1, up:null };
+    });
+    /* 入れ子の行（欄は .win の中にある）は、外側の行を覚えておく。
+       opacity は掛け算になるので、あとで割って戻す。割らないと奥の行だけ二重に薄くなる。 */
+    rows.forEach(function(r){
+      let a = r.el.parentElement;
+      while (a && a !== el){
+        const hit = rows.filter(function(o){ return o.el === a; })[0];
+        if (hit){ r.up = hit; break; }
+        a = a.parentElement;
+      }
+    });
+    let imax = 0;
+    rows.forEach(function(r){ imax = Math.max(imax, r.i); });
+    /* いちばん後ろの行が、停留所に着いたところでちょうど濃くなりきるように割る */
+    /* 下げは段ごとに変えられる。**0 と書けば、その段は動かさない。**
+       `+el.dataset.rise || RISE` と書くと 0 が既定値に落ちてしまうので、
+       書いてあるかどうかで分ける。 */
+    return { el:el, l:+el.dataset.l, rows:rows, seen:false,
+             rise: 'rise' in el.dataset ? +el.dataset.rise || 0 : RISE,
+             span: Math.max(.2, 1 - LAG * imax) };
+  });
+}
+
+function shade(t){
+  if (!SHADE) shadeSetup();
+  SHADE.forEach(function(N){
+    /* この段の停留所。**続いている停留所（形 → 洗い出す）は、間もこの段にいる**ので
+       ひとまとめに見る。1つずつ見ると、同じ段を2回見る途中で薄くなってしまう。 */
+    const runs = [];
+    marks.forEach(function(m, k){
+      if (m.node !== N.l) return;
+      const r = runs[runs.length - 1];
+      if (r && r[1] === k - 1) r[1] = k; else runs.push([k, k]);
+    });
+    let d = 9;
+    runs.forEach(function(r){
+      d = Math.min(d, t < r[0] ? r[0] - t : (t > r[1] ? t - r[1] : 0));
+    });
+    const p = 1 - Math.min(1, d);          // 0（隣の段）→ 1（この段）
+    /* 濃さは「1枚に対する絶対の濃さ」で持ち、入れ子のぶんは割って戻す。
+       opacity は掛け算になるので、割らないと**離れた段の奥の行だけ二重に薄くなる**
+       （開いた瞬間に右端へ薄く覗く次の段が、そこだけ消えてしまう）。
+       行は段より遅れて濃くなるだけで、離れているあいだは段と同じ濃さ（DIM）。 */
+    const ao = DIM + (1 - DIM) * p;        // 段そのものの濃さ
+    N.el.style.opacity = ao;
+    /* 行だけ、RSTART から着くまでの区間に詰めて出す */
+    const b = Math.max(0, (p - RSTART) / (1 - RSTART));
+    /* **動きは段そのものに入れる。行に入れてはいけない。**
+       行だけ動かすと、ラベル（.k）と区切りの線（.n5 .cols の border-top）は
+       止まったままなので、止まっているものの横で中身が上下する。
+       出てくるというより**動かされている**に見える。会社の段は塊が 359px × 2枚 で
+       線がその上に引いてあるぶん、そこがいちばん出ていた。
+       段ごと動かせば、線もラベルも一緒に動いて、着いたところで
+       線の上の定位置（seat() が決めた位置）に座る。
+       濃さだけが行ごとに遅れる＝**動くものは1つ、拍は複数**。
+       RSTART までは 0 から RISE まで寄っていくだけ。離れた段は 0＝素の位置で、
+       薄く覗いている段が線から浮いて座ることはない（線との空き 65px は動かさない）。 */
+    /* **登場は一度だけ。**一度着いた段は、もう下げない。
+       位置で決めているので、そのままだと戻るたび・通るたびに上下して、
+       段が座っていないように見える（濃さは毎回そのまま効かせる。あれは状態で、登場ではない）。
+       着いた時点で ny はすでに 0 なので、切り替わりは見えない。
+       ——「戻ってきたときにアニメーションを再生し直す」ようにしていたのは、
+       出す条件が「着いたこと」だった頃の名残（.on の付け直し）。いまは条件が位置なので、
+       再生し直す必要がない。 */
+    if (p > .999) N.seen = true;
+    const ny = N.seen ? 0
+      : N.rise * (1 - b) * Math.min(1, p / Math.max(RSTART, .001));
+    N.el.style.transform = ny > .01 ? 'translateY(' + ny.toFixed(2) + 'px)' : '';
+    N.rows.forEach(function(r){
+      const q = Math.max(0, Math.min(1, (b - LAG * r.i) / N.span));
+      r.o = DIM + (1 - DIM) * q;           // その行の絶対の濃さ
+      const up = r.up;
+      r.el.style.opacity = r.o / (up ? up.o : ao);
+    });
+  });
+}
+
+function draw(){
+  const vw = innerWidth, vh = innerHeight - 64;
+  const last = marks.length - 1;
+
+  const at0 = place();
+  const i = at0.i, j = Math.min(i + 1, last), f = at0.f;
+  const t = i + f;
+  const A = marks[i], B = marks[j];
+  /* 線に乗っている4段は同じ縮尺なので、ここは動かない。
+     会社へ入る最後の移りだけ、引きが入る。 */
+  const sc = A.s + (B.s - A.s) * f;
+
+  /* 段の中心どうしを結ぶのではなく、線の上を進む。
+     線が落ちるところでは、カメラも一緒に落ちる。 */
+  const q = thread.getPointAtLength(lenAt(i, j, f));
+  const cx = q.x + off[i][0] + (off[j][0] - off[i][0]) * f;
+  const cy = q.y + off[i][1] + (off[j][1] - off[i][1]) * f;
+
+  /* 中身の外形の中心を、使える範囲の中心に置く。真ん中は計算で出す。
+     dx は、そこから意図してずらすぶんだけ（既定 0）。 */
+  const dx = A.dx + (B.dx - A.dx) * f;
+  canvas.style.transform =
+    'translate(' + (aimX() + dx - cx * sc) + 'px,' + (aimY() - cy * sc) + 'px) scale(' + sc + ')';
+
+  // 段と行の濃さ。進み具合から決めるが、濃さだけは少し遅れて追いつく（follow）
+  shade(follow(t));
+  if (ST !== t && !spinning) spin();
+
+  // 進み具合。押すものではなく、どこまで来たかを示すだけ
+  const pc = last ? t / last * 100 : 0;
+  document.getElementById('bar').style.width = pc + '%';
+  document.getElementById('dot').style.left  = pc + '%';
+  document.getElementById('depth').textContent = '×' + sc.toFixed(2);
+
+  // いちばん近い段を濃く出す。またいだときだけ入れ替える
+  const n = Math.round(t);
+  if (n === here) return;
+  here = n;
+  const m = marks[n];
+  document.getElementById('where').textContent = m.nm;
+  document.getElementById('toEnd').classList.toggle('here', n === last);
+  // .hide は触らせないためだけ。濃さは shade() が毎フレーム持つ
+  document.querySelectorAll('.node').forEach(function(el){
+    el.classList.toggle('hide', +el.dataset.l !== m.node);
+  });
+  // 洗い出した帯は、そこに寄ったときに出す。戻れば畳む
+  document.querySelector('.n2').classList.toggle('reveal', !!m.add);
+}
+
+/* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
+let ticking = false;
+view.addEventListener('scroll', function(){
+  if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(function(){ ticking = false; draw(); });
+}, { passive:true });
+
+/* マウスのホイール。**縦に回しても横に流れなかった。**
+   NOTES の「まだ確かめていないこと：縦に回して横に進むか」がこれで、
+   実機で確かめたら効いていなかった（横にしかスクロールしない容器でも、
+   ブラウザは縦の delta を横へ回してくれない）。
+   **1対1で横へ渡すだけ。閾値も、時間も、ひと振りの終わりも見ない。**
+   ここで「1イベント＝1段」や「静止するまで受け付けない」をやると、
+   4回作って4回壊れた形に戻る（NOTES の表を参照）。
+   snap は proximity に落としてある。理由は #view のところに書いた。 */
+const NOTCH_PX = 120;   // ホイール1目盛の、だいたいの px（環境で違う）
+const NOTCH    = 4;     // 段ひとつを、だいたい何目盛で渡るか
+view.addEventListener('wheel', function(e){
+  // 横に振ったぶん（トラックパッド等）は、そのままブラウザに任せる
+  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+  e.preventDefault();
+  /* deltaMode は環境で違う。行（Firefox 等）とページを px に直す。
+     40 は「1目盛＝3行」を Chrome の1目盛（120px）に合わせた数字。
+     16 だと Firefox だけ 2.5倍 重くなる。 */
+  const k = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? view.clientWidth : 1;
+  /* **px をそのまま足さない。**停留所の幅は画面幅の 1〜2倍あるので、
+     1対1で足すと段ひとつに 11〜21目盛かかって回しきれない。
+     段の幅に対する比で渡す。停留所の幅は段によって違うので、
+     行き来する範囲を停留所の数で割って出す。
+     倍率であって、閾値でも時間でもない。ひと振りの終わりは見ていない。 */
+  const span = (view.scrollWidth - view.clientWidth) / Math.max(1, marks.length - 1);
+  view.scrollLeft += e.deltaY * k / NOTCH_PX * (span / NOTCH);
+}, { passive:false });
+
+/* 停留所へ落ち着かせる。**snap から scrollend に移した。**
+   scrollend は「慣性まで含めてスクロールが終わった」というブラウザ側の合図。
+   NOTES に「wheel には指が離れたことを表す標準の情報が無い」と書いたのは、
+   当時それが無かったから。いまはある（Chrome 114 / Firefox 109 / Safari 18）。
+   **ひと振りの終わりを推測しない**という結論はそのままで、推測の代わりに
+   合図を使う形になった。閾値も時間も持たない。
+   無い環境では snap を mandatory に戻す。触る操作はそれで効く
+   （ホイールは効かないが、それは元の状態）。 */
+if ('onscrollend' in window){
+  view.addEventListener('scrollend', function(){
+    /* 停留所の位置。g-ride は段ごとに幅が違うので stopAt、
+       g-zoom は画面幅ぴったりなので掛け算で出す。 */
+    const to = (typeof stopAt === 'function') ? stopAt(at()) : at() * view.clientWidth;
+    // すでに停留所にいるなら何もしない（自分で寄せたあとの scrollend で回らないように）
+    if (Math.abs(view.scrollLeft - to) > 1) view.scrollTo({ left: to, behavior:'smooth' });
+  });
+} else {
+  view.style.scrollSnapType = 'x mandatory';
+}
+
+function goTo(n){
+  const last = marks.length - 1;
+  view.scrollTo({ left: stopAt(Math.max(0, Math.min(last, n))), behavior:'smooth' });
+}
+function at(){ const q = place(); return q.f > 0.5 ? q.i + 1 : q.i; }
+
+addEventListener('keydown', function(e){
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); goTo(at() + 1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'){   e.preventDefault(); goTo(at() - 1); }
+});
+
+/* 社名 → 会社概要。飛ぶのではなく、1枚の上を滑って行く。
+   途中の段が流れて見えるので、同じ紙の上にいることが崩れない。 */
+document.getElementById('toEnd').onclick = function(){ goTo(marks.length - 1); };
+
+/* 幅が 760 をまたぐと、会社の段が割れたり戻ったりして段の数が変わる。
+   停留所を置き直して、いまの位置を収まる範囲に丸める。 */
+addEventListener('resize', function(){
+  const n = at();
+  VIEWS = buildViews();
+  buildStops();
+  measure();
+  view.scrollLeft = stopAt(Math.min(n, marks.length - 1));
+  here = -1;
+  draw();
+});
+
+buildStops();
+measure();
+draw();
+</script>
+</body>
+</html>
