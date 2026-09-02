@@ -743,7 +743,7 @@ function buildStops(){
 
 /* 寄り先は先に全部測っておく。スクロールのたびに測ると、
    測っている先が動いてがくつく。 */
-const ALIGN_MIX = .35;  // align をどれだけ効かせるか（1 で完全に揃う＝下の線に被る／0 で効かない）
+const ALIGN_MIX = .2;   // align をどれだけ効かせるか（1 で完全に揃う＝下の線に被る／0 で効かない）
 function measure(){
   const vw = innerWidth, vh = innerHeight - 64;   // 下の帯ぶん除く
   /* 広い画面：枠に合わせて寄る。段ごとの縮尺の差が「地続き」の実体。
