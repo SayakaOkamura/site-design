@@ -1209,15 +1209,33 @@ if ('onscrollend' in window){
        g-zoom は画面幅ぴったりなので掛け算で出す。 */
     const to = (typeof stopAt === 'function') ? stopAt(at()) : at() * view.clientWidth;
     // すでに停留所にいるなら何もしない（自分で寄せたあとの scrollend で回らないように）
-    if (Math.abs(view.scrollLeft - to) > 1) view.scrollTo({ left: to, behavior:'smooth' });
+    if (Math.abs(view.scrollLeft - to) > 1) glide(to);
   });
 } else {
   view.style.scrollSnapType = 'x mandatory';
 }
 
+/* 段から段への移り。**ブラウザ任せ（behavior:'smooth'）だと速すぎる。**
+   あちらは速さをこちらで持てないので、自前で動かす。
+   丸め方は紙・線と同じ smoothstep。止まった状態から始まって、止まって終わる。
+   **手で振っているあいだは触らない**（ホイール・トラックパッド・指）。あれは手の速さで、
+   そこに秒を持ち込むと、4回作って4回壊した形に戻る。ここが動かすのは、
+   矢印キー・社名から飛ぶとき・停留所への寄せ直しだけ。 */
+const STEP = .9;    // 段ひとつを渡るのにかかる秒数
+let anim = 0;
+function glide(to){   // 名前は glide。draw() の中の slide（紙の横のずれ）と別物
+  const from = view.scrollLeft, t0 = performance.now();
+  cancelAnimationFrame(anim);
+  (function step(){
+    const x = Math.min(1, (performance.now() - t0) / 1000 / STEP);
+    view.scrollLeft = from + (to - from) * (x * x * (3 - 2 * x));
+    if (x < 1) anim = requestAnimationFrame(step);
+  })();
+}
+
 function goTo(n){
   const last = marks.length - 1;
-  view.scrollTo({ left: stopAt(Math.max(0, Math.min(last, n))), behavior:'smooth' });
+  glide(stopAt(Math.max(0, Math.min(last, n))));
 }
 function at(){ const q = place(); return q.f > 0.5 ? q.i + 1 : q.i; }
 
