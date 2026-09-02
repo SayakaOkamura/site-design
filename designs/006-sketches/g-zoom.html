@@ -1008,6 +1008,8 @@ if ('onscrollend' in window){
    そこに秒を持ち込むと、4回作って4回壊した形に戻る。ここが動かすのは、
    矢印キー・社名から飛ぶとき・停留所への寄せ直しだけ。 */
 const STEP = .9;    // 段ひとつを渡るのにかかる秒数
+                    // **落ちる移りを長くする仕掛けは g-ride にある**（線の上をカメラが
+                    // 進む案なので、そこだけ縦に 700px 下りる）。この案の線は平ら。
 let anim = 0;
 function glide(to){   // 名前は glide。draw() の中の slide（紙の横のずれ）と別物
   const from = view.scrollLeft, t0 = performance.now();

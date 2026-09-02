@@ -1221,13 +1221,21 @@ if ('onscrollend' in window){
    **手で振っているあいだは触らない**（ホイール・トラックパッド・指）。あれは手の速さで、
    そこに秒を持ち込むと、4回作って4回壊した形に戻る。ここが動かすのは、
    矢印キー・社名から飛ぶとき・停留所への寄せ直しだけ。 */
-const STEP = .9;    // 段ひとつを渡るのにかかる秒数
+const STEP = .9;    // 段ひとつを渡るのにかかる秒数（平らなところ）
+/* **落ちる移りだけ、長くする。**この案はカメラが線の上を進むので、落ちる区間では
+   同じ横幅ぶんでも縦に 700px 以上下りる。平らなところと同じ秒数だと、そこだけ速い。
+   落差から足す（落差 0 なら STEP のまま）。段ごとに数字を持たない。 */
+const DROP = 1.0;   // 落差 1000px あたり、何秒足すか
+function stopY(n){
+  const q = thread.getPointAtLength(stopLen[Math.max(0, Math.min(stopLen.length - 1, n))]);
+  return q.y;
+}
 let anim = 0;
-function glide(to){   // 名前は glide。draw() の中の slide（紙の横のずれ）と別物
-  const from = view.scrollLeft, t0 = performance.now();
+function glide(to, secs){   // 名前は glide。draw() の中の slide（紙の横のずれ）と別物
+  const from = view.scrollLeft, t0 = performance.now(), dur = secs || STEP;
   cancelAnimationFrame(anim);
   (function step(){
-    const x = Math.min(1, (performance.now() - t0) / 1000 / STEP);
+    const x = Math.min(1, (performance.now() - t0) / 1000 / dur);
     view.scrollLeft = from + (to - from) * (x * x * (3 - 2 * x));
     if (x < 1) anim = requestAnimationFrame(step);
   })();
@@ -1235,7 +1243,9 @@ function glide(to){   // 名前は glide。draw() の中の slide（紙の横の
 
 function goTo(n){
   const last = marks.length - 1;
-  glide(stopAt(Math.max(0, Math.min(last, n))));
+  const m = Math.max(0, Math.min(last, n));
+  const drop = Math.abs(stopY(m) - stopY(at()));
+  glide(stopAt(m), STEP + DROP * drop / 1000);
 }
 function at(){ const q = place(); return q.f > 0.5 ? q.i + 1 : q.i; }
 
