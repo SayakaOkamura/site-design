@@ -55,31 +55,37 @@
   </span>
 </div>
 
-<div class="view" id="view">
+<!-- 左に目次、右にセッション。
+     **下に一覧を置いたら、読むところが狭くなった**（本人の指摘、2026-09-02）。
+     目次は左に出す。中身は置いてあるファイルの木で、押せばそこへ飛ぶ。 -->
+<div class="main">
+
+  <!-- 目次。**置いてあるものが全部見える。**無いもの（事例・料金）は並ばない。
+       いま読んでいるところに印、読み終わったものに ✓。**いつでも押せる。** -->
+  <nav class="side">
+    <div class="sh">~/alter-design</div>
+    <ul id="tree"></ul>
+    <div class="sf" id="autoState">自動で進みます</div>
+  </nav>
+
+  <div class="view" id="view">
   <div class="session" id="log">
     <div class="boot">
       <b>✻</b> 株式会社アルターデザインコンサルティング
       <span class="s">経営の力で「遊ぶように働く世界」をデザインする。／2025年6月設立</span>
     </div>
   </div>
+  </div>
 </div>
 
 <div class="foot">
-  <!-- 聞けることの一覧。**常に出しておく。**
-       決まった順に流すだけだと「選べない・戻れない」（本人の指摘、2026-09-02）。
-       並びは会社サイトの順（サービス → 進め方 → 実績 → 料金 → 会社概要 → 理念 → 問い合わせ）。
-       一度聞いたものには印を付けるが、**押せるままにする**（戻れることが要点）。 -->
-  <div class="menu" id="menu">
-    <div class="mh"><b>/</b> 聞けること — 数字キーでも選べます</div>
-    <ul id="items"></ul>
-  </div>
   <div class="box">
     <span class="p">&gt;</span>
     <span class="typed" id="typed"></span><span class="cur" id="cur"></span>
   </div>
   <div class="hint">
     <span><b>1</b>–<b>9</b> 選ぶ</span>
-    <span><b>esc</b> 最後まで出す</span>
+    <span><b>space</b> 自動で進むのを止める／動かす</span>
     <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
   <!-- 実物の下2行。**意味は無いが、これがあると Claude Code に見える。**
@@ -378,52 +384,71 @@ function put(s, end){
 }
 
 /* =====================================================================
-   選び方。**選べる・戻れる**が要点（2026-09-02 の指摘）。
+   進み方。**勝手に進む。でも選べる。戻れる。**（2026-09-02）
 
-   - 下の一覧から選ぶ（押す／数字キー）。**いつでも、何度でも選べる**
-   - 選ぶと、その問いが下の枠に打たれて送られ、Claude 側が自動で流れる
-   - 一度聞いたものには印が付くが、**押せるまま**。もう一度聞ける
-   - log は消さない。上に遡れば、前に聞いたことがそのまま残っている
-   - esc で、流れている途中を最後まで出す
+   一手ずつエンターは押す回数が多すぎ（26回）、下に一覧を置いたら読むところが
+   狭くなった。**いまは自動で順に進んで、目次は左に出す。**
 
-   前は決まった順に1本流すだけで、選べず戻れなかった。
+   - 上から順に、勝手に流れる（1つ終わると PACE.turn 待って次へ）
+   - 左の目次を押せば、そこへ飛ぶ。**いつでも、何度でも**
+   - 読み終わったものに ✓、いま読んでいるところに縦線
+   - log は消さない。上に遡れば、前のものがそのまま残っている
+   - space で止める／また動かす、esc で流れている途中を最後まで出す
    ===================================================================== */
-const items = document.getElementById('items');
-let busyNow = false;
+const tree = document.getElementById('tree');
+const autoState = document.getElementById('autoState');
 
-/* 一覧を作る。並びは会社サイトの順（T の順そのまま） */
+/* 目次。**置いてあるファイルの木**として出す */
+const FILES = ['サービス/', '進め方.md', 'やらないこと.md', '事例/', '料金.md',
+               '会社概要.md', '会社概要.md#登記', '理念.md', 'お問い合わせ.md'];
+
 T.forEach(function(t, n){
   const li = document.createElement('li');
   li.innerHTML = '<button type="button" data-n="' + n + '">' +
     '<span class="k">' + (n + 1) + '</span>' +
-    '<span class="c">' + t.k + '</span>' +
-    '<span class="n">' + t.q + '</span></button>';
-  items.appendChild(li);
+    '<span class="c">' + FILES[n] + '</span></button>';
+  tree.appendChild(li);
 });
 
-function mark(n){
-  const b = items.querySelector('button[data-n="' + n + '"]');
-  if (b) b.classList.add('seen');
+function btn(n){ return tree.querySelector('button[data-n="' + n + '"]'); }
+
+function light(n){
+  [].forEach.call(tree.querySelectorAll('button'), function(b){ b.classList.remove('now'); });
+  const b = btn(n);
+  if (b){ b.classList.add('now'); b.scrollIntoView({ block:'nearest' }); }
 }
 
-/* 選んだ話題を流す */
-let queue = [], qi = 0;
+let queue = [], qi = 0, nowAt = -1, busyNow = false, auto = true, timer = 0;   /* nowAt は「いまの話題」。cur はカーソルの要素なので使わない */
+
+function state(){
+  autoState.textContent = auto
+    ? (nowAt + 1 >= T.length ? 'ぜんぶ出ました' : '自動で進みます（space で止める）')
+    : '止めています（space で動かす）';
+}
 
 function runQueue(){
-  if (qi >= queue.length){ busyNow = false; bottom(); return; }
-  const step = queue[qi++];
-  put(step, function(){ meter(); runQueue(); });
+  if (qi < queue.length){
+    put(queue[qi++], function(){ meter(); runQueue(); });
+    return;
+  }
+  /* 話題がひとつ終わった。**✓ を付けて、次へ** */
+  busyNow = false;
+  const b = btn(nowAt);
+  if (b) b.classList.add('seen');
+  meter(); state();
+  if (auto && nowAt + 1 < T.length){
+    clearTimeout(timer);
+    timer = setTimeout(function(){ ask(nowAt + 1); }, STILL ? 0 : PACE.turn);
+  }
 }
 
-function ask(n, quiet){
+function ask(n){
   const t = T[n];
   if (!t) return;
-  /* **流れている途中でも選べる。**押しても何も起きないと、壊れて見える。
-     途中のぶんは最後まで出してから、次の話題に移る。 */
-  if (busyNow) rest();
-  busyNow = true;
-  if (!quiet) mark(n);
-  /* 問いを下の枠に打ってから、上へ送る（打っているのが見えるのが Claude Code） */
+  clearTimeout(timer);
+  if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
+  nowAt = n; busyNow = true;
+  light(n); state();
   const send = function(){
     typed.textContent = '';
     el('row you', '<span>&gt;</span> ' + t.q);
@@ -448,33 +473,42 @@ function rest(){
       (step.exp ? ' <span class="exp">(ctrl+r to expand)</span>' : ''));
     else put(step, function(){});
   }
-  busyNow = false; meter(); bottom();
+  busyNow = false;
+  const b = btn(nowAt);
+  if (b) b.classList.add('seen');
+  meter(); bottom();
 }
 
-/* 残りの割合は、聞いた話題の数で減らす */
+/* 残りの割合は、読み終わった話題の数で減らす */
 function meter(){
-  const seen = items.querySelectorAll('button.seen').length;
+  const seen = tree.querySelectorAll('button.seen').length;
   ctxEl.textContent = Math.round(78 - 47 * (seen / T.length));
 }
 
-items.addEventListener('click', function(e){
+tree.addEventListener('click', function(e){
   const b = e.target.closest('button');
-  if (b) ask(+b.dataset.n);
+  if (!b) return;
+  auto = true;                  /* 押したら、そこから先も自動で続ける */
+  ask(+b.dataset.n);
 });
 
 addEventListener('keydown', function(e){
-  if (e.key >= '1' && e.key <= '9'){ ask(+e.key - 1); return; }
+  if (e.key >= '1' && e.key <= '9'){ auto = true; ask(+e.key - 1); return; }
+  if (e.key === ' '){
+    e.preventDefault();
+    auto = !auto; state();
+    if (auto && !busyNow && nowAt + 1 < T.length) ask(nowAt + 1);
+    return;
+  }
   if (e.key === 'Escape'){ e.preventDefault(); rest(); }
 });
 
 again.addEventListener('click', function(){ location.reload(); });
 
-/* 開いた瞬間に、サービスだけ出しておく。**真っ暗な画面から始めない。**
-   あとは選んでもらう。 */
-/* 開いた瞬間は 1 だけ流す。**印は付けない**
-   （開いた直後に ✓ が付いていると、押していないのに済に見える）。 */
-meter();
-ask(0, true);
+/* 上から順に、勝手に流れはじめる */
+meter(); state();
+if (STILL){ T.forEach(function(t, n){ nowAt = n; queue = t.s.slice(); qi = 0; rest(); }); }
+else ask(0);
 </script>
 </body>
 </html>

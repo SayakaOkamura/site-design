@@ -219,41 +219,56 @@ body{
   .stagger > *{opacity:1}
 }
 
-/* ---------- 選べる／戻れるようにした（2026-09-02） ----------
-   本人の指摘：「そもそも選べない、戻れないは結構困る」。
-   決まった順に流すだけだと、コーポレートサイトとして使えない。
-   Claude Code の / の候補一覧の形で、聞けることを常に出しておく。 */
-.menu{
-  max-width:90ch;margin:0 auto 8px;border:1px solid var(--line);border-radius:8px;
-  background:var(--panel);
-  /* 内側で巻かせない（枠の中に別のスクロールが出ると、壊れて見える）。
-     行は9つで高さが読めているので、そのまま置く。 */
+/* ---------- 左の目次（2026-09-02） ----------
+   下に一覧を置いたら、読むところが狭くなった。**目次は左に出す。**
+   中身は置いてあるファイルの木。押せばそこへ飛ぶ（選べる・戻れる）。 */
+.main{flex:1 1 auto;min-height:0;display:flex}
+.side{
+  flex:none;width:236px;border-right:1px solid var(--line);
+  overflow-y:auto;padding:16px 0 12px;display:flex;flex-direction:column;
 }
-.menu .mh{
-  padding:7px 14px;border-bottom:1px solid var(--line);
-  font-size:11.5px;color:var(--faint);letter-spacing:.04em;
+.side .sh{
+  padding:0 16px 10px;font-size:11.5px;color:var(--faint);letter-spacing:.04em;
 }
-.menu .mh b{color:var(--orange);font-weight:400}
-.menu ul{list-style:none;display:grid;grid-template-columns:1fr 1fr}
-@media (max-width:720px){ .menu ul{grid-template-columns:1fr} }
-/* **区切りを見えるようにする。**透明の罫だと、2列が揃っていないように見えた */
-.menu li{border-top:1px solid var(--line)}
-.menu li:nth-child(2n){border-left:1px solid var(--line)}
-@media (max-width:720px){ .menu li:nth-child(2n){border-left:0} }
-.menu button{
+.side ul{list-style:none}
+.side button{
   width:100%;text-align:left;font:inherit;font-size:13px;cursor:pointer;
-  background:none;border:0;padding:7px 14px;color:var(--sub);
-  display:flex;gap:10px;align-items:baseline;
-  /* **min-width:0 が要る。**無いと、長い文が flex から溢れて隣の列にかぶる */
-  min-width:0;
+  background:none;border:0;padding:5px 16px;color:var(--sub);
+  display:flex;gap:8px;align-items:baseline;min-width:0;
+  border-left:2px solid transparent;
 }
-.menu button:hover,.menu button:focus-visible{background:rgba(217,119,87,.10);color:var(--ink);outline:none}
-.menu button .k{color:var(--faint);flex:none;width:1.2em}
-.menu button .c{color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.menu button .n{
-  color:var(--faint);margin-left:auto;font-size:11.5px;flex:none;
-  max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+.side button:hover,.side button:focus-visible{color:var(--ink);outline:none}
+.side button .k{color:var(--faint);flex:none;width:1.1em;font-size:11.5px}
+.side button .c{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 読み終わったものに ✓。**押せるままにする**（戻れることが要点） */
+.side button.seen .c{color:var(--faint)}
+.side button.seen::after{content:"✓";color:var(--green);margin-left:auto;font-size:11px}
+/* いま読んでいるところ */
+.side button.now{color:var(--ink);border-left-color:var(--orange)}
+.side button.now .c{color:var(--ink)}
+.side .sf{
+  margin-top:auto;padding:12px 16px 0;font-size:11.5px;color:var(--faint);
 }
-/* 一度聞いたものは印を付けるが、**押せるままにする**（戻れることが要点） */
-.menu button.seen .c{color:var(--sub)}
-.menu button.seen .n::after{content:" ✓"; color:var(--green)}
+/* 狭い画面では、目次を上に横並びで置く */
+@media (max-width:760px){
+  .main{flex-direction:column}
+  .side{
+    width:auto;border-right:0;border-bottom:1px solid var(--line);
+    padding:10px 0;flex-direction:row;align-items:center;gap:0;overflow-x:auto;
+  }
+  .side .sh,.side .sf{display:none}
+  .side ul{display:flex;gap:0}
+  .side button{width:auto;white-space:nowrap;border-left:0;border-bottom:2px solid transparent;padding:4px 12px}
+  .side button.now{border-bottom-color:var(--orange)}
+  .side button.seen::after{margin-left:6px}
+}
+
+/* ---------- 塊は、行を1本ずつ出す（2026-09-02） ----------
+   一覧・diff・ファイルを丸ごと一度に出すと、読む前に次が来る。
+   **面は先に置いて、中の行だけ順に出す。**（面ごと出すと画面が跳ねる） */
+.stagger > *{opacity:0}
+.stagger > *.in{opacity:1;transition:opacity .2s ease}
+@media (prefers-reduced-motion:reduce){
+  .stagger > *{opacity:1}
+}
+
