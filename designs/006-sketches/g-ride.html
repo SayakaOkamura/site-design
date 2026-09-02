@@ -940,10 +940,38 @@ let KUP = 0;        // 出だしの倍率。上がるだけ（下げない）
    **速さは一定（linear）。**ease だと出だしだけ速く、画面に入っている範囲が
    すぐ引き終わる。一定なら、見えている範囲は「見えている割合 × DRAW」で引き終わり、
    文字の出だし（INTRO）と同じころに揃う。 */
-const DRAW = 2.8;   // 紙の端から端まで、線を引くのにかかる秒数
+const DRAW = 2.8;   // 平らなところを、紙の端から端まで引くのにかかる秒数
 const THREAD = document.querySelector('svg.thread path');
 let TLEN = 0;       // 線の実測長。下の init で入れる
 let TSTART = 0;     // 引きはじめた時刻（文字の出だしと同じ）
+/* **落ちるところは、同じ長さでも時間をかける。**
+   長さだけで時間を配ると、落ちる区間があっという間に過ぎる。読んでいる速さに対して、
+   線だけ先に下りてしまう。下がったぶん（|dy|）を重みに足して、時間を配り直す。
+   **平らなところの速さは変えない。**落ちるぶんだけ、全体が DRAW より長くなる（DUR）。
+   線が平ら（g-zoom）なら重みは 0 なので、DUR は DRAW のままで何も変わらない。 */
+/* 名前は DIP。**FALL は使えない**（この案がカメラの動き方で先に使っている。上の 701行）。 */
+const DIP = 1.2;    // 落ちているぶんの重み。0 なら長さだけで配る（前と同じ）
+let TMAP = null;    // 時間の割合 → そこまでに引いた長さ
+let DUR  = DRAW;    // 実際にかかる秒数
+function buildDraw(){
+  const N = 400, w = new Float64Array(N + 1);
+  let prev = THREAD.getPointAtLength(0), tot = 0;
+  for (let i = 1; i <= N; i++){
+    const p = THREAD.getPointAtLength(TLEN * i / N);
+    tot += TLEN / N + DIP * Math.abs(p.y - prev.y);
+    w[i] = tot; prev = p;
+  }
+  DUR = DRAW * (TLEN ? tot / TLEN : 1);
+  const M = 240;
+  TMAP = new Float64Array(M + 1);
+  let j = 1;
+  for (let m = 0; m <= M; m++){
+    const target = tot * m / M;
+    while (j < N && w[j] < target) j++;
+    TMAP[m] = TLEN * j / N;
+  }
+  TMAP[0] = 0; TMAP[M] = TLEN;
+}
 let ST = null;      // 濃さが見ている位置（t に遅れて付いてくる）
 let STt = 0;        // 前に呼ばれた時刻
 function follow(t){
@@ -1090,11 +1118,16 @@ function draw(){
   KUP = k;
   shade(st, k);
 
-  /* 線。文字と同じ瞬間に始めて、一定の速さで引く */
+  /* 線。文字と同じ瞬間に始めて、平らなところは一定の速さで引く（落ちるところは遅い） */
   if (TLEN){
-    const e = Math.min(1, (performance.now() - TSTART) / 1000 / DRAW);
+    const e = Math.min(1, (performance.now() - TSTART) / 1000 / DUR);
     if (e < 1){
-      THREAD.style.strokeDashoffset = (TLEN * (1 - e)).toFixed(1);
+      let l = TLEN * e;
+      if (TMAP){
+        const x = e * (TMAP.length - 1), i0 = Math.floor(x), i1 = Math.min(TMAP.length - 1, i0 + 1);
+        l = TMAP[i0] + (TMAP[i1] - TMAP[i0]) * (x - i0);
+      }
+      THREAD.style.strokeDashoffset = (TLEN - l).toFixed(1);
       if (!spinning) spin();
     } else {
       /* 引き終わったら、破線の指定ごと外す。**残すと、あとで線の形を変えたときに
@@ -1231,6 +1264,7 @@ if (THREAD){
   TLEN = THREAD.getTotalLength();
   THREAD.style.strokeDasharray  = TLEN;
   THREAD.style.strokeDashoffset = TLEN;
+  buildDraw();
 }
 TSTART = STt;
 
