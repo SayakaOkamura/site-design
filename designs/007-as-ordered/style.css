@@ -47,7 +47,9 @@ body{
 @media (max-width:700px){ .head .right{display:none} }
 
 /* ---------- 本体。1本のセッション ---------- */
-.view{flex:1;overflow-y:auto;padding:26px 20px 8px}
+/* **min-height:0 が要る。**これが無いと、log が伸びたときに flex の子が縮まず、
+   下の枠（入力欄と一覧）が画面の外へ押し出される。overflow だけでは足りない。 */
+.view{flex:1 1 auto;min-height:0;overflow-y:auto;padding:26px 20px 8px}
 .session{max-width:90ch;margin:0 auto}
 
 /* 起動時の枠。実物と同じく、角丸の枠に一言 */
@@ -223,7 +225,9 @@ body{
    Claude Code の / の候補一覧の形で、聞けることを常に出しておく。 */
 .menu{
   max-width:90ch;margin:0 auto 8px;border:1px solid var(--line);border-radius:8px;
-  background:var(--panel);overflow:hidden;
+  background:var(--panel);overflow:auto;
+  /* 背の低い窓では一覧が場所を取りすぎる。log の場所を残す */
+  max-height:40vh;
 }
 .menu .mh{
   padding:7px 14px;border-bottom:1px solid var(--line);

@@ -416,9 +416,11 @@ function runQueue(){
 }
 
 function ask(n){
-  if (busyNow) return;
   const t = T[n];
   if (!t) return;
+  /* **流れている途中でも選べる。**押しても何も起きないと、壊れて見える。
+     途中のぶんは最後まで出してから、次の話題に移る。 */
+  if (busyNow) rest();
   busyNow = true;
   mark(n);
   /* 問いを下の枠に打ってから、上へ送る（打っているのが見えるのが Claude Code） */
