@@ -415,8 +415,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
     <!-- data-rise="0" ＝ **この段だけ動かさない。濃さだけで出す。**会社の段と同じ扱い。
          ここは開いた瞬間に見えている段で、そこで動くものは線（引かれていく）と
          この段の二つになる。**どちらを見ればいいか分からなくなる。**
-         濃さだけなら、動いているのは線ひとつのまま。 -->
-    <div class="node n0" data-l="0" data-rise="0">
+         濃さだけなら、動いているのは線ひとつのまま。
+         data-lag="0" ＝ **行を順に出さない。一斉に濃くする。**
+         動かしていないのに順に出てくると、それ自体が動きになる。
+         ほかの段は寄ってきた結果として順に出るので、そのまま（LAG .16）。 -->
+    <div class="node n0" data-l="0" data-rise="0" data-lag="0">
       <div class="k"    style="--i:0">ある会社で聞いた話</div>
       <!-- ここは謎ではなく、依頼。だから3つの空欄で解ける大きさかどうかを問われない。
            一言が短いほど効く（言われたのはこれだけ、が次の段の論拠になる）。
@@ -998,12 +1001,14 @@ function shadeSetup(){
     let imax = 0;
     rows.forEach(function(r){ imax = Math.max(imax, r.i); });
     /* いちばん後ろの行が、停留所に着いたところでちょうど濃くなりきるように割る */
-    /* 下げは段ごとに変えられる。**0 と書けば、その段は動かさない。**
+    /* 下げも遅れも、段ごとに変えられる。**0 と書けば、その段は動かさない／揃えて出す。**
        `+el.dataset.rise || RISE` と書くと 0 が既定値に落ちてしまうので、
-       書いてあるかどうかで分ける。 */
+       書いてあるかどうかで分ける（lag も同じ）。 */
+    const lag = 'lag' in el.dataset ? +el.dataset.lag || 0 : LAG;
     return { el:el, l:+el.dataset.l, rows:rows, seen:false,
              rise: 'rise' in el.dataset ? +el.dataset.rise || 0 : RISE,
-             span: Math.max(.2, 1 - LAG * imax) };
+             lag: lag,
+             span: Math.max(.2, 1 - lag * imax) };
   });
 }
 
@@ -1057,7 +1062,7 @@ function shade(t){
       : N.rise * (1 - b) * Math.min(1, p / Math.max(RSTART, .001));
     N.el.style.transform = ny > .01 ? 'translateY(' + ny.toFixed(2) + 'px)' : '';
     N.rows.forEach(function(r){
-      const q = Math.max(0, Math.min(1, (b - LAG * r.i) / N.span));
+      const q = Math.max(0, Math.min(1, (b - N.lag * r.i) / N.span));
       r.o = DIM + (1 - DIM) * q;           // その行の絶対の濃さ
       const up = r.up;
       r.el.style.opacity = r.o / (up ? up.o : ao);
