@@ -183,3 +183,27 @@ body{
 }
 .meta .r{margin-left:auto}
 @media (max-width:700px){ .meta .r{margin-left:0} }
+
+/* ---------- 会社の情報を返す形にしたので足した部品（2026-09-02） ---------- */
+
+/* Glob の結果。ファイル名で並べる */
+.list{margin:8px 0 6px;color:var(--sub);font-size:13px}
+.list div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list .fn{color:var(--ink)}
+.list .d{color:var(--faint);margin-left:14px}
+@media (max-width:700px){
+  .list div{white-space:normal}
+  .list .d{display:block;margin-left:24px}
+}
+
+/* 箇条書きのファイル。中身をそのまま見せる */
+.file .md div{color:var(--ink);font-size:13px}
+.file .md div + div{margin-top:2px}
+
+/* 理念。**ここだけ声を大きくする。**名乗りは最後（G と同じ） */
+.quote{
+  margin:18px 0 6px;padding:18px 20px;border-left:2px solid var(--orange);
+  background:var(--panel);border-radius:0 6px 6px 0;
+  font-size:17px;line-height:1.7;color:var(--ink);
+}
+@media (max-width:700px){ .quote{font-size:15px;padding:14px 16px} }
