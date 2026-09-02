@@ -751,18 +751,20 @@ let intro = false;  // 出だしのあいだだけ真。触るか、寄りきれ
    1-(1-x)² なら 5.4 だった。**カーブを変えるたびに、同じ数字でも見え方が変わる。**
    いまは 4.0（見えている範囲を引き終わるまで、だいたい 1.7秒）。
    却下：落ちるところだけ遅くする（`476927f`。欲しかったのは線全体の速さだった）。 */
-const DRAW = 4.0;   // 平らなところを、紙の端から端まで引くのにかかる秒数
+const DRAW = 4.0;   // 紙の端から端まで、線を引き終わるまでの秒数（落ちても伸びない）
 const THREAD = document.querySelector('svg.thread path');
 let TLEN = 0;       // 線の実測長。下の init で入れる
 let TSTART = 0;     // 引きはじめた時刻
 /* **落ちるところだけ、同じ長さでも時間をかける。**
    長さだけで時間を配ると、落ちる区間があっという間に過ぎる。線全体を遅くするのとは違う。
-   下がったぶん（|dy|）を重みに足して、時間を配り直す。**平らなところの速さは変えない。**
-   落ちるぶんだけ、全体が DRAW より長くなる（DUR）。線が平ら（g-zoom）なら重みは 0 で、
-   DUR は DRAW のまま何も変わらない。名前は DIP（FALL は g-ride が先に使っている）。 */
+   下がったぶん（縦に動いたぶん）を重みに足して、時間を配り直す。
+   **全体の秒数（DRAW）は増やさない。**その中で配り直すだけなので、落ちるところが
+   長くなったぶん、平らなところは少し速くなる。伸ばすと「線が遅くなった」になる。
+   線が平ら（g-zoom）なら重みは 0 で、何も変わらない。
+   名前は DIP（FALL は g-ride が先に使っている）。 */
 const DIP = 1.2;    // 落ちているぶんの重み。0 なら長さだけで配る
 let TMAP = null;    // 時間の割合 → そこまでに引いた長さ
-let DUR  = DRAW;    // 実際にかかる秒数
+
 function buildDraw(){
   const N = 400, w = new Float64Array(N + 1);
   let prev = THREAD.getPointAtLength(0), tot = 0;
@@ -771,7 +773,8 @@ function buildDraw(){
     tot += TLEN / N + DIP * Math.abs(p.y - prev.y);
     w[i] = tot; prev = p;
   }
-  DUR = DRAW * (TLEN ? tot / TLEN : 1);
+  // **全体の秒数は増やさない。**DRAW の中で配り直すだけ（落ちるところが長くなったぶん、
+  // 平らなところは少し速くなる）。伸ばすと「線が遅くなった」になる。
   const M = 240;
   TMAP = new Float64Array(M + 1);
   let j = 1;
@@ -937,7 +940,7 @@ function draw(){
   /* 線。文字と同じ瞬間に始めて、紙と同じ丸め方で引く。
      引く長さは TMAP を通す。**落ちるところは、同じ長さでも時間をかける。** */
   if (TLEN){
-    const x = Math.min(1, (performance.now() - TSTART) / 1000 / DUR);
+    const x = Math.min(1, (performance.now() - TSTART) / 1000 / DRAW);
     if (x < 1){
       const e = x * x * (3 - 2 * x);   // 紙と同じ丸め方（smoothstep）
       let l = TLEN * e;
