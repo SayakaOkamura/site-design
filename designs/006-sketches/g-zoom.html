@@ -1109,21 +1109,29 @@ let anim = 0, gliding = false;
 function stopGlide(){ cancelAnimationFrame(anim); gliding = false; }
 view.addEventListener('pointerdown', stopGlide, { passive:true });
 view.addEventListener('touchstart',  stopGlide, { passive:true });
-function glide(to){
-  const from = view.scrollLeft, t0 = performance.now();
+/* **縦に動く移りだけ、長くする。**段の移りを全部同じ秒数にすると、
+   縦に 730px 落ちる 1→2 だけ画面の流れる量が段違いになって、そこだけ急に見える。
+   縦の隔たりぶんだけ足して、2→3・3→4 と揃える。
+   一度これを 1.0 秒＋落差まるごと（1.63秒）にして、落下そのものが消えた。
+   **足しすぎないこと。**いまは +0.37秒。 */
+function glide(to, secs){
+  const from = view.scrollLeft, t0 = performance.now(), dur = secs || STEP;
   cancelAnimationFrame(anim);
   gliding = true;
   (function step(){
-    const x = Math.min(1, (performance.now() - t0) / 1000 / STEP);
+    const x = Math.min(1, (performance.now() - t0) / 1000 / dur);
     view.scrollLeft = from + (to - from) * (x * x * (3 - 2 * x));
     if (x < 1){ anim = requestAnimationFrame(step); }
     else { view.scrollLeft = to; gliding = false; }   // 端数を残さない
   })();
 }
 
+const VERT = .5;    // 縦に 1000px 動くごとに、足す秒数
 function goTo(n){
   const last = marks.length - 1;
-  glide(Math.max(0, Math.min(last, n)) * view.clientWidth);
+  const m = Math.max(0, Math.min(last, n)), a = at();
+  const drop = Math.abs((marks[m] ? marks[m].cy : 0) - (marks[a] ? marks[a].cy : 0));
+  glide(m * view.clientWidth, STEP + VERT * drop / 1000);
 }
 
 function at(){ return Math.round(view.scrollLeft / (view.clientWidth || 1)); }
