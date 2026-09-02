@@ -65,13 +65,21 @@
 </div>
 
 <div class="foot">
+  <!-- 聞けることの一覧。**常に出しておく。**
+       決まった順に流すだけだと「選べない・戻れない」（本人の指摘、2026-09-02）。
+       並びは会社サイトの順（サービス → 進め方 → 実績 → 料金 → 会社概要 → 理念 → 問い合わせ）。
+       一度聞いたものには印を付けるが、**押せるままにする**（戻れることが要点）。 -->
+  <div class="menu" id="menu">
+    <div class="mh"><b>/</b> 聞けること — 数字キーでも選べます</div>
+    <ul id="items"></ul>
+  </div>
   <div class="box">
     <span class="p">&gt;</span>
     <span class="typed" id="typed"></span><span class="cur" id="cur"></span>
   </div>
   <div class="hint">
-    <span><b>enter</b> 送る</span>
-    <span><b>esc</b> 最後まで</span>
+    <span><b>1</b>–<b>9</b> 選ぶ</span>
+    <span><b>esc</b> 最後まで出す</span>
     <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
   <!-- 実物の下2行。**意味は無いが、これがあると Claude Code に見える。**
@@ -97,113 +105,89 @@
      file  ⏺ Write(...) と、書き出したファイル
      think ✻ 考えている（回る記号・経過秒・esc to interrupt）
    ===================================================================== */
-const S = [
+/* =====================================================================
+   話題ごとの台本。**流れは1本ではない。**選んだものだけ流す。
 
-  /* =====================================================================
-     **サイトの案内そのものが Claude Code のセッション。**
-     訪問者がふつうに聞きたいことを、ファイルを読む形で返す。
-     **無いものは「見つかりません」と出る。**隠していないことが作りで分かる。
+   並びは**会社サイトの順**（2026-09-02 に直した）。前は
+   「訪問者が知りたい順」に自分で並べ替えたが、本来の会社 HP の順のほうが
+   探しやすい、という指摘で戻した。
 
-     ── 並びは「訪問者が知りたい順」（2026-09-02 に直した）────────────
-     前は 会社概要 → 事例 → できること → 登記 → 株主 の順だった。
-     **登記や株主は、訪問者が最初に知りたいことではない。**
-     事例も上に置く必要がない（無いので、上にあると「無い会社」から始まる）。
-     いまは できること → やり方 → やらないこと → 料金 → 事例 →
-     誰が → いつから → どこ → 理念 → 登記・株主 → 相談。
-
-     ── 1件ずつ ──────────────────────────────────────────────────
-     **1つの答えに1つのことしか入れない。**まとめて出すと読む前に流れる。
-     代表・設立・所在地も、それぞれ別の問いで1行ずつ返す。
-     ===================================================================== */
-
-  /* 0. 棚を見せる。**何が置いてあるかが先。**無いもの（事例・料金）は並ばない */
-  { t:'you',  x:'ls' },
-  { t:'list', x:[
-      ['サービス/', ''],
-      ['やり方.md', ''],
-      ['やらないこと.md', ''],
-      ['会社概要.md', ''],
-      ['理念.md', ''],
-      ['お問い合わせ.md', ''],
+   一度聞いたものも**もう一度聞ける**（戻れることが要点）。
+   log は消さないので、上に遡っても読める。
+   ===================================================================== */
+const T = [
+  { k:'サービス', q:'何ができる？', s:[
+      { t:'tool', x:'Glob', a:'サービス/*.md' },
+      { t:'res',  x:'Found 4 files', exp:true },
+      { t:'list', x:[
+          ['次世代型業務システム開発', 'ノーコード／ローコードで業務を再設計'],
+          ['AIによる意思決定支援・事業変革', 'データ資産を戦略と予測に変換'],
+          ['自律共創型の組織デザイン', '個の自律とチームの協働を両立する構造'],
+          ['地域のデジタル格差支援', 'ノーコードとクラウドAI、DX人材の育成'],
+        ]},
     ]},
 
-  /* 1. できること。**ここが最初。**4本を1行ずつ */
-  { t:'you',  x:'何ができる？' },
-  { t:'tool', x:'Glob', a:'サービス/*.md' },
-  { t:'res',  x:'Found 4 files', exp:true },
-  { t:'list', x:[
-      ['次世代型業務システム開発', 'ノーコード／ローコードで業務を再設計'],
-      ['AIによる意思決定支援・事業変革', 'データ資産を戦略と予測に変換'],
-      ['自律共創型の組織デザイン', '個の自律とチームの協働を両立する構造'],
-      ['地域のデジタル格差支援', 'ノーコードとクラウドAI、DX人材の育成'],
+  { k:'進め方', q:'どうやるの？', s:[
+      { t:'tool', x:'Read', a:'進め方.md' },
+      { t:'md',   f:'進め方.md', x:[
+          '決まっていないところは、先に形にしてから出す',
+          '決めるのは御社の会議。うちは足りない決めごとを見つけるところまで',
+        ]},
     ]},
 
-  /* 2. やり方。**うちの主張はここ**（005・G と同じ順） */
-  { t:'you',  x:'どうやるの？' },
-  { t:'tool', x:'Read', a:'やり方.md' },
-  { t:'md',   f:'やり方.md', x:[
-      '決まっていないところは、先に形にしてから出す',
-      '決めるのは御社の会議。うちは足りない決めごとを見つけるところまで',
+  { k:'やらないこと', q:'やらないことは？', s:[
+      { t:'tool', x:'Read', a:'やらないこと.md' },
+      { t:'md',   f:'やらないこと.md', x:[
+          '言われたとおりに作って、それで終わること',
+          '事例で説明すること（まだ無いので）',
+          '根拠のない数字を出すこと',
+        ]},
     ]},
 
-  /* 3. やらないこと。**ここが変なところ。中身は仮**（NOTES 参照） */
-  { t:'you',  x:'やらないことは？' },
-  { t:'tool', x:'Read', a:'やらないこと.md' },
-  { t:'md',   f:'やらないこと.md', x:[
-      '言われたとおりに作って、それで終わること',
-      '事例で説明すること（まだ無いので）',
-      '根拠のない数字を出すこと',
+  { k:'実績・事例', q:'事例は？', s:[
+      { t:'tool', x:'Glob', a:'事例/**/*.md' },
+      { t:'res',  x:'No files found' },
+      { t:'say',  x:'掲載できる事例は、<b>まだありません。</b>2025年6月に始めた会社です。' },
     ]},
 
-  /* 4. 料金。**無い。**File does not exist で返す */
-  { t:'you',  x:'料金は？' },
-  { t:'tool', x:'Read', a:'料金.md' },
-  { t:'res',  x:'File does not exist' },
-  { t:'say',  x:'置いていません。<b>決める工程から入る</b>ので、範囲が決まるまで金額が出せません。' },
-
-  /* 5. 事例。**0件がそのまま出る。**上には置かない
-     （上にあると「無い会社」から話が始まる） */
-  { t:'you',  x:'事例は？' },
-  { t:'tool', x:'Glob', a:'事例/**/*.md' },
-  { t:'res',  x:'No files found' },
-  { t:'say',  x:'掲載できる事例は、<b>まだありません。</b>2025年6月に始めた会社です。' },
-
-  /* 6〜8. 会社の基本。**1行ずつ。**まとめて出さない */
-  { t:'you',  x:'誰がやってる？' },
-  { t:'tool', x:'Read', a:'会社概要.md#代表' },
-  { t:'res',  x:'代表取締役　松岡 真功' },
-
-  { t:'you',  x:'いつから？' },
-  { t:'tool', x:'Read', a:'会社概要.md#設立' },
-  { t:'res',  x:'2025年6月' },
-
-  { t:'you',  x:'どこ？' },
-  { t:'tool', x:'Read', a:'会社概要.md#所在地' },
-  { t:'res',  x:'東京都港区西新橋3-23-5 ANYZ304' },
-
-  /* 9. 理念。**名乗りは最後**（G と同じ）。ここだけ声を大きくする */
-  { t:'you',  x:'理念は？' },
-  { t:'tool', x:'Read', a:'理念.md' },
-  { t:'quote', x:'経営の力で「遊ぶように働く世界」をデザインする。' },
-
-  /* 10. 登記まわり。**いちばん下。**訪問者が知りたい順では最後 */
-  { t:'you',  x:'登記とか株主は？' },
-  { t:'tool', x:'Read', a:'会社概要.md' },
-  { t:'md',   f:'会社概要.md', x:[
-      '株式会社アルターデザインコンサルティング／資本金 6,000万円',
-      'AI技術を活用した組織最適化に関するコンサルティング事業',
-      'AIとローコードを組み合わせた次世代型のシステム開発事業',
-      '株主：BlueMeme／ハイ・アベイラビリティ・システムズ／サーバーワークス・キャピタル／リックソフト',
+  { k:'料金', q:'料金は？', s:[
+      { t:'tool', x:'Read', a:'料金.md' },
+      { t:'res',  x:'File does not exist' },
+      { t:'say',  x:'置いていません。<b>決める工程から入る</b>ので、範囲が決まるまで金額が出せません。' },
     ]},
 
-  /* 11. 相談。書き出して終わる */
-  { t:'you',  x:'相談したい' },
-  { t:'tool', x:'Write', a:'お問い合わせ.md' },
-  { t:'md',   f:'お問い合わせ.md', x:[
-      'info@alter-dsgn.co.jp',
-      '決まっていない状態からで構いません',
+  { k:'会社概要', q:'会社概要', s:[
+      { t:'tool', x:'Read', a:'会社概要.md' },
+      { t:'md',   f:'会社概要.md', x:[
+          '株式会社アルターデザインコンサルティング',
+          '代表取締役　松岡 真功',
+          '設立　2025年6月／資本金 6,000万円',
+          '東京都港区西新橋3-23-5 ANYZ304',
+        ]},
     ]},
-  { t:'say',  x:'「何を決めればいいか分からない」という相談が、いちばん多いです。' },
+
+  { k:'登記・株主', q:'登記とか株主は？', s:[
+      { t:'tool', x:'Read', a:'会社概要.md#登記' },
+      { t:'md',   f:'会社概要.md#登記', x:[
+          'AI技術を活用した組織最適化に関するコンサルティング事業',
+          'AIとローコードを組み合わせた次世代型のシステム開発事業',
+          '株主：BlueMeme／ハイ・アベイラビリティ・システムズ／サーバーワークス・キャピタル／リックソフト',
+        ]},
+    ]},
+
+  { k:'理念', q:'理念は？', s:[
+      { t:'tool', x:'Read', a:'理念.md' },
+      { t:'quote', x:'経営の力で「遊ぶように働く世界」をデザインする。' },
+    ]},
+
+  { k:'お問い合わせ', q:'相談したい', s:[
+      { t:'tool', x:'Write', a:'お問い合わせ.md' },
+      { t:'md',   f:'お問い合わせ.md', x:[
+          'info@alter-dsgn.co.jp',
+          '決まっていない状態からで構いません',
+        ]},
+      { t:'say',  x:'「何を決めればいいか分からない」という相談が、いちばん多いです。' },
+    ]},
 ];
 
 const view  = document.getElementById('view');
@@ -229,7 +213,7 @@ const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
          **ここがいちばん効く。**読み終わる前に次の行が打たれると、目が戻る */
 const PACE = { ch:28, res:18, tool:620, block:820, turn:1100 };
 
-let at = 0, busy = false, done = false;
+/* 進み具合は「聞いた話題の数」で持つ（下の meter）。at / busy / done は使わない */
 
 function el(cls, html){
   const d = document.createElement('div');
@@ -239,12 +223,6 @@ function el(cls, html){
   return d;
 }
 function bottom(){ view.scrollTop = view.scrollHeight; }
-
-/* 残りの割合を、進み具合に合わせて減らす。**減らないと動いていないものに見える。**
-   数字そのものに意味は無い（78 → 31 まで）。 */
-function meter(){
-  ctxEl.textContent = Math.round(78 - 47 * (at / S.length));
-}
 
 /* 1文字ずつ。**速さは一定。**待たせる間は作らない */
 function type(node, text, per, end){
@@ -300,7 +278,7 @@ function reveal(box, per, end){
 
 function put(s, end){
   if (s.t === 'you'){
-    /* 送るだけ。**打つのは typeYou()。**打ち終わったところで enter を待つ */
+    /* 送るだけ。**打つのは ask()。**（rest から呼ばれる用） */
     typed.textContent = '';
     el('row you', '<span>&gt;</span> ' + s.x);
     bottom(); end();
@@ -400,109 +378,99 @@ function put(s, end){
 }
 
 /* =====================================================================
-   進め方。**エンターを押すのは、人の行だけ。**
+   選び方。**選べる・戻れる**が要点（2026-09-02 の指摘）。
 
-   前は一手ずつエンターで、26回押すことになっていた。多すぎた。
-   いまは Claude 側（ツール・地の文・diff・一覧）が**自動で続けて出る**。
-   その turn が終わると、**次の注文が下の枠に打たれて止まる。**
-   そこでエンターを押すと送られて、また Claude 側が自動で流れる。押すのは4回。
+   - 下の一覧から選ぶ（押す／数字キー）。**いつでも、何度でも選べる**
+   - 選ぶと、その問いが下の枠に打たれて送られ、Claude 側が自動で流れる
+   - 一度聞いたものには印が付くが、**押せるまま**。もう一度聞ける
+   - log は消さない。上に遡れば、前に聞いたことがそのまま残っている
+   - esc で、流れている途中を最後まで出す
 
-   自動で流すのは Claude 側だけ。**人の行は自動で送らない。**
-   送ってしまうと、読んでいる途中で話が進む。 */
-let waiting = false;   // 人の行を打ち終えて、enter を待っている
-const hintEl = document.querySelector('.hint');
+   前は決まった順に1本流すだけで、選べず戻れなかった。
+   ===================================================================== */
+const items = document.getElementById('items');
+let busyNow = false;
 
-/* 人の行を、下の枠に打つ。打ち終わったら止まって待つ */
-function typeYou(){
-  const s = S[at];
-  waiting = false;
-  if (STILL){ typed.textContent = s.x; waiting = true; mark(); return; }
+/* 一覧を作る。並びは会社サイトの順（T の順そのまま） */
+T.forEach(function(t, n){
+  const li = document.createElement('li');
+  li.innerHTML = '<button type="button" data-n="' + n + '">' +
+    '<span class="k">' + (n + 1) + '</span>' +
+    '<span class="c">' + t.k + '</span>' +
+    '<span class="n">' + t.q + '</span></button>';
+  items.appendChild(li);
+});
+
+function mark(n){
+  const b = items.querySelector('button[data-n="' + n + '"]');
+  if (b) b.classList.add('seen');
+}
+
+/* 選んだ話題を流す */
+let queue = [], qi = 0;
+
+function runQueue(){
+  if (qi >= queue.length){ busyNow = false; bottom(); return; }
+  const step = queue[qi++];
+  put(step, function(){ meter(); runQueue(); });
+}
+
+function ask(n){
+  if (busyNow) return;
+  const t = T[n];
+  if (!t) return;
+  busyNow = true;
+  mark(n);
+  /* 問いを下の枠に打ってから、上へ送る（打っているのが見えるのが Claude Code） */
+  const send = function(){
+    typed.textContent = '';
+    el('row you', '<span>&gt;</span> ' + t.q);
+    bottom();
+    queue = t.s.slice(); qi = 0;
+    runQueue();
+  };
+  if (STILL){ send(); return; }
   let i = 0;
   (function tick(){
-    typed.textContent = s.x.slice(0, ++i);
-    bottom();
-    if (i < s.x.length) setTimeout(tick, 34);
-    else { waiting = true; mark(); }
+    typed.textContent = t.q.slice(0, ++i);
+    if (i < t.q.length) setTimeout(tick, 34); else setTimeout(send, 240);
   })();
 }
 
-/* 待っているあいだだけ、下の合図を変える */
-function mark(){
-  hintEl.firstElementChild.innerHTML = waiting
-    ? '<b>enter</b> 送る'
-    : '<b>enter</b> 進める';
-}
-
-/* Claude 側を、止まるまで自動で流す */
-function run(){
-  if (busy || done) return;
-  if (at >= S.length){ finish(); return; }
-  if (S[at].t === 'you'){
-    /* **読み終わる時間を置いてから打ちはじめる。**すぐ打つと目が下に引かれる */
-    busy = true;
-    setTimeout(function(){ busy = false; typeYou(); }, STILL ? 0 : PACE.turn);
-    return;
-  }
-  busy = true;
-  put(S[at], function(){
-    at += 1; busy = false; meter();
-    run();
-  });
-}
-
-function send(){
-  if (!waiting) return;
-  waiting = false; mark();
-  busy = true;
-  put(S[at], function(){
-    at += 1; busy = false; meter();
-    run();
-  });
-}
-
-function finish(){
-  done = true;
-  typed.textContent = '';
-  cur.style.display = 'none';
-  hintEl.firstElementChild.innerHTML = '<b>おわり</b>';
-}
-
-/* esc で最後まで。打つ動きは飛ばして中身だけ置く */
+/* 流れている途中を、最後まで出す */
 function rest(){
-  busy = false; waiting = false;
-  while (at < S.length){
-    const s = S[at];
-    if (s.t === 'you') el('row you', '<span>&gt;</span> ' + s.x);
-    else if (s.t === 'say') el('row say' + (s.dim ? ' dim' : ''), s.x);
-    else if (s.t === 'think') el('row think', '<span class="g">✻</span> ' + s.x + '…');
-    else if (s.t === 'res') el('row res', '  ⎿ <span class="a">' + s.x + '</span>' +
-      (s.exp ? ' <span class="exp">(ctrl+r to expand)</span>' : ''));
-    else if (s.t === 'bash'){
-      el('row tool', '<span class="b">⏺</span> <span class="nm">Bash</span>(' + s.x + ')');
-      el('out', s.o.join('\n'));
-    }
-    else put(s, function(){});
-    at += 1;
+  while (qi < queue.length){
+    const step = queue[qi++];
+    if (step.t === 'say') el('row say' + (step.dim ? ' dim' : ''), step.x);
+    else if (step.t === 'res') el('row res', '  ⎿ <span class="a">' + step.x + '</span>' +
+      (step.exp ? ' <span class="exp">(ctrl+r to expand)</span>' : ''));
+    else put(step, function(){});
   }
-  meter(); finish(); bottom();
+  busyNow = false; meter(); bottom();
 }
+
+/* 残りの割合は、聞いた話題の数で減らす */
+function meter(){
+  const seen = items.querySelectorAll('button.seen').length;
+  ctxEl.textContent = Math.round(78 - 47 * (seen / T.length));
+}
+
+items.addEventListener('click', function(e){
+  const b = e.target.closest('button');
+  if (b) ask(+b.dataset.n);
+});
 
 addEventListener('keydown', function(e){
-  if (e.key === 'Enter'){ e.preventDefault(); send(); }
+  if (e.key >= '1' && e.key <= '9'){ ask(+e.key - 1); return; }
   if (e.key === 'Escape'){ e.preventDefault(); rest(); }
 });
-/* 触る操作でも送れる。スマホはキーが無い */
-view.addEventListener('click', send);
-document.querySelector('.foot').addEventListener('click', function(e){
-  if (e.target === again) return;
-  send();
-});
+
 again.addEventListener('click', function(){ location.reload(); });
 
-/* 開いた瞬間に、最初の注文が打たれる。**送るのは人。**
-   ここを自動で送ると、何が起きているのか分からないまま流れていく。 */
-meter(); mark();
-if (STILL) rest(); else run();
+/* 開いた瞬間に、サービスだけ出しておく。**真っ暗な画面から始めない。**
+   あとは選んでもらう。 */
+meter();
+ask(0);
 </script>
 </body>
 </html>

@@ -216,3 +216,32 @@ body{
 @media (prefers-reduced-motion:reduce){
   .stagger > *{opacity:1}
 }
+
+/* ---------- 選べる／戻れるようにした（2026-09-02） ----------
+   本人の指摘：「そもそも選べない、戻れないは結構困る」。
+   決まった順に流すだけだと、コーポレートサイトとして使えない。
+   Claude Code の / の候補一覧の形で、聞けることを常に出しておく。 */
+.menu{
+  max-width:90ch;margin:0 auto 8px;border:1px solid var(--line);border-radius:8px;
+  background:var(--panel);overflow:hidden;
+}
+.menu .mh{
+  padding:7px 14px;border-bottom:1px solid var(--line);
+  font-size:11.5px;color:var(--faint);letter-spacing:.04em;
+}
+.menu .mh b{color:var(--orange);font-weight:400}
+.menu ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media (max-width:720px){ .menu ul{grid-template-columns:1fr} }
+.menu li{border-top:1px solid transparent}
+.menu button{
+  width:100%;text-align:left;font:inherit;font-size:13px;cursor:pointer;
+  background:none;border:0;padding:7px 14px;color:var(--sub);
+  display:flex;gap:10px;align-items:baseline;
+}
+.menu button:hover,.menu button:focus-visible{background:rgba(217,119,87,.10);color:var(--ink);outline:none}
+.menu button .k{color:var(--faint);flex:none;width:1.2em}
+.menu button .c{color:var(--ink)}
+.menu button .n{color:var(--faint);margin-left:auto;font-size:11.5px}
+/* 一度聞いたものは印を付けるが、**押せるままにする**（戻れることが要点） */
+.menu button.seen .c{color:var(--sub)}
+.menu button.seen .n::after{content:" ✓"; color:var(--green)}
