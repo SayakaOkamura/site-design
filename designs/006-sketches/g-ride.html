@@ -970,7 +970,7 @@ let intro = false;  // 出だしのあいだだけ真。触るか、寄りきれ
    1.14秒（DIP 0 なら DRAW 5.4 で 1.15秒。どちらでも見え方の速さは同じ）。
    落ちるのに使う時間は、DIP 0 で 0.90秒、いま 1.05秒。
    **カーブを変えたら、必ずこの時刻で測り直すこと。**秒数だけ見ても合わない。 */
-const DRAW = 4.0;   // 紙の端から端まで、線を引き終わるまでの秒数（落ちても伸びない）
+const DRAW = 3.0;   // 紙の端から端まで、線を引き終わるまでの秒数（落ちても伸びない）
 const THREAD = document.querySelector('svg.thread path');
 let TLEN = 0;       // 線の実測長。下の init で入れる
 let TSTART = 0;     // 引きはじめた時刻
@@ -981,7 +981,7 @@ let TSTART = 0;     // 引きはじめた時刻
    長くなったぶん、平らなところは少し速くなる。伸ばすと「線が遅くなった」になる。
    線が平ら（g-zoom）なら重みは 0 で、何も変わらない。
    名前は DIP（FALL は g-ride が先に使っている）。 */
-const DIP = 1.2;    // 落ちているぶんの重み。0 なら長さだけで配る（一律）
+const DIP = 0;      // 落ちているぶんの重み。0 で長さなりの一律配分（いまはこれ）
 let TMAP = null;    // 時間の割合 → そこまでに引いた長さ
 
 function buildDraw(){
@@ -1165,7 +1165,7 @@ function draw(){
   if (TLEN){
     const x = Math.min(1, (performance.now() - TSTART) / 1000 / DRAW);
     if (x < 1){
-      const e = 1 - (1 - x) * (1 - x);   // 線はこちら。紙（smoothstep）とは別（下の注）
+      const e = x;   // **一定の速さ。**丸めない（丸めると落ちるところが落下に見えなくなる）
       let l = TLEN * e;
       if (TMAP){
         const u = e * (TMAP.length - 1), i0 = Math.floor(u), i1 = Math.min(TMAP.length - 1, i0 + 1);
