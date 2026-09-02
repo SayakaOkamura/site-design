@@ -649,10 +649,11 @@ function buildViews(){
        「同じものが大きくなる」動きになる。帯が出たぶん箱が広がるので、
        寄りを揃えても寄せ（中心の移動）は起きる。 */
     /* **dy は上下の寄せ**（画面の px。既定 0＝中身の外形を真ん中に置く）。
-       ここは帯が出て箱が縦にも広がる。**紙を下げる＝カメラが上から覗く形になり、寄って見える。**
-       一度 -30（紙を上げる）にして、逆だった。
+       ここは帯が出て箱が縦にも広がるので、外形で真ん中に置くと線の高さがここだけ動く。
+       **align に段の番号を書くと、その段と線の高さが揃うように dy が出る。**
+       手で ±30 と当てていたのをやめた（窓の大きさで変わるので、数字では合わない）。
        **dx は「形」と揃えるが、dy は揃えない。**箱の大きさが変わるのはこの寄り先だけ。 */
-    { nm:'洗い出す', node:1, sel:['.n2'], w: 800, h: 380, z: 1.15, add:true, dx: -25, dy: 30 },
+    { nm:'洗い出す', node:1, sel:['.n2'], w: 800, h: 380, z: 1.15, add:true, dx: -25, align: 3 },
     /* 行為とその理由。ここが山場。z がいちばん大きい */
     { nm:'うちがしたこと', node:2, sel:['.nc'], w: 880, h: 230, z: 1.40 }
   ];
@@ -772,7 +773,7 @@ function measure(){
       tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
       cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
       w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
-      nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0, dy: v.dy || 0
+      nm: v.nm, node: v.node, add: v.add, dx: v.dx || 0, dy: v.dy || 0, align: v.align
     };
   });
 
@@ -793,6 +794,19 @@ function measure(){
     /* 会社だけ少し引く。ほかは FLAT のまま。 */
     marks.forEach(function(m){ m.s = f * (m.node === 3 ? ROOM_N5 : ROOM); });
   }
+
+  /* **線の高さを、別の段に合わせる。**align にその段の番号を書くと、
+     画面の上で線が同じ高さに来るように dy を出す。手で数字を当てない。
+     箱の大きさが変わる寄り先（帯を出す「洗い出す」）は、外形で真ん中に置くと
+     線の高さがそこだけ動いて、下にずれて見える。 */
+  marks.forEach(function(m, i){
+    if (typeof m.align !== "number") return;
+    const r = marks[m.align];
+    if (!r) return;
+    const at = function(k){ return lineYAt(marks[k].cx); };
+    const ref = (r.dy || 0) + (at(m.align) - r.cy) * r.s;
+    m.dy = ref - (at(i) - m.cy) * m.s;
+  });
 
   survey();
 }
