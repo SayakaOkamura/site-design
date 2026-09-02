@@ -734,8 +734,9 @@ const HALF = .10;   // 残りの半分を詰めるのにかかる秒数。大き
    開いたところは動かしているものが無く、同じ速さだと現れ方が急に見える。
    **HALF 自体は上げない。**上げると、段を渡るときの濃さが全部ゆっくりになる。
    触られたら HALF に戻す。手が動いているなら、待たせる理由が無い。 */
-const INTRO = .34;
+const INTRO = .24;
 const SLIDE = 45;   // 出だしに、紙ごと何 px 左にずらしておくか（幅 1280 のとき。0 で動きなし）
+const SWING = 4.5;  // 定位置をどれだけ行き過ぎて戻るか（0 で行き過ぎない＝まっすぐ入る）
                     // **狭い画面では幅なりに減らす。**px で固定すると、幅 390 では
                     // 画面の 13% を動くことになって、PC の 4% と別物になる。
 let intro = false;  // 出だしのあいだだけ真。触るか、寄りきれば下ろす
@@ -894,7 +895,10 @@ function draw(){
      進み具合は濃さと同じもの（ST が一段前から寄ってくる残り）を使うので、時計は増えていない。
      縮尺（cx, cy, sc）は触らないので、寄る先も大きさもそのまま。
      却下：**奥行き（ZIN。少し引いた縮尺から寄る）。** */
-  const slide = intro ? SLIDE * Math.min(1, vw / 1280) * Math.max(0, Math.min(1, Math.abs(t - st))) : 0;
+  /* **行き過ぎて戻る。**距離は同じでも、まっすぐ入るより動きが増える。
+     残り（rem）が振れ幅、進んだぶん（1-rem）が振れの位相。定位置に着けば両方 0。 */
+  const rem = Math.max(0, Math.min(1, Math.abs(t - st)));
+  const slide = intro ? SLIDE * Math.min(1, vw / 1280) * rem * Math.cos(SWING * (1 - rem)) : 0;
   const sc = A.s + (B.s - A.s) * f;
 
   canvas.style.transform =
