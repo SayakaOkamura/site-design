@@ -190,6 +190,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 .n2 .row{display:flex;align-items:flex-start;gap:30px}
 .n2 .col{flex:none;width:430px}
 .n2 .win{width:430px}
+/* **箱だけ 2px 下げる。**カード（.win）と、後半に出る帯（.found）の2つ。
+   position:relative なので**流れは動かない**（下の説明文はそのまま）。
+   margin で下げると説明文まで押し下がるので、そうしていない。
+   .found は .add の入場（addIn）で transform を使うので、transform は避ける。 */
+.n2 .win, .n2 .found{position:relative;top:2px}
 
 /* 洗い出した束。カードの外の右。
    カードの罫線と揃う位置に置いて、同じ紙の続きに見えるようにする。 */
