@@ -381,8 +381,8 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
          ここでは「決まっていない3つ」を先に言わない。
          それを言うと、どうやって分かったのかが抜ける。
          005 と同じ順（形にする → 足りないところが浮かぶ）に揃える。 -->
-    <!-- **いま上下の動きを付けて試しているところ**（data-rise を外して既定の 10px）。
-         戻すなら data-rise="0" を足すだけ。会社の段と同じ、濃さだけの出方になる。
+    <!-- data-rise="0" ＝ **この段は動かさない。**上下に動かすのは一度試して「違う」。
+         動きは紙ごとの寄り（ZIN）で出す。
          data-lag="0" ＝ **行を順に出さない。一斉に濃くする。**ここは変えない。
          ほかの段は寄ってきた結果として順に出るので、そのまま（LAG .16）。
 
@@ -390,7 +390,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
          色変える」「一斉に濃くする」。**理由づけをここに書き足さないこと。**
          一度「どちらを見ればいいか分からなくなる」と書いたが、それは本人の言葉ではなく
          こちらの言い換えで、訂正されている（NOTES の指針6）。 -->
-    <div class="node n0" data-l="0" data-lag="0">
+    <div class="node n0" data-l="0" data-rise="0" data-lag="0">
       <div class="k"    style="--i:0">ある会社で聞いた話</div>
       <!-- ここは謎ではなく、依頼。だから3つの空欄で解ける大きさかどうかを問われない。
            一言が短いほど効く（言われたのはこれだけ、が次の段の論拠になる）。
@@ -732,6 +732,7 @@ const HALF = .10;   // 残りの半分を詰めるのにかかる秒数。大き
    **HALF 自体は上げない。**上げると、段を渡るときの濃さが全部ゆっくりになる。
    触られたら HALF に戻す。手が動いているなら、待たせる理由が無い。 */
 const INTRO = .24;
+const ZIN   = .94;  // 出だしに、紙ごとどこまで引いておくか（1 で引かない＝寄る動きなし）
 let intro = false;  // 出だしのあいだだけ真。触るか、寄りきれば下ろす
 /* 線。**開いてから動くのは、これひとつ。**
    前は CSS 側で 0.3秒待ってから引いていて、さらに長さの直値が実測とずれていたぶんも
@@ -872,17 +873,27 @@ function draw(){
 
   const i = Math.floor(t), j = Math.min(i + 1, last), f = t - i;
   const A = marks[i], B = marks[j];
-  const sc = A.s + (B.s - A.s) * f;
   const dx = A.dx + (B.dx - A.dx) * f;   // 段ごとの左右の寄せ
 
   const cx = A.cx + (B.cx - A.cx) * f;
   const cy = A.cy + (B.cy - A.cy) * f;
 
+  // 段と行の濃さ。進み具合から決めるが、濃さだけは少し遅れて追いつく（follow）
+  const st = follow(t);
+
+  /* 出だしだけ、**紙ごと**少し引いたところから寄る。
+     文字に動きを付けると「違う」、動かさないと「動きが少ない」。
+     動かすものを文字ではなく紙にすれば、**線も一緒に動くので、動いているものは増えない。**
+     寄る量は ZIN。進み具合は濃さと同じもの（ST が一段前から寄ってくる残り）を使うので、
+     時計は増えていない。中心（cx, cy）は動かさないので、寄る先はそのまま。 */
+  const zin = intro
+    ? ZIN + (1 - ZIN) * Math.max(0, Math.min(1, 1 - Math.abs(t - st)))
+    : 1;
+  const sc = (A.s + (B.s - A.s) * f) * zin;
+
   canvas.style.transform =
     'translate(' + (vw / 2 + NUDGE + dx - cx * sc) + 'px,' + (vh / 2 - cy * sc) + 'px) scale(' + sc + ')';
 
-  // 段と行の濃さ。進み具合から決めるが、濃さだけは少し遅れて追いつく（follow）
-  const st = follow(t);
   shade(st);
 
   /* 線。文字と同じ瞬間に始めて、文字と同じ形（出だしが速く、終わりが伸びる）で引く */
