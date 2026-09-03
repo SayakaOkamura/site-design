@@ -12,12 +12,20 @@
    公式は**白地に濃い紫**（#2A0E3E がいちばん多く、リンクは #654087 系）。
    005 から持ってきていた茶系をやめて、そちらに揃えた。 */
 :root{
-  --ink:   #2a0e3e;   /* 本文。公式サイトの地の色 */
+  --ink:   #2a0e3e;   /* 本文。公式サイトでいちばん多い色 */
   --sub:   #574566;   /* 補助 */
   --faint: #8b7f96;   /* ラベル・注記 */
-  --rule:  #e7e2ee;
+  --rule:  #e3d8f0;
   --bg:    #ffffff;   /* 公式は白地 */
-  --accent:#654087;   /* 見出しとリンク。公式のリンク色 */
+  --accent:#654087;   /* 節見出しとリンク。公式のリンク色 */
+  --creed: #4b2470;   /* 理念。**ここでいちばん面積を取る** */
+  --tint:  #f7f3fb;   /* 帯と下の地。薄く敷いて面積を作る */
+
+  /* **文字の色を紫にしても、紫には見えない。**（2026-09-03）
+     一度 #2a0e3e（本文）と #654087（12px の節見出し）だけで組んだが、
+     本文は暗すぎて黒と区別がつかず、節見出しは面積が小さすぎた。
+     **公式サイトも、文字では紫を出していない。**あれはロゴと背景の線画で出ている。
+     ここには絵を置かないので、**面積は「理念の大きな字」と「薄く敷いた地」で作る。** */
   --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
   --mincho: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
 }
@@ -33,7 +41,7 @@ a{color:inherit}
 /* ---------- 上の案内（動線）----------
    **見慣れた形にする。**レビューで言われたのはここ。
    用があって来た人が、用が合っているかを疑わないで済むように。 */
-.head{border-bottom:1px solid var(--rule);background:var(--bg)}
+.head{border-bottom:1px solid var(--rule);background:var(--tint)}
 .head .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;padding-top:18px;padding-bottom:18px}
 .head .name{font-size:13px;color:var(--sub);letter-spacing:.02em}
 .head .nav{margin-left:auto;display:flex;gap:20px;font-size:13px}
@@ -46,6 +54,7 @@ a{color:inherit}
 /* ---------- 理念。**意味は書かない** ---------- */
 .creed{padding:76px 0 68px;border-bottom:1px solid var(--rule)}
 .creed h1{
+  color:var(--creed);
   font-family:var(--mincho);font-weight:400;
   /* 38em の中で「〜をデザインする」が折り返さない大きさ（18字 × 28px < 570px）。
      30px だと「デザインす／る」で切れた */
@@ -59,7 +68,7 @@ a{color:inherit}
 /* ---------- 本文の節 ---------- */
 .sec{padding:48px 0;border-bottom:1px solid var(--rule)}
 .sec h2{
-  font-size:12px;color:var(--accent);font-weight:400;
+  font-size:13px;color:var(--accent);font-weight:400;
   letter-spacing:.16em;margin-bottom:20px;
 }
 .sec p + p{margin-top:12px}
@@ -84,11 +93,17 @@ a{color:inherit}
 }
 
 .mail{margin-top:14px}
-.mail a{border-bottom:1px solid var(--rule)}
+.mail a{color:var(--accent);border-bottom:1px solid var(--rule)}
 .mail a:hover{border-bottom-color:var(--accent)}
 
 /* ---------- 出どころと、いつ時点か ----------
    **残した仕掛けはこれ一つ。**道具が変わっても、出どころは要る。 */
-.foot{padding:34px 0 60px;font-size:12px;color:var(--faint);line-height:1.9}
-.foot a{border-bottom:1px solid var(--rule)}
+.foot{
+  background:var(--tint);border-top:1px solid var(--rule);
+  padding:34px 0 60px;font-size:12px;color:var(--faint);line-height:1.9;
+}
+.foot a{color:var(--accent);border-bottom:1px solid var(--rule)}
 .foot .fine{margin-top:6px}
+
+/* 最後の節の下罫は、下の薄い地との境と重なるので消す */
+.sec:last-of-type{border-bottom:0}
