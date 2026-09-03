@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 <!-- =====================================================================
@@ -33,8 +33,13 @@
      ── 借りた語彙（2026-09-02 に増やした）────────────────────────
      ⏺ ツールの呼び出し／⎿ その結果／☐ ☒ やることの一覧／行番号つきの diff／
      ✻ 考えている（回る記号＋経過秒＋esc to interrupt）／
-     Updated ... with N additions and M removals ／(ctrl+r to expand)／
+     Updated ... with N additions and M removals ／
      Bash の起動ログ／? for shortcuts／Context left until auto-compact。
+
+     **(ctrl+r to expand) は外した**（2026-09-03）。
+     > ctrl+r to expandって書いてるけどこれ何？
+     押しても何も起きないうえ、ブラウザでは ctrl+r が読み直しなので、
+     **書いてあるとおりに押すと、ここが最初から始まってしまう。**
 
      **借りるのは語彙だけ。**画面の写しにはしない。文字の大きさと行間と
      対比は読める側に寄せてある（14px / 1.85 / 13:1 / 90ch）。
@@ -111,7 +116,7 @@
      you   人の行（> で始まる）        下の枠に打ってから log へ送る
      say   Claude の地の文             1文字ずつ出す
      tool  ⏺ ツールの呼び出し
-     res   ⎿ その結果（exp:true で (ctrl+r to expand) を付ける）
+     res   ⎿ その結果
      bash  ⏺ Bash(...) と、その出力
      todo  ⏺ Update Todos と ☐ / ☒ の一覧
      diff  ⏺ Update(path) と、まとめ行と、行番号つきの diff
@@ -178,7 +183,7 @@ const T = [
 
   { k:'サービス', s:[
       { t:'tool', x:'Glob', a:'サービス/*' },
-      { t:'res',  x:'Found 4 files', exp:true },
+      { t:'res',  x:'Found 4 files' },
       { t:'list', x:[
           ['人間中心の次世代業務システム開発',
            '業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供'],
@@ -362,13 +367,15 @@ function put(s, end){
 
   if (s.t === 'tool'){
     el('row tool', '<span class="b">⏺</span> <span class="nm">' + s.x + '</span>(' + s.a + ')');
-    bottom(); setTimeout(end, STILL ? 0 : (rush ? RUSH.tool : PACE.tool)); return;
+    /* **二度目は待たせない。**（2026-09-03）
+       > 二回目以降の時は、書いていますの時間なしで完成させていいよ
+       貼るときは、ツールの行と結果の間の間合いも置かない */
+    bottom(); setTimeout(end, (STILL || flush) ? 0 : (rush ? RUSH.tool : PACE.tool)); return;
   }
 
   if (s.t === 'res'){
     const n = el('row res', '');
-    const tail = s.exp ? ' <span class="exp">(ctrl+r to expand)</span>' : '';
-    type(n, '  ⎿ <span class="a">' + s.x + '</span>' + tail, PACE.res, end);
+    type(n, '  ⎿ <span class="a">' + s.x + '</span>', PACE.res, end);
     return;
   }
 
@@ -632,8 +639,7 @@ function rest(){
   while (qi < queue.length){
     const step = queue[qi++];
     if (step.t === 'say') el('row say' + (step.dim ? ' dim' : ''), step.x);
-    else if (step.t === 'res') el('row res', '  ⎿ <span class="a">' + step.x + '</span>' +
-      (step.exp ? ' <span class="exp">(ctrl+r to expand)</span>' : ''));
+    else if (step.t === 'res') el('row res', '  ⎿ <span class="a">' + step.x + '</span>');
     else put(step, function(){});
   }
   done();

@@ -165,9 +165,6 @@ body{
 .think .g{color:var(--orange);display:inline-block;width:1em}
 .think .sec{color:var(--faint)}
 
-/* ツールの結果に付く折りたたみのヒント */
-.res .exp{color:var(--faint)}
-
 /* 変更のまとめ行（⎿ Updated ... with N additions and M removals） */
 .sum{color:var(--sub);margin-top:2px}
 .sum .n{color:var(--green)}
