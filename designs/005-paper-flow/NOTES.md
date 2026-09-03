@@ -4,6 +4,10 @@
 
 - 公開（push すれば）: https://sayakaokamura.github.io/site-design/designs/005-paper-flow/
 - 現行サイト（差し替え対象）: https://alt-dsgn.co.jp/
+- 並走：`designs/006-sketches/g-ride.html`／`designs/007-as-ordered/`
+- **見せる順は 007 → 005 → 006-G**（2026-09-03 に決めた）。
+  注文が「Claude Code っぽくて先進的なもの」なので、**注文にいちばん近い 007 から。**
+  そのあとは情報量の多い順に上げていく。**どれが本命かは決めていない。**
 - 前身: 003（腕試し案）／素材: 004（要素スケッチ6枚。A・D・E をまとめたのが 005）。
   **どちらも実物は消した。**中身と却下の理由は `designs/IDEAS.md` に移してある
   （実物は git 履歴。`git checkout 1fb67cf -- designs/003-alter-design-generate/`）
