@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 <!-- =====================================================================
@@ -76,6 +76,7 @@
   <div class="session" id="log">
     <div class="boot">
       <b>✻</b> 株式会社アルターデザインコンサルティング
+      <span class="s">経営の力で「遊ぶように働く世界」をデザインする。／2025年6月設立</span>
     </div>
   </div>
   </div>
@@ -204,28 +205,20 @@ const T = [
 ];
 
 /* =====================================================================
-   開いた時点で出ているもの。**何も押さなくても、情報はある**（2026-09-03）
+   開いた時点で出ているもの。**上の2行だけ**（2026-09-03）
 
    > 一番最初に表示したいようなものを最初から出しておいて、何もクリック
    > しなくても情報自体はあるようにしたいかも。表示したいものでも、
    > このサイトのルールでもいいけど
    > スクロールいらないくらいがいいな。その会社概要と理念だけでいいんじゃない、最初は
+   > さっきみたいに上に2行でまとめてるやつだけでいい
 
-   **打たない。送らない。**注文（`>` の行）は付けない。
-   人が送っていない行を注文として出すと、自動で送っているのと同じになる。
-   **開き直したら前の続きが残っている**、という形にする。
+   **起動枠の2行が、会社概要と理念をまとめたもの。**
+   社名／理念／設立が、押さなくても出ている。それ以上は出さない。
 
-   中身は**会社概要と理念だけ。**一度はルール（CLAUDE.md の3行）と
-   サービス4件にしたが、狭い画面で下がはみ出していた。
-   上の起動枠から理念と設立を外したのも、すぐ下に本体として出るから。
+   セッションに中身を置くのは**やめた**（会社概要の札と理念の枠を出していた）。
+   同じことが上の2行に書いてあって、社名が二度出ていた。
    ===================================================================== */
-/* **スクロールがいらないくらいに収める**（2026-09-03）。
-   ルール3行＋サービス4件では、狭い画面で下がはみ出していた。
-   台本をそのまま使うので、中身は二重に書かない。**目次のその2つには最初から ✓** */
-const OPEN = ['会社概要', '理念'];
-function at(k){ for (let i = 0; i < T.length; i++) if (T[i].k === k) return i; return -1; }
-let BOOT = [];
-OPEN.forEach(function(k){ BOOT = BOOT.concat(T[at(k)].s); });
 
 const view  = document.getElementById('view');
 const log   = document.getElementById('log');
@@ -592,15 +585,7 @@ addEventListener('keydown', function(e){
 
 again.addEventListener('click', function(){ location.reload(); });
 
-/* 開いた時点で出しておく。**打たない・送らない・流さない。**
-   flush を立てて、その場で全部置く（読みに来た人が待たされない） */
-function boot(list){
-  flush = true;
-  list.forEach(function(step){ put(step, function(){}); });
-  flush = false;
-}
-
-/* 出したぶんに ✓ を付けて、次の注文を枠に打って止まる */
+/* 最初の注文を枠に打って、止まる */
 meter();
 if (STILL){
   T.forEach(function(t, n){
@@ -612,13 +597,7 @@ if (STILL){
   });
   typed.textContent = ''; meter(); state();
 }
-else {
-  boot(BOOT);
-  OPEN.forEach(function(k){ const b = btn(at(k)); if (b) b.classList.add('seen'); });
-  meter();
-  const n = next();
-  if (n >= 0) write(n); else state();
-}
+else write(0);
 </script>
 </body>
 </html>
