@@ -253,8 +253,15 @@ try {
   localStorage.setItem('007-seen', '1');
 } catch (e) {}
 
-/* 流さずに全部出すのは、動きを切る指定のときと、二度目から（指針4） */
-const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches || AGAIN;
+/* **打たずに貼るのは、二度目からと、動きを切る指定のとき**（`STILL`）。
+   ただし**進み方は変えない。**二度目でも、注文は枠に出て、送るのは人。
+   > パンと貼るやつできてないよ。開いた時点で、とかではなく
+   一度、二度目は開いた時点で全部貼る形にしたが、それは違った。
+   **止まるところは同じ。出方だけが「打つ」から「貼る」に変わる。**
+
+   ぜんぶ一度に置くのは、動きを切る指定のときだけ（指針4）。 */
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const STILL = REDUCED || AGAIN;
 
 /* **間は、ここだけで決める。**「一気に出てくると読みにくい」（2026-09-02）。
    前は地の文 16ms／ツールのあと 240ms／塊のあと 300ms で、
@@ -268,9 +275,8 @@ const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches || AGAIN;
    tool  ツールの行を出したあと、結果を出すまで
    block 一覧・diff・ファイルを出したあと
    turn  Claude 側が終わってから、次の注文を打ちはじめるまで。**0。**
-         > 下の勝手に入る文字は、AIが勝手に打ってる分が出きった瞬間でいい
-         **出きった瞬間に打ちはじめる。**下の枠は本文と別の場所なので、
-         そこが動いても読んでいる目は戻らない（前は 1100ms 待たせていた） */
+         いまは**出きる前**（最後のひと塊に入った時点）から打ちはじめるので、
+         ここまで残っているのは飛ばされたとき（esc など）だけ */
 const PACE = { ch:23, res:15, line:15, tool:620, block:820, turn:0 };
 
 /* **開いた瞬間の1回だけ、速さを別にする**（2026-09-03）。
@@ -578,10 +584,21 @@ function jump(n){
 
 function runQueue(){
   if (qi < queue.length){
+    /* **最後のひと塊に入ったら、下の枠を打ちはじめる。**（2026-09-03）
+       > 下枠の文字、出きった時じゃなくて出きる前の時点から出してほしい
+       出きるのを待つと、下が止まって見える。重ねて打つ */
+    if (qi === queue.length - 1) ahead();
     put(queue[qi++], function(){ meter(); runQueue(); });
     return;
   }
   done();
+}
+
+/* 次の注文を、**まだ出している途中で**枠に打つ。送りはしない */
+function ahead(){
+  if (STILL || pending >= 0) return;
+  const n = next();
+  if (n >= 0) write(n);
 }
 
 /* ひとつ終わった。**✓ を付けて、次の注文を枠に打つ。**送りはしない */
@@ -604,8 +621,12 @@ function done(){
   if (b) b.classList.add('seen');
   meter(); bottom(); state();
   if (tree.querySelectorAll('button.seen').length >= T.length) tail();
-  const n = next();
-  if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
+  /* たいていは ahead() で打ち終わっている。飛ばされたとき（esc など）だけここ */
+  if (pending < 0){
+    const n = next();
+    if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
+  }
+  state();
   rush = false;                 /* 速いのは開いた瞬間の1回だけ */
 }
 
@@ -663,7 +684,7 @@ again.addEventListener('click', function(){
 /* 開いた瞬間、Claude 側だけが動きはじめる。**注文は置かない。**
    1つめが終わると、次の注文が枠に打たれて止まる（そこからは人が送る） */
 meter();
-if (STILL){
+if (REDUCED){
   T.forEach(function(t, n){
     nowAt = n;
     el('row you', '<span>&gt;</span> ' + ask(n));
