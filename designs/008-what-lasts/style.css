@@ -1,0 +1,94 @@
+/* 008 変わらないところ
+   ------------------------------------------------------------------
+   **仕掛けを落とした一本。**動きは無い（JavaScript も無い）。
+   残したのは、読める寸法と、出どころ。
+
+   寸法は 007 で詰めたものを白地に移した：本文 15px／行間 1.95／
+   一行 38字前後／白地に #1c1a17（対比 14:1 前後）。
+   003・005 で決めた「黒地は読みにくい」はそのまま生きている。 */
+
+/* 色は**公式サイトから取った**（2026-09-03、実物の computed style を読んだ）。
+   > 会社のイメージカラーが紫だからそこつかうのもありかもね
+   公式は**白地に濃い紫**（#2A0E3E がいちばん多く、リンクは #654087 系）。
+   005 から持ってきていた茶系をやめて、そちらに揃えた。 */
+:root{
+  --ink:   #2a0e3e;   /* 本文。公式サイトの地の色 */
+  --sub:   #574566;   /* 補助 */
+  --faint: #8b7f96;   /* ラベル・注記 */
+  --rule:  #e7e2ee;
+  --bg:    #ffffff;   /* 公式は白地 */
+  --accent:#654087;   /* 見出しとリンク。公式のリンク色 */
+  --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+  --mincho: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+}
+
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:var(--gothic);font-size:15px;line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:38em;margin:0 auto;padding:0 24px}
+a{color:inherit}
+
+/* ---------- 上の案内（動線）----------
+   **見慣れた形にする。**レビューで言われたのはここ。
+   用があって来た人が、用が合っているかを疑わないで済むように。 */
+.head{border-bottom:1px solid var(--rule);background:var(--bg)}
+.head .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;padding-top:18px;padding-bottom:18px}
+.head .name{font-size:13px;color:var(--sub);letter-spacing:.02em}
+.head .nav{margin-left:auto;display:flex;gap:20px;font-size:13px}
+.head .nav a{color:var(--sub);text-decoration:none;padding-bottom:2px;border-bottom:1px solid transparent}
+.head .nav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+@media (max-width:600px){
+  .head .nav{margin-left:0;gap:16px;flex-wrap:wrap}
+}
+
+/* ---------- 理念。**意味は書かない** ---------- */
+.creed{padding:76px 0 68px;border-bottom:1px solid var(--rule)}
+.creed h1{
+  font-family:var(--mincho);font-weight:400;
+  /* 38em の中で「〜をデザインする」が折り返さない大きさ（18字 × 28px < 570px）。
+     30px だと「デザインす／る」で切れた */
+  font-size:28px;line-height:1.85;letter-spacing:.02em;
+}
+@media (max-width:600px){
+  .creed{padding:52px 0 46px}
+  .creed h1{font-size:23px;line-height:1.8}
+}
+
+/* ---------- 本文の節 ---------- */
+.sec{padding:48px 0;border-bottom:1px solid var(--rule)}
+.sec h2{
+  font-size:12px;color:var(--accent);font-weight:400;
+  letter-spacing:.16em;margin-bottom:20px;
+}
+.sec p + p{margin-top:12px}
+
+.plain{list-style:none}
+.plain li{padding-left:1em;text-indent:-1em}
+.plain li + li{margin-top:6px}
+
+/* サービス。**見出しと説明を、公式のまま** */
+.svc dt{font-weight:600;margin-top:22px}
+.svc dt:first-child{margin-top:0}
+.svc dd{color:var(--sub);font-size:14px;line-height:1.9;margin-top:2px}
+
+/* 会社概要。**項目名と値。ここだけ表の組み** */
+.facts{display:grid;grid-template-columns:7.5em 1fr;column-gap:20px;row-gap:8px}
+.facts dt{color:var(--faint);font-size:13px}
+.facts dd{overflow-wrap:anywhere}
+@media (max-width:600px){
+  .facts{grid-template-columns:1fr;row-gap:2px}
+  .facts dt{margin-top:10px}
+  .facts dt:first-child{margin-top:0}
+}
+
+.mail{margin-top:14px}
+.mail a{border-bottom:1px solid var(--rule)}
+.mail a:hover{border-bottom-color:var(--accent)}
+
+/* ---------- 出どころと、いつ時点か ----------
+   **残した仕掛けはこれ一つ。**道具が変わっても、出どころは要る。 */
+.foot{padding:34px 0 60px;font-size:12px;color:var(--faint);line-height:1.9}
+.foot a{border-bottom:1px solid var(--rule)}
+.foot .fine{margin-top:6px}
