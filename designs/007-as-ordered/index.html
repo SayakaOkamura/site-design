@@ -250,11 +250,14 @@ const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
    ch    地の文の1文字
    res   ⎿ の1文字（結果は短いので、地の文より少し速い）
+   line  塊の中の1文字（札・一覧・一言。地の文より速い）
    tool  ツールの行を出したあと、結果を出すまで
    block 一覧・diff・ファイルを出したあと
-   turn  Claude 側が終わってから、次の注文を打ちはじめるまで
-         **ここがいちばん効く。**読み終わる前に次の行が打たれると、目が戻る */
-const PACE = { ch:28, res:18, line:12, tool:620, block:820, turn:1100 };
+   turn  Claude 側が終わってから、次の注文を打ちはじめるまで。**0。**
+         > 下の勝手に入る文字は、AIが勝手に打ってる分が出きった瞬間でいい
+         **出きった瞬間に打ちはじめる。**下の枠は本文と別の場所なので、
+         そこが動いても読んでいる目は戻らない（前は 1100ms 待たせていた） */
+const PACE = { ch:18, res:12, line:8, tool:620, block:820, turn:0 };
 
 /* **開いた瞬間の1回だけ、速さを別にする**（2026-09-03）。
    > ページのロードあるのにここでも初手ロードで待たされるとストレスあるかも。
@@ -262,7 +265,7 @@ const PACE = { ch:28, res:18, line:12, tool:620, block:820, turn:1100 };
    ふつうの速さ（think 1.5s＋tool 620＋1行 300…）だと、出そろうまで 2.5 秒かかる。
    **ここだけ 850ms 前後に詰める。**読ませる間は、送ったあとの turn で取ればいい。
    think 400 ／ tool 150 ／ 1行 60 ／ 塊のあと 60 ／ 次の注文まで 400 */
-const RUSH = { think:400, tool:150, line:8, block:60, turn:400 };
+const RUSH = { think:400, tool:150, line:6, block:60, turn:0 };
 let rush = false;
 
 /* esc。**流れている途中を、その場で出しきる。**
