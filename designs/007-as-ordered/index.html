@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <!-- =====================================================================
@@ -92,7 +92,7 @@
   </div>
   <div class="hint">
     <span class="keys"><b>enter</b> 送る</span>
-    <span class="keys"><b>1</b>–<b>9</b> 選ぶ</span>
+    <span class="keys"><b>数字</b> 選ぶ</span>
     <span class="keys"><b>esc</b> 最後まで出す</span>
     <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
@@ -130,6 +130,19 @@
    log は消さないので、上に遡っても読める。
    ===================================================================== */
 const T = [
+  /* **最初の注文は、このページのこと。**（2026-09-03）
+     「何ができる？」から始めると、開いた人が困る。誰が誰に聞いているのか
+     分からないし、サイトの側から聞かれているようにも読める。
+     **開いた人がその場で思うことを、そのまま1つめの注文にする。** */
+  { k:'このサイト', q:'ここ、何？', s:[
+      { t:'tool', x:'Read', a:'CLAUDE.md' },
+      { t:'md',   f:'CLAUDE.md', x:[
+          'ここは会社案内。聞かれたことは、置いてあるファイルで返す',
+          '無いものは、無いと返す',
+          '決まっていないことは、埋めない',
+        ]},
+    ]},
+
   { k:'サービス', q:'何ができる？', s:[
       { t:'tool', x:'Glob', a:'サービス/*.md' },
       { t:'res',  x:'Found 4 files', exp:true },
@@ -435,7 +448,7 @@ function put(s, end){
 const tree = document.getElementById('tree');
 
 /* 目次。**置いてあるファイルの木**として出す */
-const FILES = ['サービス/', '進め方.md', 'やらないこと.md', '事例/', '料金.md',
+const FILES = ['CLAUDE.md', 'サービス/', '進め方.md', 'やらないこと.md', '事例/', '料金.md',
                '会社概要.md', '会社概要.md#登記', '理念.md', 'お問い合わせ.md'];
 
 T.forEach(function(t, n){
@@ -579,7 +592,12 @@ box.addEventListener('click', send);
 
 addEventListener('keydown', function(e){
   if (e.key === 'Enter'){ e.preventDefault(); send(); return; }
-  if (e.key >= '1' && e.key <= '9'){ jump(+e.key - 1); return; }
+  /* 話題が10になったので、10番目は 0（実物の並びと同じ数え方） */
+  if (e.key >= '0' && e.key <= '9'){
+    const n = e.key === '0' ? 9 : (+e.key - 1);
+    if (n < T.length) jump(n);
+    return;
+  }
   if (e.key === 'Escape'){ e.preventDefault(); if (busyNow) rest(); }
 });
 
