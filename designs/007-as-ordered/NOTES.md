@@ -544,6 +544,49 @@ Claude の地の文は1文字ずつ出すが、速さは一定にして待たせ
 **`top` という名前は使えない。**`window.top` とぶつかって、
 **スクリプトが丸ごと落ちる**（目次が一つも出なくなった）。`toTop()` にした。
 
+## 商標（2026-09-03 に確認して直した）
+
+> 007の著作権ちょっと心配なんだけど大丈夫なの
+
+**著作権は薄い。**コードは一行も持ってきていない（全部書き起こし）。
+短い機能表示（`Found 4 files`）や Unicode 記号（`⏺ ⎿ ✻`）は著作物になりにくい。
+
+**問題は商標だった。**公式にこう書いてある。
+
+> You can accurately say, in plain text, that your product has Claude Code
+> preinstalled or that it runs Claude Code. But you cannot use the Claude Code
+> or Anthropic names or logos as part of your own product, feature, or company
+> name, in your own logo, or in a way that suggests Anthropic built, endorses,
+> or is partnered with your product.
+> — https://code.claude.com/docs/en/legal-and-compliance
+
+（原文は `you can't use`。引用の都合で綴りを開いてある）
+
+商標ガイドライン（https://www.anthropic.com/legal/trademark-guidelines）にも
+**「色・フォント・比率の変更は不可／供給されたロゴのみ」**とある。
+**ルック＆フィールの模倣については、記載が無い。**
+
+| 出していたもの | どうしたか |
+| --- | --- |
+| 上の帯の `claude` | **`alter` にした。**平文で事実を言うのではなく、自分の画面の一部として掲げていた |
+| 上の帯の `opus 4.6` | **消した。**製品名を自分のステータスバーに置いていた |
+| `⏺ ⎿ ✻`、黒地、`Read()`、`esc to interrupt` | **残した。**商標ではない。効いているのはこちら |
+
+**名前を外しても、この案は成立する。**効いているのは記号と間の取り方だった。
+
+**まだ残っている製品の言い回し**（商標ではないが、Claude Code の文言そのまま）。
+外しても何も失われない。**本番に採用するなら外す。**
+
+- `⏵⏵ auto-accept edits on`（上の帯）
+- `? for shortcuts`（下）
+- `Context left until auto-compact: 78%`（下）
+
+**005・008 の「実装は AI（Claude）が行いました」は、許されている形**
+（平文で事実を言う）。そこは変えていない。
+
+**法律の判断はしていない。**本番採用なら法務の一言を取ること。
+書面の許諾が要る場合の窓口は `marketing@anthropic.com`。
+
 ## 未解決
 
 1. **「すごさが AI に帰属する」に正面から乗っている。**006 の前提では弱点として
