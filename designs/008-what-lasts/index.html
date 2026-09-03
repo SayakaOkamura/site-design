@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>8 Alter Design Consulting</title>
 <link rel="stylesheet" href="../../assets/css/reset.css">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <!-- =====================================================================
@@ -45,23 +45,17 @@
 <header class="head">
   <div class="wrap">
     <p class="name">株式会社アルターデザインコンサルティング</p>
-    <!-- **実演はここ一つだけ。**（2026-09-03）
-         案内に、答えのある4つと、**答えの無い2つ**を同じ並びで置いてある。
-         押すと、答えのあるほうは節へ飛ぶ。**無いほうは、無いと返る。**
-
-         これが「先に形にして、足りないところが出る」の最小の形。
-         **言葉で言わずに、押した人にだけ起きる。**
-         言っているのは「このページには置いていません」で、
-         **会社に無い、とは言っていない**（出どころと確認日は下に出してある）。 -->
+    <!-- **足りないものは、わざわざ出さない。**（2026-09-03）
+         > あと足りないものわざわざアピールしなくていい、情報自体は007と同じ
+         案内に「料金」「実績・事例」を並べて、押すと「置いていません」と
+         返す作りにしていたが、**無いものを自分から見せて回る形**になっていた。
+         落とした。**中身は 007 と同じ**（理念・サービス・会社概要・お問い合わせ）。 -->
     <nav class="nav">
       <a href="#philosophy">企業理念</a>
       <a href="#services">サービス</a>
       <a href="#company">会社概要</a>
       <a href="#contact">お問い合わせ</a>
-      <button type="button" class="none" data-none="料金">料金</button>
-      <button type="button" class="none" data-none="実績・事例">実績・事例</button>
     </nav>
-    <p class="reply" id="reply" hidden></p>
   </div>
 </header>
 
@@ -176,8 +170,6 @@ const CMD = [
   { k:'サービス',  t:'サービスへ',        go:'services' },
   { k:'会社概要',  t:'会社概要へ',        go:'company' },
   { k:'問い合わせ',t:'お問い合わせへ',    go:'contact' },
-  { k:'料金',      t:'このページには置いていません', say:'料金は、このページには置いていません。' },
-  { k:'実績',      t:'このページには置いていません', say:'実績・事例は、このページには置いていません。' },
   { k:'出どころ',  t:'いつ時点の情報か',  say:'alt-dsgn.co.jp に出ている言葉です。2026年9月3日に確認しました。' },
 ];
 
@@ -297,6 +289,17 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
     });
     h.replaceChild(frag, n);
   });
+  /* **気づかないかも、への手当て。**（2026-09-03）
+     > 面白いけど気づかないかも
+     開いて少し経ったら、**「遊」の一字だけが一度跳ねる。**
+     触れることの合図。**言葉では書かない。**一度だけで、繰り返さない。 */
+  const asobu = [].slice.call(h.querySelectorAll('.ch')).filter(function(s){
+    return s.textContent === '遊';
+  })[0];
+  if (asobu && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+    setTimeout(function(){ asobu.classList.add('hop'); }, 1400);
+  }
+
   h.addEventListener('click', function(e){
     const s = e.target.closest('.ch');
     if (!s) return;
@@ -310,19 +313,5 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
 console.log('/ を押すと、このページに聞けます。');
 </script>
 
-<script>
-/* **008 で唯一の JavaScript。**前は一行も無かった（2026-09-03 に足した）。
-   実演を一つだけ入れると決めたので、そのぶんだけ。 */
-const reply = document.getElementById('reply');
-document.querySelectorAll('.none').forEach(function(b){
-  b.addEventListener('click', function(){
-    document.querySelectorAll('.none').forEach(function(o){ o.classList.remove('asked'); });
-    b.classList.add('asked');
-    /* **会社に無い、とは言わない。**このページに置いていない、と言う */
-    reply.textContent = b.dataset.none + 'は、このページには置いていません。';
-    reply.hidden = false;
-  });
-});
-</script>
 </body>
 </html>
