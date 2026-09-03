@@ -181,11 +181,23 @@ a{color:inherit}
   pointer-events:none;z-index:0;overflow:visible;
   display:none;
 }
+/* **罫線と同じ重さにする。**線が罫線を引き受けるので、インクを増やさない。
+   罫（1px #e3d8f0）より少しだけ強い紫にして、繋ぎ目が見える程度に。 */
 .thread path{
-  fill:none;stroke:var(--accent);stroke-width:2;opacity:.5;
-  stroke-linecap:round;
+  fill:none;stroke:#cbb8e0;stroke-width:1.5;
+  stroke-linecap:butt;
 }
 @media (min-width:1120px){ .thread{display:block} }
+
+/* **もう置いてある罫線を、線が引き受ける。**（2026-09-03）
+   > 悪くない、けど必然性がない／配置に理由がないな……
+   線を新しく置くのをやめた。**節を分けている罫線を繋いだだけ**にしてある。
+   だから「なぜそこに置いたか」を答える必要が無い。罫線がそこにあったから。
+   JS が動いたときだけ透明にする（動かなければ罫線はそのまま残る）。 */
+@media (min-width:1120px){
+  .threaded main .creed,
+  .threaded main .sec{border-bottom-color:transparent}
+}
 
 /* **線の始まり。**社名の左の輪。開いて一度だけ回る（繰り返さない）。
    一箇所だけ色を抜いてあるので、回っているのが見える。 */

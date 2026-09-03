@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>8 Alter Design Consulting</title>
 <link rel="stylesheet" href="../../assets/css/reset.css">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 <!-- =====================================================================
@@ -344,25 +344,22 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
   const p    = document.getElementById('threadPath');
   const mark = document.querySelector('.mark');
   const mail = document.querySelector('.mail a');
-  const main = document.querySelector('main.wrap');
-  if (!svg || !p || !mark || !mail || !main) return;
+  if (!svg || !p || !mark || !mail) return;
 
-  let len = 0;
+  let len = 0, head = 0;             /* head = 開いた時点で引いてある割合 */
 
   const box = function(el){
     const r = el.getBoundingClientRect();
     return { x:r.left + scrollX, y:r.top + scrollY, w:r.width, h:r.height };
   };
 
-  /* S字ひとつ。**曲がるのは円弧の中だけ**（G と同じ組み方）。
-     半径は振り幅の半分にすると、出る円弧と受ける円弧がぴったり閉じる。 */
-  function sJog(fromX, toX, y){
-    const r = Math.abs(toX - fromX) / 2;
-    const cw = toX > fromX ? 1 : 0;
-    return ' L ' + fromX + ' ' + (y - r)
-         + ' A ' + r + ' ' + r + ' 0 0 ' + cw + ' ' + ((fromX + toX) / 2) + ' ' + y
-         + ' A ' + r + ' ' + r + ' 0 0 ' + (1 - cw) + ' ' + toX + ' ' + (y + r);
-  }
+  /* 角。**曲がるのは円弧の中だけ。**
+     SVG は y が下向きなので `sweep=1` が画面の時計回り。
+       下→右 0 ／ 右→下 1 ／ 下→左 1 ／ 左→下 0
+     （前は右振りを 1 にしていて、継ぎ目に 90度の角が2つできていた） */
+  const arc = function(r, sweep, x, y){
+    return ' A ' + r + ' ' + r + ' 0 0 ' + sweep + ' ' + x + ' ' + y;
+  };
 
   function build(){
     const W = document.documentElement.clientWidth;
@@ -371,49 +368,78 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
     svg.style.width  = W + 'px';
     svg.style.height = H + 'px';
 
-    /* **始まりは社名の左の輪。終わりは宛先。**両端に理由がある */
-    const m = box(mark), t = box(mail), c = box(main);
-    const x0 = Math.round(m.x + m.w / 2);
+    const m = box(mark), t = box(mail);
+    const x0 = Math.round(m.x + m.w / 2);      /* 社名の輪 */
     const y0 = Math.round(m.y + m.h);
-    const xe = Math.round(t.x - 14);
+    const xe = Math.round(t.x - 14);           /* 宛先の手前 */
     const ye = Math.round(t.y + t.h / 2);
 
-    /* 通り道は**本文の左の余白。**文字の下は通らない */
-    const X = [Math.round(c.x - 170), Math.round(c.x - 90)];
-    const R = (X[1] - X[0]) / 2;                /* 節の切り替わりの振り幅の半分 */
+    /* **もう置いてある罫線を拾う。**線を新しく置くのではなく、これを繋ぐ */
+    const rules = [].slice.call(document.querySelectorAll('main .creed, main .sec'))
+      .filter(function(el){ return getComputedStyle(el).borderBottomStyle !== 'none'; })
+      .map(function(el){
+        const b = box(el), st = getComputedStyle(el);
+        /* 半径は**節の下の空きそのまま。**ここでも数字は選ばない */
+        const below = parseFloat(st.paddingBottom) || 0;
+        const nx = el.nextElementSibling;
+        const above = nx ? (parseFloat(getComputedStyle(nx).paddingTop) || 0) : below;
+        return {
+          y: Math.round(b.y + b.h),
+          L: Math.round(b.x),
+          R: Math.round(b.x + b.w),
+          r: Math.max(8, Math.round(Math.min(below, above)))
+        };
+      })
+      .filter(function(ru){ return ru.y > y0 + ru.r && ru.y < ye - ru.r * 2; });
 
     let d = 'M ' + x0 + ' ' + y0;
-    d += sJog(x0, X[0], y0 + 130);              /* 輪から余白へ、ひと振りで移る */
+    let x = x0, first = -1;
 
-    /* 曲がる場所は節の頭。**読み進みと曲がりが揃う** */
-    let i = 0;
-    [].slice.call(document.querySelectorAll('main .sec'))
-      .map(function(el){ return box(el).y; })
-      .filter(function(y){ return y > y0 + 130 + R * 2 && y < ye - R * 3; })
-      .forEach(function(y){
-        d += sJog(X[i % 2], X[(i + 1) % 2], y);
-        i += 1;
-      });
+    rules.forEach(function(ru, i){
+      const to   = (x - ru.L) < (ru.R - x) ? ru.R : ru.L;   /* 遠いほうへ渡る */
+      const east = to > x;
+      const r = ru.r;
+      d += ' L ' + x + ' ' + (ru.y - r);
+      d += arc(r, east ? 0 : 1, x + (east ? r : -r), ru.y);          /* 下→横 */
+      d += ' L ' + (to - (east ? r : -r)) + ' ' + ru.y;              /* **罫線そのもの** */
+      d += arc(r, east ? 1 : 0, to, ru.y + r);                       /* 横→下 */
+      x = to;
+      if (i === 0) first = ru.y + r;
+    });
 
-    /* **最後は本文へ入り込んで、宛先の手前で止まる** */
-    const last = X[i % 2];
-    d += ' L ' + last + ' ' + (ye - R);
-    d += ' A ' + R + ' ' + R + ' 0 0 0 ' + (last + R) + ' ' + ye;
+    /* 最後は宛先の手前で止まる */
+    const rr = rules.length ? rules[rules.length - 1].r : 24;
+    const east = xe > x;
+    d += ' L ' + x + ' ' + (ye - rr);
+    d += arc(rr, east ? 0 : 1, x + (east ? rr : -rr), ye);
     d += ' L ' + xe + ' ' + ye;
     p.setAttribute('d', d);
 
-    len = p.getTotalLength();       /* **実測。**直値で書かない */
+    len = p.getTotalLength();        /* **実測。**直値で書かない */
     p.style.strokeDasharray = len;
+
+    /* 開いた時点で、**1本目の罫線までは引いてある**（罫線が欠けて見えないように） */
+    head = 0.08;
+    if (first > 0){
+      let lo = 0, hi = len;
+      for (let k = 0; k < 14; k++){
+        const mid = (lo + hi) / 2;
+        (p.getPointAtLength(mid).y < first) ? (lo = mid) : (hi = mid);
+      }
+      head = Math.min(0.9, hi / len);
+    }
     draw();
   }
 
-  /* 読むほど引かれる。**輪が回り終わってから伸びはじめる** */
-  let grown = 0;
+  /* 読むほど引かれる。**その節の区切り線は、読者が着いたときに引かれる** */
   function draw(){
     const max = document.documentElement.scrollHeight - innerHeight;
     const r = max > 0 ? Math.min(1, scrollY / max) : 1;
-    p.style.strokeDashoffset = len * (1 - Math.max(grown, r));
+    p.style.strokeDashoffset = len * (1 - Math.max(head, r));
   }
+
+  /* **線が罫線を引き受ける。**CSS の罫は透明にする（JS が動いたときだけ） */
+  document.documentElement.classList.add('threaded');
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches){
     build();
@@ -423,8 +449,6 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
     build();
     addEventListener('scroll', draw, { passive:true });
     addEventListener('resize', build);
-    /* 輪が一回まわる（0.8秒）。**回り終わったところから線が出る** */
-    setTimeout(function(){ grown = 0.14; draw(); }, 820);
   }
 })();
 
