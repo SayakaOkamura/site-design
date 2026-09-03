@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 <!-- =====================================================================
@@ -67,7 +67,7 @@
   <!-- 目次。**置いてあるものが全部見える。**無いもの（事例・料金）は並ばない。
        いま読んでいるところに印、読み終わったものに ✓。**いつでも押せる。** -->
   <nav class="side">
-    <div class="sh">~/alter-design</div>
+    <div class="sh">聞けること</div>
     <ul id="tree"></ul>
     <div class="sf" id="sf">enter で送ります</div>
   </nav>
@@ -92,7 +92,7 @@
   </div>
   <div class="hint">
     <span class="keys"><b>enter</b> 送る</span>
-    <span class="keys"><b>数字</b> 選ぶ</span>
+    <span class="keys"><b>1</b>–<b>5</b> 選ぶ</span>
     <span class="keys"><b>esc</b> 最後まで出す</span>
     <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
@@ -120,28 +120,21 @@
      think ✻ 考えている（回る記号・経過秒・esc to interrupt）
    ===================================================================== */
 /* =====================================================================
-   話題ごとの台本。**流れは1本ではない。**選んだものだけ流す。
+   話題。**注文の言葉と、左の目次の言葉を同じにしてある**（2026-09-03）
 
-   並びは**会社サイトの順**（2026-09-02 に直した）。前は
-   「訪問者が知りたい順」に自分で並べ替えたが、本来の会社 HP の順のほうが
-   探しやすい、という指摘で戻した。
+   > ClaudeCodeに投げる質問と横の目次同じでいい気がする。横に合わせて。
+   > あとmdって入れるのは露骨すぎる。もっと一般層でも見れるようにして
 
-   一度聞いたものも**もう一度聞ける**（戻れることが要点）。
-   log は消さないので、上に遡っても読める。
+   目次は**言葉**（できること／事例と料金…）。**押すと、その言葉が
+   そのまま注文として送られる。**二つの言い方を持たない。
+
+   `.md` は目次から外した。ファイル名が出るのは Claude が読みにいく行のほう
+   （`⏺ Read(会社概要.md)`）。**人は言葉で言い、道具はファイルで動く。**
+
+   1つめ（このサイトのこと）は、開いた瞬間に人の行なしで流れる。
    ===================================================================== */
 const T = [
-  /* **1つめは、人の行なしで動く。**（2026-09-03）
-     ここは何度も替えた。`何ができる？`（誰が誰に聞いているか分からない）、
-     `ここ、何？`（問いかけには変わりない）、`クリックしてください`
-     （**押す動機がない**）。**注文を置くのをやめた。**
-
-     開いた瞬間、**Claude 側だけが勝手に動く。**回る記号が出て、CLAUDE.md を
-     読んで、止まる。**動くものがあると目が行く。止まったところで人に渡る。**
-     人の行は出さないので、機械が注文を送ったことにはならない。
-     起動直後の Claude Code そのもの。
-
-     `q` は目次から押し直したときにだけ使う（そのときは人が押している）。 */
-  { k:'このサイト', q:'ここのルールは？', s:[
+  { k:'このサイトのこと', s:[
       { t:'think', x:'読んでいます' },
       { t:'tool', x:'Read', a:'CLAUDE.md' },
       { t:'md',   f:'CLAUDE.md', x:[
@@ -152,7 +145,8 @@ const T = [
         ]},
     ]},
 
-  { k:'サービス', q:'何ができる？', s:[
+  /* できること ＝ サービス → 進め方 → やらないこと */
+  { k:'できること', s:[
       { t:'tool', x:'Glob', a:'サービス/*.md' },
       { t:'res',  x:'Found 4 files', exp:true },
       { t:'list', x:[
@@ -161,17 +155,11 @@ const T = [
           ['自律共創型の組織デザイン', '個の自律とチームの協働を両立する構造'],
           ['地域のデジタル格差支援', 'ノーコードとクラウドAI、DX人材の育成'],
         ]},
-    ]},
-
-  { k:'進め方', q:'どうやるの？', s:[
       { t:'tool', x:'Read', a:'進め方.md' },
       { t:'md',   f:'進め方.md', x:[
           '決まっていないところは、先に形にしてから出す',
           '決めるのは御社の会議。うちは足りない決めごとを見つけるところまで',
         ]},
-    ]},
-
-  { k:'やらないこと', q:'やらないことは？', s:[
       { t:'tool', x:'Read', a:'やらないこと.md' },
       { t:'md',   f:'やらないこと.md', x:[
           '言われたとおりに作って、それで終わること',
@@ -180,19 +168,18 @@ const T = [
         ]},
     ]},
 
-  { k:'実績・事例', q:'事例は？', s:[
+  /* **このサイトで一番変なところ。**無いものが 0件として出る。2つ続けて出す */
+  { k:'事例と料金', s:[
       { t:'tool', x:'Glob', a:'事例/**/*.md' },
       { t:'res',  x:'No files found' },
       { t:'say',  x:'掲載できる事例は、<b>まだありません。</b>2025年6月に始めた会社です。' },
-    ]},
-
-  { k:'料金', q:'料金は？', s:[
       { t:'tool', x:'Read', a:'料金.md' },
       { t:'res',  x:'File does not exist' },
       { t:'say',  x:'置いていません。<b>決める工程から入る</b>ので、範囲が決まるまで金額が出せません。' },
     ]},
 
-  { k:'会社概要', q:'会社概要', s:[
+  /* 会社概要 → 登記・株主 → 理念。**名乗りは最後**（G と同じ） */
+  { k:'会社のこと', s:[
       { t:'tool', x:'Read', a:'会社概要.md' },
       { t:'md',   f:'会社概要.md', x:[
           '株式会社アルターデザインコンサルティング',
@@ -200,23 +187,17 @@ const T = [
           '設立　2025年6月／資本金 6,000万円',
           '東京都港区西新橋3-23-5 ANYZ304',
         ]},
-    ]},
-
-  { k:'登記・株主', q:'登記とか株主は？', s:[
       { t:'tool', x:'Read', a:'会社概要.md#登記' },
       { t:'md',   f:'会社概要.md#登記', x:[
           'AI技術を活用した組織最適化に関するコンサルティング事業',
           'AIとローコードを組み合わせた次世代型のシステム開発事業',
           '株主：BlueMeme／ハイ・アベイラビリティ・システムズ／サーバーワークス・キャピタル／リックソフト',
         ]},
-    ]},
-
-  { k:'理念', q:'理念は？', s:[
       { t:'tool', x:'Read', a:'理念.md' },
       { t:'quote', x:'経営の力で「遊ぶように働く世界」をデザインする。' },
     ]},
 
-  { k:'お問い合わせ', q:'相談したい', s:[
+  { k:'相談したい', s:[
       { t:'tool', x:'Write', a:'お問い合わせ.md' },
       { t:'md',   f:'お問い合わせ.md', x:[
           'info@alter-dsgn.co.jp',
@@ -465,52 +446,27 @@ function put(s, end){
    ===================================================================== */
 const tree = document.getElementById('tree');
 
-/* 目次。**置いてあるファイルの木**として出す */
-const FILES = ['CLAUDE.md', 'サービス/', '進め方.md', 'やらないこと.md', '事例/', '料金.md',
-               '会社概要.md', '会社概要.md#登記', '理念.md', 'お問い合わせ.md'];
-
+/* 目次。**押すと、その言葉がそのまま注文になる。**言い方は一つ */
 T.forEach(function(t, n){
   const li = document.createElement('li');
   li.innerHTML = '<button type="button" data-n="' + n + '">' +
     '<span class="k">' + (n + 1) + '</span>' +
-    '<span class="c">' + FILES[n] + '</span></button>';
+    '<span class="c">' + t.k + '</span></button>';
   tree.appendChild(li);
 });
 
 function btn(n){ return tree.querySelector('button[data-n="' + n + '"]'); }
 
-function light(list){
+function light(n){
   [].forEach.call(tree.querySelectorAll('button'), function(b){ b.classList.remove('now'); });
-  list.forEach(function(n){ const b = btn(n); if (b) b.classList.add('now'); });
-  const head = btn(list[0]);
-  if (head) head.scrollIntoView({ block:'nearest' });
+  const b = btn(n);
+  if (b){ b.classList.add('now'); b.scrollIntoView({ block:'nearest' }); }
 }
 
-/* =====================================================================
-   注文は4つ。**目次は10のまま。**（2026-09-03）
-
-   > クリックいちいちさせるのだるいかなあ、でも体験としてはこっちの方が
-   > いいんだよな、迷う ／ 情報量増やして量を減らす？
-
-   1回1件だと、**押した割に返ってくるものが軽い。**訪問者がひと息で聞く
-   単位にまとめて、9回 → 4回にした。**まとめるのは流れのほうだけ。**
-   目次から押したときは、これまでどおり1件だけ出る
-   （「1つの答えに1つのこと」は、そちらに残してある）。
-   ===================================================================== */
-const G = [
-  { q:'何ができて、どう進める？', k:['サービス', '進め方', 'やらないこと'] },
-  { q:'事例と料金は？',           k:['実績・事例', '料金'] },
-  { q:'会社のことは？',           k:['会社概要', '登記・株主', '理念'] },
-  { q:'相談したい',               k:['お問い合わせ'] },
-];
-function at(k){ for (let i = 0; i < T.length; i++) if (T[i].k === k) return i; return -1; }
-function ids(g){ return G[g].k.map(at).filter(function(n){ return n >= 0; }); }
-
-/* nowAt   最後に出した話題        runIds  いま流している話題の並び
-   nowG    いまのまとまり          pending 枠に打ってあって、まだ送っていないまとまり
+/* nowAt   いま出している話題
+   pending 枠に打ってあって、まだ送っていない話題（-1 は無し）
    tok     打っている途中のもの。別のものを選ばれたら、前のは止まる */
-let queue = [], qi = 0, nowAt = -1, nowG = -1, runIds = [];
-let busyNow = false, pending = -1, timer = 0, tok = 0;
+let queue = [], qi = 0, nowAt = -1, busyNow = false, pending = -1, timer = 0, tok = 0;
 
 function state(){
   /* 次の注文を打ちはじめるまでの間は、何も言わない（空にする） */
@@ -523,44 +479,42 @@ function state(){
 }
 
 /* 下の枠に打つ。**送らない。**送るのは人 */
-function write(g){
-  const t = G[g];
+function write(n){
+  const t = T[n];
   if (!t) return;
   const my = ++tok;
-  pending = g;
+  pending = n;
   typed.textContent = '';
   state();
-  if (STILL){ typed.textContent = t.q; return; }
+  if (STILL){ typed.textContent = t.k; return; }
   let i = 0;
   (function tick(){
     if (my !== tok) return;       /* 途中で別のものを選ばれたら、打つのをやめる */
-    typed.textContent = t.q.slice(0, ++i);
-    if (i < t.q.length) setTimeout(tick, 38);
+    typed.textContent = t.k.slice(0, ++i);
+    if (i < t.k.length) setTimeout(tick, 38);
   })();
 }
 
 /* 送る。**ここから先が自動** */
-function send(){ if (pending >= 0){ const g = pending; nowG = g; run(G[g].q, ids(g)); } }
+function send(){ if (pending >= 0) go(pending); }
 
-/* 流す。alone を立てると、人の行を出さずに Claude 側だけ動かす（開いた瞬間の1回） */
-function run(q, list, alone){
-  if (!list.length) return;
+/* alone を立てると、人の行を出さずに Claude 側だけ動かす（開いた瞬間の1回） */
+function go(n, alone){
+  const t = T[n];
+  if (!t) return;
   pending = -1; flush = false; rush = !!alone; ++tok;
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
-  runIds = list; nowAt = list[list.length - 1];
-  busyNow = true;
-  light(list); state();
+  nowAt = n; busyNow = true;
+  light(n); state();
   typed.textContent = '';
-  if (!alone) el('row you', '<span>&gt;</span> ' + q);
+  if (!alone) el('row you', '<span>&gt;</span> ' + t.k);
   bottom();
-  queue = [];
-  list.forEach(function(n){ queue = queue.concat(T[n].s); });
-  qi = 0;
+  queue = t.s.slice(); qi = 0;
   runQueue();
 }
 
-/* 目次と数字キー。**1件だけ出す。**押したこと自体が送る動きなので、打ってから送る */
+/* 目次と数字キー。**押したこと自体が送る動き**なので、打ってから送る */
 function jump(n){
   if (!T[n]) return;
   clearTimeout(timer);
@@ -568,12 +522,12 @@ function jump(n){
   pending = -1;
   typed.textContent = '';
   state();
-  if (STILL){ run(T[n].q, [n]); return; }
+  if (STILL){ go(n); return; }
   let i = 0;
   (function tick(){
     if (my !== tok) return;
-    typed.textContent = T[n].q.slice(0, ++i);
-    if (i < T[n].q.length) setTimeout(tick, 30); else run(T[n].q, [n]);
+    typed.textContent = T[n].k.slice(0, ++i);
+    if (i < T[n].k.length) setTimeout(tick, 30); else go(n);
   })();
 }
 
@@ -585,30 +539,26 @@ function runQueue(){
   done();
 }
 
-/* ひとまとまり終わった。**出したもの全部に ✓ を付けて、次の注文を枠に打つ。**送りはしない */
+/* ひとつ終わった。**✓ を付けて、次の注文を枠に打つ。**送りはしない */
 function done(){
   /* esc のあと、途中だった行が戻ってきて二度呼ばれることがある */
   if (!busyNow) return;
   busyNow = false;
-  runIds.forEach(function(n){ const b = btn(n); if (b) b.classList.add('seen'); });
+  const b = btn(nowAt);
+  if (b) b.classList.add('seen');
   meter(); bottom(); state();
-  const g = nextG();
-  if (g >= 0) timer = setTimeout(function(){ write(g); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
+  const n = next();
+  if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
   rush = false;                 /* 速いのは開いた瞬間の1回だけ */
 }
 
-/* 次に打つまとまり。**まだ出していないものが残っているところ。**
-   目次から先に押されて中身が埋まったところは飛ばす。終わりまで行ったら頭に戻る。
-   `nowG` は**流したまとまり**だけを指す（枠に打っただけでは進めない。
-   進めると、目次を1件押したあとに、打ちかけだったまとまりへ戻ってこない） */
-function nextG(){
-  for (let i = 1; i <= G.length; i++){
-    const j = (nowG + i + G.length) % G.length;
-    const left = ids(j).some(function(n){
-      const b = btn(n);
-      return b && !b.classList.contains('seen');
-    });
-    if (left) return j;
+/* 次に打つ話題。**まだ出していないもの。**目次から先に押されたものは飛ばす。
+   終わりまで行ったら頭に戻って、残っているものを拾う */
+function next(){
+  for (let i = 1; i <= T.length; i++){
+    const j = (nowAt + i + T.length) % T.length;
+    const b = btn(j);
+    if (b && !b.classList.contains('seen')) return j;
   }
   return -1;
 }
@@ -642,12 +592,7 @@ box.addEventListener('click', send);
 
 addEventListener('keydown', function(e){
   if (e.key === 'Enter'){ e.preventDefault(); send(); return; }
-  /* 話題が10になったので、10番目は 0（実物の並びと同じ数え方） */
-  if (e.key >= '0' && e.key <= '9'){
-    const n = e.key === '0' ? 9 : (+e.key - 1);
-    if (n < T.length) jump(n);
-    return;
-  }
+  if (e.key >= '1' && e.key <= '9'){ jump(+e.key - 1); return; }
   if (e.key === 'Escape'){ e.preventDefault(); if (busyNow) rest(); }
 });
 
@@ -659,14 +604,14 @@ meter();
 if (STILL){
   T.forEach(function(t, n){
     nowAt = n;
-    el('row you', '<span>&gt;</span> ' + t.q);
+    el('row you', '<span>&gt;</span> ' + t.k);
     queue = t.s.slice(); qi = 0;
     while (qi < queue.length) put(queue[qi++], function(){});
     const b = btn(n); if (b) b.classList.add('seen');
   });
   typed.textContent = ''; meter(); state();
 }
-else run(T[0].q, [0], true);
+else go(0, true);
 </script>
 </body>
 </html>
