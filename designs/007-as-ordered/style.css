@@ -214,6 +214,9 @@ body{
    **面は先に置いて、中の行だけ順に出す。**（面ごと出すと画面が跳ねる） */
 .stagger > *{opacity:0}
 .stagger > *.in{opacity:1;transition:opacity .2s ease}
+/* 貼るときは、ふわっとも出さない（2026-09-03） */
+.stagger.flat > *,
+.stagger.flat > *.in{transition:none}
 @media (prefers-reduced-motion:reduce){
   .stagger > *{opacity:1}
 }
@@ -267,6 +270,9 @@ body{
    **面は先に置いて、中の行だけ順に出す。**（面ごと出すと画面が跳ねる） */
 .stagger > *{opacity:0}
 .stagger > *.in{opacity:1;transition:opacity .2s ease}
+/* 貼るときは、ふわっとも出さない（2026-09-03） */
+.stagger.flat > *,
+.stagger.flat > *.in{transition:none}
 @media (prefers-reduced-motion:reduce){
   .stagger > *{opacity:1}
 }

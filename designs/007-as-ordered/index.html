@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=16">
+<link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
 <!-- =====================================================================
@@ -287,7 +287,24 @@ function el(cls, html){
   log.appendChild(d);
   return d;
 }
-function bottom(){ view.scrollTop = view.scrollHeight; }
+/* **貼るときは、下へ送らない。**（2026-09-03）
+   > 次々切り替えたとき、下からぐあんとなる動きが結構目に負担掛かる
+   打っているあいだは1行ずつ伸びるので、下へ送っても目はついていける。
+   **貼るときは一気に伸びるので、そのぶん画面が飛ぶ。**
+   だから貼るあいだは送らず、出しきってから**その注文の行を頭に置く**
+   （下から上がってくるのではなく、読むところが上に来る）。 */
+let hold = false;               /* 貼っているあいだは、下へ送らない */
+let head = null;                /* いま出している注文の行 */
+
+function bottom(){ if (!hold) view.scrollTop = view.scrollHeight; }
+
+/* その注文の行を、読むところの頭に置く。
+   **`top` という名前は使えない**（window.top とぶつかって、丸ごと落ちる） */
+function toTop(){
+  if (!head) return;
+  const d = head.getBoundingClientRect().top - view.getBoundingClientRect().top;
+  view.scrollTop += d - 12;
+}
 
 /* 1文字ずつ。**速さは一定。**待たせる間は作らない */
 function type(node, text, per, end){
@@ -334,7 +351,12 @@ function think(s, end){
 function reveal(box, per, end){
   const kids = [].slice.call(box.children);
   box.classList.add('stagger');
-  const done = function(){ kids.forEach(function(k){ k.classList.add('in'); }); end(); };
+  /* 貼るときは**ふわっとも出さない。**面ごと 0.2 秒で浮くと、それが「ぐあん」に見える */
+  const done = function(){
+    box.classList.add('flat');
+    kids.forEach(function(k){ k.classList.add('in'); });
+    end();
+  };
   if (STILL || flush){ done(); return; }
   const html = kids.map(function(k){ return k.innerHTML; });
   kids.forEach(function(k){ k.innerHTML = ''; });
@@ -554,10 +576,11 @@ function go(n, boot, paste){
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
   flush = !!paste;
+  hold = !!paste;               /* 貼るあいだは下へ送らない */
   nowAt = n; busyNow = true;
   light(n); state();
   typed.textContent = '';
-  el('row you', '<span>&gt;</span> ' + ask(n));
+  head = el('row you', '<span>&gt;</span> ' + ask(n));
   bottom();
   queue = t.s.slice(); qi = 0;
   runQueue();
@@ -604,6 +627,8 @@ function done(){
   if (b) b.classList.add('seen');
   meter(); bottom(); state();
   if (tree.querySelectorAll('button.seen').length >= T.length) tail();
+  /* 貼り終わったら、送るのではなく**その注文の行を頭に置く** */
+  if (hold){ hold = false; toTop(); }
   /* **下の枠が動くのは、上が止まってから。**（2026-09-03）
      > 2箇所動くと結構目が引っ張られるな。やっぱり別にしようか、動くタイミング
      一度、出きる直前から重ねて打つようにしたが、**上と下が同時に動くと目が散る。**
