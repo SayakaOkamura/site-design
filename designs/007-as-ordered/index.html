@@ -125,8 +125,8 @@
    > ClaudeCodeに投げる質問と横の目次同じでいい気がする。横に合わせて。
    > あとmdって入れるのは露骨すぎる。もっと一般層でも見れるようにして
 
-   目次は**言葉**。**押すと、その言葉がそのまま注文として送られる。**
-   二つの言い方を持たない。
+   目次は**言葉**。**押すと、その言葉に「は？」を付けて送る**（`ask()`）。
+   目次は見出しのまま、送るほうは問いになる。**言葉は一つ。**
 
    言葉は**会社サイトの見出し**（サービス／実績・料金／会社概要／お問い合わせ）。
    一度やわらかく書いたが（できること／相談したい）、**硬めに合わせた。**
@@ -138,7 +138,7 @@
    1つめ（このサイトのこと）は、開いた瞬間に人の行なしで流れる。
    ===================================================================== */
 const T = [
-  { k:'このサイトについて', s:[
+  { k:'このサイト', s:[
       { t:'think', x:'読んでいます' },
       { t:'tool', x:'Read', a:'CLAUDE.md' },
       { t:'md',   f:'CLAUDE.md', x:[
@@ -461,6 +461,10 @@ T.forEach(function(t, n){
 
 function btn(n){ return tree.querySelector('button[data-n="' + n + '"]'); }
 
+/* 送る言葉。**目次の見出しに「は？」を付けるだけ。**
+   目次は見出しとして読ませ、送るほうは問いにする（2026-09-03） */
+function ask(n){ return T[n].k + 'は？'; }
+
 function light(n){
   [].forEach.call(tree.querySelectorAll('button'), function(b){ b.classList.remove('now'); });
   const b = btn(n);
@@ -490,12 +494,13 @@ function write(n){
   pending = n;
   typed.textContent = '';
   state();
-  if (STILL){ typed.textContent = t.k; return; }
+  const q = ask(n);
+  if (STILL){ typed.textContent = q; return; }
   let i = 0;
   (function tick(){
     if (my !== tok) return;       /* 途中で別のものを選ばれたら、打つのをやめる */
-    typed.textContent = t.k.slice(0, ++i);
-    if (i < t.k.length) setTimeout(tick, 38);
+    typed.textContent = q.slice(0, ++i);
+    if (i < q.length) setTimeout(tick, 38);
   })();
 }
 
@@ -512,7 +517,7 @@ function go(n, alone){
   nowAt = n; busyNow = true;
   light(n); state();
   typed.textContent = '';
-  if (!alone) el('row you', '<span>&gt;</span> ' + t.k);
+  if (!alone) el('row you', '<span>&gt;</span> ' + ask(n));
   bottom();
   queue = t.s.slice(); qi = 0;
   runQueue();
@@ -527,11 +532,12 @@ function jump(n){
   typed.textContent = '';
   state();
   if (STILL){ go(n); return; }
+  const q = ask(n);
   let i = 0;
   (function tick(){
     if (my !== tok) return;
-    typed.textContent = T[n].k.slice(0, ++i);
-    if (i < T[n].k.length) setTimeout(tick, 30); else go(n);
+    typed.textContent = q.slice(0, ++i);
+    if (i < q.length) setTimeout(tick, 30); else go(n);
   })();
 }
 
@@ -608,7 +614,7 @@ meter();
 if (STILL){
   T.forEach(function(t, n){
     nowAt = n;
-    el('row you', '<span>&gt;</span> ' + t.k);
+    el('row you', '<span>&gt;</span> ' + ask(n));
     queue = t.s.slice(); qi = 0;
     while (qi < queue.length) put(queue[qi++], function(){});
     const b = btn(n); if (b) b.classList.add('seen');
