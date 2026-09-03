@@ -3,7 +3,7 @@
 - 公開: https://sayakaokamura.github.io/site-design/designs/008-what-lasts/
 - 並走：`005-paper-flow/`／`006-sketches/g-ride.html`／`007-as-ordered/`
 - **レビューでもらった言葉は `designs/REVIEW.md`。**触る前に読む
-- **008 を土台に組み合わせた一本が `designs/009-one/`**（2026-09-03）
+- **組み合わせた一本は `designs/009-one/`**（2026-09-03。土台は 006-G。008 からは入口だけ持っていった）
 - 005・006・007 の NOTES に書いた却下・規則は、ここでもそのまま生きている
 
 ## なぜ作ったか（2026-09-03、本人の言葉から）
