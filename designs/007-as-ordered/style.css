@@ -289,14 +289,6 @@ body{
 @media (max-width:760px){ .hint .keys{display:none} }
 
 /* ---------- 目次のいちばん下（2026-09-03） ----------
-   「このサイト」は**案内の順の外。**開いた瞬間に出るぶんで、いつでも開き直せる。
-   順番の中に置くと、1番が黙って終わったように見えて、次が飛んで見える。 */
-.side li:last-child{
-  margin-top:10px;padding-top:10px;border-top:1px solid var(--line);
-}
-@media (max-width:760px){
-  .side li:last-child{
-    margin-top:0;padding-top:0;border-top:0;
-    border-left:1px solid var(--line);margin-left:8px;
-  }
-}
+   「このサイト」は案内の順の外だが、**線で区切ってはいない。**
+   > このサイト、を聞けることから分ける必要がない
+   開いた瞬間に一度出ているので ✓ が付いていて、それで足りている。 */
