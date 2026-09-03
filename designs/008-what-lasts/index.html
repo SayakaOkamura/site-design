@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>8 Alter Design Consulting</title>
 <link rel="stylesheet" href="../../assets/css/reset.css">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 <!-- =====================================================================
@@ -45,12 +45,23 @@
 <header class="head">
   <div class="wrap">
     <p class="name">株式会社アルターデザインコンサルティング</p>
+    <!-- **実演はここ一つだけ。**（2026-09-03）
+         案内に、答えのある4つと、**答えの無い2つ**を同じ並びで置いてある。
+         押すと、答えのあるほうは節へ飛ぶ。**無いほうは、無いと返る。**
+
+         これが「先に形にして、足りないところが出る」の最小の形。
+         **言葉で言わずに、押した人にだけ起きる。**
+         言っているのは「このページには置いていません」で、
+         **会社に無い、とは言っていない**（出どころと確認日は下に出してある）。 -->
     <nav class="nav">
       <a href="#philosophy">企業理念</a>
       <a href="#services">サービス</a>
       <a href="#company">会社概要</a>
       <a href="#contact">お問い合わせ</a>
+      <button type="button" class="none" data-none="料金">料金</button>
+      <button type="button" class="none" data-none="実績・事例">実績・事例</button>
     </nav>
+    <p class="reply" id="reply" hidden></p>
   </div>
 </header>
 
@@ -119,5 +130,20 @@
     <p class="fine">実装は AI（Claude）が行いました。</p>
   </div>
 </footer>
+
+<script>
+/* **008 で唯一の JavaScript。**前は一行も無かった（2026-09-03 に足した）。
+   実演を一つだけ入れると決めたので、そのぶんだけ。 */
+const reply = document.getElementById('reply');
+document.querySelectorAll('.none').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.none').forEach(function(o){ o.classList.remove('asked'); });
+    b.classList.add('asked');
+    /* **会社に無い、とは言わない。**このページに置いていない、と言う */
+    reply.textContent = b.dataset.none + 'は、このページには置いていません。';
+    reply.hidden = false;
+  });
+});
+</script>
 </body>
 </html>
