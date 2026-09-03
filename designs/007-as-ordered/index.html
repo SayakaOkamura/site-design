@@ -157,10 +157,11 @@
    目次から**外す**と開き直せない。**線で区切る**のもやめた。
    いまは**いちばん上に、そのまま並べてある。**
    - 開いた瞬間に流れるので、最初から ✓ が付いている
+   - **人の行（`> このサイトは？`）も出る。**ここだけ例外にしない
    - **案内の順の外**（`open`）。枠に最初に打たれるのは `サービスは？`
    - 案内が一周しても、ここへは戻らない。押せばいつでも開き直せる */
 const T = [
-  /* **案内の順の外**（`open`）。開いた瞬間に、人の行なしで流れるぶん。
+  /* **案内の順の外**（`open`）。開いた瞬間に流れるぶん。
      目次ではいちばん上。押せばいつでも開き直せる */
   { k:'このサイト', open:true, s:[
       { t:'think', x:'読んでいます' },
@@ -526,17 +527,19 @@ function write(n){
 /* 送る。**ここから先が自動** */
 function send(){ if (pending >= 0) go(pending); }
 
-/* alone を立てると、人の行を出さずに Claude 側だけ動かす（開いた瞬間の1回） */
-function go(n, alone){
+/* boot を立てるのは開いた瞬間の1回だけ。**速さが変わるだけで、出るものは同じ。**
+   > 「> このサイト」みたいなやついるよ、これだけ例外とかないから
+   人の行は、開いた瞬間も出す（2026-09-03）。**枠に打つのは省くが、行は省かない。** */
+function go(n, boot){
   const t = T[n];
   if (!t) return;
-  pending = -1; flush = false; rush = !!alone; ++tok;
+  pending = -1; flush = false; rush = !!boot; ++tok;
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
   nowAt = n; busyNow = true;
   light(n); state();
   typed.textContent = '';
-  if (!alone) el('row you', '<span>&gt;</span> ' + ask(n));
+  el('row you', '<span>&gt;</span> ' + ask(n));
   bottom();
   queue = t.s.slice(); qi = 0;
   runQueue();
