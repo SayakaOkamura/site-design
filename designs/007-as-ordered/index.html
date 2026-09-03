@@ -537,21 +537,23 @@ function send(){ if (pending >= 0) go(pending); }
 /* boot を立てるのは開いた瞬間の1回だけ。**速さが変わるだけで、出るものは同じ。**
    > 「> このサイト」みたいなやついるよ、これだけ例外とかないから
    人の行は、開いた瞬間も出す（2026-09-03）。**枠に打つのは省くが、行は省かない。** */
-function go(n, boot){
+/* boot   開いた瞬間の1回（速さだけ変わる）
+   paste  **打たずに貼る。**左の欄から出したときはこれ（2026-09-03）
+
+   > 二回目以降を記録できるなら二回目は入力なしでパン、と貼ってほしい
+   > パンのやつ、アクセスしたことあるかどうかに依存してほしいわけじゃないよ
+   > あー、いや、左の欄押して出したときって条件にするか
+
+   **条件は「左の欄から出したかどうか」。**来訪でも、出したことがあるかでもない。
+   一覧から選ぶのは**読みにいく動き**なので、待たせない。
+   上から順に流れているぶん（`enter`）は、これまでどおり打つ。 */
+function go(n, boot, paste){
   const t = T[n];
   if (!t) return;
-  /* **二度目は打たずに貼る。**（2026-09-03）
-     > 二回目以降を記録できるなら二回目は入力なしでパン、と貼ってほしい
-     > パンのやつ、アクセスしたことあるかどうかに依存してほしいわけじゃないよ
-     数えているのは**この話題を一度出したかどうか**（目次の ✓）。
-     来たことがあるかどうかではない。一度出したものを、もう一度打ち直さない。
-     **止まるところは同じ。出方だけが「打つ」から「貼る」に変わる。** */
-  const mark = btn(n);
-  const again = !!(mark && mark.classList.contains('seen'));
   pending = -1; rush = !!boot; ++tok;
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
-  flush = again;                /* 二度目は、その場で貼る */
+  flush = !!paste;
   nowAt = n; busyNow = true;
   light(n); state();
   typed.textContent = '';
@@ -562,23 +564,16 @@ function go(n, boot){
 }
 
 /* 目次と数字キー。**押したこと自体が送る動き**なので、打ってから送る */
+/* 左の欄と数字キー。**打たずに貼る。**押したこと自体が「読みにいく」動きなので、
+   注文を打って見せる間も置かない */
 function jump(n){
   if (!T[n]) return;
   clearTimeout(timer);
-  const my = ++tok;
+  ++tok;
   pending = -1;
   typed.textContent = '';
   state();
-  /* **一度出したものは、打つところも見せない。**その場で貼る */
-  const mark = btn(n);
-  if (STILL || (mark && mark.classList.contains('seen'))){ go(n); return; }
-  const q = ask(n);
-  let i = 0;
-  (function tick(){
-    if (my !== tok) return;
-    typed.textContent = q.slice(0, ++i);
-    if (i < q.length) setTimeout(tick, 30); else go(n);
-  })();
+  go(n, false, true);
 }
 
 function runQueue(){
