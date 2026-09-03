@@ -340,7 +340,10 @@ function reveal(box, per, end){
     if (i >= kids.length){ setTimeout(end, rush ? RUSH.block : PACE.block / 2); return; }
     const k = kids[i];
     k.classList.add('in');
-    type(k, html[i], rush ? RUSH.line : PACE.line, function(){ i += 1; step(); });
+    const per = rush ? RUSH.line : PACE.line;
+    /* **最後の行の、終わりぎわ。**残り12文字あたりで下の枠を打ちはじめる */
+    if (last && i === kids.length - 1) setTimeout(ahead, Math.max(0, (html[i].length - 12) * per));
+    type(k, html[i], per, function(){ i += 1; step(); });
   })();
 }
 
@@ -496,6 +499,7 @@ function light(n){
    pending 枠に打ってあって、まだ送っていない話題（-1 は無し）
    tok     打っている途中のもの。別のものを選ばれたら、前のは止まる */
 let queue = [], qi = 0, nowAt = -1, busyNow = false, pending = -1, timer = 0, tok = 0;
+let last = false;               /* いま出しているのが、その注文の最後のひと塊か */
 
 function state(){
   /* 次の注文を打ちはじめるまでの間は、何も言わない（空にする） */
@@ -577,10 +581,11 @@ function jump(n){
 
 function runQueue(){
   if (qi < queue.length){
-    /* **最後のひと塊に入ったら、下の枠を打ちはじめる。**（2026-09-03）
-       > 下枠の文字、出きった時じゃなくて出きる前の時点から出してほしい
-       出きるのを待つと、下が止まって見える。重ねて打つ */
-    if (qi === queue.length - 1) ahead();
+    /* **打ちはじめるのは、出きる直前。**（2026-09-03）
+       > 今出してるやつができる直前くらいに下枠の文字出してほしいのね
+       最後のひと塊に入った時点では早すぎた（札は7行ある）。
+       いまは `reveal()` が**最後の行の終わりぎわ**で呼ぶ。ここでは印だけ立てる */
+    last = (qi === queue.length - 1);
     put(queue[qi++], function(){ meter(); runQueue(); });
     return;
   }
