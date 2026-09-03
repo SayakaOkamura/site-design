@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>8 Alter Design Consulting</title>
 <link rel="stylesheet" href="../../assets/css/reset.css">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 <!-- =====================================================================
@@ -265,6 +265,46 @@ clist.addEventListener('click', function(e){
 
 /* 下の合図。押しても開く（キーの無い機械のため） */
 hintbar.addEventListener('click', function(){ open ? hide() : show(); });
+
+/* =====================================================================
+   理念の一行だけ、触ると動く（2026-09-03）
+
+   **ここまで、理念を実演している案が一つも無かった。**
+   005・006-G・007 は3本とも「決める」の話で、
+   005 の NOTES に目的として書いてある「理念の体現」は空いたままだった。
+
+   > 理念である遊ぶように働く、が一番強くて
+
+   **文字を一つずつに割って、触ると持ち上がる。押すと跳ねる。**
+   遊ぶのは**理念の一行の上だけ。**ほかは動かない。
+   会社案内が跳ね回ると広告になるが、**ここは跳ねてよい一箇所**
+   （「遊ぶように働く」と書いてある場所なので）。
+
+   読めなくはならない。**戻る。**動きを切る指定では動かない（CSS 側）。
+   ===================================================================== */
+(function(){
+  const h = document.querySelector('.creed h1');
+  if (!h) return;
+  /* 文字だけ包む。`<br>` はそのまま残す */
+  [].slice.call(h.childNodes).forEach(function(n){
+    if (n.nodeType !== 3) return;
+    const frag = document.createDocumentFragment();
+    n.textContent.split('').forEach(function(ch){
+      const s = document.createElement('span');
+      s.className = 'ch';
+      s.textContent = ch;
+      frag.appendChild(s);
+    });
+    h.replaceChild(frag, n);
+  });
+  h.addEventListener('click', function(e){
+    const s = e.target.closest('.ch');
+    if (!s) return;
+    s.classList.remove('hop');
+    void s.offsetWidth;              /* もう一度同じ字を押しても跳ねるように */
+    s.classList.add('hop');
+  });
+})();
 
 /* ソースを見た人にだけ。**書かない遊び心** */
 console.log('/ を押すと、このページに聞けます。');

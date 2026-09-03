@@ -162,3 +162,26 @@ a{color:inherit}
 .cmd .out{margin-top:10px;padding-left:8px;font-size:13px;color:var(--ink)}
 
 @media (prefers-reduced-motion:reduce){ .cmd .cur{animation:none} }
+
+/* ---------- 理念の一行だけ、触ると動く（2026-09-03）----------
+   **遊ぶのはここだけ。**「遊ぶように働く」と書いてある場所なので、
+   跳ねてよい一箇所。会社案内が全部跳ねると広告になる。
+   読めなくはならない（必ず戻る）。 */
+.creed .ch{
+  display:inline-block;
+  transition:transform .18s ease, color .18s ease;
+}
+.creed .ch:hover{transform:translateY(-3px);color:var(--accent)}
+.creed .ch.hop{animation:hop .42s ease}
+@keyframes hop{
+  0%   {transform:translateY(0)}
+  30%  {transform:translateY(-10px) rotate(-3deg)}
+  55%  {transform:translateY(0)}
+  72%  {transform:translateY(-3px)}
+  100% {transform:translateY(0)}
+}
+@media (prefers-reduced-motion:reduce){
+  .creed .ch{transition:none}
+  .creed .ch:hover{transform:none}
+  .creed .ch.hop{animation:none}
+}
