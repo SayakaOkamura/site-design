@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>8 Alter Design Consulting</title>
 <link rel="stylesheet" href="../../assets/css/reset.css">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <!-- =====================================================================
@@ -130,6 +130,123 @@
     <p class="fine">実装は AI（Claude）が行いました。</p>
   </div>
 </footer>
+
+<!-- **隠しコマンド。**（2026-09-03）
+     > デモの中に遊び要素仕込むとか、ClaudeCodeの隠しコマンドとか、
+     > そういう意味の遊び心ね
+
+     既定では**何も出ていない。**`/` を押した人にだけ、下に道具が出る。
+
+     - 何も知らない人には、ふつうの会社案内のまま（**役割はHP**）
+     - 気づいた人には、**案内が応答する**（007 の体験がここに入る）
+     - 技術邁進感は**速さで出す。**キーだけで全部辿れて、待たされない。
+       言葉では足さない
+
+     **押せることは、下に `/` の一文字だけ置いて合図する。**
+     何も書かないと誰も気づかない（007 で学んだ）。書きすぎると仕込みでなくなる。 -->
+<div class="cmd" id="cmd" hidden>
+  <div class="wrap">
+    <div class="line"><span class="p">/</span><span class="typed" id="ctyped"></span><span class="cur"></span></div>
+    <ul class="list" id="clist"></ul>
+    <p class="out" id="cout" hidden></p>
+  </div>
+</div>
+<p class="hintbar"><span id="hintkey">/</span></p>
+
+<script>
+/* =====================================================================
+   隠しコマンド（2026-09-03）
+
+   **既定は出ていない。**`/` で開き、`esc` で閉じる。
+   打つと絞り込み、`enter` か押すと動く。上下キーでも選べる。
+
+   中身は**このページにあるものだけ。**無いものは「置いていません」と返す。
+   会社の言葉は増やしていない。
+   ===================================================================== */
+const CMD = [
+  { k:'理念',      t:'企業理念へ',        go:'philosophy' },
+  { k:'サービス',  t:'サービスへ',        go:'services' },
+  { k:'会社概要',  t:'会社概要へ',        go:'company' },
+  { k:'問い合わせ',t:'お問い合わせへ',    go:'contact' },
+  { k:'料金',      t:'このページには置いていません', say:'料金は、このページには置いていません。' },
+  { k:'実績',      t:'このページには置いていません', say:'実績・事例は、このページには置いていません。' },
+  { k:'出どころ',  t:'いつ時点の情報か',  say:'alt-dsgn.co.jp に出ている言葉です。2026年9月3日に確認しました。' },
+];
+
+const cmd    = document.getElementById('cmd');
+const ctyped = document.getElementById('ctyped');
+const clist  = document.getElementById('clist');
+const cout   = document.getElementById('cout');
+const hintbar= document.querySelector('.hintbar');
+
+let open = false, buf = '', at = 0;
+
+function match(){
+  return CMD.filter(function(c){ return !buf || c.k.indexOf(buf) === 0; });
+}
+
+function draw(){
+  const m = match();
+  if (at >= m.length) at = Math.max(0, m.length - 1);
+  ctyped.textContent = buf;
+  clist.innerHTML = m.map(function(c, i){
+    return '<li' + (i === at ? ' class="on"' : '') + ' data-k="' + c.k + '">' +
+           '<span class="k">/' + c.k + '</span><span class="t">' + c.t + '</span></li>';
+  }).join('');
+}
+
+function show(){
+  open = true; buf = ''; at = 0;
+  cmd.hidden = false; cout.hidden = true;
+  hintbar.classList.add('on');
+  draw();
+}
+function hide(){
+  open = false;
+  cmd.hidden = true;
+  hintbar.classList.remove('on');
+}
+
+/* 走らせる。**待たせない。**跳ぶものは跳び、無いものはその場で返す */
+function run(c){
+  if (!c) return;
+  if (c.go){
+    hide();
+    document.getElementById(c.go).scrollIntoView({ block:'start' });
+    return;
+  }
+  cout.textContent = c.say;
+  cout.hidden = false;
+}
+
+addEventListener('keydown', function(e){
+  if (!open){
+    /* 入力中の欄が無いページなので、`/` はそのまま拾える */
+    if (e.key === '/'){ e.preventDefault(); show(); }
+    return;
+  }
+  if (e.key === 'Escape'){ e.preventDefault(); hide(); return; }
+  if (e.key === 'Enter'){ e.preventDefault(); run(match()[at]); return; }
+  if (e.key === 'ArrowDown'){ e.preventDefault(); at = Math.min(at + 1, match().length - 1); draw(); return; }
+  if (e.key === 'ArrowUp'){ e.preventDefault(); at = Math.max(at - 1, 0); draw(); return; }
+  if (e.key === 'Backspace'){ e.preventDefault(); buf = buf.slice(0, -1); at = 0; draw(); return; }
+  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey){
+    e.preventDefault(); buf += e.key; at = 0; draw();
+  }
+});
+
+clist.addEventListener('click', function(e){
+  const li = e.target.closest('li');
+  if (!li) return;
+  run(CMD.filter(function(c){ return c.k === li.dataset.k; })[0]);
+});
+
+/* 下の合図。押しても開く（キーの無い機械のため） */
+hintbar.addEventListener('click', function(){ open ? hide() : show(); });
+
+/* ソースを見た人にだけ。**書かない遊び心** */
+console.log('/ を押すと、このページに聞けます。');
+</script>
 
 <script>
 /* **008 で唯一の JavaScript。**前は一行も無かった（2026-09-03 に足した）。
