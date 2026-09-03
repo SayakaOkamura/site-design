@@ -242,26 +242,8 @@ const sf    = document.getElementById('sf');
 
 /* 動きを切る指定があるときは、流さずに全部出す（指針4）。
    動かない環境で中身が消えてはいけない。 */
-/* **二度目からは、打たずに貼る。**（2026-09-03）
-   > これ、二回目以降を記録できるなら二回目は入力なしでパン、と貼ってほしい
-   一度見た人に、同じ実演をもう一度見せない。開いた時点で全部出ていて、
-   押すところも無い。**「最初から」で戻せる**（印を消して読み直す）。
-   印はこの機械の中だけ（`localStorage`）。読めない設定なら、いつも一度目。 */
-let AGAIN = false;
-try {
-  AGAIN = localStorage.getItem('007-seen') === '1';
-  localStorage.setItem('007-seen', '1');
-} catch (e) {}
-
-/* **打たずに貼るのは、二度目からと、動きを切る指定のとき**（`STILL`）。
-   ただし**進み方は変えない。**二度目でも、注文は枠に出て、送るのは人。
-   > パンと貼るやつできてないよ。開いた時点で、とかではなく
-   一度、二度目は開いた時点で全部貼る形にしたが、それは違った。
-   **止まるところは同じ。出方だけが「打つ」から「貼る」に変わる。**
-
-   ぜんぶ一度に置くのは、動きを切る指定のときだけ（指針4）。 */
-const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const STILL = REDUCED || AGAIN;
+/* 動きを切る指定では、流さずに全部出す（指針4） */
+const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* **間は、ここだけで決める。**「一気に出てくると読みにくい」（2026-09-02）。
    前は地の文 16ms／ツールのあと 240ms／塊のあと 300ms で、
@@ -552,9 +534,18 @@ function send(){ if (pending >= 0) go(pending); }
 function go(n, boot){
   const t = T[n];
   if (!t) return;
-  pending = -1; flush = false; rush = !!boot; ++tok;
+  /* **二度目は打たずに貼る。**（2026-09-03）
+     > 二回目以降を記録できるなら二回目は入力なしでパン、と貼ってほしい
+     > パンのやつ、アクセスしたことあるかどうかに依存してほしいわけじゃないよ
+     数えているのは**この話題を一度出したかどうか**（目次の ✓）。
+     来たことがあるかどうかではない。一度出したものを、もう一度打ち直さない。
+     **止まるところは同じ。出方だけが「打つ」から「貼る」に変わる。** */
+  const mark = btn(n);
+  const again = !!(mark && mark.classList.contains('seen'));
+  pending = -1; rush = !!boot; ++tok;
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
+  flush = again;                /* 二度目は、その場で貼る */
   nowAt = n; busyNow = true;
   light(n); state();
   typed.textContent = '';
@@ -572,7 +563,9 @@ function jump(n){
   pending = -1;
   typed.textContent = '';
   state();
-  if (STILL){ go(n); return; }
+  /* **一度出したものは、打つところも見せない。**その場で貼る */
+  const mark = btn(n);
+  if (STILL || (mark && mark.classList.contains('seen'))){ go(n); return; }
   const q = ask(n);
   let i = 0;
   (function tick(){
@@ -675,16 +668,12 @@ addEventListener('keydown', function(e){
   if (e.key === 'Escape'){ e.preventDefault(); if (busyNow) rest(); }
 });
 
-/* 「最初から」は、二度目の印も消す。**もう一度、打つところから見せる** */
-again.addEventListener('click', function(){
-  try { localStorage.removeItem('007-seen'); } catch (e) {}
-  location.reload();
-});
+again.addEventListener('click', function(){ location.reload(); });
 
 /* 開いた瞬間、Claude 側だけが動きはじめる。**注文は置かない。**
    1つめが終わると、次の注文が枠に打たれて止まる（そこからは人が送る） */
 meter();
-if (REDUCED){
+if (STILL){
   T.forEach(function(t, n){
     nowAt = n;
     el('row you', '<span>&gt;</span> ' + ask(n));
