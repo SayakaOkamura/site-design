@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
 <!-- =====================================================================
@@ -242,7 +242,19 @@ const sf    = document.getElementById('sf');
 
 /* 動きを切る指定があるときは、流さずに全部出す（指針4）。
    動かない環境で中身が消えてはいけない。 */
-const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* **二度目からは、打たずに貼る。**（2026-09-03）
+   > これ、二回目以降を記録できるなら二回目は入力なしでパン、と貼ってほしい
+   一度見た人に、同じ実演をもう一度見せない。開いた時点で全部出ていて、
+   押すところも無い。**「最初から」で戻せる**（印を消して読み直す）。
+   印はこの機械の中だけ（`localStorage`）。読めない設定なら、いつも一度目。 */
+let AGAIN = false;
+try {
+  AGAIN = localStorage.getItem('007-seen') === '1';
+  localStorage.setItem('007-seen', '1');
+} catch (e) {}
+
+/* 流さずに全部出すのは、動きを切る指定のときと、二度目から（指針4） */
+const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches || AGAIN;
 
 /* **間は、ここだけで決める。**「一気に出てくると読みにくい」（2026-09-02）。
    前は地の文 16ms／ツールのあと 240ms／塊のあと 300ms で、
@@ -573,6 +585,17 @@ function runQueue(){
 }
 
 /* ひとつ終わった。**✓ を付けて、次の注文を枠に打つ。**送りはしない */
+/* 下まで行ったら、**もう一度名乗る。**（2026-09-03）
+   > クリックだけで下まで到達したらもう一度会社名と理念のあの箱貼るのどうだろう
+   上と同じ箱を、終わりにもう一枚。**名乗りは最後**（005・G と同じ） */
+function tail(){
+  if (log.querySelector('.boot.end')) return;
+  el('boot end',
+    '<b>✻</b> 株式会社アルターデザインコンサルティング' +
+    '<span class="s">経営の力で「遊ぶように働く世界」をデザインする／2025年6月設立</span>');
+  bottom();
+}
+
 function done(){
   /* esc のあと、途中だった行が戻ってきて二度呼ばれることがある */
   if (!busyNow) return;
@@ -580,6 +603,7 @@ function done(){
   const b = btn(nowAt);
   if (b) b.classList.add('seen');
   meter(); bottom(); state();
+  if (tree.querySelectorAll('button.seen').length >= T.length) tail();
   const n = next();
   if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
   rush = false;                 /* 速いのは開いた瞬間の1回だけ */
@@ -630,7 +654,11 @@ addEventListener('keydown', function(e){
   if (e.key === 'Escape'){ e.preventDefault(); if (busyNow) rest(); }
 });
 
-again.addEventListener('click', function(){ location.reload(); });
+/* 「最初から」は、二度目の印も消す。**もう一度、打つところから見せる** */
+again.addEventListener('click', function(){
+  try { localStorage.removeItem('007-seen'); } catch (e) {}
+  location.reload();
+});
 
 /* 開いた瞬間、Claude 側だけが動きはじめる。**注文は置かない。**
    1つめが終わると、次の注文が枠に打たれて止まる（そこからは人が送る） */
@@ -643,7 +671,8 @@ if (STILL){
     while (qi < queue.length) put(queue[qi++], function(){});
     const b = btn(n); if (b) b.classList.add('seen');
   });
-  typed.textContent = ''; meter(); state();
+  typed.textContent = ''; meter(); tail(); state();
+  view.scrollTop = 0;           /* 貼り終わったら頭に戻す（下まで送られている） */
 }
 else go(OPEN_AT, true);
 </script>

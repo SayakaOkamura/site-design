@@ -297,3 +297,7 @@ body{
 .note div{color:var(--sub)}
 .note div + div{margin-top:2px}
 .note b{color:var(--ink);font-weight:600}
+
+/* 終わりにもう一枚（2026-09-03）。**名乗りは最後**（005・G と同じ）。
+   上の起動枠と同じ箱。上に間を空けて、下は詰める */
+.boot.end{margin:30px 0 6px}
