@@ -267,6 +267,15 @@ const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
          **ここがいちばん効く。**読み終わる前に次の行が打たれると、目が戻る */
 const PACE = { ch:28, res:18, tool:620, block:820, turn:1100 };
 
+/* **開いた瞬間の1回だけ、速さを別にする**（2026-09-03）。
+   > ページのロードあるのにここでも初手ロードで待たされるとストレスあるかも。
+   > なしで。やるなら1秒以内
+   ふつうの速さ（think 1.5s＋tool 620＋1行 300…）だと、出そろうまで 2.5 秒かかる。
+   **ここだけ 850ms 前後に詰める。**読ませる間は、送ったあとの turn で取ればいい。
+   think 400 ／ tool 150 ／ 1行 60 ／ 塊のあと 60 ／ 次の注文まで 400 */
+const RUSH = { think:400, tool:150, line:60, block:60, turn:400 };
+let rush = false;
+
 /* esc。**流れている途中を、その場で出しきる。**
    出しきったあとも、途中だった行がゆっくり打ち続けないように */
 let flush = false;
@@ -313,7 +322,7 @@ function think(s, end){
     n.innerHTML = '<span class="g">' + GLYPH[k++ % GLYPH.length] + '</span> ' + s.x + '… ' +
                   '<span class="sec">(' + sec + 's · esc to interrupt)</span>';
     bottom();
-    if (Date.now() - t0 < 1500) setTimeout(tick, 120);
+    if (Date.now() - t0 < (rush ? RUSH.think : 1500)) setTimeout(tick, rush ? 100 : 120);
     else { live = false; n.innerHTML = '<span class="g">✻</span> ' + s.x + '…'; end(); }
   })();
 }
@@ -327,13 +336,13 @@ function reveal(box, per, end){
   let i = 0;
   (function tick(){
     if (flush){ kids.forEach(function(k){ k.classList.add('in'); }); end(); return; }
-    if (i >= kids.length){ setTimeout(end, PACE.block / 2); return; }
+    if (i >= kids.length){ setTimeout(end, rush ? RUSH.block : PACE.block / 2); return; }
     kids[i].classList.add('in');
     /* dt のときは dd も一緒に */
     if (kids[i].tagName === 'DT' && kids[i + 1]) kids[++i].classList.add('in');
     i += 1;
     bottom();
-    setTimeout(tick, per);
+    setTimeout(tick, rush ? RUSH.line : per);
   })();
 }
 
@@ -356,7 +365,7 @@ function put(s, end){
 
   if (s.t === 'tool'){
     el('row tool', '<span class="b">⏺</span> <span class="nm">' + s.x + '</span>(' + s.a + ')');
-    bottom(); setTimeout(end, STILL ? 0 : PACE.tool); return;
+    bottom(); setTimeout(end, STILL ? 0 : (rush ? RUSH.tool : PACE.tool)); return;
   }
 
   if (s.t === 'res'){
@@ -513,7 +522,7 @@ function send(){ if (pending >= 0) go(pending); }
 function go(n, alone){
   const t = T[n];
   if (!t) return;
-  pending = -1; flush = false;
+  pending = -1; flush = false; rush = !!alone;
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
   nowAt = n; busyNow = true;
@@ -558,7 +567,8 @@ function done(){
   if (b) b.classList.add('seen');
   meter(); bottom(); state();
   const n = next();
-  if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : PACE.turn);
+  if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
+  rush = false;                 /* 速いのは開いた瞬間の1回だけ */
 }
 
 /* 次に打つ話題。**まだ出していないもの。**出したものは飛ばす
