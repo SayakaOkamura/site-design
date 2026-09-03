@@ -92,7 +92,7 @@
   </div>
   <div class="hint">
     <span class="keys"><b>enter</b> 送る</span>
-    <span class="keys"><b>1</b>–<b>5</b> 選ぶ</span>
+    <span class="keys"><b>1</b>–<b>4</b> 選ぶ</span>
     <span class="keys"><b>esc</b> 最後まで出す</span>
     <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
@@ -140,21 +140,29 @@
    「このサイト」が `CLAUDE.md` と結びついてしまうのでやめた（2026-09-03）。
    ほかは全部、日本語の名前のファイルを読んでいる。
 
-   1つめ（このサイトのこと）は、開いた瞬間に人の行なしで流れる。
    ===================================================================== */
-const T = [
-  { k:'このサイト', s:[
-      { t:'think', x:'読んでいます' },
-      { t:'tool', x:'Read', a:'このサイト.md' },
-      { t:'md',   f:'このサイト.md', x:[
-          'ここは会社案内。聞かれたことは、置いてあるファイルで返す',
-          '無いものは、無いと返す',
-          '決まっていないことは、埋めない',
-          '読みたいところは、左の一覧を押す。enter でも次へ進む',
-        ]},
-    ]},
 
-  /* できること ＝ サービス → 進め方 → やらないこと */
+/* 開いた瞬間に流れるぶん。**目次には入れない**（2026-09-03）
+
+   > このサイトの分なのに Read になってるから、いきなりサービス？って見える
+
+   目次に「このサイト」を置くと、**そこが人の行なしで済んでしまう。**
+   1つめが黙って終わったように見えて、次の `サービスは？` が飛んで見える。
+   **これは聞けることではなく、開いたときに出るもの。**目次から外した。
+   目次の1番は `サービス`。枠に最初に打たれるのも `サービスは？` で、揃う。 */
+const OPEN = [
+  { t:'think', x:'読んでいます' },
+  { t:'tool', x:'Read', a:'このサイト.md' },
+  { t:'md',   f:'このサイト.md', x:[
+      'ここは会社案内。聞かれたことは、置いてあるファイルで返す',
+      '無いものは、無いと返す',
+      '決まっていないことは、埋めない',
+      '読みたいところは、左の一覧を押す。enter でも次へ進む',
+    ]},
+];
+
+const T = [
+  /* サービス ＝ サービス4件 → 進め方 → やらないこと */
   { k:'サービス', s:[
       { t:'tool', x:'Glob', a:'サービス/*.md' },
       { t:'res',  x:'Found 4 files', exp:true },
@@ -512,17 +520,26 @@ function write(n){
 /* 送る。**ここから先が自動** */
 function send(){ if (pending >= 0) go(pending); }
 
-/* alone を立てると、人の行を出さずに Claude 側だけ動かす（開いた瞬間の1回） */
-function go(n, alone){
+/* 開いた瞬間。**人の行は出さない。**目次のどれでもないので、印も付かない */
+function open(){
+  nowAt = -1; busyNow = true;
+  flush = false; rush = true;
+  state();
+  queue = OPEN.slice(); qi = 0;
+  runQueue();
+}
+
+/* 目次のものを流す */
+function go(n){
   const t = T[n];
   if (!t) return;
-  pending = -1; flush = false; rush = !!alone; ++tok;
+  pending = -1; flush = false; rush = false; ++tok;
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
   nowAt = n; busyNow = true;
   light(n); state();
   typed.textContent = '';
-  if (!alone) el('row you', '<span>&gt;</span> ' + ask(n));
+  el('row you', '<span>&gt;</span> ' + ask(n));
   bottom();
   queue = t.s.slice(); qi = 0;
   runQueue();
@@ -617,6 +634,8 @@ again.addEventListener('click', function(){ location.reload(); });
    1つめが終わると、次の注文が枠に打たれて止まる（そこからは人が送る） */
 meter();
 if (STILL){
+  queue = OPEN.slice(); qi = 0;
+  while (qi < queue.length) put(queue[qi++], function(){});
   T.forEach(function(t, n){
     nowAt = n;
     el('row you', '<span>&gt;</span> ' + ask(n));
@@ -626,7 +645,7 @@ if (STILL){
   });
   typed.textContent = ''; meter(); state();
 }
-else go(0, true);
+else open();
 </script>
 </body>
 </html>
