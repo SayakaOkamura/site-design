@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 <!-- =====================================================================
@@ -76,7 +76,6 @@
   <div class="session" id="log">
     <div class="boot">
       <b>✻</b> 株式会社アルターデザインコンサルティング
-      <span class="s">経営の力で「遊ぶように働く世界」をデザインする。／2025年6月設立</span>
     </div>
   </div>
   </div>
@@ -210,24 +209,23 @@ const T = [
    > 一番最初に表示したいようなものを最初から出しておいて、何もクリック
    > しなくても情報自体はあるようにしたいかも。表示したいものでも、
    > このサイトのルールでもいいけど
+   > スクロールいらないくらいがいいな。その会社概要と理念だけでいいんじゃない、最初は
 
    **打たない。送らない。**注文（`>` の行）は付けない。
    人が送っていない行を注文として出すと、自動で送っているのと同じになる。
    **開き直したら前の続きが残っている**、という形にする。
 
-   中身は2つ。**このサイトのルール**（CLAUDE.md）と、
-   **いちばん見せたいもの**（サービス。T の1つめをそのまま使う）。
-   だから目次の1つめは、開いた時点で ✓ が付いている。
+   中身は**会社概要と理念だけ。**一度はルール（CLAUDE.md の3行）と
+   サービス4件にしたが、狭い画面で下がはみ出していた。
+   上の起動枠から理念と設立を外したのも、すぐ下に本体として出るから。
    ===================================================================== */
-const RULES = [
-  { t:'tool', x:'Read', a:'CLAUDE.md' },
-  { t:'md',   f:'CLAUDE.md', x:[
-      '聞かれたことは、置いてあるファイルで返す',
-      '無いものは、無いと返す',
-      '決まっていないことは、埋めない',
-    ]},
-];
-const BOOT = RULES.concat(T[0].s);
+/* **スクロールがいらないくらいに収める**（2026-09-03）。
+   ルール3行＋サービス4件では、狭い画面で下がはみ出していた。
+   台本をそのまま使うので、中身は二重に書かない。**目次のその2つには最初から ✓** */
+const OPEN = ['会社概要', '理念'];
+function at(k){ for (let i = 0; i < T.length; i++) if (T[i].k === k) return i; return -1; }
+let BOOT = [];
+OPEN.forEach(function(k){ BOOT = BOOT.concat(T[at(k)].s); });
 
 const view  = document.getElementById('view');
 const log   = document.getElementById('log');
@@ -543,7 +541,20 @@ function done(){
   const b = btn(nowAt);
   if (b) b.classList.add('seen');
   meter(); bottom(); state();
-  if (nowAt + 1 < T.length) timer = setTimeout(function(){ write(nowAt + 1); }, STILL ? 0 : PACE.turn);
+  const n = next();
+  if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : PACE.turn);
+}
+
+/* 次に打つ話題。**まだ出していないもの。**出したものは飛ばす
+   （会社概要と理念は、開いた時点で出ている）。
+   終わりまで行ったら頭に戻って、残っているものを拾う */
+function next(){
+  for (let i = 1; i <= T.length; i++){
+    const j = (nowAt + i + T.length) % T.length;
+    const b = btn(j);
+    if (b && !b.classList.contains('seen')) return j;
+  }
+  return -1;
 }
 
 /* 流れている途中を、最後まで出す */
@@ -592,7 +603,6 @@ function boot(list){
 /* 出したぶんに ✓ を付けて、次の注文を枠に打って止まる */
 meter();
 if (STILL){
-  boot(RULES);
   T.forEach(function(t, n){
     nowAt = n;
     el('row you', '<span>&gt;</span> ' + t.q);
@@ -604,10 +614,10 @@ if (STILL){
 }
 else {
   boot(BOOT);
-  nowAt = 0;
-  const b = btn(0); if (b) b.classList.add('seen');
+  OPEN.forEach(function(k){ const b = btn(at(k)); if (b) b.classList.add('seen'); });
   meter();
-  write(1);
+  const n = next();
+  if (n >= 0) write(n); else state();
 }
 </script>
 </body>

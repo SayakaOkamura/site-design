@@ -60,7 +60,6 @@ body{
   color:var(--sub);font-size:13px;
 }
 .boot b{color:var(--orange);font-weight:400}
-.boot .s{display:block;color:var(--faint);font-size:12px;margin-top:4px}
 
 /* 人の行。> で始める */
 .row{margin:0 0 6px;white-space:pre-wrap;word-break:break-word}
