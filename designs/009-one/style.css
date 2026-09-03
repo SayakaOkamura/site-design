@@ -1,0 +1,255 @@
+/* 008 変わらないところ
+   ------------------------------------------------------------------
+   **仕掛けを落とした一本。**動きは無い（JavaScript も無い）。
+   残したのは、読める寸法と、出どころ。
+
+   寸法は 007 で詰めたものを白地に移した：本文 15px／行間 1.95／
+   一行 38字前後／白地に #1c1a17（対比 14:1 前後）。
+   003・005 で決めた「黒地は読みにくい」はそのまま生きている。 */
+
+/* 色は**公式サイトから取った**（2026-09-03、実物の computed style を読んだ）。
+   > 会社のイメージカラーが紫だからそこつかうのもありかもね
+   公式は**白地に濃い紫**（#2A0E3E がいちばん多く、リンクは #654087 系）。
+   005 から持ってきていた茶系をやめて、そちらに揃えた。 */
+:root{
+  --ink:   #2a0e3e;   /* 本文。公式サイトでいちばん多い色 */
+  --sub:   #574566;   /* 補助 */
+  --faint: #8b7f96;   /* ラベル・注記 */
+  --rule:  #e3d8f0;
+  --bg:    #ffffff;   /* 公式は白地 */
+  --accent:#654087;   /* 節見出しとリンク。公式のリンク色 */
+  --creed: #4b2470;   /* 理念。**ここでいちばん面積を取る** */
+  --tint:  #f7f3fb;   /* 帯と下の地。薄く敷いて面積を作る */
+
+  /* **文字の色を紫にしても、紫には見えない。**（2026-09-03）
+     一度 #2a0e3e（本文）と #654087（12px の節見出し）だけで組んだが、
+     本文は暗すぎて黒と区別がつかず、節見出しは面積が小さすぎた。
+     **公式サイトも、文字では紫を出していない。**あれはロゴと背景の線画で出ている。
+     ここには絵を置かないので、**面積は「理念の大きな字」と「薄く敷いた地」で作る。** */
+  --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+  --mincho: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+}
+
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:var(--gothic);font-size:15px;line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:38em;margin:0 auto;padding:0 24px}
+a{color:inherit}
+
+/* ---------- 上の案内（動線）----------
+   **見慣れた形にする。**レビューで言われたのはここ。
+   用があって来た人が、用が合っているかを疑わないで済むように。 */
+.head{border-bottom:1px solid var(--rule);background:var(--tint)}
+.head .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;padding-top:18px;padding-bottom:18px}
+.head .name{font-size:13px;color:var(--sub);letter-spacing:.02em}
+.head .nav{margin-left:auto;display:flex;gap:20px;font-size:13px}
+.head .nav a{color:var(--sub);text-decoration:none;padding-bottom:2px;border-bottom:1px solid transparent}
+.head .nav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+@media (max-width:600px){
+  .head .nav{margin-left:0;gap:16px;flex-wrap:wrap}
+}
+
+/* ---------- 理念。**意味は書かない** ---------- */
+.creed{padding:76px 0 68px;border-bottom:1px solid var(--rule)}
+.creed h1{
+  color:var(--creed);
+  font-family:var(--mincho);font-weight:400;
+  /* 38em の中で「〜をデザインする」が折り返さない大きさ（18字 × 28px < 570px）。
+     30px だと「デザインす／る」で切れた */
+  font-size:28px;line-height:1.85;letter-spacing:.02em;
+}
+@media (max-width:600px){
+  .creed{padding:52px 0 46px}
+  .creed h1{font-size:23px;line-height:1.8}
+}
+
+/* ---------- 本文の節 ---------- */
+.sec{padding:48px 0;border-bottom:1px solid var(--rule)}
+.sec h2{
+  font-size:13px;color:var(--accent);font-weight:400;
+  letter-spacing:.16em;margin-bottom:20px;
+}
+.sec p + p{margin-top:12px}
+
+.plain{list-style:none}
+.plain li{padding-left:1em;text-indent:-1em}
+.plain li + li{margin-top:6px}
+
+/* サービス。**見出しと説明を、公式のまま** */
+.svc dt{font-weight:600;margin-top:22px}
+.svc dt:first-child{margin-top:0}
+.svc dd{color:var(--sub);font-size:14px;line-height:1.9;margin-top:2px}
+
+/* 会社概要。**項目名と値。ここだけ表の組み** */
+.facts{display:grid;grid-template-columns:7.5em 1fr;column-gap:20px;row-gap:8px}
+.facts dt{color:var(--faint);font-size:13px}
+.facts dd{overflow-wrap:anywhere}
+@media (max-width:600px){
+  .facts{grid-template-columns:1fr;row-gap:2px}
+  .facts dt{margin-top:10px}
+  .facts dt:first-child{margin-top:0}
+}
+
+.mail{margin-top:14px}
+.mail a{color:var(--accent);border-bottom:1px solid var(--rule)}
+.mail a:hover{border-bottom-color:var(--accent)}
+
+/* ---------- 出どころと、いつ時点か ----------
+   **残した仕掛けはこれ一つ。**道具が変わっても、出どころは要る。 */
+.foot{
+  background:var(--tint);border-top:1px solid var(--rule);
+  padding:34px 0 60px;font-size:12px;color:var(--faint);line-height:1.9;
+}
+.foot a{color:var(--accent);border-bottom:1px solid var(--rule)}
+.foot .fine{margin-top:6px}
+
+/* 最後の節の下罫は、下の薄い地との境と重なるので消す */
+.sec:last-of-type{border-bottom:0}
+
+
+/* ---------- 隠しコマンド（2026-09-03）----------
+   既定では出ていない。`/` を押した人にだけ、下に出る。
+   **仕込みなので、目立たせない。**下の合図は `/` の一文字だけ。 */
+.hintbar{
+  position:fixed;left:0;right:0;bottom:0;
+  text-align:center;padding:6px 0 8px;
+  font-size:12px;color:#b3a5c4;cursor:pointer;user-select:none;
+}
+.hintbar:hover{color:var(--accent)}
+.hintbar.on{opacity:0}
+
+.cmd{
+  position:fixed;left:0;right:0;bottom:0;
+  background:var(--bg);border-top:1px solid var(--rule);
+  box-shadow:0 -6px 20px rgba(42,14,62,.06);
+  padding:14px 0 16px;
+}
+/* **本物の input。**日本語入力を通すため（2026-09-03）。
+   見た目は素の一行に見せる。枠も地も付けない。点滅はブラウザの caret に任せる。 */
+.cmd .line{display:flex;gap:8px;align-items:baseline;font-size:15px}
+.cmd .line .p{color:var(--accent)}
+.cmd .line input{
+  flex:1;min-width:0;font:inherit;font-size:15px;color:var(--ink);
+  background:none;border:0;padding:0;outline:none;
+  caret-color:var(--ink);
+}
+
+.cmd .list{list-style:none;margin-top:10px}
+.cmd .list li{
+  display:flex;gap:16px;padding:3px 0;font-size:13px;color:var(--sub);
+  cursor:pointer;border-left:2px solid transparent;padding-left:8px;
+}
+.cmd .list li:hover{color:var(--ink)}
+.cmd .list li.on{color:var(--ink);border-left-color:var(--accent)}
+.cmd .list .k{min-width:8em;color:var(--accent)}
+.cmd .out{margin-top:10px;padding-left:8px;font-size:13px;color:var(--ink)}
+
+@media (prefers-reduced-motion:reduce){ .cmd .cur{animation:none} }
+
+/* ---------- 理念の一行だけ、触ると動く（2026-09-03）----------
+   **遊ぶのはここだけ。**「遊ぶように働く」と書いてある場所なので、
+   跳ねてよい一箇所。会社案内が全部跳ねると広告になる。
+   読めなくはならない（必ず戻る）。 */
+.creed .ch{
+  display:inline-block;
+  transition:transform .18s ease, color .18s ease;
+}
+.creed .ch:hover{transform:translateY(-3px);color:var(--accent)}
+.creed .ch.hop{animation:hop .42s ease}
+@keyframes hop{
+  0%   {transform:translateY(0)}
+  30%  {transform:translateY(-10px) rotate(-3deg)}
+  55%  {transform:translateY(0)}
+  72%  {transform:translateY(-3px)}
+  100% {transform:translateY(0)}
+}
+@media (prefers-reduced-motion:reduce){
+  .creed .ch{transition:none}
+  .creed .ch:hover{transform:none}
+  .creed .ch.hop{animation:none}
+}
+
+/* ---------- 縦に落ちる一本（2026-09-03）----------
+   006-G の線を縦に引き直したもの。**本文の左の余白に置く。**
+   文字の下は通らない。狭い画面では出さない（余白が無いので線が本文に乗る）。 */
+/* **紙いっぱいに置く。**両端（社名の輪・宛先）に届く必要があるので、
+   余白だけの箱では足りない。線が通るのは余白で、最後だけ本文へ入る。 */
+.thread{
+  position:absolute;top:0;left:0;
+  pointer-events:none;z-index:0;overflow:visible;
+  display:none;
+}
+/* **罫線と同じ重さにする。**線が罫線を引き受けるので、インクを増やさない。
+   罫（1px #e3d8f0）より少しだけ強い紫にして、繋ぎ目が見える程度に。 */
+.thread path{
+  fill:none;stroke:#cbb8e0;stroke-width:1.5;
+  stroke-linecap:butt;
+}
+@media (min-width:1120px){ .thread{display:block} }
+
+/* **もう置いてある罫線を、線が引き受ける。**（2026-09-03）
+   > 悪くない、けど必然性がない／配置に理由がないな……
+   線を新しく置くのをやめた。**節を分けている罫線を繋いだだけ**にしてある。
+   だから「なぜそこに置いたか」を答える必要が無い。罫線がそこにあったから。
+   JS が動いたときだけ透明にする（動かなければ罫線はそのまま残る）。 */
+@media (min-width:1120px){
+  .threaded main .creed,
+  .threaded main .sec{border-bottom-color:transparent}
+}
+
+/* **線の始まり。**社名の左の輪。開いて一度だけ回る（繰り返さない）。
+   一箇所だけ色を抜いてあるので、回っているのが見える。 */
+.mark{
+  display:inline-block;width:12px;height:12px;margin-right:9px;
+  border:2px solid var(--accent);border-top-color:transparent;
+  border-radius:50%;vertical-align:-1px;
+  animation:turn .8s cubic-bezier(.3,.7,.3,1) both;
+}
+@keyframes turn{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@media (prefers-reduced-motion:reduce){ .mark{animation:none} }
+
+/* ---------- 009：節の見出しが注文の形（2026-09-03）----------
+   007 の「聞かれたことに答える」を、節そのものに持たせた。
+   **情報は見えたまま。**隠して押させるとHPでなくなる。 */
+.sec h2 .p{color:var(--accent);opacity:.55;margin-right:.5em;font-weight:400}
+.res{
+  font-size:12px;color:var(--faint);margin:-12px 0 16px;letter-spacing:.02em;
+}
+
+/* ---------- 009：実演（005 由来）---------- */
+.work .lead{margin-bottom:18px}
+.egs{list-style:none;margin-bottom:22px}
+.egs li + li{margin-top:6px}
+.egs button{
+  font:inherit;font-size:14px;color:var(--sub);text-align:left;
+  background:none;border:0;padding:2px 0;cursor:pointer;
+  border-bottom:1px solid var(--rule);
+}
+.egs button:hover{color:var(--ink);border-bottom-color:var(--accent)}
+.egs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+.sheet{border:1px solid var(--rule);padding:20px 22px 18px;background:#fff}
+.sheet .from{font-size:13px;color:var(--sub);margin-bottom:16px}
+.sheet .tag{
+  display:inline-block;margin-right:8px;padding:0 6px;
+  border:1px solid var(--rule);font-size:11px;color:var(--faint);
+}
+.sheet .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.sheet h3{font-size:11px;color:var(--accent);font-weight:400;letter-spacing:.12em;margin-bottom:8px}
+.sheet ul{list-style:none;font-size:13px;line-height:1.9}
+.sheet li{padding:3px 0}
+.sheet .q{display:block;color:var(--faint);font-size:12px}
+/* **決まっていないところは、空欄のまま。**罫だけ引く（005 と同じ） */
+.sheet .blank{display:block;height:1.6em;border-bottom:1px solid var(--rule)}
+.sheet .val{display:block;color:var(--ink)}
+.sheet .src{display:block;font-size:11px;color:var(--faint)}
+.sheet .act{margin-top:18px}
+.sheet .act button{
+  font:inherit;font-size:13px;color:var(--ink);background:none;
+  border:1px solid var(--ink);padding:8px 20px;cursor:pointer;
+}
+.sheet .act button:hover:not([disabled]){background:var(--ink);color:#fff}
+.sheet .act button[disabled]{opacity:.35;cursor:default;border-color:var(--rule);color:var(--faint)}
+@media (max-width:600px){ .sheet .cols{grid-template-columns:1fr;gap:14px} }
