@@ -277,3 +277,13 @@ body{
   .stagger > *{opacity:1}
 }
 
+
+/* ---------- 送るのは人（2026-09-03） ----------
+   自動で流れるのは Claude 側だけにした。注文は枠に打たれて止まるので、
+   **止まっていることが見えないといけない。**打ち終わったら ⏎ を出し、
+   枠ごと押せるようにする（キーの無い機械のため）。 */
+.box.ready{cursor:pointer}
+.box .go{margin-left:auto;flex:none;color:var(--faint);opacity:0}
+.box.ready .go{opacity:1;color:var(--orange)}
+/* キーの説明は、キーのある画面にだけ出す */
+@media (max-width:760px){ .hint .keys{display:none} }

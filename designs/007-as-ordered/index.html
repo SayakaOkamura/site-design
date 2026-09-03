@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <!-- =====================================================================
@@ -69,7 +69,7 @@
   <nav class="side">
     <div class="sh">~/alter-design</div>
     <ul id="tree"></ul>
-    <div class="sf" id="autoState">自動で進みます</div>
+    <div class="sf" id="sf">enter で送ります</div>
   </nav>
 
   <div class="view" id="view">
@@ -83,13 +83,17 @@
 </div>
 
 <div class="foot">
-  <div class="box">
+  <!-- **打ち終わったら、止まる。**送るのは人（2026-09-03 に戻した）。
+       自動で流れるのは Claude 側だけ。キーの無い機械のために、枠そのものも押せる。 -->
+  <div class="box" id="box">
     <span class="p">&gt;</span>
     <span class="typed" id="typed"></span><span class="cur" id="cur"></span>
+    <span class="go">⏎</span>
   </div>
   <div class="hint">
-    <span><b>1</b>–<b>9</b> 選ぶ</span>
-    <span><b>space</b> 自動で進むのを止める／動かす</span>
+    <span class="keys"><b>enter</b> 送る</span>
+    <span class="keys"><b>1</b>–<b>9</b> 選ぶ</span>
+    <span class="keys"><b>esc</b> 最後まで出す</span>
     <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
   <!-- 実物の下2行。**意味は無いが、これがあると Claude Code に見える。**
@@ -206,6 +210,8 @@ const typed = document.getElementById('typed');
 const cur   = document.getElementById('cur');
 const again = document.getElementById('again');
 const ctxEl = document.getElementById('ctx');
+const box   = document.getElementById('box');
+const sf    = document.getElementById('sf');
 
 /* 動きを切る指定があるときは、流さずに全部出す（指針4）。
    動かない環境で中身が消えてはいけない。 */
@@ -223,6 +229,10 @@ const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
          **ここがいちばん効く。**読み終わる前に次の行が打たれると、目が戻る */
 const PACE = { ch:28, res:18, tool:620, block:820, turn:1100 };
 
+/* esc。**流れている途中を、その場で出しきる。**
+   出しきったあとも、途中だった行がゆっくり打ち続けないように */
+let flush = false;
+
 /* 進み具合は「聞いた話題の数」で持つ（下の meter）。at / busy / done は使わない */
 
 function el(cls, html){
@@ -239,6 +249,7 @@ function type(node, text, per, end){
   if (STILL){ node.innerHTML = text; end(); return; }
   let i = 0;
   (function tick(){
+    if (flush){ node.innerHTML = text; end(); return; }
     if (text[i] === '<') i = text.indexOf('>', i) + 1;   /* タグは一気に進める */
     else i += 1;
     node.innerHTML = text.slice(0, i);
@@ -259,6 +270,7 @@ function think(s, end){
   let k = 0, live = true;
   (function tick(){
     if (!live) return;
+    if (flush){ live = false; n.innerHTML = '<span class="g">✻</span> ' + s.x + '…'; end(); return; }
     const sec = ((Date.now() - t0) / 1000).toFixed(0);
     n.innerHTML = '<span class="g">' + GLYPH[k++ % GLYPH.length] + '</span> ' + s.x + '… ' +
                   '<span class="sec">(' + sec + 's · esc to interrupt)</span>';
@@ -276,6 +288,7 @@ function reveal(box, per, end){
   if (STILL){ kids.forEach(function(k){ k.classList.add('in'); }); end(); return; }
   let i = 0;
   (function tick(){
+    if (flush){ kids.forEach(function(k){ k.classList.add('in'); }); end(); return; }
     if (i >= kids.length){ setTimeout(end, PACE.block / 2); return; }
     kids[i].classList.add('in');
     /* dt のときは dd も一緒に */
@@ -288,7 +301,7 @@ function reveal(box, per, end){
 
 function put(s, end){
   if (s.t === 'you'){
-    /* 送るだけ。**打つのは ask()。**（rest から呼ばれる用） */
+    /* 送るだけ。**打つのは write()。**（rest から呼ばれる用） */
     typed.textContent = '';
     el('row you', '<span>&gt;</span> ' + s.x);
     bottom(); end();
@@ -321,6 +334,7 @@ function put(s, end){
     if (STILL){ out.innerHTML = s.o.join('\n'); bottom(); end(); return; }
     let i = 0;
     (function tick(){
+      if (flush) i = s.o.length - 1;      /* esc。残りを一度に出す */
       out.innerHTML = s.o.slice(0, ++i).join('\n');
       bottom();
       if (i < s.o.length) setTimeout(tick, 520); else end();
@@ -388,19 +402,21 @@ function put(s, end){
 }
 
 /* =====================================================================
-   進み方。**勝手に進む。でも選べる。戻れる。**（2026-09-02）
+   進み方。**自動で流れるのは Claude 側だけ。**（2026-09-03）
 
    一手ずつエンターは押す回数が多すぎ（26回）、下に一覧を置いたら読むところが
-   狭くなった。**いまは自動で順に進んで、目次は左に出す。**
+   狭くなった。そこを直したときに、**注文まで自動で送るようにしてしまった。**
+   人の行を機械が送ると、「注文どおりに作る」話が「機械が勝手に進める」話になる。
 
-   - 上から順に、勝手に流れる（1つ終わると PACE.turn 待って次へ）
-   - 左の目次を押せば、そこへ飛ぶ。**いつでも、何度でも**
+   - 注文は**枠に打たれて、止まる。**送るのは人（enter／枠を押す）
+   - 送ったあとの Claude 側は、最後まで自動で流れる
+   - 1つ終わると PACE.turn 待って、**次の注文が枠に打たれる**（送りはしない）
+   - 左の目次を押せば、そこへ飛ぶ。**いつでも、何度でも**（押すこと自体が送る動き）
    - 読み終わったものに ✓、いま読んでいるところに縦線
    - log は消さない。上に遡れば、前のものがそのまま残っている
-   - space で止める／また動かす、esc で流れている途中を最後まで出す
+   - esc で流れている途中を最後まで出す
    ===================================================================== */
 const tree = document.getElementById('tree');
-const autoState = document.getElementById('autoState');
 
 /* 目次。**置いてあるファイルの木**として出す */
 const FILES = ['サービス/', '進め方.md', 'やらないこと.md', '事例/', '料金.md',
@@ -422,12 +438,68 @@ function light(n){
   if (b){ b.classList.add('now'); b.scrollIntoView({ block:'nearest' }); }
 }
 
-let queue = [], qi = 0, nowAt = -1, busyNow = false, auto = true, timer = 0;   /* nowAt は「いまの話題」。cur はカーソルの要素なので使わない */
+/* nowAt  いま読んでいる話題
+   pending 枠に打ってあって、まだ送っていない話題（-1 は無し） */
+let queue = [], qi = 0, nowAt = -1, busyNow = false, pending = -1, timer = 0;
 
 function state(){
-  autoState.textContent = auto
-    ? (nowAt + 1 >= T.length ? 'ぜんぶ出ました' : '自動で進みます（space で止める）')
-    : '止めています（space で動かす）';
+  /* 次の注文を打ちはじめるまでの間は、何も言わない（空にする） */
+  const all = tree.querySelectorAll('button.seen').length >= T.length;
+  sf.textContent = busyNow      ? '書いています'
+                 : pending >= 0 ? 'enter で送ります'
+                 : all          ? 'ぜんぶ出ました'
+                 :                '';
+  box.classList.toggle('ready', pending >= 0 && !busyNow);
+}
+
+/* 下の枠に打つ。**送らない。**送るのは人 */
+function write(n){
+  const t = T[n];
+  if (!t) return;
+  pending = n;
+  typed.textContent = '';
+  state();
+  if (STILL){ typed.textContent = t.q; return; }
+  let i = 0;
+  (function tick(){
+    if (pending !== n) return;        /* 途中で別のものを選ばれたら、打つのをやめる */
+    typed.textContent = t.q.slice(0, ++i);
+    if (i < t.q.length) setTimeout(tick, 38);
+  })();
+}
+
+/* 送る。**ここから先が自動** */
+function send(){ if (pending >= 0) go(pending); }
+
+function go(n){
+  const t = T[n];
+  if (!t) return;
+  pending = -1; flush = false;
+  if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
+  clearTimeout(timer);          /* rest が入れた次の予約を消す */
+  nowAt = n; busyNow = true;
+  light(n); state();
+  typed.textContent = '';
+  el('row you', '<span>&gt;</span> ' + t.q);
+  bottom();
+  queue = t.s.slice(); qi = 0;
+  runQueue();
+}
+
+/* 目次と数字キー。**押したこと自体が送る動き**なので、打ってから送る */
+function jump(n){
+  if (!T[n]) return;
+  clearTimeout(timer);
+  pending = n;
+  typed.textContent = '';
+  state();
+  if (STILL){ go(n); return; }
+  let i = 0;
+  (function tick(){
+    if (pending !== n) return;
+    typed.textContent = T[n].q.slice(0, ++i);
+    if (i < T[n].q.length) setTimeout(tick, 30); else go(n);
+  })();
 }
 
 function runQueue(){
@@ -435,44 +507,23 @@ function runQueue(){
     put(queue[qi++], function(){ meter(); runQueue(); });
     return;
   }
-  /* 話題がひとつ終わった。**✓ を付けて、次へ** */
+  done();
+}
+
+/* 話題がひとつ終わった。**✓ を付けて、次の注文を枠に打つ。**送りはしない */
+function done(){
+  /* esc のあと、途中だった行が戻ってきて二度呼ばれることがある */
+  if (!busyNow) return;
   busyNow = false;
   const b = btn(nowAt);
   if (b) b.classList.add('seen');
-  meter(); state();
-  if (auto && nowAt + 1 < T.length){
-    clearTimeout(timer);
-    timer = setTimeout(function(){ ask(nowAt + 1); }, STILL ? 0 : PACE.turn);
-  }
-}
-
-function ask(n){
-  const t = T[n];
-  if (!t) return;
-  clearTimeout(timer);
-  if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
-  nowAt = n; busyNow = true;
-  light(n); state();
-  const send = function(){
-    typed.textContent = '';
-    el('row you', '<span>&gt;</span> ' + t.q);
-    bottom();
-    queue = t.s.slice(); qi = 0;
-    runQueue();
-  };
-  if (STILL){ send(); return; }
-  let i = 0;
-  (function tick(){
-    typed.textContent = t.q.slice(0, ++i);
-    /* **打ち終わってから、読める間を置いて送る。**
-       最初の形は enter 待ちだったので読めていた。自動で進むようにしたら
-       240ms で送られて、打った文字が見えなくなっていた（2026-09-02）。 */
-    if (i < t.q.length) setTimeout(tick, 38); else setTimeout(send, 900);
-  })();
+  meter(); bottom(); state();
+  if (nowAt + 1 < T.length) timer = setTimeout(function(){ write(nowAt + 1); }, STILL ? 0 : PACE.turn);
 }
 
 /* 流れている途中を、最後まで出す */
 function rest(){
+  flush = true;                 /* 動いている途中の行も、その場で出しきる */
   while (qi < queue.length){
     const step = queue[qi++];
     if (step.t === 'say') el('row say' + (step.dim ? ' dim' : ''), step.x);
@@ -480,10 +531,7 @@ function rest(){
       (step.exp ? ' <span class="exp">(ctrl+r to expand)</span>' : ''));
     else put(step, function(){});
   }
-  busyNow = false;
-  const b = btn(nowAt);
-  if (b) b.classList.add('seen');
-  meter(); bottom();
+  done();
 }
 
 /* 残りの割合は、読み終わった話題の数で減らす */
@@ -494,28 +542,33 @@ function meter(){
 
 tree.addEventListener('click', function(e){
   const b = e.target.closest('button');
-  if (!b) return;
-  auto = true;                  /* 押したら、そこから先も自動で続ける */
-  ask(+b.dataset.n);
+  if (b) jump(+b.dataset.n);
 });
 
+/* 枠を押しても送れる。**キーの無い機械のため** */
+box.addEventListener('click', send);
+
 addEventListener('keydown', function(e){
-  if (e.key >= '1' && e.key <= '9'){ auto = true; ask(+e.key - 1); return; }
-  if (e.key === ' '){
-    e.preventDefault();
-    auto = !auto; state();
-    if (auto && !busyNow && nowAt + 1 < T.length) ask(nowAt + 1);
-    return;
-  }
-  if (e.key === 'Escape'){ e.preventDefault(); rest(); }
+  if (e.key === 'Enter'){ e.preventDefault(); send(); return; }
+  if (e.key >= '1' && e.key <= '9'){ jump(+e.key - 1); return; }
+  if (e.key === 'Escape'){ e.preventDefault(); if (busyNow) rest(); }
 });
 
 again.addEventListener('click', function(){ location.reload(); });
 
-/* 上から順に、勝手に流れはじめる */
-meter(); state();
-if (STILL){ T.forEach(function(t, n){ nowAt = n; queue = t.s.slice(); qi = 0; rest(); }); }
-else ask(0);
+/* 最初の注文を枠に打って、止まる。**開いた時点では、まだ何も進まない** */
+meter();
+if (STILL){
+  T.forEach(function(t, n){
+    nowAt = n;
+    el('row you', '<span>&gt;</span> ' + t.q);
+    queue = t.s.slice(); qi = 0;
+    while (qi < queue.length) put(queue[qi++], function(){});
+    const b = btn(n); if (b) b.classList.add('seen');
+  });
+  typed.textContent = ''; meter(); state();
+}
+else write(0);
 </script>
 </body>
 </html>
