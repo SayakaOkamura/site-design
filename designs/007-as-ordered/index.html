@@ -479,15 +479,38 @@ T.forEach(function(t, n){
 
 function btn(n){ return tree.querySelector('button[data-n="' + n + '"]'); }
 
-function light(n){
+function light(list){
   [].forEach.call(tree.querySelectorAll('button'), function(b){ b.classList.remove('now'); });
-  const b = btn(n);
-  if (b){ b.classList.add('now'); b.scrollIntoView({ block:'nearest' }); }
+  list.forEach(function(n){ const b = btn(n); if (b) b.classList.add('now'); });
+  const head = btn(list[0]);
+  if (head) head.scrollIntoView({ block:'nearest' });
 }
 
-/* nowAt  いま読んでいる話題
-   pending 枠に打ってあって、まだ送っていない話題（-1 は無し） */
-let queue = [], qi = 0, nowAt = -1, busyNow = false, pending = -1, timer = 0;
+/* =====================================================================
+   注文は4つ。**目次は10のまま。**（2026-09-03）
+
+   > クリックいちいちさせるのだるいかなあ、でも体験としてはこっちの方が
+   > いいんだよな、迷う ／ 情報量増やして量を減らす？
+
+   1回1件だと、**押した割に返ってくるものが軽い。**訪問者がひと息で聞く
+   単位にまとめて、9回 → 4回にした。**まとめるのは流れのほうだけ。**
+   目次から押したときは、これまでどおり1件だけ出る
+   （「1つの答えに1つのこと」は、そちらに残してある）。
+   ===================================================================== */
+const G = [
+  { q:'何ができて、どう進める？', k:['サービス', '進め方', 'やらないこと'] },
+  { q:'事例と料金は？',           k:['実績・事例', '料金'] },
+  { q:'会社のことは？',           k:['会社概要', '登記・株主', '理念'] },
+  { q:'相談したい',               k:['お問い合わせ'] },
+];
+function at(k){ for (let i = 0; i < T.length; i++) if (T[i].k === k) return i; return -1; }
+function ids(g){ return G[g].k.map(at).filter(function(n){ return n >= 0; }); }
+
+/* nowAt   最後に出した話題        runIds  いま流している話題の並び
+   nowG    いまのまとまり          pending 枠に打ってあって、まだ送っていないまとまり
+   tok     打っている途中のもの。別のものを選ばれたら、前のは止まる */
+let queue = [], qi = 0, nowAt = -1, nowG = -1, runIds = [];
+let busyNow = false, pending = -1, timer = 0, tok = 0;
 
 function state(){
   /* 次の注文を打ちはじめるまでの間は、何も言わない（空にする） */
@@ -500,53 +523,57 @@ function state(){
 }
 
 /* 下の枠に打つ。**送らない。**送るのは人 */
-function write(n){
-  const t = T[n];
+function write(g){
+  const t = G[g];
   if (!t) return;
-  pending = n;
+  const my = ++tok;
+  pending = g;
   typed.textContent = '';
   state();
   if (STILL){ typed.textContent = t.q; return; }
   let i = 0;
   (function tick(){
-    if (pending !== n) return;        /* 途中で別のものを選ばれたら、打つのをやめる */
+    if (my !== tok) return;       /* 途中で別のものを選ばれたら、打つのをやめる */
     typed.textContent = t.q.slice(0, ++i);
     if (i < t.q.length) setTimeout(tick, 38);
   })();
 }
 
 /* 送る。**ここから先が自動** */
-function send(){ if (pending >= 0) go(pending); }
+function send(){ if (pending >= 0){ const g = pending; nowG = g; run(G[g].q, ids(g)); } }
 
-/* alone を立てると、人の行を出さずに Claude 側だけ動かす（開いた瞬間の1回） */
-function go(n, alone){
-  const t = T[n];
-  if (!t) return;
-  pending = -1; flush = false; rush = !!alone;
+/* 流す。alone を立てると、人の行を出さずに Claude 側だけ動かす（開いた瞬間の1回） */
+function run(q, list, alone){
+  if (!list.length) return;
+  pending = -1; flush = false; rush = !!alone; ++tok;
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
-  nowAt = n; busyNow = true;
-  light(n); state();
+  runIds = list; nowAt = list[list.length - 1];
+  busyNow = true;
+  light(list); state();
   typed.textContent = '';
-  if (!alone) el('row you', '<span>&gt;</span> ' + t.q);
+  if (!alone) el('row you', '<span>&gt;</span> ' + q);
   bottom();
-  queue = t.s.slice(); qi = 0;
+  queue = [];
+  list.forEach(function(n){ queue = queue.concat(T[n].s); });
+  qi = 0;
   runQueue();
 }
 
-/* 目次と数字キー。**押したこと自体が送る動き**なので、打ってから送る */
+/* 目次と数字キー。**1件だけ出す。**押したこと自体が送る動きなので、打ってから送る */
 function jump(n){
   if (!T[n]) return;
   clearTimeout(timer);
-  pending = n;
+  const my = ++tok;
+  pending = -1;
   typed.textContent = '';
   state();
-  if (STILL){ go(n); return; }
+  if (STILL){ run(T[n].q, [n]); return; }
   let i = 0;
   (function tick(){
-    if (pending !== n) return;
+    if (my !== tok) return;
     typed.textContent = T[n].q.slice(0, ++i);
-    if (i < T[n].q.length) setTimeout(tick, 30); else go(n);
+    if (i < T[n].q.length) setTimeout(tick, 30); else run(T[n].q, [n]);
   })();
 }
 
@@ -558,27 +585,30 @@ function runQueue(){
   done();
 }
 
-/* 話題がひとつ終わった。**✓ を付けて、次の注文を枠に打つ。**送りはしない */
+/* ひとまとまり終わった。**出したもの全部に ✓ を付けて、次の注文を枠に打つ。**送りはしない */
 function done(){
   /* esc のあと、途中だった行が戻ってきて二度呼ばれることがある */
   if (!busyNow) return;
   busyNow = false;
-  const b = btn(nowAt);
-  if (b) b.classList.add('seen');
+  runIds.forEach(function(n){ const b = btn(n); if (b) b.classList.add('seen'); });
   meter(); bottom(); state();
-  const n = next();
-  if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
+  const g = nextG();
+  if (g >= 0) timer = setTimeout(function(){ write(g); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
   rush = false;                 /* 速いのは開いた瞬間の1回だけ */
 }
 
-/* 次に打つ話題。**まだ出していないもの。**出したものは飛ばす
-   （会社概要と理念は、開いた時点で出ている）。
-   終わりまで行ったら頭に戻って、残っているものを拾う */
-function next(){
-  for (let i = 1; i <= T.length; i++){
-    const j = (nowAt + i + T.length) % T.length;
-    const b = btn(j);
-    if (b && !b.classList.contains('seen')) return j;
+/* 次に打つまとまり。**まだ出していないものが残っているところ。**
+   目次から先に押されて中身が埋まったところは飛ばす。終わりまで行ったら頭に戻る。
+   `nowG` は**流したまとまり**だけを指す（枠に打っただけでは進めない。
+   進めると、目次を1件押したあとに、打ちかけだったまとまりへ戻ってこない） */
+function nextG(){
+  for (let i = 1; i <= G.length; i++){
+    const j = (nowG + i + G.length) % G.length;
+    const left = ids(j).some(function(n){
+      const b = btn(n);
+      return b && !b.classList.contains('seen');
+    });
+    if (left) return j;
   }
   return -1;
 }
@@ -636,7 +666,7 @@ if (STILL){
   });
   typed.textContent = ''; meter(); state();
 }
-else go(0, true);
+else run(T[0].q, [0], true);
 </script>
 </body>
 </html>
