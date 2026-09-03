@@ -170,3 +170,17 @@ a{color:inherit}
   .creed .ch:hover{transform:none}
   .creed .ch.hop{animation:none}
 }
+
+/* ---------- 縦に落ちる一本（2026-09-03）----------
+   006-G の線を縦に引き直したもの。**本文の左の余白に置く。**
+   文字の下は通らない。狭い画面では出さない（余白が無いので線が本文に乗る）。 */
+.thread{
+  position:absolute;top:0;left:calc(50% - 19em - 170px);
+  width:160px;pointer-events:none;z-index:0;overflow:visible;
+  display:none;
+}
+.thread path{
+  fill:none;stroke:var(--accent);stroke-width:2;opacity:.5;
+  stroke-linecap:round;
+}
+@media (min-width:1120px){ .thread{display:block} }

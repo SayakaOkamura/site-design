@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>8 Alter Design Consulting</title>
 <link rel="stylesheet" href="../../assets/css/reset.css">
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 <!-- =====================================================================
@@ -58,6 +58,18 @@
     </nav>
   </div>
 </header>
+
+<!-- **006 の線を、縦に引き直した。**（2026-09-03）
+     > せっかくあのくねくねモーション作ったしあれも使いたいけどなあ
+
+     006-G は横一枚を辿る線だった。ここは縦のページなので、**縦に落ちる一本**にする。
+     組み方は G のまま：**直線 → 円弧 → 直線。曲がるのは円弧の中だけ。**
+     点を通す曲線（Catmull-Rom）はぶよぶよになるので使わない（G の NOTES）。
+
+     **読むほど引かれる。**進み具合を兼ねる（G の下の線と同じ役目）。
+     文字の下は通らない（本文の左の余白に置く）。狭い画面では出さない。
+     長さは実測（`getTotalLength`）。**直値で書かない**（G で一度ずれた）。 -->
+<svg class="thread" id="thread" aria-hidden="true"><path id="threadPath"/></svg>
 
 <main class="wrap">
 
@@ -307,6 +319,66 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
     void s.offsetWidth;              /* もう一度同じ字を押しても跳ねるように */
     s.classList.add('hop');
   });
+})();
+
+/* =====================================================================
+   縦に落ちる一本（2026-09-03）
+
+   節の切り替わりで左右に振る。振り幅は円弧2つぶん（半径 40 × 2 = 80）で、
+   **S字がきれいに閉じる大きさ。**それ以外は直線。
+   ===================================================================== */
+(function(){
+  const svg = document.getElementById('thread');
+  const p   = document.getElementById('threadPath');
+  if (!svg || !p) return;
+
+  const R = 40, X = [40, 120];      /* 振り幅 = 2R。左右2箇所を行き来する */
+  let len = 0;
+
+  function build(){
+    const H = document.documentElement.scrollHeight;
+    svg.setAttribute('viewBox', '0 0 160 ' + H);
+    svg.style.height = H + 'px';
+
+    /* 曲がる場所は、節の頭に合わせる（読み進みと曲がりが揃う） */
+    const ys = [].slice.call(document.querySelectorAll('main .sec'))
+      .map(function(el){ return el.getBoundingClientRect().top + scrollY; })
+      .filter(function(y){ return y > R * 2 && y < H - R * 2; });
+
+    let i = 0, d = 'M ' + X[0] + ' 0';
+    ys.forEach(function(y){
+      const from = X[i % 2], to = X[(i + 1) % 2];
+      d += ' L ' + from + ' ' + (y - R);
+      /* S字：出る円弧と受ける円弧。**曲がるのはこの中だけ** */
+      d += ' A ' + R + ' ' + R + ' 0 0 ' + (to > from ? 1 : 0) + ' ' + ((from + to) / 2) + ' ' + y;
+      d += ' A ' + R + ' ' + R + ' 0 0 ' + (to > from ? 0 : 1) + ' ' + to + ' ' + (y + R);
+      i += 1;
+    });
+    d += ' L ' + X[i % 2] + ' ' + H;
+    p.setAttribute('d', d);
+
+    len = p.getTotalLength();       /* **実測。**直値で書かない */
+    p.style.strokeDasharray = len;
+    draw();
+  }
+
+  /* 読むほど引かれる */
+  function draw(){
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const r = max > 0 ? Math.min(1, scrollY / max) : 1;
+    /* 開いた時点で少し引いてある（何も無いと線に見えない） */
+    p.style.strokeDashoffset = len * (1 - Math.max(0.12, r));
+  }
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches){
+    build();
+    p.style.strokeDasharray = 'none';
+    p.style.strokeDashoffset = 0;
+  } else {
+    build();
+    addEventListener('scroll', draw, { passive:true });
+    addEventListener('resize', build);
+  }
 })();
 
 /* ソースを見た人にだけ。**書かない遊び心** */
