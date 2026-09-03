@@ -9,7 +9,7 @@
      直したのに変わらないことが起きる（2026-09-02 に一度これで見え方が壊れた。
      新しい HTML と古い CSS が混ざって、目次が全幅・本体が下になった）。
      **style.css を触ったら、この数字を上げること。** -->
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 <!-- =====================================================================
@@ -92,7 +92,7 @@
   </div>
   <div class="hint">
     <span class="keys"><b>enter</b> 送る</span>
-    <span class="keys"><b>1</b>–<b>4</b> 選ぶ</span>
+    <span class="keys"><b>1</b>–<b>5</b> 選ぶ</span>
     <span class="keys"><b>esc</b> 最後まで出す</span>
     <span class="r"><button id="again" type="button">最初から</button></span>
   </div>
@@ -142,25 +142,18 @@
 
    ===================================================================== */
 
-/* 開いた瞬間に流れるぶん。**目次には入れない**（2026-09-03）
+/* **「このサイト」は目次のいちばん下。**（2026-09-03）
 
    > このサイトの分なのに Read になってるから、いきなりサービス？って見える
+   > いや、それ自体は何回も開ける必要がある
 
-   目次に「このサイト」を置くと、**そこが人の行なしで済んでしまう。**
-   1つめが黙って終わったように見えて、次の `サービスは？` が飛んで見える。
-   **これは聞けることではなく、開いたときに出るもの。**目次から外した。
-   目次の1番は `サービス`。枠に最初に打たれるのも `サービスは？` で、揃う。 */
-const OPEN = [
-  { t:'think', x:'読んでいます' },
-  { t:'tool', x:'Read', a:'このサイト.md' },
-  { t:'md',   f:'このサイト.md', x:[
-      'ここは会社案内。聞かれたことは、置いてあるファイルで返す',
-      '無いものは、無いと返す',
-      '決まっていないことは、埋めない',
-      '読みたいところは、左の一覧を押す。enter でも次へ進む',
-    ]},
-];
-
+   目次の**1番**に置くと、そこだけ人の行なしで済んで、1番が黙って終わった
+   ように見える。次の `サービスは？` が飛んで見えるのはそのせい。
+   目次から**外す**と、今度は開き直せない。
+   **順番の外に置いた。**下に一つだけ、区切って並べる。
+   - 案内の順は `サービス` から始まる（枠に最初に打たれるのもこれ。揃う）
+   - 「このサイト」は**いつでも押せる。**開いた瞬間に一度出ているので ✓ が付く
+   - 案内が一周しても、ここへは戻らない（**順番の外**なので） */
 const T = [
   /* サービス ＝ サービス4件 → 進め方 → やらないこと */
   { k:'サービス', s:[
@@ -222,7 +215,22 @@ const T = [
         ]},
       { t:'say',  x:'「何を決めればいいか分からない」という相談が、いちばん多いです。' },
     ]},
+
+  /* **順番の外。**開いた瞬間に流れるぶんで、目次では下に区切って並ぶ */
+  { k:'このサイト', s:[
+      { t:'think', x:'読んでいます' },
+      { t:'tool', x:'Read', a:'このサイト.md' },
+      { t:'md',   f:'このサイト.md', x:[
+          'ここは会社案内。聞かれたことは、置いてあるファイルで返す',
+          '無いものは、無いと返す',
+          '決まっていないことは、埋めない',
+          '読みたいところは、左の一覧を押す。enter でも次へ進む',
+        ]},
+    ]},
 ];
+
+/* 案内の順に並んでいるのは、最後の一つを除いたぶん */
+const TOUR = T.length - 1;
 
 /* =====================================================================
    開いた時点で出ているもの。**上の2行だけ**（2026-09-03）
@@ -520,26 +528,17 @@ function write(n){
 /* 送る。**ここから先が自動** */
 function send(){ if (pending >= 0) go(pending); }
 
-/* 開いた瞬間。**人の行は出さない。**目次のどれでもないので、印も付かない */
-function open(){
-  nowAt = -1; busyNow = true;
-  flush = false; rush = true;
-  state();
-  queue = OPEN.slice(); qi = 0;
-  runQueue();
-}
-
-/* 目次のものを流す */
-function go(n){
+/* alone を立てると、人の行を出さずに Claude 側だけ動かす（開いた瞬間の1回） */
+function go(n, alone){
   const t = T[n];
   if (!t) return;
-  pending = -1; flush = false; rush = false; ++tok;
+  pending = -1; flush = false; rush = !!alone; ++tok;
   if (busyNow) rest();          /* 途中でも選べる。途中のぶんは出しきる */
   clearTimeout(timer);          /* rest が入れた次の予約を消す */
   nowAt = n; busyNow = true;
   light(n); state();
   typed.textContent = '';
-  el('row you', '<span>&gt;</span> ' + ask(n));
+  if (!alone) el('row you', '<span>&gt;</span> ' + ask(n));
   bottom();
   queue = t.s.slice(); qi = 0;
   runQueue();
@@ -587,8 +586,11 @@ function done(){
 /* 次に打つ話題。**まだ出していないもの。**目次から先に押されたものは飛ばす。
    終わりまで行ったら頭に戻って、残っているものを拾う */
 function next(){
-  for (let i = 1; i <= T.length; i++){
-    const j = (nowAt + i + T.length) % T.length;
+  /* 順番の外（いちばん下の一つ）にいたときは、案内の頭から数える。
+     開いた瞬間はそこにいるので、最初に打たれるのは目次の1番になる */
+  const from = nowAt >= TOUR ? -1 : nowAt;
+  for (let i = 1; i <= TOUR; i++){
+    const j = (from + i + TOUR) % TOUR;    /* 順番の外は拾わない */
     const b = btn(j);
     if (b && !b.classList.contains('seen')) return j;
   }
@@ -634,8 +636,6 @@ again.addEventListener('click', function(){ location.reload(); });
    1つめが終わると、次の注文が枠に打たれて止まる（そこからは人が送る） */
 meter();
 if (STILL){
-  queue = OPEN.slice(); qi = 0;
-  while (qi < queue.length) put(queue[qi++], function(){});
   T.forEach(function(t, n){
     nowAt = n;
     el('row you', '<span>&gt;</span> ' + ask(n));
@@ -645,7 +645,7 @@ if (STILL){
   });
   typed.textContent = ''; meter(); state();
 }
-else open();
+else go(T.length - 1, true);
 </script>
 </body>
 </html>
