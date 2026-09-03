@@ -167,7 +167,6 @@ const T = [
       { t:'think', x:'読んでいます' },
       { t:'note', x:[
           'ここは会社案内です。聞かれたことは、置いてあるものから返します',
-          '無いものは、<b>無いと返します</b>',
           '読みたいところは、左の一覧から。enter でも次へ進みます',
         ]},
     ]},
@@ -262,7 +261,7 @@ const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
    block 一覧・diff・ファイルを出したあと
    turn  Claude 側が終わってから、次の注文を打ちはじめるまで
          **ここがいちばん効く。**読み終わる前に次の行が打たれると、目が戻る */
-const PACE = { ch:28, res:18, tool:620, block:820, turn:1100 };
+const PACE = { ch:28, res:18, line:12, tool:620, block:820, turn:1100 };
 
 /* **開いた瞬間の1回だけ、速さを別にする**（2026-09-03）。
    > ページのロードあるのにここでも初手ロードで待たされるとストレスあるかも。
@@ -270,7 +269,7 @@ const PACE = { ch:28, res:18, tool:620, block:820, turn:1100 };
    ふつうの速さ（think 1.5s＋tool 620＋1行 300…）だと、出そろうまで 2.5 秒かかる。
    **ここだけ 850ms 前後に詰める。**読ませる間は、送ったあとの turn で取ればいい。
    think 400 ／ tool 150 ／ 1行 60 ／ 塊のあと 60 ／ 次の注文まで 400 */
-const RUSH = { think:400, tool:150, line:60, block:60, turn:400 };
+const RUSH = { think:400, tool:150, line:8, block:60, turn:400 };
 let rush = false;
 
 /* esc。**流れている途中を、その場で出しきる。**
@@ -326,20 +325,24 @@ function think(s, end){
 
 /* 塊の中の行を、1本ずつ出す。**面は先に置く**（面ごと出すと画面が跳ねる）。
    dl は dt と dd を対で出す（片方だけ出ると意味にならない）。 */
+/* 塊の中も、**1文字ずつ出す。**（2026-09-03）
+   > AI側の文字出す時に急に入力感無くなるのは何
+   前は行ごとにふっと出していた（速いが、そこで打っている感じが切れる）。
+   面は先に置いて、中の行を順に打つ。1文字は地の文より速い（12ms / 開いた瞬間は 8ms）。 */
 function reveal(box, per, end){
   const kids = [].slice.call(box.children);
   box.classList.add('stagger');
-  if (STILL){ kids.forEach(function(k){ k.classList.add('in'); }); end(); return; }
+  const done = function(){ kids.forEach(function(k){ k.classList.add('in'); }); end(); };
+  if (STILL || flush){ done(); return; }
+  const html = kids.map(function(k){ return k.innerHTML; });
+  kids.forEach(function(k){ k.innerHTML = ''; });
   let i = 0;
-  (function tick(){
-    if (flush){ kids.forEach(function(k){ k.classList.add('in'); }); end(); return; }
+  (function step(){
+    if (flush){ kids.forEach(function(k, n){ k.innerHTML = html[n]; }); done(); return; }
     if (i >= kids.length){ setTimeout(end, rush ? RUSH.block : PACE.block / 2); return; }
-    kids[i].classList.add('in');
-    /* dt のときは dd も一緒に */
-    if (kids[i].tagName === 'DT' && kids[i + 1]) kids[++i].classList.add('in');
-    i += 1;
-    bottom();
-    setTimeout(tick, rush ? RUSH.line : per);
+    const k = kids[i];
+    k.classList.add('in');
+    type(k, html[i], rush ? RUSH.line : PACE.line, function(){ i += 1; step(); });
   })();
 }
 
