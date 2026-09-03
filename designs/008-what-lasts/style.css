@@ -174,9 +174,11 @@ a{color:inherit}
 /* ---------- 縦に落ちる一本（2026-09-03）----------
    006-G の線を縦に引き直したもの。**本文の左の余白に置く。**
    文字の下は通らない。狭い画面では出さない（余白が無いので線が本文に乗る）。 */
+/* **紙いっぱいに置く。**両端（社名の輪・宛先）に届く必要があるので、
+   余白だけの箱では足りない。線が通るのは余白で、最後だけ本文へ入る。 */
 .thread{
-  position:absolute;top:0;left:calc(50% - 19em - 170px);
-  width:160px;pointer-events:none;z-index:0;overflow:visible;
+  position:absolute;top:0;left:0;
+  pointer-events:none;z-index:0;overflow:visible;
   display:none;
 }
 .thread path{
@@ -184,3 +186,14 @@ a{color:inherit}
   stroke-linecap:round;
 }
 @media (min-width:1120px){ .thread{display:block} }
+
+/* **線の始まり。**社名の左の輪。開いて一度だけ回る（繰り返さない）。
+   一箇所だけ色を抜いてあるので、回っているのが見える。 */
+.mark{
+  display:inline-block;width:12px;height:12px;margin-right:9px;
+  border:2px solid var(--accent);border-top-color:transparent;
+  border-radius:50%;vertical-align:-1px;
+  animation:turn .8s cubic-bezier(.3,.7,.3,1) both;
+}
+@keyframes turn{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@media (prefers-reduced-motion:reduce){ .mark{animation:none} }

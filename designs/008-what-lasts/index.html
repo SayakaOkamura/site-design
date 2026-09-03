@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>8 Alter Design Consulting</title>
 <link rel="stylesheet" href="../../assets/css/reset.css">
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 <!-- =====================================================================
@@ -44,7 +44,13 @@
 
 <header class="head">
   <div class="wrap">
-    <p class="name">株式会社アルターデザインコンサルティング</p>
+    <!-- **線の始まり。**（2026-09-03）
+         > 悪くない、けど必然性がない。たとえばロゴが回転して下にこの線が伸びるとか
+         線が余白に置いてあるだけだと、始まりも終わりも意味を持たない。
+         **社名の左の輪から出て、宛先で終わる。**会社案内は、名前から始まって
+         連絡先で終わるものなので、両端がその二つになる。
+         輪は開いて一度だけ回る（一周して止まる。繰り返さない）。 -->
+    <p class="name"><span class="mark" aria-hidden="true"></span>株式会社アルターデザインコンサルティング</p>
     <!-- **足りないものは、わざわざ出さない。**（2026-09-03）
          > あと足りないものわざわざアピールしなくていい、情報自体は007と同じ
          案内に「料金」「実績・事例」を並べて、押すと「置いていません」と
@@ -66,8 +72,14 @@
      組み方は G のまま：**直線 → 円弧 → 直線。曲がるのは円弧の中だけ。**
      点を通す曲線（Catmull-Rom）はぶよぶよになるので使わない（G の NOTES）。
 
+     **両端に理由を持たせた**（2026-09-03）。
+     > 配置に理由がないな……
+     **始まりは社名の左の輪。終わりはお問い合わせの宛先。**
+     会社案内は名前から始まって連絡先で終わるものなので、線の両端もそこ。
+     通り道は節の切り替わりで、読み進みと曲がりが揃う。
+
      **読むほど引かれる。**進み具合を兼ねる（G の下の線と同じ役目）。
-     文字の下は通らない（本文の左の余白に置く）。狭い画面では出さない。
+     文字の下は通らない（最後だけ本文へ入り込んで、宛先の手前で止まる）。
      長さは実測（`getTotalLength`）。**直値で書かない**（G で一度ずれた）。 -->
 <svg class="thread" id="thread" aria-hidden="true"><path id="threadPath"/></svg>
 
@@ -328,33 +340,66 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
    **S字がきれいに閉じる大きさ。**それ以外は直線。
    ===================================================================== */
 (function(){
-  const svg = document.getElementById('thread');
-  const p   = document.getElementById('threadPath');
-  if (!svg || !p) return;
+  const svg  = document.getElementById('thread');
+  const p    = document.getElementById('threadPath');
+  const mark = document.querySelector('.mark');
+  const mail = document.querySelector('.mail a');
+  const main = document.querySelector('main.wrap');
+  if (!svg || !p || !mark || !mail || !main) return;
 
-  const R = 40, X = [40, 120];      /* 振り幅 = 2R。左右2箇所を行き来する */
   let len = 0;
 
+  const box = function(el){
+    const r = el.getBoundingClientRect();
+    return { x:r.left + scrollX, y:r.top + scrollY, w:r.width, h:r.height };
+  };
+
+  /* S字ひとつ。**曲がるのは円弧の中だけ**（G と同じ組み方）。
+     半径は振り幅の半分にすると、出る円弧と受ける円弧がぴったり閉じる。 */
+  function sJog(fromX, toX, y){
+    const r = Math.abs(toX - fromX) / 2;
+    const cw = toX > fromX ? 1 : 0;
+    return ' L ' + fromX + ' ' + (y - r)
+         + ' A ' + r + ' ' + r + ' 0 0 ' + cw + ' ' + ((fromX + toX) / 2) + ' ' + y
+         + ' A ' + r + ' ' + r + ' 0 0 ' + (1 - cw) + ' ' + toX + ' ' + (y + r);
+  }
+
   function build(){
+    const W = document.documentElement.clientWidth;
     const H = document.documentElement.scrollHeight;
-    svg.setAttribute('viewBox', '0 0 160 ' + H);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.style.width  = W + 'px';
     svg.style.height = H + 'px';
 
-    /* 曲がる場所は、節の頭に合わせる（読み進みと曲がりが揃う） */
-    const ys = [].slice.call(document.querySelectorAll('main .sec'))
-      .map(function(el){ return el.getBoundingClientRect().top + scrollY; })
-      .filter(function(y){ return y > R * 2 && y < H - R * 2; });
+    /* **始まりは社名の左の輪。終わりは宛先。**両端に理由がある */
+    const m = box(mark), t = box(mail), c = box(main);
+    const x0 = Math.round(m.x + m.w / 2);
+    const y0 = Math.round(m.y + m.h);
+    const xe = Math.round(t.x - 14);
+    const ye = Math.round(t.y + t.h / 2);
 
-    let i = 0, d = 'M ' + X[0] + ' 0';
-    ys.forEach(function(y){
-      const from = X[i % 2], to = X[(i + 1) % 2];
-      d += ' L ' + from + ' ' + (y - R);
-      /* S字：出る円弧と受ける円弧。**曲がるのはこの中だけ** */
-      d += ' A ' + R + ' ' + R + ' 0 0 ' + (to > from ? 1 : 0) + ' ' + ((from + to) / 2) + ' ' + y;
-      d += ' A ' + R + ' ' + R + ' 0 0 ' + (to > from ? 0 : 1) + ' ' + to + ' ' + (y + R);
-      i += 1;
-    });
-    d += ' L ' + X[i % 2] + ' ' + H;
+    /* 通り道は**本文の左の余白。**文字の下は通らない */
+    const X = [Math.round(c.x - 170), Math.round(c.x - 90)];
+    const R = (X[1] - X[0]) / 2;                /* 節の切り替わりの振り幅の半分 */
+
+    let d = 'M ' + x0 + ' ' + y0;
+    d += sJog(x0, X[0], y0 + 130);              /* 輪から余白へ、ひと振りで移る */
+
+    /* 曲がる場所は節の頭。**読み進みと曲がりが揃う** */
+    let i = 0;
+    [].slice.call(document.querySelectorAll('main .sec'))
+      .map(function(el){ return box(el).y; })
+      .filter(function(y){ return y > y0 + 130 + R * 2 && y < ye - R * 3; })
+      .forEach(function(y){
+        d += sJog(X[i % 2], X[(i + 1) % 2], y);
+        i += 1;
+      });
+
+    /* **最後は本文へ入り込んで、宛先の手前で止まる** */
+    const last = X[i % 2];
+    d += ' L ' + last + ' ' + (ye - R);
+    d += ' A ' + R + ' ' + R + ' 0 0 0 ' + (last + R) + ' ' + ye;
+    d += ' L ' + xe + ' ' + ye;
     p.setAttribute('d', d);
 
     len = p.getTotalLength();       /* **実測。**直値で書かない */
@@ -362,12 +407,12 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
     draw();
   }
 
-  /* 読むほど引かれる */
+  /* 読むほど引かれる。**輪が回り終わってから伸びはじめる** */
+  let grown = 0;
   function draw(){
     const max = document.documentElement.scrollHeight - innerHeight;
     const r = max > 0 ? Math.min(1, scrollY / max) : 1;
-    /* 開いた時点で少し引いてある（何も無いと線に見えない） */
-    p.style.strokeDashoffset = len * (1 - Math.max(0.12, r));
+    p.style.strokeDashoffset = len * (1 - Math.max(grown, r));
   }
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches){
@@ -378,6 +423,8 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
     build();
     addEventListener('scroll', draw, { passive:true });
     addEventListener('resize', build);
+    /* 輪が一回まわる（0.8秒）。**回り終わったところから線が出る** */
+    setTimeout(function(){ grown = 0.14; draw(); }, 820);
   }
 })();
 
