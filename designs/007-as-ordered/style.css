@@ -195,13 +195,10 @@ body{
 
 /* Glob の結果。ファイル名で並べる */
 .list{margin:8px 0 6px;color:var(--sub);font-size:13px}
-.list div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 説明文は公式のものをそのまま出すので長い。**折り返して、下にぶら下げる** */
+.list div{white-space:normal}
 .list .fn{color:var(--ink)}
-.list .d{color:var(--faint);margin-left:14px}
-@media (max-width:700px){
-  .list div{white-space:normal}
-  .list .d{display:block;margin-left:24px}
-}
+.list .d{color:var(--faint);display:block;margin-left:24px;margin-top:1px}
 
 /* 箇条書きのファイル。中身をそのまま見せる */
 .file .md div{color:var(--ink);font-size:13px}
