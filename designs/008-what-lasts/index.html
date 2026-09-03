@@ -346,7 +346,11 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
   const mail = document.querySelector('.mail a');
   if (!svg || !p || !mark || !mail) return;
 
-  let len = 0, head = 0;             /* head = 開いた時点で引いてある割合 */
+  /* **引く動きはやめた。**（2026-09-03）
+     > この線の動き普通に邪魔だなあ
+     スクロールで引いていたが、**引き終わるまで罫線が欠けて見える。**
+     罫線は家具なので、途中まで描かれている状態がそもそも邪魔だった。
+     **最初から全部引いてある。**動くのは社名の輪の一回転だけ。 */
 
   const box = function(el){
     const r = el.getBoundingClientRect();
@@ -393,9 +397,9 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
       .filter(function(ru){ return ru.y > y0 + ru.r && ru.y < ye - ru.r * 2; });
 
     let d = 'M ' + x0 + ' ' + y0;
-    let x = x0, first = -1;
+    let x = x0;
 
-    rules.forEach(function(ru, i){
+    rules.forEach(function(ru){
       const to   = (x - ru.L) < (ru.R - x) ? ru.R : ru.L;   /* 遠いほうへ渡る */
       const east = to > x;
       const r = ru.r;
@@ -404,7 +408,6 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
       d += ' L ' + (to - (east ? r : -r)) + ' ' + ru.y;              /* **罫線そのもの** */
       d += arc(r, east ? 1 : 0, to, ru.y + r);                       /* 横→下 */
       x = to;
-      if (i === 0) first = ru.y + r;
     });
 
     /* 最後は宛先の手前で止まる */
@@ -415,41 +418,13 @@ hintbar.addEventListener('click', function(){ open ? hide() : show(); });
     d += ' L ' + xe + ' ' + ye;
     p.setAttribute('d', d);
 
-    len = p.getTotalLength();        /* **実測。**直値で書かない */
-    p.style.strokeDasharray = len;
-
-    /* 開いた時点で、**1本目の罫線までは引いてある**（罫線が欠けて見えないように） */
-    head = 0.08;
-    if (first > 0){
-      let lo = 0, hi = len;
-      for (let k = 0; k < 14; k++){
-        const mid = (lo + hi) / 2;
-        (p.getPointAtLength(mid).y < first) ? (lo = mid) : (hi = mid);
-      }
-      head = Math.min(0.9, hi / len);
-    }
-    draw();
-  }
-
-  /* 読むほど引かれる。**その節の区切り線は、読者が着いたときに引かれる** */
-  function draw(){
-    const max = document.documentElement.scrollHeight - innerHeight;
-    const r = max > 0 ? Math.min(1, scrollY / max) : 1;
-    p.style.strokeDashoffset = len * (1 - Math.max(head, r));
   }
 
   /* **線が罫線を引き受ける。**CSS の罫は透明にする（JS が動いたときだけ） */
   document.documentElement.classList.add('threaded');
 
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches){
-    build();
-    p.style.strokeDasharray = 'none';
-    p.style.strokeDashoffset = 0;
-  } else {
-    build();
-    addEventListener('scroll', draw, { passive:true });
-    addEventListener('resize', build);
-  }
+  build();
+  addEventListener('resize', build);
 })();
 
 /* ソースを見た人にだけ。**書かない遊び心** */
