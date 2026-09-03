@@ -257,8 +257,7 @@ const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
    tool  ツールの行を出したあと、結果を出すまで
    block 一覧・diff・ファイルを出したあと
    turn  Claude 側が終わってから、次の注文を打ちはじめるまで。**0。**
-         いまは**出きる前**（最後のひと塊に入った時点）から打ちはじめるので、
-         ここまで残っているのは飛ばされたとき（esc など）だけ */
+         出きった瞬間に打ちはじめる。**重ねない**（上と下が同時に動くと目が散る） */
 const PACE = { ch:23, res:15, line:15, tool:620, block:820, turn:0 };
 
 /* **開いた瞬間の1回だけ、速さを別にする**（2026-09-03）。
@@ -340,10 +339,7 @@ function reveal(box, per, end){
     if (i >= kids.length){ setTimeout(end, rush ? RUSH.block : PACE.block / 2); return; }
     const k = kids[i];
     k.classList.add('in');
-    const per = rush ? RUSH.line : PACE.line;
-    /* **最後の行の、終わりぎわ。**残り12文字あたりで下の枠を打ちはじめる */
-    if (last && i === kids.length - 1) setTimeout(ahead, Math.max(0, (html[i].length - 12) * per));
-    type(k, html[i], per, function(){ i += 1; step(); });
+    type(k, html[i], rush ? RUSH.line : PACE.line, function(){ i += 1; step(); });
   })();
 }
 
@@ -499,7 +495,6 @@ function light(n){
    pending 枠に打ってあって、まだ送っていない話題（-1 は無し）
    tok     打っている途中のもの。別のものを選ばれたら、前のは止まる */
 let queue = [], qi = 0, nowAt = -1, busyNow = false, pending = -1, timer = 0, tok = 0;
-let last = false;               /* いま出しているのが、その注文の最後のひと塊か */
 
 function state(){
   /* 次の注文を打ちはじめるまでの間は、何も言わない（空にする） */
@@ -581,22 +576,10 @@ function jump(n){
 
 function runQueue(){
   if (qi < queue.length){
-    /* **打ちはじめるのは、出きる直前。**（2026-09-03）
-       > 今出してるやつができる直前くらいに下枠の文字出してほしいのね
-       最後のひと塊に入った時点では早すぎた（札は7行ある）。
-       いまは `reveal()` が**最後の行の終わりぎわ**で呼ぶ。ここでは印だけ立てる */
-    last = (qi === queue.length - 1);
     put(queue[qi++], function(){ meter(); runQueue(); });
     return;
   }
   done();
-}
-
-/* 次の注文を、**まだ出している途中で**枠に打つ。送りはしない */
-function ahead(){
-  if (STILL || pending >= 0) return;
-  const n = next();
-  if (n >= 0) write(n);
 }
 
 /* ひとつ終わった。**✓ を付けて、次の注文を枠に打つ。**送りはしない */
@@ -619,7 +602,10 @@ function done(){
   if (b) b.classList.add('seen');
   meter(); bottom(); state();
   if (tree.querySelectorAll('button.seen').length >= T.length) tail();
-  /* たいていは ahead() で打ち終わっている。飛ばされたとき（esc など）だけここ */
+  /* **下の枠が動くのは、上が止まってから。**（2026-09-03）
+     > 2箇所動くと結構目が引っ張られるな。やっぱり別にしようか、動くタイミング
+     一度、出きる直前から重ねて打つようにしたが、**上と下が同時に動くと目が散る。**
+     動くのは一度に一つ。上が出きったところで、下が打ちはじめる（間は 0）。 */
   if (pending < 0){
     const n = next();
     if (n >= 0) timer = setTimeout(function(){ write(n); }, STILL ? 0 : (rush ? RUSH.turn : PACE.turn));
