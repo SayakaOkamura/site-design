@@ -359,7 +359,12 @@ svg.thread path.branch{opacity:0}
 .n5 .src{margin-top:18px;font-size:11.5px;color:var(--faint);line-height:1.8}
 
 /* 下の道具（`>` の欄）。**007 の背骨。**打つと、その場所へ飛ぶ */
-#stage a,#stage button{pointer-events:auto}
+/* **面は素通し**（#stage は pointer-events:none）。触れるものだけ戻す。
+   **欄を入れ忘れていた。**（2026-09-04）
+   本人：**「この書き方だともうすでにここがフォームになってるように見えるんだけど、
+   実際書けないんだよね。この矛盾はどうする？」**——書ける形に見えて、押せなかった。
+   `label` も戻す（欄の文字を押して欄に入れるように）。 */
+#stage a,#stage button,#stage input,#stage textarea,#stage label{pointer-events:auto}
 .tool{display:flex;align-items:baseline;gap:10px;font-family:var(--mono);font-size:13px;pointer-events:auto}
 .tool .p{color:var(--amber)}
 .tool input{
@@ -1634,6 +1639,15 @@ function goTo(n){
 function at(){ const q = place(); return q.f > 0.5 ? q.i + 1 : q.i; }
 
 addEventListener('keydown', function(e){
+  /* **欄に入っているあいだは、面はキーを受けない。**（2026-09-04）
+     ここを素通しにすると、本文の中で ← を押しただけで枝から出てしまう
+     （カーソルを戻したいだけなのに、画面ごと戻る）。
+     Esc で欄から出る——出れば、いつもの ← ↑ が効く。 */
+  const el = e.target;
+  if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')){
+    if (e.key === 'Escape') el.blur();
+    return;
+  }
   if (brMoving){ e.preventDefault(); return; }
   /* 枝に降りているあいだは、上か左で戻るだけ。横には進まない */
   if (onBranch()){
