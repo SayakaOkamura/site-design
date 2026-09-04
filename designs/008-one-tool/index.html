@@ -321,8 +321,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
   .n2 .egs{display:block}
   .n2 .egs li + li{margin-top:4px}
   .n2 .paper dl{grid-template-columns:1fr;row-gap:0}
-  /* 狭い画面では線が段の横に来ないので、見出しの下を空ける理由もない */
-  .ne h1,.n0 .svc,.n2 .paper,.nc .facts,.n5 .lead{margin-top:14px}
+  /* **見出しの下の空きは、狭い画面でも 80px のまま。**
+     ここを 14px に詰めていた。理由は「狭い画面では線が段の横に来ない」だったが、
+     **面は一枚なので、線は幅に関係なく段の中を通る。**詰めたぶん、線が中身の一行目に
+     重なって、見出しに打ち消し線が引かれているように見えていた（430px で確認）。
+     空きは SEAT_GAP（40）の2倍。幅で変えてはいけない。 */
   .n0 .svc{grid-template-columns:1fr;column-gap:0}
   .ne h1{font-size:24px}
   .n0 .svc li{font-size:14px}
@@ -1139,7 +1142,9 @@ function draw(){
 /* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
 let ticking = false;
 view.addEventListener('scroll', function(){
-  if (!touched){ touched = true; document.getElementById('hint').classList.add('off'); }
+  /* 手がかり（#hint）は 008 の body にまだ無い。**素で触ると、最初のひと振りで例外が出て
+     そのフレームの draw() が飛ぶ。**出す・出さないを決めるまで、無ければ触らない。 */
+  if (!touched){ touched = true; const h = document.getElementById('hint'); if (h) h.classList.add('off'); }
   if (ticking) return;
   ticking = true;
   requestAnimationFrame(function(){ ticking = false; draw(); });
@@ -1454,6 +1459,14 @@ draw();
      押さなくても中身はある——**押すと変わるのは、どの例を見るかと、空欄が埋まるか。**
      （007 で同じことを決めている：最初から出しておいて、何もしなくても情報はある。） */
   show(0);
+  /* **紙を入れてから、測り直す。**寄り先（marks）は読み込み時に一度測るだけで、
+     その measure() はここより先に走っている。**そのとき紙はまだ空。**
+     広い画面では .n2 の min-height が空の紙のぶんを立てていたので気づかなかったが、
+     狭い画面はその min-height を 0 にしてあるので、空の高さで寄り先が決まって、
+     **進め方の段が画面の下から 74px はみ出し、進み具合の帯にも被っていた**（430px で確認）。
+     ここで測り直せば、幅に関係なく「入っている紙」の高さで決まる。 */
+  measure();
+  draw();
 })();
 
 </script>
