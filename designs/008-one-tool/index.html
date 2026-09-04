@@ -219,12 +219,13 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
 .node .k{font-size:11.5px;letter-spacing:.16em;color:var(--amber)}
 
-/* **見出しと中身のあいだを、線のぶん空ける。**80px ＝ SEAT_GAP（40）の2倍。
-   ここに線が通って、見出しの下の罫になる。数字を変えるときは JS 側と一緒に。
-   進め方だけ、線の上に来るのが「注文（例の2つ）」までなので、空けるのは紙の上。 */
+/* **段の名前と中身のあいだを、線のぶん空ける。**80px ＝ SEAT_GAP（40）の2倍。
+   ここに線が通って、名前の下の罫になる。数字を変えるときは JS 側と一緒に。
+   **どの段も、空けるのは「名前のすぐ下」。**進め方だけ紙の上に空けていたが、
+   罫の上にリード文と例が乗っていた頃のもの。いまは名前だけが上なので、揃う。 */
 .ne h1{margin-top:80px}
 .n0 .svc{margin-top:80px}
-.n2 .paper{margin-top:80px}
+.n2 .cap2{margin-top:80px}
 .nc .facts{margin-top:80px}
 .n5 .lead{margin-top:80px}
 
@@ -248,7 +249,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
    （G は .reveal を当てて測り直していたが、あれは寄ると開く仕掛けで、
    ここは押すと開く仕掛けなので、測る時点では開くかどうか決まっていない。） */
 .n2{min-height:385px}
-.n2 .cap2{font-size:14.5px;color:var(--sub);margin-top:6px;line-height:1.85}
+.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは 80px（罫のぶん） */
 /* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
    2つしかないので、横で足りる。 */
 .n2 .egs{list-style:none;display:flex;gap:26px;margin:10px 0 0;flex-wrap:wrap}
@@ -259,7 +260,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 }
 .n2 .egs button:hover{color:var(--ink);border-bottom-color:var(--amber)}
 .n2 .egs button.on{color:var(--ink);border-bottom-color:var(--amber)}
-.n2 .paper{border:1px solid var(--line);background:var(--paper);padding:15px 18px 10px}
+.n2 .paper{margin-top:24px;border:1px solid var(--line);background:var(--paper);padding:15px 18px 10px}
 .n2 .paper .from{font-size:12.5px;color:var(--sub);margin-bottom:12px}
 .n2 .paper .tag{display:inline-block;margin-right:7px;padding:0 5px;border:1px solid var(--line);font-size:10.5px;color:var(--faint)}
 .n2 .paper .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -705,11 +706,15 @@ function measure(){
    中を通せば、線は**見出しの下の罫**になる。停留所が変わっても同じ高さに罫があって、
    それが一本に繋がっている——線に理由がつく。
    on は、線に乗せる要素（その下端が線の SEAT_GAP 上に来る）。
-   進め方だけ、乗せるのは注文（例の2つ）まで。**出てきたもの（紙）は線の下。** */
+   **罫の上に乗るのは、どの段も「段の名前」だけ。**（2026-09-04）
+   進め方だけ、注文（リード文と例の2つ）まで罫の上に乗せていた。そのぶんこの段だけ
+   罫の上が高くなり、**罫の高さは全段で揃えてあるので、他の4段まで一緒に下がっていた**
+   （「なぜかちょっと低いなと思ったけど…情報は全部下に入れて、タイトルだけ上にして」）。
+   名前だけにすれば、罫の上は全段そろって同じ高さになり、そのぶん罫を上げられる。 */
 const SEATS = [
   { sel:'.ne', on:'.ne .k'   },
   { sel:'.n0', on:'.n0 .k'   },
-  { sel:'.n2', on:'.n2 .egs' },
+  { sel:'.n2', on:'.n2 .k'   },
   { sel:'.nc', on:'.nc .k'   },
   { sel:'.n5', on:'.n5 .k'   }
 ];
@@ -717,7 +722,7 @@ const SEATS = [
 /* 段と線の空き。ここを広げると段が上へ動くので、
    段を動かさずに空きだけ広げたいときは、線のほうも同じだけ下げること
    （40 → 65 にしたとき、線の高さも 420/1150 → 445/1175 にしてある）。
-   二段目は説明文が線の下に続くので、そちらの空き（.n2 .cap2 の margin-top）も揃える。 */
+   罫のすぐ下に来るものの margin-top が、この空きと同じ値になっていること。 */
 /* 65 → 40。線が段の中を通るようになったので、この空きは**上下に2回**効く
    （見出しの下 40 + 線 + 中身の上 40）。65 のままだと段が 130px 高くなって、
    進め方の段が使える高さを越えていた。CSS 側の空き（80px）は、この2倍。 */
