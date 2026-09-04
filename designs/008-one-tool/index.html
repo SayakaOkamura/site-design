@@ -144,12 +144,10 @@ svg.thread path.branch{opacity:0}
 }
 .nf .go button:hover,.nf .go button:focus-visible{background:var(--ink);color:var(--bg)}
 .nf .go .to{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
-.nf .go .back{
-  margin-left:auto;border:0;background:none;padding:4px 2px;cursor:pointer;
-  font:inherit;font-size:12px;letter-spacing:.1em;color:var(--sub);
-}
-.nf .go .back::before{content:"↑ "}
-.nf .go .back:hover,.nf .go .back:focus-visible{color:var(--amber)}
+/* **移動先に「戻る」は置かない。**（2026-09-04）
+   本人：**「移動できた時点で戻り方にも予測がつくはず」。**
+   降りたのが ↓（か入口）なら、戻るのは ↑。置いた瞬間に、
+   その1つが「戻り方はこれです」と言ってしまって、予測を殺す。 */
 
 /* ---------- 操作 ----------
    ボタンは置かない。押すものが並んでいると「操作盤」に見えて、
@@ -220,12 +218,6 @@ svg.thread path.branch{opacity:0}
   box-shadow:0 2px 14px rgba(0,0,0,.10);
 }
 .dive::after{content:"↓";font-size:15px;line-height:1}
-/* 戻るほうは塗らない。**降りた先で目立つ必要は無い**（そこは中身を読む場所） */
-.dive.up{
-  background:var(--bg);color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber);
-  font-size:12px;padding:8px 18px 9px;
-}
-.dive.up::after{content:"↑";font-size:13px}
 .dive.off{opacity:0;pointer-events:none}
 .dive:hover,.dive:focus-visible{opacity:.88}
 
@@ -568,11 +560,7 @@ svg.thread path.branch{opacity:0}
         <label class="wide">ご相談内容<textarea name="msg" rows="3"></textarea></label>
         <p class="note">押すと、宛先と本文が入ったメールの下書きが開きます。<b>送信はご自身で。</b></p>
         <p class="go"><button type="submit">下書きを開く</button>
-           <span class="to">contact@alt-dsgn.co.jp</span>
-           <!-- **戻るは枝の中身に置く。**浮かせると（画面に固定すると）
-                フォームの下端と重なった。中身の中なら、どの窓でも重ならない。
-                ↑ と ← でも戻れる。 -->
-           <button class="back" type="button" id="back">戻る</button></p>
+           <span class="to">contact@alt-dsgn.co.jp</span></p>
       </form>
     </div>
 
@@ -827,7 +815,7 @@ function measure(){
      上端から 20〜39px は帯が埋めているので、上端で等分すると文字が帯に寄る。 */
   const LINE_AT = headBottom + up + gp * f;
   LINE_Y = LINE_AT;   // 罫の画面上の高さ。入口の置き場に使う（diveMove）
-  marks.forEach(function(m){ m.dy = LINE_AT - aimY() + (m.cy - lineOf(m)) * m.s; });
+  marks.forEach(function(m){ m.ly = lineOf(m); m.dy = LINE_AT - aimY() + (m.cy - m.ly) * m.s; });
 
   /* 枝の寄り先。**主線の停留所とまったく同じ扱い**（同じ縮尺、同じ罫の高さ）。
      違うのは、乗っている線と、辿り方（スクロールではなく押して降りる）だけ。 */
@@ -841,7 +829,7 @@ function measure(){
     return {
       pe: pe, len: len, off: [cx - q.x, cy - q.y],
       cx: cx, cy: cy, w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
-      nm: b.nm, node: b.node, s: f, dx: 0,
+      nm: b.nm, node: b.node, s: f, dx: 0, ly: ly,
       dy: LINE_AT - aimY() + (cy - ly) * f
     };
   });
@@ -1346,7 +1334,7 @@ function drawBranch(){
   b.pe.style.opacity = (0.85 * Math.min(1, brU * 2)).toFixed(3);
   document.getElementById('where').textContent = e > .5 ? b.nm : pm.nm;
   document.getElementById('depth').textContent = '×' + FLAT.toFixed(2);
-  diveShow(brOn, true);
+  diveSync(-9);   // 枝に降りているあいだは出さない
 }
 
 function draw(){
@@ -1418,6 +1406,9 @@ function draw(){
   }
   if (ST !== t && !spinning) spin();
 
+  /* 枝への入口。**押したことではなく、いまどこに居るかで出す** */
+  diveSync(t);
+
   // 進み具合。押すものではなく、どこまで来たかを示すだけ
   const pc = last ? t / last * 100 : 0;
   document.getElementById('bar').style.width = pc + '%';
@@ -1438,10 +1429,7 @@ function draw(){
   });
   // 洗い出した帯は、そこに寄ったときに出す。戻れば畳む
   document.querySelector('.n2').classList.toggle('reveal', !!m.add);
-  /* **枝がある停留所に来たら、その段の下に入口を出す。**無い停留所では消す */
-  const bk = brAt(n);
-  diveShow(bk, false);
-  if (bk >= 0) diveMove(m);
+
 }
 
 /* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
@@ -1555,7 +1543,7 @@ function glide(to, secs){
    降りているあいだ、主線のスクロールは受けない（戻ったときに別の場所に居ないように）。
    戻る道は3つ：印をもう一度押す／↑／←。 */
 const BR_STEP = .9;   // 降りる・戻るのにかかる秒数
-function brMove(k, into){
+function brMove(k, into, then){
   if (k < 0 || !BRM[k]) return;
   brOn = k;
   const from = brU, to = into ? 1 : 0, t0 = performance.now();
@@ -1575,6 +1563,7 @@ function brMove(k, into){
       here = -1;   // 段の出し分けを次の draw でやり直させる
     }
     draw();
+    if (then) then();
   })();
 }
 /* いまの停留所に枝があるか */
@@ -1590,10 +1579,6 @@ function brAt(n){
     const k = brAt(at());
     if (k >= 0) brMove(k, true);
   });
-  const bk = document.getElementById('back');
-  if (bk) bk.addEventListener('click', function(){
-    if (!brMoving && onBranch()) brMove(brOn, false);
-  });
 })();
 /* 入口の出し分けと、置き場。**ここだけが枝の在り処を画面に出す。**
    置き場は決め打ちにしない：**いま居る段の下端から下げて、帯の上で止める。**
@@ -1603,18 +1588,30 @@ const DIVE_OVER  = 26;   // 帯からどれだけ上に浮かせるか
 function diveMove(m){
   const dv = document.getElementById('dive');
   if (!dv || !m) return;
-  const bottomOfNode = LINE_Y + (m.bottom - lineYAt(m.cx, m.pe || null)) * m.s;
+  const bottomOfNode = LINE_Y + (m.bottom - (m.ly || 0)) * m.s;
   const floor = innerHeight - hudH() - DIVE_OVER - dv.offsetHeight;
   dv.style.top = Math.round(Math.min(bottomOfNode + DIVE_UNDER, floor)) + 'px';
 }
-/* **入口は「降りる」ときだけ出す。**戻るは枝の中身が持っている
-   （浮かせるとフォームの下端に重なった）。 */
-function diveShow(k, back){
+/* **入口の出し入れは「いまどこに居るか」だけで決める。**（2026-09-04）
+   本人：**「クリックをボタン消去のトリガーにしないで。矢印でも移動できるんだから」。**
+   前は「段が切り替わった瞬間」と「押したとき」の2か所で出し入れしていた。
+   押して動かす道と、矢印・ホイール・欄に打つ・ロゴを押す道で、**出方が違っていた。**
+   毎フレーム、位置と状態から出す。**押したことは条件に入れない。**
+   - 枝に降りている／動いている途中は出さない（着いていない場所の口は出さない）
+   - 停留所に着いていて、そこに枝があるときだけ出す */
+let diveWas = false;
+function diveSync(t){
   const dv = document.getElementById('dive');
   if (!dv) return;
-  dv.classList.toggle('off', back || k < 0);
-  const l = dv.querySelector('.dl');
-  if (l && !back) l.textContent = k >= 0 ? BRANCHES[k].nm + 'を開く' : '';
+  const n = Math.round(t), k = brAt(n);
+  const show = !onBranch() && !brMoving && !gliding && k >= 0 && Math.abs(t - n) < .08;
+  if (show){
+    const l = dv.querySelector('.dl');
+    if (l) l.textContent = BRANCHES[k].nm + 'を開く';
+    if (!diveWas) diveMove(marks[n]);   // 出るときだけ置き直す
+  }
+  dv.classList.toggle('off', !show);
+  diveWas = show;
 }
 
 const VERT = .5;
@@ -1740,7 +1737,11 @@ draw();
      落ちる区間で縦に動くぶんの間（VERT）も取れない。 */
   function fly(i){
     if (i == null || i < 0) return;
-    goTo(i);
+    /* **枝に降りているときは、先に主線へ戻す。**戻らずに主線を動かすと、
+       カメラは枝の上に居るまま親の停留所へ帰り、そのあと飛び先へ飛ぶ形になる
+       （降りたことが無かったかのように見える）。 */
+    if (onBranch()){ brMove(brOn, false, function(){ goTo(i); }); }
+    else goTo(i);
     q.value = '';
     at = -1;
     draw();
