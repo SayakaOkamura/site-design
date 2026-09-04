@@ -680,12 +680,18 @@ function measure(){
     marks.forEach(function(m){ m.s *= k; });
     FLAT *= k; up *= k; down *= k;
   }
-  /* 罫を置く高さ。**余りを上下に半分ずつではなく、上を少なくする。**
-     段は罫からほとんど下へぶら下がる（罫の上にあるのは段の名前だけ。
-     例外は進め方で、そこだけ例の2つが罫の上に乗る）。半分ずつだと、
-     **どの停留所も上が空いて、中身が下に沈んで見える。**
-     LINE_HIGH は、余りのうち罫の上に置く割合。0 で目一杯上、0.5 で真ん中。 */
-  const LINE_AT = PAD_TOP + up + (roomH - (up + down)) * LINE_HIGH;
+  /* **罫を置く高さは、段の名前の上下を均等にして決める。**（2026-09-04）
+     罫の上にあるのは、どの段も名前だけ。その名前は、
+     **いちばん上の動かないもの（社名の帯 .title）と、罫との間**に居る。
+     本人：**「一番上にある不動の概要と線との間、文字の上下を均等にして」。**
+
+     名前の下の空きは、作りから SEAT_GAP（40）× 縮尺で決まっている。
+     **だから上も同じにすれば揃う。**割合（LINE_HIGH）で当てるのはやめた。 */
+  const head = document.querySelector('.title');
+  const headBottom = head ? head.getBoundingClientRect().bottom : PAD_TOP;
+  let LINE_AT = headBottom + SEAT_GAP * FLAT + up;
+  /* 下がはみ出すなら、そのぶんだけ上げる（上下均等より、収まるほうが先） */
+  LINE_AT = Math.min(LINE_AT, vh - PAD_BOT - down);
   marks.forEach(function(m){ m.dy = LINE_AT - aimY() + (m.cy - lineOf(m)) * m.s; });
 
   survey();
@@ -786,11 +792,6 @@ const NUDGE = 16;
    ここを触ると字の大きさが全部変わるので、まずここで合わせること。 */
 const ROOM = 1.00;
 
-/* 罫の高さ。使える範囲の余りのうち、**罫の上に置く割合。**
-   0.5 が上下半分ずつ（＝ど真ん中）、0 で目一杯上。
-   上限は進め方（罫の上に例が2つ乗る段）で決まるので、ここを 0 にしても
-   その段が画面から出ることはない。 */
-const LINE_HIGH = 0.08;
 
 /* **会社概要だけ 0.975 に引いていたのは、やめた。**（2026-09-04）
    4つの移りのうち2つだけ縮尺が動いていて、**そこだけ速さが変わっていた**
