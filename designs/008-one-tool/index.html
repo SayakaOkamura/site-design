@@ -336,9 +336,16 @@ svg.thread path.branch{opacity:0}
    真ん中に来るように置いてあるため。中身の側は SEAT_GAP（56）で固定。
    **どの段も、空けるのは「名前のすぐ下」。**前は二段目だけ紙の上に空けていたが、
    罫の上にリード文と例が乗っていた頃のもの。いまは名前だけが上なので、揃う。 */
-.ne h1,.n0 .cap,.nc .facts,.n5 .lead,.nf .fm{margin-top:var(--rule-gap)}
+.ne .ask,.n0 .cap,.nc .facts,.n5 .lead,.nf .fm{margin-top:var(--rule-gap)}
 
-.ne h1{font-size:calc(34px * var(--tx));line-height:1.8;letter-spacing:.02em;margin-bottom:calc(22px * var(--sp))}
+/* 打った行。**下の欄と同じ形**（等幅・`>` は琥珀）。答えより小さく、薄い——
+   入口で最初に読まれるのは理念のほうで、順番は変えない。 */
+.ne .ask{
+  font-family:var(--mono);font-size:max(11.5px, calc(12.5px * var(--tx)));letter-spacing:.06em;
+  color:var(--faint);margin-bottom:calc(6px + 10px * var(--sp));
+}
+.ne .ask .p{color:var(--amber);margin-right:.7em}
+.ne h1{font-size:calc(34px * var(--tx));line-height:1.8;letter-spacing:.02em;margin-top:0;margin-bottom:calc(22px * var(--sp))}
 .ne h1 b{color:var(--amber);font-weight:inherit}
 .ne .lead{font-size:calc(15px * var(--tx));color:var(--sub);line-height:1.9}
 
@@ -403,6 +410,7 @@ svg.thread path.branch{opacity:0}
   .n0 .cap{font-size:calc(14.5px * var(--tx));line-height:1.85}
   .n0 .svc li{padding:calc(9px * var(--sp)) 0;font-size:calc(15px * var(--tx))}
   .n0 .svc span{margin-top:calc(3px * var(--sp));font-size:calc(12px * var(--tx));line-height:1.75}
+  .ne .ask{font-size:max(11px, calc(11.5px * var(--tx)));margin-bottom:calc(5px + 6px * var(--sp))}
   .ne h1{font-size:calc(24px * var(--tx))}
   .ne .lead{font-size:calc(14px * var(--tx))}
   .nc .facts{grid-template-columns:1fr;row-gap:2px;font-size:calc(14.5px * var(--tx))}
@@ -495,8 +503,23 @@ svg.thread path.branch{opacity:0}
          引用から始めると「本当にHPか」を疑わせる（レビュー）。 -->
     <div class="node ne" data-l="0" data-rise="0" data-lag="0">
       <div class="k r"    style="--i:0">株式会社アルターデザインコンサルティング</div>
-      <h1 class="r"       style="--i:1">経営の力で<br>「遊ぶように働く世界」を<b>デザインする</b></h1>
-      <p class="lead r"   style="--i:2">2025年6月設立／AI とローコードで、上流工程中心のシステム開発</p>
+      <!-- **入口を、一往復にした。**（2026-09-04）
+           本人：**「入口に遊び置けない？」「ClaudeCode感」**、そして
+           **「中の方」**（三案のうち、入口を一往復の会話にするもの）。
+
+           **打ち出しのアニメは付けない。**入口は「合ってる？」が起きる場所で、
+           理念を待たせる形にすると、直しに来たものが要望のほうを壊す。
+           **答えを出し終えた状態から始める**——遊びは形（一往復）で、動きではない。
+
+           **問いはこちらの言葉。**会社の主張は書かない（画面に載せるのは公式に出ているものだけ）。
+           出どころは本人の言葉：**「そもそもこの会社が何をしてくれるのかってところじゃない？」。**
+           訪ねてきた人が最初に打つ一行を、こちらが先に打っておく形。
+
+           `>` は**下の欄とまったく同じ形**（同じ等幅・同じ色）。
+           言葉で「ここに打てます」と書かずに、入口の一行が下の欄の使い方を見せる。 -->
+      <p class="ask r"    style="--i:1"><span class="p">&gt;</span>何をしてくれる会社ですか</p>
+      <h1 class="r"       style="--i:2">経営の力で<br>「遊ぶように働く世界」を<b>デザインする</b></h1>
+      <p class="lead r"   style="--i:3">2025年6月設立／AI とローコードで、上流工程中心のシステム開発</p>
     </div>
 
     <!-- 一 サービス。公式サイトの見出しと説明文、そのまま -->
