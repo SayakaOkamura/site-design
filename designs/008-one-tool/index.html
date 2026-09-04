@@ -676,10 +676,23 @@ function measure(){
     up   = Math.max(up,   (lineOf(m) - m.top)     * m.s);
     down = Math.max(down, (m.bottom  - lineOf(m)) * m.s);
   });
-  /* 収まらないなら、収まるまで**一律に**縮める。段ごとに変えない
-     （段ごとに変えると、その移りだけ縮尺が動いて、また揃わなくなる）。 */
-  if (up + down > roomH && up + down > 0){
-    const k = roomH / (up + down);
+  const head = document.querySelector('.title');
+  const headBottom = head ? head.getBoundingClientRect().bottom : PAD_TOP;
+  /* **収まらないときに削るのは、縮尺。空きではない。**（2026-09-04）
+     前は罫を上へ押し上げて（LINE_AT の clamp）辻褄を合わせていた。
+     **足りないぶんを、上の空きが丸ごと肩代わりしていた。**
+     背の低い窓ではそれが全部無くなって、**段の名前が社名の帯に貼りつく**
+     （1280×640 で 帯→文字 10.8 ／ 文字→罫 89.7。NAME_GAP をいくら動かしても変わらない）。
+     本人に三度「くっついてる」「変わってない」と言われたのは、これ。
+
+     **要るもの＝帯の下 + 名前の上の空き + 名前 + 名前の下の空き + 罫より下ぜんぶ。**
+     入らなければ、その比だけ**一律に**縮める（段ごとに変えない。変えると
+     その移りだけ縮尺が動いて、また揃わなくなる）。
+     **字は小さくなるが、上下の空きは窓の高さに関係なく守られる。** */
+  const need  = NAME_GAP * FLAT + up + down;
+  const avail = vh - PAD_BOT - headBottom;
+  if (need > avail && need > 0){
+    const k = avail / need;
     marks.forEach(function(m){ m.s *= k; });
     FLAT *= k; up *= k; down *= k;
   }
@@ -692,11 +705,7 @@ function measure(){
 
      名前の下の空き ＝ up − 名前の高さ ＝ NAME_GAP × 縮尺。上もそれと同じにする。
      **上げ下げの目盛りは NAME_GAP ひとつ。**割合（LINE_HIGH）で当てるのはやめてある。 */
-  const head = document.querySelector('.title');
-  const headBottom = head ? head.getBoundingClientRect().bottom : PAD_TOP;
-  let LINE_AT = headBottom + up + NAME_GAP * FLAT;
-  /* 下がはみ出すなら、そのぶんだけ上げる（上下均等より、収まるほうが先） */
-  LINE_AT = Math.min(LINE_AT, vh - PAD_BOT - down);
+  const LINE_AT = headBottom + up + NAME_GAP * FLAT;
   marks.forEach(function(m){ m.dy = LINE_AT - aimY() + (m.cy - lineOf(m)) * m.s; });
 
   survey();
