@@ -865,8 +865,7 @@ const BRANCHES = [
 let LINE_Y = 0;          // 罫の画面上の高さ（measure が入れる）
 let BRM = [];            // 枝の寄り先（marks と同じ形）
 let brOn = -1;           // いま降りている枝（-1 で主線）
-let brU = 0;             // 枝の進み具合 0（折れ口）→ 1（枝の段）
-let brAnim = 0, brMoving = false;
+let brU = 0;             // 枝に降りているか 0／1（間は取らない）
 function onBranch(){ return brOn >= 0; }
 
 const SEATS = [
@@ -1420,7 +1419,7 @@ view.addEventListener('scroll', function(){
   /* 触ったら、手がかりは消す。**無くても落ちないようにしておく**
      （markup が落ちていたあいだ、ここが最初のひと振りで例外を出して draw() を飛ばしていた）。 */
   if (!touched){ touched = true; const h = document.getElementById('hint'); if (h) h.classList.add('off'); }
-  if (onBranch() || brMoving) return;   // 枝を描いている途中で主線に戻さない
+  if (onBranch()) return;   // 降りているあいだは主線に戻さない
   if (ticking) return;
   ticking = true;
   requestAnimationFrame(function(){ ticking = false; draw(); });
@@ -1451,7 +1450,7 @@ let lockUntil = 0;
 view.addEventListener("wheel", function(e){
   e.preventDefault();
   const now = performance.now();
-  if (onBranch() || brMoving) return;   // 降りているあいだは主線を動かさない
+  if (onBranch()) return;   // 降りているあいだは主線を動かさない
   if (gliding || now < lockUntil) return;
   const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
   if (Math.abs(d) < NUDGE_MIN) return;
@@ -1521,35 +1520,32 @@ function glide(to, secs){
    残してあるのは枝（線に引っかける仕掛け）のため——**枝は縦に動く。**
    縦の量だけ増えて間が同じだと、そこだけ急になる。 */
 /* ---------- 枝への出入り ----------
-   **スクロールでは降りない。押して降りる**（主線は年表で、枝は横に並んでいない）。
+   **スクロールでは降りない。押して降りる**（枝は横に並んでいないので）。
    降りているあいだ、主線のスクロールは受けない（戻ったときに別の場所に居ないように）。
-   戻る道は3つ：印をもう一度押す／↑／←。 */
-const BR_STEP = .9;   // 降りる・戻るのにかかる秒数
+   戻る道：`↑` ／ `←`（移動先に「戻る」は置かない——降り方が分かれば戻り方も分かる）。
+
+   **間を取らない。パン、と切り替える。**（2026-09-04）
+   本人：**「移動モーションに対してじんわり出てくるんじゃなくてパン、と出てくる」。**
+   前は 0.9秒かけてカメラを下ろし、そのあいだ中身の濃さを進み具合に合わせていた
+   ——**「移動に合わせてじんわり出てくる」のはこれ。**
+   いまは brU を 0/1 に置いて一度描くだけ。
+   （**主線の横の移りは 1.0秒のまま。辿るのと、降りるのは別のもの。**） */
 function brMove(k, into, then){
   if (k < 0 || !BRM[k]) return;
-  brOn = k;
-  /* 枝の線を出す。**一度に出す。**濃さを進み具合に合わせると線が伸びて見える */
-  if (into && BRM[k].pe) BRM[k].pe.style.opacity = .85;
-  const from = brU, to = into ? 1 : 0, t0 = performance.now();
-  cancelAnimationFrame(brAnim); brMoving = true;
-  (function step(){
-    const x = Math.min(1, (performance.now() - t0) / 1000 / BR_STEP);
-    brU = from + (to - from) * (x * x * x * (x * (x * 6 - 15) + 10));
-    draw();
-    if (x < 1){ brAnim = requestAnimationFrame(step); return; }
-    brU = to; brMoving = false;
-    if (!into){
-      /* 主線へ戻す。**opacity を素に返す**（shade が毎フレーム持ち直す） */
-      const pe = BRM[brOn] && BRM[brOn].pe;
-      if (pe) pe.style.opacity = 0;              // 枝の線を消す（これも一度に）
-      brOn = -1;
-      document.querySelectorAll('.node').forEach(function(el){ el.style.opacity = ''; });
-      here = -1;   // 段の出し分けを次の draw でやり直させる
-    }
-    draw();
-    if (then) then();
-  })();
+  const pe = BRM[k].pe;
+  if (into){
+    brOn = k; brU = 1;
+    if (pe) pe.style.opacity = .85;      // 枝の線を出す（これも一度に）
+  } else {
+    brOn = -1; brU = 0;
+    if (pe) pe.style.opacity = 0;
+    document.querySelectorAll('.node').forEach(function(el){ el.style.opacity = ''; });
+    here = -1;                           // 段の出し分けを次の draw でやり直させる
+  }
+  draw();
+  if (then) then();
 }
+
 /* いまの停留所に枝があるか */
 function brAt(n){
   for (let k = 0; k < BRANCHES.length; k++) if (BRANCHES[k].parent === n) return k;
@@ -1559,7 +1555,7 @@ function brAt(n){
 (function(){
   const dv = document.getElementById('dive');
   if (dv) dv.addEventListener('click', function(){
-    if (brMoving || onBranch()) return;
+    if (onBranch()) return;
     const k = brAt(at());
     if (k >= 0) brMove(k, true);
   });
@@ -1588,7 +1584,7 @@ function diveSync(t){
   const dv = document.getElementById('dive');
   if (!dv) return;
   const n = Math.round(t), k = brAt(n);
-  const show = !onBranch() && !brMoving && !gliding && k >= 0 && Math.abs(t - n) < .08;
+  const show = !onBranch() && !gliding && k >= 0 && Math.abs(t - n) < .08;
   if (show){
     const l = dv.querySelector('.dl');
     if (l) l.textContent = BRANCHES[k].nm + 'を開く';
@@ -1609,7 +1605,6 @@ function goTo(n){
 function at(){ const q = place(); return q.f > 0.5 ? q.i + 1 : q.i; }
 
 addEventListener('keydown', function(e){
-  if (brMoving){ e.preventDefault(); return; }
   /* 枝に降りているあいだは、上か左で戻るだけ。横には進まない */
   if (onBranch()){
     if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); brMove(brOn, false); }
