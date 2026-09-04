@@ -219,16 +219,18 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
 .node .k{font-size:11.5px;letter-spacing:.16em;color:var(--amber)}
 
-/* **段の名前と中身のあいだを、線のぶん空ける。**112px ＝ SEAT_GAP（56）の2倍。
-   **この数字だけを触らないこと。**JS の SEAT_GAP と必ず一緒に動かす（＝いつも2倍）。
-   ずれると、罫が名前と中身のちょうど中間から外れる。
+/* **段の名前と中身のあいだを、線のぶん空ける。**145px ＝ NAME_GAP（89）＋ SEAT_GAP（56）。
+   **この数字だけを触らないこと。**JS の2つと必ず一緒に動かす（＝いつもその和）。
+   ずれると、罫が名前と中身のあいだの決めた場所から外れる。
+   **上下は同じではない。**名前の側（89）が広いのは、名前が画面の上端と罫の
+   真ん中に来るように置いてあるため。中身の側は SEAT_GAP（56）。
    **どの段も、空けるのは「名前のすぐ下」。**進め方だけ紙の上に空けていたが、
    罫の上にリード文と例が乗っていた頃のもの。いまは名前だけが上なので、揃う。 */
-.ne h1{margin-top:112px}
-.n0 .svc{margin-top:112px}
-.n2 .cap2{margin-top:112px}
-.nc .facts{margin-top:112px}
-.n5 .lead{margin-top:112px}
+.ne h1{margin-top:145px}
+.n0 .svc{margin-top:145px}
+.n2 .cap2{margin-top:145px}
+.nc .facts{margin-top:145px}
+.n5 .lead{margin-top:145px}
 
 .ne h1{font-size:34px;line-height:1.75;letter-spacing:.02em;margin-bottom:14px}
 .ne h1 b{color:var(--amber);font-weight:inherit}
@@ -250,7 +252,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
    （G は .reveal を当てて測り直していたが、あれは寄ると開く仕掛けで、
    ここは押すと開く仕掛けなので、測る時点では開くかどうか決まっていない。） */
 .n2{min-height:385px}
-.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは 112px（罫のぶん） */
+.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは 145px（罫のぶん） */
 /* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
    2つしかないので、横で足りる。 */
 .n2 .egs{list-style:none;display:flex;gap:26px;margin:10px 0 0;flex-wrap:wrap}
@@ -328,11 +330,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
   .n2 .egs{display:block}
   .n2 .egs li + li{margin-top:4px}
   .n2 .paper dl{grid-template-columns:1fr;row-gap:0}
-  /* **見出しの下の空きは、狭い画面でも同じ（112px）。**
+  /* **見出しの下の空きは、狭い画面でも同じ（145px）。**
      ここを 14px に詰めていた。理由は「狭い画面では線が段の横に来ない」だったが、
      **面は一枚なので、線は幅に関係なく段の中を通る。**詰めたぶん、線が中身の一行目に
      重なって、見出しに打ち消し線が引かれているように見えていた（430px で確認）。
-     空きは SEAT_GAP の2倍。幅で変えてはいけない。 */
+     空きは NAME_GAP ＋ SEAT_GAP。幅で変えてはいけない。 */
   .n0 .svc{grid-template-columns:1fr;column-gap:0}
   .ne h1{font-size:24px}
   .n0 .svc li{font-size:14px}
@@ -681,16 +683,14 @@ function measure(){
     marks.forEach(function(m){ m.s *= k; });
     FLAT *= k; up *= k; down *= k;
   }
-  /* **罫を置く高さは、段の名前の上下を均等にして決める。**（2026-09-04）
-     罫の上にあるのは、どの段も名前だけ。その名前は、
-     **いちばん上の動かないもの（社名の帯 .title）と、罫との間**に居る。
-     本人：**「一番上にある不動の概要と線との間、文字の上下を均等にして」。**
+  /* **罫を置く高さ。段の名前を、画面の上端と罫のちょうど真ん中に置く。**（2026-09-04）
+     本人：**「線もう少しだけ下げて、それと画面上部との中心に文字を置いて」。**
+     基準は**画面の上端**であって、社名の帯ではない（前は帯の下端から測っていた）。
 
-     名前の下の空きは、作りから SEAT_GAP × 縮尺で決まっている。
-     **だから上も同じにすれば揃う。**割合（LINE_HIGH）で当てるのはやめた。 */
-  const head = document.querySelector('.title');
-  const headBottom = head ? head.getBoundingClientRect().bottom : PAD_TOP;
-  let LINE_AT = headBottom + SEAT_GAP * FLAT + up;
+     名前の上端 ＝ LINE_AT − up、名前の下の空き ＝ up − 名前の高さ ＝ NAME_GAP × 縮尺。
+     上下を等しくすると、そのまま **LINE_AT = up + NAME_GAP × 縮尺** になる。
+     **上げ下げの目盛りは NAME_GAP ひとつ。**割合（LINE_HIGH）で当てるのはやめてある。 */
+  let LINE_AT = up + NAME_GAP * FLAT;
   /* 下がはみ出すなら、そのぶんだけ上げる（上下均等より、収まるほうが先） */
   LINE_AT = Math.min(LINE_AT, vh - PAD_BOT - down);
   marks.forEach(function(m){ m.dy = LINE_AT - aimY() + (m.cy - lineOf(m)) * m.s; });
@@ -703,7 +703,7 @@ function measure(){
    （狭い画面では段が縦長になるので、必ずずれていた）。
    線の高さから毎回引き算する。乗る面は段によって違う：
    引用と4段目は段そのものの下端、二段目はカードの下端（説明文は線の下に続く）。 */
-/* **5段ぜんぶ、線の上に座らせる。**どの段も、下端が線の SEAT_GAP 上に来る。
+/* **5段ぜんぶ、線の上に座らせる。**どの段も、名前の下端が線の NAME_GAP 上に来る。
    G では段ごとに乗る面が違っていた（引用は段の下端、二段目はカードの下端）が、
    ここは中身の作りが揃っているので一律でいい。
    落ちる区間（サービス→進め方）を挟んで、前2段は y445、後3段は y1175 に座る。 */
@@ -712,7 +712,7 @@ function measure(){
    横線が二本並んでいるように見えていた。
    中を通せば、線は**見出しの下の罫**になる。停留所が変わっても同じ高さに罫があって、
    それが一本に繋がっている——線に理由がつく。
-   on は、線に乗せる要素（その下端が線の SEAT_GAP 上に来る）。
+   on は、線に乗せる要素（その下端が線の NAME_GAP 上に来る）。
    **罫の上に乗るのは、どの段も「段の名前」だけ。**（2026-09-04）
    進め方だけ、注文（リード文と例の2つ）まで罫の上に乗せていた。そのぶんこの段だけ
    罫の上が高くなり、**罫の高さは全段で揃えてあるので、他の4段まで一緒に下がっていた**
@@ -732,13 +732,21 @@ const SEATS = [
    罫のすぐ下に来るものの margin-top が、この空きと同じ値になっていること。 */
 /* 65 → 40。線が段の中を通るようになったので、この空きは**上下に2回**効く
    （見出しの下 40 + 線 + 中身の上 40）。65 のままだと段が 130px 高くなって、
-   進め方の段が使える高さを越えていた。CSS 側の空き（112px）は、この2倍。
+   進め方の段が使える高さを越えていた。
 
-   **40 → 56。**（2026-09-04「もうちょっと上下の余白入れて」）
-   この一つが**三か所に効く**：社名の帯と段の名前のあいだ／名前と罫のあいだ／
-   罫と中身のあいだ。三つとも同じ量になる。
-   **触ったら CSS の 112px も一緒に動かすこと**（いつも2倍）。 */
+   **SEAT_GAP は「罫と中身」のあいだだけ。**（2026-09-04）
+   名前と罫のあいだは NAME_GAP（下）で別に持つ。
+   **CSS の空き（145px）は、この2つの和。**片方を触ったら CSS も動かすこと。 */
 const SEAT_GAP = 56;
+
+/* **段の名前と罫のあいだ**（面の座標）。SEAT_GAP とは別に持つ。
+   本人：**「線もう少しだけ下げて、それと画面上部との中心に文字を置いて」**（2026-09-04）。
+   名前を**画面の上端と罫のちょうど真ん中**に置くと、
+   名前の上の空き＝名前の下の空き＝ NAME_GAP × 縮尺 になる（下の LINE_AT）。
+   **つまりこの数字が、罫をどれだけ下げるかの目盛りそのもの。**
+   89 で、1280×800 の罫は 236（前は 197）。上げ下げはここだけ触る。
+   （社名の帯は基準にしない。基準は**画面の上端**。） */
+const NAME_GAP = 89;
 
 function seat(){
   SEATS.forEach(function(s){
@@ -748,7 +756,7 @@ function seat(){
     const on = s.on ? document.querySelector(s.on) : null;
     const bottom = on ? (on.offsetTop + on.offsetHeight) : el.offsetHeight;
     const cx = el.offsetLeft + el.offsetWidth / 2;
-    el.style.top = Math.round(lineYAt(cx) - SEAT_GAP - bottom) + 'px';
+    el.style.top = Math.round(lineYAt(cx) - NAME_GAP - bottom) + 'px';
   });
 }
 
