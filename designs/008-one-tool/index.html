@@ -309,7 +309,14 @@ svg.thread path.branch{opacity:0}
    **中心を 1800px おきに置く**：600 / 2400 / 4200 / 6000。
    間隔を揃えるのは、移りが時間で決まっているから——距離が違うと、
    そこだけ画面の流れる速さが変わる。 */
-.n0{left:1880px; top:190px; width:1040px}
+/* **サービスだけ狭くした。**（2026-09-04）
+   本人：**「サービスが横みちみちになるのが気になるんだよね」。**
+   4本を 1fr 1fr で組むと**箱を端まで埋める**ので、段の幅がそのまま行の長さになる。
+   1040 だと画面の端に着いていた（1280px の窓で左右 20px しか空かない）。
+   **860 にすると、1280px の窓で左右 108px 空く。**
+   **縮尺はいちばん広い段（.ne の 1040）で決まるので、字の大きさは変わらない**
+   ——だから、ここだけ狭くできる。中心は 2400 のまま（間隔 1800 を崩さない）。 */
+.n0{left:1970px; top:190px; width: 860px}
 .nc{left:3750px; top:385px; width: 900px}
 .n5{left:5620px; top:385px; width: 760px}
 /* 枝の段。**親（.n5）の真下。**left と width を同じにする。top は JS が座らせる */
@@ -339,7 +346,7 @@ svg.thread path.branch{opacity:0}
    縮尺は**いちばん広い段の幅**で決まっていて、縦にはまだ余りがある。
    だから縦に伸ばしても縮尺は下がらない（背の低い窓では下がる。そこは承知の上）。 */
 /* 前置きの一行。**四本の上に置く大きい話** */
-.n0 .cap{font-size:calc(15px * var(--tx));line-height:1.95;color:var(--sub);max-width:46em}
+.n0 .cap{font-size:calc(15px * var(--tx));line-height:1.95;color:var(--sub)}
 .n0 .svc{list-style:none;display:grid;grid-template-columns:1fr 1fr;column-gap:52px;margin-top:calc(38px * var(--sp))}
 .n0 .svc li{padding:calc(18px * var(--sp)) 0;font-size:calc(15px * var(--tx));font-weight:600;border-top:1px solid var(--line)}
 .n0 .svc span{display:block;font-weight:400;font-size:calc(12.5px * var(--tx));color:var(--sub);margin-top:calc(7px * var(--sp));line-height:1.9}
@@ -653,7 +660,7 @@ function buildViews(){
     { nm:'会社案内', node:0, sel:['.ne'], w:1040, h: 258 },
     /* 一 サービス。前置きの一行（二つの事業）＋公式の4本。
        デモ（005）はここから枝で降りる */
-    { nm:'サービス', node:1, sel:['.n0'], w:1040, h: 287 },
+    { nm:'サービス', node:1, sel:['.n0'], w: 860, h: 287 },
     /* 三 会社概要。公式の7項目 */
     { nm:'会社概要', node:3, sel:['.nc'], w: 900, h: 325 },
     /* 四 お問い合わせ。締めは引いて渡す */
