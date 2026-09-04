@@ -389,16 +389,20 @@ svg.thread path.branch{opacity:0}
      **面は一枚なので、線は幅に関係なく段の中を通る。**詰めたぶん、線が中身の一行目に
      重なって、見出しに打ち消し線が引かれているように見えていた（430px で確認）。
      空きは NAME_GAP ＋ SEAT_GAP。幅で変えてはいけない。 */
-  /* 狭い画面では4本が1列に積むので、広げたぶんが全部縦に来る。
-     **ここだけ詰め直す**（詰めないと、収めるために面ごと小さくなる） */
-  .n0 .svc{grid-template-columns:1fr;column-gap:0;margin-top:26px}
-  .n0 .cap{font-size:15px;line-height:1.9}
-  .n0 .svc li{padding:12px 0}
-  .n0 .svc span{margin-top:5px}
-  .nc .facts{row-gap:8px}
+  /* **狭い画面では、広げたぶんを戻す。**（2026-09-04）
+     4本が1列に積むので、**広い画面で足した縦がそのまま4倍で来る。**
+     詰め直さないと、収めるために面ごと小さくなる——
+     390×664 で ×0.54（本文が 9px）まで落ちた。ここだけ元の詰め方に近づける。 */
+  .n0 .svc{grid-template-columns:1fr;column-gap:0;margin-top:20px}
+  .n0 .cap{font-size:13.5px;line-height:1.85}
+  .n0 .svc li{padding:9px 0;font-size:14px}
+  .n0 .svc span{margin-top:3px;font-size:12px;line-height:1.75}
   .ne h1{font-size:24px}
-  .n0 .svc li{font-size:14px}
-  .nc .facts{grid-template-columns:1fr;row-gap:2px}
+  .ne .lead{font-size:14px}
+  .nc .facts{grid-template-columns:1fr;row-gap:2px;font-size:13.5px}
+  .n5 .lead{font-size:14.5px;line-height:1.9}
+  .n5 .mail{margin-top:16px;font-size:16px}
+  .n5 .src{margin-top:20px}
   .tool input{width:9em}
   /* 枝のフォーム。狭い画面では欄を縦に積む（横に3つは入らない） */
   .nf .row{display:block}
@@ -813,14 +817,17 @@ function measure(){
   const dvEl = document.getElementById('dive');
   const DIVE_ROOM = belowBr > 0 && dvEl
     ? DIVE_UNDER + dvEl.offsetHeight + DIVE_OVER : 0;
-  /* 収まる条件は2つ。**どの段も入る**と、**枝がある段＋入口も入る。** */
+  /* **収まる条件は2つ。**どの段も入る／枝がある段＋入口も入る。
+     **上下の空き（GAP_MIN）は画面px なので、縮尺に掛けずにそのまま引く。** */
   f = Math.min(f,
-        avail / (kH + belowP  + 2 * GAP_MIN),
-        (avail - DIVE_ROOM) / (kH + belowBr + 2 * GAP_MIN));
+        (avail - 2 * GAP_MIN) / (kH + belowP),
+        (avail - DIVE_ROOM - 2 * GAP_MIN) / (kH + belowBr || 1));
+  /* 空きは、残った高さを上下で半分ずつ。NAME_GAP（面の 80）が上限、
+     GAP_MIN（画面の 56）が下限。 */
   let gp = Math.min(NAME_GAP,
         (avail / f - kH - belowP) / 2,
         ((avail - DIVE_ROOM) / f - kH - belowBr) / 2);
-  if (gp < GAP_MIN) gp = GAP_MIN;
+  gp = Math.max(gp, GAP_MIN / f);
 
   /* ---- 二度目：決まった空きで座らせ直す。縮尺はもう動かさない ---- */
   setGap(gp); build();
@@ -950,9 +957,12 @@ const SEAT_GAP = 56;
    （基準は**社名の帯の下端**。画面の上端ではない——上端は帯が埋めている。） */
 const NAME_GAP = 80;
 
-/* 空きの下限（面の座標）。**ここを下回るときだけ、縮尺を落とす。**
-   それまでは縮尺を動かさない（本人：「カメラは最初の位置から変えないで」）。 */
-const GAP_MIN = 24;
+/* **名前の上下の空きの下限。画面px で持つ。**（2026-09-04）
+   前は面の座標（24）で持っていた。**面の座標だと、縮尺が下がったときに
+   画面の上では 24 より狭くなる**——390×664 で 16px まで詰まって、
+   「上部にくっついてる」と言われた状態に戻っていた。
+   **画面px で持てば、どの窓でも同じだけ空く。**足りなければ縮尺が下がる。 */
+const GAP_MIN = 56;
 
 /* いま効いている空き（面の座標）。measure が窓ごとに決める。
    **CSS の --rule-gap も一緒に書き換えること**（罫は名前と中身のあいだを通るので、
