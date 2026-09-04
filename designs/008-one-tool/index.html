@@ -75,12 +75,12 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
      ここに書いてあるのは、JS が走る前の一瞬だけ効く初期値。
      中身は GAP（名前と罫のあいだ）＋ SEAT_GAP（罫と中身のあいだ）。 */
   --rule-gap:136px;
-  position:absolute;top:0;left:0;width:9600px;height:1600px;
+  position:absolute;top:0;left:0;width:8400px;height:1600px;
   transform-origin:0 0;   /* スクロールに毎フレーム追従するので、transition は置かない */
 }
 
 /* 一本の線。ここが「地続き」の実体 */
-svg.thread{position:absolute;top:0;left:0;width:9600px;height:1600px;pointer-events:none;z-index:1}
+svg.thread{position:absolute;top:0;left:0;width:8400px;height:1600px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
@@ -268,8 +268,8 @@ svg.thread path.branch{opacity:0}
 .n2{left:3700px; top:314px; width:1000px}
 .nc{left:5550px; top:385px; width: 900px}
 .n5{left:7420px; top:385px; width: 760px}
-/* 枝の段。枝の線（y1000）の上に座る。top は JS が座らせる */
-.nf{left:8060px; top:940px; width: 760px}
+/* 枝の段。**親（.n5）の真下。**left と width を同じにする。top は JS が座らせる */
+.nf{left:7420px; top:940px; width: 760px}
 
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
 .node .k{font-size:11.5px;letter-spacing:.16em;color:var(--amber)}
@@ -376,7 +376,7 @@ svg.thread path.branch{opacity:0}
    **left は触らない。**横の位置は幅が変わっても同じ（線の x が決め打ちなので、
    触ると段が線から外れる）。縦は JS が線から計算して座らせる。 */
 @media (max-width:760px){
-  .ne,.n0,.n2,.nc,.n5{width:330px}
+  .ne,.n0,.n2,.nc,.n5,.nf{width:330px}
   .n2{min-height:0}
   .n2 .egs{display:block}
   .n2 .egs li + li{margin-top:4px}
@@ -413,7 +413,7 @@ svg.thread path.branch{opacity:0}
 <div id="stage">
   <div id="canvas">
 
-    <svg class="thread" viewBox="0 0 9600 1600">
+    <svg class="thread" viewBox="0 0 8400 1600">
       <!-- 一本の線。**G と同じ組み方。**曲がるのは円弧の中だけ。
            直線 → 円弧 → 直線 → 円弧 → 直線。道路や線路と同じで、
            直線のところは曲がりが 0 になる。**点を通す曲線（Catmull-Rom）はやめた。**
@@ -447,16 +447,22 @@ svg.thread path.branch{opacity:0}
       <!-- **枝。**（2026-09-04）
            本人：**「線上に何か引っかける」「途中に分岐入れて…お問い合わせの
            メールフォームに進める」。**主線は年表なので曲げない。**遊びは枝で出す。**
-           お問い合わせの停留所（cx 7800）から、線が下へ折れて、下の高さで戻って走る。
+
+           **枝の段は、親の停留所の真下。**（本人：「実装場所も真下でいい」）
+           `.nf` の left と width は `.n5` と同じ。**横にずらさない。**
+           そのため、**折れ口は段の左端より左**（x7180）に取る——
+           段の真下に罫を通すには、横に走る区間が段の幅を覆っている必要がある。
+           折れ口を段の真ん中に置くと、左半分の罫が無くなる。
+
            曲がりは主線と同じ組み方：直線 → 円弧 → 直線 → 円弧 → 直線。
            sweep は y が下向き：**右→下 が 1、下→右 が 0。**
-             折れる  半径 90 の円弧（x7800 → 7890、y445 → 535）
-             まっすぐ x7890、y535 → 910（375）
-             受ける  半径 90 の円弧（x7890 → 7980、y910 → 1000）
-             平ら    y1000、x9500 まで
-           下の高さ 1000 は、主線の段がいちばん下まで来る 803 より下に取ってある
+             折れる  半径 90 の円弧（x7180 → 7270、y445 → 535）
+             まっすぐ x7270、y535 → 910（375）
+             受ける  半径 90 の円弧（x7270 → 7360、y910 → 1000）
+             平ら    y1000、x8400 まで（面の右端。段の右端 8180 より先へ抜ける）
+           下の高さ 1000 は、主線の段がいちばん下まで来る 803 より下
            （被ると、枝に降りたときに上の段が画面に映り込む）。 -->
-      <path id="fork1" class="branch" d="M 7800 445 A 90 90 0 0 1 7890 535 L 7890 910 A 90 90 0 0 0 7980 1000 L 9500 1000" />
+      <path id="fork1" class="branch" d="M 7180 445 A 90 90 0 0 1 7270 535 L 7270 910 A 90 90 0 0 0 7360 1000 L 8400 1000" />
     </svg>
 
     <!-- ===================================================================
@@ -1329,9 +1335,6 @@ function drawBranch(){
     el.classList.toggle('hide', l !== b.node && l !== pm.node);
     if (l === b.node) el.querySelectorAll('.r').forEach(function(r){ r.style.opacity = 1; });
   });
-  /* **枝の線は、降りるぶんだけ出す。**（面に置いたままにすると段の字を貫く）
-     出だしを速くする（×2）——線が先に伸びて、カメラがそれを追う形にしたい。 */
-  b.pe.style.opacity = (0.85 * Math.min(1, brU * 2)).toFixed(3);
   document.getElementById('where').textContent = e > .5 ? b.nm : pm.nm;
   document.getElementById('depth').textContent = '×' + FLAT.toFixed(2);
   diveSync(-9);   // 枝に降りているあいだは出さない
@@ -1546,6 +1549,11 @@ const BR_STEP = .9;   // 降りる・戻るのにかかる秒数
 function brMove(k, into, then){
   if (k < 0 || !BRM[k]) return;
   brOn = k;
+  /* **枝の線は、出すか出さないかだけ。生える動きは付けない。**（2026-09-04）
+     本人：**「移動する時に線が生えるモーションは必要ない」。**
+     降りはじめた時点で出し、主線に戻りきった時点で消す（下の then のところ）。
+     面に置きっぱなしにはしない——置くと段の字を縦に貫く。 */
+  if (into && BRM[k].pe) BRM[k].pe.style.opacity = .85;
   const from = brU, to = into ? 1 : 0, t0 = performance.now();
   cancelAnimationFrame(brAnim); brMoving = true;
   (function step(){
