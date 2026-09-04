@@ -581,7 +581,11 @@ const PAD_TOP = 50, PAD_BOT = 14, PAD_L = 20, PAD_R = 20;
 
 /* 使える範囲の中心（画面の座標） */
 function aimX(){ return (PAD_L + (innerWidth - PAD_R)) / 2; }
-function aimY(){ return (PAD_TOP + (innerHeight - 64 - PAD_BOT)) / 2; }
+/* 下の帯（進み具合と `>` の欄）が食う高さ。**64 と決め打ちしていた。**
+   実測は 49（罫2 + 空き9 + 文字22 + 下の余白16）。**15px を無駄に取っていて、
+   背の低い窓ではそのぶん縮尺が落ちていた。**毎回測る。 */
+function hudH(){ const el = document.querySelector('.hud'); return el ? el.offsetHeight : 49; }
+function aimY(){ return (PAD_TOP + (innerHeight - hudH() - PAD_BOT)) / 2; }
 let stopLen = [];  // 段が、線に沿って何 px 目にあるか
 let off = [];      // 段の真ん中と、線の上の点とのずれ
 let TAB = [];      // 線を刻んだ表 [x, 線に沿った長さ]
@@ -616,7 +620,7 @@ function buildStops(){
 /* 寄り先は先に全部測っておく。スクロールのたびに測ると、
    測っている先が動いてがくつく。 */
 function measure(){
-  const vw = innerWidth, vh = innerHeight - 64;   // 下の帯ぶん除く
+  const vw = innerWidth, vh = innerHeight - hudH();   // 下の帯ぶん除く（実測）
   /* 広い画面：枠に合わせて寄る。段ごとの縮尺の差が「地続き」の実体。
      狭い画面：寄りをやめて、原寸のまま動かすだけ。
      横長の枠を幅 390 に合わせると字が読めなくなるので、縮小するくらいなら動かすだけにする。
@@ -1136,7 +1140,7 @@ function shade(t){
 }
 
 function draw(){
-  const vw = innerWidth, vh = innerHeight - 64;
+  const vw = innerWidth, vh = innerHeight - hudH();
   const last = marks.length - 1;
 
   const at0 = place();
