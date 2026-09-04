@@ -75,12 +75,12 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
      ここに書いてあるのは、JS が走る前の一瞬だけ効く初期値。
      中身は GAP（名前と罫のあいだ）＋ SEAT_GAP（罫と中身のあいだ）。 */
   --rule-gap:136px;
-  position:absolute;top:0;left:0;width:8400px;height:1600px;
+  position:absolute;top:0;left:0;width:6700px;height:1600px;
   transform-origin:0 0;   /* スクロールに毎フレーム追従するので、transition は置かない */
 }
 
 /* 一本の線。ここが「地続き」の実体 */
-svg.thread{position:absolute;top:0;left:0;width:8400px;height:1600px;pointer-events:none;z-index:1}
+svg.thread{position:absolute;top:0;left:0;width:6700px;height:1600px;pointer-events:none;z-index:1}
 /* 追いかける1本。まわりの空欄に埋もれると、何を見せたいか分からなくなる。
    太さと濃さで、はっきり手前に出す。 */
 svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
@@ -113,7 +113,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 /* ---------- 段の体裁は、この下（008 の置き場）にまとめてある ----------
    **G の段（引用・例・見つけたあと・会社）の体裁は消した。**中身が別物になったので、
    残していても効かないか、効いて邪魔になるだけだった
-   （実際、`.n2 .cap2` の `margin-top:110px` が新しい一行を 110px 下げていた）。
+   （実際、二段目の説明文の margin-top:110px が新しい一行を 110px 下げていた）。
    面・線・カメラ・スクロールの受け方は G のまま。**そこは触っていない。** */
 
 
@@ -286,16 +286,15 @@ svg.thread path.branch{opacity:0}
    ここに書いてあるのは、それが走る前に一瞬だけ効く初期値。手で合わせ直さないこと。
    合わせるなら SEAT_GAP のほう。 */
 .ne{left:  80px; top:190px; width:1040px}
-/* **できること（.n2）を、サービス（.n0）より先に置いた。**（2026-09-04）
-   本人：**「できることが2つしかないように見える」。**
-   二つの事業のあとに四本のサービスが来れば、**四本がその中身だと分かる。**
-   前は四本が先で、そのあとに二つが出ていた（細かい話のあとに大きい話）。 */
-.n2{left:1880px; top:314px; width:1000px}
-.n0{left:3700px; top:190px; width:1040px}
-.nc{left:5550px; top:385px; width: 900px}
-.n5{left:7420px; top:385px; width: 760px}
+/* **停留所は4つ。**（2026-09-04。「できること」を消してサービスに畳んだ）
+   **中心を 1800px おきに置く**：600 / 2400 / 4200 / 6000。
+   間隔を揃えるのは、移りが時間で決まっているから——距離が違うと、
+   そこだけ画面の流れる速さが変わる。 */
+.n0{left:1880px; top:190px; width:1040px}
+.nc{left:3750px; top:385px; width: 900px}
+.n5{left:5620px; top:385px; width: 760px}
 /* 枝の段。**親（.n5）の真下。**left と width を同じにする。top は JS が座らせる */
-.nf{left:7420px; top:940px; width: 760px}
+.nf{left:5620px; top:940px; width: 760px}
 
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
 .node .k{font-size:12.5px;letter-spacing:.16em;color:var(--amber)}
@@ -307,7 +306,7 @@ svg.thread path.branch{opacity:0}
    真ん中に来るように置いてあるため。中身の側は SEAT_GAP（56）で固定。
    **どの段も、空けるのは「名前のすぐ下」。**前は二段目だけ紙の上に空けていたが、
    罫の上にリード文と例が乗っていた頃のもの。いまは名前だけが上なので、揃う。 */
-.ne h1,.n0 .svc,.n2 .does,.nc .facts,.n5 .lead,.nf .fm{margin-top:var(--rule-gap)}
+.ne h1,.n0 .cap,.nc .facts,.n5 .lead,.nf .fm{margin-top:var(--rule-gap)}
 
 .ne h1{font-size:38px;line-height:1.8;letter-spacing:.02em;margin-bottom:22px}
 .ne h1 b{color:var(--amber);font-weight:inherit}
@@ -320,24 +319,12 @@ svg.thread path.branch{opacity:0}
    足りないように見せてほしいわけじゃないから」）
    縮尺は**いちばん広い段の幅**で決まっていて、縦にはまだ余りがある。
    だから縦に伸ばしても縮尺は下がらない（背の低い窓では下がる。そこは承知の上）。 */
-.n0 .svc{list-style:none;display:grid;grid-template-columns:1fr 1fr;column-gap:52px}
+/* 前置きの一行。**四本の上に置く大きい話** */
+.n0 .cap{font-size:16.5px;line-height:1.95;color:var(--sub);max-width:46em}
+.n0 .svc{list-style:none;display:grid;grid-template-columns:1fr 1fr;column-gap:52px;margin-top:38px}
 .n0 .svc li{padding:18px 0;font-size:16.5px;font-weight:600;border-top:1px solid var(--line)}
 .n0 .svc span{display:block;font-weight:400;font-size:13.5px;color:var(--sub);margin-top:7px;line-height:1.9}
 
-/* できること。二つの事業（前は「進め方」で、005 の体験の縮小版を置いていた）。
-
-   **高さを先に取っておく。**寄り先（marks）は読み込み時に一度測るだけなので、
-   あとから紙が開いて段が伸びると、伸びたぶんが画面の下からはみ出す。
-   開いた姿の高さ（385px。紙を開いて、空欄が埋まった状態で実測）を min-height で
-   先に確保して、**開いても箱が変わらない**ようにした。
-   （G は .reveal を当てて測り直していたが、あれは寄ると開く仕掛けで、
-   ここは押すと開く仕掛けなので、測る時点では開くかどうか決まっていない。） */
-/* 二つの事業。**サービスの4本と同じ組み方**（罫で区切って、見出しと説明）。
-   同じ組み方にすることで、**こちらが上位だと分かる**（4本はこの二つの中身）。 */
-.n2 .does{list-style:none}
-.n2 .does li{padding:26px 0;border-top:1px solid var(--line)}
-.n2 .does b{display:block;font-size:23px;font-weight:600;letter-spacing:.01em}
-.n2 .does span{display:block;font-size:15px;color:var(--sub);margin-top:10px;line-height:1.9}
 /* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
    2つしかないので、横で足りる。 */
   font:inherit;font-size:14px;color:var(--sub);text-align:left;
@@ -396,13 +383,19 @@ svg.thread path.branch{opacity:0}
    **left は触らない。**横の位置は幅が変わっても同じ（線の x が決め打ちなので、
    触ると段が線から外れる）。縦は JS が線から計算して座らせる。 */
 @media (max-width:760px){
-  .ne,.n0,.n2,.nc,.n5,.nf{width:330px}
+  .ne,.n0,.nc,.n5,.nf{width:330px}
   /* **見出しの下の空きは、狭い画面でも同じ（--rule-gap）。**
      ここを 14px に詰めていた。理由は「狭い画面では線が段の横に来ない」だったが、
      **面は一枚なので、線は幅に関係なく段の中を通る。**詰めたぶん、線が中身の一行目に
      重なって、見出しに打ち消し線が引かれているように見えていた（430px で確認）。
      空きは NAME_GAP ＋ SEAT_GAP。幅で変えてはいけない。 */
-  .n0 .svc{grid-template-columns:1fr;column-gap:0}
+  /* 狭い画面では4本が1列に積むので、広げたぶんが全部縦に来る。
+     **ここだけ詰め直す**（詰めないと、収めるために面ごと小さくなる） */
+  .n0 .svc{grid-template-columns:1fr;column-gap:0;margin-top:26px}
+  .n0 .cap{font-size:15px;line-height:1.9}
+  .n0 .svc li{padding:12px 0}
+  .n0 .svc span{margin-top:5px}
+  .nc .facts{row-gap:8px}
   .ne h1{font-size:24px}
   .n0 .svc li{font-size:14px}
   .nc .facts{grid-template-columns:1fr;row-gap:2px}
@@ -431,7 +424,7 @@ svg.thread path.branch{opacity:0}
 <div id="stage">
   <div id="canvas">
 
-    <svg class="thread" viewBox="0 0 8400 1600">
+    <svg class="thread" viewBox="0 0 6700 1600">
       <!-- 一本の線。**G と同じ組み方。**曲がるのは円弧の中だけ。
            直線 → 円弧 → 直線 → 円弧 → 直線。道路や線路と同じで、
            直線のところは曲がりが 0 になる。**点を通す曲線（Catmull-Rom）はやめた。**
@@ -461,7 +454,7 @@ svg.thread path.branch{opacity:0}
              曲線は 直線 → 円弧 → 直線。Catmull-Rom は禁止＝ぶよぶよになる。）
 
            カメラはこの線をなぞる（draw の中）。長さは必ず getTotalLength で測る。 -->
-      <path id="thread" d="M 80 445 L 8200 445" />
+      <path id="thread" d="M 80 445 L 6500 445" />
       <!-- **枝。**（2026-09-04）
            本人：**「移動する時に線が生えるモーションは必要ない」
            →「線生える場所が変わっただけになってる。折れ口の話をしてる」。**
@@ -475,7 +468,7 @@ svg.thread path.branch{opacity:0}
            **出すか消すかだけで、動きは付けない。**
            カメラは、親の停留所からここへ**まっすぐ下りる**（drawBranch）。
            左右は親と同じなので、動くのは縦だけ。 -->
-      <path id="fork1" class="branch" d="M 7180 1000 L 8400 1000" />
+      <path id="fork1" class="branch" d="M 5380 1000 L 6700 1000" />
     </svg>
 
     <!-- ===================================================================
@@ -485,7 +478,7 @@ svg.thread path.branch{opacity:0}
          005（体験）はデモとして枝に。**
 
          中身は公表情報だけ（`alt-dsgn.co.jp`、2026-09-03 に確認）。
-         できることの二行は、公式の事業内容そのまま。
+         サービスの前置きの一行は、公式の事業内容から。
          =================================================================== -->
 
     <!-- 〇 名乗り。**開いた瞬間に会社案内だと分かること。**
@@ -499,37 +492,29 @@ svg.thread path.branch{opacity:0}
     <!-- 一 サービス。公式サイトの見出しと説明文、そのまま -->
     <div class="node n0" data-l="1">
       <div class="k" style="--i:0">サービス</div>
+      <!-- **前置きの一行。**（2026-09-04）
+           本人：**「サービス、からつなげる？できること消す、とか」。**
+           「できること」という停留所を一つ使っていたが、**枠が上限に見えた**
+           （「できることって書くとこれしかできないように見えるな」）。
+           消して、**大きい話を一行に畳んでサービスの上に置いた。**
+
+           出どころは公式・会社概要の事業内容：「AI技術を活用した組織最適化に関する
+           コンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業」。
+           **「二つ」は、公式のその一文が ／ で二つに分かれていることから。**
+
+           **四本がどちらの事業に属すかは書かない。**公式は四本を並列に並べているだけで、
+           対応づけはこちらの解釈になる（特に「AIによる意思決定支援」はどちらとも取れる）。
+           **前置きの一行に留めれば、その線を越えない。** -->
+      <p class="cap r" style="--i:1">事業は二つ。組織を最適化するコンサルティングと、AI とローコードを組み合わせたシステム開発。</p>
       <ul class="svc">
-        <li class="r" style="--i:1">人間中心の次世代業務システム開発
+        <li class="r" style="--i:2">人間中心の次世代業務システム開発
           <span>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供</span></li>
-        <li class="r" style="--i:2">AIによる意思決定支援と事業変革支援
+        <li class="r" style="--i:3">AIによる意思決定支援と事業変革支援
           <span>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援</span></li>
-        <li class="r" style="--i:3">自律型・共創型の組織設計支援
+        <li class="r" style="--i:4">自律型・共創型の組織設計支援
           <span>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現</span></li>
-        <li class="r" style="--i:4">地域格差の解消を目指したデジタル支援
+        <li class="r" style="--i:5">地域格差の解消を目指したデジタル支援
           <span>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援</span></li>
-      </ul>
-    </div>
-
-    <!-- 二 できること。**二つの事業。**サービスの4本の上位にある構造。
-         例を押すと形になり、決まっていないところが空欄で残る。
-         もう一手で埋まり、**値に出どころが付く**（決めるのは客側）。 -->
-    <div class="node n2" data-l="2">
-      <div class="k" style="--i:0">できること</div>
-      <!-- **「進め方」をやめて「できること」にした。**（2026-09-04）
-           本人：**「そもそもこの会社が何をしてくれるのかってところじゃない？」。**
-           前は進め方（＝デモの手順）を三行で書いていたが、**デモの言い換えでしかなく、
-           AI も出てこなかった。**
-
-           **サービスの4本は公式の文そのままなので、読んでも「で、何をしてくれるの」が
-           分からない。**その上位の構造は、会社概要の事業内容に書いてある——**二つの事業。**
-           出どころ：「AI技術を活用した組織最適化に関するコンサルティング事業／
-           AIとローコードを組み合わせた次世代型のシステム開発事業」（公式・事業内容）。
-           **足したのは体言止めの整えだけ。**（案A には「どちらも上流工程中心」を
-           付けていたが、**0 の一言で既に言っているので繰り返さない**——本人が B を選んだ） -->
-      <ul class="does r" style="--i:1">
-        <li><b>組織を最適化する</b><span>AI技術を活用したコンサルティング</span></li>
-        <li><b>システムを作る</b><span>AI とローコードを組み合わせた、次世代型の開発</span></li>
       </ul>
     </div>
 
@@ -667,9 +652,8 @@ function buildViews(){
   const V = [
     /* 〇 名乗り。**開いた瞬間に会社案内だと分かること。**社名 ─線─ 理念 */
     { nm:'会社案内', node:0, sel:['.ne'], w:1040, h: 258 },
-    /* 一 できること。二つの事業。デモ（005）はここから枝で降りる */
-    { nm:'できること', node:2, sel:['.n2'], w:1000, h: 385 },
-    /* 二 サービス。公式の4本。**二つの事業の中身**なので、あとに置く */
+    /* 一 サービス。前置きの一行（二つの事業）＋公式の4本。
+       デモ（005）はここから枝で降りる */
     { nm:'サービス', node:1, sel:['.n0'], w:1040, h: 287 },
     /* 三 会社概要。公式の7項目 */
     { nm:'会社概要', node:3, sel:['.nc'], w: 900, h: 325 },
@@ -796,9 +780,12 @@ function measure(){
      空き 0 の高さで決めれば、縮尺は**窓と中身だけ**で決まって、空きでは動かない。 */
   setGap(0); build();
   let kH = 0, belowP = 0;   // 名前の高さ／罫より下の張り出し（面の座標。空きに依らない）
-  marks.forEach(function(m){
+  let belowBr = 0;          // **枝がある段だけの張り出し**（その下に入口を置くので）
+  marks.forEach(function(m, i){
+    const b = m.bottom - lineOf(m);
     kH     = Math.max(kH,     lineOf(m) - m.top);
-    belowP = Math.max(belowP, m.bottom  - lineOf(m));
+    belowP = Math.max(belowP, b);
+    if (brAt(i) >= 0) belowBr = Math.max(belowBr, b);
   });
   /* **枝の段も一緒に測る。**罫の高さは主線と枝で同じに揃えてあるので、
      枝の段がいちばん下まで来るなら、縮尺はそれで決まる。
@@ -819,13 +806,21 @@ function measure(){
      割合は追わない（「上下の空きの比率にこだわらなくていい」）。
      NAME_GAP は**上限**。窓が高ければそこで止め、低ければ残りを分ける。 */
   const avail = vh - PAD_BOT - headBottom;
-  let gp = Math.min(NAME_GAP, (avail / f - kH - belowP) / 2);
-  /* **下限を割るときだけ、縮尺を落とす。**ここが最後の手段。
-     （390×664 のような背の低い窓では、空き 24 を残すために縮尺が下がる） */
-  if (gp < GAP_MIN){
-    gp = GAP_MIN;
-    f  = Math.min(f, avail / (kH + belowP + 2 * GAP_MIN));
-  }
+  /* **枝がある段の下には、入口の場所を先に取る。**（2026-09-04）
+     取らずにいたら、段が高くなったとき（サービスに前置きを足したとき）
+     **入口が中身に 49px 被った**（430×860 で実測）。
+     入口は画面に固定した口なので、**縮尺で伸び縮みしない固定の高さ**として引く。 */
+  const dvEl = document.getElementById('dive');
+  const DIVE_ROOM = belowBr > 0 && dvEl
+    ? DIVE_UNDER + dvEl.offsetHeight + DIVE_OVER : 0;
+  /* 収まる条件は2つ。**どの段も入る**と、**枝がある段＋入口も入る。** */
+  f = Math.min(f,
+        avail / (kH + belowP  + 2 * GAP_MIN),
+        (avail - DIVE_ROOM) / (kH + belowBr + 2 * GAP_MIN));
+  let gp = Math.min(NAME_GAP,
+        (avail / f - kH - belowP) / 2,
+        ((avail - DIVE_ROOM) / f - kH - belowBr) / 2);
+  if (gp < GAP_MIN) gp = GAP_MIN;
 
   /* ---- 二度目：決まった空きで座らせ直す。縮尺はもう動かさない ---- */
   setGap(gp); build();
@@ -909,7 +904,7 @@ function measure(){
    メールフォームに進める」。主線（年表）は曲げない。遊びは枝で出す。**
    parent は、どの停留所から降りるか。hook は線に引っかける印。 */
 const BRANCHES = [
-  { path:'#fork1', sel:'.nf', on:'.nf .k', nm:'フォーム', node:5, parent:4 },
+  { path:'#fork1', sel:'.nf', on:'.nf .k', nm:'フォーム', node:5, parent:3 },
   /* **面の上には置かない枝。**全画面のデモ層を開く（005 をそのまま読み込む）。
      `sel` が無いものは、寄り先を測らない（面に段が無いので）。 */
   { overlay:'#demo', src:'../005-paper-flow/index.html', nm:'デモ', parent:1, note:true }
@@ -925,7 +920,6 @@ function onBranch(){ return brOn >= 0 || ovOn >= 0; }
 const SEATS = [
   { sel:'.ne', on:'.ne .k'   },
   { sel:'.n0', on:'.n0 .k'   },
-  { sel:'.n2', on:'.n2 .k'   },
   { sel:'.nc', on:'.nc .k'   },
   { sel:'.n5', on:'.n5 .k'   },
   /* 枝の段。**乗る線が違う**ので、どの線かを書く */
@@ -1044,7 +1038,7 @@ const ROOM = 1.00;
    残しておくと、**同じだけ指を動かしても進む量が移りによって 1.5 倍違う**
    （glide は時間で動くので押したときは同じ。差が出るのは指で送ったとき）。
    最後の数字は、最後の段そのものの幅（そこから先へは進まない）。 */
-const SPANS = [2, 2, 2, 2, 1];
+const SPANS = [2, 2, 2, 1];
 
 /* 全体をどれだけゆっくりにするか。上の SPANS 全部に掛かる。
    1 で 0.48、2 で 0.24（画面の流れ。1.0 が指と同じ速さ）。
@@ -1463,8 +1457,6 @@ function draw(){
   document.querySelectorAll('.node').forEach(function(el){
     el.classList.toggle('hide', +el.dataset.l !== m.node);
   });
-  // 洗い出した帯は、そこに寄ったときに出す。戻れば畳む
-  document.querySelector('.n2').classList.toggle('reveal', !!m.add);
 
 }
 
