@@ -204,6 +204,22 @@ svg.thread path.branch{opacity:0}
   .hint .narrow{display:inline}
 }
 
+/* デモ層。**下の帯だけ残して、上は全部 005 に渡す。**
+   いちばん上に戻る口の帯を1本、その下ぜんぶが 005。 */
+#demo{position:fixed;left:0;right:0;top:0;z-index:7;background:var(--bg);
+      display:flex;flex-direction:column}
+#demo.off{display:none}
+#demo iframe{display:block;width:100%;flex:1;border:0;min-height:0}
+.demobar{flex:0 0 auto;display:flex;justify-content:flex-end;padding:10px 20px 8px}
+/* 戻る口。**ここだけは出す**（キーが 005 に取られるので ↑ が効かない）。 */
+#demoBack{
+  font:inherit;font-size:12px;letter-spacing:.12em;
+  background:var(--bg);color:var(--amber);border:1px solid var(--amber);
+  border-radius:999px;padding:6px 15px 7px;cursor:pointer;
+}
+#demoBack::before{content:"↑ "}
+#demoBack:hover,#demoBack:focus-visible{background:var(--amber);color:var(--bg)}
+
 /* 枝への入口。**露骨に。**（2026-09-04）
    琥珀で塗って、字も大きくする。**周りは薄い字しか無いので、塗るだけで一目で分かる。**
    位置は JS（diveMove）が毎回置く：**いま居る段の下端から下げて、帯の上で止める。**
@@ -588,6 +604,25 @@ svg.thread path.branch{opacity:0}
      それでも決め打ちにはしない。**いま居る段の下端から下げて、帯の上で止める**（JS）。 -->
 <button class="dive off" id="dive" type="button"><span class="dl"></span></button>
 
+<!-- **デモ。**（2026-09-04）
+     本人：**「005のやつそのままデモとしていれてもいいかもね」。**
+     **「そのまま」なので、作り直さずに 005 をそのまま読み込む**（同じリポジトリの中）。
+
+     **なぜ枝ではなく全画面か。**005 は「1画面完結・スクロールしない」設計で、
+     実測すると **1040×600 では収まるが、1040×500 では紙にスクロールバーが出る。**
+     枝の段は名前と罫で 186px 使うので、そこに入れると必ず潰れる。
+     **下の帯だけ残して、上は全部 005 に渡す。**
+
+     戻る道は2つ。**Esc**（同じ出どころなので、005 の中に聞き役を差し込める）と、
+     右上の「戻る」。**枝と違って ↑ が使えない**——キーは 005 が受け取るので、
+     こちらには届かない。だから、ここだけは戻る口を出す。 -->
+<div id="demo" class="off" aria-hidden="true">
+  <!-- **戻る口は、デモの上に重ねない。**細い帯を1本取って、そこに置く。
+       重ねると、狭い画面で 005 の題に被った（430px で実測）。 -->
+  <div class="demobar"><button id="demoBack" type="button">戻る</button></div>
+  <iframe id="demoF" title="デモ（005 書く／決める／通す）"></iframe>
+</div>
+
 <!-- 触る層。見た目には何も無い。スクロールを受けるためだけに置く -->
 <div id="view"><div id="track"></div></div>
 
@@ -779,6 +814,7 @@ function measure(){
      枝の段がいちばん下まで来るなら、縮尺はそれで決まる。
      ここを忘れると、背の低い窓で**枝に降りたときだけフォームが帯に潜る。** */
   BRANCHES.forEach(function(br){
+    if (br.overlay) return;
     const pe = document.querySelector(br.path);
     const bx = box([br.sel]);
     if (!pe || !bx.w) return;
@@ -829,6 +865,7 @@ function measure(){
   /* 枝の寄り先。**主線の停留所とまったく同じ扱い**（同じ縮尺、同じ罫の高さ）。
      違うのは、乗っている線と、辿り方（スクロールではなく押して降りる）だけ。 */
   BRM = BRANCHES.map(function(b){
+    if (b.overlay) return null;          // 全画面のデモは面に段を持たない
     const pe = document.querySelector(b.path);
     const bx = box([b.sel]);
     const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
@@ -882,14 +919,18 @@ function measure(){
    メールフォームに進める」。主線（年表）は曲げない。遊びは枝で出す。**
    parent は、どの停留所から降りるか。hook は線に引っかける印。 */
 const BRANCHES = [
-  { path:'#fork1', sel:'.nf', on:'.nf .k', nm:'フォーム', node:5, parent:4 }
+  { path:'#fork1', sel:'.nf', on:'.nf .k', nm:'フォーム', node:5, parent:4 },
+  /* **面の上には置かない枝。**全画面のデモ層を開く（005 をそのまま読み込む）。
+     `sel` が無いものは、寄り先を測らない（面に段が無いので）。 */
+  { overlay:'#demo', src:'../005-paper-flow/index.html', nm:'デモ', parent:2 }
 ];
 let LINE_Y = 0;          // 罫の画面上の高さ（measure が入れる）
 let BRM = [];            // 枝の寄り先（marks と同じ形）
 let brOn = -1;           // いま降りている枝（-1 で主線）
 let brU = 0;             // 枝の進み具合 0（親の停留所）→ 1（枝の段）
+let ovOn = -1;           // 開いているデモ層（面の枝とは別に持つ）
 let brAnim = 0, brMoving = false;   // 動いているあいだは入力を受けない
-function onBranch(){ return brOn >= 0; }
+function onBranch(){ return brOn >= 0 || ovOn >= 0; }
 
 const SEATS = [
   { sel:'.ne', on:'.ne .k'   },
@@ -1345,7 +1386,7 @@ function drawBranch(){
 function draw(){
   const vw = innerWidth, vh = innerHeight - hudH();
   const last = marks.length - 1;
-  if (onBranch()){ drawBranch(); return; }
+  if (brOn >= 0){ drawBranch(); return; }
 
   const at0 = place();
   const i = at0.i, j = Math.min(i + 1, last), f = at0.f;
@@ -1554,9 +1595,58 @@ function glide(to, secs){
    ——それが「じんわり出てくる」。**濃さは最初から 1。**
    カメラが下りてきて枠に入るから見える、というだけにする。
    （**主線の横の移りは 1.0秒。辿るのと、降りるのは別のもの**なので少し速い。） */
+/* ---------- 全画面のデモ層 ----------
+   005 を**そのまま**読み込む。作り直さない。
+   **Esc で戻れるようにする。**キーは 005 が受け取るので、こちらの ↑ は届かない。
+   同じ出どころ（同じサイトの中）なので、**005 の中に聞き役を差し込める。**
+   差し込みは読み込みのたびに一度だけ。 */
+function ovOpen(k){
+  const b = BRANCHES[k], host = document.querySelector(b.overlay);
+  if (!host) return;
+  const fr = host.querySelector('iframe');
+  ovOn = k;
+  host.classList.remove('off'); host.setAttribute('aria-hidden','false');
+  ovFit();
+  if (fr && !fr.getAttribute('src')){
+    fr.addEventListener('load', function(){
+      try{
+        fr.contentWindow.addEventListener('keydown', function(e){
+          if (e.key === 'Escape') ovClose();
+        });
+      }catch(err){}                     // 出どころが違えば差し込めない（いまは同じ）
+    });
+    fr.setAttribute('src', b.src);
+  }
+  draw();
+}
+function ovClose(){
+  if (ovOn < 0) return;
+  const host = document.querySelector(BRANCHES[ovOn].overlay);
+  if (host){ host.classList.add('off'); host.setAttribute('aria-hidden','true'); }
+  ovOn = -1;
+  here = -1;
+  draw();
+}
+/* 下の帯のぶんだけ空ける。帯の高さは実測なので、窓が変わっても合う */
+function ovFit(){
+  const host = document.getElementById('demo');
+  if (host) host.style.bottom = hudH() + 'px';
+}
+(function(){
+  const bk = document.getElementById('demoBack');
+  if (bk) bk.addEventListener('click', ovClose);
+})();
+
 const BR_STEP = .9;   // 降りる・戻るのにかかる秒数
 function brMove(k, into, then){
-  if (k < 0 || !BRM[k]) return;
+  if (k < 0) return;
+  /* 全画面のデモは、カメラを動かさない。層を出すだけ */
+  if (BRANCHES[k] && BRANCHES[k].overlay){
+    if (into) ovOpen(k); else ovClose();
+    if (then) then();
+    return;
+  }
+  if (!BRM[k]) return;
   const pe = BRM[k].pe;
   brOn = k;
   /* 枝の線も中身も、**一度に出す。**進み具合には紐づけない */
@@ -1593,6 +1683,8 @@ function brAt(n){
     const k = brAt(at());
     if (k >= 0) brMove(k, true);
   });
+  /* 窓が変わったら、デモ層の高さも合わせ直す */
+  addEventListener('resize', ovFit);
 })();
 /* 入口の出し分けと、置き場。**ここだけが枝の在り処を画面に出す。**
    置き場は決め打ちにしない：**いま居る段の下端から下げて、帯の上で止める。**
@@ -1651,7 +1743,10 @@ addEventListener('keydown', function(e){
   if (brMoving){ e.preventDefault(); return; }
   /* 枝に降りているあいだは、上か左で戻るだけ。横には進まない */
   if (onBranch()){
-    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); brMove(brOn, false); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'Escape'){
+      e.preventDefault();
+      if (ovOn >= 0) ovClose(); else brMove(brOn, false);
+    }
     return;
   }
   /* **下は「枝へ降りる」。**枝が無い停留所では、これまでどおり次へ進む */
