@@ -759,7 +759,9 @@ function measure(){
         /* これ以上寄るとはみ出す倍率。**枠（v.w/v.h）ではなく実寸で取る。**
            枠は手で書いた控えの数字で、中身とは合っていないことがある。 */
         fit: Math.min((vw - 40) / bx.w, vh / (bx.h + 30)),
-        tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
+        /* 狭い画面用。**高さの項は外した**（2026-09-04）。
+           入れておくと、窓の高さで字の大きさが変わる。 */
+        tight: Math.min(1, (vw - 28) / bx.w),
         cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
         w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
         nm: v.nm, node: v.node, dx: v.dx || 0, dy: 0
@@ -817,16 +819,21 @@ function measure(){
   const dvEl = document.getElementById('dive');
   const DIVE_ROOM = belowBr > 0 && dvEl
     ? DIVE_UNDER + dvEl.offsetHeight + DIVE_OVER : 0;
-  /* **収まる条件は2つ。**どの段も入る／枝がある段＋入口も入る。
-     **上下の空き（GAP_MIN）は画面px なので、縮尺に掛けずにそのまま引く。** */
-  f = Math.min(f,
-        (avail - 2 * GAP_MIN) / (kH + belowP),
-        (avail - DIVE_ROOM - 2 * GAP_MIN) / (kH + belowBr || 1));
-  /* 空きは、残った高さを上下で半分ずつ。NAME_GAP（面の 80）が上限、
-     GAP_MIN（画面の 56）が下限。 */
-  let gp = Math.min(NAME_GAP,
-        (avail / f - kH - belowP) / 2,
-        ((avail - DIVE_ROOM) / f - kH - belowBr) / 2);
+  /* **空きが先に譲る。縮尺は最後。**（2026-09-04）
+     「空きに回せる高さ」を出して、それを上下で半分ずつ使う。
+     残りが下限（GAP_MIN × 2）を割ったときだけ、**そこで初めて縮尺を落とす。**
+     こうすると、**窓の高さでは字の大きさが変わらない**（幅だけで決まる）。
+     詰まるのは名前の上下——**位置で吸収する。** */
+  let room = avail - Math.max(
+        (kH + belowP)  * f,
+        belowBr > 0 ? (kH + belowBr) * f + DIVE_ROOM : 0);
+  if (room < 2 * GAP_MIN){
+    f = Math.min(
+          (avail - 2 * GAP_MIN) / (kH + belowP),
+          belowBr > 0 ? (avail - DIVE_ROOM - 2 * GAP_MIN) / (kH + belowBr) : Infinity);
+    room = 2 * GAP_MIN;
+  }
+  let gp = Math.min(NAME_GAP, (room / 2) / f);
   gp = Math.max(gp, GAP_MIN / f);
 
   /* ---- 二度目：決まった空きで座らせ直す。縮尺はもう動かさない ---- */
@@ -957,12 +964,14 @@ const SEAT_GAP = 56;
    （基準は**社名の帯の下端**。画面の上端ではない——上端は帯が埋めている。） */
 const NAME_GAP = 80;
 
-/* **名前の上下の空きの下限。画面px で持つ。**（2026-09-04）
-   前は面の座標（24）で持っていた。**面の座標だと、縮尺が下がったときに
-   画面の上では 24 より狭くなる**——390×664 で 16px まで詰まって、
-   「上部にくっついてる」と言われた状態に戻っていた。
-   **画面px で持てば、どの窓でも同じだけ空く。**足りなければ縮尺が下がる。 */
-const GAP_MIN = 56;
+/* **名前の上下の空きの下限（画面px）。ここは「これ以上は詰めない」線。**
+   （2026-09-04）本人：**「大きさ、全体を小さくして調節しないで。位置では見れない？」。**
+
+   **順番を入れ替えた。**前は「空きを 56 に保って、入らなければ縮尺を落とす」。
+   それだと窓の高さで字の大きさが変わる（1280×640 で ×0.80、本文 13px）。
+   いまは **「縮尺は幅だけで決める。入らないぶんは空きが詰まる（＝位置で吸収する）」。**
+   **縮尺を落とすのは、空きをここまで詰めても入らないときだけ。** */
+const GAP_MIN = 10;
 
 /* いま効いている空き（面の座標）。measure が窓ごとに決める。
    **CSS の --rule-gap も一緒に書き換えること**（罫は名前と中身のあいだを通るので、
