@@ -143,6 +143,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
   transition:opacity .5s ease;
 }
 .hint.off{opacity:0}
+/* **行き先の一覧から離す。**foot の空きは 12px、一覧の項目どうしは 14px。
+   同じ空きで並べると、記号が**6つめの行き先**に見えた。
+   狭い画面は一覧が消えるので、そこでは要らない。 */
+.hint{margin-left:24px}
+@media (max-width:760px){ .hint{margin-left:0} }
 /* 記号だけにした。文字を並べるより、何で動くかが一目で分かる。
    線は currentColor なので、色は .hint の指定にそのまま従う。 */
 /* display:inline-block を明示する。**共有の reset.css が svg{display:block} を敷いている**
@@ -478,6 +483,15 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
       <input id="q" type="text" autocomplete="off" spellcheck="false"
              placeholder="聞く" aria-label="聞く">
       <ul class="go" id="go"></ul>
+    </span>
+    <!-- **何で動くのか。**CSS（.hint）は 008 を組んだ時から入っていたのに、
+         markup だけ落ちていた。JS も #hint を触っていて、最初のひと振りで例外が出ていた。
+         **記号がそのまま文の主語。**「マウス」「矢印キー」と言葉に戻さない（006-G と同じ）。
+         狭い画面にはどちらも無いので、そこは左右の矢印だけ（指で動かす）。 -->
+    <span class="hint" id="hint">
+      <span class="wide" role="img" aria-label="ホイールか矢印キー"><svg viewBox="0 0 12 18" aria-hidden="true"><rect x="1" y="1" width="10" height="16" rx="5"/><line x1="6" y1="4.6" x2="6" y2="7.6"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M9.3 5.2 6.5 8 9.3 10.8"/></svg><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M6.7 5.2 9.5 8 6.7 10.8"/></svg></span>
+      <span class="narrow" role="img" aria-label="指の左右"><svg viewBox="0 0 26 12" aria-hidden="true"><path d="M4.5 2.5 1.5 6 4.5 9.5"/><line x1="1.5" y1="6" x2="24.5" y2="6"/><path d="M21.5 2.5 24.5 6 21.5 9.5"/></svg></span>
+      <span class="use">で辿れます</span>
     </span>
     <span class="grow"></span>
     <span id="where">経営</span>
@@ -1142,8 +1156,8 @@ function draw(){
 /* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
 let ticking = false;
 view.addEventListener('scroll', function(){
-  /* 手がかり（#hint）は 008 の body にまだ無い。**素で触ると、最初のひと振りで例外が出て
-     そのフレームの draw() が飛ぶ。**出す・出さないを決めるまで、無ければ触らない。 */
+  /* 触ったら、手がかりは消す。**無くても落ちないようにしておく**
+     （markup が落ちていたあいだ、ここが最初のひと振りで例外を出して draw() を飛ばしていた）。 */
   if (!touched){ touched = true; const h = document.getElementById('hint'); if (h) h.classList.add('off'); }
   if (ticking) return;
   ticking = true;
