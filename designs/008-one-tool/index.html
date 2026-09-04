@@ -71,6 +71,10 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
    （1300px で組んだら、進め方に寄ったとき左下の隅を線が斜めに横切って、
    下の道具の上に被っていた）。1800 なら、前後に 82px ずつ余る。 */
 #canvas{
+  /* 段の名前と中身のあいだ。**JS が毎回書き換える**（measure）。
+     ここに書いてあるのは、JS が走る前の一瞬だけ効く初期値。
+     中身は GAP（名前と罫のあいだ）＋ SEAT_GAP（罫と中身のあいだ）。 */
+  --rule-gap:136px;
   position:absolute;top:0;left:0;width:8300px;height:1600px;
   transform-origin:0 0;   /* スクロールに毎フレーム追従するので、transition は置かない */
 }
@@ -219,18 +223,14 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
 .node .k{font-size:11.5px;letter-spacing:.16em;color:var(--amber)}
 
-/* **段の名前と中身のあいだを、線のぶん空ける。**136px ＝ NAME_GAP（80）＋ SEAT_GAP（56）。
-   **この数字だけを触らないこと。**JS の2つと必ず一緒に動かす（＝いつもその和）。
-   ずれると、罫が名前と中身のあいだの決めた場所から外れる。
-   **上下は同じではない。**名前の側（80）が広いのは、名前が画面の上端と罫の
-   真ん中に来るように置いてあるため。中身の側は SEAT_GAP（56）。
+/* **段の名前と中身のあいだを、線のぶん空ける。**
+   **数字は書かない。**JS（measure → setGap）が窓ごとに決めて `--rule-gap` に書く。
+   中身は GAP（名前と罫のあいだ）＋ SEAT_GAP（罫と中身のあいだ）。
+   **上下は同じではない。**名前の側が広いのは、名前が社名の帯と罫の
+   真ん中に来るように置いてあるため。中身の側は SEAT_GAP（56）で固定。
    **どの段も、空けるのは「名前のすぐ下」。**進め方だけ紙の上に空けていたが、
    罫の上にリード文と例が乗っていた頃のもの。いまは名前だけが上なので、揃う。 */
-.ne h1{margin-top:136px}
-.n0 .svc{margin-top:136px}
-.n2 .cap2{margin-top:136px}
-.nc .facts{margin-top:136px}
-.n5 .lead{margin-top:136px}
+.ne h1,.n0 .svc,.n2 .cap2,.nc .facts,.n5 .lead{margin-top:var(--rule-gap)}
 
 .ne h1{font-size:34px;line-height:1.75;letter-spacing:.02em;margin-bottom:14px}
 .ne h1 b{color:var(--amber);font-weight:inherit}
@@ -252,7 +252,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
    （G は .reveal を当てて測り直していたが、あれは寄ると開く仕掛けで、
    ここは押すと開く仕掛けなので、測る時点では開くかどうか決まっていない。） */
 .n2{min-height:385px}
-.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは 136px（罫のぶん） */
+.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは --rule-gap（罫のぶん） */
 /* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
    2つしかないので、横で足りる。 */
 .n2 .egs{list-style:none;display:flex;gap:26px;margin:10px 0 0;flex-wrap:wrap}
@@ -330,7 +330,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
   .n2 .egs{display:block}
   .n2 .egs li + li{margin-top:4px}
   .n2 .paper dl{grid-template-columns:1fr;row-gap:0}
-  /* **見出しの下の空きは、狭い画面でも同じ（136px）。**
+  /* **見出しの下の空きは、狭い画面でも同じ（--rule-gap）。**
      ここを 14px に詰めていた。理由は「狭い画面では線が段の横に来ない」だったが、
      **面は一枚なので、線は幅に関係なく段の中を通る。**詰めたぶん、線が中身の一行目に
      重なって、見出しに打ち消し線が引かれているように見えていた（430px で確認）。
@@ -621,95 +621,88 @@ function buildStops(){
    測っている先が動いてがくつく。 */
 function measure(){
   const vw = innerWidth, vh = innerHeight - hudH();   // 下の帯ぶん除く（実測）
-  /* 広い画面：枠に合わせて寄る。段ごとの縮尺の差が「地続き」の実体。
-     狭い画面：寄りをやめて、原寸のまま動かすだけ。
-     横長の枠を幅 390 に合わせると字が読めなくなるので、縮小するくらいなら動かすだけにする。
-     真ん中は、枠ではなく実物で取る。枠は「どこまで寄るか」を決めるためだけの数字で、
-     中身の実寸とは一致しない（枠で取っていたら、形の段が 39px 下にずれていた）。 */
-  /* 寄り先を測る前に、段を線の上に座らせておく。
-     順序が逆だと、座る前の位置で寄り先が決まる。
-     **G の「測る間だけ .reveal を当てる」は外した。**あれは寄ると開く仕掛けのためで、
-     008 は押すと開く仕掛け。測る時点では開くかどうか決まっていないので、
-     開いた姿の高さを CSS（.n2 の min-height）で先に確保してある。 */
-  seat();
-
-  marks = VIEWS.map(function(v){
-    const bx = box(v.sel);
-    return {
-      /* これ以上寄るとはみ出す倍率。**枠（v.w/v.h）ではなく実寸で取る。**
-         枠は手で書いた控えの数字で、中身とは合っていないことがある。
-         枠で取ると、合っていないぶんだけ全段の字が小さくなる。 */
-      fit: Math.min((vw - 40) / bx.w, vh / (bx.h + 30)),
-      tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
-      cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
-      w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
-      nm: v.nm, node: v.node, dx: v.dx || 0, dy: 0
-    };
-  });
-
-  /* 縮尺は1つに固定する。段ごとに寄りを変えない（前後の動きは酔いのもと）。
-     どの段も「使える範囲」に収まる、いちばん大きい倍率を選ぶ。
-     中身の外形（実寸）で取る。枠の数字は使わない。 */
   const roomW = vw - PAD_L - PAD_R;
   const roomH = vh - PAD_TOP - PAD_BOT;
-  if (vw < 760){
-    FLAT = Math.min.apply(null, marks.map(function(m){ return m.tight; }));
-    marks.forEach(function(m){ m.s = FLAT; });
-  } else {
+  const head = document.querySelector('.title');
+  const headBottom = head ? head.getBoundingClientRect().bottom : PAD_TOP;
+  const lineOf = function(m){ return lineYAt(m.cx); };
+
+  /* 段を座らせて、寄り先を測り直す。**空き（GAP）を変えたら毎回これを通す。**
+     順序が逆だと、座る前の位置で寄り先が決まる。 */
+  const build = function(){
+    seat();
+    marks = VIEWS.map(function(v){
+      const bx = box(v.sel);
+      return {
+        /* これ以上寄るとはみ出す倍率。**枠（v.w/v.h）ではなく実寸で取る。**
+           枠は手で書いた控えの数字で、中身とは合っていないことがある。 */
+        fit: Math.min((vw - 40) / bx.w, vh / (bx.h + 30)),
+        tight: Math.min(1, (vw - 28) / bx.w, vh / (bx.h + 24)),   // 狭い画面用
+        cx: bx.x + bx.w / 2, cy: bx.y + bx.h / 2,
+        w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
+        nm: v.nm, node: v.node, dx: v.dx || 0, dy: 0
+      };
+    });
+  };
+  /* 縮尺は1つに固定する。段ごとに寄りを変えない（前後の動きは酔いのもと）。
+     どの段も「使える範囲」に収まる、いちばん大きい倍率。実寸で取る。
+     狭い画面は寄りをやめて原寸のまま動かす（幅 390 に横長の枠を合わせると字が読めない）。 */
+  const scaleOf = function(){
+    if (vw < 760) return Math.min.apply(null, marks.map(function(m){ return m.tight; }));
     let f = Infinity;
     marks.forEach(function(m){ f = Math.min(f, roomW / m.w, roomH / m.h); });
-    FLAT = f * ROOM;
-      marks.forEach(function(m){ m.s = f * ROOM; });
+    return f * ROOM;
+  };
+
+  /* ---- 一度目：空きを 0 にして測る ----
+     **カメラの位置を、上下の空きから切り離すため。**（2026-09-04）
+     本人：**「カメラは最初の位置から変えないで」。**
+     空きを入れたまま縮尺を決めると、**空きを広げるたびにカメラが後ろへ下がる**
+     （1280×640 で ×1.19 → ×1.12 → ×0.97 と落ちていた）。
+     空き 0 の高さで決めれば、縮尺は**窓と中身だけ**で決まって、空きでは動かない。 */
+  setGap(0); build();
+  let kH = 0, belowP = 0;   // 名前の高さ／罫より下の張り出し（面の座標。空きに依らない）
+  marks.forEach(function(m){
+    kH     = Math.max(kH,     lineOf(m) - m.top);
+    belowP = Math.max(belowP, m.bottom  - lineOf(m));
+  });
+  let f = scaleOf();
+
+  /* ---- 空きは、残った高さを上下で半分ずつ ----
+     条件は一つだけ（本人）：**「概要からタイトルまでとタイトルから線までが同じ距離」。**
+     割合は追わない（「上下の空きの比率にこだわらなくていい」）。
+     NAME_GAP は**上限**。窓が高ければそこで止め、低ければ残りを分ける。 */
+  const avail = vh - PAD_BOT - headBottom;
+  let gp = Math.min(NAME_GAP, (avail / f - kH - belowP) / 2);
+  /* **下限を割るときだけ、縮尺を落とす。**ここが最後の手段。
+     （390×664 のような背の低い窓では、空き 24 を残すために縮尺が下がる） */
+  if (gp < GAP_MIN){
+    gp = GAP_MIN;
+    f  = Math.min(f, avail / (kH + belowP + 2 * GAP_MIN));
   }
 
+  /* ---- 二度目：決まった空きで座らせ直す。縮尺はもう動かさない ---- */
+  setGap(gp); build();
+  FLAT = f;
+  marks.forEach(function(m){ m.s = f; });
+
   /* **罫の高さを、全部の停留所でそろえる。**（2026-09-04）
-     線を真っ直ぐにしたのに、移りがガタガタしていた。**原因はここだった。**
      段ごとに「その段の外形の真ん中」を画面の真ん中に置いていたので、
      段の高さが違うぶん、**面の上では一本の高さにある罫が、停留所ごとに上下していた**
      （実測 304 / 286 / 313 / 267 / 337。70px の幅で跳ねる）。
-     横に動いているだけなのに、罫が上下する——それが「ガタガタ」の実体。
-
+     横に動いているだけなのに罫が上下する——それが「ガタガタ」の実体。
      **線は一本なので、画面の上でも一本の高さに居るのが正しい。**
-     段の真ん中ではなく、**罫を基準に置く。**段は罫から上下にぶら下がる。
-     （前は align／ALIGN_MIX で 20% だけ寄せる折衷が書いてあったが、
-     どの停留所にも align が書かれておらず、**一度も効いていなかった。**
-     線が落ちていた頃の名残なので、まるごと外した。） */
-  const lineOf = function(m){ return lineYAt(m.cx); };
+     段の真ん中ではなく、**罫を基準に置く。**段は罫から上下にぶら下がる。 */
   let up = 0, down = 0;   // 罫から上下へ、いちばん張り出す量（画面px）
   marks.forEach(function(m){
     up   = Math.max(up,   (lineOf(m) - m.top)     * m.s);
     down = Math.max(down, (m.bottom  - lineOf(m)) * m.s);
   });
-  const head = document.querySelector('.title');
-  const headBottom = head ? head.getBoundingClientRect().bottom : PAD_TOP;
-  /* **収まらないときに削るのは、縮尺。空きではない。**（2026-09-04）
-     前は罫を上へ押し上げて（LINE_AT の clamp）辻褄を合わせていた。
-     **足りないぶんを、上の空きが丸ごと肩代わりしていた。**
-     背の低い窓ではそれが全部無くなって、**段の名前が社名の帯に貼りつく**
-     （1280×640 で 帯→文字 10.8 ／ 文字→罫 89.7。NAME_GAP をいくら動かしても変わらない）。
-     本人に三度「くっついてる」「変わってない」と言われたのは、これ。
 
-     **要るもの＝帯の下 + 名前の上の空き + 名前 + 名前の下の空き + 罫より下ぜんぶ。**
-     入らなければ、その比だけ**一律に**縮める（段ごとに変えない。変えると
-     その移りだけ縮尺が動いて、また揃わなくなる）。
-     **字は小さくなるが、上下の空きは窓の高さに関係なく守られる。** */
-  const need  = NAME_GAP * FLAT + up + down;
-  const avail = vh - PAD_BOT - headBottom;
-  if (need > avail && need > 0){
-    const k = avail / need;
-    marks.forEach(function(m){ m.s *= k; });
-    FLAT *= k; up *= k; down *= k;
-  }
-  /* **罫を置く高さ。段の名前を、社名の帯と罫のちょうど真ん中に置く。**（2026-09-04）
-     本人：**「線もう少しだけ下げて、それと画面上部との中心に文字を置いて」**
-     → 画面の上端（y=0）から測ってみたら、**「上部にくっついてるように見える」。**
-     **上端から測るのは間違い。**上端から 20〜39px は社名の帯が埋めているので、
-     上端から等分すると、目に見える空きは上だけ帯のぶん減って、文字が帯に寄る。
-     **等分する相手は、帯の下端。**
-
-     名前の下の空き ＝ up − 名前の高さ ＝ NAME_GAP × 縮尺。上もそれと同じにする。
-     **上げ下げの目盛りは NAME_GAP ひとつ。**割合（LINE_HIGH）で当てるのはやめてある。 */
-  const LINE_AT = headBottom + up + NAME_GAP * FLAT;
+  /* **罫を置く高さ。段の名前を、社名の帯と罫のちょうど真ん中に置く。**
+     等分する相手は**帯の下端**。画面の上端（y=0）ではない——
+     上端から 20〜39px は帯が埋めているので、上端で等分すると文字が帯に寄る。 */
+  const LINE_AT = headBottom + up + gp * f;
   marks.forEach(function(m){ m.dy = LINE_AT - aimY() + (m.cy - lineOf(m)) * m.s; });
 
   survey();
@@ -753,7 +746,7 @@ const SEATS = [
 
    **SEAT_GAP は「罫と中身」のあいだだけ。**（2026-09-04）
    名前と罫のあいだは NAME_GAP（下）で別に持つ。
-   **CSS の空き（136px）は、この2つの和。**片方を触ったら CSS も動かすこと。 */
+   **CSS の空き（--rule-gap）は、この2つの和。**setGap が毎回書く。 */
 const SEAT_GAP = 56;
 
 /* **段の名前と罫のあいだ**（面の座標）。SEAT_GAP とは別に持つ。
@@ -761,12 +754,25 @@ const SEAT_GAP = 56;
    名前を**画面の上端と罫のちょうど真ん中**に置くと、
    名前の上の空き＝名前の下の空き＝ NAME_GAP × 縮尺 になる（下の LINE_AT）。
    **つまりこの数字が、罫をどれだけ下げるかの目盛りそのもの。**
-   80 で、1280×800 は 文字 134.6 ／ 罫 253.7。上げ下げはここだけ触る。
-   1 上げると、文字も罫も、縮尺ぶん下がる（帯の下端から等分しているので同じだけ）。
-   **天井は 430×860 で 84 くらい。**越えると進め方の段が下に収まらず、
-   LINE_AT の clamp が罫を持ち上げて上下が揃わなくなる。
+   **これは上限。**窓が高ければここで止まり、低ければ残った高さを上下で半分に分ける
+   （measure。1280×800 で 95.4、1280×640 で 39.4、いずれも上下は同じ）。
+   **下限は GAP_MIN。そこを割るときだけ、縮尺が落ちる。**
    （基準は**社名の帯の下端**。画面の上端ではない——上端は帯が埋めている。） */
 const NAME_GAP = 80;
+
+/* 空きの下限（面の座標）。**ここを下回るときだけ、縮尺を落とす。**
+   それまでは縮尺を動かさない（本人：「カメラは最初の位置から変えないで」）。 */
+const GAP_MIN = 24;
+
+/* いま効いている空き（面の座標）。measure が窓ごとに決める。
+   **CSS の --rule-gap も一緒に書き換えること**（罫は名前と中身のあいだを通るので、
+   ずれると罫が決めた場所から外れる）。 */
+let GAP = NAME_GAP;
+function setGap(gp){
+  GAP = gp;
+  const cv = document.getElementById('canvas');
+  if (cv) cv.style.setProperty('--rule-gap', (gp + SEAT_GAP) + 'px');
+}
 
 function seat(){
   SEATS.forEach(function(s){
@@ -776,7 +782,7 @@ function seat(){
     const on = s.on ? document.querySelector(s.on) : null;
     const bottom = on ? (on.offsetTop + on.offsetHeight) : el.offsetHeight;
     const cx = el.offsetLeft + el.offsetWidth / 2;
-    el.style.top = Math.round(lineYAt(cx) - NAME_GAP - bottom) + 'px';
+    el.style.top = Math.round(lineYAt(cx) - GAP - bottom) + 'px';
   });
 }
 
