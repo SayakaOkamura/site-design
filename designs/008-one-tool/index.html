@@ -824,11 +824,24 @@ function measure(){
     const bx = box([b.sel]);
     const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
     const ly = lineYAt(cx, pe);
+    /* **枝の段は、罫の高さで揃えない。使える範囲の真ん中に置く。**（2026-09-04）
+       本人：**「画面内にあるものが、常に中央に合わせたちょうどいい余白を持つように
+       してほしい。今だとフォームは、下に寄りすぎて余白が死んでる」。**
+
+       主線の停留所は**罫を同じ高さに固定する**（横に辿るとき、罫が上下すると
+       「ガタガタ」に見えるので）。**枝はそこに縛られない**——降りるのは縦の動きで、
+       世界ごと動くから、罫の高さが変わっても揺れて見えない。
+       枝の段は中身が高い（フォーム）ので、罫で吊ると下が詰まって上だけ空く。
+       **段まるごとを、社名の帯と下の帯のあいだの真ん中に置く。** */
+    /* 帯（HUD）の上までを、そのまま使える範囲とする。PAD_BOT は引かない
+       ——引くと、その 14px だけ下の余白が広くなって、上下が揃わない。 */
+    const bandTop = headBottom, band = vh - headBottom;
+    const wantTop = bandTop + (band - bx.h * f) / 2;
     return {
       pe: pe,
       cx: cx, cy: cy, w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
       nm: b.nm, node: b.node, s: f, dx: 0, ly: ly,
-      dy: LINE_AT - aimY() + (cy - ly) * f
+      dy: wantTop - aimY() - (bx.y - cy) * f
     };
   });
 
