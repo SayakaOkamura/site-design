@@ -117,10 +117,12 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
    面・線・カメラ・スクロールの受け方は G のまま。**そこは触っていない。** */
 
 
-/* **枝の線は、降りるときだけ出す。**（2026-09-04）
-   面の上に置いたままにしたら、**縦に走る区間がお問い合わせの段を貫いて、
-   本文と出典の字を縦に切り、下の帯まで抜けていた**（本人：「枝の入れ方やばすぎる」）。
-   主線は always、枝は brU に応じて JS が濃さを書く（drawBranch）。 */
+/* 枝の線。**主線と同じ太さ・同じ色。既定は消しておく。**
+   「y1000 なら主線からは画面に入らない」と一度書いたが、**窓によっては入る**
+   （1920×1400 で 1368/1400、430×860 で 774/860、390×664 で 602/664。実測）。
+   面の見える範囲は窓の高さと縮尺で変わるので、**高さでは逃げきれない。**
+   降りているあいだだけ出す。**ただし動きは付けない**——出すか消すかだけ
+   （本人：「移動する時に線が生えるモーションは必要ない」）。 */
 svg.thread path.branch{opacity:0}
 
 /* フォーム。**主線の段と同じ組み方**（名前 ─罫─ 中身）。
@@ -135,9 +137,7 @@ svg.thread path.branch{opacity:0}
   padding:5px 2px;outline:none;resize:none;
 }
 .nf input:focus,.nf textarea:focus{border-bottom-color:var(--amber)}
-.nf .note{font-size:11.5px;color:var(--sub);margin-top:14px;line-height:1.8}
-.nf .note b{color:var(--ink);font-weight:600}
-.nf .go{display:flex;align-items:baseline;gap:16px;margin-top:12px}
+.nf .go{display:flex;align-items:baseline;gap:16px;margin-top:26px}
 .nf .go button{
   font:inherit;font-size:13px;background:none;border:1px solid var(--ink);
   padding:7px 18px;cursor:pointer;color:var(--ink);transition:background .2s,color .2s;
@@ -445,24 +445,19 @@ svg.thread path.branch{opacity:0}
            カメラはこの線をなぞる（draw の中）。長さは必ず getTotalLength で測る。 -->
       <path id="thread" d="M 80 445 L 8200 445" />
       <!-- **枝。**（2026-09-04）
-           本人：**「線上に何か引っかける」「途中に分岐入れて…お問い合わせの
-           メールフォームに進める」。**主線は年表なので曲げない。**遊びは枝で出す。**
+           本人：**「移動する時に線が生えるモーションは必要ない」
+           →「線生える場所が変わっただけになってる。折れ口の話をしてる」。**
 
-           **枝の段は、親の停留所の真下。**（本人：「実装場所も真下でいい」）
-           `.nf` の left と width は `.n5` と同じ。**横にずらさない。**
-           そのため、**折れ口は段の左端より左**（x7180）に取る——
-           段の真下に罫を通すには、横に走る区間が段の幅を覆っている必要がある。
-           折れ口を段の真ん中に置くと、左半分の罫が無くなる。
+           **折れ口をやめた。**主線から下へ折れて降りる形は、置いた場所を変えても
+           **線が生えることには変わりない。**枝の線は**まっすぐ一本だけ**——
+           フォームの名前の下を通る罫で、主線とは繋がっていない。
 
-           曲がりは主線と同じ組み方：直線 → 円弧 → 直線 → 円弧 → 直線。
-           sweep は y が下向き：**右→下 が 1、下→右 が 0。**
-             折れる  半径 90 の円弧（x7180 → 7270、y445 → 535）
-             まっすぐ x7270、y535 → 910（375）
-             受ける  半径 90 の円弧（x7270 → 7360、y910 → 1000）
-             平ら    y1000、x8400 まで（面の右端。段の右端 8180 より先へ抜ける）
-           下の高さ 1000 は、主線の段がいちばん下まで来る 803 より下
-           （被ると、枝に降りたときに上の段が画面に映り込む）。 -->
-      <path id="fork1" class="branch" d="M 7180 445 A 90 90 0 0 1 7270 535 L 7270 910 A 90 90 0 0 0 7360 1000 L 8400 1000" />
+           y1000 は主線の段（いちばん下でも 803）より下。ただし**窓によっては
+           主線からも画面に入る**ので（背の高い窓・狭い窓）、降りているあいだだけ出す。
+           **出すか消すかだけで、動きは付けない。**
+           カメラは、親の停留所からここへ**まっすぐ下りる**（drawBranch）。
+           左右は親と同じなので、動くのは縦だけ。 -->
+      <path id="fork1" class="branch" d="M 7180 1000 L 8400 1000" />
     </svg>
 
     <!-- ===================================================================
@@ -564,7 +559,6 @@ svg.thread path.branch{opacity:0}
           <label>メール<input type="email" name="em" autocomplete="email"></label>
         </div>
         <label class="wide">ご相談内容<textarea name="msg" rows="3"></textarea></label>
-        <p class="note">押すと、宛先と本文が入ったメールの下書きが開きます。<b>送信はご自身で。</b></p>
         <p class="go"><button type="submit">下書きを開く</button>
            <span class="to">contact@alt-dsgn.co.jp</span></p>
       </form>
@@ -829,11 +823,9 @@ function measure(){
     const pe = document.querySelector(b.path);
     const bx = box([b.sel]);
     const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
-    const len = lenNearOn(pe, cx);              // 枝の上を、段の x まで
-    const q   = pe.getPointAtLength(len);
-    const ly  = lineYAt(cx, pe);
+    const ly = lineYAt(cx, pe);
     return {
-      pe: pe, len: len, off: [cx - q.x, cy - q.y],
+      pe: pe,
       cx: cx, cy: cy, w: bx.w, h: bx.h, top: bx.y, bottom: bx.y + bx.h,
       nm: b.nm, node: b.node, s: f, dx: 0, ly: ly,
       dy: LINE_AT - aimY() + (cy - ly) * f
@@ -951,17 +943,6 @@ function lineYAt(x, pathEl){
   return best.y;
 }
 
-/* その線の上で、x にいちばん近い点までの長さ */
-function lenNearOn(pe, x){
-  const L = pe.getTotalLength();
-  let best = 0, bd = Infinity;
-  for (let i = 0; i <= 400; i++){
-    const l = L * i / 400, q = pe.getPointAtLength(l);
-    const d = Math.abs(q.x - x);
-    if (d < bd){ bd = d; best = l; }
-  }
-  return best;
-}
 
 /* ---- 線の上をなぞるための下ごしらえ ------------------------------------
    段と段のあいだを、直線で結ばずに線に沿って動く。
@@ -1311,18 +1292,16 @@ function shade(t){
 }
 
 /* **枝を描く。**主線の draw とは別の道。
-   折れ口（枝の線の長さ 0 ＝ 親の停留所でカメラが乗っている点）から、
-   枝の段まで、枝の線の上を進む。**縮尺は動かさない**（FLAT のまま）。
-   親の off／dy から枝の off／dy へ寄せるので、主線と同じ形で繋がる。 */
+   **線をなぞらない。**親の停留所の寄り先から、枝の段の寄り先へ、まっすぐ寄せるだけ。
+   枝は親の真下にあるので、**動くのは縦だけ。**（折れ口をやめたので、なぞる線が無い）
+   **縮尺は動かさない**（FLAT のまま）。 */
 function drawBranch(){
   const b = BRM[brOn]; if (!b) return;
   const par = BRANCHES[brOn].parent, pm = marks[par];
-  if (!pm || !b.pe) return;
+  if (!pm) return;
   const e = brU * brU * brU * (brU * (brU * 6 - 15) + 10);   // 主線の移りと同じ丸め方
-  const q  = b.pe.getPointAtLength(b.len * e);
-  const o0 = off[par] || [0,0], o1 = b.off;
-  const cx = q.x + o0[0] + (o1[0] - o0[0]) * e;
-  const cy = q.y + o0[1] + (o1[1] - o0[1]) * e;
+  const cx = pm.cx + (b.cx - pm.cx) * e;
+  const cy = pm.cy + (b.cy - pm.cy) * e;
   const dy = (pm.dy || 0) + (b.dy - (pm.dy || 0)) * e;
   canvas.style.transform =
     'translate(' + (aimX() - cx * FLAT) + 'px,' + (aimY() + dy - cy * FLAT) + 'px) scale(' + FLAT + ')';
@@ -1549,10 +1528,7 @@ const BR_STEP = .9;   // 降りる・戻るのにかかる秒数
 function brMove(k, into, then){
   if (k < 0 || !BRM[k]) return;
   brOn = k;
-  /* **枝の線は、出すか出さないかだけ。生える動きは付けない。**（2026-09-04）
-     本人：**「移動する時に線が生えるモーションは必要ない」。**
-     降りはじめた時点で出し、主線に戻りきった時点で消す（下の then のところ）。
-     面に置きっぱなしにはしない——置くと段の字を縦に貫く。 */
+  /* 枝の線を出す。**一度に出す。**濃さを進み具合に合わせると線が伸びて見える */
   if (into && BRM[k].pe) BRM[k].pe.style.opacity = .85;
   const from = brU, to = into ? 1 : 0, t0 = performance.now();
   cancelAnimationFrame(brAnim); brMoving = true;
@@ -1565,7 +1541,7 @@ function brMove(k, into, then){
     if (!into){
       /* 主線へ戻す。**opacity を素に返す**（shade が毎フレーム持ち直す） */
       const pe = BRM[brOn] && BRM[brOn].pe;
-      if (pe) pe.style.opacity = 0;              // 枝の線を消す
+      if (pe) pe.style.opacity = 0;              // 枝の線を消す（これも一度に）
       brOn = -1;
       document.querySelectorAll('.node').forEach(function(el){ el.style.opacity = ''; });
       here = -1;   // 段の出し分けを次の draw でやり直させる
