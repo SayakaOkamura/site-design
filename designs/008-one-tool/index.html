@@ -144,6 +144,12 @@ svg.thread path.branch{opacity:0}
 }
 .nf .go button:hover,.nf .go button:focus-visible{background:var(--ink);color:var(--bg)}
 .nf .go .to{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.nf .go .back{
+  margin-left:auto;border:0;background:none;padding:4px 2px;cursor:pointer;
+  font:inherit;font-size:12px;letter-spacing:.1em;color:var(--sub);
+}
+.nf .go .back::before{content:"↑ "}
+.nf .go .back:hover,.nf .go .back:focus-visible{color:var(--amber)}
 
 /* ---------- 操作 ----------
    ボタンは置かない。押すものが並んでいると「操作盤」に見えて、
@@ -198,27 +204,30 @@ svg.thread path.branch{opacity:0}
 @media (max-width:760px){
   .hint .wide{display:none}
   .hint .narrow{display:inline}
-  /* 狭い画面では、枝の入口は記号だけ。言葉まで置くと帯が2行に折れて、
-     帯が高くなったぶん面の縮尺が落ちる（390px で実測）。 */
-  .dive .dl{display:none}
-  .dive{margin-right:12px}
 }
 
-/* 枝への入口。**帯の中に置く**（面の上に置くと段の字に被る）。
-   記号は向きだけ言う（↓ で降りる、↑ で戻る）。 */
+/* 枝への入口。**露骨に。**（2026-09-04）
+   琥珀で塗って、字も大きくする。**周りは薄い字しか無いので、塗るだけで一目で分かる。**
+   位置は JS（diveMove）が毎回置く：**いま居る段の下端から下げて、帯の上で止める。**
+   横は真ん中——枝の線が段の真ん中から降りるので、そこに口がある形になる。 */
 .dive{
-  font:inherit;background:none;border:0;padding:0;cursor:pointer;
-  font-size:11px;letter-spacing:.14em;color:var(--amber);
-  display:flex;align-items:baseline;gap:5px;
-  transition:opacity .3s ease;pointer-events:auto;
-  /* いま居る場所（#where）とくっついて一塊に見えたので離す */
-  margin-right:20px;
+  position:fixed;left:50%;transform:translateX(-50%);z-index:6;
+  font:inherit;font-size:13.5px;letter-spacing:.1em;
+  background:var(--amber);color:var(--bg);border:0;border-radius:999px;
+  padding:11px 26px 12px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  pointer-events:auto;transition:opacity .3s ease;
+  box-shadow:0 2px 14px rgba(0,0,0,.10);
 }
-.dive::after{content:"↓";font-size:12px}
-.dive.up::after{content:"↑"}
+.dive::after{content:"↓";font-size:15px;line-height:1}
+/* 戻るほうは塗らない。**降りた先で目立つ必要は無い**（そこは中身を読む場所） */
+.dive.up{
+  background:var(--bg);color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber);
+  font-size:12px;padding:8px 18px 9px;
+}
+.dive.up::after{content:"↑";font-size:13px}
 .dive.off{opacity:0;pointer-events:none}
-.dive .dl{border-bottom:1px solid transparent;transition:border-color .2s}
-.dive:hover .dl,.dive:focus-visible .dl{border-bottom-color:var(--amber)}
+.dive:hover,.dive:focus-visible{opacity:.88}
 
 /* 社名だけ。一言は一枚目で名乗るので、ここでは繰り返さない */
 .title{
@@ -390,9 +399,7 @@ svg.thread path.branch{opacity:0}
   .n0 .svc li{font-size:14px}
   .n2 .paper .two{grid-template-columns:1fr;gap:12px}
   .nc .facts{grid-template-columns:1fr;row-gap:2px}
-  /* 帯を1行に収める。折れると帯が 49 → 66px に高くなって、面の縮尺が落ちる */
-  .foot{gap:8px}
-  .tool input{width:6.5em}
+  .tool input{width:9em}
   .tool .go{display:none}
 }
 </style>
@@ -561,12 +568,28 @@ svg.thread path.branch{opacity:0}
         <label class="wide">ご相談内容<textarea name="msg" rows="3"></textarea></label>
         <p class="note">押すと、宛先と本文が入ったメールの下書きが開きます。<b>送信はご自身で。</b></p>
         <p class="go"><button type="submit">下書きを開く</button>
-           <span class="to">contact@alt-dsgn.co.jp</span></p>
+           <span class="to">contact@alt-dsgn.co.jp</span>
+           <!-- **戻るは枝の中身に置く。**浮かせると（画面に固定すると）
+                フォームの下端と重なった。中身の中なら、どの窓でも重ならない。
+                ↑ と ← でも戻れる。 -->
+           <button class="back" type="button" id="back">戻る</button></p>
       </form>
     </div>
 
   </div>
 </div>
+
+<!-- **枝への入口。**（2026-09-04）
+     本人：**「画面下部が空いてるから、そこに誘導の文字か記号かって、そういうのでいい」**
+     → 帯の中に小さく入れたら **「指示をそこに格納すると絶対わからないよ。露骨なくらいでいい」。**
+     帯は薄い字が5つ並ぶ場所で、そこに混ぜたら**見つからない。**
+
+     **面の上には置かない**（段の字に被る）。**画面の下の空きに、単体で置く。**
+     「下は空いていないことがある」と一度書いたが、**それはこちらの見間違い。**
+     いちばん高い段（進め方）で見ていた。**入口が出るのは、枝がある停留所だけ。**
+     お問い合わせの段は中身が少なく、1280×800 で中身の下端 444・帯 751——**307px 空いている。**
+     それでも決め打ちにはしない。**いま居る段の下端から下げて、帯の上で止める**（JS）。 -->
+<button class="dive off" id="dive" type="button"><span class="dl"></span></button>
 
 <!-- 触る層。見た目には何も無い。スクロールを受けるためだけに置く -->
 <div id="view"><div id="track"></div></div>
@@ -597,13 +620,6 @@ svg.thread path.branch{opacity:0}
       <span class="use">で辿れます</span>
     </span>
     <span class="grow"></span>
-    <!-- **枝への入口。**（2026-09-04）
-         本人：**「少なくとも文字にはかぶせないで。画面下部が空いてるから、
-         そこに誘導の文字か記号かって、そういうのでいい」。**
-         **面の上には置かない。**段の高さは窓によって変わるので、
-         「空いている下の方」も窓によって変わる——**帯の中なら、いつでも空いている。**
-         枝がある停留所に居るときだけ出る。降りているあいだは「戻る ↑」。 -->
-    <button class="dive off" id="dive" type="button"><span class="dl"></span></button>
     <span id="where">経営</span>
   </div>
 </div>
@@ -810,6 +826,7 @@ function measure(){
      等分する相手は**帯の下端**。画面の上端（y=0）ではない——
      上端から 20〜39px は帯が埋めているので、上端で等分すると文字が帯に寄る。 */
   const LINE_AT = headBottom + up + gp * f;
+  LINE_Y = LINE_AT;   // 罫の画面上の高さ。入口の置き場に使う（diveMove）
   marks.forEach(function(m){ m.dy = LINE_AT - aimY() + (m.cy - lineOf(m)) * m.s; });
 
   /* 枝の寄り先。**主線の停留所とまったく同じ扱い**（同じ縮尺、同じ罫の高さ）。
@@ -859,6 +876,7 @@ function measure(){
 const BRANCHES = [
   { path:'#fork1', sel:'.nf', on:'.nf .k', nm:'フォーム', node:5, parent:4 }
 ];
+let LINE_Y = 0;          // 罫の画面上の高さ（measure が入れる）
 let BRM = [];            // 枝の寄り先（marks と同じ形）
 let brOn = -1;           // いま降りている枝（-1 で主線）
 let brU = 0;             // 枝の進み具合 0（折れ口）→ 1（枝の段）
@@ -1420,8 +1438,10 @@ function draw(){
   });
   // 洗い出した帯は、そこに寄ったときに出す。戻れば畳む
   document.querySelector('.n2').classList.toggle('reveal', !!m.add);
-  /* **枝がある停留所に来たら、帯に入口を出す。**無い停留所では消す */
-  diveShow(brAt(n), false);
+  /* **枝がある停留所に来たら、その段の下に入口を出す。**無い停留所では消す */
+  const bk = brAt(n);
+  diveShow(bk, false);
+  if (bk >= 0) diveMove(m);
 }
 
 /* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
@@ -1562,25 +1582,39 @@ function brAt(n){
   for (let k = 0; k < BRANCHES.length; k++) if (BRANCHES[k].parent === n) return k;
   return -1;
 }
-/* 帯の中の入口。押すと降りる／戻る */
+/* 入口（降りる）と、枝の中の「戻る」 */
 (function(){
   const dv = document.getElementById('dive');
-  if (!dv) return;
-  dv.addEventListener('click', function(){
-    if (brMoving) return;
-    if (onBranch()){ brMove(brOn, false); return; }
+  if (dv) dv.addEventListener('click', function(){
+    if (brMoving || onBranch()) return;
     const k = brAt(at());
     if (k >= 0) brMove(k, true);
   });
+  const bk = document.getElementById('back');
+  if (bk) bk.addEventListener('click', function(){
+    if (!brMoving && onBranch()) brMove(brOn, false);
+  });
 })();
-/* 帯の入口の出し分け。**ここだけが枝の在り処を画面に出す** */
+/* 入口の出し分けと、置き場。**ここだけが枝の在り処を画面に出す。**
+   置き場は決め打ちにしない：**いま居る段の下端から下げて、帯の上で止める。**
+   段の高さも帯の高さも窓で変わるので、両方から毎回出す。 */
+const DIVE_UNDER = 46;   // 段の下端からどれだけ下げるか
+const DIVE_OVER  = 26;   // 帯からどれだけ上に浮かせるか
+function diveMove(m){
+  const dv = document.getElementById('dive');
+  if (!dv || !m) return;
+  const bottomOfNode = LINE_Y + (m.bottom - lineYAt(m.cx, m.pe || null)) * m.s;
+  const floor = innerHeight - hudH() - DIVE_OVER - dv.offsetHeight;
+  dv.style.top = Math.round(Math.min(bottomOfNode + DIVE_UNDER, floor)) + 'px';
+}
+/* **入口は「降りる」ときだけ出す。**戻るは枝の中身が持っている
+   （浮かせるとフォームの下端に重なった）。 */
 function diveShow(k, back){
   const dv = document.getElementById('dive');
   if (!dv) return;
-  dv.classList.toggle('off', k < 0 && !back);
-  dv.classList.toggle('up', !!back);
+  dv.classList.toggle('off', back || k < 0);
   const l = dv.querySelector('.dl');
-  if (l) l.textContent = back ? '戻る' : (k >= 0 ? BRANCHES[k].nm + 'へ' : '');
+  if (l && !back) l.textContent = k >= 0 ? BRANCHES[k].nm + 'を開く' : '';
 }
 
 const VERT = .5;
