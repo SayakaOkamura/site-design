@@ -175,6 +175,10 @@ svg.thread path.branch{opacity:0}
 .hud{
   position:fixed;left:0;right:0;bottom:0;z-index:5;
   padding:0 22px 16px;pointer-events:none;
+  /* **地色を敷く。**（2026-09-04）本人：**「フォームで使ってる線が下部の固定タブを
+     貫通する。ここの固定タブ固有色と同じ色で背景入れちゃっていいよ」。**
+     枝の線（#fork1）は面の上を走るので、帯が透けていると帯の中まで伸びて見えた。 */
+  background:var(--bg);
 }
 .rail{
   height:2px;background:var(--line);position:relative;border-radius:2px;
@@ -323,7 +327,7 @@ svg.thread path.branch{opacity:0}
 .nf{left:5620px; top:940px; width: 760px}
 
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
-.node .k{font-size:calc(11.5px * var(--tx));letter-spacing:.16em;color:var(--amber)}
+.node .k{font-size:calc(12.5px * var(--tx));letter-spacing:.16em;color:var(--amber)}
 
 /* **段の名前と中身のあいだを、線のぶん空ける。**
    **数字は書かない。**JS（measure → setGap）が窓ごとに決めて `--rule-gap` に書く。
@@ -346,14 +350,14 @@ svg.thread path.branch{opacity:0}
    縮尺は**いちばん広い段の幅**で決まっていて、縦にはまだ余りがある。
    だから縦に伸ばしても縮尺は下がらない（背の低い窓では下がる。そこは承知の上）。 */
 /* 前置きの一行。**四本の上に置く大きい話** */
-.n0 .cap{font-size:calc(15px * var(--tx));line-height:1.95;color:var(--sub)}
+.n0 .cap{font-size:calc(16px * var(--tx));line-height:1.95;color:var(--sub)}
 .n0 .svc{list-style:none;display:grid;grid-template-columns:1fr 1fr;column-gap:52px;margin-top:calc(38px * var(--sp))}
-.n0 .svc li{padding:calc(18px * var(--sp)) 0;font-size:calc(15px * var(--tx));font-weight:600;border-top:1px solid var(--line)}
-.n0 .svc span{display:block;font-weight:400;font-size:calc(12.5px * var(--tx));color:var(--sub);margin-top:calc(7px * var(--sp));line-height:1.9}
+.n0 .svc li{padding:calc(18px * var(--sp)) 0;font-size:calc(16px * var(--tx));font-weight:600;border-top:1px solid var(--line)}
+.n0 .svc span{display:block;font-weight:400;font-size:calc(13.5px * var(--tx));color:var(--sub);margin-top:calc(7px * var(--sp));line-height:1.9}
 
 /* 会社概要。公式の7項目・その並び */
-.nc .facts{display:grid;grid-template-columns:8em minmax(0,1fr);column-gap:22px;row-gap:calc(14px * var(--sp));font-size:calc(13.5px * var(--tx))}
-.nc .facts dt{color:var(--faint);font-size:calc(12px * var(--tx))}
+.nc .facts{display:grid;grid-template-columns:8em minmax(0,1fr);column-gap:22px;row-gap:calc(14px * var(--sp));font-size:calc(15px * var(--tx))}
+.nc .facts dt{color:var(--faint);font-size:calc(13px * var(--tx))}
 .nc .facts dd{overflow-wrap:anywhere}
 
 /* お問い合わせ */
@@ -396,12 +400,12 @@ svg.thread path.branch{opacity:0}
      詰め直さないと、収めるために面ごと小さくなる——
      390×664 で ×0.54（本文が 9px）まで落ちた。ここだけ元の詰め方に近づける。 */
   .n0 .svc{grid-template-columns:1fr;column-gap:0;margin-top:calc(20px * var(--sp))}
-  .n0 .cap{font-size:calc(13.5px * var(--tx));line-height:1.85}
-  .n0 .svc li{padding:calc(9px * var(--sp)) 0;font-size:calc(14px * var(--tx))}
+  .n0 .cap{font-size:calc(14.5px * var(--tx));line-height:1.85}
+  .n0 .svc li{padding:calc(9px * var(--sp)) 0;font-size:calc(15px * var(--tx))}
   .n0 .svc span{margin-top:calc(3px * var(--sp));font-size:calc(12px * var(--tx));line-height:1.75}
   .ne h1{font-size:calc(24px * var(--tx))}
   .ne .lead{font-size:calc(14px * var(--tx))}
-  .nc .facts{grid-template-columns:1fr;row-gap:2px;font-size:calc(13.5px * var(--tx))}
+  .nc .facts{grid-template-columns:1fr;row-gap:2px;font-size:calc(14.5px * var(--tx))}
   .n5 .lead{font-size:calc(14.5px * var(--tx));line-height:1.9}
   .n5 .mail{margin-top:calc(16px * var(--sp));font-size:calc(16px * var(--tx))}
   .n5 .src{margin-top:calc(20px * var(--sp))}
@@ -818,8 +822,11 @@ function measure(){
      **入口が中身に 49px 被った**（430×860 で実測）。
      入口は画面に固定した口なので、**縮尺で伸び縮みしない固定の高さ**として引く。 */
   const dvEl = document.getElementById('dive');
-  const DIVE_ROOM = belowBr > 0 && dvEl
-    ? DIVE_UNDER + dvEl.offsetHeight + DIVE_OVER : 0;
+  /* **DIVE_OVER（帯からの浮き）はここでは引かない。**（2026-09-04）
+     三等分した「下の一つ分」がその役をするので、両方引くと二重になって、
+     入口の下だけ空きが余った（1280×800 で 上 41 / 下 85）。
+     帯にぶつからないことは diveMove の floor が別に保証している。 */
+  const DIVE_ROOM = belowBr > 0 && dvEl ? DIVE_UNDER + dvEl.offsetHeight : 0;
   /* **譲るのは字。縮尺（カメラ）も余白も動かさない。**（2026-09-04）
      本人：**「合わないなら文字の大きさの方下げていいよ。余白使って」。**
 
@@ -854,7 +861,17 @@ function measure(){
   }
   kH = r.kH; belowP = r.belowP; belowBr = r.belowBr;
   let room = Math.max(r.room, 2 * GAP_MIN);
-  let gp = Math.min(NAME_GAP, (room / 2) / f);
+  /* **残りは三等分。**（2026-09-04）本人：**「上方向にもう少し移動して良い。
+     デモのアイコン分の余白があるから、中心に見えなくなってる」。**
+
+     二等分だと、余った高さが全部「帯→名前」と「名前→罫」に入って、
+     **下には一切残らない**（入口のぶん DIVE_ROOM を引いた、その残りが 0）。
+     段の下に入口（丸い口）がぶら下がるので、**見えている塊は下へ伸びる**——
+     上に空きがあって下が詰まっている形になり、真ん中に見えない。
+     三等分にすれば、**下にも同じだけ空きが残って、塊ごと上へ寄る。**
+     本人の条件（**「概要からタイトルまでとタイトルから線までが同じ距離」**）は
+     そのまま——上の二つは変わらず同じ量。 */
+  let gp = Math.min(NAME_GAP, (room / 3) / f);
   gp = Math.max(gp, GAP_MIN / f);
 
   /* ---- 二度目：決まった空きで座らせ直す。縮尺はもう動かさない ---- */
@@ -1604,7 +1621,7 @@ view.addEventListener('touchstart',  stopGlide, { passive:true });
    縦の隔たりぶんだけ足して、2→3・3→4 と揃える。
    一度これを 1.0 秒＋落差まるごと（1.63秒）にして、落下そのものが消えた。
    **足しすぎないこと。**いまは +0.37秒。 */
-function glide(to, secs){
+function glide(to, secs, then){
   const from = view.scrollLeft, t0 = performance.now(), dur = secs || STEP;
   cancelAnimationFrame(anim);
   gliding = true;
@@ -1615,7 +1632,7 @@ function glide(to, secs){
        smootherstep（x³(6x²-15x+10)）は加速度も 0 で終わるので、すっと止まる。 */
     view.scrollLeft = from + (to - from) * (x * x * x * (x * (x * 6 - 15) + 10));
     if (x < 1){ anim = requestAnimationFrame(step); }
-    else { view.scrollLeft = to; gliding = false; }   // 端数を残さない
+    else { view.scrollLeft = to; gliding = false; if (then) then(); }   // 端数を残さない
   })();
 }
 
@@ -1800,15 +1817,19 @@ function diveSync(t){
 }
 
 const VERT = .5;
-function goTo(n){
+function goTo(n, then){
   const last = marks.length - 1;
   const m = Math.max(0, Math.min(last, n)), a = at();
   const drop = Math.abs((marks[m] ? marks[m].cy : 0) - (marks[a] ? marks[a].cy : 0));
-  glide(stopAt(m), STEP + VERT * drop / 1000);
+  glide(stopAt(m), STEP + VERT * drop / 1000, then);
 }
 
 function at(){ const q = place(); return q.f > 0.5 ? q.i + 1 : q.i; }
 
+/* **面を動かすキー。**押されたら、ブラウザに素のスクロールをさせない。
+   ここに無いキー（Tab、文字キー）は素通しにする。 */
+const NAVKEYS = ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',
+                 'PageUp','PageDown','Home','End',' ','Spacebar'];
 addEventListener('keydown', function(e){
   /* **欄に入っているあいだは、面はキーを受けない。**（2026-09-04）
      ここを素通しにすると、本文の中で ← を押しただけで枝から出てしまう
@@ -1819,9 +1840,17 @@ addEventListener('keydown', function(e){
     if (e.key === 'Escape') el.blur();
     return;
   }
+  /* **ボタンやリンクに焦点があるとき、Space と Enter はその押しのもの。**
+     面が取ると、入口（丸い口）を Tab で選んで Space で開く道が消える。 */
+  if (el && (el.tagName === 'BUTTON' || el.tagName === 'A') &&
+      (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter')) return;
   if (brMoving){ e.preventDefault(); return; }
   /* 枝に降りているあいだは、上か左で戻るだけ。横には進まない */
   if (onBranch()){
+    /* **枝に居るあいだ、面を動かすキーは全部こちらで止める。**
+       止めずに返すと、ブラウザが下の #view を勝手に動かして、
+       戻ったときに**降りた場所とは違う停留所に立っている。** */
+    if (NAVKEYS.indexOf(e.key) >= 0) e.preventDefault();
     if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'Escape'){
       e.preventDefault();
       if (ovOn >= 0) ovClose(); else brMove(brOn, false);
@@ -1833,6 +1862,16 @@ addEventListener('keydown', function(e){
     const k = brAt(at());
     if (k >= 0){ e.preventDefault(); brMove(k, true); return; }
   }
+  /* **大きく飛ぶキーも、こちらで受ける。**（2026-09-04）本人：**「Pgdnでバグる」。**
+     受けずにいると、ブラウザが #view を一画面ぶん（clientWidth）勝手に動かす。
+     停留所は 1つ 2画面ぶん（SPANS）なので、**必ず停留所のあいだで止まる**——
+     段が薄いまま宙に浮いて、そのあと scrollend が慌てて寄せ直す。
+     連打すれば、寄せ直しの途中にまた飛ぶ。**飛ぶ量を持っているのはこちらだけ。**
+     PageDown ／ Space は次へ、PageUp は前へ、Home ／ End は端へ。 */
+  if (e.key === 'PageDown' || e.key === ' ' || e.key === 'Spacebar'){ e.preventDefault(); goTo(at() + 1); return; }
+  if (e.key === 'PageUp'){ e.preventDefault(); goTo(at() - 1); return; }
+  if (e.key === 'Home'){   e.preventDefault(); goTo(0); return; }
+  if (e.key === 'End'){    e.preventDefault(); goTo(marks.length - 1); return; }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); goTo(at() + 1); }
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'){   e.preventDefault(); goTo(at() - 1); }
 });
@@ -1904,18 +1943,47 @@ draw();
   if (!q || !go) return;
 
   /* 行き先は停留所そのもの。**別に一覧を持たない**（VIEWS が唯一の出どころ） */
-  const names = function(){ return VIEWS.map(function(v, i){ return { i:i, k:v.nm }; }); };
+  const names = function(){
+    const L = VIEWS.map(function(v, i){ return { i:i, k:v.nm }; });
+    /* **枝も一覧に出す。**（2026-09-04）本人：**「下部のクリックで飛べる目次に
+       デモとフォームを追加する」。**辿り方（押して降りる）は主線と違うが、
+       **行き先であることは同じ。**入口の丸い口に気づかなかった人は、ここから行ける。
+       出どころは BRANCHES ひとつ。ここに名前を書き足さない。 */
+    BRANCHES.forEach(function(b, k){ L.push({ i:b.parent, br:k, k:b.nm }); });
+    return L;
+  };
 
   /* **空のときは、どれも選ばない**（at = -1）。
      0 にしていたら、いま居る場所が選ばれた状態で出て、
      enter がそこへ行くように見えていた。いま居る場所は右下（#where）が言う。 */
   let at = -1, composing = false;
 
+  /* その行き先に**いま置いてある字。**枝はその段（フォーム）、
+     面に段を持たないもの（全画面のデモ）は名前だけ。 */
+  const textOf = function(n){
+    const sel = (n.br != null) ? BRANCHES[n.br].sel : (VIEWS[n.i] && VIEWS[n.i].sel[0]);
+    const el  = sel ? document.querySelector(sel) : null;
+    return el ? el.textContent : n.k;
+  };
+
   function match(){
     const b = q.value.trim();
     if (!b) return names();
     /* 頭からでなく、含んでいれば当てる（「概要」で会社概要に当たる） */
     const hit = names().filter(function(n){ return n.k.indexOf(b) >= 0; });
+    /* **名前で当たらなかったら、その段に書いてある字を見る。**（2026-09-04）
+       本人：**「聞く、のところ使えるようにする」。**名前だけ見ていたので、
+       「聞く」と書いてあるのに、聞けるのは停留所の名前だけだった。
+
+       **言い換えの表は作らない。**（「料金」→ お問い合わせ のような表は、
+       書いていないことを勝手に結びつける。着いた先に、その答えが無い。）
+       見るのは**面に出ている字そのまま。**だから当たった先には、
+       打った言葉が必ず書いてある——「資本金」で会社概要、
+       「ローコード」でサービス、「ご相談」でフォーム。 */
+    if (!hit.length){
+      const body = names().filter(function(n){ return textOf(n).indexOf(b) >= 0; });
+      if (body.length) return body;
+    }
     /* **当たらなくても、一覧は畳まない。**「ありません」と書く場所ではないし、
        面の上に何が置いてあるかは、当たらなかった人にこそ要る。 */
     return hit.length ? hit : names();
@@ -1925,20 +1993,31 @@ draw();
     if (!q.value.trim()) at = -1;
     if (at >= m.length) at = m.length - 1;
     go.innerHTML = m.map(function(n, j){
-      return '<li' + (j === at ? ' class="on"' : '') + ' data-i="' + n.i + '">' + n.k + '</li>';
+      const cls = (j === at ? 'on ' : '') + (n.br != null ? 'br' : '');
+      return '<li' + (cls.trim() ? ' class="' + cls.trim() + '"' : '')
+           + ' data-i="' + n.i + '"'
+           + (n.br != null ? ' data-b="' + n.br + '"' : '') + '>' + n.k + '</li>';
     }).join('');
   }
   /* **飛ぶ。**面の上を動くので、log も画面の切り替えも無い。
      移りは goTo（G のもの）に任せる。**scrollTo({behavior:smooth}) は使わない。**
      ブラウザ任せの速さになって、ロゴを押したときの移りと揃わないし、
      落ちる区間で縦に動くぶんの間（VERT）も取れない。 */
-  function fly(i){
+  function fly(n){
+    if (n == null) return;
+    const i = (typeof n === 'number') ? n : n.i;
+    const k = (n && n.br != null) ? n.br : -1;
     if (i == null || i < 0) return;
+    /* すでにその枝に居るなら、降り直さない（閉じて開く形に見える） */
+    if (k >= 0 && (brOn === k || ovOn === k)){ q.value = ''; at = -1; draw(); q.blur(); return; }
+    /* 枝が行き先なら、**親の停留所に着いてから降りる。**
+       同じ場所なら glide は 0 距離で終わるので、そのまま降りる形になる。 */
+    const after = function(){ if (k >= 0) brMove(k, true); };
     /* **枝に降りているときは、先に主線へ戻す。**戻らずに主線を動かすと、
        カメラは枝の上に居るまま親の停留所へ帰り、そのあと飛び先へ飛ぶ形になる
        （降りたことが無かったかのように見える）。 */
-    if (onBranch()){ brMove(brOn, false, function(){ goTo(i); }); }
-    else goTo(i);
+    if (onBranch()){ brMove(brOn, false, function(){ goTo(i, after); }); }
+    else goTo(i, after);
     q.value = '';
     at = -1;
     draw();
@@ -1953,7 +2032,7 @@ draw();
       if (e.isComposing) return;          /* 変換確定の enter で走らせない */
       e.preventDefault();
       const m = match();
-      if (at >= 0 && m[at]) fly(m[at].i);
+      if (at >= 0 && m[at]) fly(m[at]);
       return;
     }
     /* 上下で選ぶ。**左右は面の操作なので取らない**（矢印で辿れる） */
@@ -1963,7 +2042,7 @@ draw();
   go.addEventListener('mousedown', function(e){ e.preventDefault(); });
   go.addEventListener('click', function(e){
     const li = e.target.closest('li');
-    if (li) fly(+li.dataset.i);
+    if (li) fly({ i:+li.dataset.i, br: li.dataset.b === undefined ? null : +li.dataset.b });
   });
 
   draw();
