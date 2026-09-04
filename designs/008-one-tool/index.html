@@ -236,6 +236,12 @@ svg.thread path.branch{opacity:0}
 .dive::after{content:"↓";font-size:15px;line-height:1}
 .dive.off{opacity:0;pointer-events:none}
 .dive:hover,.dive:focus-visible{opacity:.88}
+/* 補足の口。塗らずに、線だけ。字も一段落とす */
+.dive.note{
+  background:var(--bg);color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber);
+  font-size:12px;padding:8px 18px 9px;
+}
+.dive.note::after{font-size:13px}
 
 /* 社名だけ。一言は一枚目で名乗るので、ここでは繰り返さない */
 .title{
@@ -319,6 +325,13 @@ svg.thread path.branch{opacity:0}
    （G は .reveal を当てて測り直していたが、あれは寄ると開く仕掛けで、
    ここは押すと開く仕掛けなので、測る時点では開くかどうか決まっていない。） */
 .n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは --rule-gap（罫のぶん） */
+/* 進め方の三つ。**名前は琥珀で、幅を揃えて左に並べる**（縦に読めるように）。
+   デモに出ている言葉と同じにしてある。 */
+.n2 .flow{list-style:none;margin-top:26px;font-size:13.5px;line-height:1.9}
+.n2 .flow li{display:flex;gap:16px;align-items:baseline}
+.n2 .flow li + li{margin-top:5px}
+.n2 .flow b{flex:0 0 4.4em;white-space:nowrap;font-weight:600;font-size:12px;letter-spacing:.14em;color:var(--amber)}
+.n2 .flow span{color:var(--sub)}
 /* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
    2つしかないので、横で足りる。 */
   font:inherit;font-size:14px;color:var(--sub);text-align:left;
@@ -498,6 +511,18 @@ svg.thread path.branch{opacity:0}
     <div class="node n2" data-l="2">
       <div class="k" style="--i:0">進め方</div>
       <p class="cap2 r" style="--i:1">言われたことを、先に形にします。</p>
+      <!-- **ざっくり文字で書く。**（2026-09-04）
+           本人：**「進め方、ざっくり文字で書いておいてデモは補足情報にしたい」。**
+           三つの段の名前は、デモ（005）に出ているものと同じ——
+           **読んだ人がデモの中で同じ言葉に出会う。**
+           **ここは会社について言っているのではない。**この案が示す進め方の話。
+           （公式サイトに「進め方」は無い。`../REVIEW.md` の線引きに従って、
+           会社の言葉としては出さない。） -->
+      <ol class="flow r" style="--i:2">
+        <li><b>書く</b><span>やりたいことを、一行だけ書く</span></li>
+        <li><b>決める</b><span>決まっていることが形になり、決まっていないことが空欄で残る</span></li>
+        <li><b>通す</b><span>空欄を打合せで埋めてから、通す</span></li>
+      </ol>
     </div>
 
     <!-- 三 会社概要。公式サイトの7項目、その並び順のまま -->
@@ -879,7 +904,7 @@ const BRANCHES = [
   { path:'#fork1', sel:'.nf', on:'.nf .k', nm:'フォーム', node:5, parent:4 },
   /* **面の上には置かない枝。**全画面のデモ層を開く（005 をそのまま読み込む）。
      `sel` が無いものは、寄り先を測らない（面に段が無いので）。 */
-  { overlay:'#demo', src:'../005-paper-flow/index.html', nm:'デモ', parent:2 }
+  { overlay:'#demo', src:'../005-paper-flow/index.html', nm:'デモ', parent:2, note:true }
 ];
 let LINE_Y = 0;          // 罫の画面上の高さ（measure が入れる）
 let BRM = [];            // 枝の寄り先（marks と同じ形）
@@ -1567,15 +1592,34 @@ function ovOpen(k){
   if (fr && !fr.getAttribute('src')){
     fr.addEventListener('load', function(){
       try{
-        /* **↑ でも戻る。**（2026-09-04）
-           本人：**「デモ、上を押しても戻れません」。**
-           焦点が 005 の中にあると、こちらの ↑ は届かない。だから中に差し込む。
-           **005 の ↑（例の逆回り）は、埋め込んでいるあいだ使えなくなる。**
-           例は ↓ だけで一周する（白紙 → 1 → 2 → 3 → 4 → 白紙）ので、
-           辿れなくなるものは無い。**降りたのが ↓ なら、戻るのは ↑**を通す。
-           ← は取らない（欄の中でカーソルを動かすキーなので）。 */
+        /* **↑ は、逆回りを残したうえで、一番上に着いたら戻る。**（2026-09-04）
+           本人：**「逆回りは可能だけど、一番上に着たら戻れるようにしたらいいよ」。**
+
+           005 の例は 白紙 → 1 → 2 → 3 → 4 → 白紙 と回り、**-1（白紙）が輪の一番上。**
+           そこで ↑ を押すと 005 は 4 へ回り込む。**そこだけ、こちらが先に取る。**
+           白紙かどうかは面の様子で分かる：**`#egs` に印（.on）が付いていない**
+           （005 の markEg(-1) が全部外す）。005 の中の変数には触れない。
+
+           **取る順。**005 の聞き役は window の bubble に付いている（先に登録済み）。
+           - **capture**：白紙のときだけ、こちらが先に取って閉じる（stopPropagation）
+           - **bubble**：005 が受け取らなかった（defaultPrevented でない）＝
+             段2・段3 では ↑ を無視するので、そのときは閉じる
+           Esc はいつでも閉じる。← は取らない（欄の中でカーソルを動かすキーなので）。 */
+        const idoc = fr.contentDocument;
+        const atTop = function(){
+          if (!idoc) return true;
+          const on = idoc.querySelector('#egs .on');
+          const inp = idoc.getElementById('in');
+          return !on && (!inp || inp.value === '');
+        };
         fr.contentWindow.addEventListener('keydown', function(e){
-          if (e.key === 'Escape' || e.key === 'ArrowUp'){ e.preventDefault(); ovClose(); }
+          if (e.key === 'Escape'){ e.preventDefault(); ovClose(); return; }
+          if (e.key === 'ArrowUp' && atTop()){
+            e.preventDefault(); e.stopPropagation(); ovClose();
+          }
+        }, true);
+        fr.contentWindow.addEventListener('keydown', function(e){
+          if (e.key === 'ArrowUp' && !e.defaultPrevented) ovClose();
         });
       }catch(err){}                     // 出どころが違えば差し込めない（いまは同じ）
     });
@@ -1658,7 +1702,13 @@ const DIVE_OVER  = 26;   // 帯からどれだけ上に浮かせるか
 function diveMove(m){
   const dv = document.getElementById('dive');
   if (!dv || !m) return;
-  const bottomOfNode = LINE_Y + (m.bottom - (m.ly || 0)) * m.s;
+  /* **段の下端は、面の座標から計算せずに実測する。**（2026-09-04）
+     計算でやっていたら、1920×1080 で入口が三行目に 19px 被った
+     （面の座標 × 縮尺 で出した値が、実際の描画と 65px ずれた）。
+     段はいま画面に出ているので、そのまま測れる。 */
+  const el = document.querySelector('.node[data-l="' + m.node + '"]');
+  const bottomOfNode = el ? el.getBoundingClientRect().bottom
+                          : LINE_Y + (m.bottom - (m.ly || 0)) * m.s;
   const floor = innerHeight - hudH() - DIVE_OVER - dv.offsetHeight;
   dv.style.top = Math.round(Math.min(bottomOfNode + DIVE_UNDER, floor)) + 'px';
 }
@@ -1669,7 +1719,7 @@ function diveMove(m){
    毎フレーム、位置と状態から出す。**押したことは条件に入れない。**
    - 枝に降りている／動いている途中は出さない（着いていない場所の口は出さない）
    - 停留所に着いていて、そこに枝があるときだけ出す */
-let diveWas = false;
+let diveWas = false, diveAt = -1;   // どの停留所で置いたか
 function diveSync(t){
   const dv = document.getElementById('dive');
   if (!dv) return;
@@ -1678,10 +1728,19 @@ function diveSync(t){
   if (show){
     const l = dv.querySelector('.dl');
     if (l) l.textContent = BRANCHES[k].nm + 'を開く';
-    if (!diveWas) diveMove(marks[n]);   // 出るときだけ置き直す
+    /* **補足の口は、塗らない。**（2026-09-04）
+       本人：**「デモは補足情報にしたい」。**進め方は文字で読めるようになったので、
+       デモは読まなくても済むもの＝**主役ではない。**塗ると主役になる。 */
+    dv.classList.toggle('note', !!BRANCHES[k].note);
+    /* **出るときと、停留所が変わったときに置き直す。**
+       出るときだけにしていたら、**欄に打って 進め方 → お問い合わせ と直に飛んだとき、
+       前の段の下端の位置に置いたまま**になっていた（矢印だと途中の段で一度消えるので
+       出なかった）。 */
+    if (!diveWas || diveAt !== n){ diveMove(marks[n]); diveAt = n; }
   }
   dv.classList.toggle('off', !show);
   diveWas = show;
+  if (!show) diveAt = -1;
 }
 
 const VERT = .5;
