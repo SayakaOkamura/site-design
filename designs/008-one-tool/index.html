@@ -219,18 +219,18 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
 .node .k{font-size:11.5px;letter-spacing:.16em;color:var(--amber)}
 
-/* **段の名前と中身のあいだを、線のぶん空ける。**156px ＝ NAME_GAP（100）＋ SEAT_GAP（56）。
+/* **段の名前と中身のあいだを、線のぶん空ける。**136px ＝ NAME_GAP（80）＋ SEAT_GAP（56）。
    **この数字だけを触らないこと。**JS の2つと必ず一緒に動かす（＝いつもその和）。
    ずれると、罫が名前と中身のあいだの決めた場所から外れる。
-   **上下は同じではない。**名前の側（100）が広いのは、名前が画面の上端と罫の
+   **上下は同じではない。**名前の側（80）が広いのは、名前が画面の上端と罫の
    真ん中に来るように置いてあるため。中身の側は SEAT_GAP（56）。
    **どの段も、空けるのは「名前のすぐ下」。**進め方だけ紙の上に空けていたが、
    罫の上にリード文と例が乗っていた頃のもの。いまは名前だけが上なので、揃う。 */
-.ne h1{margin-top:156px}
-.n0 .svc{margin-top:156px}
-.n2 .cap2{margin-top:156px}
-.nc .facts{margin-top:156px}
-.n5 .lead{margin-top:156px}
+.ne h1{margin-top:136px}
+.n0 .svc{margin-top:136px}
+.n2 .cap2{margin-top:136px}
+.nc .facts{margin-top:136px}
+.n5 .lead{margin-top:136px}
 
 .ne h1{font-size:34px;line-height:1.75;letter-spacing:.02em;margin-bottom:14px}
 .ne h1 b{color:var(--amber);font-weight:inherit}
@@ -252,7 +252,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
    （G は .reveal を当てて測り直していたが、あれは寄ると開く仕掛けで、
    ここは押すと開く仕掛けなので、測る時点では開くかどうか決まっていない。） */
 .n2{min-height:385px}
-.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは 156px（罫のぶん） */
+.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは 136px（罫のぶん） */
 /* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
    2つしかないので、横で足りる。 */
 .n2 .egs{list-style:none;display:flex;gap:26px;margin:10px 0 0;flex-wrap:wrap}
@@ -330,7 +330,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
   .n2 .egs{display:block}
   .n2 .egs li + li{margin-top:4px}
   .n2 .paper dl{grid-template-columns:1fr;row-gap:0}
-  /* **見出しの下の空きは、狭い画面でも同じ（156px）。**
+  /* **見出しの下の空きは、狭い画面でも同じ（136px）。**
      ここを 14px に詰めていた。理由は「狭い画面では線が段の横に来ない」だったが、
      **面は一枚なので、線は幅に関係なく段の中を通る。**詰めたぶん、線が中身の一行目に
      重なって、見出しに打ち消し線が引かれているように見えていた（430px で確認）。
@@ -683,14 +683,18 @@ function measure(){
     marks.forEach(function(m){ m.s *= k; });
     FLAT *= k; up *= k; down *= k;
   }
-  /* **罫を置く高さ。段の名前を、画面の上端と罫のちょうど真ん中に置く。**（2026-09-04）
-     本人：**「線もう少しだけ下げて、それと画面上部との中心に文字を置いて」。**
-     基準は**画面の上端**であって、社名の帯ではない（前は帯の下端から測っていた）。
+  /* **罫を置く高さ。段の名前を、社名の帯と罫のちょうど真ん中に置く。**（2026-09-04）
+     本人：**「線もう少しだけ下げて、それと画面上部との中心に文字を置いて」**
+     → 画面の上端（y=0）から測ってみたら、**「上部にくっついてるように見える」。**
+     **上端から測るのは間違い。**上端から 20〜39px は社名の帯が埋めているので、
+     上端から等分すると、目に見える空きは上だけ帯のぶん減って、文字が帯に寄る。
+     **等分する相手は、帯の下端。**
 
-     名前の上端 ＝ LINE_AT − up、名前の下の空き ＝ up − 名前の高さ ＝ NAME_GAP × 縮尺。
-     上下を等しくすると、そのまま **LINE_AT = up + NAME_GAP × 縮尺** になる。
+     名前の下の空き ＝ up − 名前の高さ ＝ NAME_GAP × 縮尺。上もそれと同じにする。
      **上げ下げの目盛りは NAME_GAP ひとつ。**割合（LINE_HIGH）で当てるのはやめてある。 */
-  let LINE_AT = up + NAME_GAP * FLAT;
+  const head = document.querySelector('.title');
+  const headBottom = head ? head.getBoundingClientRect().bottom : PAD_TOP;
+  let LINE_AT = headBottom + up + NAME_GAP * FLAT;
   /* 下がはみ出すなら、そのぶんだけ上げる（上下均等より、収まるほうが先） */
   LINE_AT = Math.min(LINE_AT, vh - PAD_BOT - down);
   marks.forEach(function(m){ m.dy = LINE_AT - aimY() + (m.cy - lineOf(m)) * m.s; });
@@ -736,7 +740,7 @@ const SEATS = [
 
    **SEAT_GAP は「罫と中身」のあいだだけ。**（2026-09-04）
    名前と罫のあいだは NAME_GAP（下）で別に持つ。
-   **CSS の空き（156px）は、この2つの和。**片方を触ったら CSS も動かすこと。 */
+   **CSS の空き（136px）は、この2つの和。**片方を触ったら CSS も動かすこと。 */
 const SEAT_GAP = 56;
 
 /* **段の名前と罫のあいだ**（面の座標）。SEAT_GAP とは別に持つ。
@@ -744,10 +748,12 @@ const SEAT_GAP = 56;
    名前を**画面の上端と罫のちょうど真ん中**に置くと、
    名前の上の空き＝名前の下の空き＝ NAME_GAP × 縮尺 になる（下の LINE_AT）。
    **つまりこの数字が、罫をどれだけ下げるかの目盛りそのもの。**
-   100 で、1280×800 は 文字 119.2 ／ 罫 262。上げ下げはここだけ触る。
-   1 上げると、文字は縮尺ぶん、罫はその2倍下がる。天井は 430×860 で 103 くらい。
-   （社名の帯は基準にしない。基準は**画面の上端**。） */
-const NAME_GAP = 100;
+   80 で、1280×800 は 文字 134.6 ／ 罫 253.7。上げ下げはここだけ触る。
+   1 上げると、文字も罫も、縮尺ぶん下がる（帯の下端から等分しているので同じだけ）。
+   **天井は 430×860 で 84 くらい。**越えると進め方の段が下に収まらず、
+   LINE_AT の clamp が罫を持ち上げて上下が揃わなくなる。
+   （基準は**社名の帯の下端**。画面の上端ではない——上端は帯が埋めている。） */
+const NAME_GAP = 80;
 
 function seat(){
   SEATS.forEach(function(s){
