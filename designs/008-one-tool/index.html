@@ -75,6 +75,13 @@ body{font-family:var(--ui);color:var(--ink);background:var(--bg);line-height:1.7
      ここに書いてあるのは、JS が走る前の一瞬だけ効く初期値。
      中身は GAP（名前と罫のあいだ）＋ SEAT_GAP（罫と中身のあいだ）。 */
   --rule-gap:136px;
+  /* **字の大きさの目盛り。**（2026-09-04）
+     本人：**「合わないなら文字の大きさの方下げていいよ。余白使って」。**
+     中身が収まらないとき、**縮尺（カメラ）も余白も動かさずに、字だけ小さくする。**
+     縮尺を落とすと余白まで一緒に縮んで「小さい絵」になる。
+     字だけ落とせば**余白はそのまま残る**——それが「余白を使う」。
+     JS（measure）が窓ごとに決める。1 が素の大きさ。 */
+  --tx:1;
   position:absolute;top:0;left:0;width:6700px;height:1600px;
   transform-origin:0 0;   /* スクロールに毎フレーム追従するので、transition は置かない */
 }
@@ -129,21 +136,21 @@ svg.thread path.branch{opacity:0}
    欄は2列。1列だと縦に伸びて、枝の段が画面に収まらない。 */
 .nf .fm{display:block}
 .nf .row{display:flex;gap:22px;margin-bottom:16px}
-.nf label{display:block;flex:1;font-size:11px;letter-spacing:.1em;color:var(--faint)}
+.nf label{display:block;flex:1;font-size:calc(11px * var(--tx));letter-spacing:.1em;color:var(--faint)}
 .nf label.wide{display:block}
 .nf input,.nf textarea{
-  display:block;width:100%;margin-top:5px;font:inherit;font-size:14px;color:var(--ink);
+  display:block;width:100%;margin-top:5px;font:inherit;font-size:calc(14px * var(--tx));color:var(--ink);
   background:none;border:0;border-bottom:1px solid var(--line);
   padding:5px 2px;outline:none;resize:none;
 }
 .nf input:focus,.nf textarea:focus{border-bottom-color:var(--amber)}
 .nf .go{display:flex;align-items:baseline;gap:16px;margin-top:20px}
 .nf .go button{
-  font:inherit;font-size:13px;background:none;border:1px solid var(--ink);
+  font:inherit;font-size:calc(13px * var(--tx));background:none;border:1px solid var(--ink);
   padding:7px 18px;cursor:pointer;color:var(--ink);transition:background .2s,color .2s;
 }
 .nf .go button:hover,.nf .go button:focus-visible{background:var(--ink);color:var(--bg)}
-.nf .go .to{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.nf .go .to{font-family:var(--mono);font-size:calc(11.5px * var(--tx));color:var(--faint)}
 /* **移動先に「戻る」は置かない。**（2026-09-04）
    本人：**「移動できた時点で戻り方にも予測がつくはず」。**
    降りたのが ↓（か入口）なら、戻るのは ↑。置いた瞬間に、
@@ -297,7 +304,7 @@ svg.thread path.branch{opacity:0}
 .nf{left:5620px; top:940px; width: 760px}
 
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
-.node .k{font-size:12.5px;letter-spacing:.16em;color:var(--amber)}
+.node .k{font-size:calc(12.5px * var(--tx));letter-spacing:.16em;color:var(--amber)}
 
 /* **段の名前と中身のあいだを、線のぶん空ける。**
    **数字は書かない。**JS（measure → setGap）が窓ごとに決めて `--rule-gap` に書く。
@@ -308,9 +315,9 @@ svg.thread path.branch{opacity:0}
    罫の上にリード文と例が乗っていた頃のもの。いまは名前だけが上なので、揃う。 */
 .ne h1,.n0 .cap,.nc .facts,.n5 .lead,.nf .fm{margin-top:var(--rule-gap)}
 
-.ne h1{font-size:38px;line-height:1.8;letter-spacing:.02em;margin-bottom:22px}
+.ne h1{font-size:calc(38px * var(--tx));line-height:1.8;letter-spacing:.02em;margin-bottom:22px}
 .ne h1 b{color:var(--amber);font-weight:inherit}
-.ne .lead{font-size:16.5px;color:var(--sub);line-height:1.9}
+.ne .lead{font-size:calc(16.5px * var(--tx));color:var(--sub);line-height:1.9}
 
 /* サービス。公式の見出しと説明文をそのまま */
 /* **2列に割る。**1列だと1行が 1040px になって、目が戻れない。
@@ -320,45 +327,21 @@ svg.thread path.branch{opacity:0}
    縮尺は**いちばん広い段の幅**で決まっていて、縦にはまだ余りがある。
    だから縦に伸ばしても縮尺は下がらない（背の低い窓では下がる。そこは承知の上）。 */
 /* 前置きの一行。**四本の上に置く大きい話** */
-.n0 .cap{font-size:16.5px;line-height:1.95;color:var(--sub);max-width:46em}
+.n0 .cap{font-size:calc(16.5px * var(--tx));line-height:1.95;color:var(--sub);max-width:46em}
 .n0 .svc{list-style:none;display:grid;grid-template-columns:1fr 1fr;column-gap:52px;margin-top:38px}
-.n0 .svc li{padding:18px 0;font-size:16.5px;font-weight:600;border-top:1px solid var(--line)}
-.n0 .svc span{display:block;font-weight:400;font-size:13.5px;color:var(--sub);margin-top:7px;line-height:1.9}
-
-/* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
-   2つしかないので、横で足りる。 */
-  font:inherit;font-size:14px;color:var(--sub);text-align:left;
-  background:none;border:0;padding:2px 0;cursor:pointer;
-  border-bottom:1px solid var(--line);
-}
-/* **項目名は、空欄の上ではなく左に置く。**上に積むと3項目で 129px 使って、
-   段の高さが 414px になっていた。そうなると線が画面のいちばん下（下の道具の上）に
-   来てしまう。横に並べれば 84px で済んで、線の通る場所が空く。 */
-  display:grid;grid-template-columns:10em minmax(0,1fr);
-  column-gap:14px;row-gap:6px;font-size:13px;line-height:1.85;
-}
-/* **空欄は罫で出す**（字だと欄に見えない。005 の判断）。
-   高さは、埋まったときの行（line-height 1.85em）に合わせる。
-   1.5em にしていたら、埋まったぶんだけ段が 13px 伸びていた。
-   ここだけ琥珀の破線。**うちが見つけたのはこの空欄**という印なので、
-   ほかの罫（--line）と同じ色にはしない。 */
-/* **値と出どころは同じ行に置く。**別の行にすると、埋まったぶんだけ段が縦に伸びる
-   （3項目で 72px。それを先に確保すると、こんどは縮尺が 1.19 → 1.04 に落ちて
-   全段の字が小さくなっていた）。**空欄の罫と同じ高さに収める。** */
-  font:inherit;font-size:12.5px;color:var(--ink);background:none;
-  border:1px solid var(--ink);padding:6px 16px;cursor:pointer;
-}
+.n0 .svc li{padding:18px 0;font-size:calc(16.5px * var(--tx));font-weight:600;border-top:1px solid var(--line)}
+.n0 .svc span{display:block;font-weight:400;font-size:calc(13.5px * var(--tx));color:var(--sub);margin-top:7px;line-height:1.9}
 
 /* 会社概要。公式の7項目・その並び */
-.nc .facts{display:grid;grid-template-columns:8em minmax(0,1fr);column-gap:22px;row-gap:14px;font-size:14.5px}
-.nc .facts dt{color:var(--faint);font-size:12.5px}
+.nc .facts{display:grid;grid-template-columns:8em minmax(0,1fr);column-gap:22px;row-gap:14px;font-size:calc(14.5px * var(--tx))}
+.nc .facts dt{color:var(--faint);font-size:calc(12.5px * var(--tx))}
 .nc .facts dd{overflow-wrap:anywhere}
 
 /* お問い合わせ */
-.n5 .lead{font-size:16.5px;line-height:2}
-.n5 .mail{margin-top:26px;font-size:19px}
+.n5 .lead{font-size:calc(16.5px * var(--tx));line-height:2}
+.n5 .mail{margin-top:26px;font-size:calc(19px * var(--tx))}
 .n5 .mail a{color:var(--ink);border-bottom:1px solid var(--line)}
-.n5 .src{margin-top:34px;font-size:12px;color:var(--faint);line-height:1.9}
+.n5 .src{margin-top:34px;font-size:calc(12px * var(--tx));color:var(--faint);line-height:1.9}
 
 /* 下の道具（`>` の欄）。**007 の背骨。**打つと、その場所へ飛ぶ */
 /* **面は素通し**（#stage は pointer-events:none）。触れるものだけ戻す。
@@ -394,14 +377,14 @@ svg.thread path.branch{opacity:0}
      詰め直さないと、収めるために面ごと小さくなる——
      390×664 で ×0.54（本文が 9px）まで落ちた。ここだけ元の詰め方に近づける。 */
   .n0 .svc{grid-template-columns:1fr;column-gap:0;margin-top:20px}
-  .n0 .cap{font-size:13.5px;line-height:1.85}
-  .n0 .svc li{padding:9px 0;font-size:14px}
-  .n0 .svc span{margin-top:3px;font-size:12px;line-height:1.75}
-  .ne h1{font-size:24px}
-  .ne .lead{font-size:14px}
-  .nc .facts{grid-template-columns:1fr;row-gap:2px;font-size:13.5px}
-  .n5 .lead{font-size:14.5px;line-height:1.9}
-  .n5 .mail{margin-top:16px;font-size:16px}
+  .n0 .cap{font-size:calc(13.5px * var(--tx));line-height:1.85}
+  .n0 .svc li{padding:9px 0;font-size:calc(14px * var(--tx))}
+  .n0 .svc span{margin-top:3px;font-size:calc(12px * var(--tx));line-height:1.75}
+  .ne h1{font-size:calc(24px * var(--tx))}
+  .ne .lead{font-size:calc(14px * var(--tx))}
+  .nc .facts{grid-template-columns:1fr;row-gap:2px;font-size:calc(13.5px * var(--tx))}
+  .n5 .lead{font-size:calc(14.5px * var(--tx));line-height:1.9}
+  .n5 .mail{margin-top:16px;font-size:calc(16px * var(--tx))}
   .n5 .src{margin-top:20px}
   .tool input{width:9em}
   /* 枝のフォーム。狭い画面では欄を縦に積む（横に3つは入らない） */
@@ -784,9 +767,8 @@ function measure(){
      空きを入れたまま縮尺を決めると、**空きを広げるたびにカメラが後ろへ下がる**
      （1280×640 で ×1.19 → ×1.12 → ×0.97 と落ちていた）。
      空き 0 の高さで決めれば、縮尺は**窓と中身だけ**で決まって、空きでは動かない。 */
-  setGap(0); build();
-  let kH = 0, belowP = 0;   // 名前の高さ／罫より下の張り出し（面の座標。空きに依らない）
-  let belowBr = 0;          // **枝がある段だけの張り出し**（その下に入口を置くので）
+  setGap(0); setTx(1); build();
+  let kH = 0, belowP = 0, belowBr = 0;   // 名前の高さ／罫より下の張り出し／枝がある段のぶん
   marks.forEach(function(m, i){
     const b = m.bottom - lineOf(m);
     kH     = Math.max(kH,     lineOf(m) - m.top);
@@ -819,20 +801,33 @@ function measure(){
   const dvEl = document.getElementById('dive');
   const DIVE_ROOM = belowBr > 0 && dvEl
     ? DIVE_UNDER + dvEl.offsetHeight + DIVE_OVER : 0;
-  /* **空きが先に譲る。縮尺は最後。**（2026-09-04）
-     「空きに回せる高さ」を出して、それを上下で半分ずつ使う。
-     残りが下限（GAP_MIN × 2）を割ったときだけ、**そこで初めて縮尺を落とす。**
-     こうすると、**窓の高さでは字の大きさが変わらない**（幅だけで決まる）。
-     詰まるのは名前の上下——**位置で吸収する。** */
-  let room = avail - Math.max(
-        (kH + belowP)  * f,
-        belowBr > 0 ? (kH + belowBr) * f + DIVE_ROOM : 0);
-  if (room < 2 * GAP_MIN){
-    f = Math.min(
-          (avail - 2 * GAP_MIN) / (kH + belowP),
-          belowBr > 0 ? (avail - DIVE_ROOM - 2 * GAP_MIN) / (kH + belowBr) : Infinity);
-    room = 2 * GAP_MIN;
+  /* **譲るのは字。縮尺（カメラ）も余白も動かさない。**（2026-09-04）
+     本人：**「合わないなら文字の大きさの方下げていいよ。余白使って」。**
+
+     縮尺を落とすと**余白まで一緒に縮んで「小さい絵」になる。**
+     字だけ落とせば**余白はそのまま残る。**
+     だから：**空きが GAP_KEEP を割りそうなら、字を小さくして測り直す。**
+     字は行の高さを変えるので、**測り直しが要る**（何度か回す）。
+     最後まで足りないときだけ、空きを GAP_MIN まで詰める。 */
+  const roomOf = function(){
+    let a = 0, b = 0, c = 0;
+    marks.forEach(function(m, i){
+      const bb = m.bottom - lineOf(m);
+      a = Math.max(a, lineOf(m) - m.top);
+      b = Math.max(b, bb);
+      if (brAt(i) >= 0) c = Math.max(c, bb);
+    });
+    return { kH:a, belowP:b, belowBr:c,
+             room: avail - Math.max((a + b) * f, c > 0 ? (a + c) * f + DIVE_ROOM : 0) };
+  };
+  let TX = 1, r = roomOf(), guard = 0;
+  while (r.room < 2 * GAP_KEEP && TX > TX_MIN && guard++ < 16){
+    TX = Math.max(TX_MIN, TX - 0.04);
+    setTx(TX); build();
+    r = roomOf();
   }
+  kH = r.kH; belowP = r.belowP; belowBr = r.belowBr;
+  let room = Math.max(r.room, 2 * GAP_MIN);
   let gp = Math.min(NAME_GAP, (room / 2) / f);
   gp = Math.max(gp, GAP_MIN / f);
 
@@ -971,7 +966,16 @@ const NAME_GAP = 80;
    それだと窓の高さで字の大きさが変わる（1280×640 で ×0.80、本文 13px）。
    いまは **「縮尺は幅だけで決める。入らないぶんは空きが詰まる（＝位置で吸収する）」。**
    **縮尺を落とすのは、空きをここまで詰めても入らないときだけ。** */
-const GAP_MIN = 10;
+/* **これ以上は詰めない線**（画面px）。ここを守るために、字を小さくする。 */
+const GAP_KEEP = 56;
+/* 字を 0.6 まで小さくしても入らないときの、最後の下限（画面px）。 */
+const GAP_MIN = 12;
+/* 字の目盛りの下限。これ以上は小さくしない（読めなくなる） */
+const TX_MIN = 0.6;
+function setTx(v){
+  const cv = document.getElementById('canvas');
+  if (cv) cv.style.setProperty('--tx', String(v));
+}
 
 /* いま効いている空き（面の座標）。measure が窓ごとに決める。
    **CSS の --rule-gap も一緒に書き換えること**（罫は名前と中身のあいだを通るので、
