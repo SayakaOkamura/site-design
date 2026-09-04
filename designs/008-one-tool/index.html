@@ -318,50 +318,30 @@ svg.thread path.branch{opacity:0}
    先に確保して、**開いても箱が変わらない**ようにした。
    （G は .reveal を当てて測り直していたが、あれは寄ると開く仕掛けで、
    ここは押すと開く仕掛けなので、測る時点では開くかどうか決まっていない。） */
-.n2{min-height:385px}
 .n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは --rule-gap（罫のぶん） */
 /* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
    2つしかないので、横で足りる。 */
-.n2 .egs{list-style:none;display:flex;gap:26px;margin:10px 0 0;flex-wrap:wrap}
-.n2 .egs button{
   font:inherit;font-size:14px;color:var(--sub);text-align:left;
   background:none;border:0;padding:2px 0;cursor:pointer;
   border-bottom:1px solid var(--line);
 }
-.n2 .egs button:hover{color:var(--ink);border-bottom-color:var(--amber)}
-.n2 .egs button.on{color:var(--ink);border-bottom-color:var(--amber)}
-.n2 .paper{margin-top:24px;border:1px solid var(--line);background:var(--paper);padding:15px 18px 10px}
-.n2 .paper .from{font-size:12.5px;color:var(--sub);margin-bottom:12px}
-.n2 .paper .tag{display:inline-block;margin-right:7px;padding:0 5px;border:1px solid var(--line);font-size:10.5px;color:var(--faint)}
-.n2 .paper .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.n2 .paper .fh{font-size:10.5px;color:var(--amber);letter-spacing:.1em;margin-bottom:6px}
-.n2 .paper ul{list-style:none;font-size:13px;line-height:1.85}
 /* **項目名は、空欄の上ではなく左に置く。**上に積むと3項目で 129px 使って、
    段の高さが 414px になっていた。そうなると線が画面のいちばん下（下の道具の上）に
    来てしまう。横に並べれば 84px で済んで、線の通る場所が空く。 */
-.n2 .paper dl{
   display:grid;grid-template-columns:10em minmax(0,1fr);
   column-gap:14px;row-gap:6px;font-size:13px;line-height:1.85;
 }
-.n2 .paper dt{font-size:12px;color:var(--faint)}
 /* **空欄は罫で出す**（字だと欄に見えない。005 の判断）。
    高さは、埋まったときの行（line-height 1.85em）に合わせる。
    1.5em にしていたら、埋まったぶんだけ段が 13px 伸びていた。
    ここだけ琥珀の破線。**うちが見つけたのはこの空欄**という印なので、
    ほかの罫（--line）と同じ色にはしない。 */
-.n2 .paper dd.gap{height:1.85em;border-bottom:1px dashed var(--amber)}
 /* **値と出どころは同じ行に置く。**別の行にすると、埋まったぶんだけ段が縦に伸びる
    （3項目で 72px。それを先に確保すると、こんどは縮尺が 1.19 → 1.04 に落ちて
    全段の字が小さくなっていた）。**空欄の罫と同じ高さに収める。** */
-.n2 .paper dd .val{color:var(--ink)}
-.n2 .paper dd .src2{margin-left:9px;font-size:10.5px;color:var(--faint)}
-.n2 .paper .meet{margin-top:11px}
-.n2 .paper .meet button{
   font:inherit;font-size:12.5px;color:var(--ink);background:none;
   border:1px solid var(--ink);padding:6px 16px;cursor:pointer;
 }
-.n2 .paper .meet button:hover:not([disabled]){background:var(--ink);color:var(--paper)}
-.n2 .paper .meet button[disabled]{opacity:.4;cursor:default;border-color:var(--line);color:var(--faint)}
 
 /* 会社概要。公式の7項目・その並び */
 .nc .facts{display:grid;grid-template-columns:7.5em minmax(0,1fr);column-gap:18px;row-gap:7px;font-size:13.5px}
@@ -398,10 +378,6 @@ svg.thread path.branch{opacity:0}
    触ると段が線から外れる）。縦は JS が線から計算して座らせる。 */
 @media (max-width:760px){
   .ne,.n0,.n2,.nc,.n5,.nf{width:330px}
-  .n2{min-height:0}
-  .n2 .egs{display:block}
-  .n2 .egs li + li{margin-top:4px}
-  .n2 .paper dl{grid-template-columns:1fr;row-gap:0}
   /* **見出しの下の空きは、狭い画面でも同じ（--rule-gap）。**
      ここを 14px に詰めていた。理由は「狭い画面では線が段の横に来ない」だったが、
      **面は一枚なので、線は幅に関係なく段の中を通る。**詰めたぶん、線が中身の一行目に
@@ -410,7 +386,6 @@ svg.thread path.branch{opacity:0}
   .n0 .svc{grid-template-columns:1fr;column-gap:0}
   .ne h1{font-size:24px}
   .n0 .svc li{font-size:14px}
-  .n2 .paper .two{grid-template-columns:1fr;gap:12px}
   .nc .facts{grid-template-columns:1fr;row-gap:2px}
   .tool input{width:9em}
   /* 枝のフォーム。狭い画面では欄を縦に積む（横に3つは入らない） */
@@ -523,24 +498,6 @@ svg.thread path.branch{opacity:0}
     <div class="node n2" data-l="2">
       <div class="k" style="--i:0">進め方</div>
       <p class="cap2 r" style="--i:1">言われたことを、先に形にします。</p>
-      <ul class="egs r" style="--i:2">
-        <li><button type="button" data-i="0">月末に、経理が止まる。</button></li>
-        <li><button type="button" data-i="1">見積もりに、毎回三日かかる。</button></li>
-      </ul>
-      <div class="paper" id="paper" hidden>
-        <p class="from" id="from"></p>
-        <div class="two">
-          <div>
-            <div class="fh">決まっていること</div>
-            <ul id="fixed"></ul>
-          </div>
-          <div>
-            <div class="fh">決まっていないこと</div>
-            <dl id="open"></dl>
-          </div>
-        </div>
-        <p class="meet"><button type="button" id="meet">打合せを開く</button></p>
-      </div>
     </div>
 
     <!-- 三 会社概要。公式サイトの7項目、その並び順のまま -->
@@ -1610,8 +1567,15 @@ function ovOpen(k){
   if (fr && !fr.getAttribute('src')){
     fr.addEventListener('load', function(){
       try{
+        /* **↑ でも戻る。**（2026-09-04）
+           本人：**「デモ、上を押しても戻れません」。**
+           焦点が 005 の中にあると、こちらの ↑ は届かない。だから中に差し込む。
+           **005 の ↑（例の逆回り）は、埋め込んでいるあいだ使えなくなる。**
+           例は ↓ だけで一周する（白紙 → 1 → 2 → 3 → 4 → 白紙）ので、
+           辿れなくなるものは無い。**降りたのが ↓ なら、戻るのは ↑**を通す。
+           ← は取らない（欄の中でカーソルを動かすキーなので）。 */
         fr.contentWindow.addEventListener('keydown', function(e){
-          if (e.key === 'Escape') ovClose();
+          if (e.key === 'Escape' || e.key === 'ArrowUp'){ e.preventDefault(); ovClose(); }
         });
       }catch(err){}                     // 出どころが違えば差し込めない（いまは同じ）
     });
@@ -1891,127 +1855,50 @@ draw();
 })();
 
 /* =====================================================================
-   進め方の停留所＝005 の体験（008、2026-09-03）
+   フォーム（008、2026-09-04）
 
-   **文字で答えない。**例を押すと形になり、決まっていないところが空欄で残る。
-   もう一手で埋まり、**値に出どころが付く**（決めるのは客側）。
-   中身は例。**会社について主張はしていない。**
+   **進め方の停留所から「例を押すと紙ができる」を外した。**
+   本人：**「デモ付けるなら例はいらない」。**デモ（005）が同じことを
+   もっとよく見せるので、縮小版を二つ置く理由が無い。
+   進め方の停留所に残したのは、名前と一行だけ。
+   （外した実物は git に残っている。この commit の親を見る）
    ===================================================================== */
+/* ---------- フォーム ----------（2026-09-04）
+   本人：**「モックじゃなくて実際送れるフォーム」。**
+   ここは素の HTML／CSS だけの静的なページ（GitHub Pages）なので、
+   **サーバが無い。**代わりに**訪ねてきた人のメールソフト**に渡す：
+   押すと、宛先・件名・本文が入った下書きが開く。**送信はその人が押す。**
+   これで実際に届く（間に第三者のサービスを挟まない、鍵も置かない）。
+
+   **サーバに投げる形にしたいなら、送信先の口が要る**——それは会社が持つもので、
+   公開リポジトリに他人の鍵は置けない。決まったらここを差し替える。
+
+   宛先は公表されている `contact@alt-dsgn.co.jp`。
+   **架空のアドレスを書かない**（007 で一度出して公開している）。 */
 (function(){
-  const EG = [
-    {
-      line:'月末に、経理が止まる。',
-      fixed:['締めるのは月末', '動かすのは経理の作業', '承認を通してから動く'],
-      open:[
-        { q:'不在のとき',           a:'代理者に自動で回す' },
-        { q:'上に上げる額',         a:'一件 10万円以上' },
-        { q:'出したあとの取り下げ', a:'承認前なら、本人が取り下げる' },
-      ],
-    },
-    {
-      line:'見積もりに、毎回三日かかる。',
-      fixed:['出すのは見積もり', 'いま三日かかっている', '毎回起きている'],
-      open:[
-        { q:'値引きの上限',       a:'定価の 15% まで' },
-        { q:'原価の取り方',       a:'前月の実績原価を使う' },
-        { q:'誰が金額を決めるか', a:'課長（上限を超える分は部長）' },
-      ],
-    },
-  ];
-
-  const egs = document.querySelector('.n2 .egs');
-  const paper = document.getElementById('paper');
-  const from  = document.getElementById('from');
-  const fixed = document.getElementById('fixed');
-  const open  = document.getElementById('open');
-  const meet  = document.getElementById('meet');
-  if (!egs || !paper) return;
-
-  let now = -1;
-
-  function show(i){
-    const e = EG[i];
-    if (!e) return;
-    now = i;
-    [].forEach.call(egs.querySelectorAll('button'), function(b){
-      b.classList.toggle('on', +b.dataset.i === i);
-    });
-    from.innerHTML = '<span class="tag">例</span>「' + e.line + '」から';
-    fixed.innerHTML = e.fixed.map(function(t){ return '<li>' + t + '</li>'; }).join('');
-    open.innerHTML = e.open.map(function(o){
-      return '<dt>' + o.q + '</dt><dd class="gap"></dd>';
-    }).join('');
-    meet.disabled = false;
-    meet.textContent = '打合せを開く';
-    paper.hidden = false;
-  }
-
-  function fill(){
-    if (now < 0) return;
-    open.innerHTML = EG[now].open.map(function(o){
-      return '<dt>' + o.q + '</dt><dd><span class="val">' + o.a + '</span>'
-           + '<span class="src2">打合せで決めた</span></dd>';
-    }).join('');
-    meet.disabled = true;
-    meet.textContent = '決まりました';
-  }
-
-  egs.addEventListener('click', function(e){
-    const b = e.target.closest('button');
-    if (b) show(+b.dataset.i);
+  const fm = document.getElementById('fm');
+  if (!fm) return;
+  const TO = 'contact@alt-dsgn.co.jp';
+  fm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const v = function(n){ const el = fm.elements[n]; return el ? el.value.trim() : ''; };
+    const co = v('co'), nm = v('nm'), em = v('em'), msg = v('msg');
+    /* **空でも止めない。**必須にすると、書きかけの人を追い返すことになる。
+       足りないものは、開いた下書きの中で本人が足せる。 */
+    const body = [
+      co ? '会社名：' + co : '',
+      nm ? 'お名前：' + nm : '',
+      em ? 'メール：' + em : '',
+      '',
+      'ご相談内容：',
+      msg
+    ].filter(function(t, i){ return i > 2 || t; }).join(String.fromCharCode(10));
+    /* mailto は長いと落とすソフトがあるので、本文は 1500 字までにする */
+    const cut = body.length > 1500 ? body.slice(0, 1500) + '…' : body;
+    location.href = 'mailto:' + TO
+      + '?subject=' + encodeURIComponent('お問い合わせ（サイトのフォームから）')
+      + '&body='    + encodeURIComponent(cut);
   });
-  meet.addEventListener('click', fill);
-
-  /* **着いた時点で、もう形になっている。**押すまで空にしていたら、
-     線の下が 383px ぶん白いままで、壊れているように見えた。
-     押さなくても中身はある——**押すと変わるのは、どの例を見るかと、空欄が埋まるか。**
-     （007 で同じことを決めている：最初から出しておいて、何もしなくても情報はある。） */
-  show(0);
-  /* ---------- フォーム ----------（2026-09-04）
-     本人：**「モックじゃなくて実際送れるフォーム」。**
-     ここは素の HTML／CSS だけの静的なページ（GitHub Pages）なので、
-     **サーバが無い。**代わりに**訪ねてきた人のメールソフト**に渡す：
-     押すと、宛先・件名・本文が入った下書きが開く。**送信はその人が押す。**
-     これで実際に届く（間に第三者のサービスを挟まない、鍵も置かない）。
-
-     **サーバに投げる形にしたいなら、送信先の口が要る**——それは会社が持つもので、
-     公開リポジトリに他人の鍵は置けない。決まったらここを差し替える。
-
-     宛先は公表されている `contact@alt-dsgn.co.jp`。
-     **架空のアドレスを書かない**（007 で一度出して公開している）。 */
-  (function(){
-    const fm = document.getElementById('fm');
-    if (!fm) return;
-    const TO = 'contact@alt-dsgn.co.jp';
-    fm.addEventListener('submit', function(e){
-      e.preventDefault();
-      const v = function(n){ const el = fm.elements[n]; return el ? el.value.trim() : ''; };
-      const co = v('co'), nm = v('nm'), em = v('em'), msg = v('msg');
-      /* **空でも止めない。**必須にすると、書きかけの人を追い返すことになる。
-         足りないものは、開いた下書きの中で本人が足せる。 */
-      const body = [
-        co ? '会社名：' + co : '',
-        nm ? 'お名前：' + nm : '',
-        em ? 'メール：' + em : '',
-        '',
-        'ご相談内容：',
-        msg
-      ].filter(function(t, i){ return i > 2 || t; }).join(String.fromCharCode(10));
-      /* mailto は長いと落とすソフトがあるので、本文は 1500 字までにする */
-      const cut = body.length > 1500 ? body.slice(0, 1500) + '…' : body;
-      location.href = 'mailto:' + TO
-        + '?subject=' + encodeURIComponent('お問い合わせ（サイトのフォームから）')
-        + '&body='    + encodeURIComponent(cut);
-    });
-  })();
-  /* **紙を入れてから、測り直す。**寄り先（marks）は読み込み時に一度測るだけで、
-     その measure() はここより先に走っている。**そのとき紙はまだ空。**
-     広い画面では .n2 の min-height が空の紙のぶんを立てていたので気づかなかったが、
-     狭い画面はその min-height を 0 にしてあるので、空の高さで寄り先が決まって、
-     **進め方の段が画面の下から 74px はみ出し、進み具合の帯にも被っていた**（430px で確認）。
-     ここで測り直せば、幅に関係なく「入っている紙」の高さで決まる。 */
-  measure();
-  draw();
 })();
 
 </script>
