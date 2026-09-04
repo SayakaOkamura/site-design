@@ -209,7 +209,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 
    **top は書かない。**JS（seat）が線の高さから毎回引き算して座らせる。
    ここに書いてあるのは、それが走る前に一瞬だけ効く初期値。手で合わせ直さないこと。
-   合わせるなら SEAT_GAP（線との空き 65px）のほう。 */
+   合わせるなら SEAT_GAP のほう。 */
 .ne{left:  80px; top:190px; width:1040px}
 .n0{left:1880px; top:190px; width:1040px}
 .n2{left:3700px; top:314px; width:1000px}
@@ -219,15 +219,16 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
 /* 段の名前。G では段ごとに散らばっていたので、一つにまとめた */
 .node .k{font-size:11.5px;letter-spacing:.16em;color:var(--amber)}
 
-/* **段の名前と中身のあいだを、線のぶん空ける。**80px ＝ SEAT_GAP（40）の2倍。
-   ここに線が通って、名前の下の罫になる。数字を変えるときは JS 側と一緒に。
+/* **段の名前と中身のあいだを、線のぶん空ける。**112px ＝ SEAT_GAP（56）の2倍。
+   **この数字だけを触らないこと。**JS の SEAT_GAP と必ず一緒に動かす（＝いつも2倍）。
+   ずれると、罫が名前と中身のちょうど中間から外れる。
    **どの段も、空けるのは「名前のすぐ下」。**進め方だけ紙の上に空けていたが、
    罫の上にリード文と例が乗っていた頃のもの。いまは名前だけが上なので、揃う。 */
-.ne h1{margin-top:80px}
-.n0 .svc{margin-top:80px}
-.n2 .cap2{margin-top:80px}
-.nc .facts{margin-top:80px}
-.n5 .lead{margin-top:80px}
+.ne h1{margin-top:112px}
+.n0 .svc{margin-top:112px}
+.n2 .cap2{margin-top:112px}
+.nc .facts{margin-top:112px}
+.n5 .lead{margin-top:112px}
 
 .ne h1{font-size:34px;line-height:1.75;letter-spacing:.02em;margin-bottom:14px}
 .ne h1 b{color:var(--amber);font-weight:inherit}
@@ -249,7 +250,7 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
    （G は .reveal を当てて測り直していたが、あれは寄ると開く仕掛けで、
    ここは押すと開く仕掛けなので、測る時点では開くかどうか決まっていない。） */
 .n2{min-height:385px}
-.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは 80px（罫のぶん） */
+.n2 .cap2{font-size:14.5px;color:var(--sub);line-height:1.85}   /* 上の空きは 112px（罫のぶん） */
 /* 例は横に並べる。縦に積むと、そのぶん段が高くなる（線の場所を食う）。
    2つしかないので、横で足りる。 */
 .n2 .egs{list-style:none;display:flex;gap:26px;margin:10px 0 0;flex-wrap:wrap}
@@ -327,11 +328,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
   .n2 .egs{display:block}
   .n2 .egs li + li{margin-top:4px}
   .n2 .paper dl{grid-template-columns:1fr;row-gap:0}
-  /* **見出しの下の空きは、狭い画面でも 80px のまま。**
+  /* **見出しの下の空きは、狭い画面でも同じ（112px）。**
      ここを 14px に詰めていた。理由は「狭い画面では線が段の横に来ない」だったが、
      **面は一枚なので、線は幅に関係なく段の中を通る。**詰めたぶん、線が中身の一行目に
      重なって、見出しに打ち消し線が引かれているように見えていた（430px で確認）。
-     空きは SEAT_GAP（40）の2倍。幅で変えてはいけない。 */
+     空きは SEAT_GAP の2倍。幅で変えてはいけない。 */
   .n0 .svc{grid-template-columns:1fr;column-gap:0}
   .ne h1{font-size:24px}
   .n0 .svc li{font-size:14px}
@@ -685,7 +686,7 @@ function measure(){
      **いちばん上の動かないもの（社名の帯 .title）と、罫との間**に居る。
      本人：**「一番上にある不動の概要と線との間、文字の上下を均等にして」。**
 
-     名前の下の空きは、作りから SEAT_GAP（40）× 縮尺で決まっている。
+     名前の下の空きは、作りから SEAT_GAP × 縮尺で決まっている。
      **だから上も同じにすれば揃う。**割合（LINE_HIGH）で当てるのはやめた。 */
   const head = document.querySelector('.title');
   const headBottom = head ? head.getBoundingClientRect().bottom : PAD_TOP;
@@ -731,8 +732,13 @@ const SEATS = [
    罫のすぐ下に来るものの margin-top が、この空きと同じ値になっていること。 */
 /* 65 → 40。線が段の中を通るようになったので、この空きは**上下に2回**効く
    （見出しの下 40 + 線 + 中身の上 40）。65 のままだと段が 130px 高くなって、
-   進め方の段が使える高さを越えていた。CSS 側の空き（80px）は、この2倍。 */
-const SEAT_GAP = 40;
+   進め方の段が使える高さを越えていた。CSS 側の空き（112px）は、この2倍。
+
+   **40 → 56。**（2026-09-04「もうちょっと上下の余白入れて」）
+   この一つが**三か所に効く**：社名の帯と段の名前のあいだ／名前と罫のあいだ／
+   罫と中身のあいだ。三つとも同じ量になる。
+   **触ったら CSS の 112px も一緒に動かすこと**（いつも2倍）。 */
+const SEAT_GAP = 56;
 
 function seat(){
   SEATS.forEach(function(s){
