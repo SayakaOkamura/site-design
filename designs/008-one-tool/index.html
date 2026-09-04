@@ -117,21 +117,11 @@ svg.thread path{fill:none;stroke:var(--amber);stroke-width:5;opacity:.85}
    面・線・カメラ・スクロールの受け方は G のまま。**そこは触っていない。** */
 
 
-/* 枝の線。**主線と同じ太さ・同じ色。**細くしたり薄くしたりしない——
-   枝も同じ一本の線で、別のものに見せると「引っかけた」ことにならない。 */
-svg.thread path.branch{opacity:.85}
-
-/* **線に引っかける印。**枝の折れ口に掛ける。押すと枝へ降りる。
-   面の中に置くので、カメラの縮尺がそのまま掛かる（線と一緒に動く）。 */
-.hook{
-  position:absolute;left:7806px;top:452px;z-index:2;
-  font:inherit;background:var(--bg);border:1px solid var(--amber);
-  border-radius:999px;padding:3px 11px 4px;cursor:pointer;
-  font-size:11.5px;letter-spacing:.14em;color:var(--amber);
-  display:flex;align-items:center;gap:6px;transition:background .2s,color .2s;
-}
-.hook::after{content:"↓";font-size:12px;line-height:1}
-.hook:hover,.hook:focus-visible{background:var(--amber);color:var(--bg)}
+/* **枝の線は、降りるときだけ出す。**（2026-09-04）
+   面の上に置いたままにしたら、**縦に走る区間がお問い合わせの段を貫いて、
+   本文と出典の字を縦に切り、下の帯まで抜けていた**（本人：「枝の入れ方やばすぎる」）。
+   主線は always、枝は brU に応じて JS が濃さを書く（drawBranch）。 */
+svg.thread path.branch{opacity:0}
 
 /* フォーム。**主線の段と同じ組み方**（名前 ─罫─ 中身）。
    欄は2列。1列だと縦に伸びて、枝の段が画面に収まらない。 */
@@ -208,7 +198,27 @@ svg.thread path.branch{opacity:.85}
 @media (max-width:760px){
   .hint .wide{display:none}
   .hint .narrow{display:inline}
+  /* 狭い画面では、枝の入口は記号だけ。言葉まで置くと帯が2行に折れて、
+     帯が高くなったぶん面の縮尺が落ちる（390px で実測）。 */
+  .dive .dl{display:none}
+  .dive{margin-right:12px}
 }
+
+/* 枝への入口。**帯の中に置く**（面の上に置くと段の字に被る）。
+   記号は向きだけ言う（↓ で降りる、↑ で戻る）。 */
+.dive{
+  font:inherit;background:none;border:0;padding:0;cursor:pointer;
+  font-size:11px;letter-spacing:.14em;color:var(--amber);
+  display:flex;align-items:baseline;gap:5px;
+  transition:opacity .3s ease;pointer-events:auto;
+  /* いま居る場所（#where）とくっついて一塊に見えたので離す */
+  margin-right:20px;
+}
+.dive::after{content:"↓";font-size:12px}
+.dive.up::after{content:"↑"}
+.dive.off{opacity:0;pointer-events:none}
+.dive .dl{border-bottom:1px solid transparent;transition:border-color .2s}
+.dive:hover .dl,.dive:focus-visible .dl{border-bottom-color:var(--amber)}
 
 /* 社名だけ。一言は一枚目で名乗るので、ここでは繰り返さない */
 .title{
@@ -380,7 +390,9 @@ svg.thread path.branch{opacity:.85}
   .n0 .svc li{font-size:14px}
   .n2 .paper .two{grid-template-columns:1fr;gap:12px}
   .nc .facts{grid-template-columns:1fr;row-gap:2px}
-  .tool input{width:9em}
+  /* 帯を1行に収める。折れると帯が 49 → 66px に高くなって、面の縮尺が落ちる */
+  .foot{gap:8px}
+  .tool input{width:6.5em}
   .tool .go{display:none}
 }
 </style>
@@ -522,12 +534,6 @@ svg.thread path.branch{opacity:.85}
     </div>
 
     <!-- 四 お問い合わせ。公式サイトの案内文と宛先 -->
-    <!-- **線に引っかける印。**枝の折れ口に掛ける。押すと枝へ降りる。
-         位置は面の座標で決め打ち（枝の折れ口の x）。縦は罫の高さ。 -->
-    <button class="hook" id="hook1" type="button" aria-label="フォームへ降りる">
-      <span class="hn">フォーム</span>
-    </button>
-
     <div class="node n5" data-l="4" data-rise="0">
       <div class="k" style="--i:0">お問い合わせ</div>
       <p class="lead r" style="--i:1">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたらお気軽にお問い合わせください</p>
@@ -591,6 +597,13 @@ svg.thread path.branch{opacity:.85}
       <span class="use">で辿れます</span>
     </span>
     <span class="grow"></span>
+    <!-- **枝への入口。**（2026-09-04）
+         本人：**「少なくとも文字にはかぶせないで。画面下部が空いてるから、
+         そこに誘導の文字か記号かって、そういうのでいい」。**
+         **面の上には置かない。**段の高さは窓によって変わるので、
+         「空いている下の方」も窓によって変わる——**帯の中なら、いつでも空いている。**
+         枝がある停留所に居るときだけ出る。降りているあいだは「戻る ↑」。 -->
+    <button class="dive off" id="dive" type="button"><span class="dl"></span></button>
     <span id="where">経営</span>
   </div>
 </div>
@@ -844,7 +857,7 @@ function measure(){
    メールフォームに進める」。主線（年表）は曲げない。遊びは枝で出す。**
    parent は、どの停留所から降りるか。hook は線に引っかける印。 */
 const BRANCHES = [
-  { path:'#fork1', sel:'.nf', on:'.nf .k', nm:'フォーム', node:5, parent:4, hook:'#hook1' }
+  { path:'#fork1', sel:'.nf', on:'.nf .k', nm:'フォーム', node:5, parent:4 }
 ];
 let BRM = [];            // 枝の寄り先（marks と同じ形）
 let brOn = -1;           // いま降りている枝（-1 で主線）
@@ -1310,8 +1323,12 @@ function drawBranch(){
     el.classList.toggle('hide', l !== b.node && l !== pm.node);
     if (l === b.node) el.querySelectorAll('.r').forEach(function(r){ r.style.opacity = 1; });
   });
+  /* **枝の線は、降りるぶんだけ出す。**（面に置いたままにすると段の字を貫く）
+     出だしを速くする（×2）——線が先に伸びて、カメラがそれを追う形にしたい。 */
+  b.pe.style.opacity = (0.85 * Math.min(1, brU * 2)).toFixed(3);
   document.getElementById('where').textContent = e > .5 ? b.nm : pm.nm;
   document.getElementById('depth').textContent = '×' + FLAT.toFixed(2);
+  diveShow(brOn, true);
 }
 
 function draw(){
@@ -1403,6 +1420,8 @@ function draw(){
   });
   // 洗い出した帯は、そこに寄ったときに出す。戻れば畳む
   document.querySelector('.n2').classList.toggle('reveal', !!m.add);
+  /* **枝がある停留所に来たら、帯に入口を出す。**無い停留所では消す */
+  diveShow(brAt(n), false);
 }
 
 /* 受けるのはこれだけ。閾値も、時間も、ひと振りの終わりも見ない。 */
@@ -1529,6 +1548,8 @@ function brMove(k, into){
     brU = to; brMoving = false;
     if (!into){
       /* 主線へ戻す。**opacity を素に返す**（shade が毎フレーム持ち直す） */
+      const pe = BRM[brOn] && BRM[brOn].pe;
+      if (pe) pe.style.opacity = 0;              // 枝の線を消す
       brOn = -1;
       document.querySelectorAll('.node').forEach(function(el){ el.style.opacity = ''; });
       here = -1;   // 段の出し分けを次の draw でやり直させる
@@ -1541,10 +1562,26 @@ function brAt(n){
   for (let k = 0; k < BRANCHES.length; k++) if (BRANCHES[k].parent === n) return k;
   return -1;
 }
-BRANCHES.forEach(function(b, k){
-  const el = b.hook && document.querySelector(b.hook);
-  if (el) el.addEventListener('click', function(){ if (!brMoving) brMove(k, !onBranch()); });
-});
+/* 帯の中の入口。押すと降りる／戻る */
+(function(){
+  const dv = document.getElementById('dive');
+  if (!dv) return;
+  dv.addEventListener('click', function(){
+    if (brMoving) return;
+    if (onBranch()){ brMove(brOn, false); return; }
+    const k = brAt(at());
+    if (k >= 0) brMove(k, true);
+  });
+})();
+/* 帯の入口の出し分け。**ここだけが枝の在り処を画面に出す** */
+function diveShow(k, back){
+  const dv = document.getElementById('dive');
+  if (!dv) return;
+  dv.classList.toggle('off', k < 0 && !back);
+  dv.classList.toggle('up', !!back);
+  const l = dv.querySelector('.dl');
+  if (l) l.textContent = back ? '戻る' : (k >= 0 ? BRANCHES[k].nm + 'へ' : '');
+}
 
 const VERT = .5;
 function goTo(n){
