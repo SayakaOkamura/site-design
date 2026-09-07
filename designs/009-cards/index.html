@@ -144,6 +144,10 @@ body.locked{overflow:hidden}
 .facts dt{font-weight:700; white-space:nowrap; color:var(--sub); background:var(--tint); border-radius:8px 0 0 8px}
 .facts dd{background:var(--tint); border-radius:0 8px 8px 0}
 
+/* 中身が決まっていない段。空の箱に見せず、決まっていないことをそう書く */
+.todo{margin:0; background:var(--tint); border-radius:8px; padding:22px;
+      font-size:13px; color:var(--sub); line-height:1.9}
+
 .lead{margin:0 0 20px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
 .mail a{color:var(--go); text-decoration:none}
@@ -254,10 +258,35 @@ body.locked{overflow:hidden}
       <span class="s">積み上がったものを、カードにして仕分ける</span>
     </div>
 
+    <!-- ここから下の2枚は、増えたときの並びを見るために置いてある。
+         どちらも公式サイトに無いので、中身は書かない（空の箱を作らない）。
+         5枚目は全幅、6枚目からは残りが分け合う。 -->
+    <div class="card" role="button" tabindex="0" data-k="5">
+      <span class="t">お知らせ</span>
+      <span class="s">未定</span>
+      <div class="panel">
+        <div class="bar"><h2>お知らせ</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="body">
+          <p class="todo">中身はまだ決めていません。日付と一行が並ぶ想定です。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" role="button" tabindex="0" data-k="6">
+      <span class="t">実績</span>
+      <span class="s">未定</span>
+      <div class="panel">
+        <div class="bar"><h2>実績</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="body">
+          <p class="todo">中身はまだ決めていません。社名を出すかどうかも決まっていません。</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <p class="wip">入口と会社案内の3枚だけです。「見直してみる」の行き先はまだ作っていません。<br>
-  数字キー 1〜4、Tab と矢印でも押せます。開いたら Esc で閉じます。</p>
+  <p class="wip">中身が入っているのは会社案内の3枚だけです。「お知らせ」と「実績」は並びを見るための枠、<br>
+  「見直してみる」の行き先はまだ作っていません。数字キー 1〜6、Tab と矢印でも押せます。開いたら Esc で閉じます。</p>
 
 </main>
 
@@ -376,7 +405,8 @@ body.locked{overflow:hidden}
     if (e.key === 'Escape' && open){ e.preventDefault(); hide(); return; }
     if (open) return;
 
-    var n = '1234'.indexOf(e.key);
+    var n = '123456789'.indexOf(e.key);
+    if (n >= cards.length) n = -1;
     if (n >= 0){ e.preventDefault(); cards[n].focus(); cards[n].click(); return; }
 
     var i = cards.indexOf(document.activeElement);
