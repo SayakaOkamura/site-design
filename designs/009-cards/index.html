@@ -155,16 +155,34 @@ body.locked{overflow:hidden}
       font-size:13px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
 
-/* お知らせの並び。日付と一行。押せないので影は落とさない */
-.news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:8px}
-.news li{background:var(--tint); border-radius:8px; padding:16px 20px;
-         display:flex; align-items:baseline; gap:18px}
-.news span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
-           font-variant-numeric:tabular-nums; letter-spacing:.02em}
-.news b{font-size:13.5px; font-weight:700; line-height:1.6}
+/* お知らせの並び。一件が一枚のカード。**押せるので影を落とす**
+   （押せない面 = --tint で影なし、押せるもの = 白で影あり、を守る）。
+   親カードは大きさが決まっているので、開いて伸びたぶんは .body が受ける。 */
+.news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:10px}
+.news li{background:var(--card); border-radius:8px; box-shadow:var(--lift1); overflow:hidden;
+         transition:box-shadow .16s ease, transform .16s var(--ease)}
+.news li:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.news li.on{transform:none; box-shadow:var(--lift2)}
+
+.row{
+  -webkit-appearance:none; appearance:none; border:0; background:none; margin:0;
+  font:inherit; color:inherit; text-align:left; cursor:pointer;
+  width:100%; padding:16px 20px; display:flex; align-items:baseline; gap:18px;
+}
+.row span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
+          font-variant-numeric:tabular-nums; letter-spacing:.02em}
+.row b{font-size:13.5px; font-weight:700; line-height:1.6}
+.row i{margin-left:auto; flex:none; font-style:normal; font-size:14px; color:var(--sub)}
+.row:focus-visible{outline:2px solid var(--go); outline-offset:-2px; border-radius:8px}
+
+.more{max-height:0; overflow:hidden; transition:max-height .28s var(--ease)}
+.more p{margin:0; padding:0 20px 18px; font-size:13px; color:var(--sub); line-height:1.95}
+.news li.on .more{max-height:260px}
+
 @media (max-width:520px){
-  .news li{display:block}
-  .news span{display:block; margin-bottom:6px}
+  .row{display:block; position:relative; padding-right:44px}
+  .row span{display:block; margin-bottom:6px}
+  .row i{position:absolute; right:20px; top:16px; margin:0}
 }
 
 .lead{margin:0 0 20px; font-size:14px; line-height:1.9}
@@ -290,11 +308,26 @@ body.locked{overflow:hidden}
                会社について何も主張しない言葉だけにしてある。 -->
           <p class="todo">並びを見るための<b>仮の中身</b>です。実際のお知らせではありません。</p>
           <ul class="news">
-            <li><span>2026.08.20</span><b>夏季休業のお知らせ</b></li>
-            <li><span>2026.06.02</span><b>オフィス移転のお知らせ</b></li>
-            <li><span>2026.04.10</span><b>コーポレートサイトを公開しました</b></li>
-            <li><span>2025.12.26</span><b>年末年始の休業について</b></li>
-            <li><span>2025.06.30</span><b>会社設立のお知らせ</b></li>
+            <li>
+              <button class="row"><span>2026.08.20</span><b>夏季休業のお知らせ</b><i>＋</i></button>
+              <div class="more"><p>8月13日から8月16日まで、夏季休業とさせていただきます。期間中にいただいたお問い合わせは、8月17日以降に順次ご返信いたします。</p></div>
+            </li>
+            <li>
+              <button class="row"><span>2026.06.02</span><b>オフィス移転のお知らせ</b><i>＋</i></button>
+              <div class="more"><p>このたびオフィスを移転いたしました。電話番号に変更はございません。今後ともよろしくお願い申し上げます。</p></div>
+            </li>
+            <li>
+              <button class="row"><span>2026.04.10</span><b>コーポレートサイトを公開しました</b><i>＋</i></button>
+              <div class="more"><p>コーポレートサイトを公開しました。事業内容とお問い合わせ先を掲載しています。</p></div>
+            </li>
+            <li>
+              <button class="row"><span>2025.12.26</span><b>年末年始の休業について</b><i>＋</i></button>
+              <div class="more"><p>12月27日から1月4日まで休業いたします。期間中のお問い合わせは、1月5日以降に順次ご対応いたします。</p></div>
+            </li>
+            <li>
+              <button class="row"><span>2025.06.30</span><b>会社設立のお知らせ</b><i>＋</i></button>
+              <div class="more"><p>株式会社アルターデザインコンサルティングを設立いたしました。</p></div>
+            </li>
           </ul>
         </div>
       </div>
@@ -431,6 +464,20 @@ body.locked{overflow:hidden}
   });
 
   scrim.addEventListener('click', hide);
+
+  /* お知らせの一件を開く。**開くのは一件だけ**——読むところなので、
+     開きっぱなしを積み上げない（積まれるのは決めるところだけ）。
+     親カードの大きさは変えない。伸びたぶんは .body のスクロールが受ける。 */
+  document.addEventListener('click', function(e){
+    var row = e.target.closest('.row');
+    if (!row) return;
+    var li = row.parentNode, was = li.classList.contains('on');
+    [].forEach.call(li.parentNode.children, function(o){
+      o.classList.remove('on');
+      var m = o.querySelector('.row i'); if (m) m.textContent = '＋';
+    });
+    if (!was){ li.classList.add('on'); row.querySelector('i').textContent = '−'; }
+  });
 
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
     document.addEventListener(ev, function(){
