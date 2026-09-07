@@ -17,8 +17,9 @@
      **5枚 HTML を作らず、1ファイルで URL で出し分ける。**
      `news.html#2026-08-20`。一件を人に送れるのは変わらない。
 
-     戻りは頭の大きいカード。行き先は `./#news` なので、
+     戻りは上と下に同じカード。行き先は `./#news` なので、
      **戻ると一覧が開いた状態で始まる**（印は入口側の show が残している）。
+     社名は頭の帯が持つ。**枠（頭と足）は入口と同じ。**
 
      **中身は仮。**実際のお知らせではないことを画面にも出している。
 ================================================================ -->
@@ -31,6 +32,7 @@
   --ink:  #16191d;
   --sub:  #5b626b;
   --go:   #0e6b58;
+  --frame:#d9dee3;   /* 枠（頭と足）。入口と同じ */
 
   --lift1: 0 1px 2px rgba(20,26,32,.06), 0 3px 8px rgba(20,26,32,.07);
   --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
@@ -47,25 +49,35 @@ body{
   font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
               system-ui,-apple-system,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased;
-  display:flex; padding:32px 24px;
+  display:flex; flex-direction:column;
 }
-.sheet{width:100%; max-width:860px; margin:0 auto}
 
-/* ─ 押せるカード。頭も足も同じ形（戻り方に新しい部品を足さない）─ */
-.head,.back{
-  display:block; text-decoration:none; color:inherit;
+/* ─ 枠。頭と足。入口と同じ（線は引かない。沈んだ面で枠にする）───── */
+.in,.sheet{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
+.sheet{padding:40px 24px}
+
+.top,.foot{flex:none; background:var(--frame)}
+.top{height:56px; display:flex; align-items:center}
+.mark{font-size:13.5px; font-weight:700; letter-spacing:.02em; color:var(--ink)}
+
+.foot .in{padding:30px 24px 34px}
+.foot p{margin:0; font-size:12px; color:var(--sub); line-height:1.85}
+.foot .fn{font-size:13px; font-weight:700; color:var(--ink)}
+.foot .fa{margin-top:7px}
+.foot .fc{margin-top:22px; font-size:11.5px}
+.foot .fw{margin-top:9px; font-size:11.5px}
+
+/* ─ 戻りのカード。上と下に同じものを置く（新しい部品を足さない）───── */
+.back{
+  display:block; margin-top:16px; padding:22px 26px;
+  font-size:14px; font-weight:700; text-decoration:none; color:inherit;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.head:hover,.back:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-.head:active,.back:active{transform:translateY(2px); box-shadow:var(--lift0)}
-.head:focus-visible,.back:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-
-.head{padding:34px 40px 32px}
-.head h1{margin:0; font-size:clamp(18px,2.8vw,26px); font-weight:700; letter-spacing:.01em; line-height:1.35}
-.head h1 span{display:block; margin-top:14px; font-size:clamp(12.5px,1.5vw,14px); font-weight:500; color:var(--sub); line-height:1.7}
-
-.back{margin-top:16px; padding:22px 26px; font-size:14px; font-weight:700}
+.back:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.back:active{transform:translateY(2px); box-shadow:var(--lift0)}
+.back:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.sheet>.back:first-child{margin-top:0; animation-delay:0s}
 
 /* ─ 記事 ─────────────────────────────────────────────── */
 .art{
@@ -74,7 +86,7 @@ body{
 }
 .art .d{margin:0; font-size:12.5px; font-weight:600; color:var(--sub);
         font-variant-numeric:tabular-nums; letter-spacing:.02em}
-.art h2{margin:12px 0 0; font-size:clamp(19px,2.6vw,25px); font-weight:700; line-height:1.5}
+.art h1{margin:12px 0 0; font-size:clamp(19px,2.6vw,25px); font-weight:700; line-height:1.5}
 .art .b{margin:24px 0 0; font-size:14px; line-height:2.05}
 
 /* 中身が仮であることの断り。押せないので影は落とさない */
@@ -83,13 +95,12 @@ body{
 .todo b{color:var(--ink)}
 
 @keyframes drop{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
-.head,.art,.back{animation:drop .42s var(--ease) backwards}
+.art,.back{animation:drop .42s var(--ease) backwards}
 .art{animation-delay:.06s}
 .back{animation-delay:.10s}
-@media (prefers-reduced-motion:reduce){ .head,.art,.back{animation:none} }
+@media (prefers-reduced-motion:reduce){ .art,.back{animation:none} }
 
 @media (max-width:520px){
-  .head{padding:26px 24px 24px}
   .art{padding:28px 24px 30px}
   .back{padding:20px 22px}
 }
@@ -97,26 +108,38 @@ body{
 </head>
 <body>
 
+<!-- 頭。社名だけ。押せるものは置かない（入口と同じ）-->
+<header class="top">
+  <div class="in"><span class="mark">株式会社アルターデザインコンサルティング</span></div>
+</header>
+
 <main class="sheet">
 
-  <!-- 入口へ戻る。`#news` 付きなので、一覧が開いた状態で戻る -->
-  <a class="head" href="./#news">
-    <h1>株式会社アルターデザインコンサルティング
-      <span>2025年6月設立／AI とローコードで、上流工程中心のシステム開発</span></h1>
-  </a>
+  <!-- 一覧へ戻る。読む前でも読み終わってからでも選べるように、上と下に同じものを置く。
+       `#news` 付きなので、一覧が開いた状態で戻る -->
+  <a class="back" href="./#news">お知らせの一覧へ</a>
 
   <article class="art">
     <p class="d" id="d"></p>
-    <h2 id="t"></h2>
+    <h1 id="t"></h1>
     <p class="b" id="b"></p>
   </article>
 
-  <p class="todo">これは<b>仮の中身</b>です。実際のお知らせではありません。会社の言葉として出ているのは、上の社名と事業の一行だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
+  <p class="todo">これは<b>仮の中身</b>です。実際のお知らせではありません。</p>
 
-  <!-- 一覧へ戻る。ブラウザの戻るを使わなくても、次の一件を選びに行ける -->
   <a class="back" href="./#news">お知らせの一覧へ</a>
 
 </main>
+
+<!-- 足。入口と同じ -->
+<footer class="foot">
+  <div class="in">
+    <p class="fn">株式会社アルターデザインコンサルティング</p>
+    <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
+    <p class="fc">© 2025 株式会社アルターデザインコンサルティング</p>
+    <p class="fw">これは案です。上のお知らせは仮の中身で、実際のお知らせではありません。会社の言葉として出しているのは社名と所在地だけです（alt-dsgn.co.jp、2026年9月3日に確認）。実装は AI（Claude）が行いました。</p>
+  </div>
+</footer>
 
 <script>
 /* 記事は1ファイル。URL の印で出し分ける。

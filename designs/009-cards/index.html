@@ -7,8 +7,8 @@
 
 <!-- 009 カード
      ================================================================
-     いま出来ているのは、入口と会社案内の3枚だけ。
-     体験（うじゃうじゃ → カード → 仕分け）はまだ無い。
+     入口。頭（社名）と足（所在地・著作表示）で枠を作ってある。
+     体験（うじゃうじゃ → カード → 仕分け）は `try.html`。
 
      決まっていること（NOTES.md が正）
      - カードは PDF を解体した断片。押すと中身がまとまって出る。
@@ -28,6 +28,7 @@
   --bg:   #e8ebee;
   --card: #ffffff;
   --tint: #f2f4f6;   /* 押せない面。影を落とさない */
+  --frame:#d9dee3;   /* 枠（頭と足）。--bg より少し沈んだ面 */
   --ink:  #16191d;
   --sub:  #5b626b;
   --go:   #0e6b58;
@@ -53,12 +54,28 @@ body{
   font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
               system-ui,-apple-system,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased;
-  display:flex;
-  padding:32px 24px;
+  display:flex; flex-direction:column;
 }
 body.locked{overflow:hidden}
 
-.sheet{width:100%; max-width:860px; margin:auto}
+/* ─ 枠。頭と足 ─────────────────────────────────────────────
+   線は引かない（009 は面と影だけ）。--bg より少し沈んだ面で枠にする。
+   影を落とさないので、押せるものには見えない。
+   **頭にナビは置かない。**押せるものが増えると、触れるのがカード一種類で
+   通っているのが崩れる。用がある人はカードを一枚押せば着く。 */
+.in,.sheet{width:100%; max-width:908px; margin:0 auto; padding:0 24px}  /* 908 = 860 + 24×2。頭・足・カードの左端が揃う */
+.sheet{margin:auto; padding:40px 24px}   /* margin:auto は縦にも効く。高くなったとき上を切らない */
+
+.top,.foot{flex:none; background:var(--frame)}
+.top{height:56px; display:flex; align-items:center}
+.mark{font-size:13.5px; font-weight:700; letter-spacing:.02em}
+
+.foot .in{padding:30px 24px 34px}
+.foot p{margin:0; font-size:12px; color:var(--sub); line-height:1.85}
+.foot .fn{font-size:13px; font-weight:700; color:var(--ink)}
+.foot .fa{margin-top:7px}
+.foot .fc{margin-top:22px; font-size:11.5px}
+.foot .fw{margin-top:9px; font-size:11.5px}
 
 /* ─ 大きいカード。これだけ読めば何の会社か分かる ─────────── */
 .head{
@@ -179,7 +196,6 @@ body.locked{overflow:hidden}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
 .mail a{color:var(--go); text-decoration:none}
 .mail a:hover{text-decoration:underline}
-.src{margin:24px 0 0; font-size:11.5px; color:var(--sub); line-height:1.8}
 
 /* ─ 開いたとき、わずかに落ちてくる ─────────────────────── */
 @keyframes drop{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
@@ -192,8 +208,6 @@ body.locked{overflow:hidden}
   .head,.deck .card{animation:none}
   .card.open{transition:none}
 }
-
-.wip{margin:22px 2px 0; font-size:11.5px; color:var(--sub); line-height:1.8}
 
 @media (max-width:720px){
   .head{padding:34px 26px 30px}
@@ -214,6 +228,11 @@ body.locked{overflow:hidden}
 <body>
 
 <div class="scrim" id="scrim"></div>
+
+<!-- 頭。社名だけ。押せるものは置かない -->
+<header class="top">
+  <div class="in"><span class="mark">株式会社アルターデザインコンサルティング</span></div>
+</header>
 
 <main class="sheet">
 
@@ -274,7 +293,6 @@ body.locked{overflow:hidden}
         <div class="body">
           <p class="lead">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたらお気軽にお問い合わせください</p>
           <p class="mail"><a href="mailto:contact@alt-dsgn.co.jp">contact@alt-dsgn.co.jp</a></p>
-          <p class="src">このページに載せているのは alt-dsgn.co.jp に出ている言葉です（2026年9月3日に確認）。実装は AI（Claude）が行いました。</p>
         </div>
       </div>
     </div>
@@ -323,10 +341,19 @@ body.locked{overflow:hidden}
 
   </div>
 
-  <p class="wip">会社案内の3枚は公式サイトの言葉です。「お知らせ」と「見直してみる」は中身が仮、「実績」は枠だけです。<br>
-  数字キー 1〜6、Tab と矢印でも押せます。開いたら Esc で閉じます。</p>
-
 </main>
+
+<!-- 足。所在地と著作表示。**サイトマップは並べない**（用はカード一枚で着く）。
+     案であることの断りも、散らさずここに集める。 -->
+<footer class="foot">
+  <div class="in">
+    <p class="fn">株式会社アルターデザインコンサルティング</p>
+    <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
+    <p class="fc">© 2025 株式会社アルターデザインコンサルティング</p>
+    <p class="fw">これは案です。会社案内の3枚は公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉。「お知らせ」と「見直してみる」は中身が仮、「実績」は枠だけです。実装は AI（Claude）が行いました。<br>
+    数字キー 1〜6、Tab と矢印でも押せます。開いたら Esc で閉じます。</p>
+  </div>
+</footer>
 
 <script>
 (function(){
