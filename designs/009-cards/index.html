@@ -13,8 +13,8 @@
      決まっていること（NOTES.md が正）
      - カードは PDF を解体した断片。押すと中身がまとまって出る。
        一枚に詰める話ではないし、裏表でもない
-     - 閉じるのは読むところ。積まれるのは決めるところ
-       （会社案内は開いて閉じる。体験は台帳に積まれる）
+     - **中身は右の帯に出る。カードは消えない。**だから戻るのに部品が要らない
+       （もう一度押す／別のカードを押す）。✕ は置いていない
      - 起きることは「押す」と「展開」の二つだけ
      - 影が付いているものだけ押せる。押せない中身は影を落とさない
      - 背景は入口がいちばん明るい。暗くなるのは体験の重い側だけ
@@ -63,8 +63,19 @@ body.locked{overflow:hidden}
    影を落とさないので、押せるものには見えない。
    **頭にナビは置かない。**押せるものが増えると、触れるのがカード一種類で
    通っているのが崩れる。用がある人はカードを一枚押せば着く。 */
-.in,.sheet{width:100%; max-width:908px; margin:0 auto; padding:0 24px}  /* 908 = 860 + 24×2。頭・足・カードの左端が揃う */
-.sheet{margin:auto; padding:40px 24px}   /* margin:auto は縦にも効く。高くなったとき上を切らない */
+.in,.wrap{width:100%; max-width:908px; margin:0 auto; padding:0 24px}  /* 908 = 860 + 24×2。頭・足・カードの左端が揃う */
+.wrap{
+  flex:1 0 auto; margin:0 auto; padding:40px 24px;
+  /* **縦の中央寄せはやめた。**帯が出ると塊の高さが変わるので、
+     中央に置いたままだと押した瞬間に塊が上下へ跳ねる。
+     flex:1 0 auto で置き場が伸びて、足は下に残る。 */
+  display:flex; align-items:flex-start;
+  transition:max-width .24s var(--ease);
+}
+.stack{flex:1 1 auto; min-width:0}
+
+/* 帯が出ているあいだだけ置き場を広げる。**束は左へ寄るだけで、消えない** */
+body.paneopen .wrap{max-width:1240px}
 
 .top,.foot{flex:none; background:var(--frame)}
 .top{height:56px; display:flex; align-items:center}
@@ -91,7 +102,6 @@ body.locked{overflow:hidden}
    空箱に見えた。**全部同じ大きさで、どの段も端まで揃う**ほうがいい。
    6枚なら 3＋3、7枚なら 4＋3。 */
 .deck{margin-top:16px; display:grid; grid-template-columns:repeat(var(--cols,4),1fr); gap:16px}
-.ph{border-radius:var(--r)}   /* 開いているあいだ、束に空けておく穴 */
 
 .card{
   -webkit-appearance:none; appearance:none; border:0; margin:0;
@@ -111,50 +121,40 @@ body.locked{overflow:hidden}
 .card:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 .card.down{transform:translateY(2px); box-shadow:var(--lift0); transition-duration:.06s}
 
+/* 中身が右に出ているカードは、**沈んで、面が空になる**（中身が右へ出て行った）。
+   押されたままの見た目なので、新しい印を足していない */
+.card.sel,.card.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
+
 /* 体験の口。同じ大きさ・同じ形。色だけ変える（隠さない） */
 .card.go{background:var(--go); color:#fff}
 .card.go .s{color:rgba(255,255,255,.72)}
 .card.go:focus-visible{outline-color:var(--ink)}
 
-/* ─ 開いたカード ───────────────────────────────────────── */
-.card.open{
-  position:fixed; z-index:40; cursor:default; overflow:hidden;
-  -webkit-user-select:text; user-select:text;   /* 開いたら中身は選べる */
-  box-shadow:var(--lift3); padding:0;
-  transition:top .34s var(--ease), left .34s var(--ease),
-             width .34s var(--ease), height .34s var(--ease),
-             box-shadow .34s ease;
-}
-.card.open:hover{transform:none}
-.card.open .t,
-.card.open .s{display:none}
+/* ─ 右の帯。中身はここに出る ────────────────────────────────
+   **カードは消えない。**中身が右へ出て、束が左へ寄るだけ。
+   だから戻るのに部品が要らない——**もう一度押す／別のカードを押す。**
+   ✕ は置いていない（Esc も効くが、無くても戻れる）。 */
+.pane{flex:none; width:0; overflow:hidden; transition:width .24s var(--ease)}
+.pane:empty{display:none}
+body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
-.scrim{
-  position:fixed; inset:0; z-index:30; background:rgba(20,26,32,.28);
-  opacity:0; transition:opacity .3s ease; pointer-events:none;
+/* 中身は固定幅。**帯が伸びるあいだ、文字が組み直されない** */
+.panel{display:none}
+.pane .panel{
+  display:block; width:420px; margin-left:16px;
+  -webkit-user-select:text; user-select:text;
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
+  animation:swap .18s var(--ease);
 }
-.scrim.on{opacity:1; pointer-events:auto}
+@keyframes swap{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
 
-/* 開いた中身。カードが小さいあいだは出さない */
-.panel{display:none; flex-direction:column; height:100%; min-height:0}
-.card.open .panel{display:flex}
-
-.bar{flex:none; display:flex; align-items:center; gap:16px; padding:26px 32px 18px}
-.bar h2{margin:0; font-size:clamp(17px,2.2vw,21px); font-weight:700; line-height:1.35}
-.x{
-  -webkit-appearance:none; appearance:none; border:0; margin-left:auto;
-  width:34px; height:34px; flex:none; border-radius:50%; cursor:pointer;
-  background:var(--tint); color:var(--sub); font:inherit; font-size:15px; line-height:1;
-  transition:background .15s ease, color .15s ease;
-}
-.x:hover{background:#e6e9ec; color:var(--ink)}
-.x:focus-visible{outline:2px solid var(--go); outline-offset:2px}
-
-.body{
-  flex:1; min-height:0; overflow:auto; padding:0 32px 32px;
-  opacity:0; transition:opacity .22s ease .16s;
-}
-.card.open .body{opacity:1}
+.bar{padding:24px 26px 14px}
+/* 帯は 420px。会社概要を二列で組むと社名が割れるので、見出しを上に置く */
+.pane .facts{grid-template-columns:1fr; gap:2px 0}
+.pane .facts dt{border-radius:8px 8px 0 0; padding-bottom:4px}
+.pane .facts dd{border-radius:0 0 8px 8px; padding-top:4px}
+.bar h2{margin:0; font-size:17px; font-weight:700; line-height:1.4}
+.body{padding:0 26px 26px}
 
 /* ─ 中身。押せないものは影を落とさない（影＝押せる、のルール）─ */
 .svc{list-style:none; margin:0; padding:0; display:grid; gap:10px}
@@ -206,13 +206,22 @@ body.locked{overflow:hidden}
 .deck .card:nth-child(4){animation-delay:.18s}
 @media (prefers-reduced-motion:reduce){
   .head,.deck .card{animation:none}
-  .card.open{transition:none}
+  .wrap,.pane{transition:none}
+  .pane .panel{animation:none}
+}
+
+/* 横に帯を置く余裕が無い。**束の下に出す**（カードは一枚も動かない）*/
+@media (max-width:1119px){
+  .wrap{flex-direction:column}
+  body.paneopen .wrap{max-width:908px}
+  .pane,body.paneopen .pane{width:auto; overflow:visible; transition:none}
+  .pane .panel{width:auto; margin-left:0; margin-top:16px}
 }
 
 @media (max-width:720px){
   .head{padding:34px 26px 30px}
   .card{min-height:112px; padding:22px 18px 20px}
-  .bar{padding:22px 22px 14px}
+  .bar{padding:22px 22px 12px}
   .body{padding:0 22px 24px}
   .facts{grid-template-columns:1fr; gap:2px 0}
   .facts dt{border-radius:8px 8px 0 0; padding-bottom:4px}
@@ -227,14 +236,14 @@ body.locked{overflow:hidden}
 </head>
 <body>
 
-<div class="scrim" id="scrim"></div>
-
 <!-- 頭。社名だけ。押せるものは置かない -->
 <header class="top">
   <div class="in"><span class="mark">株式会社アルターデザインコンサルティング</span></div>
 </header>
 
-<main class="sheet">
+<div class="wrap">
+
+<main class="stack">
 
   <!-- 社名と事業の一行。どちらも公表情報（alt-dsgn.co.jp、2026-09-03 確認）。 -->
   <div class="head">
@@ -248,7 +257,7 @@ body.locked{overflow:hidden}
       <span class="t">サービス</span>
       <span class="s">四本</span>
       <div class="panel">
-        <div class="bar"><h2>サービス</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="bar"><h2>サービス</h2></div>
         <div class="body">
           <!-- 公式サイトの見出しと説明文、そのまま -->
           <ul class="svc">
@@ -269,7 +278,7 @@ body.locked{overflow:hidden}
       <span class="t">会社概要</span>
       <span class="s">七項目</span>
       <div class="panel">
-        <div class="bar"><h2>会社概要</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="bar"><h2>会社概要</h2></div>
         <div class="body">
           <!-- 公式サイトの7項目、その並び順のまま -->
           <dl class="facts">
@@ -289,7 +298,7 @@ body.locked{overflow:hidden}
       <span class="t">お問い合わせ</span>
       <span class="s">contact@alt-dsgn.co.jp</span>
       <div class="panel">
-        <div class="bar"><h2>お問い合わせ</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="bar"><h2>お問い合わせ</h2></div>
         <div class="body">
           <p class="lead">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたらお気軽にお問い合わせください</p>
           <p class="mail"><a href="mailto:contact@alt-dsgn.co.jp">contact@alt-dsgn.co.jp</a></p>
@@ -314,7 +323,7 @@ body.locked{overflow:hidden}
       <span class="t">お知らせ</span>
       <span class="s">五件（仮）</span>
       <div class="panel">
-        <div class="bar"><h2>お知らせ</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="bar"><h2>お知らせ</h2></div>
         <div class="body">
           <p class="todo">並びを見るための<b>仮の中身</b>です。実際のお知らせではありません。</p>
           <ul class="news">
@@ -332,7 +341,7 @@ body.locked{overflow:hidden}
       <span class="t">実績</span>
       <span class="s">未定</span>
       <div class="panel">
-        <div class="bar"><h2>実績</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="bar"><h2>実績</h2></div>
         <div class="body">
           <p class="todo">中身はまだ決めていません。社名を出すかどうかも決まっていません。</p>
         </div>
@@ -343,6 +352,12 @@ body.locked{overflow:hidden}
 
 </main>
 
+<!-- 中身が出る帯。**中身はカードの中に置いてあって、押されたときここへ移す**
+     （複製しない。だから「同じものが右に出た」が嘘にならない）-->
+<aside class="pane" id="pane"></aside>
+
+</div>
+
 <!-- 足。所在地と著作表示。**サイトマップは並べない**（用はカード一枚で着く）。
      案であることの断りも、散らさずここに集める。 -->
 <footer class="foot">
@@ -351,19 +366,22 @@ body.locked{overflow:hidden}
     <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
     <p class="fc">© 2025 株式会社アルターデザインコンサルティング</p>
     <p class="fw">これは案です。会社案内の3枚は公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉。「お知らせ」と「見直してみる」は中身が仮、「実績」は枠だけです。実装は AI（Claude）が行いました。<br>
-    数字キー 1〜6、Tab と矢印でも押せます。開いたら Esc で閉じます。</p>
+    数字キー 1〜6、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
   </div>
 </footer>
 
 <script>
 (function(){
   var deck  = document.getElementById('deck'),
-      scrim = document.getElementById('scrim'),
+      pane  = document.getElementById('pane'),
       cards = Array.prototype.slice.call(deck.querySelectorAll('.card')),
-      open  = null,   /* いま開いているカード */
-      ph    = null;   /* 束に空けておく穴 */
+      open  = null;   /* いま中身が右に出ているカード */
 
-  var PAD = 24, MAXW = 860;
+  /* 中身はカードの中に置いてある。持ち主を覚えておいて、閉じたら返す */
+  cards.forEach(function(c){
+    var p = c.querySelector('.panel');
+    if (p){ p.owner = c; c.setAttribute('aria-expanded', 'false'); }
+  });
 
   /* 段が揃うように列を割る。一段に入る上限を先に決めて、
      その上限で何段になるかから、一段あたりの枚数を出す。
@@ -377,95 +395,71 @@ body.locked{overflow:hidden}
   relayout();
   window.addEventListener('resize', relayout);
 
-  /* 記事から戻ってきたら、その一覧を開いた状態で始める（印は show が残す） */
-  function reopen(){
-    var k = location.hash.slice(1);
-    if (!k) return;
-    var card = deck.querySelector('[data-hash="' + k + '"]');
-    if (card && !open) show(card);
-  }
-  window.addEventListener('pageshow', reopen);
-  window.addEventListener('hashchange', reopen);
-
-  /* 開いたときの行き先。中身を測ってから決める */
-  function target(card){
-    var w = Math.min(window.innerWidth - PAD * 2, MAXW),
-        maxH = window.innerHeight - PAD * 2;
-
-    /* 目標の幅で一度だけ高さを測る。ここでは描画させない */
-    var keep = card.style.cssText;
-    card.style.position = 'fixed';
-    card.style.left = '0px'; card.style.top = '0px';
-    card.style.width = w + 'px'; card.style.height = 'auto';
-    var need = card.offsetHeight;
-    card.style.cssText = keep;
-
-    var h = Math.min(need, maxH);
-    return { w: w, h: h, l: (window.innerWidth - w) / 2, t: (window.innerHeight - h) / 2 };
-  }
-
-  function put(card, r){
-    card.style.left = r.l + 'px'; card.style.top = r.t + 'px';
-    card.style.width = r.w + 'px'; card.style.height = r.h + 'px';
+  /* 帯に残っている中身を持ち主へ返す。
+     閉じかけの最中に別のカードが押されても、二枚が混ざらない */
+  function drain(){
+    var p = pane.querySelector('.panel');
+    if (!p) return;
+    p.owner.appendChild(p);
+    p.owner.classList.remove('sel');
+    p.owner.setAttribute('aria-expanded', 'false');
   }
 
   function show(card){
-    if (open) return;
-    var r = card.getBoundingClientRect();
+    if (open === card){ hide(); return; }      /* 同じカードをもう一度＝閉じる */
+    var panel = card.querySelector('.panel');
+    if (!panel) return;                        /* 行き先があるカード（体験）は素通り */
 
-    ph = document.createElement('div');
-    ph.className = 'ph';
-    ph.style.height = r.height + 'px';
-    deck.insertBefore(ph, card);
+    drain();
+    pane.appendChild(panel);
+    card.classList.add('sel');
+    card.setAttribute('aria-expanded', 'true');
 
-    card.classList.add('open');          /* .panel が出る＝中身の高さが測れる */
-    var to = target(card);
-
-    card.style.transition = 'none';      /* まず元の場所に置いて */
-    put(card, { l: r.left, t: r.top, w: r.width, h: r.height });
-    card.offsetHeight;                   /* 反映させてから */
-    card.style.transition = '';
-    put(card, to);                       /* 行き先へ */
-
-    scrim.classList.add('on');
-    document.body.classList.add('locked');
+    pane.offsetWidth;                          /* 幅 0 を一度描かせてから伸ばす */
+    document.body.classList.add('paneopen');
     open = card;
-    card.querySelector('.x').focus();
 
-    /* 記事を読んで戻ってきたとき、一覧が開いたまま戻るように印を残す。
-       これが無いと、一件読むたびにカードを開き直すことになる。
-       replaceState なので、閉じたあと戻るで開き直したりはしない。 */
+    /* 記事を読んで戻ってきたとき、一覧が出たまま戻るように印を残す。
+       replaceState なので、閉じたあと「戻る」で開き直したりはしない。 */
     if (card.dataset.hash) history.replaceState(null, '', '#' + card.dataset.hash);
+
+    /* 横に余裕が無いときは束の下に出るので、見えるところまで運ぶ */
+    if (innerWidth <= 1119) pane.scrollIntoView({ block:'nearest', behavior:'smooth' });
   }
 
   function hide(){
     if (!open) return;
-    var card = open, back = ph.getBoundingClientRect();
+    var card = open;
     open = null;
-
-    put(card, { l: back.left, t: back.top, w: back.width, h: back.height });
-    scrim.classList.remove('on');
-    document.body.classList.remove('locked');
+    document.body.classList.remove('paneopen');
     if (card.dataset.hash) history.replaceState(null, '', location.pathname);
 
-    /* 動きを切っている環境（prefers-reduced-motion）では transitionend が来ない。
-       それだけに頼ると、戻ったのに開いたままの状態が残る。時間でも片付ける。 */
+    /* 帯が縮みきってから中身を返す。動きを切っている環境では transitionend が
+       来ないので、時間でも片付ける（片方だけに頼ると中身が出たまま残る）*/
     var settled = false;
     function settle(){
       if (settled) return;
       settled = true;
-      card.removeEventListener('transitionend', onEnd);
-      card.classList.remove('open');
-      card.style.cssText = '';
-      if (ph){ ph.parentNode.removeChild(ph); ph = null; }
+      pane.removeEventListener('transitionend', onEnd);
+      if (!open) drain();                      /* この間に別のカードが開いたら触らない */
       card.focus();
     }
-    function onEnd(e){ if (e.target === card && e.propertyName === 'height') settle(); }
+    function onEnd(e){ if (e.target === pane && e.propertyName === 'width') settle(); }
 
-    card.addEventListener('transitionend', onEnd);
-    var d = parseFloat(getComputedStyle(card).transitionDuration) || 0;
+    pane.addEventListener('transitionend', onEnd);
+    var d = parseFloat(getComputedStyle(pane).transitionDuration) || 0;
     setTimeout(settle, d * 1000 + 60);
   }
+
+  /* 記事から戻ってきたら、その一覧を出した状態で始める（印は show が残す）*/
+  function reopen(){
+    var k = location.hash.slice(1);
+    if (!k) return;
+    var card = deck.querySelector('[data-hash="' + k + '"]');
+    if (card && open !== card) show(card);
+  }
+  window.addEventListener('pageshow', reopen);
+  window.addEventListener('hashchange', reopen);
 
   /* 押した感触。行き先が無いカードは沈んで戻るだけ */
   function press(c){
@@ -474,16 +468,9 @@ body.locked{overflow:hidden}
   }
 
   cards.forEach(function(c){
-    c.addEventListener('pointerdown', function(){ if (!open) c.classList.add('down'); });
-    c.addEventListener('click', function(e){
-      if (e.target.closest('[data-x]')){ hide(); return; }
-      if (open === c) return;              /* 開いた中身は押しても閉じない */
-      press(c);
-      if (c.querySelector('.panel')) show(c);
-    });
+    c.addEventListener('pointerdown', function(){ c.classList.add('down'); });
+    c.addEventListener('click', function(){ press(c); show(c); });
   });
-
-  scrim.addEventListener('click', hide);
 
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
     document.addEventListener(ev, function(){
@@ -491,37 +478,25 @@ body.locked{overflow:hidden}
     });
   });
 
-  /* マウスが無くても全部届くようにする */
+  /* マウスが無くても全部届くようにする。**カードは出ているあいだも押せる** */
   document.addEventListener('keydown', function(e){
     if (e.altKey || e.ctrlKey || e.metaKey) return;
 
     if (e.key === 'Escape' && open){ e.preventDefault(); hide(); return; }
-    if (open) return;
 
     var n = '123456789'.indexOf(e.key);
-    if (n >= cards.length) n = -1;
-    if (n >= 0){ e.preventDefault(); cards[n].focus(); cards[n].click(); return; }
+    if (n >= 0 && n < cards.length){ e.preventDefault(); cards[n].focus(); cards[n].click(); return; }
 
     var i = cards.indexOf(document.activeElement);
     if (i < 0){ if (e.key.indexOf('Arrow') === 0){ e.preventDefault(); cards[0].focus(); } return; }
 
-    /* カードは div（中に閉じるボタンを持つため）。押す挙動は自前で用意する */
+    /* カードは div（中に中身を抱えているため）。押す挙動は自前で用意する */
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); cards[i].click(); return; }
 
     var to = -1;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') to = Math.min(i + 1, cards.length - 1);
     if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   to = Math.max(i - 1, 0);
     if (to >= 0){ e.preventDefault(); cards[to].focus(); }
-  });
-
-  /* 窓が変わったら行き先を測り直す（開いている最中でも崩れないように） */
-  window.addEventListener('resize', function(){
-    if (!open) return;
-    var keep = open.style.transition;
-    open.style.transition = 'none';
-    put(open, target(open));
-    open.offsetHeight;
-    open.style.transition = keep;
   });
 })();
 </script>
