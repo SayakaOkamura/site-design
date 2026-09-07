@@ -169,11 +169,6 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .body{padding:0 26px 26px}
 
 /* ─ 中身。押せないものは影を落とさない（影＝押せる、のルール）─ */
-.svc{list-style:none; margin:0; padding:0; display:grid; gap:10px}
-.svc li{background:var(--tint); border-radius:8px; padding:20px 22px}
-.svc b{display:block; font-size:15px; font-weight:700; line-height:1.5}
-.svc span{display:block; margin-top:9px; font-size:12.5px; color:var(--sub); line-height:1.8}
-
 /* 会社概要。**灰色の板をやめた。**項目名と中身が同じ色の板に乗っていたので、
    14枚の縞になって、どこで一項目が終わるのか見えなかった
    （項目のあいだと、項目名と中身のあいだが、どちらも 2px だった）。
@@ -184,7 +179,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .facts dd{margin:3px 0 0; font-size:13.5px; line-height:1.8}
 
 /* 中身が決まっていない段。空の箱に見せず、決まっていないことをそう書く */
-.todo{margin:0; background:var(--tint); border-radius:8px; padding:22px;
+.todo{margin:0; background:var(--tint); border-radius:8px; padding:18px 20px;
       font-size:13px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
 
@@ -207,6 +202,8 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
   .news a{display:block}
   .news span{display:block; margin-bottom:6px}
 }
+
+.news + .todo{margin-top:12px}   /* 一覧の下に断りを置くとき。四行＋断りが帯に収まる高さ */
 
 .lead{margin:0 0 20px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
@@ -268,23 +265,22 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
   <div class="deck" id="deck">
 
-    <div class="card" role="button" tabindex="0" data-k="1">
+    <!-- 一覧は帯の中。**帯の中では開かせない**（開くと下が押し下げられて、
+         次の一本を選ぶのに毎回送ることになる）。中身はページ＝お知らせと同じ形。
+         題は公式サイトの言葉。押した先の詳細は仮。 -->
+    <div class="card" role="button" tabindex="0" data-k="1" data-hash="svc">
       <span class="t">サービス</span>
       <span class="s">四本</span>
       <div class="panel">
         <div class="bar"><h2>サービス</h2></div>
         <div class="body">
-          <!-- 公式サイトの見出しと説明文、そのまま -->
-          <ul class="svc">
-            <li><b>人間中心の次世代業務システム開発</b>
-              <span>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供</span></li>
-            <li><b>AIによる意思決定支援と事業変革支援</b>
-              <span>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援</span></li>
-            <li><b>自律型・共創型の組織設計支援</b>
-              <span>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現</span></li>
-            <li><b>地域格差の解消を目指したデジタル支援</b>
-              <span>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援</span></li>
+          <ul class="news">
+            <li><a href="service.html#01"><span>01</span><b>人間中心の次世代業務システム開発</b></a></li>
+            <li><a href="service.html#02"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></a></li>
+            <li><a href="service.html#03"><span>03</span><b>自律型・共創型の組織設計支援</b></a></li>
+            <li><a href="service.html#04"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></a></li>
           </ul>
+          <p class="todo">題は公式サイトの言葉です。押した先の<b>詳細は仮の中身</b>で、まだ会社が出しているものではありません。</p>
         </div>
       </div>
     </div>
@@ -380,7 +376,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
     <p class="fn">株式会社アルターデザインコンサルティング</p>
     <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
     <p class="fc">© 2025 株式会社アルターデザインコンサルティング</p>
-    <p class="fw">これは案です。会社案内の3枚は公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉。「お知らせ」と「見直してみる」は中身が仮、「実績」は枠だけです。実装は AI（Claude）が行いました。<br>
+    <p class="fw">これは案です。公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉は、社名・事業の一行・サービスの題と一行・会社概要・お問い合わせ。サービスの詳細と「お知らせ」「見直してみる」は仮の中身で、「実績」は枠だけです。実装は AI（Claude）が行いました。<br>
     数字キー 1〜6、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
   </div>
 </footer>

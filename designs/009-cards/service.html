@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>サービス｜株式会社アルターデザインコンサルティング</title>
+
+<!-- 009 カード ─ サービス（一本ずつ）
+     ================================================================
+     本人（2026-09-07）：「サービスについて、もっと詳細な情報それっぽく書けない？
+     サービスの内容をカードにして詳しく見れたら面白いなと思って」
+
+     **お知らせで決めた形をそのまま使う。**一覧はカードの中（帯）、中身はページ。
+     帯の中で開かせると、開いた一本が下を押し下げて、次の一本を選ぶのに送ることになる。
+
+     **1ファイルで URL の印から出し分ける**（`service.html#01`）。
+     お知らせと同じで、本番にするなら一本一ファイルか、生成する仕組みが要る。
+
+     **公式サイトに出ているのは、題と、そのすぐ下の一行だけ。**
+     それより下（何をするか／進め方／出てくるもの）は**こちらが書いた仮の中身。**
+     画面にもそう出している。
+     **数字は入れない**（価格・期間・社数・実績）。仮でも約束に見える。
+================================================================ -->
+
+<style>
+:root{
+  --bg:   #e8ebee;
+  --card: #ffffff;
+  --tint: #f2f4f6;
+  --ink:  #16191d;
+  --sub:  #5b626b;
+  --go:   #0e6b58;
+  --frame:#d9dee3;
+
+  --lift1: 0 1px 2px rgba(20,26,32,.06), 0 3px 8px rgba(20,26,32,.07);
+  --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
+  --lift0: 0 1px 1px rgba(20,26,32,.10);
+
+  --r: 10px;
+  --ease: cubic-bezier(.2,.7,.3,1);
+}
+
+*{box-sizing:border-box}
+html{height:100%; scrollbar-gutter:stable}
+body{
+  min-height:100%; margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
+              system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column;
+}
+
+/* ─ 枠。頭と足。入口と同じ（線は引かない。沈んだ面で枠にする）───── */
+.in,.sheet{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
+.sheet{padding:40px 24px}
+
+.top,.foot{flex:none; background:var(--frame)}
+.top{height:56px; display:flex; align-items:center}
+.mark{font-size:13.5px; font-weight:700; letter-spacing:.02em; color:var(--ink)}
+
+.foot .in{padding:30px 24px 34px}
+.foot p{margin:0; font-size:12px; color:var(--sub); line-height:1.85}
+.foot .fn{font-size:13px; font-weight:700; color:var(--ink)}
+.foot .fa{margin-top:7px}
+.foot .fc{margin-top:22px; font-size:11.5px}
+.foot .fw{margin-top:9px; font-size:11.5px}
+
+/* ─ 戻りのカード。上と下に同じものを置く（新しい部品を足さない）───── */
+.back{
+  display:block; margin-top:16px; padding:22px 26px;
+  font-size:14px; font-weight:700; text-decoration:none; color:inherit;
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+  transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.back:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.back:active{transform:translateY(2px); box-shadow:var(--lift0)}
+.back:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.sheet>.back:first-child{margin-top:0; animation-delay:0s}
+
+/* ─ 一本 ─────────────────────────────────────────────── */
+.art{
+  margin-top:16px; background:var(--card); border-radius:var(--r);
+  box-shadow:var(--lift1); padding:38px 40px 40px;
+}
+.art .d{margin:0; font-size:12.5px; font-weight:700; color:var(--go);
+        font-variant-numeric:tabular-nums; letter-spacing:.06em}
+.art h1{margin:12px 0 0; font-size:clamp(19px,2.6vw,25px); font-weight:700; line-height:1.5}
+
+/* 公式サイトの一行。ここまでが会社の言葉 */
+.art .lead{margin:18px 0 0; font-size:14px; line-height:2; color:var(--sub)}
+
+/* ─ 仮の中身。段の名前は小さく、中身を大きく（会社概要と同じ組み方）─ */
+.sec{margin-top:34px}
+.sec h2{margin:0; font-size:11.5px; font-weight:700; letter-spacing:.04em; color:var(--sub); line-height:1.5}
+.sec p{margin:6px 0 0; font-size:14px; line-height:2}
+
+/* 進め方。番号は数えさせる（手で振らない） */
+.steps{list-style:none; counter-reset:s; margin:10px 0 0; padding:0; display:grid; gap:8px}
+.steps li{
+  counter-increment:s; background:var(--tint); border-radius:8px;
+  padding:15px 18px 15px 46px; position:relative;
+  font-size:13.5px; line-height:1.75;
+}
+.steps li::before{
+  content:counter(s); position:absolute; left:18px; top:15px;
+  font-size:12px; font-weight:700; color:var(--go);
+  font-variant-numeric:tabular-nums;
+}
+
+/* 出てくるもの。**同じ板だが、番号付きの段とは形で見分ける**（小さく、横に並ぶ）*/
+.outs{list-style:none; margin:10px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:8px}
+.outs li{background:var(--tint); border-radius:6px; padding:9px 13px; font-size:13px; line-height:1.6}
+
+/* 中身が仮であることの断り。押せないので影は落とさない */
+.todo{margin:16px 0 0; background:var(--tint); border-radius:8px; padding:20px 22px;
+      font-size:12.5px; color:var(--sub); line-height:1.9}
+.todo b{color:var(--ink)}
+
+@keyframes drop{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+.art,.back{animation:drop .42s var(--ease) backwards}
+.art{animation-delay:.06s}
+.back{animation-delay:.10s}
+@media (prefers-reduced-motion:reduce){ .art,.back{animation:none} }
+
+@media (max-width:520px){
+  .art{padding:28px 24px 30px}
+  .back{padding:20px 22px}
+  .steps li{padding:14px 16px 14px 42px}
+  .steps li::before{left:16px; top:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- 頭。社名だけ。押せるものは置かない（入口と同じ）-->
+<header class="top">
+  <div class="in"><span class="mark">株式会社アルターデザインコンサルティング</span></div>
+</header>
+
+<main class="sheet">
+
+  <!-- 一覧へ戻る。読む前でも読み終わってからでも選べるように、上と下に同じものを置く。
+       `#svc` 付きなので、帯が一覧を出した状態で戻る -->
+  <a class="back" href="./#svc">サービスの一覧へ</a>
+
+  <article class="art">
+    <p class="d" id="d"></p>
+    <h1 id="t"></h1>
+    <p class="lead" id="lead"></p>
+
+    <section class="sec">
+      <h2>何をするか</h2>
+      <p id="what"></p>
+    </section>
+
+    <section class="sec">
+      <h2>進め方</h2>
+      <ol class="steps" id="steps"></ol>
+    </section>
+
+    <section class="sec">
+      <h2>出てくるもの</h2>
+      <ul class="outs" id="outs"></ul>
+    </section>
+  </article>
+
+  <p class="todo">題と、そのすぐ下の一行が<b>公式サイトの言葉</b>です（alt-dsgn.co.jp、2026年9月3日に確認）。
+  それより下は<b>仮の中身</b>で、まだ会社が出しているものではありません。</p>
+
+  <a class="back" href="./#svc">サービスの一覧へ</a>
+
+</main>
+
+<!-- 足。入口と同じ -->
+<footer class="foot">
+  <div class="in">
+    <p class="fn">株式会社アルターデザインコンサルティング</p>
+    <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
+    <p class="fc">© 2025 株式会社アルターデザインコンサルティング</p>
+    <p class="fw">これは案です。サービスの題と一行だけが公式サイトの言葉で、それより下は仮の中身です。実装は AI（Claude）が行いました。</p>
+  </div>
+</footer>
+
+<script>
+/* 一本ずつ。1ファイルで URL の印から出し分ける（お知らせと同じ）。
+
+   title と lead は**公式サイトの言葉**。what / steps / outs は**仮。**
+   書くときの縛り：数字を出さない（価格・期間・社数・実績）。
+   仮でも約束に見えるし、公表していないことを画面に書くことになる。 */
+var SVC = {
+  '01': {
+    title: '人間中心の次世代業務システム開発',
+    lead:  '業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供',
+    what:  '画面から作りません。まず、いまその仕事をしている人が何を見て何を決めているかを並べます。'
+         + '効率化だけを先に置くと、決めごとが人の頭の中に残ったまま、道具だけが新しくなります。',
+    steps: [
+      '使っている人のそばで、いまのやり方を見せてもらう',
+      '決めごとを一覧にする（誰が、何を見て、何を決めているか）',
+      '短い周期で動くものを出して、使いながら直す',
+      '手が離れる形に整えて渡す'
+    ],
+    outs:  ['決めごとの一覧', '画面の試作', '動く仕組み']
+  },
+  '02': {
+    title: 'AIによる意思決定支援と事業変革支援',
+    lead:  '経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援',
+    what:  'AI を入れる前に、何を決めるためのものかを決めます。'
+         + '「データがあるから使う」から始めると、出てきたものを誰も判断に使いません。'
+         + '決めたいことを一つに絞って、そこから逆に組みます。',
+    steps: [
+      '決めたいことを一つに絞る',
+      'いま何を見て決めているかを書き出す',
+      '手元のデータで試して、判断に足りるか見る',
+      '判断の場（会議や日々の運用）に載せる'
+    ],
+    outs:  ['判断の見取り図', '試した結果と、届かなかったところ', '運用の形']
+  },
+  '03': {
+    title: '自律型・共創型の組織設計支援',
+    lead:  'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現',
+    what:  '誰が何を決めていいかを組み替えます。道具が変わると、仕事の分け方も変わります。'
+         + '道具だけ新しくして分け方を据え置くと、承認の列がそのまま残ります。',
+    steps: [
+      '決定の流れをたどる（どこで止まっているか）',
+      '止まっている理由を、人ではなく置き場に探す',
+      '権限の置き場を組み替える',
+      'しばらく一緒に回して、戻らないか見る'
+    ],
+    outs:  ['決定の流れ図', '役割と権限の割り当て', '運用の取り決め']
+  },
+  '04': {
+    title: '地域格差の解消を目指したデジタル支援',
+    lead:  '都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援',
+    what:  'その場所で続けられる形にします。作って渡すのではなく、あとから自分たちで直せるものを置きます。'
+         + '直せないものは、作った側が離れた時点で止まります。',
+    steps: [
+      'いま使っている道具と、続けられる範囲を見る',
+      'ノーコードで小さく作って、すぐ触ってもらう',
+      '触れる人を増やす（作り方ではなく、直し方から）',
+      '手が離れる形にする'
+    ],
+    outs:  ['動く仕組み', '直し方の手引き', '直せる人']
+  }
+};
+
+function put(id, text){ document.getElementById(id).textContent = text; }
+
+function list(id, items){
+  var el = document.getElementById(id);
+  el.textContent = '';
+  items.forEach(function(t){
+    var li = document.createElement('li');
+    li.textContent = t;
+    el.appendChild(li);
+  });
+}
+
+function draw(){
+  var k = location.hash.slice(1);
+  var s = SVC[k];
+  if (!s){                                   /* 印が無い・知らない印なら一本目 */
+    k = Object.keys(SVC)[0];
+    s = SVC[k];
+    history.replaceState(null, '', '#' + k);
+  }
+  put('d', k);
+  put('t', s.title);
+  put('lead', s.lead);
+  put('what', s.what);
+  list('steps', s.steps);
+  list('outs', s.outs);
+  document.title = s.title + '｜株式会社アルターデザインコンサルティング';
+}
+draw();
+window.addEventListener('hashchange', draw);
+</script>
+
+</body>
+</html>
