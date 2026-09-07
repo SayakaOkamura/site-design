@@ -8,7 +8,6 @@
 <!-- 009 カード ─ 見直してみる（体験）
      ================================================================
      **粗い一枚。**字の大きさも間もまだ詰めていない。
-     変換の瞬間が効くかどうかを見るために作った。
 
      話し合いで決まっていること（NOTES.md が正）
      - 思わせたいのは **「この方がいいな」**。発見（できるのか）ではなく選好
@@ -16,17 +15,20 @@
      - 重い側は「無理」ではなく **「やってられない」**。読めば分かる。ただ多い
      - **量は減らない。**カード化は読みやすく決めやすくするためのもの
      - **重い側では決めさせない。**決めやすさは軽い側だけのものにする
-     - カード化の値打ちは一件が読めることではなく、**関係が見えること**
-       （被っている／これのために要る／決まっていない）
+     - カード化の値打ちは、**関係が見えること**（被っている／これのために要る／決まっていない）
      - 三択が押せるのは、**関係が見えているから**
-     - **減るのは束ではない。増えるのは自分が押した側（台帳）**
+     - **増えるのは自分が押した側（台帳）**
      - 快感は物理から。点数も演出も足さない
+     - **できない指示を出さない。**押すところは下の帯に一つだけ
 
-     **同じ行がそのままカードになる。**別のものに差し替えていない。
-     詰まっていたものが開くだけ。だから「量は同じ」が嘘にならない。
+     **カードになったらスクロールさせない**（本人 2026-09-07）：
+     > カードになった時スクロールしたくないかも。順繰りで出てきて、
+     > 終わったらたまっていく感じにできないか
 
-     背景は、重い側がいちばん暗い。カードになると明るくなる。
-     入口がいちばん明るい（`index.html`）。
+     一枚ずつ手前に出て、押したら下（台帳）へ落ちる。束の厚みは後ろに見えている。
+     **判断が一度に一つしか目に入らない**——「一枚に判断が一つ」がここで形になる。
+
+     背景は、重い側がいちばん暗い。カードになると明るくなる。入口がいちばん明るい。
 
      **中身は仮。**会社について何も主張しない言葉だけにしてある。
 ================================================================ -->
@@ -40,11 +42,12 @@
   --sub:  #5b626b;
   --go:   #0e6b58;
 
-  --dark:     #171b22;   /* 重い側 */
+  --dark:     #171b22;
   --dark-ink: #99a3b2;
 
   --lift1: 0 1px 2px rgba(20,26,32,.06), 0 3px 8px rgba(20,26,32,.07);
   --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
+  --lift3: 0 8px 16px rgba(20,26,32,.10), 0 28px 56px rgba(20,26,32,.16);
   --lift0: 0 1px 1px rgba(20,26,32,.10);
 
   --r: 10px;
@@ -52,23 +55,24 @@
 }
 
 *{box-sizing:border-box}
-[hidden]{display:none!important}   /* .go は display:block なので、これが無いと隠れない */
+[hidden]{display:none!important}
 html{height:100%; scrollbar-gutter:stable}
 body{
   min-height:100%; margin:0; color:var(--ink);
   font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
               system-ui,-apple-system,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased;
-  padding:32px 24px 140px;
+  padding:32px 24px 120px;
   background:var(--dark);
   transition:background .9s var(--ease);
 }
 body[data-stage="cards"],body[data-stage="end"]{background:var(--bg)}
+body[data-stage="cards"]{overflow:hidden}   /* 束のあいだはスクロールさせない */
 
 .sheet{width:100%; max-width:860px; margin:0 auto}
 
 /* ─ 頭 ───────────────────────────────────────────────── */
-.top{margin:0 2px 20px; transition:color .9s var(--ease); color:var(--dark-ink)}
+.top{margin:0 2px 20px; color:var(--dark-ink); transition:color .9s var(--ease)}
 body[data-stage="cards"] .top,body[data-stage="end"] .top{color:var(--sub)}
 .top h1{margin:0; font-size:clamp(16px,2.2vw,20px); font-weight:700; line-height:1.5;
         color:#e7ebf0; transition:color .9s var(--ease)}
@@ -76,60 +80,69 @@ body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)
 .top p{margin:10px 0 0; font-size:13px; line-height:1.8}
 .top .n{font-variant-numeric:tabular-nums; font-weight:700}
 
-/* ─ 束。行 → カード。**同じ要素**の見た目が変わるだけ ───────── */
-.stack{list-style:none; margin:0; padding:0; display:grid; gap:0;
-       transition:gap .55s var(--ease)}
-body[data-stage="cards"] .stack,body[data-stage="end"] .stack{gap:10px}
-
+/* ─ 重い側：詰まった行 ───────────────────────────────── */
+.stack{list-style:none; margin:0; padding:0; display:grid; gap:0}
 .stack li{
-  background:transparent; color:var(--dark-ink);
-  border-radius:8px; padding:2px 10px; box-shadow:none;
+  color:var(--dark-ink); border-radius:8px; padding:2px 10px;
   font-size:12.5px; line-height:1.75;
-  transition:background .55s var(--ease), color .55s var(--ease),
-             padding .55s var(--ease), box-shadow .55s var(--ease);
-}
-body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{
-  background:var(--card); color:var(--ink); box-shadow:var(--lift1);
-  padding:16px 20px; font-size:13.5px; line-height:1.7;
 }
 .stack li .no{display:inline-block; min-width:2.4em; color:#5d6675;
-              font-variant-numeric:tabular-nums; transition:color .55s var(--ease)}
+              font-variant-numeric:tabular-nums}
+.rel,.pick,.mark{display:none}
+
+/* ─ 軽い側：一枚ずつ手前に出る束 ─────────────────────────
+   後ろの厚みが見えているので、量が減った気にならない。
+   **判断が一度に一つしか目に入らない。** */
+/* 一枚が広すぎると板に見える。カードらしい幅に締めて、真ん中に置く */
+body[data-stage="cards"] .stack,body[data-stage="end"] .stack{
+  display:block; position:relative; min-height:320px;
+  max-width:520px; margin:40px auto 0;
+}
+body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{
+  position:absolute; left:0; right:0; top:0;
+  background:var(--card); color:var(--ink); box-shadow:var(--lift3);
+  border-radius:var(--r); padding:32px 32px 28px;
+  font-size:15.5px; line-height:1.8; min-height:250px;
+  display:flex; flex-direction:column;
+  transform:translateY(calc(var(--i) * 8px)) scale(calc(1 - var(--i) * .028));
+  z-index:calc(60 - var(--i));
+  transition:transform .38s var(--ease), opacity .34s ease, box-shadow .38s ease;
+}
 body[data-stage="cards"] .stack li .no,body[data-stage="end"] .stack li .no{color:var(--sub)}
 
-/* 関係と三択は、カードになってから出す */
-.rel,.pick,.mark{display:none}
-body[data-stage="cards"] .rel,body[data-stage="end"] .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
-body[data-stage="cards"] .pick,body[data-stage="end"] .pick{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
-.stack li.done .pick{display:none!important}
-body[data-stage="cards"] .stack li.done .mark,body[data-stage="end"] .stack li.done .mark{display:inline-block; margin-top:12px}
+/* 後ろの札は、下の縁だけ見せる */
+.stack li[data-back]{box-shadow:var(--lift1)}
+.stack li[data-hide]{opacity:0; pointer-events:none}
+.stack li[data-back] .rel,.stack li[data-back] .pick{visibility:hidden}
 
-.rel b{
-  font-size:11.5px; font-weight:700; line-height:1; padding:7px 10px; border-radius:999px;
-  background:var(--tint); color:var(--sub);
-}
+/* 押したら、台帳のほうへ落ちる */
+.stack li.out{transform:translateY(150px) scale(.94) rotate(1.2deg); opacity:0}
+
+body[data-stage="cards"] .rel,body[data-stage="end"] .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px}
+/* 三択はカードの下端に寄せる。**押す場所が毎回同じ**になるので、手が迷わない */
+body[data-stage="cards"] .pick,body[data-stage="end"] .pick{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:22px}
+
+.rel b{font-size:11.5px; font-weight:700; line-height:1; padding:7px 10px; border-radius:999px;
+       background:var(--tint); color:var(--sub)}
 .rel b.dup{background:#fdeceb; color:#a3352c}
 .rel b.needs{background:#e9f2ff; color:#22528f}
 .rel b.open{background:#fff4e2; color:#8a5a12}
 
-/* 押せるもの。影を落とす */
 .pick button{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  font-size:12.5px; font-weight:700; padding:9px 14px; border-radius:8px;
-  background:var(--card); color:var(--ink); box-shadow:var(--lift1);
+  font-size:13px; font-weight:700; padding:12px 18px; border-radius:8px;
+  background:var(--tint); color:var(--ink); box-shadow:var(--lift1);
   transition:transform .14s var(--ease), box-shadow .14s ease;
 }
 .pick button:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .pick button:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .pick button:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+.pick button i{font-style:normal; color:var(--sub); font-size:11px; margin-left:7px}
 
-.stack li.done{opacity:.62}
-.mark{font-size:12px; font-weight:700; color:var(--sub)}
-
-/* ─ 下の帯。**押すところは常にここ一箇所。**
-   最初は「カードにする」だけ、カードになったら台帳になる。
-   場所が動かないので、何をすればいいか迷わせない。 ───────────── */
+/* ─ 下の帯。押すところは常にここ。あとで台帳になる ───────────── */
 .book{
-  position:fixed; left:0; right:0; bottom:0; z-index:20;
+  position:fixed; left:0; right:0; bottom:0; z-index:80;
   background:var(--card); box-shadow:0 -2px 4px rgba(20,26,32,.06), 0 -12px 32px rgba(20,26,32,.10);
   padding:14px 24px;
 }
@@ -141,7 +154,10 @@ body[data-stage="cards"] .ledger,body[data-stage="end"] .ledger{display:flex}
 .book .c b{color:var(--ink); font-size:15px; margin-right:3px}
 .book .rest{font-size:12px; color:var(--sub)}
 
-/* ─ 押すところ ───────────────────────────────────────── */
+/* 台帳の厚み。押すたびに一枚ぶん増える（数だけでなく目にも見える） */
+.pile{display:flex; align-items:flex-end; gap:2px; height:20px}
+.pile i{display:block; width:14px; height:2px; background:var(--sub); opacity:.28; border-radius:1px}
+
 .go{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   margin-left:auto; text-align:left;
@@ -159,8 +175,10 @@ body[data-stage="wall"] .go{margin-left:0}
 .end{display:none; background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
      padding:40px; margin-bottom:16px}
 body[data-stage="end"] .end{display:block}
+body[data-stage="end"] .stack{display:none}
 .end h2{margin:0; font-size:clamp(19px,3vw,27px); font-weight:700; line-height:1.55}
 .end p{margin:20px 0 0; font-size:13.5px; color:var(--sub); line-height:1.95}
+
 .back{
   display:block; text-decoration:none; color:inherit; margin-top:16px;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
@@ -168,14 +186,16 @@ body[data-stage="end"] .end{display:block}
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 .back:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+body[data-stage="cards"] .back,body[data-stage="cards"] .note{display:none}
 
 .note{margin:22px 2px 0; font-size:11.5px; line-height:1.9; color:var(--dark-ink);
       transition:color .9s var(--ease)}
-body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
+body[data-stage="end"] .note{color:var(--sub)}
 
 @media (max-width:520px){
-  body{padding:24px 16px 150px}
+  body{padding:24px 16px 130px}
   .end{padding:28px 24px}
+  body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{padding:24px 22px; font-size:14px}
 }
 </style>
 </head>
@@ -184,8 +204,7 @@ body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
 <main class="sheet">
 
   <div class="top">
-    <!-- **できない指示を出さない。**「探してください」と言われても探す手立てが画面に無い。
-         事実だけ置いて、押すところは下の帯に一つだけ用意する。 -->
+    <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
     <h1 id="h">社内の取り決め　<span class="n" id="n">0</span> 件</h1>
     <p id="p">一行ずつは読めます。<b>どれとどれが被っているかは、見えません。</b></p>
   </div>
@@ -193,7 +212,7 @@ body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
   <!-- 終わり。理念はここで初めて出す（通り終わってから名前が付く） -->
   <div class="end">
     <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
-    <p>いま押したものは、そのまま台帳になっています。減ったのは取り決めの数ではなく、読む手間のほうです。</p>
+    <p>押したものは台帳に積まれています。減ったのは取り決めの数ではなく、読む手間のほうです。</p>
   </div>
 
   <ul class="stack" id="stack"></ul>
@@ -204,11 +223,11 @@ body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
 
 </main>
 
-<!-- 下の帯。押すところは常にここ。あとで台帳になる -->
 <div class="book">
   <div class="in">
     <span class="ledger">
       <span class="t">台帳</span>
+      <span class="pile" id="pile"></span>
       <span class="c"><b id="c1">0</b>要る</span>
       <span class="c"><b id="c2">0</b>要らない</span>
       <span class="c"><b id="c3">0</b>もうやった</span>
@@ -220,9 +239,7 @@ body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
 
 <script>
 /* 中身は仮。どの会社にもある形の取り決めだけ。業種を選ばない言葉にしてある。
-   dup  … 被っている相手
-   need … これのために要る相手
-   open … まだ決まっていない */
+   dup … 被っている相手／need … これのために要る相手／open … まだ決まっていない */
 var RULES = [
   ['申請は、所属長の承認を受けてから処理する'],
   ['所属長が不在のときは、代理の者が承認する'],
@@ -267,24 +284,26 @@ var RULES = [
 ];
 
 var PICKS = ['要る', '要らない', 'もうやった'];
-var NEED = 6;                       /* ここまで押したら「あとは同じ」で切る */
+var NEED  = 6;                    /* ここまで押したら「あとは同じ」で切る */
+var SHOW  = 4;                    /* 後ろに見せる厚み */
 
 var stack = document.getElementById('stack'),
+    go    = document.getElementById('go'),
+    lis   = [],
     counts = [0, 0, 0],
-    done = 0;
+    done = 0,
+    busy = false;
 
 RULES.forEach(function(r, i){
   var n = i + 1, rel = r[1] || {};
   var li = document.createElement('li');
-  li.dataset.n = n;
 
   var t = document.createElement('div');
   t.innerHTML = '<span class="no">' + n + '</span>';
   t.appendChild(document.createTextNode(r[0]));
   li.appendChild(t);
 
-  /* 関係。**カードになって初めて見える。**うじゃうじゃの中では見えない。
-     関係が無い一件には空の帯を置かない（空きだけが残る） */
+  /* 関係。**カードになって初めて見える。**詰まっているあいだは見えない */
   if (rel.dup || rel.need || rel.open){
     var rb = document.createElement('div');
     rb.className = 'rel';
@@ -298,51 +317,70 @@ RULES.forEach(function(r, i){
   pk.className = 'pick';
   PICKS.forEach(function(name, k){
     var b = document.createElement('button');
-    b.textContent = name;
+    b.innerHTML = name + '<i>' + (k + 1) + '</i>';
     b.onclick = function(){ sort(li, k, name); };
     pk.appendChild(b);
   });
   li.appendChild(pk);
 
-  var mk = document.createElement('span');
-  mk.className = 'mark';
-  li.appendChild(mk);
-
   stack.appendChild(li);
+  lis.push(li);
 });
 
 document.getElementById('n').textContent = RULES.length;
 tally();
 
-/* 仕分ける。**束からは消さない**（量は減らない）。増えるのは台帳のほう */
+function live(){ return lis.filter(function(l){ return !l.dataset.gone; }); }
+
+/* 手前から順に番号を振り直す。0 が手前の一枚 */
+function restack(){
+  live().forEach(function(l, i){
+    l.style.setProperty('--i', i);
+    if (i === 0){ delete l.dataset.back; } else { l.dataset.back = '1'; }
+    if (i >= SHOW){ l.dataset.hide = '1'; } else { delete l.dataset.hide; }
+  });
+}
+
+/* 仕分ける。押した一枚は台帳のほうへ落ちる */
 function sort(li, k, name){
-  if (li.classList.contains('done')) return;
-  li.classList.add('done');
-  li.querySelector('.mark').textContent = '→ ' + name;
+  if (busy || li.dataset.gone) return;
+  busy = true;
+  li.classList.add('out');
   counts[k]++; done++;
-  tally();
-  if (done === NEED) finish();
+
+  setTimeout(function(){
+    li.dataset.gone = '1';
+    li.hidden = true;
+    restack();
+    tally();
+    busy = false;
+    if (done === 1) go.hidden = false;
+    if (done === NEED) finish();
+  }, 340);
 }
 
 function tally(){
   document.getElementById('c1').textContent = counts[0];
   document.getElementById('c2').textContent = counts[1];
   document.getElementById('c3').textContent = counts[2];
-  document.getElementById('rest').textContent =
-    '束は ' + RULES.length + ' 件のまま（減りません）';
+  document.getElementById('rest').textContent = '束の残り ' + live().length + ' 件';
+  var pile = document.getElementById('pile');
+  pile.innerHTML = '';
+  for (var i = 0; i < done; i++) pile.appendChild(document.createElement('i'));
 }
 
-/* 重い側の一手 → カードへ。背景も同時に明るくなる */
-var go = document.getElementById('go');
+/* 重い側の一手 → 束へ。背景も同時に明るくなる */
 go.onclick = function(){
   if (document.body.dataset.stage === 'wall'){
     document.body.dataset.stage = 'cards';
+    restack();
     document.getElementById('h').textContent = '同じ ' + RULES.length + ' 件です';
     document.getElementById('p').innerHTML =
-      '一件が一枚になりました。<b>被っているもの・何かのために要るもの・まだ決まっていないもの</b>に印が付いています。'
-      + '<br>見えていれば、押せます。';
+      '一枚ずつ出てきます。<b>被っているもの・何かのために要るもの・まだ決まっていないもの</b>に印が付いています。'
+      + '<br>見えていれば、押せます（キーの <b>1 2 3</b> でも）。';
     go.innerHTML = 'ここまでにする<span>残りも同じ形です</span>';
-    go.hidden = true;                      /* 仕分けが始まるまでは出さない */
+    go.hidden = true;
+    window.scrollTo(0, 0);
     return;
   }
   finish();
@@ -352,18 +390,21 @@ function finish(){
   document.body.dataset.stage = 'end';
   document.getElementById('h').textContent = '見直したもの';
   document.getElementById('p').innerHTML =
-    '押した ' + done + ' 件は台帳に入りました。<b>束は ' + RULES.length + ' 件のままです。</b>減ったのは数ではなく、読む手間のほうです。';
+    '押した ' + done + ' 件が台帳に入りました。<b>取り決めそのものは ' + RULES.length + ' 件のままです。</b>'
+    + '減ったのは数ではなく、読む手間のほうです。';
   go.hidden = true;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo(0, 0);
 }
 
-/* 仕分けが一件でも進んだら「ここまで」を出す */
-var seen = false;
-stack.addEventListener('click', function(){
-  if (seen || document.body.dataset.stage !== 'cards') return;
-  if (!done) return;
-  seen = true;
-  go.hidden = false;
+/* マウスが無くても押せるように。1 2 3 で三択 */
+document.addEventListener('keydown', function(e){
+  if (document.body.dataset.stage !== 'cards' || busy) return;
+  var k = '123'.indexOf(e.key);
+  if (k < 0) return;
+  var top = live()[0];
+  if (!top) return;
+  e.preventDefault();
+  sort(top, k, PICKS[k]);
 });
 </script>
 
