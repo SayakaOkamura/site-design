@@ -199,11 +199,19 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .news a:active,.news .row:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .news a:focus-visible,.news .row:focus-visible{outline:2px solid var(--go); outline-offset:2px}
 
-/* 開いている行は沈む。**カードと同じ言い方**（押されたまま、面が空） */
+/* 開いている行は沈む。**カードと同じ言い方**（押されたまま、面が空）。
+   そして**帯の上端に貼りつく。**中身が下を流れていっても、
+   **戻り先（同じ行）が上端から動かない**——読んだあとに送り返さなくていい。 */
+.news li[hidden]{display:none}
 .news .row[aria-expanded="true"],
 .news .row[aria-expanded="true"]:hover{
   transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint);
 }
+/* **貼りつくのは行ではなく一覧のほう。**
+   sticky は親の箱から出られないので、行に付けても効かない（一度これで外した）。
+   一覧の箱は帯の中身ぜんぶの高さを持っているので、こちらなら貼りつく。
+   下を流れる中身を隠すため、白を敷く。 */
+.body.one .news{position:sticky; top:0; z-index:1; background:var(--card); padding-bottom:9px}
 
 /* 選んだ一本の中身。**一覧の下に出る＝一覧は動かない。**
    新しい面は作らない（帯の白の上に直に組む）。
@@ -577,8 +585,11 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
     if (body) body.tabIndex = body.scrollHeight > body.clientHeight ? 0 : -1;
   }
 
-  /* サービスの一本。**一覧は動かさず、下に中身を出す。**
-     もう一度押すと閉じる（入口のカードと同じ押し方）。 */
+  /* サービスの一本。**帯は「一覧」か「一本」のどちらかを出す。両方は出さない。**
+     一本を出すあいだ、他の三行は畳む。出した行は上端に貼りつく（CSS の sticky）。
+     **だから読み終わって次を選ぶときに、送り返す必要がない。**
+     一覧の下に中身を足す形は却下（本人：「それやるといちいち上に戻って
+     来ないといけないって話だったはず」。お知らせで一度言われたのと同じ）。 */
   document.addEventListener('click', function(e){
     var row = e.target.closest('.row[data-svc]');
     if (!row) return;
@@ -587,22 +598,21 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
     box.querySelectorAll('.row[data-svc]').forEach(function(r){
       r.setAttribute('aria-expanded', 'false');
+      r.parentNode.hidden = false;                       /* 畳んだ行を戻す */
     });
     box.querySelectorAll('.det[data-svc]').forEach(function(d){ d.hidden = true; });
-    if (on){ reach(box); return; }          /* もう一度押した＝閉じる */
+    box.classList.remove('one');
+    box.scrollTop = 0;                                   /* 上端から始める */
+
+    if (on){ reach(box); return; }                       /* もう一度押した＝一覧へ戻る */
 
     row.setAttribute('aria-expanded', 'true');
+    box.classList.add('one');                            /* 一覧が上端に貼りつく */
+    box.querySelectorAll('.row[data-svc]').forEach(function(r){
+      if (r !== row) r.parentNode.hidden = true;         /* 出しているあいだ、他は畳む */
+    });
     box.querySelector('.det[data-svc="' + row.dataset.svc + '"]').hidden = false;
     reach(box);
-
-    /* 押した行を帯の上へ。**その下に中身が続く**ので、戻る先（同じ行）が見えたまま。
-       帯が送れないとき（狭い画面）はページのほうで見えるところまで運ぶ。 */
-    if (box.scrollHeight > box.clientHeight){
-      var to = row.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
-      box.scrollTo({ top: Math.max(0, to - 4), behavior:'smooth' });
-    } else {
-      row.scrollIntoView({ block:'nearest', behavior:'smooth' });
-    }
   });
 
   /* 押した感触。行き先が無いカードは沈んで戻るだけ */
