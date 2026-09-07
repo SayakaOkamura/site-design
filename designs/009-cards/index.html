@@ -69,11 +69,12 @@ body.locked{overflow:hidden}
 .head p{margin:18px 0 0; font-size:clamp(13px,1.6vw,15px); font-weight:500; color:var(--sub); line-height:1.7}
 
 /* ─ 押せるカード ───────────────────────────────────────── */
-/* 枚数を決め打ちしない。入る数だけ一列に並んで、余りは次の列が埋める。
-   お知らせのような塊が増えても、4＋1 の間抜けな折り返しにならない。
-   （狭い画面では自然に縦へ積まれる） */
-.deck{margin-top:16px; display:flex; flex-wrap:wrap; gap:16px}
-.ph{flex:1 1 190px; border-radius:var(--r)}   /* 開いているあいだ、束に空けておく穴 */
+/* 枚数を決め打ちせず、段が揃うように列を割り直す（列の数は JS が入れる）。
+   引き伸ばして余りを埋める形にしたら、題名しか無いカードが倍の幅になって
+   空箱に見えた。**全部同じ大きさで、どの段も端まで揃う**ほうがいい。
+   6枚なら 3＋3、7枚なら 4＋3。 */
+.deck{margin-top:16px; display:grid; grid-template-columns:repeat(var(--cols,4),1fr); gap:16px}
+.ph{border-radius:var(--r)}   /* 開いているあいだ、束に空けておく穴 */
 
 .card{
   -webkit-appearance:none; appearance:none; border:0; margin:0;
@@ -81,7 +82,7 @@ body.locked{overflow:hidden}
   -webkit-user-select:none; user-select:none;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
   padding:26px 22px 24px; min-height:128px;
-  flex:1 1 190px; min-width:0;
+  min-width:0;
   display:flex; flex-direction:column;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
@@ -304,6 +305,18 @@ body.locked{overflow:hidden}
       ph    = null;   /* 束に空けておく穴 */
 
   var PAD = 24, MAXW = 860;
+
+  /* 段が揃うように列を割る。一段に入る上限を先に決めて、
+     その上限で何段になるかから、一段あたりの枚数を出す。
+     6枚 → 2段 → 3枚ずつ。7枚 → 2段 → 4＋3。 */
+  function relayout(){
+    var n = deck.querySelectorAll('.card').length;
+    var max = innerWidth <= 420 ? 1 : innerWidth <= 720 ? 2 : 4;
+    var rows = Math.max(1, Math.ceil(n / max));
+    deck.style.setProperty('--cols', Math.ceil(n / rows));
+  }
+  relayout();
+  window.addEventListener('resize', relayout);
 
   /* 開いたときの行き先。中身を測ってから決める */
   function target(card){
