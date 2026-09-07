@@ -41,9 +41,12 @@
      > ここに懐かし画面要素入れてもいいね。改修するの、昔のシステムのことも多いだろうし
 
      > なんかここを昔懐かしUIにできない？あ～あったね～ってなるようなやつ
+     > エクセルのUIってこういうのに勝手に使っていいの？
+     > だからCLI寄せの方がいいと思うよって話
 
-     **いまは Windows 95 の業務アプリ。**青緑のデスクトップ、紺のタイトルバー、
-     灰色の立体枠、メニュー、凹んだ一覧、太いスクロールバー、ステータスバー。
+     **製品の画面は真似しない。**Windows 95 の窓も一度作ったが、
+     ロゴも画像も使っていなくても「あの製品」と分かる寄せ方だった。
+     **端末の出力は特定の製品の意匠ではない**ので、寄せ先としてここが安全。
      難解さは**絡まりのほう**に持たせている——項番の順に並んでいない、
      関わりのある項が遠い、参照は番号だけで意味が書いていない。
      **中身は読める日本語のまま。**
@@ -74,15 +77,13 @@
 
   --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
           "Liberation Mono","Courier New",monospace;
-  /* 昔のアプリ（引用）。重い側だけで使う。**あの灰色と、あの紺** */
-  --w-face:   #c0c0c0;
-  --w-light:  #ffffff;
-  --w-shadow: #808080;
-  --w-face2:  #dfdfdf;
-  --w-title:  #000080;
-  --w-desk:   #008080;   /* あの青緑のデスクトップ */
-  --w-ui: "MS UI Gothic","MS PGothic",Osaka,
-          "Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  /* 端末の出力（重い側だけ）。**どの製品の意匠でもない** */
+  --crt-bg:  #0a1210;
+  --crt-ink: #86c9a4;
+  --crt-dim: #45705c;
+  --crt-hi:  #d9f5e6;
+  --crt-ref: #b8933f;
+  --crt-cmd: #5fbfa1;
 
   --r: 10px;
   --ease: cubic-bezier(.2,.7,.3,1);
@@ -115,15 +116,13 @@ body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)
 .top p{margin:10px 0 0; font-size:13px; line-height:1.8}
 .top .n{font-variant-numeric:tabular-nums; font-weight:700}
 
-/* ─ 重い側：**Windows 95 の業務アプリ** ─────────────────────
-   **改修する相手は、たいてい昔のシステム**（本人 2026-09-07）。
-   そして「あ～あったね～ってなるやつ」。青緑のデスクトップ、紺の帯、
-   灰色の立体枠、メニュー、凹んだ一覧、太いスクロールバー、ステータスバー。
+/* ─ 重い側：**端末の出力** ─────────────────────────────────
+   **製品の画面は真似しない**（本人 2026-09-07：「エクセルのUIってこういうのに
+   勝手に使っていいの？」→「だからCLI寄せの方がいいと思うよって話」）。
+   端末の出力は特定の製品の意匠ではないので、寄せ先としてここが安全。
    難解さは**組み方**に持たせる（項番の順に並んでいない／関わる項が遠い／
    参照は番号だけ）。**中身は読める日本語のまま**——読めなくすると「無理」に振れて、
-   狙っている「こっちのほうがいい」が出ない。
-   ここは**引用した昔の画面**なので、線と立体はこの枠の中だけ
-   （新しい側は面と影だけ、という 009 の決めごとは崩していない）。 */
+   狙っている「こっちのほうがいい」が出ない。 */
 .stack{list-style:none; margin:0; padding:0; display:grid; gap:0}
 .stack li{
   color:var(--dark-ink); border-radius:8px; padding:2px 10px;
@@ -133,123 +132,83 @@ body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)
               font-variant-numeric:tabular-nums}
 .rel,.pick,.mark{display:none}
 
-/* 画面の桁は**重い側だけの部品。**カードになったら残るのは番号と本文だけ */
-.gut,.id,.ref{display:none}
+/* 桁は**重い側だけの部品。**カードになったら残るのは番号と本文だけ */
+.gut,.id,.ref,.cmd,.pre,.sum,.cur{display:none}
 
-/* デスクトップ。重い側だけ青緑 */
-body[data-stage="wall"]{background:var(--w-desk)}
-body[data-stage="wall"] .top h1{color:#fff}
-body[data-stage="wall"] .top p{color:#d3ecea}
-body[data-stage="wall"] .note{color:#a9d3d0}
+body[data-stage="wall"]{background:var(--crt-bg)}
+body[data-stage="wall"] .top,
+body[data-stage="wall"] .stack,
+body[data-stage="wall"] .cmd,
+body[data-stage="wall"] .pre,
+body[data-stage="wall"] .sum{font-family:var(--mono)}
 
-/* ─ 窓 ─ 立体枠は border-color の順（上左が明、下右が暗）で作る ─ */
-.crt{display:contents}
-.crtbar,.crtmenu,.crthd,.crtft{display:none}
-body[data-stage="wall"] .crt{
-  display:block; font-family:var(--w-ui); font-size:12px; line-height:1.6;
-  background:var(--w-face); color:#000;
-  border:2px solid; border-color:var(--w-light) var(--w-dark2,#000) var(--w-dark2,#000) var(--w-light);
-  box-shadow:inset -1px -1px 0 var(--w-shadow), inset 1px 1px 0 var(--w-face2);
-  padding:3px;
-  -webkit-font-smoothing:auto;
+/* 打ち込んだ一行。**$ だけ色を持つ** */
+body[data-stage="wall"] .cmd{
+  display:block; margin:0 2px 12px; font-size:12.5px; line-height:1.8;
+  color:var(--crt-dim); overflow-wrap:anywhere;
 }
+.cmd b{color:var(--crt-cmd); font-weight:400; margin-right:9px}
 
-/* 紺のタイトルバー。右に □ボタン三つ */
-body[data-stage="wall"] .crtbar{
-  display:flex; align-items:center; gap:6px;
-  background:var(--w-title); color:#fff; font-weight:700;
-  padding:3px 3px 3px 4px;
-}
-.crtbar .ic{
-  flex:none; width:15px; height:14px; background:var(--w-face); color:#000;
-  font-size:9px; line-height:14px; text-align:center; font-weight:400;
-  box-shadow:inset -1px -1px 0 var(--w-shadow), inset 1px 1px 0 var(--w-light);
-}
-.crtbar .ti{flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis}
-.crtbar .btns{flex:none; display:flex; gap:2px}
-.crtbar .btns i{
-  width:16px; height:14px; background:var(--w-face); color:#000;
-  font-style:normal; font-size:10px; font-weight:700; line-height:12px; text-align:center;
-  box-shadow:inset -1px -1px 0 var(--w-shadow), inset 1px 1px 0 var(--w-light);
-}
+/* 前置きとしめ。**中身のことは何も言っていない**（版・読み込み・警告・件数だけ）*/
+body[data-stage="wall"] .pre{display:block; margin:0 2px 14px; font-size:12px;
+                             line-height:1.85; color:var(--crt-dim)}
+body[data-stage="wall"] .sum{display:block; margin:16px 2px 0; font-size:12px;
+                             line-height:1.85; color:var(--crt-dim)}
+.pre div,.sum{animation:emit 60ms linear both}   /* 遅れは JS が入れる */
+.pre .v{color:#6f9d87}
+.pre .w{color:var(--crt-ref)}
 
-/* メニュー。下線付きの英字は当時のアクセスキー */
-body[data-stage="wall"] .crtmenu{display:flex; gap:2px; padding:3px 1px}
-.crtmenu span{padding:2px 7px}
+/* 点滅する角 */
+body[data-stage="wall"] .cur{
+  display:inline-block; width:.55em; height:1.05em; background:var(--crt-dim);
+  vertical-align:-.18em; margin-left:2px; animation:blink 1.06s steps(1) infinite;
+}
+@keyframes blink{0%,49%{opacity:.85} 50%,100%{opacity:0}}
 
-/* 凹んだ一覧。header は列見出しの立体ボタン、行はその下を送る */
-body[data-stage="wall"] .crtlist{
-  background:#fff; margin:1px 0 3px;
-  border:1px solid; border-color:var(--w-shadow) var(--w-light) var(--w-light) var(--w-shadow);
-  box-shadow:inset 1px 1px 0 #000, inset -1px -1px 0 var(--w-face2);
-  padding:1px;
-}
-body[data-stage="wall"] .crthd{display:flex; background:var(--w-face)}
-.crthd span{
-  box-shadow:inset -1px -1px 0 var(--w-shadow), inset 1px 1px 0 var(--w-light);
-  padding-top:1px; padding-bottom:1px;
-}
-body[data-stage="wall"] .stack{
-  height:308px; overflow:auto; background:#fff; border-top:1px solid var(--w-face);
-}
+/* 出力の一行。行番号／項番／本文／参照。**参照は本文のすぐ右に付く** */
 body[data-stage="wall"] .stack li{
-  border-radius:0; padding:1px 0; font-size:12px; line-height:1.7; color:#000;
+  border-radius:0; padding:1px 10px; font-size:12px; line-height:1.9;
+  color:var(--crt-ink);
 }
-/* いちばん上の行に反転のカーソルが乗っている（あの選択行）*/
-body[data-stage="wall"] .stack li:first-child{background:var(--w-title); color:#fff}
-
-/* 桁。行番号／項番／内容／参照。**内容だけが入れ子で右へ寄る** */
 body[data-stage="wall"] .ln{display:flex; align-items:baseline}
-body[data-stage="wall"] .gut,
-body[data-stage="wall"] .id,
-body[data-stage="wall"] .tx,
-body[data-stage="wall"] .ref{display:block; box-sizing:border-box; padding-left:5px; padding-right:5px}
-body[data-stage="wall"] .gut{flex:none; width:38px; text-align:right; font-variant-numeric:tabular-nums}
-body[data-stage="wall"] .id{flex:none; width:62px; font-variant-numeric:tabular-nums}
-body[data-stage="wall"] .tx{flex:1; min-width:0; padding-left:calc(5px + var(--d,0) * 16px)}
-body[data-stage="wall"] .ref{flex:none; width:64px; text-align:right; font-variant-numeric:tabular-nums}
+body[data-stage="wall"] .gut{
+  display:inline-block; flex:none; min-width:3ch; text-align:right;
+  margin-right:1.5em; color:#2f5647; font-variant-numeric:tabular-nums;
+}
+body[data-stage="wall"] .id{
+  display:inline-block; flex:none; min-width:5.5ch; color:var(--crt-dim);
+  font-variant-numeric:tabular-nums;
+}
+body[data-stage="wall"] .tx{flex:0 1 auto; min-width:0;
+                            padding-left:calc(var(--d,0) * 1.9em)}
+body[data-stage="wall"] .ref{
+  display:inline-block; flex:none; margin-left:1.4em; color:var(--crt-ref);
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
 body[data-stage="wall"] .no{display:none}
 
-/* あの太いスクロールバー（矢印の箱つき） */
-body[data-stage="wall"] .stack{scrollbar-width:auto}
-body[data-stage="wall"] .stack::-webkit-scrollbar{width:16px; background:var(--w-face2)}
-body[data-stage="wall"] .stack::-webkit-scrollbar-thumb{
-  background:var(--w-face);
-  box-shadow:inset -1px -1px 0 var(--w-shadow), inset 1px 1px 0 var(--w-light);
-}
-/* 端の箱は上下に一つずつ。**指定すると四つ出る**ので、内側の二つは消す */
-body[data-stage="wall"] .stack::-webkit-scrollbar-button:vertical:start:increment,
-body[data-stage="wall"] .stack::-webkit-scrollbar-button:vertical:end:decrement{display:none}
-body[data-stage="wall"] .stack::-webkit-scrollbar-button:vertical{
-  height:16px; background:var(--w-face) no-repeat center;
-  box-shadow:inset -1px -1px 0 var(--w-shadow), inset 1px 1px 0 var(--w-light);
-}
-body[data-stage="wall"] .stack::-webkit-scrollbar-button:vertical:decrement{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4'%3E%3Cpath d='M3.5 0 L7 4 L0 4 z' fill='%23000'/%3E%3C/svg%3E");
-}
-body[data-stage="wall"] .stack::-webkit-scrollbar-button:vertical:increment{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4'%3E%3Cpath d='M0 0 L7 0 L3.5 4 z' fill='%23000'/%3E%3C/svg%3E");
-}
-
-/* ステータスバー。凹んだ枠がいくつか並ぶ */
-body[data-stage="wall"] .crtft{display:flex; gap:2px; padding:1px 0 0}
-.crtft .p{
-  box-shadow:inset 1px 1px 0 var(--w-shadow), inset -1px -1px 0 var(--w-light);
-  padding:2px 6px;
-}
-.crtft .p:first-child{flex:1}
-
-/* 画面が塗られていく感じ。**動かさない。点くだけ。**
+/* 出力が届く感じ。**動かさない。点くだけ。**
    間隔はばらしてある（遅れは JS が入れる）。場所は最初から取ってある＝何も跳ねない */
 @keyframes emit{from{opacity:0} to{opacity:1}}
 body[data-stage="wall"] .stack li{animation:emit 60ms linear both}
 
-/* 頭は**サイトの声**のまま。下の窓が「引用した昔の画面」だと分かるように */
+/* 頭も出力の一部にする（`#` のコメント）。**声を張るのは 40 行のほう** */
 body[data-stage="wall"] .top{margin-bottom:14px}
-body[data-stage="wall"] .top h1{font-size:15px}
+body[data-stage="wall"] .top h1{font-size:12.5px; font-weight:400;
+                                color:var(--crt-ink); line-height:1.8}
+body[data-stage="wall"] .top h1 .n{color:var(--crt-hi)}
+body[data-stage="wall"] .top p{margin-top:0; font-size:12.5px; line-height:1.8;
+                               color:var(--crt-dim)}
+body[data-stage="wall"] .top p b{color:var(--crt-ink)}
+body[data-stage="wall"] .top h1::before,
+body[data-stage="wall"] .top p::before{content:"# "; color:#2f5647}
+body[data-stage="wall"] .note{color:#4d7f6a}
 
 @media (prefers-reduced-motion:reduce){
-  body[data-stage="wall"] .stack li{animation:none}
+  body[data-stage="wall"] .stack li,
+  body[data-stage="wall"] .pre div,
+  body[data-stage="wall"] .sum,
+  body[data-stage="wall"] .cur{animation:none}
 }
 
 /* ─ 軽い側：一枚ずつ手前に出る束 ─────────────────────────
@@ -378,6 +337,19 @@ body[data-stage="end"] .note{color:var(--sub)}
 
 <main class="sheet">
 
+  <!-- 打ち込んだ一行と前置き。**製品の画面は真似しない。**
+       端末の出力は特定の製品の意匠ではないので、ここに寄せる。
+       前置きは版・読み込み・警告だけで、**中身の関係は一言も出さない。** -->
+  <p class="cmd"><b>$</b>alter scan --rules --deep | alter graph --resolve 2&gt;&amp;1 | tee scan.log</p>
+
+  <div class="pre">
+    <div class="v">alter 0.4.1-rc2 (build 8f3ac1) · node v24.18.0 · win32-x64</div>
+    <div>reading .alter/rules.d/**/*.{yml,md,txt}  … 12 files</div>
+    <div class="w">warn  3 files have no schema version</div>
+    <div class="w">warn  mixed encodings (utf-8, cp932)</div>
+    <div>resolving refs …</div>
+  </div>
+
   <div class="top">
     <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
     <h1 id="h">社内の取り決め　<span class="n" id="n">0</span> 件</h1>
@@ -390,30 +362,12 @@ body[data-stage="end"] .note{color:var(--sub)}
     <p>読める形にして、一枚ずつ決める。押したものは台帳に積まれています。</p>
   </div>
 
-  <!-- 昔のシステムの画面。**改修する相手は、たいてい昔のシステム。**
-       画面ID・罫線・項番・参照・F キーはその頃の部品。
-       カードになったら、この枠も帯も桁も消える。 -->
-  <div class="crt">
-    <div class="crtbar">
-      <span class="ic">■</span>
-      <span class="ti">社内取決　一覧照会 - GYM0120</span>
-      <span class="btns"><i>_</i><i>□</i><i>×</i></span>
-    </div>
-    <div class="crtmenu">
-      <span>ファイル(<u>F</u>)</span><span>編集(<u>E</u>)</span>
-      <span>表示(<u>V</u>)</span><span>ヘルプ(<u>H</u>)</span>
-    </div>
+  <!-- 出力の本体。**桁（行番号・項番・参照）は重い側だけの部品で、
+       カードになったら番号と本文だけが残る。** -->
+  <ul class="stack" id="stack"></ul>
 
-    <div class="crtlist">
-      <div class="crthd"><span class="gut">行</span><span class="id">項番</span><span class="tx">内容</span><span class="ref">参照</span></div>
-      <ul class="stack" id="stack"></ul>
-    </div>
-
-    <div class="crtft">
-      <span class="p">レコード: 1 / <span id="ftn">0</span></span>
-      <span class="p">準備完了</span><span class="p">NUM</span>
-    </div>
-  </div>
+  <!-- しめ。数字は JS が入れる（実際の件数と合わせる） -->
+  <p class="sum" id="sum"></p>
 
   <p class="note">これは仮の中身です。実際の社内規程ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
 
@@ -524,7 +478,7 @@ SEQ.forEach(function(n, row){
               + '<span class="id">' + pad4(n) + '</span>'
               + '<span class="no">' + n + '</span>'
               + '<span class="tx"></span>'
-              + '<span class="ref">' + refs.join(' ') + '</span>';
+              + '<span class="ref">' + (refs.length ? '→ ' + refs.join(' ') : '') + '</span>';
   t.querySelector('.tx').textContent = r[0];
   li.appendChild(t);
 
@@ -554,7 +508,9 @@ SEQ.forEach(function(n, row){
 
 document.getElementById('n').textContent = RULES.length;
 
-document.getElementById('ftn').textContent = RULES.length;
+document.getElementById('sum').innerHTML =
+  RULES.length + ' rules · 12 files · 2 encodings · schema: mixed<br>'
+  + 'exit 0 (2 warnings)<span class="cur"></span>';
 
 /* 塗られる順と、その間隔。**一定にしない**——一定だと機械の飾りに見える。
    場所は最初から取ってあるので、点いても何も跳ねない。 */
@@ -563,7 +519,9 @@ function beat(el){
   el.style.animationDelay = _t + 'ms';
   _t += GAPS[_g++ % GAPS.length];
 }
+[].forEach.call(document.querySelectorAll('.pre div'), beat);
 lis.forEach(beat);
+beat(document.getElementById('sum'));
 
 tally();
 
