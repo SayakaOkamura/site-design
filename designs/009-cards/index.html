@@ -42,18 +42,23 @@
 }
 
 *{box-sizing:border-box}
-html,body{height:100%}
+
+/* 束が増えたら縦に伸びる。入りきらないぶんはスクロールで届く。
+   flex の中央寄せ（align-items:center）だと、はみ出した上が切れて
+   スクロールでも戻せない。だから寄せるのは .sheet の margin:auto でやる。
+   scrollbar-gutter は、カードを開いて body を止めたときに横へずれないため。 */
+html{height:100%; scrollbar-gutter:stable}
 body{
-  margin:0; background:var(--bg); color:var(--ink);
+  min-height:100%; margin:0; background:var(--bg); color:var(--ink);
   font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
               system-ui,-apple-system,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased;
-  display:flex; align-items:center; justify-content:center;
+  display:flex;
   padding:32px 24px;
 }
 body.locked{overflow:hidden}
 
-.sheet{width:100%; max-width:860px}
+.sheet{width:100%; max-width:860px; margin:auto}
 
 /* ─ 大きいカード。これだけ読めば何の会社か分かる ─────────── */
 .head{
