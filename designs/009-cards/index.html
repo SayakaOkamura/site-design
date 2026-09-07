@@ -78,7 +78,7 @@ body.locked{overflow:hidden}
 
 .card{
   -webkit-appearance:none; appearance:none; border:0; margin:0;
-  font:inherit; color:inherit; text-align:left; cursor:pointer;
+  font:inherit; color:inherit; text-align:left; cursor:pointer; text-decoration:none;
   -webkit-user-select:none; user-select:none;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
   padding:26px 22px 24px; min-height:128px;
@@ -154,36 +154,6 @@ body.locked{overflow:hidden}
 .todo{margin:0; background:var(--tint); border-radius:8px; padding:22px;
       font-size:13px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
-
-/* お知らせの並び。一件が一枚のカード。**押せるので影を落とす**
-   （押せない面 = --tint で影なし、押せるもの = 白で影あり、を守る）。
-   親カードは大きさが決まっているので、開いて伸びたぶんは .body が受ける。 */
-.news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:10px}
-.news li{background:var(--card); border-radius:8px; box-shadow:var(--lift1); overflow:hidden;
-         transition:box-shadow .16s ease, transform .16s var(--ease)}
-.news li:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.news li.on{transform:none; box-shadow:var(--lift2)}
-
-.row{
-  -webkit-appearance:none; appearance:none; border:0; background:none; margin:0;
-  font:inherit; color:inherit; text-align:left; cursor:pointer;
-  width:100%; padding:16px 20px; display:flex; align-items:baseline; gap:18px;
-}
-.row span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
-          font-variant-numeric:tabular-nums; letter-spacing:.02em}
-.row b{font-size:13.5px; font-weight:700; line-height:1.6}
-.row i{margin-left:auto; flex:none; font-style:normal; font-size:14px; color:var(--sub)}
-.row:focus-visible{outline:2px solid var(--go); outline-offset:-2px; border-radius:8px}
-
-.more{max-height:0; overflow:hidden; transition:max-height .28s var(--ease)}
-.more p{margin:0; padding:0 20px 18px; font-size:13px; color:var(--sub); line-height:1.95}
-.news li.on .more{max-height:260px}
-
-@media (max-width:520px){
-  .row{display:block; position:relative; padding-right:44px}
-  .row span{display:block; margin-bottom:6px}
-  .row i{position:absolute; right:20px; top:16px; margin:0}
-}
 
 .lead{margin:0 0 20px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
@@ -298,40 +268,13 @@ body.locked{overflow:hidden}
     <!-- ここから下の2枚は、増えたときの並びを見るために置いてある。
          どちらも公式サイトに無いので、中身は書かない（空の箱を作らない）。
          5枚目は全幅、6枚目からは残りが分け合う。 -->
-    <div class="card" role="button" tabindex="0" data-k="5">
+    <!-- **溜まっていくものはページ。**お知らせは増え続けるので、
+         カードの中で開かせない（長くなると、閉じるために上へ戻ることになる）。
+         a なので、中クリックで別のタブにも開けるし、戻るが効く。 -->
+    <a class="card" href="news.html" data-k="5">
       <span class="t">お知らせ</span>
       <span class="s">五件（仮）</span>
-      <div class="panel">
-        <div class="bar"><h2>お知らせ</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
-        <div class="body">
-          <!-- 並びを見るための仮の中身。実際のお知らせではないので、画面にもそう書く。
-               会社について何も主張しない言葉だけにしてある。 -->
-          <p class="todo">並びを見るための<b>仮の中身</b>です。実際のお知らせではありません。</p>
-          <ul class="news">
-            <li>
-              <button class="row"><span>2026.08.20</span><b>夏季休業のお知らせ</b><i>＋</i></button>
-              <div class="more"><p>8月13日から8月16日まで、夏季休業とさせていただきます。期間中にいただいたお問い合わせは、8月17日以降に順次ご返信いたします。</p></div>
-            </li>
-            <li>
-              <button class="row"><span>2026.06.02</span><b>オフィス移転のお知らせ</b><i>＋</i></button>
-              <div class="more"><p>このたびオフィスを移転いたしました。電話番号に変更はございません。今後ともよろしくお願い申し上げます。</p></div>
-            </li>
-            <li>
-              <button class="row"><span>2026.04.10</span><b>コーポレートサイトを公開しました</b><i>＋</i></button>
-              <div class="more"><p>コーポレートサイトを公開しました。事業内容とお問い合わせ先を掲載しています。</p></div>
-            </li>
-            <li>
-              <button class="row"><span>2025.12.26</span><b>年末年始の休業について</b><i>＋</i></button>
-              <div class="more"><p>12月27日から1月4日まで休業いたします。期間中のお問い合わせは、1月5日以降に順次ご対応いたします。</p></div>
-            </li>
-            <li>
-              <button class="row"><span>2025.06.30</span><b>会社設立のお知らせ</b><i>＋</i></button>
-              <div class="more"><p>株式会社アルターデザインコンサルティングを設立いたしました。</p></div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+    </a>
 
     <div class="card" role="button" tabindex="0" data-k="6">
       <span class="t">実績</span>
@@ -346,7 +289,7 @@ body.locked{overflow:hidden}
 
   </div>
 
-  <p class="wip">会社案内の3枚は公式サイトの言葉です。「お知らせ」は仮の中身、「実績」は枠だけ、<br>
+  <p class="wip">会社案内の3枚は公式サイトの言葉です。「お知らせ」は別ページで中身は仮、「実績」は枠だけ、<br>
   「見直してみる」の行き先はまだ作っていません。数字キー 1〜6、Tab と矢印でも押せます。開いたら Esc で閉じます。</p>
 
 </main>
@@ -464,20 +407,6 @@ body.locked{overflow:hidden}
   });
 
   scrim.addEventListener('click', hide);
-
-  /* お知らせの一件を開く。**開くのは一件だけ**——読むところなので、
-     開きっぱなしを積み上げない（積まれるのは決めるところだけ）。
-     親カードの大きさは変えない。伸びたぶんは .body のスクロールが受ける。 */
-  document.addEventListener('click', function(e){
-    var row = e.target.closest('.row');
-    if (!row) return;
-    var li = row.parentNode, was = li.classList.contains('on');
-    [].forEach.call(li.parentNode.children, function(o){
-      o.classList.remove('on');
-      var m = o.querySelector('.row i'); if (m) m.textContent = '＋';
-    });
-    if (!was){ li.classList.add('on'); row.querySelector('i').textContent = '−'; }
-  });
 
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
     document.addEventListener(ev, function(){
