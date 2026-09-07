@@ -69,7 +69,7 @@ body.locked{overflow:hidden}
   /* **縦の中央寄せはやめた。**帯が出ると塊の高さが変わるので、
      中央に置いたままだと押した瞬間に塊が上下へ跳ねる。
      flex:1 0 auto で置き場が伸びて、足は下に残る。 */
-  display:flex; align-items:flex-start;
+  display:flex; align-items:stretch;   /* 帯の高さは左の柱に合わせる（下を参照）*/
   transition:max-width .24s var(--ease);
 }
 .stack{flex:1 1 auto; min-width:0}
@@ -134,18 +134,34 @@ body.paneopen .wrap{max-width:1240px}
    **カードは消えない。**中身が右へ出て、束が左へ寄るだけ。
    だから戻るのに部品が要らない——**もう一度押す／別のカードを押す。**
    ✕ は置いていない（Esc も効くが、無くても戻れる）。 */
-.pane{flex:none; width:0; overflow:hidden; transition:width .24s var(--ease)}
+.pane{flex:none; position:relative; width:0; overflow:hidden; transition:width .24s var(--ease)}
 .pane:empty{display:none}
 body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
 /* 中身は固定幅。**帯が伸びるあいだ、文字が組み直されない** */
 .panel{display:none}
+
+/* **帯の高さは、左の柱（社名＋カード）とぴったり同じにする。**
+   長い中身は帯の中で送る（ページを伸ばさない）。
+   仕掛け：帯を絶対配置にして、外枠（.pane）の高さに一切足さない。
+   外枠は align-items:stretch で柱と同じ高さになる。 */
 .pane .panel{
-  display:block; width:420px; margin-left:16px;
+  position:absolute; top:0; bottom:0; left:16px; width:420px;
+  display:flex; flex-direction:column; overflow:hidden;
   -webkit-user-select:text; user-select:text;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
   animation:swap .18s var(--ease);
 }
+.pane .bar{flex:none}
+.pane .body{
+  flex:1; min-height:0; overflow:auto;              /* 送るのは中身だけ。題は残る */
+  scrollbar-width:thin; scrollbar-color:#c8ced4 transparent;
+}
+/* 送れることは、切れた文字と細い棒で分かる（言葉で足さない）*/
+.pane .body::-webkit-scrollbar{width:8px}
+.pane .body::-webkit-scrollbar-track{background:transparent}
+.pane .body::-webkit-scrollbar-thumb{background:#c8ced4; border-radius:4px; border:2px solid transparent; background-clip:content-box}
+.pane .body:focus-visible{outline:2px solid var(--go); outline-offset:-2px}
 @keyframes swap{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
 
 .bar{padding:24px 26px 14px}
@@ -215,7 +231,9 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
   .wrap{flex-direction:column}
   body.paneopen .wrap{max-width:908px}
   .pane,body.paneopen .pane{width:auto; overflow:visible; transition:none}
-  .pane .panel{width:auto; margin-left:0; margin-top:16px}
+  /* 束の下に出るので、高さを合わせる相手がいない。中身の高さで出す */
+  .pane .panel{position:static; width:auto; margin-top:16px; overflow:visible}
+  .pane .body{overflow:visible}
 }
 
 @media (max-width:720px){
@@ -418,6 +436,11 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
     pane.offsetWidth;                          /* 幅 0 を一度描かせてから伸ばす */
     document.body.classList.add('paneopen');
     open = card;
+
+    /* 帯の中に収まらない中身は、キーボードでも送れるようにする。
+       あふれていないときは tab の行き先を増やさない。 */
+    var body = panel.querySelector('.body');
+    if (body) body.tabIndex = body.scrollHeight > body.clientHeight ? 0 : -1;
 
     /* 記事を読んで戻ってきたとき、一覧が出たまま戻るように印を残す。
        replaceState なので、閉じたあと「戻る」で開き直したりはしない。 */
