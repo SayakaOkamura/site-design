@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+
+<!-- 009 カード ─ 入口の一枚
+     ================================================================
+     ここは入口だけ。押しても行き先はまだ無い。
+
+     決まっていること（話し合いで積み上げたもの。NOTES.md が正）
+     - 入口はカードが置いてあるだけの一枚。軽い
+     - 全部同じカード。用がある人は一枚押せば着く（動線が軽い）
+     - 体験も同じ大きさで並べる。隠さない（007 はここで失敗した）
+     - 入口でカードを押した人は、体験に入ったとき押し方の説明が要らない
+     - 背景は入口がいちばん明るい。暗くなるのは体験の重い側だけ
+
+     008 から捨てたもの
+     - 紙・細い罫・琥珀。線を一本も引いていない（面と影だけ）
+     - 横に動く一枚の面、カメラ、ターミナルの `>` 欄
+     - 小さい字。ここでは字を大きく取る
+================================================================ -->
+
+<style>
+:root{
+  /* 入口はいちばん明るい。ここから先（体験の重い側）で暗くなる。
+     008 の紙白＋琥珀を避けて、冷たい灰と深い青緑にした。 */
+  --bg:   #e8ebee;
+  --card: #ffffff;
+  --ink:  #16191d;
+  --sub:  #5b626b;
+  --go:   #0e6b58;
+
+  /* 影だけで面を立てる。線は引かない。 */
+  --lift1: 0 1px 2px rgba(20,26,32,.06), 0 3px 8px rgba(20,26,32,.07);
+  --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
+  --lift0: 0 1px 1px rgba(20,26,32,.10);
+
+  --r: 10px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
+              system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex; align-items:center; justify-content:center;
+  padding:32px 24px;
+}
+
+.sheet{width:100%; max-width:860px}
+
+/* ─ 大きいカード。これだけ読めば何の会社か分かる ─────────── */
+.head{
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+  padding:44px 40px 40px;
+}
+.head h1{
+  margin:0; font-size:clamp(21px, 3.4vw, 31px); font-weight:700;
+  letter-spacing:.01em; line-height:1.35;
+}
+.head p{
+  margin:18px 0 0; font-size:clamp(13px, 1.6vw, 15px); font-weight:500;
+  color:var(--sub); line-height:1.7;
+}
+
+/* ─ 押せるカード ───────────────────────────────────────── */
+.deck{
+  margin-top:16px;
+  display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
+}
+.card{
+  -webkit-appearance:none; appearance:none; border:0; margin:0;
+  font:inherit; color:inherit; text-align:left; cursor:pointer;
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+  padding:26px 22px 24px;
+  min-height:128px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  transition:transform .16s cubic-bezier(.2,.7,.3,1), box-shadow .16s ease;
+}
+.card .t{font-size:clamp(15px, 1.8vw, 17px); font-weight:700; line-height:1.4}
+.card .s{margin-top:14px; font-size:12px; font-weight:500; color:var(--sub); line-height:1.6}
+
+/* 手触りは物理から出す。点数も演出も足さない（話し合いで引いた線）。 */
+.card:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.card:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.card.down{transform:translateY(2px); box-shadow:var(--lift0); transition-duration:.06s}
+
+/* 体験の口。同じ大きさ・同じ形。色だけ変える（隠さない） */
+.card.go{background:var(--go); color:#fff}
+.card.go .s{color:rgba(255,255,255,.72)}
+.card.go:focus-visible{outline-color:var(--ink)}
+
+/* ─ 開いたとき、わずかに落ちてくる。控えめに ─────────────── */
+@keyframes drop{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+.head,.card{animation:drop .42s cubic-bezier(.2,.7,.3,1) backwards}
+.head{animation-delay:0s}
+.deck .card:nth-child(1){animation-delay:.06s}
+.deck .card:nth-child(2){animation-delay:.10s}
+.deck .card:nth-child(3){animation-delay:.14s}
+.deck .card:nth-child(4){animation-delay:.18s}
+@media (prefers-reduced-motion:reduce){ .head,.card{animation:none} }
+
+/* ─ いまは入口だけ、という注記。作り込みの途中であることを画面に出す ─ */
+.wip{
+  margin:22px 2px 0; font-size:11.5px; color:var(--sub); line-height:1.7;
+}
+
+@media (max-width:720px){
+  .deck{grid-template-columns:repeat(2,1fr)}
+  .head{padding:34px 26px 30px}
+  .card{min-height:112px; padding:22px 18px 20px}
+}
+@media (max-width:420px){
+  .deck{grid-template-columns:1fr; gap:12px}
+  .card{min-height:0}
+  .card .s{margin-top:10px}
+}
+</style>
+</head>
+<body>
+
+<main class="sheet">
+
+  <!-- 社名と事業の一行。どちらも公表情報（alt-dsgn.co.jp）。
+       事業の一行は公式・会社概要の事業内容から。 -->
+  <div class="head">
+    <h1>株式会社アルターデザインコンサルティング</h1>
+    <p>2025年6月設立／AI とローコードで、上流工程中心のシステム開発</p>
+  </div>
+
+  <div class="deck">
+    <button class="card" data-k="1">
+      <span class="t">サービス</span>
+      <span class="s">四本</span>
+    </button>
+    <button class="card" data-k="2">
+      <span class="t">会社概要</span>
+      <span class="s">七項目</span>
+    </button>
+    <button class="card" data-k="3">
+      <span class="t">お問い合わせ</span>
+      <span class="s">contact@alt-dsgn.co.jp</span>
+    </button>
+    <!-- 体験の口。仮の言葉。ここは未決 -->
+    <button class="card go" data-k="4">
+      <span class="t">見直してみる</span>
+      <span class="s">積み上がったものを、カードにして仕分ける</span>
+    </button>
+  </div>
+
+  <p class="wip">入口の一枚だけです。押すと沈みますが、行き先はまだ作っていません。<br>
+  数字キー 1〜4、Tab と矢印でも押せます。</p>
+
+</main>
+
+<script>
+/* マウスが無くても全部押せるようにする。
+   ・数字キー 1〜4
+   ・Tab（ボタンなので既定で回る）＋ 矢印
+   ・Enter / Space（ボタンの既定） */
+(function(){
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+
+  /* 押した感触。行き先はまだ無いので、沈んで戻るところまで。 */
+  function press(c){
+    c.classList.add('down');
+    setTimeout(function(){ c.classList.remove('down'); }, 110);
+  }
+  cards.forEach(function(c){
+    c.addEventListener('pointerdown', function(){ c.classList.add('down'); });
+    c.addEventListener('click', function(){ press(c); });
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+    document.addEventListener(ev, function(){
+      cards.forEach(function(c){ c.classList.remove('down'); });
+    });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+    var n = '1234'.indexOf(e.key);
+    if (n >= 0){ e.preventDefault(); cards[n].focus(); press(cards[n]); return; }
+
+    var i = cards.indexOf(document.activeElement);
+    if (i < 0) {
+      if (e.key.indexOf('Arrow') === 0){ e.preventDefault(); cards[0].focus(); }
+      return;
+    }
+    var to = -1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') to = Math.min(i + 1, cards.length - 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   to = Math.max(i - 1, 0);
+    if (to >= 0){ e.preventDefault(); cards[to].focus(); }
+  });
+})();
+</script>
+
+</body>
+</html>
