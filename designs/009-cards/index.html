@@ -153,6 +153,19 @@ body.locked{overflow:hidden}
 /* 中身が決まっていない段。空の箱に見せず、決まっていないことをそう書く */
 .todo{margin:0; background:var(--tint); border-radius:8px; padding:22px;
       font-size:13px; color:var(--sub); line-height:1.9}
+.todo b{color:var(--ink)}
+
+/* お知らせの並び。日付と一行。押せないので影は落とさない */
+.news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:8px}
+.news li{background:var(--tint); border-radius:8px; padding:16px 20px;
+         display:flex; align-items:baseline; gap:18px}
+.news span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
+           font-variant-numeric:tabular-nums; letter-spacing:.02em}
+.news b{font-size:13.5px; font-weight:700; line-height:1.6}
+@media (max-width:520px){
+  .news li{display:block}
+  .news span{display:block; margin-bottom:6px}
+}
 
 .lead{margin:0 0 20px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
@@ -269,11 +282,20 @@ body.locked{overflow:hidden}
          5枚目は全幅、6枚目からは残りが分け合う。 -->
     <div class="card" role="button" tabindex="0" data-k="5">
       <span class="t">お知らせ</span>
-      <span class="s">未定</span>
+      <span class="s">五件（仮）</span>
       <div class="panel">
         <div class="bar"><h2>お知らせ</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
         <div class="body">
-          <p class="todo">中身はまだ決めていません。日付と一行が並ぶ想定です。</p>
+          <!-- 並びを見るための仮の中身。実際のお知らせではないので、画面にもそう書く。
+               会社について何も主張しない言葉だけにしてある。 -->
+          <p class="todo">並びを見るための<b>仮の中身</b>です。実際のお知らせではありません。</p>
+          <ul class="news">
+            <li><span>2026.08.20</span><b>夏季休業のお知らせ</b></li>
+            <li><span>2026.06.02</span><b>オフィス移転のお知らせ</b></li>
+            <li><span>2026.04.10</span><b>コーポレートサイトを公開しました</b></li>
+            <li><span>2025.12.26</span><b>年末年始の休業について</b></li>
+            <li><span>2025.06.30</span><b>会社設立のお知らせ</b></li>
+          </ul>
         </div>
       </div>
     </div>
@@ -291,7 +313,7 @@ body.locked{overflow:hidden}
 
   </div>
 
-  <p class="wip">中身が入っているのは会社案内の3枚だけです。「お知らせ」と「実績」は並びを見るための枠、<br>
+  <p class="wip">会社案内の3枚は公式サイトの言葉です。「お知らせ」は仮の中身、「実績」は枠だけ、<br>
   「見直してみる」の行き先はまだ作っていません。数字キー 1〜6、Tab と矢印でも押せます。開いたら Esc で閉じます。</p>
 
 </main>
