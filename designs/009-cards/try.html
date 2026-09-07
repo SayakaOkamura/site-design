@@ -299,7 +299,6 @@ var RULES = [
 ];
 
 var PICKS = ['要る', '要らない', 'もうやった'];
-var NEED  = 6;                    /* ここまで押したら「あとは同じ」で切る */
 var SHOW  = 7;                    /* 後ろに見せる厚み */
 
 var stack = document.getElementById('stack'),
@@ -373,10 +372,12 @@ function sort(li, k, name){
 
   restack();                       /* 次が前へ出るのは、飛ぶのを待たない */
   tally();
-  if (done === 1) go.hidden = false;
 
   setTimeout(function(){ li.hidden = true; }, 320);
-  if (done === NEED) setTimeout(finish, 380);
+
+  /* **勝手に終わらせない。**終わるのは「ここまでにする」を押したときか、
+     束を全部やり切ったときだけ。リズムが出てきたところで止めない。 */
+  if (!live().length) setTimeout(finish, 380);
 }
 
 function tally(){
@@ -401,8 +402,8 @@ go.onclick = function(){
     document.getElementById('p').innerHTML =
       '一枚ずつ出てきます。<b>被っているもの・何かのために要るもの・まだ決まっていないもの</b>に印が付いています。'
       + '<br>見えていれば、押せます（キーの <b>1 2 3</b> でも）。';
-    go.innerHTML = 'ここまでにする<span>残りも同じ形です</span>';
-    go.hidden = true;
+    /* 抜け口は最初から出しておく。いつやめてもいい */
+    go.innerHTML = 'ここまでにする<span>いつでも抜けられます</span>';
     window.scrollTo(0, 0);
     return;
   }
