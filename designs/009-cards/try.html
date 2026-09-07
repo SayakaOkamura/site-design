@@ -125,31 +125,35 @@ body[data-stage="cards"] .stack li.done .mark,body[data-stage="end"] .stack li.d
 .stack li.done{opacity:.62}
 .mark{font-size:12px; font-weight:700; color:var(--sub)}
 
-/* ─ 台帳。**減るのは束ではない。増えるのはこっち** ───────────── */
+/* ─ 下の帯。**押すところは常にここ一箇所。**
+   最初は「カードにする」だけ、カードになったら台帳になる。
+   場所が動かないので、何をすればいいか迷わせない。 ───────────── */
 .book{
   position:fixed; left:0; right:0; bottom:0; z-index:20;
   background:var(--card); box-shadow:0 -2px 4px rgba(20,26,32,.06), 0 -12px 32px rgba(20,26,32,.10);
-  padding:16px 24px; display:none;
+  padding:14px 24px;
 }
-body[data-stage="cards"] .book,body[data-stage="end"] .book{display:block}
-.book .in{max-width:860px; margin:0 auto; display:flex; align-items:center; gap:22px; flex-wrap:wrap}
+.book .in{max-width:860px; margin:0 auto; display:flex; align-items:center; gap:20px; flex-wrap:wrap}
+.ledger{display:none; align-items:center; gap:20px; flex-wrap:wrap}
+body[data-stage="cards"] .ledger,body[data-stage="end"] .ledger{display:flex}
 .book .t{font-size:12.5px; font-weight:700}
 .book .c{font-size:12.5px; color:var(--sub); font-variant-numeric:tabular-nums}
 .book .c b{color:var(--ink); font-size:15px; margin-right:3px}
-.book .rest{margin-left:auto; font-size:12px; color:var(--sub)}
+.book .rest{font-size:12px; color:var(--sub)}
 
-/* ─ 押すところ（重い側の一手、終わりの一手）─────────────── */
+/* ─ 押すところ ───────────────────────────────────────── */
 .go{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  display:block; width:100%; text-align:left; margin:0 0 20px;
-  background:var(--go); color:#fff; border-radius:var(--r); box-shadow:var(--lift1);
-  padding:22px 26px; font-size:14.5px; font-weight:700;
+  margin-left:auto; text-align:left;
+  background:var(--go); color:#fff; border-radius:9px; box-shadow:var(--lift1);
+  padding:14px 22px; font-size:14px; font-weight:700; line-height:1.4;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.go:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-.go:active{transform:translateY(2px); box-shadow:var(--lift0)}
-.go:focus-visible{outline:2px solid #fff; outline-offset:3px}
-.go span{display:block; margin-top:8px; font-size:12px; font-weight:500; color:rgba(255,255,255,.76)}
+.go:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.go:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.go:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.go span{display:block; margin-top:4px; font-size:11.5px; font-weight:500; color:rgba(255,255,255,.76)}
+body[data-stage="wall"] .go{margin-left:0}
 
 /* ─ 終わり ───────────────────────────────────────────── */
 .end{display:none; background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
@@ -180,9 +184,10 @@ body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
 <main class="sheet">
 
   <div class="top">
-    <h1 id="h">いま、社内にある取り決め</h1>
-    <p id="p">全部で <span class="n" id="n">0</span> 件。<br>
-      この中で<b>どれとどれが被っているか</b>、探してみてください。読めます。ただ、それだけです。</p>
+    <!-- **できない指示を出さない。**「探してください」と言われても探す手立てが画面に無い。
+         事実だけ置いて、押すところは下の帯に一つだけ用意する。 -->
+    <h1 id="h">社内の取り決め　<span class="n" id="n">0</span> 件</h1>
+    <p id="p">一行ずつは読めます。<b>どれとどれが被っているかは、見えません。</b></p>
   </div>
 
   <!-- 終わり。理念はここで初めて出す（通り終わってから名前が付く） -->
@@ -190,8 +195,6 @@ body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
     <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
     <p>いま押したものは、そのまま台帳になっています。減ったのは取り決めの数ではなく、読む手間のほうです。</p>
   </div>
-
-  <button class="go" id="go">カードにする<span>数は変わりません。形だけ変わります</span></button>
 
   <ul class="stack" id="stack"></ul>
 
@@ -201,14 +204,17 @@ body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
 
 </main>
 
-<!-- 台帳 -->
+<!-- 下の帯。押すところは常にここ。あとで台帳になる -->
 <div class="book">
   <div class="in">
-    <span class="t">台帳</span>
-    <span class="c"><b id="c1">0</b>要る</span>
-    <span class="c"><b id="c2">0</b>要らない</span>
-    <span class="c"><b id="c3">0</b>もうやった</span>
-    <span class="rest" id="rest"></span>
+    <span class="ledger">
+      <span class="t">台帳</span>
+      <span class="c"><b id="c1">0</b>要る</span>
+      <span class="c"><b id="c2">0</b>要らない</span>
+      <span class="c"><b id="c3">0</b>もうやった</span>
+      <span class="rest" id="rest"></span>
+    </span>
+    <button class="go" id="go">カードにする<span>数は変わりません。形だけ変わります</span></button>
   </div>
 </div>
 
