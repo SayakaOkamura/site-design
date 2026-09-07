@@ -30,10 +30,12 @@
   --tint: #eff5fb;   /* 押せない面。影を落とさない */
   --ink:  #251f45;   /* 紫の端。字。真っ黒は使わない */
   --sub:  #5c6288;
-  --go:   #5a45d8;   /* 帯の中〜紫寄り。行き先がある印 */
+  --go:   #6354e0;   /* 帯の中〜紫寄り。行き先がある印 */
   --frame:#d8e5f1;   /* 枠（頭と足）。水色の端を少し沈ませた */
-  /* 社名のカードだけ、帯そのものを使う（水色から紫へ渡る） */
-  --face: linear-gradient(118deg, #1b2f63 0%, #2a2160 52%, #472a70 100%);
+  /* 社名のカードだけ、帯そのものを使う（**水色から紫へ渡る**）。
+     暗い端（紺青→紫）で作ると濃くなりすぎた。明るい側から引く。
+     字は濃いまま（紫の端）なので、白字にしなくても読める */
+  --face: linear-gradient(118deg, #b6e2f6 0%, #c2cdf8 50%, #d8c3f3 100%);
 
   --lift1: 0 1px 2px rgba(31,25,64,.07), 0 3px 8px rgba(31,25,64,.08);
   --lift2: 0 2px 4px rgba(31,25,64,.08), 0 10px 24px rgba(31,25,64,.12);
@@ -101,7 +103,7 @@ body.paneopen .wrap{max-width:1240px}
    これで順番が付く：**濃い顔（誰か）→ 緑の一手（何ができるか）→ 白いカード（中身）。**
    背景は明るいまま（「入口がいちばん明るい」は背景の話なので崩していない）。 */
 .head{
-  background:var(--face); color:#fff;
+  background:var(--face); color:var(--ink);
   border-radius:var(--r); box-shadow:var(--lift2);
   padding:48px 40px 44px;
 }
@@ -109,7 +111,7 @@ body.paneopen .wrap{max-width:1240px}
    **濃さで目を引くので、大きさは元のまま**で足りる */
 .head h1{margin:0; font-size:clamp(21px,3.4vw,31px); font-weight:700; letter-spacing:.01em; line-height:1.35}
 .head p{margin:20px 0 0; font-size:clamp(13px,1.7vw,16px); font-weight:500;
-        color:rgba(255,255,255,.74); line-height:1.7}
+        color:rgba(37,31,69,.74); line-height:1.7}
 
 /* ─ 押せるカード ───────────────────────────────────────── */
 /* 枚数を決め打ちせず、段が揃うように列を割り直す（列の数は JS が入れる）。
