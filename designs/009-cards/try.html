@@ -25,6 +25,16 @@
      > 体験はカードを押す方じゃなくて、複雑で面倒なものがカード化されて可視化される法に
      > しないと、カード押すの気持ちいいね～で伝わるものは何もない気がするな
 
+     **「で、何？」になる**（本人 2026-09-07）：
+     > 最初にデモ画面を開けても、で、何？にしかならないんだよな。
+     > この画面を詳細に見ようとも思わないし、進めたらただカードが出てくるだけ
+     > → **量で殴りつつ、それをまず自分ごとにさせる必要があるって話**
+
+     根は UI ではなく**前提**だった。他人の表を他人のために整えていたので、
+     訪問者に取り分が無い。だから段を三つにした：
+     **件数を自分で答える（自分ごと）→ その件数で出る（量で殴る）→ カードになる（可視化）。**
+     **量は自分が答えた数**なので、うんざりするのは自分の申告のぶん。
+
      だから段を二つにした。**表 → カードになる（可視化）。**
      カードは**スクロールして選ぶ。押すと右に詳しく出る。**
      （本人 2026-09-07：「順繰りじゃなくてスクロールして選択→詳細が右に出る→
@@ -284,6 +294,27 @@ body[data-stage="seen"] .stack li.gl:first-child{padding-top:2px}
 body[data-stage="seen"] .stack li.gl b{color:var(--ink); font-size:16px; margin-right:7px;
                                        font-variant-numeric:tabular-nums}
 
+/* ─ はじめに一つ聞く。**自分ごとにする段**（`ask`）───────────────
+   他人の表を見せる前に、**自分の会社の件数を答えてもらう。**
+   出す量はその数。うんざりするのは、自分の申告のぶん。
+   聞くのは一つだけ（宿題は出さない。押せば進む）。 */
+.ask0{display:none}
+body[data-stage="ask"] .ask0{display:block; margin-top:28px}
+.q0{margin:0; font-size:15px; font-weight:700; line-height:1.6}
+.opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(196px,1fr));
+      gap:12px; margin-top:14px}
+.opts button{
+  -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
+  text-align:left; color:inherit;
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+  padding:20px 22px; font-size:14px; font-weight:700;
+  transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.opts button:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.opts button:active{transform:translateY(2px); box-shadow:var(--lift0)}
+.opts button:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.opts button span{display:block; margin-top:7px; font-size:12px; font-weight:500; color:var(--sub)}
+
 /* ─ 関係の印。**カードになって初めて見える**（表では番号だけ）─────
    束を捨てたときに、この見た目も一緒に消してしまっていた。戻した。
    色は青紫の palette の中で三つが分かれるように置いてある——
@@ -384,7 +415,7 @@ body:not([data-stage="wall"]) .note{color:var(--sub)}
 }
 </style>
 </head>
-<body data-stage="wall">
+<body data-stage="ask">
 
 <!-- 頭の帯。**カードの段だけ出す。**入口と同じ形なので、戻ってきたと分かる -->
 <header class="topbar">
@@ -396,8 +427,20 @@ body:not([data-stage="wall"]) .note{color:var(--sub)}
   <div class="top">
     <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
     <h1 id="h">課題管理表を片付ける</h1>
-    <p id="p"><b>作っているものの例です。</b>どこにもある表（<span class="n" id="n">0</span> 件、仮の中身）で、
-    一行ずつは読めますが、関わりは番号だけ。これをカードにして片付けます。</p>
+    <p id="p"><b>作っているものの例です。</b>まず一つだけ教えてください——
+    出す表は、その件数にします。<span class="n" id="n" hidden>0</span></p>
+  </div>
+
+  <!-- はじめに一つだけ聞く。**他人の表を見せる前に、自分ごとにする。**
+       出す量はここで答えた数（量で殴るのを、自分の申告でやる） -->
+  <div class="ask0" id="ask0">
+    <p class="q0">あなたの会社の課題管理表には、いま何件たまっていますか？</p>
+    <div class="opts">
+      <button type="button" data-n="40">40 件くらい<span>一つのシートに収まる</span></button>
+      <button type="button" data-n="120">120 件くらい<span>シートが増えてきた</span></button>
+      <button type="button" data-n="400">400 件以上<span>誰も全部は見ていない</span></button>
+      <button type="button" data-n="400" data-unknown>数えたことがない<span>いちばん多い形で出します</span></button>
+    </div>
   </div>
 
   <!-- 打ち込んだ一行と前置き。**製品の画面は真似しない。**
@@ -407,7 +450,7 @@ body:not([data-stage="wall"]) .note{color:var(--sub)}
 
   <div class="pre">
     <div class="v">alter 0.4.1-rc2 (build 8f3ac1) · node v24.18.0 · win32-x64</div>
-    <div>reading  課題管理.xlsx / 課題管理_旧.xlsx / 課題一覧(2019).xls  … 3 files, 6 sheets</div>
+    <div id="rd">reading  課題管理.xlsx / 課題管理_旧.xlsx / 課題一覧(2019).xls</div>
     <div class="w">warn  2 sheets have no header row</div>
     <div class="w">warn  mixed encodings (utf-8, cp932)</div>
     <div class="w">warn  状態の値に辞書に無いものがある</div>
@@ -506,17 +549,61 @@ var ITEMS = [
 var stack = document.getElementById('stack'),
     pane2 = document.getElementById('pane2'),
     go    = document.getElementById('go'),
-    lis   = [];
+    lis   = [],
+    frag  = null,
+    N     = 0;      /* 出す件数。本人が答えた数 */
 
-ITEMS.forEach(function(it, i){
+/* 40 件を種にして、答えた件数まで積む。
+   **同じ件名が何度も立つ**のは、荒れた表では普通のこと（再登録・別シート）。
+   欄の値は二周目以降だけ回して、同じ行が並ばないようにする。
+   参照の番号は周ごとにずらす（周の中では絡まりが保たれる）。 */
+var WHO = ['', '〃', '田中', '鈴木', '佐藤', '高橋', '同上', '―'];
+var ST  = ['対応中', '未着手', '保留', '調査中', '進行中', '着手済み', '未定', '―', ''];
+var DL  = ['', '？', '－', '―', '2024/03', '2025/06', '2023/11', '2024/09'];
+
+function make(i){
+  var base = ITEMS[i % ITEMS.length], lap = Math.floor(i / ITEMS.length);
+  if (lap === 0) return base;
+  return {
+    t: base.t,
+    s: ST[(i * 5 + lap) % ST.length],
+    w: WHO[(i * 3 + lap) % WHO.length],
+    d: DL[(i * 7 + lap) % DL.length],
+    rel: base.rel
+  };
+}
+
+/* 参照の相手。周ごとにずらして、はみ出したら落とす */
+function ref(k, i){
+  var lap = Math.floor(i / ITEMS.length), t = lap * ITEMS.length + k;
+  return (t >= 1 && t <= N) ? t : 0;
+}
+
+function build(n){
+  N = n;
+  stack.textContent = '';
+  lis = [];
+  /* 400 行を一枚ずつ差し込むと、押してから 1 秒近く待たされる。
+     まとめて作って一度で入れる */
+  frag = document.createDocumentFragment();
+  for (var i = 0; i < n; i++) row(make(i), i);
+  stack.appendChild(frag);
+  frag = null;
+  groups();
+  paint();
+}
+
+function row(it, i){
   var n = i + 1, rel = it.rel || {};
   var li = document.createElement('li');
 
   /* 参照。**番号だけ。**何がどう関わっているかは書かない
      （それはカードになって初めて言葉になる）。未決は ?? */
-  var refs = [];
-  if (rel.dup)  refs = refs.concat(rel.dup);
-  if (rel.need) refs.push(rel.need);
+  var refs = [], dups = [], need = 0;
+  (rel.dup || []).forEach(function(k){ var t = ref(k, i); if (t) dups.push(t); });
+  if (rel.need) need = ref(rel.need, i);
+  refs = refs.concat(dups);
+  if (need) refs.push(need);
   if (rel.open) refs.push('??');
 
   var t = document.createElement('div');
@@ -546,13 +633,11 @@ ITEMS.forEach(function(it, i){
   li.appendChild(t);
 
   /* 関係。**カードになって初めて見える。**表のあいだは番号だけ */
-  if (rel.dup || rel.need || rel.open){
+  if (dups.length || need || rel.open){
     var rb = document.createElement('div');
     rb.className = 'rel';
-    (rel.dup || []).forEach(function(k){
-      rb.innerHTML += '<b class="dup">' + k + '番と被っている</b>';
-    });
-    if (rel.need) rb.innerHTML += '<b class="needs">' + rel.need + '番のために要る</b>';
+    dups.forEach(function(k){ rb.innerHTML += '<b class="dup">' + k + '番と被っている</b>'; });
+    if (need) rb.innerHTML += '<b class="needs">' + need + '番のために要る</b>';
     if (rel.open) rb.innerHTML += '<b class="open">決まっていない</b>';
     li.appendChild(rb);
   }
@@ -565,9 +650,9 @@ ITEMS.forEach(function(it, i){
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(li, i); }
   };
 
-  stack.appendChild(li);
+  (frag || stack).appendChild(li);
   lis.push(li);
-});
+}
 
 document.getElementById('n').textContent = ITEMS.length;
 
@@ -581,42 +666,56 @@ function groupOf(rel){
   return 3;
 }
 var counts0 = [0, 0, 0, 0];
-lis.forEach(function(li, i){
-  var g = groupOf(ITEMS[i].rel || {});
-  counts0[g]++;
-  li.style.order = g * 1000 + i;      /* 群ごとに固まる。中の順は表と同じ */
-});
-GROUPS.forEach(function(name, g){
-  var l = document.createElement('li');
-  l.className = 'gl';
-  l.style.order = g * 1000 - 1;
-  l.innerHTML = '<b>' + counts0[g] + '</b>' + name;
-  stack.appendChild(l);
-});
-
-/* しめ。**数字は表から数える**（合っていない数字を置かない）。
-   状態の種類と担当の空欄は、荒れの量そのもの。関係の数は出さない */
-var kinds = {}, blank = 0;
-ITEMS.forEach(function(it){
-  kinds[it.s || '(空欄)'] = 1;
-  if (!it.w) blank++;
-});
-document.getElementById('sum').innerHTML =
-  ITEMS.length + ' issues · 3 files · 6 sheets · 状態 '
-  + Object.keys(kinds).length + ' 種 · 担当 空欄 ' + blank + '<br>'
-  + 'exit 0 (3 warnings)<span class="cur"></span>';
-
-/* 塗られる順と、その間隔。**一定にしない**——一定だと機械の飾りに見える。
-   場所は最初から取ってあるので、点いても何も跳ねない。 */
-var GAPS = [9, 9, 34, 12, 9, 52, 9, 18, 9, 26], _t = 60, _g = 0;
-function beat(el){
-  el.style.animationDelay = _t + 'ms';
-  _t += GAPS[_g++ % GAPS.length];
+function groups(){
+  counts0 = [0, 0, 0, 0];
+  lis.forEach(function(li, i){
+    var g = groupOf(make(i).rel || {});
+    counts0[g]++;
+    li.style.order = g * 100000 + i;   /* 群ごとに固まる。中の順は表と同じ */
+  });
+  GROUPS.forEach(function(name, g){
+    var l = document.createElement('li');
+    l.className = 'gl';
+    l.style.order = g * 100000 - 1;
+    l.innerHTML = '<b>' + counts0[g] + '</b>' + name;
+    stack.appendChild(l);
+  });
 }
-[].forEach.call(document.querySelectorAll('.pre div'), beat);
-beat(document.querySelector('.hdr'));
-lis.forEach(beat);
-beat(document.getElementById('sum'));
+
+/* しめと、点く順。**数字は出した表から数える**（合っていない数字を置かない）。
+   状態の種類と担当の空欄は、荒れの量そのもの。関係の数は出さない */
+function paint(){
+  var kinds = {}, blank = 0;
+  for (var i = 0; i < N; i++){
+    var it = make(i);
+    kinds[it.s || '(空欄)'] = 1;
+    if (!it.w) blank++;
+  }
+  /* 前置きの読み込み行も、出した件数に合わせる（数字が食い違わないように） */
+  var files = 3 + Math.floor(N / 40) - 1, sheets = 6 + Math.floor(N / 40) * 2 - 2;
+  document.getElementById('rd').textContent =
+    'reading  課題管理.xlsx / 課題管理_旧.xlsx / 課題一覧(2019).xls  … '
+    + files + ' files, ' + sheets + ' sheets';
+  document.getElementById('sum').innerHTML =
+    N + ' issues · ' + files + ' files · '
+    + sheets + ' sheets · 状態 '
+    + Object.keys(kinds).length + ' 種 · 担当 空欄 ' + blank + '<br>'
+    + 'exit 0 (3 warnings)<span class="cur"></span>';
+
+  /* 件数が増えても**出そろう時間は変えない**（1.4 秒）。
+     間隔はばらす（一定だと機械の飾りに見える） */
+  var GAPS = [9, 9, 34, 12, 9, 52, 9, 18, 9, 26], _t = 60, _g = 0;
+  var scale = Math.min(1, 1400 / Math.max(1, N * 19));
+  function beat(el){
+    el.style.animationDelay = Math.round(_t) + 'ms';
+    _t += GAPS[_g++ % GAPS.length] * scale;
+  }
+  [].forEach.call(document.querySelectorAll('.pre div'), beat);
+  beat(document.querySelector('.hdr'));
+  lis.forEach(beat);
+  beat(document.getElementById('sum'));
+}
+document.getElementById('sum').innerHTML = '';   /* paint() で入れる */
 
 /* ─ 押したカードの中身を、右の帯に出す ────────────────────────
    **一覧はそのまま。**カードは動かないし、消えない。
@@ -660,11 +759,32 @@ document.addEventListener('keydown', function(e){
 /* ─ 段は二つ。**表 → カードになる。**
    カード化＝可視化がここの山場で、そのあとは目を通すだけ。
    一枚ずつ決めさせるのはやめた（本人：「別にOKしてくとかいらない」）。 */
+/* ─ 段は三つ。**答える（自分ごと）→ 表（量）→ カード（可視化）** ───── */
+document.getElementById('n').textContent = ITEMS.length;
+go.hidden = true;              /* 答えるまで、進む先は出さない */
+
+/* 答えた件数で表を出す */
+[].forEach.call(document.querySelectorAll('.opts button'), function(b){
+  b.onclick = function(){
+    var n = +b.dataset.n;
+    build(n);
+    document.body.dataset.stage = 'wall';
+    document.getElementById('h').textContent = 'この表を片付ける';
+    document.getElementById('p').innerHTML =
+      '<b>' + n + ' 件で出しました。</b>'
+      + (b.dataset.unknown ? '（数えていないので、いちばん多い形で）' : '')
+      + 'どこにもある課題管理表（仮の中身）です。'
+      + '一行ずつは読めますが、関わりは番号だけ。';
+    go.hidden = false;
+    window.scrollTo(0, 0);
+  };
+});
+
 go.onclick = function(){
   document.body.dataset.stage = 'seen';
   document.getElementById('h').textContent = 'カードになった';
   document.getElementById('p').innerHTML =
-    '<b>同じ ' + ITEMS.length + ' 件です。</b>'
+    '<b>同じ ' + N + ' 件です。</b>'
     + '表では番号だけだった関わりに、言葉が付きました——'
     + '<b>被っている ' + counts0[0] + '／何かのために要る ' + counts0[1]
     + '／まだ決まっていない ' + counts0[2] + '</b>。'
