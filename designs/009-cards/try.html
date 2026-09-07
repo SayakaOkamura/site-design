@@ -52,6 +52,7 @@
 
   --r: 10px;
   --ease: cubic-bezier(.2,.7,.3,1);
+  --snap: cubic-bezier(.16,1,.3,1);   /* 前へ出るとき。速く動いて素早く止まる */
 }
 
 *{box-sizing:border-box}
@@ -64,7 +65,7 @@ body{
   -webkit-font-smoothing:antialiased;
   padding:32px 24px 120px;
   background:var(--dark);
-  transition:background .9s var(--ease);
+  transition:background .55s var(--ease);
 }
 body[data-stage="cards"],body[data-stage="end"]{background:var(--bg)}
 body[data-stage="cards"]{overflow:hidden}   /* 束のあいだはスクロールさせない */
@@ -72,10 +73,10 @@ body[data-stage="cards"]{overflow:hidden}   /* 束のあいだはスクロール
 .sheet{width:100%; max-width:860px; margin:0 auto}
 
 /* ─ 頭 ───────────────────────────────────────────────── */
-.top{margin:0 2px 20px; color:var(--dark-ink); transition:color .9s var(--ease)}
+.top{margin:0 2px 20px; color:var(--dark-ink); transition:color .55s var(--ease)}
 body[data-stage="cards"] .top,body[data-stage="end"] .top{color:var(--sub)}
 .top h1{margin:0; font-size:clamp(16px,2.2vw,20px); font-weight:700; line-height:1.5;
-        color:#e7ebf0; transition:color .9s var(--ease)}
+        color:#e7ebf0; transition:color .55s var(--ease)}
 body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)}
 .top p{margin:10px 0 0; font-size:13px; line-height:1.8}
 .top .n{font-variant-numeric:tabular-nums; font-weight:700}
@@ -106,7 +107,7 @@ body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{
   display:flex; flex-direction:column;
   transform:translateY(calc(var(--i) * 8px)) scale(calc(1 - var(--i) * .028));
   z-index:calc(60 - var(--i));
-  transition:transform .38s var(--ease), opacity .34s ease, box-shadow .38s ease;
+  transition:transform .2s var(--snap), opacity .16s ease, box-shadow .2s ease;
 }
 body[data-stage="cards"] .stack li .no,body[data-stage="end"] .stack li .no{color:var(--sub)}
 
@@ -115,8 +116,13 @@ body[data-stage="cards"] .stack li .no,body[data-stage="end"] .stack li .no{colo
 .stack li[data-hide]{opacity:0; pointer-events:none}
 .stack li[data-back] .rel,.stack li[data-back] .pick{visibility:hidden}
 
-/* 押したら、台帳のほうへ落ちる */
-.stack li.out{transform:translateY(150px) scale(.94) rotate(1.2deg); opacity:0}
+/* 押したら台帳のほうへ抜ける。**見届けさせない。**
+   加速して出ていく曲線にして、次の一枚は待たずに前へ出す。 */
+.stack li.out{
+  z-index:70; pointer-events:none;
+  transform:translateY(96px) scale(.96); opacity:0;
+  transition:transform .17s cubic-bezier(.4,0,1,1), opacity .14s linear;
+}
 
 body[data-stage="cards"] .rel,body[data-stage="end"] .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px}
 /* 三択はカードの下端に寄せる。**押す場所が毎回同じ**になるので、手が迷わない */
@@ -157,6 +163,9 @@ body[data-stage="cards"] .ledger,body[data-stage="end"] .ledger{display:flex}
 /* 台帳の厚み。押すたびに一枚ぶん増える（数だけでなく目にも見える） */
 .pile{display:flex; align-items:flex-end; gap:2px; height:20px}
 .pile i{display:block; width:14px; height:2px; background:var(--sub); opacity:.28; border-radius:1px}
+/* 積まれた一枚だけ、置かれた感じを出す（演出ではなく手応え） */
+@keyframes drop-in{from{transform:translateY(-7px); opacity:0} to{transform:none; opacity:.28}}
+.pile i:last-child{animation:drop-in .18s var(--snap)}
 
 .go{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
@@ -189,7 +198,7 @@ body[data-stage="end"] .stack{display:none}
 body[data-stage="cards"] .back,body[data-stage="cards"] .note{display:none}
 
 .note{margin:22px 2px 0; font-size:11.5px; line-height:1.9; color:var(--dark-ink);
-      transition:color .9s var(--ease)}
+      transition:color .55s var(--ease)}
 body[data-stage="end"] .note{color:var(--sub)}
 
 @media (max-width:520px){
@@ -291,8 +300,7 @@ var stack = document.getElementById('stack'),
     go    = document.getElementById('go'),
     lis   = [],
     counts = [0, 0, 0],
-    done = 0,
-    busy = false;
+    done = 0;
 
 RULES.forEach(function(r, i){
   var n = i + 1, rel = r[1] || {};
@@ -341,22 +349,21 @@ function restack(){
   });
 }
 
-/* 仕分ける。押した一枚は台帳のほうへ落ちる */
+/* 仕分ける。**待たせない。**押した瞬間に次の一枚が前へ出て、
+   押された一枚は独立して抜けていく（見届けさせない）。 */
 function sort(li, k, name){
-  if (busy || li.dataset.gone) return;
-  busy = true;
+  if (li.dataset.gone) return;
+
+  li.dataset.gone = '1';
   li.classList.add('out');
   counts[k]++; done++;
 
-  setTimeout(function(){
-    li.dataset.gone = '1';
-    li.hidden = true;
-    restack();
-    tally();
-    busy = false;
-    if (done === 1) go.hidden = false;
-    if (done === NEED) finish();
-  }, 340);
+  restack();                       /* 次が前へ出るのは、抜けるのを待たない */
+  tally();
+  if (done === 1) go.hidden = false;
+
+  setTimeout(function(){ li.hidden = true; }, 200);
+  if (done === NEED) setTimeout(finish, 220);
 }
 
 function tally(){
@@ -398,7 +405,7 @@ function finish(){
 
 /* マウスが無くても押せるように。1 2 3 で三択 */
 document.addEventListener('keydown', function(e){
-  if (document.body.dataset.stage !== 'cards' || busy) return;
+  if (document.body.dataset.stage !== 'cards') return;
   var k = '123'.indexOf(e.key);
   if (k < 0) return;
   var top = live()[0];
