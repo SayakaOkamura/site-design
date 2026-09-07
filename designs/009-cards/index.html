@@ -186,6 +186,9 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 /* お知らせの一覧。**一件が一行。ここでは開かない。**
    押せるので影を落とす（押せない面 = --tint で影なし、を守る）。 */
 .news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:9px}
+/* 行と中身を縦に積む。**flex にしておくと、改行（空白）が行を作らない**
+   （中身を行の中に入れたとき、これが無いと一覧が 5px 高くなって帯からあふれた）*/
+.news>li{display:flex; flex-direction:column}
 .news a,.news .row{
   display:flex; align-items:baseline; gap:18px; text-decoration:none; color:inherit;
   background:var(--card); border-radius:8px; box-shadow:var(--lift1);
@@ -199,24 +202,18 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .news a:active,.news .row:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .news a:focus-visible,.news .row:focus-visible{outline:2px solid var(--go); outline-offset:2px}
 
-/* 開いている行は沈む。**カードと同じ言い方**（押されたまま、面が空）。
-   そして**帯の上端に貼りつく。**中身が下を流れていっても、
-   **戻り先（同じ行）が上端から動かない**——読んだあとに送り返さなくていい。 */
-.news li[hidden]{display:none}
+/* 開いている行は沈む。**カードと同じ言い方**（押されたまま、面が空） */
 .news .row[aria-expanded="true"],
 .news .row[aria-expanded="true"]:hover{
   transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint);
 }
-/* **貼りつくのは行ではなく一覧のほう。**
-   sticky は親の箱から出られないので、行に付けても効かない（一度これで外した）。
-   一覧の箱は帯の中身ぜんぶの高さを持っているので、こちらなら貼りつく。
-   下を流れる中身を隠すため、白を敷く。 */
-.body.one .news{position:sticky; top:0; z-index:1; background:var(--card); padding-bottom:9px}
 
-/* 選んだ一本の中身。**一覧の下に出る＝一覧は動かない。**
+/* 選んだ一本の中身。**押した行のすぐ下に入る。**
+   だから**他の選択肢が中身の上と下に残る**——読み終わったところに次がある
+   （本人「中身の上下にそのまま他の選択肢も置いておいて、一つ開けたら他閉じる形」）。
    新しい面は作らない（帯の白の上に直に組む）。
    **事例が乗るのはここ**——段をもう一つ足すだけで入る。 */
-.det{margin-top:18px}
+.det{margin-top:10px}
 .det[hidden]{display:none}
 .det .lead{margin:0; font-size:13px; line-height:1.9; color:var(--sub)}
 .det h3{margin:22px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em;
@@ -319,76 +316,76 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
       <div class="panel">
         <div class="bar"><h2>サービス</h2></div>
         <div class="body">
+          <!-- **事例が乗るのはここ**（中身に段をもう一つ足すだけ）。
+               いまは中身が無いので置かない（空の箱を作らない）。 -->
           <ul class="news">
-            <li><button class="row" type="button" data-svc="01" aria-expanded="false"><span>01</span><b>人間中心の次世代業務システム開発</b></button></li>
-            <li><button class="row" type="button" data-svc="02" aria-expanded="false"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></button></li>
-            <li><button class="row" type="button" data-svc="03" aria-expanded="false"><span>03</span><b>自律型・共創型の組織設計支援</b></button></li>
-            <li><button class="row" type="button" data-svc="04" aria-expanded="false"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></button></li>
+            <li><button class="row" type="button" data-svc="01" aria-expanded="false"><span>01</span><b>人間中心の次世代業務システム開発</b></button>
+              <div class="det" data-svc="01" hidden>
+                <p class="lead">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供</p>
+                <h3>何をするか</h3>
+                <p>画面から作りません。まず、いまその仕事をしている人が何を見て何を決めているかを並べます。効率化だけを先に置くと、決めごとが人の頭の中に残ったまま、道具だけが新しくなります。</p>
+                <h3>進め方</h3>
+                <ol class="steps">
+                  <li>使っている人のそばで、いまのやり方を見せてもらう</li>
+                  <li>決めごとを一覧にする（誰が、何を見て、何を決めているか）</li>
+                  <li>短い周期で動くものを出して、使いながら直す</li>
+                  <li>手が離れる形に整えて渡す</li>
+                </ol>
+                <h3>出てくるもの</h3>
+                <ul class="outs"><li>決めごとの一覧</li><li>画面の試作</li><li>動く仕組み</li></ul>
+              </div>
+            </li>
+            <li><button class="row" type="button" data-svc="02" aria-expanded="false"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></button>
+              <div class="det" data-svc="02" hidden>
+                <p class="lead">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援</p>
+                <h3>何をするか</h3>
+                <p>AI を入れる前に、何を決めるためのものかを決めます。「データがあるから使う」から始めると、出てきたものを誰も判断に使いません。決めたいことを一つに絞って、そこから逆に組みます。</p>
+                <h3>進め方</h3>
+                <ol class="steps">
+                  <li>決めたいことを一つに絞る</li>
+                  <li>いま何を見て決めているかを書き出す</li>
+                  <li>手元のデータで試して、判断に足りるか見る</li>
+                  <li>判断の場（会議や日々の運用）に載せる</li>
+                </ol>
+                <h3>出てくるもの</h3>
+                <ul class="outs"><li>判断の見取り図</li><li>試した結果と、届かなかったところ</li><li>運用の形</li></ul>
+              </div>
+            </li>
+            <li><button class="row" type="button" data-svc="03" aria-expanded="false"><span>03</span><b>自律型・共創型の組織設計支援</b></button>
+              <div class="det" data-svc="03" hidden>
+                <p class="lead">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現</p>
+                <h3>何をするか</h3>
+                <p>誰が何を決めていいかを組み替えます。道具が変わると、仕事の分け方も変わります。道具だけ新しくして分け方を据え置くと、承認の列がそのまま残ります。</p>
+                <h3>進め方</h3>
+                <ol class="steps">
+                  <li>決定の流れをたどる（どこで止まっているか）</li>
+                  <li>止まっている理由を、人ではなく置き場に探す</li>
+                  <li>権限の置き場を組み替える</li>
+                  <li>しばらく一緒に回して、戻らないか見る</li>
+                </ol>
+                <h3>出てくるもの</h3>
+                <ul class="outs"><li>決定の流れ図</li><li>役割と権限の割り当て</li><li>運用の取り決め</li></ul>
+              </div>
+            </li>
+            <li><button class="row" type="button" data-svc="04" aria-expanded="false"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></button>
+              <div class="det" data-svc="04" hidden>
+                <p class="lead">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援</p>
+                <h3>何をするか</h3>
+                <p>その場所で続けられる形にします。作って渡すのではなく、あとから自分たちで直せるものを置きます。直せないものは、作った側が離れた時点で止まります。</p>
+                <h3>進め方</h3>
+                <ol class="steps">
+                  <li>いま使っている道具と、続けられる範囲を見る</li>
+                  <li>ノーコードで小さく作って、すぐ触ってもらう</li>
+                  <li>触れる人を増やす（作り方ではなく、直し方から）</li>
+                  <li>手が離れる形にする</li>
+                </ol>
+                <h3>出てくるもの</h3>
+                <ul class="outs"><li>動く仕組み</li><li>直し方の手引き</li><li>直せる人</li></ul>
+              </div>
+            </li>
           </ul>
 
-          <!-- **事例が乗るのはここ。**「事例」の段を足すだけで入る。
-               いまは無いので置かない（空の箱を作らない）。 -->
-          <div class="det" data-svc="01" hidden>
-            <p class="lead">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供</p>
-            <h3>何をするか</h3>
-            <p>画面から作りません。まず、いまその仕事をしている人が何を見て何を決めているかを並べます。効率化だけを先に置くと、決めごとが人の頭の中に残ったまま、道具だけが新しくなります。</p>
-            <h3>進め方</h3>
-            <ol class="steps">
-              <li>使っている人のそばで、いまのやり方を見せてもらう</li>
-              <li>決めごとを一覧にする（誰が、何を見て、何を決めているか）</li>
-              <li>短い周期で動くものを出して、使いながら直す</li>
-              <li>手が離れる形に整えて渡す</li>
-            </ol>
-            <h3>出てくるもの</h3>
-            <ul class="outs"><li>決めごとの一覧</li><li>画面の試作</li><li>動く仕組み</li></ul>
-          </div>
-
-          <div class="det" data-svc="02" hidden>
-            <p class="lead">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援</p>
-            <h3>何をするか</h3>
-            <p>AI を入れる前に、何を決めるためのものかを決めます。「データがあるから使う」から始めると、出てきたものを誰も判断に使いません。決めたいことを一つに絞って、そこから逆に組みます。</p>
-            <h3>進め方</h3>
-            <ol class="steps">
-              <li>決めたいことを一つに絞る</li>
-              <li>いま何を見て決めているかを書き出す</li>
-              <li>手元のデータで試して、判断に足りるか見る</li>
-              <li>判断の場（会議や日々の運用）に載せる</li>
-            </ol>
-            <h3>出てくるもの</h3>
-            <ul class="outs"><li>判断の見取り図</li><li>試した結果と、届かなかったところ</li><li>運用の形</li></ul>
-          </div>
-
-          <div class="det" data-svc="03" hidden>
-            <p class="lead">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現</p>
-            <h3>何をするか</h3>
-            <p>誰が何を決めていいかを組み替えます。道具が変わると、仕事の分け方も変わります。道具だけ新しくして分け方を据え置くと、承認の列がそのまま残ります。</p>
-            <h3>進め方</h3>
-            <ol class="steps">
-              <li>決定の流れをたどる（どこで止まっているか）</li>
-              <li>止まっている理由を、人ではなく置き場に探す</li>
-              <li>権限の置き場を組み替える</li>
-              <li>しばらく一緒に回して、戻らないか見る</li>
-            </ol>
-            <h3>出てくるもの</h3>
-            <ul class="outs"><li>決定の流れ図</li><li>役割と権限の割り当て</li><li>運用の取り決め</li></ul>
-          </div>
-
-          <div class="det" data-svc="04" hidden>
-            <p class="lead">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援</p>
-            <h3>何をするか</h3>
-            <p>その場所で続けられる形にします。作って渡すのではなく、あとから自分たちで直せるものを置きます。直せないものは、作った側が離れた時点で止まります。</p>
-            <h3>進め方</h3>
-            <ol class="steps">
-              <li>いま使っている道具と、続けられる範囲を見る</li>
-              <li>ノーコードで小さく作って、すぐ触ってもらう</li>
-              <li>触れる人を増やす（作り方ではなく、直し方から）</li>
-              <li>手が離れる形にする</li>
-            </ol>
-            <h3>出てくるもの</h3>
-            <ul class="outs"><li>動く仕組み</li><li>直し方の手引き</li><li>直せる人</li></ul>
-          </div>
-
-          <p class="todo">題と、そのすぐ下の一行が<b>公式サイトの言葉</b>です。それより下は<b>仮の中身</b>で、まだ会社が出しているものではありません。</p>
+          <p class="todo">題と、そのすぐ下の一行が<b>公式サイトの言葉</b>です。それより下は、まだ会社が出していない<b>仮の中身</b>です。</p>
         </div>
       </div>
     </div>
@@ -601,11 +598,13 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
     if (body) body.tabIndex = body.scrollHeight > body.clientHeight ? 0 : -1;
   }
 
-  /* サービスの一本。**帯は「一覧」か「一本」のどちらかを出す。両方は出さない。**
-     一本を出すあいだ、他の三行は畳む。出した行は上端に貼りつく（CSS の sticky）。
-     **だから読み終わって次を選ぶときに、送り返す必要がない。**
-     一覧の下に中身を足す形は却下（本人：「それやるといちいち上に戻って
-     来ないといけないって話だったはず」。お知らせで一度言われたのと同じ）。 */
+  /* サービスの一本。**中身は押した行のすぐ下に入る。他の選択肢は畳まない。**
+     だから中身の上と下に選択肢が残って、**読み終わったところに次がある。**
+     開くのは一つだけ（一つ開けたら他は閉じる）。もう一度押すと閉じる。
+
+     捨てた形は二つ。**一覧の下にまとめて足す形**（読むために送らせると、
+     次を選ぶのに送り返させる）と、**他を畳んで上端に貼りつける形**
+     （送り返さずに済むが、次の選択肢が見えない）。 */
   document.addEventListener('click', function(e){
     var row = e.target.closest('.row[data-svc]');
     if (!row) return;
@@ -614,20 +613,13 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
     box.querySelectorAll('.row[data-svc]').forEach(function(r){
       r.setAttribute('aria-expanded', 'false');
-      r.parentNode.hidden = false;                       /* 畳んだ行を戻す */
     });
     box.querySelectorAll('.det[data-svc]').forEach(function(d){ d.hidden = true; });
-    box.classList.remove('one');
-    box.scrollTop = 0;                                   /* 上端から始める */
 
-    if (on){ reach(box); return; }                       /* もう一度押した＝一覧へ戻る */
-
-    row.setAttribute('aria-expanded', 'true');
-    box.classList.add('one');                            /* 一覧が上端に貼りつく */
-    box.querySelectorAll('.row[data-svc]').forEach(function(r){
-      if (r !== row) r.parentNode.hidden = true;         /* 出しているあいだ、他は畳む */
-    });
-    box.querySelector('.det[data-svc="' + row.dataset.svc + '"]').hidden = false;
+    if (!on){                                            /* 同じ行をもう一度＝閉じる */
+      row.setAttribute('aria-expanded', 'true');
+      row.parentNode.querySelector('.det').hidden = false;
+    }
     reach(box);
   });
 
