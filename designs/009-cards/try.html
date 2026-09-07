@@ -25,9 +25,14 @@
      > 体験はカードを押す方じゃなくて、複雑で面倒なものがカード化されて可視化される法に
      > しないと、カード押すの気持ちいいね～で伝わるものは何もない気がするな
 
-     だから段を三つにした。**表 → 一斉にカードになる（可視化）→ 一枚ずつ決める。**
-     真ん中が山場で、ここで**同じ 40 件が関係ごとに固まって見える**。
-     押して気持ちいいのは、そのあとの話。
+     だから段を二つにした。**表 → カードになる（可視化）。**
+     カードは**スクロールして選ぶ。押すと右に詳しく出る。**
+     （本人 2026-09-07：「順繰りじゃなくてスクロールして選択→詳細が右に出る→
+     目が通せるって形にして、別にOKしてくとかいらない感じにしよう」）
+
+     **捨てたもの：**順繰りの束、三択（要る／要らない／もうやった）、台帳の三つの山、
+     進みの帯。**一枚ずつ決めさせるのをやめた**——伝えたいのは
+     「読める形になった＝目が通せる」ことで、押して気持ちいいことではない。
 
      **カードになったらスクロールさせない**（本人 2026-09-07）：
      > カードになった時スクロールしたくないかも。順繰りで出てきて、
@@ -111,9 +116,11 @@ body{
   transition:background .55s var(--ease);
 }
 body:not([data-stage="wall"]){background:var(--bg)}
-body[data-stage="cards"]{overflow:hidden}   /* 束のあいだはスクロールさせない */
 
-.sheet{width:100%; max-width:908px; margin:0 auto; padding:0 24px}   /* 908 = 860 + 24×2。入口と同じ */
+.sheet{width:100%; max-width:908px; margin:0 auto; padding:0 24px;   /* 908 = 860 + 24×2。入口と同じ */
+       transition:max-width .24s var(--ease)}
+/* 帯が出ているあいだだけ置き場を広げる（入口と同じ手）*/
+body.picked .sheet{max-width:1240px}
 
 /* ─ 頭の帯。**カードの段だけ出す**（入口と同じ形にして、同じサイトだと分かるように）─ */
 .topbar{display:none}
@@ -124,17 +131,6 @@ body:not([data-stage="wall"]){padding-top:0}
 .topbar .in{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
 /* .mark は既にこのファイルで使われている（重い側で消す組）。名前を分ける */
 .topbar .brand{font-size:13.5px; font-weight:700; letter-spacing:.02em; color:var(--ink)}
-
-/* ─ 進み。**何枚やったかを、数と面で出す**（点数ではなく現在地）─ */
-.prog{display:none}
-body[data-stage="cards"] .prog,body[data-stage="end"] .prog{
-  display:flex; align-items:center; gap:16px; margin:22px 2px 0;
-}
-.prog .pg{flex:1; height:6px; border-radius:3px; background:#d5e2ee; overflow:hidden}
-.prog .pg i{display:block; height:100%; width:0; border-radius:3px; background:var(--go);
-            transition:width .3s var(--snap)}
-.prog .pn{flex:none; margin:0; font-size:13px; color:var(--sub); font-variant-numeric:tabular-nums}
-.prog .pn b{font-size:20px; color:var(--ink); margin-right:2px}
 
 /* ─ 頭 ───────────────────────────────────────────────── */
 .top{margin:0 2px 20px; color:var(--dark-ink); transition:color .55s var(--ease)}
@@ -167,22 +163,19 @@ body[data-stage="wall"] .hdr{display:flex; margin:0 0 4px; padding:1px 10px;
                              font-size:12px; line-height:1.9; color:#2f5647}
 
 /* カードでは、三つの欄が件名の下に小さく並ぶ。**表と同じ値** */
-body[data-stage="cards"] .fl,body[data-stage="end"] .fl{
+/* 三つの欄（状態・担当・期限）は**右の帯だけ**で出す。
+   一覧のカードには出さない（一覧は目で追う場所） */
+/* 一覧では消してあるので、帯のほうを強く書く（そうしないと消えたまま）*/
+body[data-stage="seen"] .pane2 .fl{
   display:block; margin-top:14px; font-size:12.5px; color:var(--sub); line-height:1.9;
 }
-body[data-stage="cards"] .fl>span,body[data-stage="end"] .fl>span{margin-right:20px}
-body[data-stage="cards"] .fl i,body[data-stage="end"] .fl i{
-  display:inline; font-style:normal; margin-right:7px; color:#8a929c;
-}
+.pane2 .fl>span{display:block}
+.pane2 .fl i{display:inline; font-style:normal; margin-right:8px; color:#8a929c}
 /* 空欄は、空欄と書く（決まっていないことを、決まっていないと書く）*/
-body[data-stage="cards"] .fl [data-empty]::after,
-body[data-stage="end"] .fl [data-empty]::after{content:"（空欄）"; opacity:.75}
+.pane2 .fl [data-empty]::after{content:"（空欄）"; opacity:.75}
 /* 「〃」「同上」は、表の中では上の行を指しているが、
    一枚になると指す先が無い。**何も決まっていないのと同じ**なので、そう書く */
-body[data-stage="cards"] .fl [data-ditto]::after,
-body[data-stage="end"] .fl [data-ditto]::after{
-  content:"（上の行と同じ）"; opacity:.75; margin-left:5px;
-}
+.pane2 .fl [data-ditto]::after{content:"（上の行と同じ）"; opacity:.75; margin-left:5px}
 
 body[data-stage="wall"]{background:var(--crt-bg)}
 body[data-stage="wall"] .stack,
@@ -268,7 +261,7 @@ body[data-stage="wall"] .note{color:#4d7f6a}
    まだ決まっていない／印なし。**表では番号だけだったものに、言葉が付く。**
    ここでは押せるものを置かない（進むのは下の帯の一つだけ）。 */
 body[data-stage="seen"] .stack{
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(166px,1fr));
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
   gap:10px; margin-top:20px;
 }
 body[data-stage="seen"] .stack li{
@@ -291,64 +284,51 @@ body[data-stage="seen"] .stack li.gl:first-child{padding-top:2px}
 body[data-stage="seen"] .stack li.gl b{color:var(--ink); font-size:16px; margin-right:7px;
                                        font-variant-numeric:tabular-nums}
 
-/* ─ 軽い側：一枚ずつ手前に出る束 ─────────────────────────
-   後ろの厚みが見えているので、量が減った気にならない。
-   **判断が一度に一つしか目に入らない。** */
-/* 一枚が広すぎると板に見える。カードらしい幅に締めて、真ん中に置く */
-body[data-stage="cards"] .stack,body[data-stage="end"] .stack{
-  display:block; position:relative; min-height:300px;
-  max-width:560px; margin:26px auto 0;
-}
-/* 群の名前は、束の段では出さない（`.stack li` の指定が `.gl` より強いので、ここで消す）*/
-body[data-stage="cards"] .stack li.gl,body[data-stage="end"] .stack li.gl{display:none}
-body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{
-  position:absolute; left:0; right:0; top:0;
-  background:var(--card); color:var(--ink); box-shadow:var(--lift3);
-  border-radius:var(--r); padding:32px 32px 28px;
-  font-size:15.5px; line-height:1.8; min-height:200px;
-  display:flex; flex-direction:column;
-  transform:translateY(calc(var(--i) * 8px)) scale(calc(1 - var(--i) * .028));
-  z-index:calc(60 - var(--i));
-  transition:transform .2s var(--snap), opacity .16s ease, box-shadow .2s ease;
-}
-body[data-stage="cards"] .stack li .no,body[data-stage="end"] .stack li .no{color:var(--sub)}
-
-/* 後ろの札は、下の縁だけ見せる */
-.stack li[data-back]{box-shadow:var(--lift1)}
-.stack li[data-hide]{opacity:0; pointer-events:none}
-.stack li[data-back] .rel,.stack li[data-back] .pick{visibility:hidden}
-
-/* 押したら**選んだ山へ飛ぶ**（行き先は JS が inline transform で入れる）。
-   見届けさせない——次の一枚は待たずに前へ出す。 */
-.stack li.out{
-  z-index:70; pointer-events:none; opacity:0;
-  transition:transform .3s cubic-bezier(.4,0,1,1), opacity .26s ease-in;
-}
-
+/* ─ 関係の印。**カードになって初めて見える**（表では番号だけ）─────
+   束を捨てたときに、この見た目も一緒に消してしまっていた。戻した。
+   色は青紫の palette の中で三つが分かれるように置いてある——
+   **依存はサイトの色、重複は赤、未決は琥珀**（赤と琥珀は「困っている側」）。 */
 body:not([data-stage="wall"]) .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px}
-/* 三択はカードの下端に寄せる。**押す場所が毎回同じ**になるので、手が迷わない */
-body[data-stage="cards"] .pick,body[data-stage="end"] .pick{
-  display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:22px}
-
 .rel b{font-size:11.5px; font-weight:700; line-height:1; padding:7px 10px; border-radius:999px;
        background:var(--tint); color:var(--sub)}
-/* 印の色。青紫の palette の中で三つが分かれるように置き直した。
-   **依存はサイトの色（青紫）に寄せ、重複は赤、未決は琥珀**——
-   赤と琥珀は「困っている側」なので、青紫の外に置いてある */
 .rel b.dup{background:#fdeaee; color:#a32c4a}
 .rel b.needs{background:#eae7fb; color:#4232b4}
 .rel b.open{background:#fdf1de; color:#8a5a12}
 
-.pick button{
-  -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  font-size:13px; font-weight:700; padding:12px 18px; border-radius:8px;
-  background:var(--tint); color:var(--ink); box-shadow:var(--lift1);
-  transition:transform .14s var(--ease), box-shadow .14s ease;
+/* ─ 右の帯。**押したカードの中身がここに出る**（入口と同じ形）───
+   一覧はスクロールして選ぶ。**押すと右に出る。決めさせない。**
+   帯は貼りつく（`sticky`）ので、一覧を送っても中身が残る＝**目が通せる。** */
+.wrap2{display:contents}
+body[data-stage="seen"] .wrap2{display:flex; align-items:flex-start}
+body[data-stage="seen"] .stack{flex:1 1 auto; min-width:0}
+
+.pane2{display:none}
+body[data-stage="seen"] .pane2{
+  display:block; flex:none; width:0; overflow:hidden;
+  position:sticky; top:24px; transition:width .24s var(--ease);
 }
-.pick button:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.pick button:active{transform:translateY(1px); box-shadow:var(--lift0)}
-.pick button:focus-visible{outline:2px solid var(--go); outline-offset:2px}
-.pick button i{font-style:normal; color:var(--sub); font-size:11px; margin-left:7px}
+body.picked[data-stage="seen"] .pane2{width:356px}   /* 340 ＋ 空き 16 */
+
+/* 中身は固定幅。**帯が伸びるあいだ、文字が組み直されない** */
+.pane2 .box{
+  width:340px; margin-left:16px; padding:22px 24px;
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
+  animation:swap2 .18s var(--ease);
+}
+@keyframes swap2{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
+.pane2 .no{display:inline-block; min-width:0; margin-right:10px; font-size:12.5px; color:var(--sub)}
+.pane2 .tx{font-size:16px; font-weight:700; line-height:1.55}
+.pane2 .rel{margin-top:14px}
+
+/* 押したカードは沈む。**カードと同じ言い方**（新しい印を足さない） */
+body[data-stage="seen"] .stack li.pick2,
+body[data-stage="seen"] .stack li.pick2:hover{
+  transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint);
+}
+body[data-stage="seen"] .stack li:not(.gl){cursor:pointer;
+  transition:transform .16s var(--ease), box-shadow .16s ease}
+body[data-stage="seen"] .stack li:not(.gl):hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+body[data-stage="seen"] .stack li:not(.gl):focus-visible{outline:2px solid var(--go); outline-offset:3px}
 
 /* ─ 下の帯。押すところは常にここ。あとで台帳になる ───────────── */
 .book{
@@ -358,26 +338,6 @@ body[data-stage="cards"] .pick,body[data-stage="end"] .pick{
 }
 .book .in{max-width:908px; margin:0 auto; padding:0 24px; display:flex; align-items:flex-end;
           gap:20px; flex-wrap:wrap}
-.ledger{display:none; align-items:flex-end; gap:22px; flex-wrap:wrap}
-body[data-stage="cards"] .ledger,body[data-stage="end"] .ledger{display:flex}
-.book .t,.book .rest{padding-bottom:2px}
-.book .t{font-size:12.5px; font-weight:700}
-.book .c{font-size:12.5px; color:var(--sub); font-variant-numeric:tabular-nums}
-.book .c b{color:var(--ink); font-size:15px; margin-right:3px}
-.book .rest{font-size:12px; color:var(--sub)}
-
-/* 台帳は三つの山。**押したカードはその山へ飛んでいく。**
-   細い線が一本増えるだけでは「たまっていく」が出なかった。 */
-.piles{display:flex; gap:26px; align-items:flex-end}
-.heap{display:flex; flex-direction:column; align-items:center; gap:8px; min-width:86px}
-.heap .stackbars{display:flex; flex-direction:column-reverse; justify-content:flex-end;
-                 gap:2px; height:46px; width:68px}
-.heap .stackbars i{display:block; height:4px; border-radius:2px; background:var(--sub); opacity:.34}
-@keyframes land{from{transform:translateY(-10px) scaleX(.8); opacity:0} to{transform:none; opacity:.32}}
-.heap .stackbars i:first-child{animation:land .2s var(--snap)}
-.heap .nm{font-size:12px; font-weight:700; color:var(--sub); white-space:nowrap}
-.heap .nm b{color:var(--ink); font-size:19px; margin-right:5px; font-variant-numeric:tabular-nums}
-
 .go{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   margin-left:auto; text-align:left;
@@ -392,10 +352,11 @@ body[data-stage="cards"] .ledger,body[data-stage="end"] .ledger{display:flex}
 body[data-stage="wall"] .go{margin-left:0}
 
 /* ─ 終わり ───────────────────────────────────────────── */
+/* 理念。**一覧の下に置く**（通り終わってから名前が付く。
+   「ここまでにする」を押させるのはやめた） */
 .end{display:none; background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
-     padding:40px; margin-bottom:16px}
-body[data-stage="end"] .end{display:block}
-body[data-stage="end"] .stack{display:none}
+     padding:40px; margin-top:26px}
+body[data-stage="seen"] .end{display:block}
 .end h2{margin:0; font-size:clamp(19px,3vw,27px); font-weight:700; line-height:1.55}
 .end p{margin:20px 0 0; font-size:13.5px; color:var(--sub); line-height:1.95}
 
@@ -411,16 +372,15 @@ body[data-stage="end"] .stack{display:none}
 .home:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .home:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .home:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-body[data-stage="cards"] .note{display:none}
+
 
 .note{margin:22px 2px 0; font-size:11.5px; line-height:1.9; color:var(--dark-ink);
       transition:color .55s var(--ease)}
-body[data-stage="end"] .note{color:var(--sub)}
+body:not([data-stage="wall"]) .note{color:var(--sub)}
 
 @media (max-width:520px){
   body{padding:24px 16px 130px}
   .end{padding:28px 24px}
-  body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{padding:24px 22px; font-size:14px}
 }
 </style>
 </head>
@@ -438,19 +398,6 @@ body[data-stage="end"] .note{color:var(--sub)}
     <h1 id="h">課題管理表を片付ける</h1>
     <p id="p"><b>作っているものの例です。</b>どこにもある表（<span class="n" id="n">0</span> 件、仮の中身）で、
     一行ずつは読めますが、関わりは番号だけ。これをカードにして片付けます。</p>
-  </div>
-
-  <!-- 終わり。理念はここで初めて出す（通り終わってから名前が付く） -->
-  <div class="end">
-    <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
-    <p>読める形にして、一枚ずつ決める。<b>これが、作っているものです。</b></p>
-  </div>
-
-  <!-- 進み。**何枚やったか**を数と面で出す（点数ではなく現在地）。
-       カードの段だけ出る -->
-  <div class="prog">
-    <span class="pg"><i id="pgb"></i></span>
-    <p class="pn"><b id="pgd">0</b>/ <span id="pgt">0</span> 枚</p>
   </div>
 
   <!-- 打ち込んだ一行と前置き。**製品の画面は真似しない。**
@@ -476,10 +423,20 @@ body[data-stage="end"] .note{color:var(--sub)}
 
   <!-- 出力の本体。**桁（No・状態・担当・期限・参照）は重い側だけの部品で、
        カードになったら番号と件名が前に出て、三つの欄は下に小さく並ぶ。** -->
-  <ul class="stack" id="stack"></ul>
+  <!-- 一覧と、押したカードの中身が出る帯。カードの段だけ横に並ぶ -->
+  <div class="wrap2">
+    <ul class="stack" id="stack"></ul>
+    <aside class="pane2" id="pane2"></aside>
+  </div>
 
   <!-- しめ。数字は JS が入れる（実際の件数と合わせる） -->
   <p class="sum" id="sum"></p>
+
+  <!-- 理念。一覧の下（通り終わってから名前が付く） -->
+  <div class="end">
+    <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
+    <p>読める形にして、目を通せるようにする。<b>これが、作っているものです。</b></p>
+  </div>
 
   <p class="note">これは仮の中身です。実際の課題管理表ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
 
@@ -490,16 +447,7 @@ body[data-stage="end"] .note{color:var(--sub)}
     <!-- ホーム。**どの段でも、いつもここにある。**
          「入口」は人が使う言葉ではない（本人 2026-09-07：「入口、とは呼ばないだろう」）-->
     <a class="home" href="./">ホーム</a>
-    <span class="ledger">
-      <span class="t">台帳</span>
-      <span class="piles">
-        <span class="heap" id="h0"><span class="stackbars"></span><span class="nm"><b>0</b>要る</span></span>
-        <span class="heap" id="h1"><span class="stackbars"></span><span class="nm"><b>0</b>要らない</span></span>
-        <span class="heap" id="h2"><span class="stackbars"></span><span class="nm"><b>0</b>もうやった</span></span>
-      </span>
-      <span class="rest" id="rest"></span>
-    </span>
-    <button class="go" id="go">この表をカードにする<span>一枚ずつ、押して仕分けられます</span></button>
+    <button class="go" id="go">この表をカードにする<span>押すと、右に詳しく出ます</span></button>
   </div>
 </div>
 
@@ -555,14 +503,10 @@ var ITEMS = [
   {t:'崩れの件、環境が特定できない', s:'―',   w:'―',   d:'？',      rel:{dup:[32],open:1}}
 ];
 
-var PICKS = ['要る', '要らない', 'もうやった'];
-var SHOW  = 7;                    /* 後ろに見せる厚み */
-
 var stack = document.getElementById('stack'),
+    pane2 = document.getElementById('pane2'),
     go    = document.getElementById('go'),
-    lis   = [],
-    counts = [0, 0, 0],
-    done = 0;
+    lis   = [];
 
 ITEMS.forEach(function(it, i){
   var n = i + 1, rel = it.rel || {};
@@ -613,15 +557,13 @@ ITEMS.forEach(function(it, i){
     li.appendChild(rb);
   }
 
-  var pk = document.createElement('div');
-  pk.className = 'pick';
-  PICKS.forEach(function(name, k){
-    var b = document.createElement('button');
-    b.innerHTML = name + '<i>' + (k + 1) + '</i>';
-    b.onclick = function(){ sort(li, k, name); };
-    pk.appendChild(b);
-  });
-  li.appendChild(pk);
+  /* **押すと右に出る。決めさせない。**（三択は捨てた）
+     マウスが無くても届くように、tab で回って Enter / Space で押せる */
+  li.tabIndex = 0;
+  li.onclick = function(){ pick(li, i); };
+  li.onkeydown = function(e){
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(li, i); }
+  };
 
   stack.appendChild(li);
   lis.push(li);
@@ -676,118 +618,60 @@ beat(document.querySelector('.hdr'));
 lis.forEach(beat);
 beat(document.getElementById('sum'));
 
-tally();
+/* ─ 押したカードの中身を、右の帯に出す ────────────────────────
+   **一覧はそのまま。**カードは動かないし、消えない。
+   帯の中身は**カードをそのまま写したもの**（別のものに差し替えていない）。
+   もう一度押すと閉じる。別のカードを押すと入れ替わる。 */
+var picked = null;
 
-function live(){ return lis.filter(function(l){ return !l.dataset.gone; }); }
+function pick(li, i){
+  if (picked === li){ close2(); return; }
 
-/* 手前から順に番号を振り直す。0 が手前の一枚 */
-function restack(){
-  live().forEach(function(l, i){
-    l.style.setProperty('--i', i);
-    if (i === 0){ delete l.dataset.back; } else { l.dataset.back = '1'; }
-    if (i >= SHOW){ l.dataset.hide = '1'; } else { delete l.dataset.hide; }
-  });
+  lis.forEach(function(l){ l.classList.remove('pick2'); });
+  li.classList.add('pick2');
+  picked = li;
+  document.body.classList.add('picked');
+
+  var box = document.createElement('div');
+  box.className = 'box';
+  /* カードを写す（同じものが右に出た、が嘘にならない）。
+     三つの欄は、こちら側の見た目でだけ出る（一覧では出さない） */
+  box.appendChild(li.querySelector('.ln').cloneNode(true));
+  var rel = li.querySelector('.rel');
+  if (rel) box.appendChild(rel.cloneNode(true));
+
+  pane2.textContent = '';
+  pane2.appendChild(box);
 }
 
-/* 仕分ける。**待たせない。**押した瞬間に次の一枚が前へ出て、
-   押された一枚は**選んだ山へ飛んでいく**（見届けさせない）。 */
-function sort(li, k, name){
-  if (li.dataset.gone) return;
-
-  /* 行き先＝その山。カードの今いる場所との差を測って、そこへ投げる */
-  var a = li.getBoundingClientRect(),
-      b = document.getElementById('h' + k).getBoundingClientRect();
-  li.style.transform =
-    'translate(' + Math.round(b.left + b.width / 2 - (a.left + a.width / 2)) + 'px,'
-                 + Math.round(b.top + b.height / 2 - (a.top + a.height / 2)) + 'px) scale(.12)';
-
-  li.dataset.gone = '1';
-  li.classList.add('out');
-  counts[k]++; done++;
-
-  restack();                       /* 次が前へ出るのは、飛ぶのを待たない */
-  tally();
-
-  setTimeout(function(){ li.hidden = true; }, 320);
-
-  /* **勝手に終わらせない。**終わるのは「ここまでにする」を押したときか、
-     束を全部やり切ったときだけ。リズムが出てきたところで止めない。 */
-  if (!live().length) setTimeout(finish, 380);
+function close2(){
+  if (!picked) return;
+  picked.classList.remove('pick2');
+  picked = null;
+  document.body.classList.remove('picked');
+  /* 帯が縮みきってから中身を消す（縮むあいだ、文字が組み直されない） */
+  setTimeout(function(){ if (!picked) pane2.textContent = ''; }, 260);
 }
 
-function tally(){
-  counts.forEach(function(c, k){
-    var heap = document.getElementById('h' + k);
-    heap.querySelector('.nm b').textContent = c;
-    var bars = heap.querySelector('.stackbars'), want = Math.min(c, 9);
-    while (bars.children.length > want) bars.removeChild(bars.lastChild);
-    while (bars.children.length < want) bars.insertBefore(document.createElement('i'), bars.firstChild);
-    /* 幅を少しずつ変えて、紙が揃っていない感じにする */
-    [].forEach.call(bars.children, function(i, n){ i.style.width = (44 + (n % 3) * 5) + 'px'; });
-  });
-  document.getElementById('rest').textContent = '残り ' + live().length + ' 件';
-
-  /* 進み。**押した数がそのまま面になる**（現在地。点数ではない）*/
-  document.getElementById('pgd').textContent = done;
-  document.getElementById('pgt').textContent = ITEMS.length;
-  document.getElementById('pgb').style.width = (done / ITEMS.length * 100) + '%';
-}
-
-/* 段は三つ。**表 → 一斉にカードになる（山場）→ 一枚ずつ決める。**
-   カード化＝可視化のところを飛ばさない（押すのが山場ではない）。 */
-go.onclick = function(){
-  var st = document.body.dataset.stage;
-
-  if (st === 'wall'){
-    document.body.dataset.stage = 'seen';
-    document.getElementById('h').textContent = 'カードになった';
-    document.getElementById('p').innerHTML =
-      '<b>同じ ' + ITEMS.length + ' 件です。</b>'
-      + '表では番号だけだった関わりに、言葉が付きました——'
-      + '<b>被っている ' + counts0[0] + '／何かのために要る ' + counts0[1]
-      + '／まだ決まっていない ' + counts0[2] + '</b>。表のままでは見えていなかったところです。';
-    go.innerHTML = '一枚ずつ決める<span>押して仕分けられます</span>';
-    window.scrollTo(0, 0);
-    return;
-  }
-
-  if (st === 'seen'){
-    document.body.dataset.stage = 'cards';
-    restack();
-    document.getElementById('h').textContent = '仕分ける';
-    document.getElementById('p').innerHTML =
-      '一枚ずつ出てきます。<b>関係が見えているので、押せます</b>——'
-      + '被っているなら要らない、何かのために要るなら要る、決まっていないならまだ決めない。';
-    /* 抜け口は最初から出しておく。いつやめてもいい */
-    go.innerHTML = 'ここまでにする<span>いつでも抜けられます</span>';
-    window.scrollTo(0, 0);
-    return;
-  }
-
-  finish();
-};
-
-function finish(){
-  document.body.dataset.stage = 'end';
-  document.getElementById('h').textContent = '片付いた';
-  document.getElementById('p').innerHTML =
-    '<b>' + done + ' 件を、一枚ずつ決めました。</b>'
-    + '同じ ' + ITEMS.length + ' 件でも、表のままなら'
-    + '「どれとどれが被っているか」は見えていません。残りも同じ形で片付きます。';
-  go.hidden = true;
-  window.scrollTo(0, 0);
-}
-
-/* マウスが無くても押せるように。1 2 3 で三択 */
 document.addEventListener('keydown', function(e){
-  if (document.body.dataset.stage !== 'cards') return;
-  var k = '123'.indexOf(e.key);
-  if (k < 0) return;
-  var top = live()[0];
-  if (!top) return;
-  e.preventDefault();
-  sort(top, k, PICKS[k]);
+  if (e.key === 'Escape' && picked){ e.preventDefault(); close2(); }
 });
+
+/* ─ 段は二つ。**表 → カードになる。**
+   カード化＝可視化がここの山場で、そのあとは目を通すだけ。
+   一枚ずつ決めさせるのはやめた（本人：「別にOKしてくとかいらない」）。 */
+go.onclick = function(){
+  document.body.dataset.stage = 'seen';
+  document.getElementById('h').textContent = 'カードになった';
+  document.getElementById('p').innerHTML =
+    '<b>同じ ' + ITEMS.length + ' 件です。</b>'
+    + '表では番号だけだった関わりに、言葉が付きました——'
+    + '<b>被っている ' + counts0[0] + '／何かのために要る ' + counts0[1]
+    + '／まだ決まっていない ' + counts0[2] + '</b>。'
+    + '<b>押すと、右に詳しく出ます。</b>';
+  go.hidden = true;            /* 先はもう無い。目を通すだけ */
+  window.scrollTo(0, 0);
+};
 </script>
 
 </body>
