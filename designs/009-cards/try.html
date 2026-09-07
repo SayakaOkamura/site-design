@@ -133,7 +133,27 @@ body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)
 .rel,.pick,.mark{display:none}
 
 /* 桁は**重い側だけの部品。**カードになったら残るのは番号と本文だけ */
-.gut,.id,.ref,.cmd,.pre,.sum,.cur{display:none}
+.gut,.ref,.cmd,.pre,.sum,.cur,.hdr{display:none}
+body[data-stage="wall"] .hdr{display:flex; margin:0 0 4px; padding:1px 10px;
+                             font-size:12px; line-height:1.9; color:#2f5647}
+
+/* カードでは、三つの欄が件名の下に小さく並ぶ。**表と同じ値** */
+body[data-stage="cards"] .fl,body[data-stage="end"] .fl{
+  display:block; margin-top:14px; font-size:12.5px; color:var(--sub); line-height:1.9;
+}
+body[data-stage="cards"] .fl>span,body[data-stage="end"] .fl>span{margin-right:20px}
+body[data-stage="cards"] .fl i,body[data-stage="end"] .fl i{
+  display:inline; font-style:normal; margin-right:7px; color:#8a929c;
+}
+/* 空欄は、空欄と書く（決まっていないことを、決まっていないと書く）*/
+body[data-stage="cards"] .fl [data-empty]::after,
+body[data-stage="end"] .fl [data-empty]::after{content:"（空欄）"; opacity:.75}
+/* 「〃」「同上」は、表の中では上の行を指しているが、
+   一枚になると指す先が無い。**何も決まっていないのと同じ**なので、そう書く */
+body[data-stage="cards"] .fl [data-ditto]::after,
+body[data-stage="end"] .fl [data-ditto]::after{
+  content:"（上の行と同じ）"; opacity:.75; margin-left:5px;
+}
 
 body[data-stage="wall"]{background:var(--crt-bg)}
 body[data-stage="wall"] .top,
@@ -154,7 +174,7 @@ body[data-stage="wall"] .pre{display:block; margin:0 2px 14px; font-size:12px;
                              line-height:1.85; color:var(--crt-dim)}
 body[data-stage="wall"] .sum{display:block; margin:16px 2px 0; font-size:12px;
                              line-height:1.85; color:var(--crt-dim)}
-.pre div,.sum{animation:emit 60ms linear both}   /* 遅れは JS が入れる */
+.pre div,.sum,.hdr{animation:emit 60ms linear both}   /* 遅れは JS が入れる */
 .pre .v{color:#6f9d87}
 .pre .w{color:var(--crt-ref)}
 
@@ -175,12 +195,19 @@ body[data-stage="wall"] .gut{
   display:inline-block; flex:none; min-width:3ch; text-align:right;
   margin-right:1.5em; color:#2f5647; font-variant-numeric:tabular-nums;
 }
-body[data-stage="wall"] .id{
-  display:inline-block; flex:none; min-width:5.5ch; color:var(--crt-dim);
-  font-variant-numeric:tabular-nums;
+/* 件名のあとに三つの欄（状態・担当・期限）。**表として桁が揃う** */
+body[data-stage="wall"] .tx{
+  flex:none; width:30ch; padding-right:1.5em;
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
 }
-body[data-stage="wall"] .tx{flex:0 1 auto; min-width:0;
-                            padding-left:calc(var(--d,0) * 1.9em)}
+body[data-stage="wall"] .fl{display:contents}
+body[data-stage="wall"] .st,
+body[data-stage="wall"] .wh,
+body[data-stage="wall"] .dl{display:inline-block; flex:none; color:var(--crt-dim)}
+body[data-stage="wall"] .st{width:9ch}
+body[data-stage="wall"] .wh{width:7ch}
+body[data-stage="wall"] .dl{width:10ch; font-variant-numeric:tabular-nums}
+.fl i{display:none}   /* 欄の名前はカードのときだけ出す */
 body[data-stage="wall"] .ref{
   display:inline-block; flex:none; margin-left:1.4em; color:var(--crt-ref);
   font-variant-numeric:tabular-nums; white-space:nowrap;
@@ -340,19 +367,20 @@ body[data-stage="end"] .note{color:var(--sub)}
   <!-- 打ち込んだ一行と前置き。**製品の画面は真似しない。**
        端末の出力は特定の製品の意匠ではないので、ここに寄せる。
        前置きは版・読み込み・警告だけで、**中身の関係は一言も出さない。** -->
-  <p class="cmd"><b>$</b>alter scan --rules --deep | alter graph --resolve 2&gt;&amp;1 | tee scan.log</p>
+  <p class="cmd"><b>$</b>alter scan --issues --deep | alter graph --resolve 2&gt;&amp;1 | tee scan.log</p>
 
   <div class="pre">
     <div class="v">alter 0.4.1-rc2 (build 8f3ac1) · node v24.18.0 · win32-x64</div>
-    <div>reading .alter/rules.d/**/*.{yml,md,txt}  … 12 files</div>
-    <div class="w">warn  3 files have no schema version</div>
+    <div>reading  課題管理.xlsx / 課題管理_旧.xlsx / 課題一覧(2019).xls  … 3 files, 6 sheets</div>
+    <div class="w">warn  2 sheets have no header row</div>
     <div class="w">warn  mixed encodings (utf-8, cp932)</div>
+    <div class="w">warn  状態の値に辞書に無いものがある</div>
     <div>resolving refs …</div>
   </div>
 
   <div class="top">
     <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
-    <h1 id="h">社内の取り決め　<span class="n" id="n">0</span> 件</h1>
+    <h1 id="h">課題管理表　<span class="n" id="n">0</span> 件</h1>
     <p id="p">一行ずつは読めます。<b>関わりは番号だけです。</b></p>
   </div>
 
@@ -362,14 +390,21 @@ body[data-stage="end"] .note{color:var(--sub)}
     <p>読める形にして、一枚ずつ決める。押したものは台帳に積まれています。</p>
   </div>
 
-  <!-- 出力の本体。**桁（行番号・項番・参照）は重い側だけの部品で、
-       カードになったら番号と本文だけが残る。** -->
+  <!-- 桁の名前。表から出したものなので見出しの行が付く（重い側だけ） -->
+  <div class="hdr ln">
+    <span class="gut">No</span><span class="tx">件名</span>
+    <span class="fl"><span class="st">状態</span><span class="wh">担当</span><span class="dl">期限</span></span>
+    <span class="ref">参照</span>
+  </div>
+
+  <!-- 出力の本体。**桁（No・状態・担当・期限・参照）は重い側だけの部品で、
+       カードになったら番号と件名が前に出て、三つの欄は下に小さく並ぶ。** -->
   <ul class="stack" id="stack"></ul>
 
   <!-- しめ。数字は JS が入れる（実際の件数と合わせる） -->
   <p class="sum" id="sum"></p>
 
-  <p class="note">これは仮の中身です。実際の社内規程ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
+  <p class="note">これは仮の中身です。実際の課題管理表ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
 
   <a class="back" href="./">入口へ戻る</a>
 
@@ -391,63 +426,56 @@ body[data-stage="end"] .note{color:var(--sub)}
 </div>
 
 <script>
-/* 中身は仮。どの会社にもある形の取り決めだけ。業種を選ばない言葉にしてある。
-   dup … 被っている相手／need … これのために要る相手／open … まだ決まっていない */
-var RULES = [
-  ['申請は、所属長の承認を受けてから処理する'],
-  ['所属長が不在のときは、代理の者が承認する'],
-  ['代理の者は、あらかじめ各部署で定めておく', {need:2}],
-  ['承認された申請は、その日のうちに担当へ回す'],
-  ['担当は、受け取った申請を3営業日以内に処理する'],
-  ['処理が遅れる場合は、申請者に理由を伝える', {need:5}],
-  ['月次の報告は、翌月5営業日までに提出する', {dup:8}],
-  ['月次報告の提出期限は、翌月の第5営業日とする', {dup:7}],
-  ['報告の様式は、共有の場所に置いてあるものを使う'],
-  ['様式を変更するときは、事前に周知する', {need:9}],
-  ['締めは、月末の翌3営業日までに行う'],
-  ['締めの前に、未処理の申請がないか確認する', {need:11}],
-  ['未処理の申請があるときは、担当と所属長の双方に連絡する', {need:12}],
-  ['連絡は、記録が残る方法で行う'],
-  ['記録は、1年間保管する'],
-  ['保管期間を過ぎた記録は、担当が廃棄する', {need:15}],
-  ['廃棄したことは、記録に残す'],
-  ['引き継ぎは、書面で行う'],
-  ['引き継ぎ書面には、未処理の件を必ず含める', {need:18}],
-  ['引き継ぎの完了は、所属長が確認する'],
-  ['新しい取り決めは、決めた日から適用する'],
-  ['取り決めを変えたときは、古いものを残しておく'],
-  ['古い取り決めをいつまで残すかは、定めていない', {open:1}],
-  ['例外を認めるときは、所属長の判断による'],
-  ['例外を認めた場合は、記録に残す', {need:24}],
-  ['例外が続いたときの扱いは、定めていない', {open:1}],
-  ['点検は、四半期ごとに行う'],
-  ['点検の結果は、次の会議で共有する', {need:27}],
-  ['会議に出られなかった者には、後で共有する'],
-  ['共有の方法は、担当に任せる'],
-  ['問い合わせは、受けた者が最後まで対応する'],
-  ['対応できないときは、分かる者に引き継ぐ'],
-  ['引き継いだ後も、受けた者が結果を確認する', {need:31}],
-  ['期限のない依頼は、受けない'],
-  ['期限を延ばすときは、依頼した者の合意を得る'],
-  ['合意が得られないときの扱いは、定めていない', {open:1}],
-  ['報告の提出先は、所属長とする', {dup:38}],
-  ['月次の報告は、所属長に提出する', {dup:37}],
-  ['届出は、変更が生じた日から5日以内に行う'],
-  ['届出が遅れたときの扱いは、定めていない', {open:1}]
+/* 中身は仮。**どの会社にもある課題管理表**の行だけにしてある（業種を選ばない）。
+   ぐちゃぐちゃの出どころは、こちらで作った意味ではなく**表そのものの荒れ**：
+   状態の言い方が揃っていない／担当が「〃」「同上」「空欄」／期限が「？」「－」「過去」／
+   同じ件が別の言い方で何度も立っている／件名が空の行がある。
+
+   t=件名 s=状態 w=担当 d=期限
+   rel … dup:[相手] 被っている／need:相手 それのために要る／open まだ決まっていない
+   **重複している相手は、番号が遠い**（入れた時期が違うから）。 */
+var ITEMS = [
+  {t:'帳票の桁ずれ',              s:'対応中',  w:'〃',   d:'－',      rel:{dup:[14,29]}},
+  {t:'ログイン後の画面が白いまま', s:'保留',    w:'田中', d:'？',      rel:{need:11}},
+  {t:'（件名なし）',              s:'完了',    w:'',     d:'',        rel:{open:1}},
+  {t:'月次の集計が合わない',      s:'調査中',  w:'〃',   d:'2024/07'},
+  {t:'検索が遅い',                s:'対応中',  w:'鈴木', d:'2025/06', rel:{dup:[22]}},
+  {t:'パスワードの規則',          s:'完了',    w:'佐藤', d:'2023/11', rel:{dup:[31]}},
+  {t:'画面の文言を直す',          s:'完了',    w:'',     d:'2024/01'},
+  {t:'同上',                      s:'対応中',  w:'〃',   d:'',        rel:{dup:[3],open:1}},
+  {t:'添付が開けない',            s:'対応中',  w:'高橋', d:'－',      rel:{dup:[26]}},
+  {t:'印刷すると切れる',          s:'対応中',  w:'',     d:'2025/09'},
+  {t:'権限の整理',                s:'進行中',  w:'佐藤', d:'2024/12', rel:{dup:[19,35]}},
+  {t:'取り込みで止まる',          s:'調査中',  w:'鈴木', d:'2024/09'},
+  {t:'メールが届かないことがある', s:'保留',   w:'',     d:'？',      rel:{open:1}},
+  {t:'帳票の桁ずれ（再）',        s:'未着手',  w:'',     d:'2024/03', rel:{dup:[1]}},
+  {t:'集計の件、担当が不明',      s:'―',      w:'',     d:'',        rel:{need:4,open:1}},
+  {t:'古いデータの扱い',          s:'未定',    w:'',     d:'',        rel:{open:1}},
+  {t:'二重登録ができてしまう',    s:'対応中',  w:'田中', d:'2025/03'},
+  {t:'締め処理の順番',            s:'保留',    w:'',     d:'？',      rel:{open:1}},
+  {t:'権限まわり',                s:'着手済み', w:'〃',  d:'',        rel:{dup:[11]}},
+  {t:'文言、別の箇所も',          s:'未着手',  w:'同上', d:'？',      rel:{need:7}},
+  {t:'印刷の余白',                s:'保留',    w:'〃',   d:'',        rel:{need:10}},
+  {t:'検索遅い（別件？）',        s:'未着手',  w:'',     d:'',        rel:{dup:[5],open:1}},
+  {t:'取り込みエラーの再現手順',  s:'未着手',  w:'',     d:'？',      rel:{need:12}},
+  {t:'重複チェックの条件',        s:'未着手',  w:'〃',   d:'',        rel:{need:17}},
+  {t:'締めの手順書が古い',        s:'―',      w:'―',   d:'2022/06', rel:{need:18}},
+  {t:'添付の件は 9 と同じ？',     s:'―',      w:'〃',   d:'',        rel:{dup:[9],open:1}},
+  {t:'ログの保存期間',            s:'未定',    w:'',     d:'？',      rel:{open:1}},
+  {t:'一覧が重い',                s:'保留',    w:'〃',   d:'－',      rel:{need:5}},
+  {t:'桁ずれの件',                s:'―',      w:'―',   d:'―',      rel:{dup:[1],open:1}},
+  {t:'画面の並び順を直す',        s:'未着手',  w:'',     d:'？',      rel:{dup:[38]}},
+  {t:'パスワードの規則（見直し）', s:'未着手', w:'',     d:'？',      rel:{dup:[6]}},
+  {t:'端末を替えると表示が崩れる', s:'未着手', w:'',     d:'',        rel:{dup:[40]}},
+  {t:'依頼の受付先が二つある',    s:'対応中',  w:'',     d:'2024/05'},
+  {t:'引き継ぎの記録がない',      s:'―',      w:'',     d:'',        rel:{open:1}},
+  {t:'権限の件（11と同じ？）',    s:'―',      w:'',     d:'',        rel:{dup:[11],open:1}},
+  {t:'誰も触っていない機能',      s:'未定',    w:'',     d:'？',      rel:{open:1}},
+  {t:'受付の窓口を決める',        s:'未定',    w:'同上', d:'',        rel:{need:33,open:1}},
+  {t:'一覧の並び（優先度低）',    s:'保留',    w:'同上', d:'－',      rel:{dup:[30]}},
+  {t:'権限がない人が押せる',      s:'対応中',  w:'佐藤', d:'2025/11', rel:{need:11}},
+  {t:'崩れの件、環境が特定できない', s:'―',   w:'―',   d:'？',      rel:{dup:[32],open:1}}
 ];
-
-/* 画面に出る順番。**項番の順ではない。**
-   長いあいだ足していった台帳なので、番号は行き来するし、
-   **関わりのある項が遠い**（被っている 7 と 8 は、画面の 10 行目と 32 行目）。
-   これが「一行ずつは読めるのに、関係だけ見えない」の中身。 */
-var SEQ = [1,2,3,21,22,23,31,32,33,7,14,11,12,13,38,4,5,6,17,29,
-           24,25,34,35,36,9,10,20,18,19,30,8,27,28,39,40,15,16,37,26];
-
-/* 入れ子の深さ。ぶら下がっている項は右へ寄る（画面の中だけ） */
-var DEEP = {2:1,3:2,6:1,10:1,12:1,13:2,16:1,19:1,22:1,23:2,
-            25:1,26:2,28:1,30:1,32:1,33:1,35:1,36:2,40:1};
-
-function pad4(n){ return ('000' + n).slice(-4); }
 
 var PICKS = ['要る', '要らない', 'もうやった'];
 var SHOW  = 7;                    /* 後ろに見せる厚み */
@@ -458,35 +486,50 @@ var stack = document.getElementById('stack'),
     counts = [0, 0, 0],
     done = 0;
 
-SEQ.forEach(function(n, row){
-  var r = RULES[n - 1], rel = r[1] || {};
+ITEMS.forEach(function(it, i){
+  var n = i + 1, rel = it.rel || {};
   var li = document.createElement('li');
-  li.style.setProperty('--d', DEEP[n] || 0);
 
   /* 参照。**番号だけ。**何がどう関わっているかは書かない
-     （それはカードになって初めて言葉になる）。未決は ???? */
+     （それはカードになって初めて言葉になる）。未決は ?? */
   var refs = [];
-  if (rel.dup)  refs.push(pad4(rel.dup));
-  if (rel.need) refs.push(pad4(rel.need));
-  if (rel.open) refs.push('????');
+  if (rel.dup)  refs = refs.concat(rel.dup);
+  if (rel.need) refs.push(rel.need);
+  if (rel.open) refs.push('??');
 
   var t = document.createElement('div');
   t.className = 'ln';
-  /* 重い側は 行番号＋項番、カードになったら番号だけ。**同じ数字**なので、
-     カードの印（「8番と被っている」）と突き合わせられる */
-  t.innerHTML = '<span class="gut">' + (row + 1) + '</span>'
-              + '<span class="id">' + pad4(n) + '</span>'
+  /* 桁は表のまま（No 件名 状態 担当 期限 参照）。
+     カードになると、番号と件名が前に出て、三つの欄は下に小さく並ぶ。
+     **同じ値を、二通りに組んでいるだけ**（端折っていない）。 */
+  t.innerHTML = '<span class="gut">' + n + '</span>'
               + '<span class="no">' + n + '</span>'
               + '<span class="tx"></span>'
+              + '<span class="fl">'
+              +   '<span class="st"><i>状態</i></span>'
+              +   '<span class="wh"><i>担当</i></span>'
+              +   '<span class="dl"><i>期限</i></span>'
+              + '</span>'
               + '<span class="ref">' + (refs.length ? '→ ' + refs.join(' ') : '') + '</span>';
-  t.querySelector('.tx').textContent = r[0];
+  t.querySelector('.tx').textContent = it.t;
+
+  /* 空欄は空欄のまま置く（表ではそう見えている）。
+     カードでは「（空欄）」と出す——決まっていないことを、決まっていないと書く */
+  [['.st', it.s], ['.wh', it.w], ['.dl', it.d]].forEach(function(p){
+    var el = t.querySelector(p[0]);
+    el.appendChild(document.createTextNode(p[1] || ''));
+    if (!p[1]) el.dataset.empty = '1';
+    if (p[1] === '〃' || p[1] === '同上') el.dataset.ditto = '1';
+  });
   li.appendChild(t);
 
-  /* 関係。**カードになって初めて見える。**詰まっているあいだは見えない */
+  /* 関係。**カードになって初めて見える。**表のあいだは番号だけ */
   if (rel.dup || rel.need || rel.open){
     var rb = document.createElement('div');
     rb.className = 'rel';
-    if (rel.dup)  rb.innerHTML += '<b class="dup">' + rel.dup + '番と被っている</b>';
+    (rel.dup || []).forEach(function(k){
+      rb.innerHTML += '<b class="dup">' + k + '番と被っている</b>';
+    });
     if (rel.need) rb.innerHTML += '<b class="needs">' + rel.need + '番のために要る</b>';
     if (rel.open) rb.innerHTML += '<b class="open">決まっていない</b>';
     li.appendChild(rb);
@@ -506,11 +549,19 @@ SEQ.forEach(function(n, row){
   lis.push(li);
 });
 
-document.getElementById('n').textContent = RULES.length;
+document.getElementById('n').textContent = ITEMS.length;
 
+/* しめ。**数字は表から数える**（合っていない数字を置かない）。
+   状態の種類と担当の空欄は、荒れの量そのもの。関係の数は出さない */
+var kinds = {}, blank = 0;
+ITEMS.forEach(function(it){
+  kinds[it.s || '(空欄)'] = 1;
+  if (!it.w) blank++;
+});
 document.getElementById('sum').innerHTML =
-  RULES.length + ' rules · 12 files · 2 encodings · schema: mixed<br>'
-  + 'exit 0 (2 warnings)<span class="cur"></span>';
+  ITEMS.length + ' issues · 3 files · 6 sheets · 状態 '
+  + Object.keys(kinds).length + ' 種 · 担当 空欄 ' + blank + '<br>'
+  + 'exit 0 (3 warnings)<span class="cur"></span>';
 
 /* 塗られる順と、その間隔。**一定にしない**——一定だと機械の飾りに見える。
    場所は最初から取ってあるので、点いても何も跳ねない。 */
@@ -520,6 +571,7 @@ function beat(el){
   _t += GAPS[_g++ % GAPS.length];
 }
 [].forEach.call(document.querySelectorAll('.pre div'), beat);
+beat(document.querySelector('.hdr'));
 lis.forEach(beat);
 beat(document.getElementById('sum'));
 
@@ -580,7 +632,7 @@ go.onclick = function(){
   if (document.body.dataset.stage === 'wall'){
     document.body.dataset.stage = 'cards';
     restack();
-    document.getElementById('h').textContent = RULES.length + ' 件を、一枚ずつ';
+    document.getElementById('h').textContent = ITEMS.length + ' 件を、一枚ずつ';
     document.getElementById('p').innerHTML =
       '一枚ずつ出てきます。<b>被っているもの・何かのために要るもの・まだ決まっていないもの</b>に印が付いています。'
       + '<br>見えていれば、押せます（キーの <b>1 2 3</b> でも）。';
