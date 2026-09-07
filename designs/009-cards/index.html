@@ -88,13 +88,22 @@ body.paneopen .wrap{max-width:1240px}
 .foot .fc{margin-top:22px; font-size:11.5px}
 .foot .fw{margin-top:9px; font-size:11.5px}
 
-/* ─ 大きいカード。これだけ読めば何の会社か分かる ─────────── */
+/* ─ 大きいカード。これだけ読めば何の会社か分かる ───────────
+   **でかいのに最初に目がいかなかった**（本人 2026-09-07）。
+   原因は大きさではなく**差が無いこと**——面も影も、下のカードと同じ白。
+   大きさは色に負ける。**ここだけ濃い面にした。**
+   これで順番が付く：**濃い顔（誰か）→ 緑の一手（何ができるか）→ 白いカード（中身）。**
+   背景は明るいまま（「入口がいちばん明るい」は背景の話なので崩していない）。 */
 .head{
-  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
-  padding:44px 40px 40px;
+  background:var(--ink); color:#fff;
+  border-radius:var(--r); box-shadow:var(--lift2);
+  padding:48px 40px 44px;
 }
+/* 34px にすると、帯が出ているあいだ（柱が細くなる）社名が二行に割れる。
+   **濃さで目を引くので、大きさは元のまま**で足りる */
 .head h1{margin:0; font-size:clamp(21px,3.4vw,31px); font-weight:700; letter-spacing:.01em; line-height:1.35}
-.head p{margin:18px 0 0; font-size:clamp(13px,1.6vw,15px); font-weight:500; color:var(--sub); line-height:1.7}
+.head p{margin:20px 0 0; font-size:clamp(13px,1.7vw,16px); font-weight:500;
+        color:rgba(255,255,255,.74); line-height:1.7}
 
 /* ─ 押せるカード ───────────────────────────────────────── */
 /* 枚数を決め打ちせず、段が揃うように列を割り直す（列の数は JS が入れる）。
@@ -260,6 +269,8 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 }
 
 .news + .todo{margin-top:10px}   /* 一覧の下に断りを置くとき。四行＋断りが帯に収まる高さ */
+.q + .todo{margin-top:8px}       /* 見出しの下に断りを置くとき＝**選ぶ前に読む** */
+.todo + .news{margin-top:10px}
 
 .lead{margin:0 0 14px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
@@ -460,15 +471,15 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
                本物のフォームが出てきたら、行き先の作り方を差し替えるだけ。 -->
 
           <p class="q">ご用件</p>
+          <!-- **見出しの下、三件より上。先に説明。**
+               （本人 2026-09-07：「ご用件ってカテゴリの下。3件の一番上。先に説明」）
+               押す前に、押したら何が起きるかを読んでから選ぶ -->
+          <p class="todo">選んだ内容が<b>件名と本文に入った</b>メールが開きます。</p>
           <ul class="news" data-ask="kind">
             <li><button class="row" type="button" aria-pressed="false" data-val="サービスに関するご相談"><b>サービスに関するご相談</b></button></li>
             <li><button class="row" type="button" aria-pressed="false" data-val="掲載のご依頼"><b>掲載のご依頼</b></button></li>
             <li><button class="row" type="button" aria-pressed="false" data-val="その他ご質問"><b>その他ご質問</b></button></li>
           </ul>
-          <!-- **押したら何が起きるかは、最初に押すところの直下で言う**
-               （本人 2026-09-07：「絶対ご用件の直下に置いた方がいいよ」）。
-               下の緑の一枚の脇に置くと、選び終わるまで読まれない -->
-          <p class="todo">選んだ内容が<b>件名と本文に入った</b>メールが開きます。</p>
 
           <!-- 相談のときだけ、もう一段。**選ばないと出ない**（先に全部見せない） -->
           <div class="step" data-when="サービスに関するご相談" hidden>
