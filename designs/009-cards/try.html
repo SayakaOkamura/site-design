@@ -30,6 +30,14 @@
      > この画面を詳細に見ようとも思わないし、進めたらただカードが出てくるだけ
      > → **量で殴りつつ、それをまず自分ごとにさせる必要があるって話**
 
+     **そして出していた表が「もう整理されたもの」だった**（本人 2026-09-07）：
+     > 選択した後出てくるもの、全部既に整理されたものだよね。
+
+     桁も並びも揃った一つの表を出して、**中身の値だけ荒らしていた。**
+     いまは**シートごとに形が違う**——桁のある表、件名とメモだけ、
+     一行に詰め込んだもの、見出し行が無いもの。同じ件が別の形で何度も出てくる。
+     **揃っていないのは値ではなく、表そのもの。**
+
      根は UI ではなく**前提**だった。他人の表を他人のために整えていたので、
      訪問者に取り分が無い。だから段を三つにした：
      **件数を自分で答える（自分ごと）→ その件数で出る（量で殴る）→ カードになる（可視化）。**
@@ -183,6 +191,9 @@ body[data-stage="seen"] .pane2 .fl{
 .pane2 .fl i{display:inline; font-style:normal; margin-right:8px; color:#8a929c}
 /* 空欄は、空欄と書く（決まっていないことを、決まっていないと書く）*/
 .pane2 .fl [data-empty]::after{content:"（空欄）"; opacity:.75}
+/* **欄そのものが無かった**ものは、そう書く（空欄とは違う。埋めない） */
+.pane2 .fl [data-none]{display:block}
+.pane2 .fl [data-none]::after{content:"（この表に欄が無い）"; opacity:.75}
 /* 「〃」「同上」は、表の中では上の行を指しているが、
    一枚になると指す先が無い。**何も決まっていないのと同じ**なので、そう書く */
 .pane2 .fl [data-ditto]::after{content:"（上の行と同じ）"; opacity:.75; margin-left:5px}
@@ -274,6 +285,8 @@ body[data-stage="seen"] .stack{
   display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
   gap:10px; margin-top:20px;
 }
+/* 並べ替え（群ごとに固まる）は、この段だけ */
+body[data-stage="seen"] .stack li{order:var(--o,0)}
 body[data-stage="seen"] .stack li{
   background:var(--card); color:var(--ink); box-shadow:var(--lift1);
   border-radius:8px; padding:12px 13px; font-size:12.5px; line-height:1.6;
@@ -293,6 +306,36 @@ body[data-stage="seen"] .stack li.gl{
 body[data-stage="seen"] .stack li.gl:first-child{padding-top:2px}
 body[data-stage="seen"] .stack li.gl b{color:var(--ink); font-size:16px; margin-right:7px;
                                        font-variant-numeric:tabular-nums}
+
+/* ─ シートの切れ目と、表じゃない行 ──────────────────────────
+   **出てくるのは一つの表ではない。**ファイルもシートも桁もばらばらで、
+   途中に集計行やメモ行が混ざる（本人「全部既に整理されたものだよね」）。
+   カードになると、この形の違いが消える——それが可視化の中身。 */
+.sh,.jk,.hd2{display:none}
+body[data-stage="wall"] .stack li.sh{
+  display:block; margin:22px 0 6px; padding:0 10px; color:#6f9d87;
+}
+body[data-stage="wall"] .stack li.sh:first-child{margin-top:0}
+body[data-stage="wall"] .stack li.hd2{display:flex; padding:2px 10px 4px; color:#2f5647}
+body[data-stage="wall"] .stack li.jk{display:block; padding:3px 10px; color:#45705c}
+
+/* 一行に詰め込んだシートと、和暦のシート。**桁を持たない** */
+body[data-stage="wall"] .stack li[data-k="2"] .ln,
+body[data-stage="wall"] .stack li[data-k="3"] .ln{display:block}
+body[data-stage="wall"] .stack li[data-k="2"] .tx,
+body[data-stage="wall"] .stack li[data-k="3"] .tx{width:auto; padding-right:0; display:inline}
+body[data-stage="wall"] .stack li[data-k="2"] .gut,
+body[data-stage="wall"] .stack li[data-k="3"] .gut{width:auto; min-width:0; text-align:left;
+  margin-right:.6em; padding-left:0}
+body[data-stage="wall"] .stack li[data-k="2"] .cram,
+body[data-stage="wall"] .stack li[data-k="3"] .cram{color:var(--crt-dim); margin-left:.6em}
+.cram{display:none}
+body[data-stage="wall"] .cram{display:inline}
+/* 欄そのものが無いシートでは、桁を出さない（値が空なのとは違う） */
+body[data-stage="wall"] .ln [data-none],
+body[data-stage="wall"] .ln [data-cram]{display:none}
+.mm{display:none}
+body[data-stage="wall"] .mm{display:inline-block; flex:none; color:var(--crt-ref); margin-left:1.5em}
 
 /* ─ はじめに一つ聞く。**自分ごとにする段**（`ask`）───────────────
    他人の表を見せる前に、**自分の会社の件数を答えてもらう。**
@@ -457,13 +500,6 @@ body:not([data-stage="wall"]) .note{color:var(--sub)}
     <div>resolving refs …</div>
   </div>
 
-  <!-- 桁の名前。表から出したものなので見出しの行が付く（重い側だけ） -->
-  <div class="hdr ln">
-    <span class="gut">No</span><span class="tx">件名</span>
-    <span class="fl"><span class="st">状態</span><span class="wh">担当</span><span class="dl">期限</span></span>
-    <span class="ref">参照</span>
-  </div>
-
   <!-- 出力の本体。**桁（No・状態・担当・期限・参照）は重い側だけの部品で、
        カードになったら番号と件名が前に出て、三つの欄は下に小さく並ぶ。** -->
   <!-- 一覧と、押したカードの中身が出る帯。カードの段だけ横に並ぶ -->
@@ -579,6 +615,58 @@ function ref(k, i){
   return (t >= 1 && t <= N) ? t : 0;
 }
 
+/* シート。**形が違うものが並ぶ。**12 行ごとに切り替わる。
+   k=0 桁のある表／k=1 件名とメモだけ／k=2 一行に詰め込む／k=3 見出し行が無い */
+var SHEETS = [
+  ['課題管理.xlsx', 'Sheet1'],
+  ['課題管理.xlsx', '旧課題'],
+  ['課題管理_旧.xlsx', '一覧'],
+  ['課題一覧(2019).xls', 'Sheet3']
+];
+var BLK = 12;
+var MEMO = ['※要確認', '※担当未定', '※旧仕様のまま', '※前任者に確認', '', '※起票者不明'];
+var JUNK = ['（以下、未整理）', '※状態は都度確認', '（担当は空欄のまま）', '※このシートは古い'];
+var GEN = '０１２３４５６７８９';
+
+function zen(n){ return String(n).split('').map(function(c){ return GEN[+c]; }).join(''); }
+function wa(d){                      /* 2024/07 → R6.7。日付の形もシートで違う */
+  var m = /^(\d{4})\/(\d{2})$/.exec(d || '');
+  return m ? 'R' + (+m[1] - 2018) + '.' + (+m[2]) : (d || '');
+}
+function sheetOf(i){ return Math.floor(i / BLK); }
+function kindOf(i){ return sheetOf(i) % SHEETS.length; }
+
+function note(cls, text){
+  var l = document.createElement('li');
+  l.className = cls;
+  l.textContent = text;
+  (frag || stack).appendChild(l);
+  return l;
+}
+
+/* シートの切れ目。ファイル名・シート名・桁の見出し（無いシートもある） */
+function head(i){
+  var idx = sheetOf(i), k = kindOf(i), sh = SHEETS[k], lap = Math.floor(idx / SHEETS.length);
+  note('sh', '── ' + sh[0] + ' / ' + sh[1] + (lap ? ' (' + (lap + 1) + ')' : '')
+           + ' ' + '─'.repeat(28));
+
+  if (k === 0){
+    var l = document.createElement('li');
+    l.className = 'hd2 ln';
+    l.innerHTML = '<span class="gut">No</span><span class="tx">件名</span>'
+                + '<span class="fl"><span class="st">状態</span><span class="wh">担当</span>'
+                + '<span class="dl">期限</span></span><span class="ref">参照</span>';
+    (frag || stack).appendChild(l);
+  }
+  if (k === 1){
+    var l2 = document.createElement('li');
+    l2.className = 'hd2 ln';
+    l2.innerHTML = '<span class="tx">件名</span><span class="mm">メモ</span>';
+    (frag || stack).appendChild(l2);
+  }
+  if (k === 3) note('jk', JUNK[idx % JUNK.length]);
+}
+
 function build(n){
   N = n;
   stack.textContent = '';
@@ -586,7 +674,13 @@ function build(n){
   /* 400 行を一枚ずつ差し込むと、押してから 1 秒近く待たされる。
      まとめて作って一度で入れる */
   frag = document.createDocumentFragment();
-  for (var i = 0; i < n; i++) row(make(i), i);
+  for (var i = 0; i < n; i++){
+    if (i % BLK === 0) head(i);                     /* シートが替わる */
+    row(make(i), i);
+    if (i % BLK === BLK - 1 || i === n - 1){        /* シートの終わりに集計行が混ざる */
+      if (kindOf(i) === 2) note('jk', '小計 ' + ((i % BLK) + 1) + ' 件');
+    }
+  }
   stack.appendChild(frag);
   frag = null;
   groups();
@@ -606,30 +700,57 @@ function row(it, i){
   if (need) refs.push(need);
   if (rel.open) refs.push('??');
 
+  var k = kindOf(i);
+  li.dataset.k = k;
+
   var t = document.createElement('div');
   t.className = 'ln';
-  /* 桁は表のまま（No 件名 状態 担当 期限 参照）。
-     カードになると、番号と件名が前に出て、三つの欄は下に小さく並ぶ。
+  /* 桁の並びは同じ要素で持つ。**シートによって、出す桁が違う。**
+     カードになると、番号と件名が前に出て、三つの欄は下に小さく並ぶ——
      **同じ値を、二通りに組んでいるだけ**（端折っていない）。 */
-  t.innerHTML = '<span class="gut">' + n + '</span>'
+  t.innerHTML = '<span class="gut">' + (k === 3 ? zen(n) : k === 2 ? n + '.' : n) + '</span>'
               + '<span class="no">' + n + '</span>'
               + '<span class="tx"></span>'
+              + '<span class="cram"></span>'
               + '<span class="fl">'
               +   '<span class="st"><i>状態</i></span>'
               +   '<span class="wh"><i>担当</i></span>'
               +   '<span class="dl"><i>期限</i></span>'
               + '</span>'
+              + '<span class="mm"></span>'
               + '<span class="ref">' + (refs.length ? '→ ' + refs.join(' ') : '') + '</span>';
   t.querySelector('.tx').textContent = it.t;
 
-  /* 空欄は空欄のまま置く（表ではそう見えている）。
-     カードでは「（空欄）」と出す——決まっていないことを、決まっていないと書く */
-  [['.st', it.s], ['.wh', it.w], ['.dl', it.d]].forEach(function(p){
+  /* シートごとに、**ある欄／無い欄**が違う。
+     無い欄は空欄とは違うので、`data-none` で分けておく（カードでそう書く）。
+     空欄は空欄のまま置く（表ではそう見えている）。 */
+  var have = k === 0 ? ['s', 'w', 'd']
+           : k === 1 ? []
+           : k === 2 ? ['s', 'w', 'd']
+           :           ['w', 'd'];
+  [['.st', 's', it.s], ['.wh', 'w', it.w], ['.dl', 'd', k === 3 ? wa(it.d) : it.d]]
+  .forEach(function(p){
     var el = t.querySelector(p[0]);
-    el.appendChild(document.createTextNode(p[1] || ''));
-    if (!p[1]) el.dataset.empty = '1';
-    if (p[1] === '〃' || p[1] === '同上') el.dataset.ditto = '1';
+    if (have.indexOf(p[1]) < 0){ el.dataset.none = '1'; return; }
+    /* 一行に詰め込むシートでは、値は括弧の中にある。
+       **桁としては出さないが、値は持っている**（カードでは普通に出る）。
+       欄が無いのとは違うので分けておく */
+    if (k === 2) el.dataset.cram = '1';
+    el.appendChild(document.createTextNode(p[2] || ''));
+    if (!p[2]) el.dataset.empty = '1';
+    if (p[2] === '〃' || p[2] === '同上') el.dataset.ditto = '1';
   });
+
+  /* 一行に詰め込むシート。桁を持たず、括弧の中に押し込んである */
+  if (k === 2){
+    t.querySelector('.cram').textContent =
+      '（' + [it.s || '－', it.w || '－', it.d || '－'].join('／') + '）';
+  }
+  /* 件名とメモだけのシート。**状態も担当も期限も、この表には無い** */
+  if (k === 1) t.querySelector('.mm').textContent = MEMO[i % MEMO.length];
+  /* 参照の桁を持っているのは、桁のある表だけ */
+  if (k !== 0) t.querySelector('.ref').dataset.none = '1';
+
   li.appendChild(t);
 
   /* 関係。**カードになって初めて見える。**表のあいだは番号だけ */
@@ -671,12 +792,15 @@ function groups(){
   lis.forEach(function(li, i){
     var g = groupOf(make(i).rel || {});
     counts0[g]++;
-    li.style.order = g * 100000 + i;   /* 群ごとに固まる。中の順は表と同じ */
+    /* **並べ替えはカードの段だけ。**表の段は、ファイルに入っている順のまま。
+       inline の order にすると表の段にも効いてしまい、
+       **行がシートを飛び越えてバラバラに並んでいた**（画面を見て気づいた） */
+    li.style.setProperty('--o', g * 100000 + i);
   });
   GROUPS.forEach(function(name, g){
     var l = document.createElement('li');
     l.className = 'gl';
-    l.style.order = g * 100000 - 1;
+    l.style.setProperty('--o', g * 100000 - 1);
     l.innerHTML = '<b>' + counts0[g] + '</b>' + name;
     stack.appendChild(l);
   });
@@ -710,9 +834,10 @@ function paint(){
     el.style.animationDelay = Math.round(_t) + 'ms';
     _t += GAPS[_g++ % GAPS.length] * scale;
   }
+  /* 点くのは**出力の全部**（シートの切れ目・見出し・集計行も出力の一部）。
+     群の名前（.gl）は表の段では出ないので数に入れない */
   [].forEach.call(document.querySelectorAll('.pre div'), beat);
-  beat(document.querySelector('.hdr'));
-  lis.forEach(beat);
+  [].forEach.call(stack.querySelectorAll(':scope > li:not(.gl)'), beat);
   beat(document.getElementById('sum'));
 }
 document.getElementById('sum').innerHTML = '';   /* paint() で入れる */
