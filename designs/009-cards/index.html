@@ -202,11 +202,25 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .news a:active,.news .row:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .news a:focus-visible,.news .row:focus-visible{outline:2px solid var(--go); outline-offset:2px}
 
-/* 開いている行は沈む。**カードと同じ言い方**（押されたまま、面が空） */
+/* 開いている行・選ばれている行は沈む。**カードと同じ言い方**（押されたまま、面が空） */
 .news .row[aria-expanded="true"],
-.news .row[aria-expanded="true"]:hover{
+.news .row[aria-expanded="true"]:hover,
+.news .row[aria-pressed="true"],
+.news .row[aria-pressed="true"]:hover{
   transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint);
 }
+
+/* ─ 問いの見出しと段（お問い合わせ）─────────────────────────
+   組み立て方は体験と同じ。**カードを押していくと、書かずに中身ができる。**
+   押しただけでは飛ばない（飛ぶのは緑の一枚だけ）。 */
+.q{margin:18px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em;
+   color:var(--sub); line-height:1.5}
+.q + .news{margin-top:9px}
+.step[hidden]{display:none}
+
+/* 外に出る一枚だけ色を持つ。**緑＝行き先がある**（入口の体験カードと同じ）*/
+.news .send{background:var(--go); color:#fff}
+.news .send:hover{box-shadow:var(--lift2)}
 
 /* 選んだ一本の中身。**押した行のすぐ下に入る。**
    だから**他の選択肢が中身の上と下に残る**——読み終わったところに次がある
@@ -415,23 +429,52 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
       <span class="s">contact@alt-dsgn.co.jp</span>
       <div class="panel">
         <div class="bar"><h2>お問い合わせ</h2></div>
-        <div class="body">
-          <!-- **内容を選ぶところも、押せる行（＝カード）にする。**
-               本人「そのフォームの内容選択をカードでやりたい」。
-               三つは公式サイトの一行に出ている区分（相談／掲載／その他）そのまま。
+        <div class="body" id="ask">
+          <!-- **押しても飛ばない。選ぶだけ。**飛ぶのは最後の緑の一枚だけ
+               （本人「クリックしたら飛んじゃうってわかりにくい」）。
+
+               そして**組み立て方は体験と同じ。**カードを押していくと、
+               書かずに用件ができている——体験で見せている「簡単になる」を、
+               用があって来た人が必ず通るここでも見せる
+               （本人「せっかく体験でそういうのを簡単にするデモもやったのに、
+               ここで同じように見せられないなら一切見られない可能性がある」）。
+
+               ご用件の三つは**公式サイトの一行に出ている区分**そのまま
+               （サービスに関するご相談／掲載のご依頼／その他ご質問）。
 
                **公式サイトにフォームは無い。**「お問い合わせフォームへ」のボタンが
                `mailto:contact@alt-dsgn.co.jp` になっている（2026-09-07 に確認）。
-               だから押すと**選んだ内容を件名に入れたメールが開く。**
-               本物のフォームが出てきたら `href` を差し替えるだけ。 -->
-          <p class="lead">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたらお気軽にお問い合わせください</p>
-          <ul class="news">
-            <li><a href="mailto:contact@alt-dsgn.co.jp?subject=サービスに関するご相談"><b>サービスに関するご相談</b></a></li>
-            <li><a href="mailto:contact@alt-dsgn.co.jp?subject=掲載のご依頼"><b>掲載のご依頼</b></a></li>
-            <li><a href="mailto:contact@alt-dsgn.co.jp?subject=その他ご質問"><b>その他ご質問</b></a></li>
+               だから最後はメールが開く。**選んだものは件名と本文に入る。**
+               本物のフォームが出てきたら、行き先の作り方を差し替えるだけ。 -->
+
+          <p class="q">ご用件</p>
+          <ul class="news" data-ask="kind">
+            <li><button class="row" type="button" aria-pressed="false" data-val="サービスに関するご相談"><b>サービスに関するご相談</b></button></li>
+            <li><button class="row" type="button" aria-pressed="false" data-val="掲載のご依頼"><b>掲載のご依頼</b></button></li>
+            <li><button class="row" type="button" aria-pressed="false" data-val="その他ご質問"><b>その他ご質問</b></button></li>
           </ul>
+
+          <!-- 相談のときだけ、もう一段。**選ばないと出ない**（先に全部見せない） -->
+          <div class="step" data-when="サービスに関するご相談" hidden>
+            <p class="q">対象のサービス</p>
+            <ul class="news" data-ask="svc">
+              <li><button class="row" type="button" aria-pressed="false" data-val="人間中心の次世代業務システム開発"><span>01</span><b>人間中心の次世代業務システム開発</b></button></li>
+              <li><button class="row" type="button" aria-pressed="false" data-val="AIによる意思決定支援と事業変革支援"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></button></li>
+              <li><button class="row" type="button" aria-pressed="false" data-val="自律型・共創型の組織設計支援"><span>03</span><b>自律型・共創型の組織設計支援</b></button></li>
+              <li><button class="row" type="button" aria-pressed="false" data-val="地域格差の解消を目指したデジタル支援"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></button></li>
+              <li><button class="row" type="button" aria-pressed="false" data-val="まだ決まっていない"><b>まだ決まっていない</b></button></li>
+            </ul>
+          </div>
+
+          <!-- ここだけ外に出る。だから色が付いていて、何が起きるかを一行で書いてある -->
+          <div class="step" id="send" hidden>
+            <ul class="news">
+              <li><a class="row send" id="sendto" href="mailto:contact@alt-dsgn.co.jp"><b>この内容でメールを開く</b></a></li>
+            </ul>
+            <p class="todo">選んだ内容が<b>件名と本文に入った</b>メールが開きます。</p>
+          </div>
+
           <p class="mail"><a href="mailto:contact@alt-dsgn.co.jp">contact@alt-dsgn.co.jp</a></p>
-          <p class="todo">押すと、選んだ内容を件名に入れて<b>メールが開きます</b>。</p>
         </div>
       </div>
     </div>
@@ -622,6 +665,56 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
     }
     reach(box);
   });
+
+  /* お問い合わせ。**押しても飛ばない。選ぶだけ。**
+     選んでいくと次の段が出て、最後の一枚を押したときだけメールが開く。
+     体験（うじゃうじゃ → カード → 仕分け）と同じ組み立て方を、
+     用があって来た人が必ず通るところでも見せる。 */
+  var ask = document.getElementById('ask');
+  if (ask){
+    var pick = {}, send = document.getElementById('send'), sendto = document.getElementById('sendto');
+
+    ask.addEventListener('click', function(e){
+      var b = e.target.closest('.row[data-val]');
+      if (!b) return;
+
+      var group = b.closest('[data-ask]'), key = group.dataset.ask;
+      var was = b.getAttribute('aria-pressed') === 'true';
+
+      group.querySelectorAll('.row[data-val]').forEach(function(r){
+        r.setAttribute('aria-pressed', 'false');
+      });
+      if (was){ pick[key] = null; }                 /* もう一度押した＝選び直し */
+      else { pick[key] = b.dataset.val; b.setAttribute('aria-pressed', 'true'); }
+      drawAsk();
+    });
+
+    function drawAsk(){
+      /* 段の出し入れ。出ていない段の選択は残さない */
+      ask.querySelectorAll('.step[data-when]').forEach(function(st){
+        var on = pick.kind === st.dataset.when;
+        st.hidden = !on;
+        if (!on) st.querySelectorAll('.row[data-val]').forEach(function(r){
+          r.setAttribute('aria-pressed', 'false');
+          pick[r.closest('[data-ask]').dataset.ask] = null;
+        });
+      });
+
+      send.hidden = !pick.kind;
+      if (pick.kind) sendto.href = mailto();
+      reach(ask);
+    }
+
+    /* 選んだものを件名と本文に入れる。**書かずに用件ができている** */
+    function mailto(){
+      var lines = ['ご用件：' + pick.kind];
+      if (pick.svc) lines.push('対象のサービス：' + pick.svc);
+      lines.push('', '（差し支えなければ、会社名とお名前をお書きください）');
+      return 'mailto:contact@alt-dsgn.co.jp'
+           + '?subject=' + encodeURIComponent(pick.kind)
+           + '&body='    + encodeURIComponent(lines.join('\n'));
+    }
+  }
 
   /* 押した感触。行き先が無いカードは沈んで戻るだけ */
   function press(c){
