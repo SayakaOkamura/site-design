@@ -21,6 +21,14 @@
      - 快感は物理から。点数も演出も足さない
      - **できない指示を出さない。**押すところは下の帯に一つだけ
 
+     **山場はカード化のほう**（本人 2026-09-07）：
+     > 体験はカードを押す方じゃなくて、複雑で面倒なものがカード化されて可視化される法に
+     > しないと、カード押すの気持ちいいね～で伝わるものは何もない気がするな
+
+     だから段を三つにした。**表 → 一斉にカードになる（可視化）→ 一枚ずつ決める。**
+     真ん中が山場で、ここで**同じ 40 件が関係ごとに固まって見える**。
+     押して気持ちいいのは、そのあとの話。
+
      **カードになったらスクロールさせない**（本人 2026-09-07）：
      > カードになった時スクロールしたくないかも。順繰りで出てきて、
      > 終わったらたまっていく感じにできないか
@@ -102,17 +110,17 @@ body{
   background:var(--dark);
   transition:background .55s var(--ease);
 }
-body[data-stage="cards"],body[data-stage="end"]{background:var(--bg)}
+body:not([data-stage="wall"]){background:var(--bg)}
 body[data-stage="cards"]{overflow:hidden}   /* 束のあいだはスクロールさせない */
 
 .sheet{width:100%; max-width:908px; margin:0 auto; padding:0 24px}   /* 908 = 860 + 24×2。入口と同じ */
 
 /* ─ 頭の帯。**カードの段だけ出す**（入口と同じ形にして、同じサイトだと分かるように）─ */
 .topbar{display:none}
-body[data-stage="cards"] .topbar,body[data-stage="end"] .topbar{
+body:not([data-stage="wall"]) .topbar{
   display:flex; align-items:center; height:56px; background:#d9dee3; margin-bottom:26px;
 }
-body[data-stage="cards"] ,body[data-stage="end"]{padding-top:0}
+body:not([data-stage="wall"]){padding-top:0}
 .topbar .in{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
 /* .mark は既にこのファイルで使われている（重い側で消す組）。名前を分ける */
 .topbar .brand{font-size:13.5px; font-weight:700; letter-spacing:.02em; color:var(--ink)}
@@ -130,10 +138,10 @@ body[data-stage="cards"] .prog,body[data-stage="end"] .prog{
 
 /* ─ 頭 ───────────────────────────────────────────────── */
 .top{margin:0 2px 20px; color:var(--dark-ink); transition:color .55s var(--ease)}
-body[data-stage="cards"] .top,body[data-stage="end"] .top{color:var(--sub)}
+body:not([data-stage="wall"]) .top{color:var(--sub)}
 .top h1{margin:0; font-size:clamp(16px,2.2vw,20px); font-weight:700; line-height:1.5;
         color:#e7ebf0; transition:color .55s var(--ease)}
-body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)}
+body:not([data-stage="wall"]) .top h1{color:var(--ink)}
 .top p{margin:10px 0 0; font-size:13px; line-height:1.8}
 .top .n{font-variant-numeric:tabular-nums; font-weight:700}
 
@@ -254,6 +262,35 @@ body[data-stage="wall"] .note{color:#4d7f6a}
   body[data-stage="wall"] .cur{animation:none}
 }
 
+/* ─ 山場：**一斉にカードになる段**（`seen`）───────────────────
+   **複雑で面倒なものが、カード化されて可視化される。**ここが伝えたいところ。
+   同じ 40 件が、関係ごとに固まって並ぶ——被っている／何かのために要る／
+   まだ決まっていない／印なし。**表では番号だけだったものに、言葉が付く。**
+   ここでは押せるものを置かない（進むのは下の帯の一つだけ）。 */
+body[data-stage="seen"] .stack{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(166px,1fr));
+  gap:10px; margin-top:20px;
+}
+body[data-stage="seen"] .stack li{
+  background:var(--card); color:var(--ink); box-shadow:var(--lift1);
+  border-radius:8px; padding:12px 13px; font-size:12.5px; line-height:1.6;
+  min-height:0;
+}
+body[data-stage="seen"] .stack li .no{min-width:0; margin-right:8px; font-size:11.5px}
+body[data-stage="seen"] .fl{display:none}      /* 三つの欄は、決めるときに出す */
+body[data-stage="seen"] .rel{margin-top:8px; gap:4px}
+body[data-stage="seen"] .rel b{font-size:10.5px; padding:4px 7px}
+
+/* 群の名前。**`.stack li` の面と影を消すので、こちらを強く書く** */
+.gl{display:none}
+body[data-stage="seen"] .stack li.gl{
+  display:block; grid-column:1/-1; background:none; box-shadow:none;
+  padding:18px 2px 2px; font-size:12px; font-weight:700; color:var(--sub);
+}
+body[data-stage="seen"] .stack li.gl:first-child{padding-top:2px}
+body[data-stage="seen"] .stack li.gl b{color:var(--ink); font-size:16px; margin-right:7px;
+                                       font-variant-numeric:tabular-nums}
+
 /* ─ 軽い側：一枚ずつ手前に出る束 ─────────────────────────
    後ろの厚みが見えているので、量が減った気にならない。
    **判断が一度に一つしか目に入らない。** */
@@ -262,6 +299,8 @@ body[data-stage="cards"] .stack,body[data-stage="end"] .stack{
   display:block; position:relative; min-height:300px;
   max-width:560px; margin:26px auto 0;
 }
+/* 群の名前は、束の段では出さない（`.stack li` の指定が `.gl` より強いので、ここで消す）*/
+body[data-stage="cards"] .stack li.gl,body[data-stage="end"] .stack li.gl{display:none}
 body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{
   position:absolute; left:0; right:0; top:0;
   background:var(--card); color:var(--ink); box-shadow:var(--lift3);
@@ -286,7 +325,7 @@ body[data-stage="cards"] .stack li .no,body[data-stage="end"] .stack li .no{colo
   transition:transform .3s cubic-bezier(.4,0,1,1), opacity .26s ease-in;
 }
 
-body[data-stage="cards"] .rel,body[data-stage="end"] .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px}
+body:not([data-stage="wall"]) .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px}
 /* 三択はカードの下端に寄せる。**押す場所が毎回同じ**になるので、手が迷わない */
 body[data-stage="cards"] .pick,body[data-stage="end"] .pick{
   display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:22px}
@@ -587,6 +626,29 @@ ITEMS.forEach(function(it, i){
 
 document.getElementById('n').textContent = ITEMS.length;
 
+/* ─ 可視化の段。**関係ごとに固める。**
+   一枚は一つの群に置く（印が二つあるカードは、上の群に入って両方の印を出す）*/
+var GROUPS = ['被っている', '何かのために要る', 'まだ決まっていない', '印なし'];
+function groupOf(rel){
+  if (rel.dup)  return 0;
+  if (rel.need) return 1;
+  if (rel.open) return 2;
+  return 3;
+}
+var counts0 = [0, 0, 0, 0];
+lis.forEach(function(li, i){
+  var g = groupOf(ITEMS[i].rel || {});
+  counts0[g]++;
+  li.style.order = g * 1000 + i;      /* 群ごとに固まる。中の順は表と同じ */
+});
+GROUPS.forEach(function(name, g){
+  var l = document.createElement('li');
+  l.className = 'gl';
+  l.style.order = g * 1000 - 1;
+  l.innerHTML = '<b>' + counts0[g] + '</b>' + name;
+  stack.appendChild(l);
+});
+
 /* しめ。**数字は表から数える**（合っていない数字を置かない）。
    状態の種類と担当の空欄は、荒れの量そのもの。関係の数は出さない */
 var kinds = {}, blank = 0;
@@ -668,21 +730,37 @@ function tally(){
   document.getElementById('pgb').style.width = (done / ITEMS.length * 100) + '%';
 }
 
-/* 重い側の一手 → 束へ。背景も同時に明るくなる */
+/* 段は三つ。**表 → 一斉にカードになる（山場）→ 一枚ずつ決める。**
+   カード化＝可視化のところを飛ばさない（押すのが山場ではない）。 */
 go.onclick = function(){
-  if (document.body.dataset.stage === 'wall'){
+  var st = document.body.dataset.stage;
+
+  if (st === 'wall'){
+    document.body.dataset.stage = 'seen';
+    document.getElementById('h').textContent = 'カードになった';
+    document.getElementById('p').innerHTML =
+      '<b>同じ ' + ITEMS.length + ' 件です。</b>'
+      + '表では番号だけだった関わりに、言葉が付きました——'
+      + '<b>被っている ' + counts0[0] + '／何かのために要る ' + counts0[1]
+      + '／まだ決まっていない ' + counts0[2] + '</b>。表のままでは見えていなかったところです。';
+    go.innerHTML = '一枚ずつ決める<span>押して仕分けられます</span>';
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  if (st === 'seen'){
     document.body.dataset.stage = 'cards';
     restack();
     document.getElementById('h').textContent = '仕分ける';
     document.getElementById('p').innerHTML =
-      '<b>同じ ' + ITEMS.length + ' 件が、一枚ずつ出てきます。</b>'
-      + '表では番号だけだった関わりに、いまは言葉が付いています——'
-      + '被っている／何かのために要る／まだ決まっていない。';
+      '一枚ずつ出てきます。<b>関係が見えているので、押せます</b>——'
+      + '被っているなら要らない、何かのために要るなら要る、決まっていないならまだ決めない。';
     /* 抜け口は最初から出しておく。いつやめてもいい */
     go.innerHTML = 'ここまでにする<span>いつでも抜けられます</span>';
     window.scrollTo(0, 0);
     return;
   }
+
   finish();
 };
 
