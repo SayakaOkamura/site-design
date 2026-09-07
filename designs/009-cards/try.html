@@ -33,10 +33,21 @@
      **そして出していた表が「もう整理されたもの」だった**（本人 2026-09-07）：
      > 選択した後出てくるもの、全部既に整理されたものだよね。
 
-     桁も並びも揃った一つの表を出して、**中身の値だけ荒らしていた。**
-     いまは**シートごとに形が違う**——桁のある表、件名とメモだけ、
-     一行に詰め込んだもの、見出し行が無いもの。同じ件が別の形で何度も出てくる。
-     **揃っていないのは値ではなく、表そのもの。**
+     **表にしてある時点で、もう整理されている**（本人 2026-09-07）：
+     > というか、件名になってて同じファイル内にある時点で
+     > かなり整理されてると思うよって言ってる
+
+     シートの形を崩すだけでは足りなかった。**題が付いていて、
+     一つのファイルに集まっている**——それが既に整理の結果。
+     いま出しているのは**題の無い、生の文**で、出どころも散っている：
+     メール・チャット・議事録・Word・PDF・Excel。
+     **表になっている Excel の塊だけ桁を持つ**（六つのうち一つ。
+     表になっているものは、まだ良いほう）。
+
+     だから、表の段に出るのは**行番号と生の文だけ。**
+     題も、状態も、担当も、期限も、参照も、**どこにも書かれていない。**
+     カードになると**題が付き、出どころが分かり、関係が言葉になる**——
+     可視化の中身が、これで「並べ替え」ではなく**変換**になった。
 
      根は UI ではなく**前提**だった。他人の表を他人のために整えていたので、
      訪問者に取り分が無い。だから段を三つにした：
@@ -176,7 +187,7 @@ body:not([data-stage="wall"]) .top h1{color:var(--ink)}
 .rel,.pick,.mark{display:none}
 
 /* 桁は**重い側だけの部品。**カードになったら残るのは番号と本文だけ */
-.gut,.ref,.cmd,.pre,.sum,.cur,.hdr{display:none}
+.gut,.rw,.tx,.sc,.cmd,.pre,.sum,.cur,.hdr{display:none}
 body[data-stage="wall"] .hdr{display:flex; margin:0 0 4px; padding:1px 10px;
                              font-size:12px; line-height:1.9; color:#2f5647}
 
@@ -193,7 +204,10 @@ body[data-stage="seen"] .pane2 .fl{
 .pane2 .fl [data-empty]::after{content:"（空欄）"; opacity:.75}
 /* **欄そのものが無かった**ものは、そう書く（空欄とは違う。埋めない） */
 .pane2 .fl [data-none]{display:block}
-.pane2 .fl [data-none]::after{content:"（この表に欄が無い）"; opacity:.75}
+.pane2 .fl [data-none]::after{content:"（どこにも書かれていない）"; opacity:.75}
+/* 三つとも無いときは一行だけ（欄の名前を三つ並べても、言うことは一つ） */
+.pane2 .fl[data-none]>span{display:none}
+.pane2 .fl[data-none]::after{content:"状態・担当・期限は、どこにも書かれていない"; opacity:.85}
 /* 「〃」「同上」は、表の中では上の行を指しているが、
    一枚になると指す先が無い。**何も決まっていないのと同じ**なので、そう書く */
 .pane2 .fl [data-ditto]::after{content:"（上の行と同じ）"; opacity:.75; margin-left:5px}
@@ -237,24 +251,28 @@ body[data-stage="wall"] .gut{
   display:inline-block; flex:none; min-width:3ch; text-align:right;
   margin-right:1.5em; color:#2f5647; font-variant-numeric:tabular-nums;
 }
-/* 件名のあとに三つの欄（状態・担当・期限）。**表として桁が揃う** */
-body[data-stage="wall"] .tx{
-  flex:none; width:30ch; padding-right:1.5em;
+/* **生の文。**題ではないので桁を持たない。長ければ折り返す */
+body[data-stage="wall"] .rw{display:block; flex:1; min-width:0}
+.fl i{display:none}   /* 欄の名前はカードのときだけ出す */
+body[data-stage="wall"] .no{display:none}
+body[data-stage="wall"] .fl{display:none}   /* 状態も担当も期限も、文章には無い */
+
+/* **Excel の塊だけ桁がある**（六つのうち一つ）。
+   表になっているものは、まだ良いほう——本人「件名になってて同じファイル内にある
+   時点でかなり整理されてる」。その「良いほう」が、これしかない。 */
+body[data-stage="wall"] .stack li[data-k="5"] .rw{
+  flex:none; width:26ch; padding-right:1.5em;
   overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
 }
-body[data-stage="wall"] .fl{display:contents}
-body[data-stage="wall"] .st,
-body[data-stage="wall"] .wh,
-body[data-stage="wall"] .dl{display:inline-block; flex:none; color:var(--crt-dim)}
-body[data-stage="wall"] .st{width:9ch}
-body[data-stage="wall"] .wh{width:7ch}
-body[data-stage="wall"] .dl{width:10ch; font-variant-numeric:tabular-nums}
-.fl i{display:none}   /* 欄の名前はカードのときだけ出す */
-body[data-stage="wall"] .ref{
-  display:inline-block; flex:none; margin-left:1.4em; color:var(--crt-ref);
-  font-variant-numeric:tabular-nums; white-space:nowrap;
+body[data-stage="wall"] .stack li[data-k="5"] .fl{display:contents}
+body[data-stage="wall"] .stack li[data-k="5"] .st,
+body[data-stage="wall"] .stack li[data-k="5"] .wh,
+body[data-stage="wall"] .stack li[data-k="5"] .dl{
+  display:inline-block; flex:none; color:var(--crt-dim);
 }
-body[data-stage="wall"] .no{display:none}
+body[data-stage="wall"] .stack li[data-k="5"] .st{width:9ch}
+body[data-stage="wall"] .stack li[data-k="5"] .wh{width:7ch}
+body[data-stage="wall"] .stack li[data-k="5"] .dl{width:10ch; font-variant-numeric:tabular-nums}
 
 /* 出力が届く感じ。**動かさない。点くだけ。**
    間隔はばらしてある（遅れは JS が入れる）。場所は最初から取ってある＝何も跳ねない */
@@ -293,6 +311,20 @@ body[data-stage="seen"] .stack li{
   min-height:0;
 }
 body[data-stage="seen"] .stack li .no{min-width:0; margin-right:8px; font-size:11.5px}
+/* **題は、この仕組みが付けたもの。**生の文には書かれていない */
+body[data-stage="seen"] .tx{display:inline}
+/* 出どころ。**どこから来た一行なのか**が、カードで初めて分かる */
+.pane2 .sc{display:block; margin-top:12px; font-size:12px; color:var(--sub)}
+/* 元の一行。**題と並べて置く**（すり替えていないことが、ここで見える） */
+.pane2 .rw{
+  display:block; margin-top:14px; padding:13px 15px;
+  background:var(--tint); border-radius:8px;
+  font-size:12.5px; line-height:1.85; color:var(--ink);
+}
+.pane2 .rw::before{
+  content:"元の一行"; display:block; margin-bottom:5px;
+  font-size:11px; font-weight:700; color:var(--sub);
+}
 body[data-stage="seen"] .fl{display:none}      /* 三つの欄は、決めるときに出す */
 body[data-stage="seen"] .rel{margin-top:8px; gap:4px}
 body[data-stage="seen"] .rel b{font-size:10.5px; padding:4px 7px}
@@ -307,10 +339,10 @@ body[data-stage="seen"] .stack li.gl:first-child{padding-top:2px}
 body[data-stage="seen"] .stack li.gl b{color:var(--ink); font-size:16px; margin-right:7px;
                                        font-variant-numeric:tabular-nums}
 
-/* ─ シートの切れ目と、表じゃない行 ──────────────────────────
-   **出てくるのは一つの表ではない。**ファイルもシートも桁もばらばらで、
-   途中に集計行やメモ行が混ざる（本人「全部既に整理されたものだよね」）。
-   カードになると、この形の違いが消える——それが可視化の中身。 */
+/* ─ 出どころの切れ目と、表じゃない行 ────────────────────────
+   **出てくるのは表ではない。**メール・チャット・議事録・Word・PDF・Excel に
+   散らばった、**題の無い文**（本人「件名になってて同じファイル内にある時点で
+   かなり整理されてる」）。カードになると、この散らばりが消えて題が付く。 */
 .sh,.jk,.hd2{display:none}
 body[data-stage="wall"] .stack li.sh{
   display:block; margin:22px 0 6px; padding:0 10px; color:#6f9d87;
@@ -319,23 +351,8 @@ body[data-stage="wall"] .stack li.sh:first-child{margin-top:0}
 body[data-stage="wall"] .stack li.hd2{display:flex; padding:2px 10px 4px; color:#2f5647}
 body[data-stage="wall"] .stack li.jk{display:block; padding:3px 10px; color:#45705c}
 
-/* 一行に詰め込んだシートと、和暦のシート。**桁を持たない** */
-body[data-stage="wall"] .stack li[data-k="2"] .ln,
-body[data-stage="wall"] .stack li[data-k="3"] .ln{display:block}
-body[data-stage="wall"] .stack li[data-k="2"] .tx,
-body[data-stage="wall"] .stack li[data-k="3"] .tx{width:auto; padding-right:0; display:inline}
-body[data-stage="wall"] .stack li[data-k="2"] .gut,
-body[data-stage="wall"] .stack li[data-k="3"] .gut{width:auto; min-width:0; text-align:left;
-  margin-right:.6em; padding-left:0}
-body[data-stage="wall"] .stack li[data-k="2"] .cram,
-body[data-stage="wall"] .stack li[data-k="3"] .cram{color:var(--crt-dim); margin-left:.6em}
-.cram{display:none}
-body[data-stage="wall"] .cram{display:inline}
-/* 欄そのものが無いシートでは、桁を出さない（値が空なのとは違う） */
-body[data-stage="wall"] .ln [data-none],
-body[data-stage="wall"] .ln [data-cram]{display:none}
-.mm{display:none}
-body[data-stage="wall"] .mm{display:inline-block; flex:none; color:var(--crt-ref); margin-left:1.5em}
+/* 書かれていない欄は、桁としても出さない（空欄なのとは違う） */
+body[data-stage="wall"] .ln [data-none]{display:none}
 
 /* ─ はじめに一つ聞く。**自分ごとにする段**（`ask`）───────────────
    他人の表を見せる前に、**自分の会社の件数を答えてもらう。**
@@ -343,7 +360,8 @@ body[data-stage="wall"] .mm{display:inline-block; flex:none; color:var(--crt-ref
    聞くのは一つだけ（宿題は出さない。押せば進む）。 */
 .ask0{display:none}
 body[data-stage="ask"] .ask0{display:block; margin-top:28px}
-.q0{margin:0; font-size:15px; font-weight:700; line-height:1.6}
+.q0{margin:0; font-size:15px; font-weight:700; line-height:1.7}
+.q0 span{font-size:13px; font-weight:500; color:var(--sub)}
 .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(196px,1fr));
       gap:12px; margin-top:14px}
 .opts button{
@@ -391,7 +409,7 @@ body.picked[data-stage="seen"] .pane2{width:356px}   /* 340 ＋ 空き 16 */
 }
 @keyframes swap2{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
 .pane2 .no{display:inline-block; min-width:0; margin-right:10px; font-size:12.5px; color:var(--sub)}
-.pane2 .tx{font-size:16px; font-weight:700; line-height:1.55}
+.pane2 .tx{display:inline; font-size:16px; font-weight:700; line-height:1.55}
 .pane2 .rel{margin-top:14px}
 
 /* 押したカードは沈む。**カードと同じ言い方**（新しい印を足さない） */
@@ -469,35 +487,36 @@ body:not([data-stage="wall"]) .note{color:var(--sub)}
 
   <div class="top">
     <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
-    <h1 id="h">課題管理表を片付ける</h1>
+    <h1 id="h">たまっているものを片付ける</h1>
     <p id="p"><b>作っているものの例です。</b>まず一つだけ教えてください——
-    出す表は、その件数にします。<span class="n" id="n" hidden>0</span></p>
+    出す量は、その件数にします。<span class="n" id="n" hidden>0</span></p>
   </div>
 
   <!-- はじめに一つだけ聞く。**他人の表を見せる前に、自分ごとにする。**
        出す量はここで答えた数（量で殴るのを、自分の申告でやる） -->
   <div class="ask0" id="ask0">
-    <p class="q0">あなたの会社の課題管理表には、いま何件たまっていますか？</p>
+    <p class="q0">決まったこと・困っていることは、いま何件くらいたまっていますか？<br>
+    <span>メール、チャット、議事録、Word、PDF、Excel——ぜんぶ合わせて。</span></p>
     <div class="opts">
-      <button type="button" data-n="40">40 件くらい<span>一つのシートに収まる</span></button>
-      <button type="button" data-n="120">120 件くらい<span>シートが増えてきた</span></button>
-      <button type="button" data-n="400">400 件以上<span>誰も全部は見ていない</span></button>
-      <button type="button" data-n="400" data-unknown>数えたことがない<span>いちばん多い形で出します</span></button>
+      <button type="button" data-n="36">36 件くらい<span>だいたい把握できている</span></button>
+      <button type="button" data-n="120">120 件くらい<span>あちこちに散っている</span></button>
+      <button type="button" data-n="402">400 件以上<span>誰も全部は見ていない</span></button>
+      <button type="button" data-n="402" data-unknown>数えたことがない<span>いちばん多い形で出します</span></button>
     </div>
   </div>
 
   <!-- 打ち込んだ一行と前置き。**製品の画面は真似しない。**
        端末の出力は特定の製品の意匠ではないので、ここに寄せる。
        前置きは版・読み込み・警告だけで、**中身の関係は一言も出さない。** -->
-  <p class="cmd"><b>$</b>alter scan --issues --deep | alter graph --resolve 2&gt;&amp;1 | tee scan.log</p>
+  <p class="cmd"><b>$</b>alter scan --all-sources --deep | alter graph --resolve 2&gt;&amp;1 | tee scan.log</p>
 
   <div class="pre">
     <div class="v">alter 0.4.1-rc2 (build 8f3ac1) · node v24.18.0 · win32-x64</div>
-    <div id="rd">reading  課題管理.xlsx / 課題管理_旧.xlsx / 課題一覧(2019).xls</div>
-    <div class="w">warn  2 sheets have no header row</div>
+    <div id="rd">reading  mail / chat / 議事録 / docx / pdf / xlsx</div>
+    <div class="w">warn  no title field in 5 of 6 sources</div>
     <div class="w">warn  mixed encodings (utf-8, cp932)</div>
-    <div class="w">warn  状態の値に辞書に無いものがある</div>
-    <div>resolving refs …</div>
+    <div class="w">warn  同じ話が別の出どころに出ている</div>
+    <div>resolving refs across sources …</div>
   </div>
 
   <!-- 出力の本体。**桁（No・状態・担当・期限・参照）は重い側だけの部品で、
@@ -517,7 +536,7 @@ body:not([data-stage="wall"]) .note{color:var(--sub)}
     <p>読める形にして、目を通せるようにする。<b>これが、作っているものです。</b></p>
   </div>
 
-  <p class="note">これは仮の中身です。実際の課題管理表ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
+  <p class="note">これは仮の中身です。実際のメールや議事録ではありません。カードに付く題は、生の一行には書かれていないもの（この仕組みが付けるもの）です。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
 
 </main>
 
@@ -526,60 +545,118 @@ body:not([data-stage="wall"]) .note{color:var(--sub)}
     <!-- ホーム。**どの段でも、いつもここにある。**
          「入口」は人が使う言葉ではない（本人 2026-09-07：「入口、とは呼ばないだろう」）-->
     <a class="home" href="./">ホーム</a>
-    <button class="go" id="go">この表をカードにする<span>押すと、右に詳しく出ます</span></button>
+    <button class="go" id="go">これをカードにする<span>題が付いて、関わりが見えます</span></button>
   </div>
 </div>
 
 <script>
-/* 中身は仮。**どの会社にもある課題管理表**の行だけにしてある（業種を選ばない）。
-   ぐちゃぐちゃの出どころは、こちらで作った意味ではなく**表そのものの荒れ**：
-   状態の言い方が揃っていない／担当が「〃」「同上」「空欄」／期限が「？」「－」「過去」／
-   同じ件が別の言い方で何度も立っている／件名が空の行がある。
+/* 中身は仮。**題の付いていない、生の断片**にしてある（業種を選ばない言葉だけ）。
 
-   t=件名 s=状態 w=担当 d=期限
+   本人 2026-09-07：「件名になってて同じファイル内にある時点でかなり整理されてると
+   思うよって言ってる」——課題管理表は、もう**題が付いて一箇所に集まったもの。**
+   本当に積み上がっているのは、**メール・チャット・議事録・Word・PDF・Excel に
+   散らばった、題の無い文章。**それを出す。
+
+   r=生の文（題ではない。そのまま読める）
+   t=カードになったときの題（**これは出力。生の文には書かれていない**）
+   s/w/d=状態・担当・期限。**書かれているものだけ入れる**（多くは無い）
    rel … dup:[相手] 被っている／need:相手 それのために要る／open まだ決まっていない
-   **重複している相手は、番号が遠い**（入れた時期が違うから）。 */
+
+   **出どころは 6 つ、6 行ずつ。**同じ話が、別の出どころで別の言い方で出てくる。 */
+var SRC = [
+  ['mail',   '2024-06-11 10:23', '佐藤 → 全員', 'Re: 帳票について'],
+  ['chat',   '#開発',            '2025-01-20 18:04', ''],
+  ['議事録', '2024-07-02',       '定例',       ''],
+  ['docx',   '要件メモ_v3.docx', 'p.4',        ''],
+  ['pdf',    '手順書(2019).pdf', 'p.42',       ''],
+  ['xlsx',   '課題管理.xlsx / Sheet1', 'B14〜', '']
+];
+var BLK = 6;
+
 var ITEMS = [
-  {t:'帳票の桁ずれ',              s:'対応中',  w:'〃',   d:'－',      rel:{dup:[14,29]}},
-  {t:'ログイン後の画面が白いまま', s:'保留',    w:'田中', d:'？',      rel:{need:11}},
-  {t:'（件名なし）',              s:'完了',    w:'',     d:'',        rel:{open:1}},
-  {t:'月次の集計が合わない',      s:'調査中',  w:'〃',   d:'2024/07'},
-  {t:'検索が遅い',                s:'対応中',  w:'鈴木', d:'2025/06', rel:{dup:[22]}},
-  {t:'パスワードの規則',          s:'完了',    w:'佐藤', d:'2023/11', rel:{dup:[31]}},
-  {t:'画面の文言を直す',          s:'完了',    w:'',     d:'2024/01'},
-  {t:'同上',                      s:'対応中',  w:'〃',   d:'',        rel:{dup:[3],open:1}},
-  {t:'添付が開けない',            s:'対応中',  w:'高橋', d:'－',      rel:{dup:[26]}},
-  {t:'印刷すると切れる',          s:'対応中',  w:'',     d:'2025/09'},
-  {t:'権限の整理',                s:'進行中',  w:'佐藤', d:'2024/12', rel:{dup:[19,35]}},
-  {t:'取り込みで止まる',          s:'調査中',  w:'鈴木', d:'2024/09'},
-  {t:'メールが届かないことがある', s:'保留',   w:'',     d:'？',      rel:{open:1}},
-  {t:'帳票の桁ずれ（再）',        s:'未着手',  w:'',     d:'2024/03', rel:{dup:[1]}},
-  {t:'集計の件、担当が不明',      s:'―',      w:'',     d:'',        rel:{need:4,open:1}},
-  {t:'古いデータの扱い',          s:'未定',    w:'',     d:'',        rel:{open:1}},
-  {t:'二重登録ができてしまう',    s:'対応中',  w:'田中', d:'2025/03'},
-  {t:'締め処理の順番',            s:'保留',    w:'',     d:'？',      rel:{open:1}},
-  {t:'権限まわり',                s:'着手済み', w:'〃',  d:'',        rel:{dup:[11]}},
-  {t:'文言、別の箇所も',          s:'未着手',  w:'同上', d:'？',      rel:{need:7}},
-  {t:'印刷の余白',                s:'保留',    w:'〃',   d:'',        rel:{need:10}},
-  {t:'検索遅い（別件？）',        s:'未着手',  w:'',     d:'',        rel:{dup:[5],open:1}},
-  {t:'取り込みエラーの再現手順',  s:'未着手',  w:'',     d:'？',      rel:{need:12}},
-  {t:'重複チェックの条件',        s:'未着手',  w:'〃',   d:'',        rel:{need:17}},
-  {t:'締めの手順書が古い',        s:'―',      w:'―',   d:'2022/06', rel:{need:18}},
-  {t:'添付の件は 9 と同じ？',     s:'―',      w:'〃',   d:'',        rel:{dup:[9],open:1}},
-  {t:'ログの保存期間',            s:'未定',    w:'',     d:'？',      rel:{open:1}},
-  {t:'一覧が重い',                s:'保留',    w:'〃',   d:'－',      rel:{need:5}},
-  {t:'桁ずれの件',                s:'―',      w:'―',   d:'―',      rel:{dup:[1],open:1}},
-  {t:'画面の並び順を直す',        s:'未着手',  w:'',     d:'？',      rel:{dup:[38]}},
-  {t:'パスワードの規則（見直し）', s:'未着手', w:'',     d:'？',      rel:{dup:[6]}},
-  {t:'端末を替えると表示が崩れる', s:'未着手', w:'',     d:'',        rel:{dup:[40]}},
-  {t:'依頼の受付先が二つある',    s:'対応中',  w:'',     d:'2024/05'},
-  {t:'引き継ぎの記録がない',      s:'―',      w:'',     d:'',        rel:{open:1}},
-  {t:'権限の件（11と同じ？）',    s:'―',      w:'',     d:'',        rel:{dup:[11],open:1}},
-  {t:'誰も触っていない機能',      s:'未定',    w:'',     d:'？',      rel:{open:1}},
-  {t:'受付の窓口を決める',        s:'未定',    w:'同上', d:'',        rel:{need:33,open:1}},
-  {t:'一覧の並び（優先度低）',    s:'保留',    w:'同上', d:'－',      rel:{dup:[30]}},
-  {t:'権限がない人が押せる',      s:'対応中',  w:'佐藤', d:'2025/11', rel:{need:11}},
-  {t:'崩れの件、環境が特定できない', s:'―',   w:'―',   d:'？',      rel:{dup:[32],open:1}}
+  /* ─ mail ─ */
+  {r:'先日の帳票、桁がずれているとのことでした。原因はまだ分かっていません。',
+   t:'帳票の桁がずれる', rel:{dup:[19,31]}},
+  {r:'印刷すると右端が切れるという話も、あわせて出ていました。',
+   t:'印刷で右端が切れる', rel:{dup:[24]}},
+  {r:'こちらは前にも同じ指摘をいただいた気がします。',
+   t:'同じ指摘が前にもあった', rel:{open:1}},
+  {r:'対応の担当は追って決めます。',
+   t:'担当が決まっていない', rel:{open:1}},
+  {r:'なお、ログイン後に画面が白いままになる件は別で見ています。',
+   t:'ログイン後の画面が白いまま', rel:{need:7}},
+  {r:'（添付：帳票サンプル.xlsx が開けないと連絡あり）',
+   t:'添付が開けない', rel:{dup:[27]}},
+
+  /* ─ chat ─ */
+  {r:'あの画面、権限まわりが終わってないと直せないと思う',
+   t:'権限の整理', rel:{dup:[14,33]}},
+  {r:'権限の一覧、どこにあるか分かる人いますか',
+   t:'権限の一覧が見つからない', rel:{open:1}},
+  {r:'たしか去年の議事録に書いてあった気がします',
+   t:'決定が議事録にしか残っていない', rel:{need:15}},
+  {r:'え、あれ課長承認でしたっけ',
+   t:'承認者が誰か分からない', rel:{dup:[16]}},
+  {r:'検索が遅いのも同じ原因？',
+   t:'検索が遅い', rel:{dup:[22]}},
+  {r:'別件かも。あとで見ます',
+   t:'検索の件は別かもしれない', rel:{open:1}},
+
+  /* ─ 議事録 ─ */
+  {r:'・月次の集計が合っていないという報告。原因は調査中。',
+   t:'月次の集計が合わない', s:'調査中'},
+  {r:'・権限の整理を進める。担当は次回決める。',
+   t:'権限の整理', rel:{dup:[7], open:1}},
+  {r:'・承認は部長で運用することにする。',
+   t:'承認者を部長にする', rel:{dup:[16]}},
+  {r:'・（前回）承認は課長に変更、と記載あり。',
+   t:'承認者を課長にする', rel:{dup:[10,15]}},
+  {r:'・二重登録ができてしまう件、条件を整理してから対応。',
+   t:'二重登録ができてしまう', rel:{need:28}},
+  {r:'・その他、特になし。',
+   t:'（内容が書かれていない）', rel:{open:1}},
+
+  /* ─ docx ─ */
+  {r:'帳票は最大 99 行。ただし旧帳票は 50 行のまま。',
+   t:'帳票の桁がずれる', rel:{dup:[1]}},
+  {r:'印刷の余白は既定のままとする。',
+   t:'印刷の余白', rel:{need:24}},
+  {r:'取り込みで止まることがある（再現手順は未記載）。',
+   t:'取り込みで止まる', rel:{need:26}},
+  {r:'検索は 3 秒以内。※現状は満たしていない。',
+   t:'検索が遅い', rel:{dup:[11]}},
+  {r:'ログの保存期間は未定。',
+   t:'ログの保存期間が未定', rel:{open:1}},
+  {r:'印刷まわりはこの節に追記予定。（書きかけ）',
+   t:'印刷で右端が切れる', rel:{dup:[2], open:1}},
+
+  /* ─ pdf ─ */
+  {r:'締めは月末の翌 3 営業日までに行うこと。',
+   t:'締め処理の順番', rel:{need:29}},
+  {r:'取り込みエラー時の手順は別紙による。別紙は添付されていない。',
+   t:'取り込みエラーの手順が無い', rel:{dup:[21], open:1}},
+  {r:'添付ファイルが開けない場合は担当に連絡すること。',
+   t:'添付が開けない', rel:{dup:[6]}},
+  {r:'重複の判定条件は定めていない。',
+   t:'重複チェックの条件が無い', rel:{open:1}},
+  {r:'本手順書は 2019 年時点のものである。',
+   t:'手順書が古い', rel:{need:25}},
+  {r:'引き継ぎは書面で行うこと。',
+   t:'引き継ぎの記録がない', rel:{open:1}},
+
+  /* ─ xlsx ─ ここだけ題が付いている（**表になっているものは、まだ良いほう**）*/
+  {r:'帳票の桁ずれ（再）', t:'帳票の桁がずれる',
+   s:'未着手', w:'', d:'2024/03', rel:{dup:[1]}},
+  {r:'同上', t:'（何を指しているか分からない）',
+   s:'対応中', w:'〃', d:'', rel:{open:1}},
+  {r:'権限の件（11と同じ？）', t:'権限の整理',
+   s:'―', w:'', d:'', rel:{dup:[7], open:1}},
+  {r:'※担当は都度確認', t:'担当が決まっていない',
+   s:'', w:'―', d:'', rel:{open:1}},
+  {r:'小計 12 件', t:'（集計行。課題ではない）',
+   s:'', w:'', d:'', rel:{open:1}},
+  {r:'（空欄）', t:'（内容が書かれていない）',
+   s:'', w:'', d:'？', rel:{open:1}}
 ];
 
 var stack = document.getElementById('stack'),
@@ -600,13 +677,13 @@ var DL  = ['', '？', '－', '―', '2024/03', '2025/06', '2023/11', '2024/09'];
 function make(i){
   var base = ITEMS[i % ITEMS.length], lap = Math.floor(i / ITEMS.length);
   if (lap === 0) return base;
-  return {
-    t: base.t,
-    s: ST[(i * 5 + lap) % ST.length],
-    w: WHO[(i * 3 + lap) % WHO.length],
-    d: DL[(i * 7 + lap) % DL.length],
-    rel: base.rel
-  };
+  var o = { t: base.t, r: base.r, rel: base.rel };
+  /* 回すのは**書かれている欄だけ。**無い欄は、周が変わっても無い
+     （文章の出どころに状態や期限が生えてくることはない） */
+  if (base.s !== undefined) o.s = ST[(i * 5 + lap) % ST.length];
+  if (base.w !== undefined) o.w = WHO[(i * 3 + lap) % WHO.length];
+  if (base.d !== undefined) o.d = DL[(i * 7 + lap) % DL.length];
+  return o;
 }
 
 /* 参照の相手。周ごとにずらして、はみ出したら落とす */
@@ -615,26 +692,10 @@ function ref(k, i){
   return (t >= 1 && t <= N) ? t : 0;
 }
 
-/* シート。**形が違うものが並ぶ。**12 行ごとに切り替わる。
-   k=0 桁のある表／k=1 件名とメモだけ／k=2 一行に詰め込む／k=3 見出し行が無い */
-var SHEETS = [
-  ['課題管理.xlsx', 'Sheet1'],
-  ['課題管理.xlsx', '旧課題'],
-  ['課題管理_旧.xlsx', '一覧'],
-  ['課題一覧(2019).xls', 'Sheet3']
-];
-var BLK = 12;
-var MEMO = ['※要確認', '※担当未定', '※旧仕様のまま', '※前任者に確認', '', '※起票者不明'];
-var JUNK = ['（以下、未整理）', '※状態は都度確認', '（担当は空欄のまま）', '※このシートは古い'];
-var GEN = '０１２３４５６７８９';
+var JUNK = ['（以下、貼り付け）', '※このシートは古い', '（転記元不明）', '※要確認'];
 
-function zen(n){ return String(n).split('').map(function(c){ return GEN[+c]; }).join(''); }
-function wa(d){                      /* 2024/07 → R6.7。日付の形もシートで違う */
-  var m = /^(\d{4})\/(\d{2})$/.exec(d || '');
-  return m ? 'R' + (+m[1] - 2018) + '.' + (+m[2]) : (d || '');
-}
-function sheetOf(i){ return Math.floor(i / BLK); }
-function kindOf(i){ return sheetOf(i) % SHEETS.length; }
+function blockOf(i){ return Math.floor(i / BLK); }
+function kindOf(i){ return blockOf(i) % SRC.length; }
 
 function note(cls, text){
   var l = document.createElement('li');
@@ -644,27 +705,24 @@ function note(cls, text){
   return l;
 }
 
-/* シートの切れ目。ファイル名・シート名・桁の見出し（無いシートもある） */
+/* 出どころの切れ目。**替わるのはシートではなく、出どころ。**
+   同じ話が、別の出どころで別の言い方で出てくる。
+   桁の見出しが付くのは Excel の塊だけ（**表になっているものは、まだ良いほう**）。 */
 function head(i){
-  var idx = sheetOf(i), k = kindOf(i), sh = SHEETS[k], lap = Math.floor(idx / SHEETS.length);
-  note('sh', '── ' + sh[0] + ' / ' + sh[1] + (lap ? ' (' + (lap + 1) + ')' : '')
-           + ' ' + '─'.repeat(28));
+  var idx = blockOf(i), k = kindOf(i), sr = SRC[k];
+  note('sh', '── ' + sr[0] + '  ' + sr[1] + '  ' + sr[2]
+           + (sr[3] ? '  ' + sr[3] : '') + '  [#' + (idx + 1) + ']  ' + '─'.repeat(8));
 
-  if (k === 0){
+  if (k === 5){
+    if (idx) note('jk', JUNK[idx % JUNK.length]);
     var l = document.createElement('li');
     l.className = 'hd2 ln';
-    l.innerHTML = '<span class="gut">No</span><span class="tx">件名</span>'
+    l.dataset.k = 5;
+    l.innerHTML = '<span class="gut">No</span><span class="rw">件名</span>'
                 + '<span class="fl"><span class="st">状態</span><span class="wh">担当</span>'
-                + '<span class="dl">期限</span></span><span class="ref">参照</span>';
+                + '<span class="dl">期限</span></span>';
     (frag || stack).appendChild(l);
   }
-  if (k === 1){
-    var l2 = document.createElement('li');
-    l2.className = 'hd2 ln';
-    l2.innerHTML = '<span class="tx">件名</span><span class="mm">メモ</span>';
-    (frag || stack).appendChild(l2);
-  }
-  if (k === 3) note('jk', JUNK[idx % JUNK.length]);
 }
 
 function build(n){
@@ -675,11 +733,10 @@ function build(n){
      まとめて作って一度で入れる */
   frag = document.createDocumentFragment();
   for (var i = 0; i < n; i++){
-    if (i % BLK === 0) head(i);                     /* シートが替わる */
+    if (i % BLK === 0) head(i);                     /* 出どころが替わる */
     row(make(i), i);
-    if (i % BLK === BLK - 1 || i === n - 1){        /* シートの終わりに集計行が混ざる */
-      if (kindOf(i) === 2) note('jk', '小計 ' + ((i % BLK) + 1) + ' 件');
-    }
+    if (i % BLK === BLK - 1 && kindOf(i) === 2)   /* 議事録の終わりには署名が付く */
+      note('jk', '（以上、記録：佐藤）');
   }
   stack.appendChild(frag);
   frag = null;
@@ -691,69 +748,55 @@ function row(it, i){
   var n = i + 1, rel = it.rel || {};
   var li = document.createElement('li');
 
-  /* 参照。**番号だけ。**何がどう関わっているかは書かない
-     （それはカードになって初めて言葉になる）。未決は ?? */
-  var refs = [], dups = [], need = 0;
+  /* 関係の相手。**表の段には一切出さない**——番号すら書かれていない。
+     生の材料に「参照」の桁は無いので、ここで持っているだけ
+     （カードになって初めて言葉になる） */
+  var dups = [], need = 0;
   (rel.dup || []).forEach(function(k){ var t = ref(k, i); if (t) dups.push(t); });
   if (rel.need) need = ref(rel.need, i);
-  refs = refs.concat(dups);
-  if (need) refs.push(need);
-  if (rel.open) refs.push('??');
 
   var k = kindOf(i);
   li.dataset.k = k;
 
   var t = document.createElement('div');
   t.className = 'ln';
-  /* 桁の並びは同じ要素で持つ。**シートによって、出す桁が違う。**
-     カードになると、番号と件名が前に出て、三つの欄は下に小さく並ぶ——
-     **同じ値を、二通りに組んでいるだけ**（端折っていない）。 */
-  t.innerHTML = '<span class="gut">' + (k === 3 ? zen(n) : k === 2 ? n + '.' : n) + '</span>'
+  /* **表の段に出るのは、行番号と生の文だけ。**
+     題も、状態も、担当も、期限も、参照も、**生の材料には無い**（誰も付けていない）。
+     カードになると**題が付き、出どころが分かり、関係が言葉になる**——
+     同じ要素に両方を持たせてあるので、端折ってはいない。 */
+  t.innerHTML = '<span class="gut">' + n + '</span>'
+              + '<span class="rw"></span>'
               + '<span class="no">' + n + '</span>'
               + '<span class="tx"></span>'
-              + '<span class="cram"></span>'
+              + '<span class="sc"></span>'
               + '<span class="fl">'
               +   '<span class="st"><i>状態</i></span>'
               +   '<span class="wh"><i>担当</i></span>'
               +   '<span class="dl"><i>期限</i></span>'
-              + '</span>'
-              + '<span class="mm"></span>'
-              + '<span class="ref">' + (refs.length ? '→ ' + refs.join(' ') : '') + '</span>';
+              + '</span>';
+  t.querySelector('.rw').textContent = it.r;
   t.querySelector('.tx').textContent = it.t;
+  t.querySelector('.sc').textContent =
+    SRC[k][0] + '  ' + SRC[k][1] + (SRC[k][2] ? '  ' + SRC[k][2] : '');
 
-  /* シートごとに、**ある欄／無い欄**が違う。
-     無い欄は空欄とは違うので、`data-none` で分けておく（カードでそう書く）。
-     空欄は空欄のまま置く（表ではそう見えている）。 */
-  var have = k === 0 ? ['s', 'w', 'd']
-           : k === 1 ? []
-           : k === 2 ? ['s', 'w', 'd']
-           :           ['w', 'd'];
-  [['.st', 's', it.s], ['.wh', 'w', it.w], ['.dl', 'd', k === 3 ? wa(it.d) : it.d]]
-  .forEach(function(p){
+  /* **書かれていない欄は、書かれていないと出す。**埋めない。
+     出どころが文章のときは、状態も担当も期限も**どこにも書いていない**（`data-none`）。
+     空欄は空欄のまま（Excel の塊にはある）。 */
+  [['.st', it.s], ['.wh', it.w], ['.dl', it.d]].forEach(function(p){
     var el = t.querySelector(p[0]);
-    if (have.indexOf(p[1]) < 0){ el.dataset.none = '1'; return; }
-    /* 一行に詰め込むシートでは、値は括弧の中にある。
-       **桁としては出さないが、値は持っている**（カードでは普通に出る）。
-       欄が無いのとは違うので分けておく */
-    if (k === 2) el.dataset.cram = '1';
-    el.appendChild(document.createTextNode(p[2] || ''));
-    if (!p[2]) el.dataset.empty = '1';
-    if (p[2] === '〃' || p[2] === '同上') el.dataset.ditto = '1';
+    if (p[1] === undefined){ el.dataset.none = '1'; return; }
+    el.appendChild(document.createTextNode(p[1] || ''));
+    if (!p[1]) el.dataset.empty = '1';
+    if (p[1] === '〃' || p[1] === '同上') el.dataset.ditto = '1';
   });
-
-  /* 一行に詰め込むシート。桁を持たず、括弧の中に押し込んである */
-  if (k === 2){
-    t.querySelector('.cram').textContent =
-      '（' + [it.s || '－', it.w || '－', it.d || '－'].join('／') + '）';
-  }
-  /* 件名とメモだけのシート。**状態も担当も期限も、この表には無い** */
-  if (k === 1) t.querySelector('.mm').textContent = MEMO[i % MEMO.length];
-  /* 参照の桁を持っているのは、桁のある表だけ */
-  if (k !== 0) t.querySelector('.ref').dataset.none = '1';
+  /* 三つとも書かれていないとき（文章の出どころはほぼこれ）は、
+     **同じ文を三度読ませない。**一行にまとめる */
+  if (it.s === undefined && it.w === undefined && it.d === undefined)
+    t.querySelector('.fl').dataset.none = '1';
 
   li.appendChild(t);
 
-  /* 関係。**カードになって初めて見える。**表のあいだは番号だけ */
+  /* 関係。**カードになって初めて見える。**表のあいだは、どこにも無い */
   if (dups.length || need || rel.open){
     var rb = document.createElement('div');
     rb.className = 'rel';
@@ -809,21 +852,21 @@ function groups(){
 /* しめと、点く順。**数字は出した表から数える**（合っていない数字を置かない）。
    状態の種類と担当の空欄は、荒れの量そのもの。関係の数は出さない */
 function paint(){
-  var kinds = {}, blank = 0;
+  /* 数えるのは**無いもの。**題が付いていない、状態がどこにも書かれていない——
+     荒れの量は、値の揺れではなく**書かれていないことの量**だった */
+  var untitled = 0, nost = 0;
   for (var i = 0; i < N; i++){
     var it = make(i);
-    kinds[it.s || '(空欄)'] = 1;
-    if (!it.w) blank++;
+    if (kindOf(i) !== 5) untitled++;
+    if (it.s === undefined) nost++;
   }
   /* 前置きの読み込み行も、出した件数に合わせる（数字が食い違わないように） */
-  var files = 3 + Math.floor(N / 40) - 1, sheets = 6 + Math.floor(N / 40) * 2 - 2;
+  var blocks = Math.ceil(N / BLK);
   document.getElementById('rd').textContent =
-    'reading  課題管理.xlsx / 課題管理_旧.xlsx / 課題一覧(2019).xls  … '
-    + files + ' files, ' + sheets + ' sheets';
+    'reading  mail / chat / 議事録 / docx / pdf / xlsx  … ' + blocks + ' sources';
   document.getElementById('sum').innerHTML =
-    N + ' issues · ' + files + ' files · '
-    + sheets + ' sheets · 状態 '
-    + Object.keys(kinds).length + ' 種 · 担当 空欄 ' + blank + '<br>'
+    N + ' fragments · ' + blocks + ' sources · 題が付いていない '
+    + untitled + ' · 状態がどこにも無い ' + nost + '<br>'
     + 'exit 0 (3 warnings)<span class="cur"></span>';
 
   /* 件数が増えても**出そろう時間は変えない**（1.4 秒）。
@@ -834,7 +877,7 @@ function paint(){
     el.style.animationDelay = Math.round(_t) + 'ms';
     _t += GAPS[_g++ % GAPS.length] * scale;
   }
-  /* 点くのは**出力の全部**（シートの切れ目・見出し・集計行も出力の一部）。
+  /* 点くのは**出力の全部**（出どころの切れ目・見出し・メモ行も出力の一部）。
      群の名前（.gl）は表の段では出ないので数に入れない */
   [].forEach.call(document.querySelectorAll('.pre div'), beat);
   [].forEach.call(stack.querySelectorAll(':scope > li:not(.gl)'), beat);
@@ -859,10 +902,18 @@ function pick(li, i){
   var box = document.createElement('div');
   box.className = 'box';
   /* カードを写す（同じものが右に出た、が嘘にならない）。
-     三つの欄は、こちら側の見た目でだけ出る（一覧では出さない） */
-  box.appendChild(li.querySelector('.ln').cloneNode(true));
+     元の一行・出どころ・三つの欄は同じ `.ln` の中にあるので、
+     **写すだけで付いてくる**（別のものを作って差し替えていない） */
+  var ln = li.querySelector('.ln').cloneNode(true);
+  box.appendChild(ln);
   var rel = li.querySelector('.rel');
   if (rel) box.appendChild(rel.cloneNode(true));
+  /* 読む順にする：**題と出どころ → 関係 → 元の一行 → 三つの欄。**
+     関係が先（そこが値打ち）。元の一行は、すり替えていない証拠として後ろ */
+  ['.rw', '.fl'].forEach(function(sel){
+    var el = ln.querySelector(sel);
+    if (el) box.appendChild(el);
+  });
 
   pane2.textContent = '';
   pane2.appendChild(box);
@@ -894,12 +945,12 @@ go.hidden = true;              /* 答えるまで、進む先は出さない */
     var n = +b.dataset.n;
     build(n);
     document.body.dataset.stage = 'wall';
-    document.getElementById('h').textContent = 'この表を片付ける';
+    document.getElementById('h').textContent = 'これを片付ける';
     document.getElementById('p').innerHTML =
-      '<b>' + n + ' 件で出しました。</b>'
+      '<b>' + n + ' 件ぶん、出どころごと出しました。</b>'
       + (b.dataset.unknown ? '（数えていないので、いちばん多い形で）' : '')
-      + 'どこにもある課題管理表（仮の中身）です。'
-      + '一行ずつは読めますが、関わりは番号だけ。';
+      + 'メール・チャット・議事録・Word・PDF・Excel（仮の中身）。'
+      + '<b>一行ずつは読めますが、題も、状態も、関わりも、どこにも書かれていません。</b>';
     go.hidden = false;
     window.scrollTo(0, 0);
   };
@@ -909,11 +960,11 @@ go.onclick = function(){
   document.body.dataset.stage = 'seen';
   document.getElementById('h').textContent = 'カードになった';
   document.getElementById('p').innerHTML =
-    '<b>同じ ' + N + ' 件です。</b>'
-    + '表では番号だけだった関わりに、言葉が付きました——'
+    '<b>同じ ' + N + ' 件に、題が付きました。</b>'
+    + 'どこにも書かれていなかった関わりも、言葉になりました——'
     + '<b>被っている ' + counts0[0] + '／何かのために要る ' + counts0[1]
     + '／まだ決まっていない ' + counts0[2] + '</b>。'
-    + '<b>押すと、右に詳しく出ます。</b>';
+    + '<b>押すと、右に元の一行と出どころが出ます。</b>';
   go.hidden = true;            /* 先はもう無い。目を通すだけ */
   window.scrollTo(0, 0);
 };
