@@ -68,20 +68,20 @@
 
 <style>
 :root{
-  --bg:   #e8ebee;
+  --bg:   #eaeaf3;   /* 青紫に寄せた明るい灰 */
   --card: #ffffff;
-  --tint: #f2f4f6;
-  --ink:  #16191d;
-  --sub:  #5b626b;
-  --go:   #0e6b58;
+  --tint: #f1f1f9;   /* 押せない面。影を落とさない */
+  --ink:  #1b1b33;   /* 青黒。真っ黒は使わない */
+  --sub:  #5f6081;
+  --go:   #4a3fc9;   /* 行き先がある印。青紫 */
 
-  --dark:     #171b22;
-  --dark-ink: #99a3b2;
+  --dark:     #191a2b;
+  --dark-ink: #9a9cba;
 
-  --lift1: 0 1px 2px rgba(20,26,32,.06), 0 3px 8px rgba(20,26,32,.07);
-  --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
-  --lift3: 0 8px 16px rgba(20,26,32,.10), 0 28px 56px rgba(20,26,32,.16);
-  --lift0: 0 1px 1px rgba(20,26,32,.10);
+  --lift1: 0 1px 2px rgba(27,27,51,.07), 0 3px 8px rgba(27,27,51,.08);
+  --lift2: 0 2px 4px rgba(27,27,51,.08), 0 10px 24px rgba(27,27,51,.12);
+  --lift3: 0 8px 16px rgba(27,27,51,.12), 0 28px 56px rgba(27,27,51,.18);
+  --lift0: 0 1px 1px rgba(27,27,51,.12);
 
   --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
           "Liberation Mono","Courier New",monospace;
@@ -118,7 +118,7 @@ body[data-stage="cards"]{overflow:hidden}   /* 束のあいだはスクロール
 /* ─ 頭の帯。**カードの段だけ出す**（入口と同じ形にして、同じサイトだと分かるように）─ */
 .topbar{display:none}
 body:not([data-stage="wall"]) .topbar{
-  display:flex; align-items:center; height:56px; background:#d9dee3; margin-bottom:26px;
+  display:flex; align-items:center; height:56px; background:#dcdcea; margin-bottom:26px;
 }
 body:not([data-stage="wall"]){padding-top:0}
 .topbar .in{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
@@ -130,7 +130,7 @@ body:not([data-stage="wall"]){padding-top:0}
 body[data-stage="cards"] .prog,body[data-stage="end"] .prog{
   display:flex; align-items:center; gap:16px; margin:22px 2px 0;
 }
-.prog .pg{flex:1; height:6px; border-radius:3px; background:#dbe0e5; overflow:hidden}
+.prog .pg{flex:1; height:6px; border-radius:3px; background:#d8d8e8; overflow:hidden}
 .prog .pg i{display:block; height:100%; width:0; border-radius:3px; background:var(--go);
             transition:width .3s var(--snap)}
 .prog .pn{flex:none; margin:0; font-size:13px; color:var(--sub); font-variant-numeric:tabular-nums}
@@ -332,9 +332,12 @@ body[data-stage="cards"] .pick,body[data-stage="end"] .pick{
 
 .rel b{font-size:11.5px; font-weight:700; line-height:1; padding:7px 10px; border-radius:999px;
        background:var(--tint); color:var(--sub)}
-.rel b.dup{background:#fdeceb; color:#a3352c}
-.rel b.needs{background:#e9f2ff; color:#22528f}
-.rel b.open{background:#fff4e2; color:#8a5a12}
+/* 印の色。青紫の palette の中で三つが分かれるように置き直した。
+   **依存はサイトの色（青紫）に寄せ、重複は赤、未決は琥珀**——
+   赤と琥珀は「困っている側」なので、青紫の外に置いてある */
+.rel b.dup{background:#fdeaee; color:#a32c4a}
+.rel b.needs{background:#ecebfb; color:#3d33a8}
+.rel b.open{background:#fdf1de; color:#8a5a12}
 
 .pick button{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;

@@ -25,18 +25,19 @@
 
 <style>
 :root{
-  --bg:   #e8ebee;
+  --bg:   #eaeaf3;   /* 青紫に寄せた明るい灰 */
   --card: #ffffff;
-  --tint: #f2f4f6;   /* 押せない面。影を落とさない */
-  --frame:#d9dee3;   /* 枠（頭と足）。--bg より少し沈んだ面 */
-  --ink:  #16191d;
-  --sub:  #5b626b;
-  --go:   #0e6b58;
+  --tint: #f1f1f9;   /* 押せない面。影を落とさない */
+  --ink:  #1b1b33;   /* 青黒。真っ黒は使わない */
+  --sub:  #5f6081;
+  --go:   #4a3fc9;   /* 行き先がある印。青紫 */
+  --frame:#dcdcea;   /* 枠（頭と足）。--bg より少し沈んだ面 */
+  --face: #232251;   /* 社名のカードの面。黒はこの palette に無い色だった */
 
-  --lift1: 0 1px 2px rgba(20,26,32,.06), 0 3px 8px rgba(20,26,32,.07);
-  --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
-  --lift3: 0 8px 16px rgba(20,26,32,.10), 0 32px 64px rgba(20,26,32,.18);
-  --lift0: 0 1px 1px rgba(20,26,32,.10);
+  --lift1: 0 1px 2px rgba(27,27,51,.07), 0 3px 8px rgba(27,27,51,.08);
+  --lift2: 0 2px 4px rgba(27,27,51,.08), 0 10px 24px rgba(27,27,51,.12);
+  --lift3: 0 8px 16px rgba(27,27,51,.12), 0 32px 64px rgba(27,27,51,.20);
+  --lift0: 0 1px 1px rgba(27,27,51,.12);
 
   --r: 10px;
   --ease: cubic-bezier(.2,.7,.3,1);
@@ -92,10 +93,12 @@ body.paneopen .wrap{max-width:1240px}
    **でかいのに最初に目がいかなかった**（本人 2026-09-07）。
    原因は大きさではなく**差が無いこと**——面も影も、下のカードと同じ白。
    大きさは色に負ける。**ここだけ濃い面にした。**
+   最初は真っ黒（#16191d）にしたが「黒ちょっとちがうかも」。
+   **黒はこの palette に無い色**だったので、青紫側の濃色（`--face`）にした。
    これで順番が付く：**濃い顔（誰か）→ 緑の一手（何ができるか）→ 白いカード（中身）。**
    背景は明るいまま（「入口がいちばん明るい」は背景の話なので崩していない）。 */
 .head{
-  background:var(--ink); color:#fff;
+  background:var(--face); color:#fff;
   border-radius:var(--r); box-shadow:var(--lift2);
   padding:48px 40px 44px;
 }
@@ -169,12 +172,12 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .pane .bar{flex:none}
 .pane .body{
   flex:1; min-height:0; overflow:auto;              /* 送るのは中身だけ。題は残る */
-  scrollbar-width:thin; scrollbar-color:#c8ced4 transparent;
+  scrollbar-width:thin; scrollbar-color:#c9c9dd transparent;
 }
 /* 送れることは、切れた文字と細い棒で分かる（言葉で足さない）*/
 .pane .body::-webkit-scrollbar{width:8px}
 .pane .body::-webkit-scrollbar-track{background:transparent}
-.pane .body::-webkit-scrollbar-thumb{background:#c8ced4; border-radius:4px; border:2px solid transparent; background-clip:content-box}
+.pane .body::-webkit-scrollbar-thumb{background:#c9c9dd; border-radius:4px; border:2px solid transparent; background-clip:content-box}
 .pane .body:focus-visible{outline:2px solid var(--go); outline-offset:-2px}
 @keyframes swap{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
 
