@@ -34,7 +34,10 @@
      > 松岡さん的にはこのClaudeCodeの昔の難解さが好きらしい。そういう、意味わかんない
      > 要素を体験の最初の方にしたらいいんじゃん、それを綺麗にまとめるのがそのあと。
 
-     **難解さは見た目だけ。**等幅・黒い画面・ID・一行ずつ点いていく出力。
+     **難解さは見た目だけ。**ただし等幅にするだけでは足りなかった
+     （本人「これはただみためだけ合わせただけだからなあ。もっと難解な感じでいいよ、1こめ」）。
+     いまは**画面の情報量そのものを難解にしてある**——版の帯、警告、
+     12 ファイルに散らばった木、しめの数字、点滅する角。
      **中身は読める日本語のまま**にしてある——読めないものにすると「無理」に見えて、
      返ってくる感情が「できるのか」（発見）になり、狙っている「こっちのほうがいい」
      （選好）が出ない。**関係（被り・依存・未決）は、ここでは出さない。**
@@ -122,14 +125,41 @@ body[data-stage="wall"] .no{display:none}
 .cmd{display:none}
 body[data-stage="wall"] .cmd{
   display:block; margin:0 2px 12px; font-family:var(--mono);
-  font-size:12.5px; color:#5d6675; line-height:1.8;
+  font-size:12.5px; color:#5d6675; line-height:1.8; overflow-wrap:anywhere;
 }
 .cmd b{color:var(--term); font-weight:400; margin-right:9px}
 
-/* 出力が届く感じ。**動かさない。点くだけ**（一行 26ms）。
+/* ─ 前置きとしめ。**中身のことは何も言っていない**
+   （版・読み込み・警告・件数だけ。関係を漏らさない）───────── */
+.pre,.sum{display:none}
+body[data-stage="wall"] .pre,
+body[data-stage="wall"] .sum{
+  display:block; font-family:var(--mono); font-size:12px; line-height:1.85; color:#5d6675;
+}
+body[data-stage="wall"] .pre{margin:0 2px 12px}
+body[data-stage="wall"] .sum{margin:16px 2px 0}
+.pre div,.sum{animation:emit 60ms linear both}   /* 遅れは JS が入れる */
+.pre .v{color:#7d8797}
+.pre .w{color:#a8814a}
+
+/* 点滅する角。端末のいちばん端の記号 */
+.cur{display:none}
+body[data-stage="wall"] .cur{
+  display:inline-block; width:.55em; height:1.05em; background:#6b7482;
+  vertical-align:-.18em; margin-left:2px; animation:blink 1.06s steps(1) infinite;
+}
+@keyframes blink{0%,49%{opacity:.85} 50%,100%{opacity:0}}
+
+/* ─ 木。**40 件が 12 ファイルに散らばっている**（積み上がった形）─ */
+.file,.tree{display:none}
+body[data-stage="wall"] .file{display:block; margin-top:9px; color:#7d8797}
+body[data-stage="wall"] .tree{display:inline-block; flex:none; color:#3f4753; white-space:pre}
+
+/* 出力が届く感じ。**動かさない。点くだけ。**
+   **間隔はばらしてある**（一定だと機械の飾りに見える。遅れは JS が入れる）。
    場所は最初から取ってあるので、何も跳ねない。 */
 @keyframes emit{from{opacity:0} to{opacity:1}}
-body[data-stage="wall"] .stack li{animation:emit 60ms linear both; animation-delay:calc(var(--k) * 26ms)}
+body[data-stage="wall"] .stack li{animation:emit 60ms linear both}
 /* 頭も出力の一部にする。**声を張るのは 40 行の壁のほう**（量で見せる）。
    カードになったら普通の見出しに戻る（この指定は wall のときだけ）。 */
 body[data-stage="wall"] .top{margin-bottom:16px}
@@ -139,7 +169,10 @@ body[data-stage="wall"] .top p{margin-top:0; font-size:12.5px; line-height:1.8}
 body[data-stage="wall"] .top h1::before,
 body[data-stage="wall"] .top p::before{content:"# "; color:#4d5563}
 @media (prefers-reduced-motion:reduce){
-  body[data-stage="wall"] .stack li{animation:none}
+  body[data-stage="wall"] .stack li,
+  body[data-stage="wall"] .pre div,
+  body[data-stage="wall"] .sum,
+  body[data-stage="wall"] .cur{animation:none}
 }
 
 /* ─ 軽い側：一枚ずつ手前に出る束 ─────────────────────────
@@ -268,8 +301,8 @@ body[data-stage="end"] .note{color:var(--sub)}
 
 <main class="sheet">
 
-  <!-- 打ち込んだ一行。端末の見た目はここと下の行だけで、カードになったら消える -->
-  <p class="cmd"><b>$</b>alter scan --rules</p>
+  <!-- 打ち込んだ一行と前置き。端末の見た目は wall のときだけで、カードになったら消える -->
+  <p class="cmd"><b>$</b>alter scan --rules --deep --format=raw | alter graph --resolve 2&gt;&amp;1 | tee scan.log</p>
 
   <div class="top">
     <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
@@ -283,7 +316,20 @@ body[data-stage="end"] .note{color:var(--sub)}
     <p>読める形にして、一枚ずつ決める。押したものは台帳に積まれています。</p>
   </div>
 
+  <!-- 前置き。**版・読み込み・警告だけ。**中身の関係は一言も出さない -->
+  <div class="pre">
+    <div class="v">alter 0.4.1-rc2 (build 8f3ac1) · node v24.18.0 · win32-x64</div>
+    <div>reading .alter/rules.d/**/*.{yml,md,txt}</div>
+    <div class="w">warn  3 files have no schema version</div>
+    <div class="w">warn  mixed encodings (utf-8, cp932)</div>
+    <div>resolving refs …</div>
+    <div class="v">.alter/rules.d/</div>
+  </div>
+
   <ul class="stack" id="stack"></ul>
+
+  <!-- しめ。数字は JS が入れる（実際の件数・ファイル数と合わせる） -->
+  <p class="sum" id="sum"></p>
 
   <p class="note">これは仮の中身です。実際の社内規程ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
 
@@ -352,6 +398,32 @@ var RULES = [
   ['届出が遅れたときの扱いは、定めていない', {open:1}]
 ];
 
+/* 40 件が 12 ファイルに散らばっている。**これが「積み上がった」の形。**
+   拡張子も版もばらばら（前置きの mixed／no schema はこれのこと）。
+   [ファイル名, 何件, 添え書き] */
+var FILES = [
+  ['001-shinsei.yml',   6, 'rev 3, 2.1 kB'],
+  ['002-houkoku.yml',   4, 'rev 1, 1.4 kB'],
+  ['003-shime.yml',     3, 'rev 5, 0.9 kB'],
+  ['004-kiroku.md',     4, 'rev 2, 3.6 kB'],
+  ['005-hikitsugi.yml', 3, 'rev 1, 1.1 kB'],
+  ['006-torikime.yml',  3, 'rev 8, 2.4 kB'],
+  ['007-reigai.txt',    3, 'no schema'],
+  ['008-tenken.yml',    4, 'rev 2, 1.8 kB'],
+  ['009-toiawase.yml',  3, 'rev 1, 1.2 kB'],
+  ['010-kigen.yml',     3, 'no schema'],
+  ['011-teishutsu.yml', 2, 'rev 4, 0.6 kB'],
+  ['012-todoke.yml',    2, 'no schema']
+];
+
+/* どの行がどのファイルの何番目か。木の枝（├ └）を出すのに要る */
+var own = [], head = [], tail = [], _k = 0;
+FILES.forEach(function(f, j){
+  for (var m = 0; m < f[1]; m++){
+    own[_k] = j; head[_k] = (m === 0); tail[_k] = (m === f[1] - 1); _k++;
+  }
+});
+
 var PICKS = ['要る', '要らない', 'もうやった'];
 var SHOW  = 7;                    /* 後ろに見せる厚み */
 
@@ -365,11 +437,22 @@ RULES.forEach(function(r, i){
   var n = i + 1, rel = r[1] || {};
   var li = document.createElement('li');
 
+  /* ファイルの頭は、その一件目の中に置く（カードになったら消える）*/
+  var j = own[i], lastFile = (j === FILES.length - 1);
+  if (head[i]){
+    var fl = document.createElement('div');
+    fl.className = 'file';
+    fl.textContent = (lastFile ? '└─ ' : '├─ ') + FILES[j][0] + '   (' + FILES[j][2] + ')';
+    li.appendChild(fl);
+  }
+
   var t = document.createElement('div');
   t.className = 'ln';
-  /* 重い側は ID、カードになったら番号。**同じ数字**なので、
+  /* 重い側は 木の枝＋ID、カードになったら番号。**同じ数字**なので、
      カードの印（「7番と被っている」）と突き合わせられる */
-  t.innerHTML = '<span class="id">RULE-' + ('000' + n).slice(-4) + '</span>'
+  t.innerHTML = '<span class="tree">' + (lastFile ? '   ' : '│  ')
+                                      + (tail[i] ? '└─ ' : '├─ ') + '</span>'
+              + '<span class="id">RULE-' + ('000' + n).slice(-4) + '</span>'
               + '<span class="no">' + n + '</span>';
   t.appendChild(document.createTextNode(r[0]));
   li.appendChild(t);
@@ -394,12 +477,27 @@ RULES.forEach(function(r, i){
   });
   li.appendChild(pk);
 
-  li.style.setProperty('--k', i);   /* 出力が届く順（点く順）*/
   stack.appendChild(li);
   lis.push(li);
 });
 
 document.getElementById('n').textContent = RULES.length;
+
+document.getElementById('sum').innerHTML =
+  RULES.length + ' rules · ' + FILES.length + ' files · 2 encodings · schema: mixed<br>'
+  + 'exit 0 (2 warnings)<span class="cur"></span>';
+
+/* 届く順と、その間隔。**一定にしない**——一定だと機械の飾りに見える。
+   場所は最初から取ってあるので、点いても何も跳ねない。 */
+var GAPS = [9, 9, 34, 12, 9, 52, 9, 18, 9, 26], _t = 60, _g = 0;
+function beat(el){
+  el.style.animationDelay = _t + 'ms';
+  _t += GAPS[_g++ % GAPS.length];
+}
+[].forEach.call(document.querySelectorAll('.pre div'), beat);
+lis.forEach(beat);
+beat(document.getElementById('sum'));
+
 tally();
 
 function live(){ return lis.filter(function(l){ return !l.dataset.gone; }); }
