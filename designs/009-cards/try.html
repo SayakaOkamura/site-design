@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>見直してみる｜株式会社アルターデザインコンサルティング</title>
+
+<!-- 009 カード ─ 見直してみる（体験）
+     ================================================================
+     **粗い一枚。**字の大きさも間もまだ詰めていない。
+     変換の瞬間が効くかどうかを見るために作った。
+
+     話し合いで決まっていること（NOTES.md が正）
+     - 思わせたいのは **「この方がいいな」**。発見（できるのか）ではなく選好
+     - だから **比較が要る。重い側は省略できない**
+     - 重い側は「無理」ではなく **「やってられない」**。読めば分かる。ただ多い
+     - **量は減らない。**カード化は読みやすく決めやすくするためのもの
+     - **重い側では決めさせない。**決めやすさは軽い側だけのものにする
+     - カード化の値打ちは一件が読めることではなく、**関係が見えること**
+       （被っている／これのために要る／決まっていない）
+     - 三択が押せるのは、**関係が見えているから**
+     - **減るのは束ではない。増えるのは自分が押した側（台帳）**
+     - 快感は物理から。点数も演出も足さない
+
+     **同じ行がそのままカードになる。**別のものに差し替えていない。
+     詰まっていたものが開くだけ。だから「量は同じ」が嘘にならない。
+
+     背景は、重い側がいちばん暗い。カードになると明るくなる。
+     入口がいちばん明るい（`index.html`）。
+
+     **中身は仮。**会社について何も主張しない言葉だけにしてある。
+================================================================ -->
+
+<style>
+:root{
+  --bg:   #e8ebee;
+  --card: #ffffff;
+  --tint: #f2f4f6;
+  --ink:  #16191d;
+  --sub:  #5b626b;
+  --go:   #0e6b58;
+
+  --dark:     #171b22;   /* 重い側 */
+  --dark-ink: #99a3b2;
+
+  --lift1: 0 1px 2px rgba(20,26,32,.06), 0 3px 8px rgba(20,26,32,.07);
+  --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
+  --lift0: 0 1px 1px rgba(20,26,32,.10);
+
+  --r: 10px;
+  --ease: cubic-bezier(.2,.7,.3,1);
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}   /* .go は display:block なので、これが無いと隠れない */
+html{height:100%; scrollbar-gutter:stable}
+body{
+  min-height:100%; margin:0; color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
+              system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding:32px 24px 140px;
+  background:var(--dark);
+  transition:background .9s var(--ease);
+}
+body[data-stage="cards"],body[data-stage="end"]{background:var(--bg)}
+
+.sheet{width:100%; max-width:860px; margin:0 auto}
+
+/* ─ 頭 ───────────────────────────────────────────────── */
+.top{margin:0 2px 20px; transition:color .9s var(--ease); color:var(--dark-ink)}
+body[data-stage="cards"] .top,body[data-stage="end"] .top{color:var(--sub)}
+.top h1{margin:0; font-size:clamp(16px,2.2vw,20px); font-weight:700; line-height:1.5;
+        color:#e7ebf0; transition:color .9s var(--ease)}
+body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)}
+.top p{margin:10px 0 0; font-size:13px; line-height:1.8}
+.top .n{font-variant-numeric:tabular-nums; font-weight:700}
+
+/* ─ 束。行 → カード。**同じ要素**の見た目が変わるだけ ───────── */
+.stack{list-style:none; margin:0; padding:0; display:grid; gap:0;
+       transition:gap .55s var(--ease)}
+body[data-stage="cards"] .stack,body[data-stage="end"] .stack{gap:10px}
+
+.stack li{
+  background:transparent; color:var(--dark-ink);
+  border-radius:8px; padding:2px 10px; box-shadow:none;
+  font-size:12.5px; line-height:1.75;
+  transition:background .55s var(--ease), color .55s var(--ease),
+             padding .55s var(--ease), box-shadow .55s var(--ease);
+}
+body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{
+  background:var(--card); color:var(--ink); box-shadow:var(--lift1);
+  padding:16px 20px; font-size:13.5px; line-height:1.7;
+}
+.stack li .no{display:inline-block; min-width:2.4em; color:#5d6675;
+              font-variant-numeric:tabular-nums; transition:color .55s var(--ease)}
+body[data-stage="cards"] .stack li .no,body[data-stage="end"] .stack li .no{color:var(--sub)}
+
+/* 関係と三択は、カードになってから出す */
+.rel,.pick,.mark{display:none}
+body[data-stage="cards"] .rel,body[data-stage="end"] .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+body[data-stage="cards"] .pick,body[data-stage="end"] .pick{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+.stack li.done .pick{display:none!important}
+body[data-stage="cards"] .stack li.done .mark,body[data-stage="end"] .stack li.done .mark{display:inline-block; margin-top:12px}
+
+.rel b{
+  font-size:11.5px; font-weight:700; line-height:1; padding:7px 10px; border-radius:999px;
+  background:var(--tint); color:var(--sub);
+}
+.rel b.dup{background:#fdeceb; color:#a3352c}
+.rel b.needs{background:#e9f2ff; color:#22528f}
+.rel b.open{background:#fff4e2; color:#8a5a12}
+
+/* 押せるもの。影を落とす */
+.pick button{
+  -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
+  font-size:12.5px; font-weight:700; padding:9px 14px; border-radius:8px;
+  background:var(--card); color:var(--ink); box-shadow:var(--lift1);
+  transition:transform .14s var(--ease), box-shadow .14s ease;
+}
+.pick button:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.pick button:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.pick button:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+
+.stack li.done{opacity:.62}
+.mark{font-size:12px; font-weight:700; color:var(--sub)}
+
+/* ─ 台帳。**減るのは束ではない。増えるのはこっち** ───────────── */
+.book{
+  position:fixed; left:0; right:0; bottom:0; z-index:20;
+  background:var(--card); box-shadow:0 -2px 4px rgba(20,26,32,.06), 0 -12px 32px rgba(20,26,32,.10);
+  padding:16px 24px; display:none;
+}
+body[data-stage="cards"] .book,body[data-stage="end"] .book{display:block}
+.book .in{max-width:860px; margin:0 auto; display:flex; align-items:center; gap:22px; flex-wrap:wrap}
+.book .t{font-size:12.5px; font-weight:700}
+.book .c{font-size:12.5px; color:var(--sub); font-variant-numeric:tabular-nums}
+.book .c b{color:var(--ink); font-size:15px; margin-right:3px}
+.book .rest{margin-left:auto; font-size:12px; color:var(--sub)}
+
+/* ─ 押すところ（重い側の一手、終わりの一手）─────────────── */
+.go{
+  -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
+  display:block; width:100%; text-align:left; margin:0 0 20px;
+  background:var(--go); color:#fff; border-radius:var(--r); box-shadow:var(--lift1);
+  padding:22px 26px; font-size:14.5px; font-weight:700;
+  transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.go:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.go:active{transform:translateY(2px); box-shadow:var(--lift0)}
+.go:focus-visible{outline:2px solid #fff; outline-offset:3px}
+.go span{display:block; margin-top:8px; font-size:12px; font-weight:500; color:rgba(255,255,255,.76)}
+
+/* ─ 終わり ───────────────────────────────────────────── */
+.end{display:none; background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+     padding:40px; margin-bottom:16px}
+body[data-stage="end"] .end{display:block}
+.end h2{margin:0; font-size:clamp(19px,3vw,27px); font-weight:700; line-height:1.55}
+.end p{margin:20px 0 0; font-size:13.5px; color:var(--sub); line-height:1.95}
+.back{
+  display:block; text-decoration:none; color:inherit; margin-top:16px;
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+  padding:22px 26px; font-size:14px; font-weight:700;
+  transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.back:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+
+.note{margin:22px 2px 0; font-size:11.5px; line-height:1.9; color:var(--dark-ink);
+      transition:color .9s var(--ease)}
+body[data-stage="cards"] .note,body[data-stage="end"] .note{color:var(--sub)}
+
+@media (max-width:520px){
+  body{padding:24px 16px 150px}
+  .end{padding:28px 24px}
+}
+</style>
+</head>
+<body data-stage="wall">
+
+<main class="sheet">
+
+  <div class="top">
+    <h1 id="h">いま、社内にある取り決め</h1>
+    <p id="p">全部で <span class="n" id="n">0</span> 件。<br>
+      この中で<b>どれとどれが被っているか</b>、探してみてください。読めます。ただ、それだけです。</p>
+  </div>
+
+  <!-- 終わり。理念はここで初めて出す（通り終わってから名前が付く） -->
+  <div class="end">
+    <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
+    <p>いま押したものは、そのまま台帳になっています。減ったのは取り決めの数ではなく、読む手間のほうです。</p>
+  </div>
+
+  <button class="go" id="go">カードにする<span>数は変わりません。形だけ変わります</span></button>
+
+  <ul class="stack" id="stack"></ul>
+
+  <p class="note">これは仮の中身です。実際の社内規程ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
+
+  <a class="back" href="./">入口へ戻る</a>
+
+</main>
+
+<!-- 台帳 -->
+<div class="book">
+  <div class="in">
+    <span class="t">台帳</span>
+    <span class="c"><b id="c1">0</b>要る</span>
+    <span class="c"><b id="c2">0</b>要らない</span>
+    <span class="c"><b id="c3">0</b>もうやった</span>
+    <span class="rest" id="rest"></span>
+  </div>
+</div>
+
+<script>
+/* 中身は仮。どの会社にもある形の取り決めだけ。業種を選ばない言葉にしてある。
+   dup  … 被っている相手
+   need … これのために要る相手
+   open … まだ決まっていない */
+var RULES = [
+  ['申請は、所属長の承認を受けてから処理する'],
+  ['所属長が不在のときは、代理の者が承認する'],
+  ['代理の者は、あらかじめ各部署で定めておく', {need:2}],
+  ['承認された申請は、その日のうちに担当へ回す'],
+  ['担当は、受け取った申請を3営業日以内に処理する'],
+  ['処理が遅れる場合は、申請者に理由を伝える', {need:5}],
+  ['月次の報告は、翌月5営業日までに提出する'],
+  ['月次報告の提出期限は、翌月の第5営業日とする', {dup:7}],
+  ['報告の様式は、共有の場所に置いてあるものを使う'],
+  ['様式を変更するときは、事前に周知する', {need:9}],
+  ['締めは、月末の翌3営業日までに行う'],
+  ['締めの前に、未処理の申請がないか確認する', {need:11}],
+  ['未処理の申請があるときは、担当と所属長の双方に連絡する', {need:12}],
+  ['連絡は、記録が残る方法で行う'],
+  ['記録は、1年間保管する'],
+  ['保管期間を過ぎた記録は、担当が廃棄する', {need:15}],
+  ['廃棄したことは、記録に残す'],
+  ['引き継ぎは、書面で行う'],
+  ['引き継ぎ書面には、未処理の件を必ず含める', {need:18}],
+  ['引き継ぎの完了は、所属長が確認する'],
+  ['新しい取り決めは、決めた日から適用する'],
+  ['取り決めを変えたときは、古いものを残しておく'],
+  ['古い取り決めをいつまで残すかは、定めていない', {open:1}],
+  ['例外を認めるときは、所属長の判断による'],
+  ['例外を認めた場合は、記録に残す', {need:24}],
+  ['例外が続いたときの扱いは、定めていない', {open:1}],
+  ['点検は、四半期ごとに行う'],
+  ['点検の結果は、次の会議で共有する', {need:27}],
+  ['会議に出られなかった者には、後で共有する'],
+  ['共有の方法は、担当に任せる'],
+  ['問い合わせは、受けた者が最後まで対応する'],
+  ['対応できないときは、分かる者に引き継ぐ'],
+  ['引き継いだ後も、受けた者が結果を確認する', {need:31}],
+  ['期限のない依頼は、受けない'],
+  ['期限を延ばすときは、依頼した者の合意を得る'],
+  ['合意が得られないときの扱いは、定めていない', {open:1}],
+  ['報告の提出先は、所属長とする'],
+  ['月次の報告は、所属長に提出する', {dup:37}],
+  ['届出は、変更が生じた日から5日以内に行う'],
+  ['届出が遅れたときの扱いは、定めていない', {open:1}]
+];
+
+var PICKS = ['要る', '要らない', 'もうやった'];
+var NEED = 6;                       /* ここまで押したら「あとは同じ」で切る */
+
+var stack = document.getElementById('stack'),
+    counts = [0, 0, 0],
+    done = 0;
+
+RULES.forEach(function(r, i){
+  var n = i + 1, rel = r[1] || {};
+  var li = document.createElement('li');
+  li.dataset.n = n;
+
+  var t = document.createElement('div');
+  t.innerHTML = '<span class="no">' + n + '</span>';
+  t.appendChild(document.createTextNode(r[0]));
+  li.appendChild(t);
+
+  /* 関係。**カードになって初めて見える。**うじゃうじゃの中では見えない。
+     関係が無い一件には空の帯を置かない（空きだけが残る） */
+  if (rel.dup || rel.need || rel.open){
+    var rb = document.createElement('div');
+    rb.className = 'rel';
+    if (rel.dup)  rb.innerHTML += '<b class="dup">' + rel.dup + '番と被っている</b>';
+    if (rel.need) rb.innerHTML += '<b class="needs">' + rel.need + '番のために要る</b>';
+    if (rel.open) rb.innerHTML += '<b class="open">決まっていない</b>';
+    li.appendChild(rb);
+  }
+
+  var pk = document.createElement('div');
+  pk.className = 'pick';
+  PICKS.forEach(function(name, k){
+    var b = document.createElement('button');
+    b.textContent = name;
+    b.onclick = function(){ sort(li, k, name); };
+    pk.appendChild(b);
+  });
+  li.appendChild(pk);
+
+  var mk = document.createElement('span');
+  mk.className = 'mark';
+  li.appendChild(mk);
+
+  stack.appendChild(li);
+});
+
+document.getElementById('n').textContent = RULES.length;
+tally();
+
+/* 仕分ける。**束からは消さない**（量は減らない）。増えるのは台帳のほう */
+function sort(li, k, name){
+  if (li.classList.contains('done')) return;
+  li.classList.add('done');
+  li.querySelector('.mark').textContent = '→ ' + name;
+  counts[k]++; done++;
+  tally();
+  if (done === NEED) finish();
+}
+
+function tally(){
+  document.getElementById('c1').textContent = counts[0];
+  document.getElementById('c2').textContent = counts[1];
+  document.getElementById('c3').textContent = counts[2];
+  document.getElementById('rest').textContent =
+    '束は ' + RULES.length + ' 件のまま（減りません）';
+}
+
+/* 重い側の一手 → カードへ。背景も同時に明るくなる */
+var go = document.getElementById('go');
+go.onclick = function(){
+  if (document.body.dataset.stage === 'wall'){
+    document.body.dataset.stage = 'cards';
+    document.getElementById('h').textContent = '同じ ' + RULES.length + ' 件です';
+    document.getElementById('p').innerHTML =
+      '一件が一枚になりました。<b>被っているもの・何かのために要るもの・まだ決まっていないもの</b>に印が付いています。'
+      + '<br>見えていれば、押せます。';
+    go.innerHTML = 'ここまでにする<span>残りも同じ形です</span>';
+    go.hidden = true;                      /* 仕分けが始まるまでは出さない */
+    return;
+  }
+  finish();
+};
+
+function finish(){
+  document.body.dataset.stage = 'end';
+  document.getElementById('h').textContent = '見直したもの';
+  document.getElementById('p').innerHTML =
+    '押した ' + done + ' 件は台帳に入りました。<b>束は ' + RULES.length + ' 件のままです。</b>減ったのは数ではなく、読む手間のほうです。';
+  go.hidden = true;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* 仕分けが一件でも進んだら「ここまで」を出す */
+var seen = false;
+stack.addEventListener('click', function(){
+  if (seen || document.body.dataset.stage !== 'cards') return;
+  if (!done) return;
+  seen = true;
+  go.hidden = false;
+});
+</script>
+
+</body>
+</html>
