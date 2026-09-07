@@ -13,7 +13,7 @@
      - 思わせたいのは **「この方がいいな」**。発見（できるのか）ではなく選好
      - だから **比較が要る。重い側は省略できない**
      - 重い側は「無理」ではなく **「やってられない」**。読めば分かる。ただ多い
-     - **量は減らない。**カード化は読みやすく決めやすくするためのもの
+     - 量は減らないが、**それは売りではない**。値打ちは読みやすさ・決めやすさ・関係が見えること
      - **重い側では決めさせない。**決めやすさは軽い側だけのものにする
      - カード化の値打ちは、**関係が見えること**（被っている／これのために要る／決まっていない）
      - 三択が押せるのは、**関係が見えているから**
@@ -103,7 +103,7 @@ body[data-stage="cards"] .stack li,body[data-stage="end"] .stack li{
   position:absolute; left:0; right:0; top:0;
   background:var(--card); color:var(--ink); box-shadow:var(--lift3);
   border-radius:var(--r); padding:32px 32px 28px;
-  font-size:15.5px; line-height:1.8; min-height:250px;
+  font-size:15.5px; line-height:1.8; min-height:200px;
   display:flex; flex-direction:column;
   transform:translateY(calc(var(--i) * 8px)) scale(calc(1 - var(--i) * .028));
   z-index:calc(60 - var(--i));
@@ -116,12 +116,11 @@ body[data-stage="cards"] .stack li .no,body[data-stage="end"] .stack li .no{colo
 .stack li[data-hide]{opacity:0; pointer-events:none}
 .stack li[data-back] .rel,.stack li[data-back] .pick{visibility:hidden}
 
-/* 押したら台帳のほうへ抜ける。**見届けさせない。**
-   加速して出ていく曲線にして、次の一枚は待たずに前へ出す。 */
+/* 押したら**選んだ山へ飛ぶ**（行き先は JS が inline transform で入れる）。
+   見届けさせない——次の一枚は待たずに前へ出す。 */
 .stack li.out{
-  z-index:70; pointer-events:none;
-  transform:translateY(96px) scale(.96); opacity:0;
-  transition:transform .17s cubic-bezier(.4,0,1,1), opacity .14s linear;
+  z-index:70; pointer-events:none; opacity:0;
+  transition:transform .3s cubic-bezier(.4,0,1,1), opacity .26s ease-in;
 }
 
 body[data-stage="cards"] .rel,body[data-stage="end"] .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px}
@@ -153,19 +152,25 @@ body[data-stage="cards"] .pick,body[data-stage="end"] .pick{
   padding:14px 24px;
 }
 .book .in{max-width:860px; margin:0 auto; display:flex; align-items:center; gap:20px; flex-wrap:wrap}
-.ledger{display:none; align-items:center; gap:20px; flex-wrap:wrap}
+.ledger{display:none; align-items:flex-end; gap:22px; flex-wrap:wrap}
 body[data-stage="cards"] .ledger,body[data-stage="end"] .ledger{display:flex}
+.book .t,.book .rest{padding-bottom:2px}
 .book .t{font-size:12.5px; font-weight:700}
 .book .c{font-size:12.5px; color:var(--sub); font-variant-numeric:tabular-nums}
 .book .c b{color:var(--ink); font-size:15px; margin-right:3px}
 .book .rest{font-size:12px; color:var(--sub)}
 
-/* 台帳の厚み。押すたびに一枚ぶん増える（数だけでなく目にも見える） */
-.pile{display:flex; align-items:flex-end; gap:2px; height:20px}
-.pile i{display:block; width:14px; height:2px; background:var(--sub); opacity:.28; border-radius:1px}
-/* 積まれた一枚だけ、置かれた感じを出す（演出ではなく手応え） */
-@keyframes drop-in{from{transform:translateY(-7px); opacity:0} to{transform:none; opacity:.28}}
-.pile i:last-child{animation:drop-in .18s var(--snap)}
+/* 台帳は三つの山。**押したカードはその山へ飛んでいく。**
+   細い線が一本増えるだけでは「たまっていく」が出なかった。 */
+.piles{display:flex; gap:26px; align-items:flex-end}
+.heap{display:flex; flex-direction:column; align-items:center; gap:7px; min-width:74px}
+.heap .stackbars{display:flex; flex-direction:column-reverse; justify-content:flex-end;
+                 gap:2px; height:34px; width:56px}
+.heap .stackbars i{display:block; height:3px; border-radius:2px; background:var(--sub); opacity:.32}
+@keyframes land{from{transform:translateY(-10px) scaleX(.8); opacity:0} to{transform:none; opacity:.32}}
+.heap .stackbars i:first-child{animation:land .2s var(--snap)}
+.heap .nm{font-size:11.5px; font-weight:700; color:var(--sub); white-space:nowrap}
+.heap .nm b{color:var(--ink); font-size:14px; margin-right:4px; font-variant-numeric:tabular-nums}
 
 .go{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
@@ -221,7 +226,7 @@ body[data-stage="end"] .note{color:var(--sub)}
   <!-- 終わり。理念はここで初めて出す（通り終わってから名前が付く） -->
   <div class="end">
     <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
-    <p>押したものは台帳に積まれています。減ったのは取り決めの数ではなく、読む手間のほうです。</p>
+    <p>読める形にして、一枚ずつ決める。押したものは台帳に積まれています。</p>
   </div>
 
   <ul class="stack" id="stack"></ul>
@@ -236,13 +241,14 @@ body[data-stage="end"] .note{color:var(--sub)}
   <div class="in">
     <span class="ledger">
       <span class="t">台帳</span>
-      <span class="pile" id="pile"></span>
-      <span class="c"><b id="c1">0</b>要る</span>
-      <span class="c"><b id="c2">0</b>要らない</span>
-      <span class="c"><b id="c3">0</b>もうやった</span>
+      <span class="piles">
+        <span class="heap" id="h0"><span class="stackbars"></span><span class="nm"><b>0</b>要る</span></span>
+        <span class="heap" id="h1"><span class="stackbars"></span><span class="nm"><b>0</b>要らない</span></span>
+        <span class="heap" id="h2"><span class="stackbars"></span><span class="nm"><b>0</b>もうやった</span></span>
+      </span>
       <span class="rest" id="rest"></span>
     </span>
-    <button class="go" id="go">カードにする<span>数は変わりません。形だけ変わります</span></button>
+    <button class="go" id="go">カードにする<span>一枚ずつ、押して仕分けられます</span></button>
   </div>
 </div>
 
@@ -294,7 +300,7 @@ var RULES = [
 
 var PICKS = ['要る', '要らない', 'もうやった'];
 var NEED  = 6;                    /* ここまで押したら「あとは同じ」で切る */
-var SHOW  = 4;                    /* 後ろに見せる厚み */
+var SHOW  = 7;                    /* 後ろに見せる厚み */
 
 var stack = document.getElementById('stack'),
     go    = document.getElementById('go'),
@@ -350,30 +356,40 @@ function restack(){
 }
 
 /* 仕分ける。**待たせない。**押した瞬間に次の一枚が前へ出て、
-   押された一枚は独立して抜けていく（見届けさせない）。 */
+   押された一枚は**選んだ山へ飛んでいく**（見届けさせない）。 */
 function sort(li, k, name){
   if (li.dataset.gone) return;
+
+  /* 行き先＝その山。カードの今いる場所との差を測って、そこへ投げる */
+  var a = li.getBoundingClientRect(),
+      b = document.getElementById('h' + k).getBoundingClientRect();
+  li.style.transform =
+    'translate(' + Math.round(b.left + b.width / 2 - (a.left + a.width / 2)) + 'px,'
+                 + Math.round(b.top + b.height / 2 - (a.top + a.height / 2)) + 'px) scale(.12)';
 
   li.dataset.gone = '1';
   li.classList.add('out');
   counts[k]++; done++;
 
-  restack();                       /* 次が前へ出るのは、抜けるのを待たない */
+  restack();                       /* 次が前へ出るのは、飛ぶのを待たない */
   tally();
   if (done === 1) go.hidden = false;
 
-  setTimeout(function(){ li.hidden = true; }, 200);
-  if (done === NEED) setTimeout(finish, 220);
+  setTimeout(function(){ li.hidden = true; }, 320);
+  if (done === NEED) setTimeout(finish, 380);
 }
 
 function tally(){
-  document.getElementById('c1').textContent = counts[0];
-  document.getElementById('c2').textContent = counts[1];
-  document.getElementById('c3').textContent = counts[2];
-  document.getElementById('rest').textContent = '束の残り ' + live().length + ' 件';
-  var pile = document.getElementById('pile');
-  pile.innerHTML = '';
-  for (var i = 0; i < done; i++) pile.appendChild(document.createElement('i'));
+  counts.forEach(function(c, k){
+    var heap = document.getElementById('h' + k);
+    heap.querySelector('.nm b').textContent = c;
+    var bars = heap.querySelector('.stackbars'), want = Math.min(c, 9);
+    while (bars.children.length > want) bars.removeChild(bars.lastChild);
+    while (bars.children.length < want) bars.insertBefore(document.createElement('i'), bars.firstChild);
+    /* 幅を少しずつ変えて、紙が揃っていない感じにする */
+    [].forEach.call(bars.children, function(i, n){ i.style.width = (44 + (n % 3) * 5) + 'px'; });
+  });
+  document.getElementById('rest').textContent = '残り ' + live().length + ' 件';
 }
 
 /* 重い側の一手 → 束へ。背景も同時に明るくなる */
@@ -381,7 +397,7 @@ go.onclick = function(){
   if (document.body.dataset.stage === 'wall'){
     document.body.dataset.stage = 'cards';
     restack();
-    document.getElementById('h').textContent = '同じ ' + RULES.length + ' 件です';
+    document.getElementById('h').textContent = RULES.length + ' 件を、一枚ずつ';
     document.getElementById('p').innerHTML =
       '一枚ずつ出てきます。<b>被っているもの・何かのために要るもの・まだ決まっていないもの</b>に印が付いています。'
       + '<br>見えていれば、押せます（キーの <b>1 2 3</b> でも）。';
@@ -397,8 +413,7 @@ function finish(){
   document.body.dataset.stage = 'end';
   document.getElementById('h').textContent = '見直したもの';
   document.getElementById('p').innerHTML =
-    '押した ' + done + ' 件が台帳に入りました。<b>取り決めそのものは ' + RULES.length + ' 件のままです。</b>'
-    + '減ったのは数ではなく、読む手間のほうです。';
+    '押した ' + done + ' 件が台帳に入りました。残りも同じ形で片付きます。';
   go.hidden = true;
   window.scrollTo(0, 0);
 }
