@@ -165,10 +165,6 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 @keyframes swap{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
 
 .bar{padding:24px 26px 14px}
-/* 帯は 420px。会社概要を二列で組むと社名が割れるので、見出しを上に置く */
-.pane .facts{grid-template-columns:1fr; gap:2px 0}
-.pane .facts dt{border-radius:8px 8px 0 0; padding-bottom:4px}
-.pane .facts dd{border-radius:0 0 8px 8px; padding-top:4px}
 .bar h2{margin:0; font-size:17px; font-weight:700; line-height:1.4}
 .body{padding:0 26px 26px}
 
@@ -178,10 +174,14 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .svc b{display:block; font-size:15px; font-weight:700; line-height:1.5}
 .svc span{display:block; margin-top:9px; font-size:12.5px; color:var(--sub); line-height:1.8}
 
-.facts{margin:0; display:grid; grid-template-columns:auto 1fr; gap:2px 0}
-.facts dt,.facts dd{margin:0; padding:15px 20px; font-size:13px; line-height:1.75}
-.facts dt{font-weight:700; white-space:nowrap; color:var(--sub); background:var(--tint); border-radius:8px 0 0 8px}
-.facts dd{background:var(--tint); border-radius:0 8px 8px 0}
+/* 会社概要。**灰色の板をやめた。**項目名と中身が同じ色の板に乗っていたので、
+   14枚の縞になって、どこで一項目が終わるのか見えなかった
+   （項目のあいだと、項目名と中身のあいだが、どちらも 2px だった）。
+   分けるのは空きでやる：中身のすぐ上に項目名、項目のあいだは広く空ける。 */
+.facts{margin:0}
+.facts dt{margin:19px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em; color:var(--sub); line-height:1.5}
+.facts dt:first-child{margin-top:0}
+.facts dd{margin:3px 0 0; font-size:13.5px; line-height:1.8}
 
 /* 中身が決まっていない段。空の箱に見せず、決まっていないことをそう書く */
 .todo{margin:0; background:var(--tint); border-radius:8px; padding:22px;
@@ -241,9 +241,6 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
   .card{min-height:112px; padding:22px 18px 20px}
   .bar{padding:22px 22px 12px}
   .body{padding:0 22px 24px}
-  .facts{grid-template-columns:1fr; gap:2px 0}
-  .facts dt{border-radius:8px 8px 0 0; padding-bottom:4px}
-  .facts dd{border-radius:0 0 8px 8px; padding-top:4px}
 }
 @media (max-width:420px){
   .deck{gap:12px}
