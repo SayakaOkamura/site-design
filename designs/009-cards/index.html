@@ -5,39 +5,40 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 
-<!-- 009 カード ─ 入口の一枚
+<!-- 009 カード
      ================================================================
-     ここは入口だけ。押しても行き先はまだ無い。
+     いま出来ているのは、入口と会社案内の3枚だけ。
+     体験（うじゃうじゃ → カード → 仕分け）はまだ無い。
 
-     決まっていること（話し合いで積み上げたもの。NOTES.md が正）
-     - 入口はカードが置いてあるだけの一枚。軽い
-     - 全部同じカード。用がある人は一枚押せば着く（動線が軽い）
-     - 体験も同じ大きさで並べる。隠さない（007 はここで失敗した）
-     - 入口でカードを押した人は、体験に入ったとき押し方の説明が要らない
+     決まっていること（NOTES.md が正）
+     - カードは PDF を解体した断片。押すと中身がまとまって出る。
+       一枚に詰める話ではないし、裏表でもない
+     - 閉じるのは読むところ。積まれるのは決めるところ
+       （会社案内は開いて閉じる。体験は台帳に積まれる）
+     - 起きることは「押す」と「展開」の二つだけ
+     - 影が付いているものだけ押せる。押せない中身は影を落とさない
      - 背景は入口がいちばん明るい。暗くなるのは体験の重い側だけ
 
-     008 から捨てたもの
-     - 紙・細い罫・琥珀。線を一本も引いていない（面と影だけ）
-     - 横に動く一枚の面、カメラ、ターミナルの `>` 欄
-     - 小さい字。ここでは字を大きく取る
+     008 から捨てたもの：紙・細い罫・琥珀・横に動く面・カメラ・`>` 欄。
+     線は一本も引いていない（面と影だけで立てる）。
 ================================================================ -->
 
 <style>
 :root{
-  /* 入口はいちばん明るい。ここから先（体験の重い側）で暗くなる。
-     008 の紙白＋琥珀を避けて、冷たい灰と深い青緑にした。 */
   --bg:   #e8ebee;
   --card: #ffffff;
+  --tint: #f2f4f6;   /* 押せない面。影を落とさない */
   --ink:  #16191d;
   --sub:  #5b626b;
   --go:   #0e6b58;
 
-  /* 影だけで面を立てる。線は引かない。 */
   --lift1: 0 1px 2px rgba(20,26,32,.06), 0 3px 8px rgba(20,26,32,.07);
   --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
+  --lift3: 0 8px 16px rgba(20,26,32,.10), 0 32px 64px rgba(20,26,32,.18);
   --lift0: 0 1px 1px rgba(20,26,32,.10);
 
   --r: 10px;
+  --ease: cubic-bezier(.2,.7,.3,1);
 }
 
 *{box-sizing:border-box}
@@ -50,6 +51,7 @@ body{
   display:flex; align-items:center; justify-content:center;
   padding:32px 24px;
 }
+body.locked{overflow:hidden}
 
 .sheet{width:100%; max-width:860px}
 
@@ -58,33 +60,26 @@ body{
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
   padding:44px 40px 40px;
 }
-.head h1{
-  margin:0; font-size:clamp(21px, 3.4vw, 31px); font-weight:700;
-  letter-spacing:.01em; line-height:1.35;
-}
-.head p{
-  margin:18px 0 0; font-size:clamp(13px, 1.6vw, 15px); font-weight:500;
-  color:var(--sub); line-height:1.7;
-}
+.head h1{margin:0; font-size:clamp(21px,3.4vw,31px); font-weight:700; letter-spacing:.01em; line-height:1.35}
+.head p{margin:18px 0 0; font-size:clamp(13px,1.6vw,15px); font-weight:500; color:var(--sub); line-height:1.7}
 
 /* ─ 押せるカード ───────────────────────────────────────── */
-.deck{
-  margin-top:16px;
-  display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
-}
+.deck{margin-top:16px; display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+.ph{border-radius:var(--r)}   /* 開いているあいだ、束に空けておく穴 */
+
 .card{
   -webkit-appearance:none; appearance:none; border:0; margin:0;
   font:inherit; color:inherit; text-align:left; cursor:pointer;
+  -webkit-user-select:none; user-select:none;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
-  padding:26px 22px 24px;
-  min-height:128px;
-  display:flex; flex-direction:column; justify-content:space-between;
-  transition:transform .16s cubic-bezier(.2,.7,.3,1), box-shadow .16s ease;
+  padding:26px 22px 24px; min-height:128px;
+  display:flex; flex-direction:column;
+  transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.card .t{font-size:clamp(15px, 1.8vw, 17px); font-weight:700; line-height:1.4}
-.card .s{margin-top:14px; font-size:12px; font-weight:500; color:var(--sub); line-height:1.6}
+.card .t{font-size:clamp(15px,1.8vw,17px); font-weight:700; line-height:1.4}
+.card .s{margin-top:auto; padding-top:14px; font-size:12px; font-weight:500; color:var(--sub); line-height:1.6}
 
-/* 手触りは物理から出す。点数も演出も足さない（話し合いで引いた線）。 */
+/* 手触りは物理から出す。点数も演出も足さない */
 .card:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
 .card:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 .card.down{transform:translateY(2px); box-shadow:var(--lift0); transition-duration:.06s}
@@ -94,107 +89,313 @@ body{
 .card.go .s{color:rgba(255,255,255,.72)}
 .card.go:focus-visible{outline-color:var(--ink)}
 
-/* ─ 開いたとき、わずかに落ちてくる。控えめに ─────────────── */
+/* ─ 開いたカード ───────────────────────────────────────── */
+.card.open{
+  position:fixed; z-index:40; cursor:default; overflow:hidden;
+  -webkit-user-select:text; user-select:text;   /* 開いたら中身は選べる */
+  box-shadow:var(--lift3); padding:0;
+  transition:top .34s var(--ease), left .34s var(--ease),
+             width .34s var(--ease), height .34s var(--ease),
+             box-shadow .34s ease;
+}
+.card.open:hover{transform:none}
+.card.open .t,
+.card.open .s{display:none}
+
+.scrim{
+  position:fixed; inset:0; z-index:30; background:rgba(20,26,32,.28);
+  opacity:0; transition:opacity .3s ease; pointer-events:none;
+}
+.scrim.on{opacity:1; pointer-events:auto}
+
+/* 開いた中身。カードが小さいあいだは出さない */
+.panel{display:none; flex-direction:column; height:100%; min-height:0}
+.card.open .panel{display:flex}
+
+.bar{flex:none; display:flex; align-items:center; gap:16px; padding:26px 32px 18px}
+.bar h2{margin:0; font-size:clamp(17px,2.2vw,21px); font-weight:700; line-height:1.35}
+.x{
+  -webkit-appearance:none; appearance:none; border:0; margin-left:auto;
+  width:34px; height:34px; flex:none; border-radius:50%; cursor:pointer;
+  background:var(--tint); color:var(--sub); font:inherit; font-size:15px; line-height:1;
+  transition:background .15s ease, color .15s ease;
+}
+.x:hover{background:#e6e9ec; color:var(--ink)}
+.x:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+
+.body{
+  flex:1; min-height:0; overflow:auto; padding:0 32px 32px;
+  opacity:0; transition:opacity .22s ease .16s;
+}
+.card.open .body{opacity:1}
+
+/* ─ 中身。押せないものは影を落とさない（影＝押せる、のルール）─ */
+.svc{list-style:none; margin:0; padding:0; display:grid; gap:10px}
+.svc li{background:var(--tint); border-radius:8px; padding:20px 22px}
+.svc b{display:block; font-size:15px; font-weight:700; line-height:1.5}
+.svc span{display:block; margin-top:9px; font-size:12.5px; color:var(--sub); line-height:1.8}
+
+.facts{margin:0; display:grid; grid-template-columns:auto 1fr; gap:2px 0}
+.facts dt,.facts dd{margin:0; padding:15px 20px; font-size:13px; line-height:1.75}
+.facts dt{font-weight:700; white-space:nowrap; color:var(--sub); background:var(--tint); border-radius:8px 0 0 8px}
+.facts dd{background:var(--tint); border-radius:0 8px 8px 0}
+
+.lead{margin:0 0 20px; font-size:14px; line-height:1.9}
+.mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
+.mail a{color:var(--go); text-decoration:none}
+.mail a:hover{text-decoration:underline}
+.src{margin:24px 0 0; font-size:11.5px; color:var(--sub); line-height:1.8}
+
+/* ─ 開いたとき、わずかに落ちてくる ─────────────────────── */
 @keyframes drop{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
-.head,.card{animation:drop .42s cubic-bezier(.2,.7,.3,1) backwards}
-.head{animation-delay:0s}
+.head,.deck .card{animation:drop .42s var(--ease) backwards}
 .deck .card:nth-child(1){animation-delay:.06s}
 .deck .card:nth-child(2){animation-delay:.10s}
 .deck .card:nth-child(3){animation-delay:.14s}
 .deck .card:nth-child(4){animation-delay:.18s}
-@media (prefers-reduced-motion:reduce){ .head,.card{animation:none} }
-
-/* ─ いまは入口だけ、という注記。作り込みの途中であることを画面に出す ─ */
-.wip{
-  margin:22px 2px 0; font-size:11.5px; color:var(--sub); line-height:1.7;
+@media (prefers-reduced-motion:reduce){
+  .head,.deck .card{animation:none}
+  .card.open{transition:none}
 }
+
+.wip{margin:22px 2px 0; font-size:11.5px; color:var(--sub); line-height:1.8}
 
 @media (max-width:720px){
   .deck{grid-template-columns:repeat(2,1fr)}
   .head{padding:34px 26px 30px}
   .card{min-height:112px; padding:22px 18px 20px}
+  .bar{padding:22px 22px 14px}
+  .body{padding:0 22px 24px}
+  .facts{grid-template-columns:1fr; gap:2px 0}
+  .facts dt{border-radius:8px 8px 0 0; padding-bottom:4px}
+  .facts dd{border-radius:0 0 8px 8px; padding-top:4px}
 }
 @media (max-width:420px){
   .deck{grid-template-columns:1fr; gap:12px}
   .card{min-height:0}
-  .card .s{margin-top:10px}
+  .card .s{padding-top:10px}
 }
 </style>
 </head>
 <body>
 
+<div class="scrim" id="scrim"></div>
+
 <main class="sheet">
 
-  <!-- 社名と事業の一行。どちらも公表情報（alt-dsgn.co.jp）。
-       事業の一行は公式・会社概要の事業内容から。 -->
+  <!-- 社名と事業の一行。どちらも公表情報（alt-dsgn.co.jp、2026-09-03 確認）。 -->
   <div class="head">
     <h1>株式会社アルターデザインコンサルティング</h1>
     <p>2025年6月設立／AI とローコードで、上流工程中心のシステム開発</p>
   </div>
 
-  <div class="deck">
-    <button class="card" data-k="1">
+  <div class="deck" id="deck">
+
+    <div class="card" role="button" tabindex="0" data-k="1">
       <span class="t">サービス</span>
       <span class="s">四本</span>
-    </button>
-    <button class="card" data-k="2">
+      <div class="panel">
+        <div class="bar"><h2>サービス</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="body">
+          <!-- 公式サイトの見出しと説明文、そのまま -->
+          <ul class="svc">
+            <li><b>人間中心の次世代業務システム開発</b>
+              <span>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供</span></li>
+            <li><b>AIによる意思決定支援と事業変革支援</b>
+              <span>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援</span></li>
+            <li><b>自律型・共創型の組織設計支援</b>
+              <span>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現</span></li>
+            <li><b>地域格差の解消を目指したデジタル支援</b>
+              <span>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" role="button" tabindex="0" data-k="2">
       <span class="t">会社概要</span>
       <span class="s">七項目</span>
-    </button>
-    <button class="card" data-k="3">
+      <div class="panel">
+        <div class="bar"><h2>会社概要</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="body">
+          <!-- 公式サイトの7項目、その並び順のまま -->
+          <dl class="facts">
+            <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
+            <dt>代表者</dt><dd>松岡　真功</dd>
+            <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd>
+            <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
+            <dt>資本金</dt><dd>60百万円</dd>
+            <dt>設立年月日</dt><dd>2025年6月</dd>
+            <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" role="button" tabindex="0" data-k="3">
       <span class="t">お問い合わせ</span>
       <span class="s">contact@alt-dsgn.co.jp</span>
-    </button>
-    <!-- 体験の口。仮の言葉。ここは未決 -->
-    <button class="card go" data-k="4">
+      <div class="panel">
+        <div class="bar"><h2>お問い合わせ</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="body">
+          <p class="lead">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたらお気軽にお問い合わせください</p>
+          <p class="mail"><a href="mailto:contact@alt-dsgn.co.jp">contact@alt-dsgn.co.jp</a></p>
+          <p class="src">このページに載せているのは alt-dsgn.co.jp に出ている言葉です（2026年9月3日に確認）。実装は AI（Claude）が行いました。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 体験の口。言葉は仮。行き先はまだ無い -->
+    <div class="card go" role="button" tabindex="0" data-k="4">
       <span class="t">見直してみる</span>
       <span class="s">積み上がったものを、カードにして仕分ける</span>
-    </button>
+    </div>
+
   </div>
 
-  <p class="wip">入口の一枚だけです。押すと沈みますが、行き先はまだ作っていません。<br>
-  数字キー 1〜4、Tab と矢印でも押せます。</p>
+  <p class="wip">入口と会社案内の3枚だけです。「見直してみる」の行き先はまだ作っていません。<br>
+  数字キー 1〜4、Tab と矢印でも押せます。開いたら Esc で閉じます。</p>
 
 </main>
 
 <script>
-/* マウスが無くても全部押せるようにする。
-   ・数字キー 1〜4
-   ・Tab（ボタンなので既定で回る）＋ 矢印
-   ・Enter / Space（ボタンの既定） */
 (function(){
-  var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+  var deck  = document.getElementById('deck'),
+      scrim = document.getElementById('scrim'),
+      cards = Array.prototype.slice.call(deck.querySelectorAll('.card')),
+      open  = null,   /* いま開いているカード */
+      ph    = null;   /* 束に空けておく穴 */
 
-  /* 押した感触。行き先はまだ無いので、沈んで戻るところまで。 */
+  var PAD = 24, MAXW = 860;
+
+  /* 開いたときの行き先。中身を測ってから決める */
+  function target(card){
+    var w = Math.min(window.innerWidth - PAD * 2, MAXW),
+        maxH = window.innerHeight - PAD * 2;
+
+    /* 目標の幅で一度だけ高さを測る。ここでは描画させない */
+    var keep = card.style.cssText;
+    card.style.position = 'fixed';
+    card.style.left = '0px'; card.style.top = '0px';
+    card.style.width = w + 'px'; card.style.height = 'auto';
+    var need = card.offsetHeight;
+    card.style.cssText = keep;
+
+    var h = Math.min(need, maxH);
+    return { w: w, h: h, l: (window.innerWidth - w) / 2, t: (window.innerHeight - h) / 2 };
+  }
+
+  function put(card, r){
+    card.style.left = r.l + 'px'; card.style.top = r.t + 'px';
+    card.style.width = r.w + 'px'; card.style.height = r.h + 'px';
+  }
+
+  function show(card){
+    if (open) return;
+    var r = card.getBoundingClientRect();
+
+    ph = document.createElement('div');
+    ph.className = 'ph';
+    ph.style.height = r.height + 'px';
+    deck.insertBefore(ph, card);
+
+    card.classList.add('open');          /* .panel が出る＝中身の高さが測れる */
+    var to = target(card);
+
+    card.style.transition = 'none';      /* まず元の場所に置いて */
+    put(card, { l: r.left, t: r.top, w: r.width, h: r.height });
+    card.offsetHeight;                   /* 反映させてから */
+    card.style.transition = '';
+    put(card, to);                       /* 行き先へ */
+
+    scrim.classList.add('on');
+    document.body.classList.add('locked');
+    open = card;
+    card.querySelector('.x').focus();
+  }
+
+  function hide(){
+    if (!open) return;
+    var card = open, back = ph.getBoundingClientRect();
+    open = null;
+
+    put(card, { l: back.left, t: back.top, w: back.width, h: back.height });
+    scrim.classList.remove('on');
+    document.body.classList.remove('locked');
+
+    /* 動きを切っている環境（prefers-reduced-motion）では transitionend が来ない。
+       それだけに頼ると、戻ったのに開いたままの状態が残る。時間でも片付ける。 */
+    var settled = false;
+    function settle(){
+      if (settled) return;
+      settled = true;
+      card.removeEventListener('transitionend', onEnd);
+      card.classList.remove('open');
+      card.style.cssText = '';
+      if (ph){ ph.parentNode.removeChild(ph); ph = null; }
+      card.focus();
+    }
+    function onEnd(e){ if (e.target === card && e.propertyName === 'height') settle(); }
+
+    card.addEventListener('transitionend', onEnd);
+    var d = parseFloat(getComputedStyle(card).transitionDuration) || 0;
+    setTimeout(settle, d * 1000 + 60);
+  }
+
+  /* 押した感触。行き先が無いカードは沈んで戻るだけ */
   function press(c){
     c.classList.add('down');
     setTimeout(function(){ c.classList.remove('down'); }, 110);
   }
+
   cards.forEach(function(c){
-    c.addEventListener('pointerdown', function(){ c.classList.add('down'); });
-    c.addEventListener('click', function(){ press(c); });
+    c.addEventListener('pointerdown', function(){ if (!open) c.classList.add('down'); });
+    c.addEventListener('click', function(e){
+      if (e.target.closest('[data-x]')){ hide(); return; }
+      if (open === c) return;              /* 開いた中身は押しても閉じない */
+      press(c);
+      if (c.querySelector('.panel')) show(c);
+    });
   });
+
+  scrim.addEventListener('click', hide);
+
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
     document.addEventListener(ev, function(){
       cards.forEach(function(c){ c.classList.remove('down'); });
     });
   });
 
+  /* マウスが無くても全部届くようにする */
   document.addEventListener('keydown', function(e){
     if (e.altKey || e.ctrlKey || e.metaKey) return;
 
+    if (e.key === 'Escape' && open){ e.preventDefault(); hide(); return; }
+    if (open) return;
+
     var n = '1234'.indexOf(e.key);
-    if (n >= 0){ e.preventDefault(); cards[n].focus(); press(cards[n]); return; }
+    if (n >= 0){ e.preventDefault(); cards[n].focus(); cards[n].click(); return; }
 
     var i = cards.indexOf(document.activeElement);
-    if (i < 0) {
-      if (e.key.indexOf('Arrow') === 0){ e.preventDefault(); cards[0].focus(); }
-      return;
-    }
+    if (i < 0){ if (e.key.indexOf('Arrow') === 0){ e.preventDefault(); cards[0].focus(); } return; }
+
+    /* カードは div（中に閉じるボタンを持つため）。押す挙動は自前で用意する */
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); cards[i].click(); return; }
+
     var to = -1;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') to = Math.min(i + 1, cards.length - 1);
     if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   to = Math.max(i - 1, 0);
     if (to >= 0){ e.preventDefault(); cards[to].focus(); }
+  });
+
+  /* 窓が変わったら行き先を測り直す（開いている最中でも崩れないように） */
+  window.addEventListener('resize', function(){
+    if (!open) return;
+    var keep = open.style.transition;
+    open.style.transition = 'none';
+    put(open, target(open));
+    open.offsetHeight;
+    open.style.transition = keep;
   });
 })();
 </script>
