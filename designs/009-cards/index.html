@@ -179,7 +179,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .facts dd{margin:3px 0 0; font-size:13.5px; line-height:1.8}
 
 /* 中身が決まっていない段。空の箱に見せず、決まっていないことをそう書く */
-.todo{margin:0; background:var(--tint); border-radius:8px; padding:18px 20px;
+.todo{margin:0; background:var(--tint); border-radius:8px; padding:16px 20px;
       font-size:13px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
 
@@ -189,12 +189,12 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .news a,.news .row{
   display:flex; align-items:baseline; gap:18px; text-decoration:none; color:inherit;
   background:var(--card); border-radius:8px; box-shadow:var(--lift1);
-  padding:17px 20px;
+  padding:16px 20px;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-/* 行き先があるものは a、その場で開くものは button。見た目は同じ */
+/* 行き先があるものは a、その場で開くものは button。**見た目は同じ**（寸法も揃える）*/
 .news .row{-webkit-appearance:none; appearance:none; border:0; width:100%;
-           font:inherit; text-align:left; cursor:pointer; padding:16px 20px}
+           font:inherit; text-align:left; cursor:pointer}
 .news a:hover,.news .row:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .news a:active,.news .row:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .news a:focus-visible,.news .row:focus-visible{outline:2px solid var(--go); outline-offset:2px}
@@ -245,8 +245,10 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
 .news + .todo{margin-top:12px}   /* 一覧の下に断りを置くとき。四行＋断りが帯に収まる高さ */
 
-.lead{margin:0 0 20px; font-size:14px; line-height:1.9}
+.lead{margin:0 0 14px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
+/* 帯の中では、先に内容を選ぶ。宛先はその下に控える */
+.pane .mail{margin-top:12px; font-size:15px}
 .mail a{color:var(--go); text-decoration:none}
 .mail a:hover{text-decoration:underline}
 
@@ -417,8 +419,22 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
       <div class="panel">
         <div class="bar"><h2>お問い合わせ</h2></div>
         <div class="body">
+          <!-- **内容を選ぶところも、押せる行（＝カード）にする。**
+               本人「そのフォームの内容選択をカードでやりたい」。
+               三つは公式サイトの一行に出ている区分（相談／掲載／その他）そのまま。
+
+               **公式サイトにフォームは無い。**「お問い合わせフォームへ」のボタンが
+               `mailto:contact@alt-dsgn.co.jp` になっている（2026-09-07 に確認）。
+               だから押すと**選んだ内容を件名に入れたメールが開く。**
+               本物のフォームが出てきたら `href` を差し替えるだけ。 -->
           <p class="lead">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたらお気軽にお問い合わせください</p>
+          <ul class="news">
+            <li><a href="mailto:contact@alt-dsgn.co.jp?subject=サービスに関するご相談"><b>サービスに関するご相談</b></a></li>
+            <li><a href="mailto:contact@alt-dsgn.co.jp?subject=掲載のご依頼"><b>掲載のご依頼</b></a></li>
+            <li><a href="mailto:contact@alt-dsgn.co.jp?subject=その他ご質問"><b>その他ご質問</b></a></li>
+          </ul>
           <p class="mail"><a href="mailto:contact@alt-dsgn.co.jp">contact@alt-dsgn.co.jp</a></p>
+          <p class="todo">押すと、選んだ内容を件名に入れて<b>メールが開きます</b>。</p>
         </div>
       </div>
     </div>
