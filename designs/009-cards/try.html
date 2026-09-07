@@ -34,10 +34,16 @@
      > 松岡さん的にはこのClaudeCodeの昔の難解さが好きらしい。そういう、意味わかんない
      > 要素を体験の最初の方にしたらいいんじゃん、それを綺麗にまとめるのがそのあと。
 
-     **難解さは見た目だけ。**ただし等幅にするだけでは足りなかった
-     （本人「これはただみためだけ合わせただけだからなあ。もっと難解な感じでいいよ、1こめ」）。
-     いまは**画面の情報量そのものを難解にしてある**——版の帯、警告、
-     12 ファイルに散らばった木、しめの数字、点滅する角。
+     **難解さは見た目だけ。**ただし等幅にしただけでは足りず、
+     CLI に寄せすぎても違った（本人）：
+     > これはただみためだけ合わせただけだからなあ。もっと難解な感じでいいよ、1こめ
+     > 別に無理にClaudeCodeに寄せなくても良くて、パスタコードみたいな難解さがほしい
+     > ここに懐かし画面要素入れてもいいね。改修するの、昔のシステムのことも多いだろうし
+
+     **いまは「昔のシステムの画面」。**画面ID・罫線・項番・参照・F キーで組んで、
+     難解さは**絡まりのほう**に持たせている——項番の順に並んでいない、
+     関わりのある項が遠い、参照は番号だけで意味が書いていない。
+     **中身は読める日本語のまま。**
      **中身は読める日本語のまま**にしてある——読めないものにすると「無理」に見えて、
      返ってくる感情が「できるのか」（発見）になり、狙っている「こっちのほうがいい」
      （選好）が出ない。**関係（被り・依存・未決）は、ここでは出さない。**
@@ -65,7 +71,13 @@
 
   --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
           "Liberation Mono","Courier New",monospace;
-  --term: #5fbfa1;                    /* 端末の $ だけに使う */
+  /* 昔の画面（引用）。この六つは重い側だけで使う */
+  --crt-bg:  #0a1210;
+  --crt-ink: #86c9a4;
+  --crt-dim: #3f6b57;
+  --crt-hi:  #d9f5e6;
+  --crt-bar: #2b6650;
+  --crt-ref: #b8933f;
 
   --r: 10px;
   --ease: cubic-bezier(.2,.7,.3,1);
@@ -98,9 +110,14 @@ body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)
 .top p{margin:10px 0 0; font-size:13px; line-height:1.8}
 .top .n{font-variant-numeric:tabular-nums; font-weight:700}
 
-/* ─ 重い側：端末の見た目 ───────────────────────────────────
-   **難解に見せるのは見た目だけ。**等幅・ID・一行ずつ点いていく出力。
-   中身は読める日本語のまま（読めないと「無理」に振れる）。 */
+/* ─ 重い側：**昔のシステムの画面** ──────────────────────────
+   **改修する相手は、たいてい昔のシステム**（本人 2026-09-07）。
+   画面ID・罫線・項番・参照・F キー——その頃の画面の部品で組んである。
+   難解さは**組み方**に持たせる（項番の順に並んでいない／関わる項が遠い／
+   参照は番号だけ）。**中身は読める日本語のまま**——読めなくすると「無理」に振れて、
+   狙っている「こっちのほうがいい」が出ない。
+   ここは**引用した画面**なので、線を引くのはこの枠の中だけ
+   （新しい側は面と影だけ、という 009 の決めごとは崩していない）。 */
 .stack{list-style:none; margin:0; padding:0; display:grid; gap:0}
 .stack li{
   color:var(--dark-ink); border-radius:8px; padding:2px 10px;
@@ -110,69 +127,63 @@ body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)
               font-variant-numeric:tabular-nums}
 .rel,.pick,.mark{display:none}
 
-/* 端末の一行。ID は等幅で頭を揃えて、折り返しは本文の側だけ下がる */
-.id{display:none}
-body[data-stage="wall"] .top,
-body[data-stage="wall"] .stack{font-family:var(--mono)}
-body[data-stage="wall"] .stack li{
-  border-radius:0; padding:1px 10px; font-size:12px; line-height:1.8;
+/* 画面の桁は**重い側だけの部品。**カードになったら残るのは番号と本文だけ */
+.gut,.id,.ref{display:none}
+
+/* 画面の枠。**カードになったら枠も部品も消える**（display:contents で居なくなる）*/
+.crt{display:contents}
+.crtbar,.crthd,.crtft{display:none}
+body[data-stage="wall"] .crt{
+  display:block; font-family:var(--mono); font-size:12px; line-height:1.8;
+  background:var(--crt-bg); color:var(--crt-ink);
+  border:1px solid var(--crt-dim); border-radius:2px; overflow:hidden;
 }
-body[data-stage="wall"] .ln{display:flex}
-body[data-stage="wall"] .id{display:inline-block; flex:none; min-width:9.5ch; color:#4d5563}
+/* 反転した見出しの帯。昔の画面のいちばん上 */
+body[data-stage="wall"] .crtbar{
+  display:flex; gap:2.4em; background:var(--crt-bar); color:var(--crt-hi);
+  padding:5px 12px; letter-spacing:.04em;
+}
+.crtbar .sp{margin-left:auto}
+body[data-stage="wall"] .crthd{display:flex; padding:9px 12px 5px; color:var(--crt-dim)}
+body[data-stage="wall"] .crtft{
+  display:block; padding:7px 12px 9px; color:var(--crt-dim);
+  border-top:1px solid #1b2d25;
+}
+body[data-stage="wall"] .stack{border-top:1px solid #1b2d25; padding:6px 0}
+body[data-stage="wall"] .stack li{
+  border-radius:0; padding:1px 12px; font-size:12px; line-height:1.9;
+  color:var(--crt-ink);
+}
+
+/* 桁。行番号／項番／内容／参照。**内容だけが入れ子で右へ寄る** */
+body[data-stage="wall"] .ln{display:flex; align-items:baseline}
+body[data-stage="wall"] .gut{
+  display:inline-block; flex:none; min-width:3ch; text-align:right;
+  margin-right:1.5em; color:#2c5244; font-variant-numeric:tabular-nums;
+}
+body[data-stage="wall"] .id{
+  display:inline-block; flex:none; min-width:5.5ch; color:var(--crt-dim);
+  font-variant-numeric:tabular-nums;
+}
+body[data-stage="wall"] .tx{flex:1; min-width:0; padding-left:calc(var(--d,0) * 1.9em)}
+body[data-stage="wall"] .ref{
+  display:inline-block; flex:none; min-width:6ch; text-align:right;
+  margin-left:1.5em; color:var(--crt-ref); font-variant-numeric:tabular-nums;
+}
 body[data-stage="wall"] .no{display:none}
 
-/* 打ち込んだ一行。ここだけ端末の色を持たせる */
-.cmd{display:none}
-body[data-stage="wall"] .cmd{
-  display:block; margin:0 2px 12px; font-family:var(--mono);
-  font-size:12.5px; color:#5d6675; line-height:1.8; overflow-wrap:anywhere;
-}
-.cmd b{color:var(--term); font-weight:400; margin-right:9px}
-
-/* ─ 前置きとしめ。**中身のことは何も言っていない**
-   （版・読み込み・警告・件数だけ。関係を漏らさない）───────── */
-.pre,.sum{display:none}
-body[data-stage="wall"] .pre,
-body[data-stage="wall"] .sum{
-  display:block; font-family:var(--mono); font-size:12px; line-height:1.85; color:#5d6675;
-}
-body[data-stage="wall"] .pre{margin:0 2px 12px}
-body[data-stage="wall"] .sum{margin:16px 2px 0}
-.pre div,.sum{animation:emit 60ms linear both}   /* 遅れは JS が入れる */
-.pre .v{color:#7d8797}
-.pre .w{color:#a8814a}
-
-/* 点滅する角。端末のいちばん端の記号 */
-.cur{display:none}
-body[data-stage="wall"] .cur{
-  display:inline-block; width:.55em; height:1.05em; background:#6b7482;
-  vertical-align:-.18em; margin-left:2px; animation:blink 1.06s steps(1) infinite;
-}
-@keyframes blink{0%,49%{opacity:.85} 50%,100%{opacity:0}}
-
-/* ─ 木。**40 件が 12 ファイルに散らばっている**（積み上がった形）─ */
-.file,.tree{display:none}
-body[data-stage="wall"] .file{display:block; margin-top:9px; color:#7d8797}
-body[data-stage="wall"] .tree{display:inline-block; flex:none; color:#3f4753; white-space:pre}
-
-/* 出力が届く感じ。**動かさない。点くだけ。**
-   **間隔はばらしてある**（一定だと機械の飾りに見える。遅れは JS が入れる）。
-   場所は最初から取ってあるので、何も跳ねない。 */
+/* 画面が塗られていく感じ。**動かさない。点くだけ。**
+   間隔はばらしてある（遅れは JS が入れる）。場所は最初から取ってある＝何も跳ねない */
 @keyframes emit{from{opacity:0} to{opacity:1}}
 body[data-stage="wall"] .stack li{animation:emit 60ms linear both}
-/* 頭も出力の一部にする。**声を張るのは 40 行の壁のほう**（量で見せる）。
-   カードになったら普通の見出しに戻る（この指定は wall のときだけ）。 */
-body[data-stage="wall"] .top{margin-bottom:16px}
-body[data-stage="wall"] .top h1{font-size:12.5px; font-weight:400; color:var(--dark-ink); line-height:1.8}
-body[data-stage="wall"] .top h1 .n{color:#e7ebf0}
-body[data-stage="wall"] .top p{margin-top:0; font-size:12.5px; line-height:1.8}
-body[data-stage="wall"] .top h1::before,
-body[data-stage="wall"] .top p::before{content:"# "; color:#4d5563}
+
+/* 頭は**サイトの声**のまま（等幅にしない）。
+   下の画面が「引用した昔の画面」だと分かるように、声を分けておく */
+body[data-stage="wall"] .top{margin-bottom:14px}
+body[data-stage="wall"] .top h1{font-size:15px}
+
 @media (prefers-reduced-motion:reduce){
-  body[data-stage="wall"] .stack li,
-  body[data-stage="wall"] .pre div,
-  body[data-stage="wall"] .sum,
-  body[data-stage="wall"] .cur{animation:none}
+  body[data-stage="wall"] .stack li{animation:none}
 }
 
 /* ─ 軽い側：一枚ずつ手前に出る束 ─────────────────────────
@@ -301,13 +312,10 @@ body[data-stage="end"] .note{color:var(--sub)}
 
 <main class="sheet">
 
-  <!-- 打ち込んだ一行と前置き。端末の見た目は wall のときだけで、カードになったら消える -->
-  <p class="cmd"><b>$</b>alter scan --rules --deep --format=raw | alter graph --resolve 2&gt;&amp;1 | tee scan.log</p>
-
   <div class="top">
     <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
     <h1 id="h">社内の取り決め　<span class="n" id="n">0</span> 件</h1>
-    <p id="p">一行ずつは読めます。<b>どれとどれが被っているかは、見えません。</b></p>
+    <p id="p">一行ずつは読めます。<b>関わりは番号だけです。</b></p>
   </div>
 
   <!-- 終わり。理念はここで初めて出す（通り終わってから名前が付く） -->
@@ -316,20 +324,17 @@ body[data-stage="end"] .note{color:var(--sub)}
     <p>読める形にして、一枚ずつ決める。押したものは台帳に積まれています。</p>
   </div>
 
-  <!-- 前置き。**版・読み込み・警告だけ。**中身の関係は一言も出さない -->
-  <div class="pre">
-    <div class="v">alter 0.4.1-rc2 (build 8f3ac1) · node v24.18.0 · win32-x64</div>
-    <div>reading .alter/rules.d/**/*.{yml,md,txt}</div>
-    <div class="w">warn  3 files have no schema version</div>
-    <div class="w">warn  mixed encodings (utf-8, cp932)</div>
-    <div>resolving refs …</div>
-    <div class="v">.alter/rules.d/</div>
+  <!-- 昔のシステムの画面。**改修する相手は、たいてい昔のシステム。**
+       画面ID・罫線・項番・参照・F キーはその頃の部品。
+       カードになったら、この枠も帯も桁も消える。 -->
+  <div class="crt">
+    <div class="crtbar"><span>GYM0120</span><span>社内取決　一覧照会</span><span class="sp">2026/09/07  11:24</span></div>
+    <div class="crthd"><span class="gut">行</span><span class="id">項番</span><span class="tx">内容</span><span class="ref">参照</span></div>
+
+    <ul class="stack" id="stack"></ul>
+
+    <div class="crtft"><span id="ftn">0</span>件　1/1頁　　F1=ﾍﾙﾌﾟ　F3=終了　F7=前頁　F8=次頁　F12=戻る</div>
   </div>
-
-  <ul class="stack" id="stack"></ul>
-
-  <!-- しめ。数字は JS が入れる（実際の件数・ファイル数と合わせる） -->
-  <p class="sum" id="sum"></p>
 
   <p class="note">これは仮の中身です。実際の社内規程ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
 
@@ -362,7 +367,7 @@ var RULES = [
   ['承認された申請は、その日のうちに担当へ回す'],
   ['担当は、受け取った申請を3営業日以内に処理する'],
   ['処理が遅れる場合は、申請者に理由を伝える', {need:5}],
-  ['月次の報告は、翌月5営業日までに提出する'],
+  ['月次の報告は、翌月5営業日までに提出する', {dup:8}],
   ['月次報告の提出期限は、翌月の第5営業日とする', {dup:7}],
   ['報告の様式は、共有の場所に置いてあるものを使う'],
   ['様式を変更するときは、事前に周知する', {need:9}],
@@ -392,37 +397,24 @@ var RULES = [
   ['期限のない依頼は、受けない'],
   ['期限を延ばすときは、依頼した者の合意を得る'],
   ['合意が得られないときの扱いは、定めていない', {open:1}],
-  ['報告の提出先は、所属長とする'],
+  ['報告の提出先は、所属長とする', {dup:38}],
   ['月次の報告は、所属長に提出する', {dup:37}],
   ['届出は、変更が生じた日から5日以内に行う'],
   ['届出が遅れたときの扱いは、定めていない', {open:1}]
 ];
 
-/* 40 件が 12 ファイルに散らばっている。**これが「積み上がった」の形。**
-   拡張子も版もばらばら（前置きの mixed／no schema はこれのこと）。
-   [ファイル名, 何件, 添え書き] */
-var FILES = [
-  ['001-shinsei.yml',   6, 'rev 3, 2.1 kB'],
-  ['002-houkoku.yml',   4, 'rev 1, 1.4 kB'],
-  ['003-shime.yml',     3, 'rev 5, 0.9 kB'],
-  ['004-kiroku.md',     4, 'rev 2, 3.6 kB'],
-  ['005-hikitsugi.yml', 3, 'rev 1, 1.1 kB'],
-  ['006-torikime.yml',  3, 'rev 8, 2.4 kB'],
-  ['007-reigai.txt',    3, 'no schema'],
-  ['008-tenken.yml',    4, 'rev 2, 1.8 kB'],
-  ['009-toiawase.yml',  3, 'rev 1, 1.2 kB'],
-  ['010-kigen.yml',     3, 'no schema'],
-  ['011-teishutsu.yml', 2, 'rev 4, 0.6 kB'],
-  ['012-todoke.yml',    2, 'no schema']
-];
+/* 画面に出る順番。**項番の順ではない。**
+   長いあいだ足していった台帳なので、番号は行き来するし、
+   **関わりのある項が遠い**（被っている 7 と 8 は、画面の 10 行目と 32 行目）。
+   これが「一行ずつは読めるのに、関係だけ見えない」の中身。 */
+var SEQ = [1,2,3,21,22,23,31,32,33,7,14,11,12,13,38,4,5,6,17,29,
+           24,25,34,35,36,9,10,20,18,19,30,8,27,28,39,40,15,16,37,26];
 
-/* どの行がどのファイルの何番目か。木の枝（├ └）を出すのに要る */
-var own = [], head = [], tail = [], _k = 0;
-FILES.forEach(function(f, j){
-  for (var m = 0; m < f[1]; m++){
-    own[_k] = j; head[_k] = (m === 0); tail[_k] = (m === f[1] - 1); _k++;
-  }
-});
+/* 入れ子の深さ。ぶら下がっている項は右へ寄る（画面の中だけ） */
+var DEEP = {2:1,3:2,6:1,10:1,12:1,13:2,16:1,19:1,22:1,23:2,
+            25:1,26:2,28:1,30:1,32:1,33:1,35:1,36:2,40:1};
+
+function pad4(n){ return ('000' + n).slice(-4); }
 
 var PICKS = ['要る', '要らない', 'もうやった'];
 var SHOW  = 7;                    /* 後ろに見せる厚み */
@@ -433,28 +425,28 @@ var stack = document.getElementById('stack'),
     counts = [0, 0, 0],
     done = 0;
 
-RULES.forEach(function(r, i){
-  var n = i + 1, rel = r[1] || {};
+SEQ.forEach(function(n, row){
+  var r = RULES[n - 1], rel = r[1] || {};
   var li = document.createElement('li');
+  li.style.setProperty('--d', DEEP[n] || 0);
 
-  /* ファイルの頭は、その一件目の中に置く（カードになったら消える）*/
-  var j = own[i], lastFile = (j === FILES.length - 1);
-  if (head[i]){
-    var fl = document.createElement('div');
-    fl.className = 'file';
-    fl.textContent = (lastFile ? '└─ ' : '├─ ') + FILES[j][0] + '   (' + FILES[j][2] + ')';
-    li.appendChild(fl);
-  }
+  /* 参照。**番号だけ。**何がどう関わっているかは書かない
+     （それはカードになって初めて言葉になる）。未決は ???? */
+  var refs = [];
+  if (rel.dup)  refs.push(pad4(rel.dup));
+  if (rel.need) refs.push(pad4(rel.need));
+  if (rel.open) refs.push('????');
 
   var t = document.createElement('div');
   t.className = 'ln';
-  /* 重い側は 木の枝＋ID、カードになったら番号。**同じ数字**なので、
-     カードの印（「7番と被っている」）と突き合わせられる */
-  t.innerHTML = '<span class="tree">' + (lastFile ? '   ' : '│  ')
-                                      + (tail[i] ? '└─ ' : '├─ ') + '</span>'
-              + '<span class="id">RULE-' + ('000' + n).slice(-4) + '</span>'
-              + '<span class="no">' + n + '</span>';
-  t.appendChild(document.createTextNode(r[0]));
+  /* 重い側は 行番号＋項番、カードになったら番号だけ。**同じ数字**なので、
+     カードの印（「8番と被っている」）と突き合わせられる */
+  t.innerHTML = '<span class="gut">' + (row + 1) + '</span>'
+              + '<span class="id">' + pad4(n) + '</span>'
+              + '<span class="no">' + n + '</span>'
+              + '<span class="tx"></span>'
+              + '<span class="ref">' + refs.join(' ') + '</span>';
+  t.querySelector('.tx').textContent = r[0];
   li.appendChild(t);
 
   /* 関係。**カードになって初めて見える。**詰まっているあいだは見えない */
@@ -483,20 +475,16 @@ RULES.forEach(function(r, i){
 
 document.getElementById('n').textContent = RULES.length;
 
-document.getElementById('sum').innerHTML =
-  RULES.length + ' rules · ' + FILES.length + ' files · 2 encodings · schema: mixed<br>'
-  + 'exit 0 (2 warnings)<span class="cur"></span>';
+document.getElementById('ftn').textContent = RULES.length;
 
-/* 届く順と、その間隔。**一定にしない**——一定だと機械の飾りに見える。
+/* 塗られる順と、その間隔。**一定にしない**——一定だと機械の飾りに見える。
    場所は最初から取ってあるので、点いても何も跳ねない。 */
 var GAPS = [9, 9, 34, 12, 9, 52, 9, 18, 9, 26], _t = 60, _g = 0;
 function beat(el){
   el.style.animationDelay = _t + 'ms';
   _t += GAPS[_g++ % GAPS.length];
 }
-[].forEach.call(document.querySelectorAll('.pre div'), beat);
 lis.forEach(beat);
-beat(document.getElementById('sum'));
 
 tally();
 
