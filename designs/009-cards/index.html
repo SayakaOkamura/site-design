@@ -179,7 +179,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .facts dd{margin:3px 0 0; font-size:13.5px; line-height:1.8}
 
 /* 中身が決まっていない段。空の箱に見せず、決まっていないことをそう書く */
-.todo{margin:0; background:var(--tint); border-radius:8px; padding:16px 20px;
+.todo{margin:0; background:var(--tint); border-radius:8px; padding:14px 18px;
       font-size:13px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
 
@@ -192,7 +192,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .news a,.news .row{
   display:flex; align-items:baseline; gap:18px; text-decoration:none; color:inherit;
   background:var(--card); border-radius:8px; box-shadow:var(--lift1);
-  padding:16px 20px;
+  padding:15px 20px;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 /* 行き先があるものは a、その場で開くものは button。**見た目は同じ**（寸法も揃える）*/
@@ -254,12 +254,13 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
   .news span{display:block; margin-bottom:6px}
 }
 
-.news + .todo{margin-top:12px}   /* 一覧の下に断りを置くとき。四行＋断りが帯に収まる高さ */
+.news + .todo{margin-top:10px}   /* 一覧の下に断りを置くとき。四行＋断りが帯に収まる高さ */
 
 .lead{margin:0 0 14px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
-/* 帯の中では、先に内容を選ぶ。宛先はその下に控える */
-.pane .mail{margin-top:12px; font-size:15px}
+/* 帯の中では宛先が先。押す前に行き先が分かる */
+.pane .mail{font-size:15px}
+.pane .mail + .q{margin-top:14px}
 .mail a{color:var(--go); text-decoration:none}
 .mail a:hover{text-decoration:underline}
 
@@ -430,6 +431,12 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
       <div class="panel">
         <div class="bar"><h2>お問い合わせ</h2></div>
         <div class="body" id="ask">
+          <!-- **宛先が先。**押す前に、どこへ行くのかが分かるように
+               （本人 2026-09-07：「メールアドレスが上じゃない？」）。
+               送る一枚と断りは**何も押していなくても出す**——
+               押したら何が起きるかを、選ぶ前に見せる。 -->
+          <p class="mail"><a href="mailto:contact@alt-dsgn.co.jp">contact@alt-dsgn.co.jp</a></p>
+
           <!-- **押しても飛ばない。選ぶだけ。**飛ぶのは最後の緑の一枚だけ
                （本人「クリックしたら飛んじゃうってわかりにくい」）。
 
@@ -466,15 +473,14 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
             </ul>
           </div>
 
-          <!-- ここだけ外に出る。だから色が付いていて、何が起きるかを一行で書いてある -->
-          <div class="step" id="send" hidden>
+          <!-- ここだけ外に出る。だから色が付いていて、何が起きるかを一行で書いてある。
+               **最初から出ている**（選んでいなければ、そのままメールが開くだけ）-->
+          <div class="step" id="send">
             <ul class="news">
-              <li><a class="row send" id="sendto" href="mailto:contact@alt-dsgn.co.jp"><b>この内容でメールを開く</b></a></li>
+              <li><a class="row send" id="sendto" href="mailto:contact@alt-dsgn.co.jp"><b id="sendlb">メールを開く</b></a></li>
             </ul>
             <p class="todo">選んだ内容が<b>件名と本文に入った</b>メールが開きます。</p>
           </div>
-
-          <p class="mail"><a href="mailto:contact@alt-dsgn.co.jp">contact@alt-dsgn.co.jp</a></p>
         </div>
       </div>
     </div>
@@ -689,6 +695,8 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
       drawAsk();
     });
 
+    drawAsk();   /* 最初から出ている状態に揃える */
+
     function drawAsk(){
       /* 段の出し入れ。出ていない段の選択は残さない */
       ask.querySelectorAll('.step[data-when]').forEach(function(st){
@@ -700,19 +708,25 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
         });
       });
 
-      send.hidden = !pick.kind;
-      if (pick.kind) sendto.href = mailto();
+      /* **送る一枚は隠さない。**何も選んでいなければ、そのままメールが開くだけ。
+         押す前に「押したら何が起きるか」が見えているほうがいい */
+      sendto.href = mailto();
+      document.getElementById('sendlb').textContent =
+        pick.kind ? 'この内容でメールを開く' : 'メールを開く';
       reach(ask);
     }
 
-    /* 選んだものを件名と本文に入れる。**書かずに用件ができている** */
+    /* 選んだものを件名と本文に入れる。**書かずに用件ができている。**
+       何も選んでいなければ、ただの宛先（件名も本文も付けない） */
     function mailto(){
+      var to = 'mailto:contact@alt-dsgn.co.jp';
+      if (!pick.kind) return to;
+
       var lines = ['ご用件：' + pick.kind];
       if (pick.svc) lines.push('対象のサービス：' + pick.svc);
       lines.push('', '（差し支えなければ、会社名とお名前をお書きください）');
-      return 'mailto:contact@alt-dsgn.co.jp'
-           + '?subject=' + encodeURIComponent(pick.kind)
-           + '&body='    + encodeURIComponent(lines.join('\n'));
+      return to + '?subject=' + encodeURIComponent(pick.kind)
+                + '&body='    + encodeURIComponent(lines.join('\n'));
     }
   }
 

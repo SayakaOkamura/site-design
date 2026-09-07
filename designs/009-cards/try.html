@@ -317,9 +317,10 @@ body[data-stage="cards"] .pick,body[data-stage="end"] .pick{
 .book{
   position:fixed; left:0; right:0; bottom:0; z-index:80;
   background:var(--card); box-shadow:0 -2px 4px rgba(20,26,32,.06), 0 -12px 32px rgba(20,26,32,.10);
-  padding:16px 24px;
+  padding:16px 0;
 }
-.book .in{max-width:860px; margin:0 auto; display:flex; align-items:center; gap:20px; flex-wrap:wrap}
+.book .in{max-width:908px; margin:0 auto; padding:0 24px; display:flex; align-items:flex-end;
+          gap:20px; flex-wrap:wrap}
 .ledger{display:none; align-items:flex-end; gap:22px; flex-wrap:wrap}
 body[data-stage="cards"] .ledger,body[data-stage="end"] .ledger{display:flex}
 .book .t,.book .rest{padding-bottom:2px}
@@ -361,14 +362,19 @@ body[data-stage="end"] .stack{display:none}
 .end h2{margin:0; font-size:clamp(19px,3vw,27px); font-weight:700; line-height:1.55}
 .end p{margin:20px 0 0; font-size:13.5px; color:var(--sub); line-height:1.95}
 
-.back{
-  display:block; text-decoration:none; color:inherit; margin-top:16px;
-  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
-  padding:22px 26px; font-size:14px; font-weight:700;
+/* 入口へ。**下の帯に常設する**（本人 2026-09-07：「常にホームに戻れるように
+   しておいて」）。ページの末尾に置くと、重い側では 40 行の下、
+   カードの段では消えていた。**いつも同じ場所に一つだけ。** */
+.home{
+  flex:none; display:block; text-decoration:none; color:inherit;
+  background:var(--card); border-radius:8px; box-shadow:var(--lift1);
+  padding:11px 16px; font-size:13px; font-weight:700; white-space:nowrap;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.back:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-body[data-stage="cards"] .back,body[data-stage="cards"] .note{display:none}
+.home:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.home:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.home:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+body[data-stage="cards"] .note{display:none}
 
 .note{margin:22px 2px 0; font-size:11.5px; line-height:1.9; color:var(--dark-ink);
       transition:color .55s var(--ease)}
@@ -439,12 +445,12 @@ body[data-stage="end"] .note{color:var(--sub)}
 
   <p class="note">これは仮の中身です。実際の課題管理表ではありません。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
 
-  <a class="back" href="./">入口へ戻る</a>
-
 </main>
 
 <div class="book">
   <div class="in">
+    <!-- 入口へ。**どの段でも、いつもここにある** -->
+    <a class="home" href="./">入口へ</a>
     <span class="ledger">
       <span class="t">台帳</span>
       <span class="piles">
