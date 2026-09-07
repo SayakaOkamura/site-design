@@ -155,6 +155,26 @@ body.locked{overflow:hidden}
       font-size:13px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
 
+/* お知らせの一覧。**一件が一行。ここでは開かない。**
+   押せるので影を落とす（押せない面 = --tint で影なし、を守る）。 */
+.news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:10px}
+.news a{
+  display:flex; align-items:baseline; gap:18px; text-decoration:none; color:inherit;
+  background:var(--card); border-radius:8px; box-shadow:var(--lift1);
+  padding:17px 20px;
+  transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.news a:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.news a:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.news a:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+.news span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
+           font-variant-numeric:tabular-nums; letter-spacing:.02em}
+.news b{font-size:13.5px; font-weight:700; line-height:1.6}
+@media (max-width:520px){
+  .news a{display:block}
+  .news span{display:block; margin-bottom:6px}
+}
+
 .lead{margin:0 0 20px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
 .mail a{color:var(--go); text-decoration:none}
@@ -268,13 +288,26 @@ body.locked{overflow:hidden}
     <!-- ここから下の2枚は、増えたときの並びを見るために置いてある。
          どちらも公式サイトに無いので、中身は書かない（空の箱を作らない）。
          5枚目は全幅、6枚目からは残りが分け合う。 -->
-    <!-- **溜まっていくものはページ。**お知らせは増え続けるので、
-         カードの中で開かせない（長くなると、閉じるために上へ戻ることになる）。
-         a なので、中クリックで別のタブにも開けるし、戻るが効く。 -->
-    <a class="card" href="news.html" data-k="5">
+    <!-- 一覧はカードの中。**ただし中では開かせない。**
+         開くと下が押し下げられて、次の一件を見るのに毎回スクロールすることになる。
+         一行ずつのまま並べて、**一覧の高さを変えない。**中身はページ。 -->
+    <div class="card" role="button" tabindex="0" data-k="5" data-hash="news">
       <span class="t">お知らせ</span>
       <span class="s">五件（仮）</span>
-    </a>
+      <div class="panel">
+        <div class="bar"><h2>お知らせ</h2><button class="x" data-x aria-label="閉じる">✕</button></div>
+        <div class="body">
+          <p class="todo">並びを見るための<b>仮の中身</b>です。実際のお知らせではありません。</p>
+          <ul class="news">
+            <li><a href="news.html#2026-08-20"><span>2026.08.20</span><b>夏季休業のお知らせ</b></a></li>
+            <li><a href="news.html#2026-06-02"><span>2026.06.02</span><b>オフィス移転のお知らせ</b></a></li>
+            <li><a href="news.html#2026-04-10"><span>2026.04.10</span><b>コーポレートサイトを公開しました</b></a></li>
+            <li><a href="news.html#2025-12-26"><span>2025.12.26</span><b>年末年始の休業について</b></a></li>
+            <li><a href="news.html#2025-06-30"><span>2025.06.30</span><b>会社設立のお知らせ</b></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
     <div class="card" role="button" tabindex="0" data-k="6">
       <span class="t">実績</span>
@@ -315,6 +348,16 @@ body.locked{overflow:hidden}
   }
   relayout();
   window.addEventListener('resize', relayout);
+
+  /* 記事から戻ってきたら、その一覧を開いた状態で始める（印は show が残す） */
+  function reopen(){
+    var k = location.hash.slice(1);
+    if (!k) return;
+    var card = deck.querySelector('[data-hash="' + k + '"]');
+    if (card && !open) show(card);
+  }
+  window.addEventListener('pageshow', reopen);
+  window.addEventListener('hashchange', reopen);
 
   /* 開いたときの行き先。中身を測ってから決める */
   function target(card){
@@ -360,6 +403,11 @@ body.locked{overflow:hidden}
     document.body.classList.add('locked');
     open = card;
     card.querySelector('.x').focus();
+
+    /* 記事を読んで戻ってきたとき、一覧が開いたまま戻るように印を残す。
+       これが無いと、一件読むたびにカードを開き直すことになる。
+       replaceState なので、閉じたあと戻るで開き直したりはしない。 */
+    if (card.dataset.hash) history.replaceState(null, '', '#' + card.dataset.hash);
   }
 
   function hide(){
@@ -370,6 +418,7 @@ body.locked{overflow:hidden}
     put(card, { l: back.left, t: back.top, w: back.width, h: back.height });
     scrim.classList.remove('on');
     document.body.classList.remove('locked');
+    if (card.dataset.hash) history.replaceState(null, '', location.pathname);
 
     /* 動きを切っている環境（prefers-reduced-motion）では transitionend が来ない。
        それだけに頼ると、戻ったのに開いたままの状態が残る。時間でも片付ける。 */

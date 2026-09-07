@@ -5,17 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>お知らせ｜株式会社アルターデザインコンサルティング</title>
 
-<!-- 009 カード ─ お知らせ
+<!-- 009 カード ─ お知らせ（記事）
      ================================================================
-     **溜まっていくものはページ。決まっているものはカード。**
-     本人（2026-09-07）：「もうそれはそれでぺーじにしていいんじゃない」。
+     **一覧はカードの中、中身はページ。**
+     本人（2026-09-07）：「お知らせはカードで内容はページでよくない？」
 
-     カードの中で開かせると、長くなったときに閉じるために上へ戻ることになる。
-     お知らせと実績は増え続けるので、ページにして普通にスクロールさせる。
-     サービス（4本）・会社概要（7項目）・お問い合わせは増えないので、
-     入口のカードのまま開いて閉じる。
+     一覧の中で開かせると、開いた一件が下を押し下げるので、
+     **次の一件を見るのに毎回スクロールすることになる。**
+     一行ずつのまま並べておいて、押したらここへ来る。一覧の高さは変わらない。
 
-     頭の大きいカードが入口への戻り。**新しい部品を足さずに済む。**
+     **5枚 HTML を作らず、1ファイルで URL で出し分ける。**
+     `news.html#2026-08-20`。一件を人に送れるのは変わらない。
+
+     戻りは頭の大きいカード。行き先は `./#news` なので、
+     **戻ると一覧が開いた状態で始まる**（印は入口側の show が残している）。
 
      **中身は仮。**実際のお知らせではないことを画面にも出している。
 ================================================================ -->
@@ -48,64 +51,47 @@ body{
 }
 .sheet{width:100%; max-width:860px; margin:0 auto}
 
-/* ─ 頭の大きいカード。押すと入口へ戻る ─────────────────── */
-.head{
+/* ─ 押せるカード。頭も足も同じ形（戻り方に新しい部品を足さない）─ */
+.head,.back{
   display:block; text-decoration:none; color:inherit;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
-  padding:34px 40px 32px;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.head:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-.head:active{transform:translateY(2px); box-shadow:var(--lift0)}
-.head:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-.head h1{margin:0; font-size:clamp(18px,2.8vw,26px); font-weight:700; letter-spacing:.01em; line-height:1.35}
-.head p{margin:14px 0 0; font-size:clamp(12.5px,1.5vw,14px); font-weight:500; color:var(--sub); line-height:1.7}
+.head:hover,.back:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.head:active,.back:active{transform:translateY(2px); box-shadow:var(--lift0)}
+.head:focus-visible,.back:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 
-.title{margin:34px 2px 16px; font-size:clamp(17px,2.2vw,21px); font-weight:700}
+.head{padding:34px 40px 32px}
+.head h1{margin:0; font-size:clamp(18px,2.8vw,26px); font-weight:700; letter-spacing:.01em; line-height:1.35}
+.head h1 span{display:block; margin-top:14px; font-size:clamp(12.5px,1.5vw,14px); font-weight:500; color:var(--sub); line-height:1.7}
+
+.back{margin-top:16px; padding:22px 26px; font-size:14px; font-weight:700}
+
+/* ─ 記事 ─────────────────────────────────────────────── */
+.art{
+  margin-top:16px; background:var(--card); border-radius:var(--r);
+  box-shadow:var(--lift1); padding:38px 40px 40px;
+}
+.art .d{margin:0; font-size:12.5px; font-weight:600; color:var(--sub);
+        font-variant-numeric:tabular-nums; letter-spacing:.02em}
+.art h2{margin:12px 0 0; font-size:clamp(19px,2.6vw,25px); font-weight:700; line-height:1.5}
+.art .b{margin:24px 0 0; font-size:14px; line-height:2.05}
 
 /* 中身が仮であることの断り。押せないので影は落とさない */
-.todo{margin:0 0 16px; background:var(--tint); border-radius:8px; padding:20px 22px;
-      font-size:13px; color:var(--sub); line-height:1.9}
+.todo{margin:16px 0 0; background:var(--tint); border-radius:8px; padding:20px 22px;
+      font-size:12.5px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
 
-/* ─ 一件が一枚のカード。押せるので影を落とす ─────────────── */
-.news{list-style:none; margin:0; padding:0; display:grid; gap:10px}
-.news li{background:var(--card); border-radius:8px; box-shadow:var(--lift1); overflow:hidden;
-         transition:box-shadow .16s ease, transform .16s var(--ease)}
-.news li:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.news li.on{transform:none; box-shadow:var(--lift2)}
-
-.row{
-  -webkit-appearance:none; appearance:none; border:0; background:none; margin:0;
-  font:inherit; color:inherit; text-align:left; cursor:pointer;
-  width:100%; padding:18px 22px; display:flex; align-items:baseline; gap:18px;
-}
-.row span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
-          font-variant-numeric:tabular-nums; letter-spacing:.02em}
-.row b{font-size:14px; font-weight:700; line-height:1.6}
-.row i{margin-left:auto; flex:none; font-style:normal; font-size:14px; color:var(--sub)}
-.row:focus-visible{outline:2px solid var(--go); outline-offset:-2px; border-radius:8px}
-
-.more{max-height:0; overflow:hidden; transition:max-height .28s var(--ease)}
-.more p{margin:0; padding:0 22px 20px; font-size:13px; color:var(--sub); line-height:1.95}
-.news li.on .more{max-height:320px}
-
-.src{margin:28px 2px 0; font-size:11.5px; color:var(--sub); line-height:1.8}
-
 @keyframes drop{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
-.head,.news li{animation:drop .42s var(--ease) backwards}
-.news li:nth-child(1){animation-delay:.06s}
-.news li:nth-child(2){animation-delay:.09s}
-.news li:nth-child(3){animation-delay:.12s}
-.news li:nth-child(4){animation-delay:.15s}
-.news li:nth-child(5){animation-delay:.18s}
-@media (prefers-reduced-motion:reduce){ .head,.news li{animation:none} }
+.head,.art,.back{animation:drop .42s var(--ease) backwards}
+.art{animation-delay:.06s}
+.back{animation-delay:.10s}
+@media (prefers-reduced-motion:reduce){ .head,.art,.back{animation:none} }
 
 @media (max-width:520px){
   .head{padding:26px 24px 24px}
-  .row{display:block; position:relative; padding-right:44px}
-  .row span{display:block; margin-bottom:6px}
-  .row i{position:absolute; right:22px; top:18px; margin:0}
+  .art{padding:28px 24px 30px}
+  .back{padding:20px 22px}
 }
 </style>
 </head>
@@ -113,57 +99,56 @@ body{
 
 <main class="sheet">
 
-  <!-- 入口へ戻る。入口と同じ大きいカードなので、戻り方に新しい部品が要らない -->
-  <a class="head" href="./">
-    <h1>株式会社アルターデザインコンサルティング</h1>
-    <p>2025年6月設立／AI とローコードで、上流工程中心のシステム開発</p>
+  <!-- 入口へ戻る。`#news` 付きなので、一覧が開いた状態で戻る -->
+  <a class="head" href="./#news">
+    <h1>株式会社アルターデザインコンサルティング
+      <span>2025年6月設立／AI とローコードで、上流工程中心のシステム開発</span></h1>
   </a>
 
-  <h2 class="title">お知らせ</h2>
+  <article class="art">
+    <p class="d" id="d"></p>
+    <h2 id="t"></h2>
+    <p class="b" id="b"></p>
+  </article>
 
-  <p class="todo">並びを見るための<b>仮の中身</b>です。実際のお知らせではありません。</p>
+  <p class="todo">これは<b>仮の中身</b>です。実際のお知らせではありません。会社の言葉として出ているのは、上の社名と事業の一行だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
 
-  <ul class="news">
-    <li>
-      <button class="row"><span>2026.08.20</span><b>夏季休業のお知らせ</b><i>＋</i></button>
-      <div class="more"><p>8月13日から8月16日まで、夏季休業とさせていただきます。期間中にいただいたお問い合わせは、8月17日以降に順次ご返信いたします。</p></div>
-    </li>
-    <li>
-      <button class="row"><span>2026.06.02</span><b>オフィス移転のお知らせ</b><i>＋</i></button>
-      <div class="more"><p>このたびオフィスを移転いたしました。電話番号に変更はございません。今後ともよろしくお願い申し上げます。</p></div>
-    </li>
-    <li>
-      <button class="row"><span>2026.04.10</span><b>コーポレートサイトを公開しました</b><i>＋</i></button>
-      <div class="more"><p>コーポレートサイトを公開しました。事業内容とお問い合わせ先を掲載しています。</p></div>
-    </li>
-    <li>
-      <button class="row"><span>2025.12.26</span><b>年末年始の休業について</b><i>＋</i></button>
-      <div class="more"><p>12月27日から1月4日まで休業いたします。期間中のお問い合わせは、1月5日以降に順次ご対応いたします。</p></div>
-    </li>
-    <li>
-      <button class="row"><span>2025.06.30</span><b>会社設立のお知らせ</b><i>＋</i></button>
-      <div class="more"><p>株式会社アルターデザインコンサルティングを設立いたしました。</p></div>
-    </li>
-  </ul>
-
-  <p class="src">このページの中身は仮です。会社の言葉として出ているのは、上の社名と事業の一行だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
+  <!-- 一覧へ戻る。ブラウザの戻るを使わなくても、次の一件を選びに行ける -->
+  <a class="back" href="./#news">お知らせの一覧へ</a>
 
 </main>
 
 <script>
-/* 開くのは一件だけ。読むところなので、開きっぱなしを積み上げない。
-   ページなので伸びたぶんは画面が普通にスクロールする（カードの中で
-   開かせていたときの「閉じるために上へ戻る」が無くなる）。 */
-document.addEventListener('click', function(e){
-  var row = e.target.closest('.row');
-  if (!row) return;
-  var li = row.parentNode, was = li.classList.contains('on');
-  [].forEach.call(li.parentNode.children, function(o){
-    o.classList.remove('on');
-    var m = o.querySelector('.row i'); if (m) m.textContent = '＋';
-  });
-  if (!was){ li.classList.add('on'); row.querySelector('i').textContent = '−'; }
-});
+/* 記事は1ファイル。URL の印で出し分ける。
+   5枚 HTML を作らなくても、一件ごとに URL を持てる。 */
+var NEWS = {
+  '2026-08-20': ['2026.08.20', '夏季休業のお知らせ',
+    '8月13日から8月16日まで、夏季休業とさせていただきます。期間中にいただいたお問い合わせは、8月17日以降に順次ご返信いたします。ご不便をおかけしますが、何卒よろしくお願い申し上げます。'],
+  '2026-06-02': ['2026.06.02', 'オフィス移転のお知らせ',
+    'このたびオフィスを移転いたしました。電話番号に変更はございません。移転に伴う業務の停止はございません。今後ともよろしくお願い申し上げます。'],
+  '2026-04-10': ['2026.04.10', 'コーポレートサイトを公開しました',
+    'コーポレートサイトを公開しました。事業内容とお問い合わせ先を掲載しています。今後、お知らせもこちらに掲載してまいります。'],
+  '2025-12-26': ['2025.12.26', '年末年始の休業について',
+    '12月27日から1月4日まで休業いたします。期間中のお問い合わせは、1月5日以降に順次ご対応いたします。'],
+  '2025-06-30': ['2025.06.30', '会社設立のお知らせ',
+    '株式会社アルターデザインコンサルティングを設立いたしました。']
+};
+
+function draw(){
+  var k = location.hash.slice(1);
+  var n = NEWS[k];
+  if (!n){                                   /* 印が無い・知らない印なら、いちばん新しいもの */
+    k = Object.keys(NEWS)[0];
+    n = NEWS[k];
+    history.replaceState(null, '', '#' + k);
+  }
+  document.getElementById('d').textContent = n[0];
+  document.getElementById('t').textContent = n[1];
+  document.getElementById('b').textContent = n[2];
+  document.title = n[1] + '｜株式会社アルターデザインコンサルティング';
+}
+draw();
+window.addEventListener('hashchange', draw);
 </script>
 
 </body>
