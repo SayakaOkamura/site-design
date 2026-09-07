@@ -30,6 +30,16 @@
 
      背景は、重い側がいちばん暗い。カードになると明るくなる。入口がいちばん明るい。
 
+     **重い側は端末の見た目にする**（本人 2026-09-07）：
+     > 松岡さん的にはこのClaudeCodeの昔の難解さが好きらしい。そういう、意味わかんない
+     > 要素を体験の最初の方にしたらいいんじゃん、それを綺麗にまとめるのがそのあと。
+
+     **難解さは見た目だけ。**等幅・黒い画面・ID・一行ずつ点いていく出力。
+     **中身は読める日本語のまま**にしてある——読めないものにすると「無理」に見えて、
+     返ってくる感情が「できるのか」（発見）になり、狙っている「こっちのほうがいい」
+     （選好）が出ない。**関係（被り・依存・未決）は、ここでは出さない。**
+     あれはカードになって初めて見えるもの。
+
      **中身は仮。**会社について何も主張しない言葉だけにしてある。
 ================================================================ -->
 
@@ -49,6 +59,10 @@
   --lift2: 0 2px 4px rgba(20,26,32,.07), 0 10px 24px rgba(20,26,32,.10);
   --lift3: 0 8px 16px rgba(20,26,32,.10), 0 28px 56px rgba(20,26,32,.16);
   --lift0: 0 1px 1px rgba(20,26,32,.10);
+
+  --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
+          "Liberation Mono","Courier New",monospace;
+  --term: #5fbfa1;                    /* 端末の $ だけに使う */
 
   --r: 10px;
   --ease: cubic-bezier(.2,.7,.3,1);
@@ -81,7 +95,9 @@ body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)
 .top p{margin:10px 0 0; font-size:13px; line-height:1.8}
 .top .n{font-variant-numeric:tabular-nums; font-weight:700}
 
-/* ─ 重い側：詰まった行 ───────────────────────────────── */
+/* ─ 重い側：端末の見た目 ───────────────────────────────────
+   **難解に見せるのは見た目だけ。**等幅・ID・一行ずつ点いていく出力。
+   中身は読める日本語のまま（読めないと「無理」に振れる）。 */
 .stack{list-style:none; margin:0; padding:0; display:grid; gap:0}
 .stack li{
   color:var(--dark-ink); border-radius:8px; padding:2px 10px;
@@ -90,6 +106,41 @@ body[data-stage="cards"] .top h1,body[data-stage="end"] .top h1{color:var(--ink)
 .stack li .no{display:inline-block; min-width:2.4em; color:#5d6675;
               font-variant-numeric:tabular-nums}
 .rel,.pick,.mark{display:none}
+
+/* 端末の一行。ID は等幅で頭を揃えて、折り返しは本文の側だけ下がる */
+.id{display:none}
+body[data-stage="wall"] .top,
+body[data-stage="wall"] .stack{font-family:var(--mono)}
+body[data-stage="wall"] .stack li{
+  border-radius:0; padding:1px 10px; font-size:12px; line-height:1.8;
+}
+body[data-stage="wall"] .ln{display:flex}
+body[data-stage="wall"] .id{display:inline-block; flex:none; min-width:9.5ch; color:#4d5563}
+body[data-stage="wall"] .no{display:none}
+
+/* 打ち込んだ一行。ここだけ端末の色を持たせる */
+.cmd{display:none}
+body[data-stage="wall"] .cmd{
+  display:block; margin:0 2px 12px; font-family:var(--mono);
+  font-size:12.5px; color:#5d6675; line-height:1.8;
+}
+.cmd b{color:var(--term); font-weight:400; margin-right:9px}
+
+/* 出力が届く感じ。**動かさない。点くだけ**（一行 26ms）。
+   場所は最初から取ってあるので、何も跳ねない。 */
+@keyframes emit{from{opacity:0} to{opacity:1}}
+body[data-stage="wall"] .stack li{animation:emit 60ms linear both; animation-delay:calc(var(--k) * 26ms)}
+/* 頭も出力の一部にする。**声を張るのは 40 行の壁のほう**（量で見せる）。
+   カードになったら普通の見出しに戻る（この指定は wall のときだけ）。 */
+body[data-stage="wall"] .top{margin-bottom:16px}
+body[data-stage="wall"] .top h1{font-size:12.5px; font-weight:400; color:var(--dark-ink); line-height:1.8}
+body[data-stage="wall"] .top h1 .n{color:#e7ebf0}
+body[data-stage="wall"] .top p{margin-top:0; font-size:12.5px; line-height:1.8}
+body[data-stage="wall"] .top h1::before,
+body[data-stage="wall"] .top p::before{content:"# "; color:#4d5563}
+@media (prefers-reduced-motion:reduce){
+  body[data-stage="wall"] .stack li{animation:none}
+}
 
 /* ─ 軽い側：一枚ずつ手前に出る束 ─────────────────────────
    後ろの厚みが見えているので、量が減った気にならない。
@@ -217,6 +268,9 @@ body[data-stage="end"] .note{color:var(--sub)}
 
 <main class="sheet">
 
+  <!-- 打ち込んだ一行。端末の見た目はここと下の行だけで、カードになったら消える -->
+  <p class="cmd"><b>$</b>alter scan --rules</p>
+
   <div class="top">
     <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
     <h1 id="h">社内の取り決め　<span class="n" id="n">0</span> 件</h1>
@@ -312,7 +366,11 @@ RULES.forEach(function(r, i){
   var li = document.createElement('li');
 
   var t = document.createElement('div');
-  t.innerHTML = '<span class="no">' + n + '</span>';
+  t.className = 'ln';
+  /* 重い側は ID、カードになったら番号。**同じ数字**なので、
+     カードの印（「7番と被っている」）と突き合わせられる */
+  t.innerHTML = '<span class="id">RULE-' + ('000' + n).slice(-4) + '</span>'
+              + '<span class="no">' + n + '</span>';
   t.appendChild(document.createTextNode(r[0]));
   li.appendChild(t);
 
@@ -336,6 +394,7 @@ RULES.forEach(function(r, i){
   });
   li.appendChild(pk);
 
+  li.style.setProperty('--k', i);   /* 出力が届く順（点く順）*/
   stack.appendChild(li);
   lis.push(li);
 });
