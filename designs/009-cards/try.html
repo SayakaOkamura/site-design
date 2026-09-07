@@ -68,20 +68,20 @@
 
 <style>
 :root{
-  --bg:   #eaeaf3;   /* 青紫に寄せた明るい灰 */
+  --bg:   #e8f0f8;   /* 水色の端。明るい面 */
   --card: #ffffff;
-  --tint: #f1f1f9;   /* 押せない面。影を落とさない */
-  --ink:  #1b1b33;   /* 青黒。真っ黒は使わない */
-  --sub:  #5f6081;
-  --go:   #4a3fc9;   /* 行き先がある印。青紫 */
+  --tint: #eff5fb;   /* 押せない面。影を落とさない */
+  --ink:  #251f45;   /* 紫の端。字。真っ黒は使わない */
+  --sub:  #5c6288;
+  --go:   #5a45d8;   /* 帯の中〜紫寄り。行き先がある印 */
 
-  --dark:     #191a2b;
-  --dark-ink: #9a9cba;
+  --dark:     #1c1a33;
+  --dark-ink: #979bbd;
 
-  --lift1: 0 1px 2px rgba(27,27,51,.07), 0 3px 8px rgba(27,27,51,.08);
-  --lift2: 0 2px 4px rgba(27,27,51,.08), 0 10px 24px rgba(27,27,51,.12);
-  --lift3: 0 8px 16px rgba(27,27,51,.12), 0 28px 56px rgba(27,27,51,.18);
-  --lift0: 0 1px 1px rgba(27,27,51,.12);
+  --lift1: 0 1px 2px rgba(31,25,64,.07), 0 3px 8px rgba(31,25,64,.08);
+  --lift2: 0 2px 4px rgba(31,25,64,.08), 0 10px 24px rgba(31,25,64,.12);
+  --lift3: 0 8px 16px rgba(31,25,64,.12), 0 28px 56px rgba(31,25,64,.18);
+  --lift0: 0 1px 1px rgba(31,25,64,.12);
 
   --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
           "Liberation Mono","Courier New",monospace;
@@ -118,7 +118,7 @@ body[data-stage="cards"]{overflow:hidden}   /* 束のあいだはスクロール
 /* ─ 頭の帯。**カードの段だけ出す**（入口と同じ形にして、同じサイトだと分かるように）─ */
 .topbar{display:none}
 body:not([data-stage="wall"]) .topbar{
-  display:flex; align-items:center; height:56px; background:#dcdcea; margin-bottom:26px;
+  display:flex; align-items:center; height:56px; background:#d8e5f1; margin-bottom:26px;
 }
 body:not([data-stage="wall"]){padding-top:0}
 .topbar .in{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
@@ -130,7 +130,7 @@ body:not([data-stage="wall"]){padding-top:0}
 body[data-stage="cards"] .prog,body[data-stage="end"] .prog{
   display:flex; align-items:center; gap:16px; margin:22px 2px 0;
 }
-.prog .pg{flex:1; height:6px; border-radius:3px; background:#d8d8e8; overflow:hidden}
+.prog .pg{flex:1; height:6px; border-radius:3px; background:#d5e2ee; overflow:hidden}
 .prog .pg i{display:block; height:100%; width:0; border-radius:3px; background:var(--go);
             transition:width .3s var(--snap)}
 .prog .pn{flex:none; margin:0; font-size:13px; color:var(--sub); font-variant-numeric:tabular-nums}
@@ -336,7 +336,7 @@ body[data-stage="cards"] .pick,body[data-stage="end"] .pick{
    **依存はサイトの色（青紫）に寄せ、重複は赤、未決は琥珀**——
    赤と琥珀は「困っている側」なので、青紫の外に置いてある */
 .rel b.dup{background:#fdeaee; color:#a32c4a}
-.rel b.needs{background:#ecebfb; color:#3d33a8}
+.rel b.needs{background:#eae7fb; color:#4232b4}
 .rel b.open{background:#fdf1de; color:#8a5a12}
 
 .pick button{
