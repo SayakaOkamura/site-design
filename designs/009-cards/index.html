@@ -252,22 +252,10 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .det{margin-top:10px}
 .det[hidden]{display:none}
 .det .lead{margin:0; font-size:13px; line-height:1.9; color:var(--sub)}
-.det h3{margin:22px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em;
-        color:var(--sub); line-height:1.5}
-.det p{margin:5px 0 0; font-size:13.5px; line-height:1.9}
-
-.det .steps{list-style:none; counter-reset:s; margin:9px 0 0; padding:0; display:grid; gap:6px}
-.det .steps li{
-  counter-increment:s; position:relative; background:var(--tint); border-radius:8px;
-  padding:12px 14px 12px 40px; font-size:13px; line-height:1.7;
-}
-.det .steps li::before{
-  content:counter(s); position:absolute; left:16px; top:12px;
-  font-size:11.5px; font-weight:700; color:var(--go); font-variant-numeric:tabular-nums;
-}
-/* 出てくるもの。同じ板の色だが、番号付きの段とは形で見分ける */
-.det .outs{list-style:none; margin:9px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:7px}
-.det .outs li{background:var(--tint); border-radius:6px; padding:8px 12px; font-size:12.5px; line-height:1.6}
+/* **説明だけ。**段（進め方・出てくるもの）は落とした
+   （本人 2026-09-07：「進め方とか出てくるものとか別に要らないよ。説明だけでいい」）。
+   公式の一行のすぐ下に、こちらが書いた説明が一段だけ続く */
+.det p{margin:12px 0 0; font-size:13.5px; line-height:1.9}
 .news span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
            font-variant-numeric:tabular-nums; letter-spacing:.02em}
 .news b{font-size:13.5px; font-weight:700; line-height:1.6}
@@ -361,65 +349,25 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
             <li><button class="row" type="button" data-svc="01" aria-expanded="false"><span>01</span><b>人間中心の次世代業務システム開発</b></button>
               <div class="det" data-svc="01" hidden>
                 <p class="lead">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供</p>
-                <h3>何をするか</h3>
                 <p>画面から作りません。まず、いまその仕事をしている人が何を見て何を決めているかを並べます。効率化だけを先に置くと、決めごとが人の頭の中に残ったまま、道具だけが新しくなります。</p>
-                <h3>進め方</h3>
-                <ol class="steps">
-                  <li>使っている人のそばで、いまのやり方を見せてもらう</li>
-                  <li>決めごとを一覧にする（誰が、何を見て、何を決めているか）</li>
-                  <li>短い周期で動くものを出して、使いながら直す</li>
-                  <li>手が離れる形に整えて渡す</li>
-                </ol>
-                <h3>出てくるもの</h3>
-                <ul class="outs"><li>決めごとの一覧</li><li>画面の試作</li><li>動く仕組み</li></ul>
               </div>
             </li>
             <li><button class="row" type="button" data-svc="02" aria-expanded="false"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></button>
               <div class="det" data-svc="02" hidden>
                 <p class="lead">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援</p>
-                <h3>何をするか</h3>
                 <p>AI を入れる前に、何を決めるためのものかを決めます。「データがあるから使う」から始めると、出てきたものを誰も判断に使いません。決めたいことを一つに絞って、そこから逆に組みます。</p>
-                <h3>進め方</h3>
-                <ol class="steps">
-                  <li>決めたいことを一つに絞る</li>
-                  <li>いま何を見て決めているかを書き出す</li>
-                  <li>手元のデータで試して、判断に足りるか見る</li>
-                  <li>判断の場（会議や日々の運用）に載せる</li>
-                </ol>
-                <h3>出てくるもの</h3>
-                <ul class="outs"><li>判断の見取り図</li><li>試した結果と、届かなかったところ</li><li>運用の形</li></ul>
               </div>
             </li>
             <li><button class="row" type="button" data-svc="03" aria-expanded="false"><span>03</span><b>自律型・共創型の組織設計支援</b></button>
               <div class="det" data-svc="03" hidden>
                 <p class="lead">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現</p>
-                <h3>何をするか</h3>
                 <p>誰が何を決めていいかを組み替えます。道具が変わると、仕事の分け方も変わります。道具だけ新しくして分け方を据え置くと、承認の列がそのまま残ります。</p>
-                <h3>進め方</h3>
-                <ol class="steps">
-                  <li>決定の流れをたどる（どこで止まっているか）</li>
-                  <li>止まっている理由を、人ではなく置き場に探す</li>
-                  <li>権限の置き場を組み替える</li>
-                  <li>しばらく一緒に回して、戻らないか見る</li>
-                </ol>
-                <h3>出てくるもの</h3>
-                <ul class="outs"><li>決定の流れ図</li><li>役割と権限の割り当て</li><li>運用の取り決め</li></ul>
               </div>
             </li>
             <li><button class="row" type="button" data-svc="04" aria-expanded="false"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></button>
               <div class="det" data-svc="04" hidden>
                 <p class="lead">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援</p>
-                <h3>何をするか</h3>
                 <p>その場所で続けられる形にします。作って渡すのではなく、あとから自分たちで直せるものを置きます。直せないものは、作った側が離れた時点で止まります。</p>
-                <h3>進め方</h3>
-                <ol class="steps">
-                  <li>いま使っている道具と、続けられる範囲を見る</li>
-                  <li>ノーコードで小さく作って、すぐ触ってもらう</li>
-                  <li>触れる人を増やす（作り方ではなく、直し方から）</li>
-                  <li>手が離れる形にする</li>
-                </ol>
-                <h3>出てくるもの</h3>
-                <ul class="outs"><li>動く仕組み</li><li>直し方の手引き</li><li>直せる人</li></ul>
               </div>
             </li>
           </ul>
