@@ -185,16 +185,48 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
 /* お知らせの一覧。**一件が一行。ここでは開かない。**
    押せるので影を落とす（押せない面 = --tint で影なし、を守る）。 */
-.news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:10px}
-.news a{
+.news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:9px}
+.news a,.news .row{
   display:flex; align-items:baseline; gap:18px; text-decoration:none; color:inherit;
   background:var(--card); border-radius:8px; box-shadow:var(--lift1);
   padding:17px 20px;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.news a:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.news a:active{transform:translateY(1px); box-shadow:var(--lift0)}
-.news a:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+/* 行き先があるものは a、その場で開くものは button。見た目は同じ */
+.news .row{-webkit-appearance:none; appearance:none; border:0; width:100%;
+           font:inherit; text-align:left; cursor:pointer; padding:16px 20px}
+.news a:hover,.news .row:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.news a:active,.news .row:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.news a:focus-visible,.news .row:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+
+/* 開いている行は沈む。**カードと同じ言い方**（押されたまま、面が空） */
+.news .row[aria-expanded="true"],
+.news .row[aria-expanded="true"]:hover{
+  transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint);
+}
+
+/* 選んだ一本の中身。**一覧の下に出る＝一覧は動かない。**
+   新しい面は作らない（帯の白の上に直に組む）。
+   **事例が乗るのはここ**——段をもう一つ足すだけで入る。 */
+.det{margin-top:18px}
+.det[hidden]{display:none}
+.det .lead{margin:0; font-size:13px; line-height:1.9; color:var(--sub)}
+.det h3{margin:22px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em;
+        color:var(--sub); line-height:1.5}
+.det p{margin:5px 0 0; font-size:13.5px; line-height:1.9}
+
+.det .steps{list-style:none; counter-reset:s; margin:9px 0 0; padding:0; display:grid; gap:6px}
+.det .steps li{
+  counter-increment:s; position:relative; background:var(--tint); border-radius:8px;
+  padding:12px 14px 12px 40px; font-size:13px; line-height:1.7;
+}
+.det .steps li::before{
+  content:counter(s); position:absolute; left:16px; top:12px;
+  font-size:11.5px; font-weight:700; color:var(--go); font-variant-numeric:tabular-nums;
+}
+/* 出てくるもの。同じ板の色だが、番号付きの段とは形で見分ける */
+.det .outs{list-style:none; margin:9px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:7px}
+.det .outs li{background:var(--tint); border-radius:6px; padding:8px 12px; font-size:12.5px; line-height:1.6}
 .news span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
            font-variant-numeric:tabular-nums; letter-spacing:.02em}
 .news b{font-size:13.5px; font-weight:700; line-height:1.6}
@@ -265,9 +297,12 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
   <div class="deck" id="deck">
 
-    <!-- 一覧は帯の中。**帯の中では開かせない**（開くと下が押し下げられて、
-         次の一本を選ぶのに毎回送ることになる）。中身はページ＝お知らせと同じ形。
-         題は公式サイトの言葉。押した先の詳細は仮。 -->
+    <!-- サービス。**中身はページにしない**（一度 service.html を作ったが、
+         本人「そこまでがっつり作らなくていい。カードポップアップをクリックしたときに
+         出してくれるくらいで」）。押すと**一覧の下**に出る。
+         **一覧は動かない**——お知らせで決めた「一覧の高さを変えない」をここでも守る。
+         もう一度押すと閉じる（入口のカードと同じ押し方）。
+         題と、そのすぐ下の一行が公式サイトの言葉。それより下は仮。 -->
     <div class="card" role="button" tabindex="0" data-k="1" data-hash="svc">
       <span class="t">サービス</span>
       <span class="s">四本</span>
@@ -275,12 +310,75 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
         <div class="bar"><h2>サービス</h2></div>
         <div class="body">
           <ul class="news">
-            <li><a href="service.html#01"><span>01</span><b>人間中心の次世代業務システム開発</b></a></li>
-            <li><a href="service.html#02"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></a></li>
-            <li><a href="service.html#03"><span>03</span><b>自律型・共創型の組織設計支援</b></a></li>
-            <li><a href="service.html#04"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></a></li>
+            <li><button class="row" type="button" data-svc="01" aria-expanded="false"><span>01</span><b>人間中心の次世代業務システム開発</b></button></li>
+            <li><button class="row" type="button" data-svc="02" aria-expanded="false"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></button></li>
+            <li><button class="row" type="button" data-svc="03" aria-expanded="false"><span>03</span><b>自律型・共創型の組織設計支援</b></button></li>
+            <li><button class="row" type="button" data-svc="04" aria-expanded="false"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></button></li>
           </ul>
-          <p class="todo">題は公式サイトの言葉です。押した先の<b>詳細は仮の中身</b>で、まだ会社が出しているものではありません。</p>
+
+          <!-- **事例が乗るのはここ。**「事例」の段を足すだけで入る。
+               いまは無いので置かない（空の箱を作らない）。 -->
+          <div class="det" data-svc="01" hidden>
+            <p class="lead">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供</p>
+            <h3>何をするか</h3>
+            <p>画面から作りません。まず、いまその仕事をしている人が何を見て何を決めているかを並べます。効率化だけを先に置くと、決めごとが人の頭の中に残ったまま、道具だけが新しくなります。</p>
+            <h3>進め方</h3>
+            <ol class="steps">
+              <li>使っている人のそばで、いまのやり方を見せてもらう</li>
+              <li>決めごとを一覧にする（誰が、何を見て、何を決めているか）</li>
+              <li>短い周期で動くものを出して、使いながら直す</li>
+              <li>手が離れる形に整えて渡す</li>
+            </ol>
+            <h3>出てくるもの</h3>
+            <ul class="outs"><li>決めごとの一覧</li><li>画面の試作</li><li>動く仕組み</li></ul>
+          </div>
+
+          <div class="det" data-svc="02" hidden>
+            <p class="lead">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援</p>
+            <h3>何をするか</h3>
+            <p>AI を入れる前に、何を決めるためのものかを決めます。「データがあるから使う」から始めると、出てきたものを誰も判断に使いません。決めたいことを一つに絞って、そこから逆に組みます。</p>
+            <h3>進め方</h3>
+            <ol class="steps">
+              <li>決めたいことを一つに絞る</li>
+              <li>いま何を見て決めているかを書き出す</li>
+              <li>手元のデータで試して、判断に足りるか見る</li>
+              <li>判断の場（会議や日々の運用）に載せる</li>
+            </ol>
+            <h3>出てくるもの</h3>
+            <ul class="outs"><li>判断の見取り図</li><li>試した結果と、届かなかったところ</li><li>運用の形</li></ul>
+          </div>
+
+          <div class="det" data-svc="03" hidden>
+            <p class="lead">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現</p>
+            <h3>何をするか</h3>
+            <p>誰が何を決めていいかを組み替えます。道具が変わると、仕事の分け方も変わります。道具だけ新しくして分け方を据え置くと、承認の列がそのまま残ります。</p>
+            <h3>進め方</h3>
+            <ol class="steps">
+              <li>決定の流れをたどる（どこで止まっているか）</li>
+              <li>止まっている理由を、人ではなく置き場に探す</li>
+              <li>権限の置き場を組み替える</li>
+              <li>しばらく一緒に回して、戻らないか見る</li>
+            </ol>
+            <h3>出てくるもの</h3>
+            <ul class="outs"><li>決定の流れ図</li><li>役割と権限の割り当て</li><li>運用の取り決め</li></ul>
+          </div>
+
+          <div class="det" data-svc="04" hidden>
+            <p class="lead">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援</p>
+            <h3>何をするか</h3>
+            <p>その場所で続けられる形にします。作って渡すのではなく、あとから自分たちで直せるものを置きます。直せないものは、作った側が離れた時点で止まります。</p>
+            <h3>進め方</h3>
+            <ol class="steps">
+              <li>いま使っている道具と、続けられる範囲を見る</li>
+              <li>ノーコードで小さく作って、すぐ触ってもらう</li>
+              <li>触れる人を増やす（作り方ではなく、直し方から）</li>
+              <li>手が離れる形にする</li>
+            </ol>
+            <h3>出てくるもの</h3>
+            <ul class="outs"><li>動く仕組み</li><li>直し方の手引き</li><li>直せる人</li></ul>
+          </div>
+
+          <p class="todo">題と、そのすぐ下の一行が<b>公式サイトの言葉</b>です。それより下は<b>仮の中身</b>で、まだ会社が出しているものではありません。</p>
         </div>
       </div>
     </div>
@@ -376,7 +474,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
     <p class="fn">株式会社アルターデザインコンサルティング</p>
     <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
     <p class="fc">© 2025 株式会社アルターデザインコンサルティング</p>
-    <p class="fw">これは案です。公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉は、社名・事業の一行・サービスの題と一行・会社概要・お問い合わせ。サービスの詳細と「お知らせ」「見直してみる」は仮の中身で、「実績」は枠だけです。実装は AI（Claude）が行いました。<br>
+    <p class="fw">これは案です。公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉は、社名・事業の一行・サービスの題と一行・会社概要・お問い合わせ。サービスの詳細（題と一行より下）と「お知らせ」「見直してみる」は仮の中身で、「実績」は枠だけです。実装は AI（Claude）が行いました。<br>
     数字キー 1〜6、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
   </div>
 </footer>
@@ -430,10 +528,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
     document.body.classList.add('paneopen');
     open = card;
 
-    /* 帯の中に収まらない中身は、キーボードでも送れるようにする。
-       あふれていないときは tab の行き先を増やさない。 */
-    var body = panel.querySelector('.body');
-    if (body) body.tabIndex = body.scrollHeight > body.clientHeight ? 0 : -1;
+    reach(panel.querySelector('.body'));
 
     /* 記事を読んで戻ってきたとき、一覧が出たまま戻るように印を残す。
        replaceState なので、閉じたあと「戻る」で開き直したりはしない。 */
@@ -476,6 +571,39 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
   }
   window.addEventListener('pageshow', reopen);
   window.addEventListener('hashchange', reopen);
+
+  /* 帯の中に収まらない中身は、キーボードでも送れるようにする */
+  function reach(body){
+    if (body) body.tabIndex = body.scrollHeight > body.clientHeight ? 0 : -1;
+  }
+
+  /* サービスの一本。**一覧は動かさず、下に中身を出す。**
+     もう一度押すと閉じる（入口のカードと同じ押し方）。 */
+  document.addEventListener('click', function(e){
+    var row = e.target.closest('.row[data-svc]');
+    if (!row) return;
+
+    var box = row.closest('.body'), on = row.getAttribute('aria-expanded') === 'true';
+
+    box.querySelectorAll('.row[data-svc]').forEach(function(r){
+      r.setAttribute('aria-expanded', 'false');
+    });
+    box.querySelectorAll('.det[data-svc]').forEach(function(d){ d.hidden = true; });
+    if (on){ reach(box); return; }          /* もう一度押した＝閉じる */
+
+    row.setAttribute('aria-expanded', 'true');
+    box.querySelector('.det[data-svc="' + row.dataset.svc + '"]').hidden = false;
+    reach(box);
+
+    /* 押した行を帯の上へ。**その下に中身が続く**ので、戻る先（同じ行）が見えたまま。
+       帯が送れないとき（狭い画面）はページのほうで見えるところまで運ぶ。 */
+    if (box.scrollHeight > box.clientHeight){
+      var to = row.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+      box.scrollTo({ top: Math.max(0, to - 4), behavior:'smooth' });
+    } else {
+      row.scrollIntoView({ block:'nearest', behavior:'smooth' });
+    }
+  });
 
   /* 押した感触。行き先が無いカードは沈んで戻るだけ */
   function press(c){
