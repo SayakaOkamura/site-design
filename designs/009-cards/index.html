@@ -125,8 +125,13 @@ body.paneopen .wrap{max-width:1240px}
    押されたままの見た目なので、新しい印を足していない */
 .card.sel,.card.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
 
-/* 体験の口。同じ大きさ・同じ形。色だけ変える（隠さない） */
-.card.go{background:var(--go); color:#fff}
+/* デモの口。同じ大きさ・同じ形。色だけ変える（隠さない）。
+   **押すと別のページへ行く**ので、右上に → を出す
+   （本人 2026-09-07：「押すことでデモに飛ぶこともわからない」）。
+   ここだけの印。言葉で「クリックすると飛びます」とは書かない */
+.card.go{background:var(--go); color:#fff; position:relative}
+.card.go .arw{position:absolute; top:22px; right:20px; font-size:16px; line-height:1;
+              color:rgba(255,255,255,.8)}
 .card.go .s{color:rgba(255,255,255,.72)}
 .card.go:focus-visible{outline-color:var(--ink)}
 
@@ -485,11 +490,14 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
       </div>
     </div>
 
-    <!-- 体験の口。言葉は仮。
-         ここだけページに飛ぶ（他のカードは開く）。体験は別の場所として持つ。 -->
+    <!-- デモの口。**ここだけページに飛ぶ**（他のカードは開く）。
+         前は「見直してみる」だけで、**何を見直すのか・誰の話なのか・
+         押すと飛ぶのか**を何も言っていなかった（本人に指摘された）。
+         いまは「デモ」と言い、何のデモかを書き、→ で行き先があることを出す。 -->
     <a class="card go" href="try.html" data-k="4">
-      <span class="t">見直してみる</span>
-      <span class="s">積み上がったものを、カードにして仕分ける</span>
+      <span class="t">デモを触る</span>
+      <span class="s">どこにもある課題管理表を、カードにして仕分けます（例）</span>
+      <span class="arw" aria-hidden="true">→</span>
     </a>
 
     <!-- ここから下の2枚は、増えたときの並びを見るために置いてある。

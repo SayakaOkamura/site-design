@@ -177,7 +177,6 @@ body[data-stage="end"] .fl [data-ditto]::after{
 }
 
 body[data-stage="wall"]{background:var(--crt-bg)}
-body[data-stage="wall"] .top,
 body[data-stage="wall"] .stack,
 body[data-stage="wall"] .cmd,
 body[data-stage="wall"] .pre,
@@ -240,16 +239,12 @@ body[data-stage="wall"] .no{display:none}
 @keyframes emit{from{opacity:0} to{opacity:1}}
 body[data-stage="wall"] .stack li{animation:emit 60ms linear both}
 
-/* 頭も出力の一部にする（`#` のコメント）。**声を張るのは 40 行のほう** */
-body[data-stage="wall"] .top{margin-bottom:14px}
-body[data-stage="wall"] .top h1{font-size:12.5px; font-weight:400;
-                                color:var(--crt-ink); line-height:1.8}
-body[data-stage="wall"] .top h1 .n{color:var(--crt-hi)}
-body[data-stage="wall"] .top p{margin-top:0; font-size:12.5px; line-height:1.8;
-                               color:var(--crt-dim)}
-body[data-stage="wall"] .top p b{color:var(--crt-ink)}
-body[data-stage="wall"] .top h1::before,
-body[data-stage="wall"] .top p::before{content:"# "; color:#2f5647}
+/* 頭は**サイトの声**（等幅にしない）。**前提を言うのはサイトの側**で、
+   端末はその引用。前は `#` のコメントにしていたが、
+   それだと「何をする画面なのか」を言う場所が無かった（本人に指摘された）。 */
+body[data-stage="wall"] .top{margin-bottom:20px; color:#8fb3a4}
+body[data-stage="wall"] .top h1{color:#e7f3ed}
+body[data-stage="wall"] .top p b{color:#c7e3d6}
 body[data-stage="wall"] .note{color:#4d7f6a}
 
 @media (prefers-reduced-motion:reduce){
@@ -396,6 +391,26 @@ body[data-stage="end"] .note{color:var(--sub)}
 
 <main class="sheet">
 
+  <div class="top">
+    <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
+    <h1 id="h">課題管理表を片付ける</h1>
+    <p id="p"><b>作っているものの例です。</b>どこにもある表（<span class="n" id="n">0</span> 件、仮の中身）で、
+    一行ずつは読めますが、関わりは番号だけ。これをカードにして片付けます。</p>
+  </div>
+
+  <!-- 終わり。理念はここで初めて出す（通り終わってから名前が付く） -->
+  <div class="end">
+    <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
+    <p>読める形にして、一枚ずつ決める。<b>これが、作っているものです。</b></p>
+  </div>
+
+  <!-- 進み。**何枚やったか**を数と面で出す（点数ではなく現在地）。
+       カードの段だけ出る -->
+  <div class="prog">
+    <span class="pg"><i id="pgb"></i></span>
+    <p class="pn"><b id="pgd">0</b>/ <span id="pgt">0</span> 枚</p>
+  </div>
+
   <!-- 打ち込んだ一行と前置き。**製品の画面は真似しない。**
        端末の出力は特定の製品の意匠ではないので、ここに寄せる。
        前置きは版・読み込み・警告だけで、**中身の関係は一言も出さない。** -->
@@ -408,25 +423,6 @@ body[data-stage="end"] .note{color:var(--sub)}
     <div class="w">warn  mixed encodings (utf-8, cp932)</div>
     <div class="w">warn  状態の値に辞書に無いものがある</div>
     <div>resolving refs …</div>
-  </div>
-
-  <div class="top">
-    <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
-    <h1 id="h">課題管理表　<span class="n" id="n">0</span> 件</h1>
-    <p id="p">一行ずつは読めます。<b>関わりは番号だけです。</b></p>
-  </div>
-
-  <!-- 終わり。理念はここで初めて出す（通り終わってから名前が付く） -->
-  <div class="end">
-    <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
-    <p>読める形にして、一枚ずつ決める。押したものは台帳に積まれています。</p>
-  </div>
-
-  <!-- 進み。**何枚やったか**を数と面で出す（点数ではなく現在地）。
-       カードの段だけ出る -->
-  <div class="prog">
-    <span class="pg"><i id="pgb"></i></span>
-    <p class="pn"><b id="pgd">0</b>/ <span id="pgt">0</span> 枚</p>
   </div>
 
   <!-- 桁の名前。表から出したものなので見出しの行が付く（重い側だけ） -->
@@ -461,7 +457,7 @@ body[data-stage="end"] .note{color:var(--sub)}
       </span>
       <span class="rest" id="rest"></span>
     </span>
-    <button class="go" id="go">カードにする<span>一枚ずつ、押して仕分けられます</span></button>
+    <button class="go" id="go">この表をカードにする<span>一枚ずつ、押して仕分けられます</span></button>
   </div>
 </div>
 
@@ -679,8 +675,9 @@ go.onclick = function(){
     restack();
     document.getElementById('h').textContent = '仕分ける';
     document.getElementById('p').innerHTML =
-      '一枚ずつ出てきます。印が付いているのは、<b>被っているもの・'
-      + '何かのために要るもの・まだ決まっていないもの</b>。';
+      '<b>同じ ' + ITEMS.length + ' 件が、一枚ずつ出てきます。</b>'
+      + '表では番号だけだった関わりに、いまは言葉が付いています——'
+      + '被っている／何かのために要る／まだ決まっていない。';
     /* 抜け口は最初から出しておく。いつやめてもいい */
     go.innerHTML = 'ここまでにする<span>いつでも抜けられます</span>';
     window.scrollTo(0, 0);
@@ -691,9 +688,11 @@ go.onclick = function(){
 
 function finish(){
   document.body.dataset.stage = 'end';
-  document.getElementById('h').textContent = '仕分けたもの';
+  document.getElementById('h').textContent = '片付いた';
   document.getElementById('p').innerHTML =
-    '押した ' + done + ' 件が台帳に入りました。残りも同じ形で片付きます。';
+    '<b>' + done + ' 件を、一枚ずつ決めました。</b>'
+    + '同じ ' + ITEMS.length + ' 件でも、表のままなら'
+    + '「どれとどれが被っているか」は見えていません。残りも同じ形で片付きます。';
   go.hidden = true;
   window.scrollTo(0, 0);
 }
