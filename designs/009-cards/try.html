@@ -3,971 +3,577 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>見直してみる｜株式会社アルターデザインコンサルティング</title>
+<title>デモ｜株式会社アルターデザインコンサルティング</title>
 
-<!-- 009 カード ─ 見直してみる（体験）
+<!-- 009 デモ ─ **ざっくり版**（2026-09-08 に組み直した）
      ================================================================
-     **粗い一枚。**字の大きさも間もまだ詰めていない。
+     **NOTES.md の「この案のコア」を先に読む。**ここはその型の一発目で、
+     詰めていないところが三つある（下の「仮」を参照）。
 
-     話し合いで決まっていること（NOTES.md が正）
-     - 思わせたいのは **「この方がいいな」**。発見（できるのか）ではなく選好
-     - だから **比較が要る。重い側は省略できない**
-     - 重い側は「無理」ではなく **「やってられない」**。読めば分かる。ただ多い
-     - 量は減らないが、**それは売りではない**。値打ちは読みやすさ・決めやすさ・関係が見えること
-     - **重い側では決めさせない。**決めやすさは軽い側だけのものにする
-     - カード化の値打ちは、**関係が見えること**（被っている／これのために要る／決まっていない）
-     - 三択が押せるのは、**関係が見えているから**
-     - **増えるのは自分が押した側（台帳）**
-     - 快感は物理から。点数も演出も足さない
-     - **できない指示を出さない。**押すところは下の帯に一つだけ
+     コア：**制約の中の自由・不自由。**縛るのは量ではなく形。
+       生の文＝自由（何でも書ける。だから手がつかない）
+       カード＝不自由（一枚に一つ、書式が決まっている。だから動ける）
 
-     **山場はカード化のほう**（本人 2026-09-07）：
-     > 体験はカードを押す方じゃなくて、複雑で面倒なものがカード化されて可視化される法に
-     > しないと、カード押すの気持ちいいね～で伝わるものは何もない気がするな
+     型（感情の順）：**あるなあ → 一瞬の不快 → 快 → 自分ごと**
+       ① あるなあ  数件だけ。読める。うんざりさせない
+       ② 不快      同じものが量の中に埋もれる。**無理だと分からせる（やらせない）**
+       ③ 快        カードで同じ用事。**塊で押せる**から終わる
+       ④ 名前      通り終わったところに理念
 
-     **「で、何？」になる**（本人 2026-09-07）：
-     > 最初にデモ画面を開けても、で、何？にしかならないんだよな。
-     > この画面を詳細に見ようとも思わないし、進めたらただカードが出てくるだけ
-     > → **量で殴りつつ、それをまず自分ごとにさせる必要があるって話**
+     分担：**見抜くのは機械、決めるのは人。**同じ件には同じ印が付いていて、
+     まとめて押せる。塊を作るのは機械、三択を押すのは人。
+     （A「最初から塊で出す」は人がハンコになるので却下。NOTES 参照）
 
-     **そして出していた表が「もう整理されたもの」だった**（本人 2026-09-07）：
-     > 選択した後出てくるもの、全部既に整理されたものだよね。
+     出さないもの：点数・レベル・達成演出・音・**実測秒数**（「体感で」）。
+     足すもの：重さ、影、押したときのずれ、片付いた束の厚み。
 
-     **表にしてある時点で、もう整理されている**（本人 2026-09-07）：
-     > というか、件名になってて同じファイル内にある時点で
-     > かなり整理されてると思うよって言ってる
-
-     シートの形を崩すだけでは足りなかった。**題が付いていて、
-     一つのファイルに集まっている**——それが既に整理の結果。
-     いま出しているのは**題の無い、生の文**で、出どころも散っている：
-     メール・チャット・議事録・Word・PDF・Excel。
-     **表になっている Excel の塊だけ桁を持つ**（六つのうち一つ。
-     表になっているものは、まだ良いほう）。
-
-     だから、表の段に出るのは**行番号と生の文だけ。**
-     題も、状態も、担当も、期限も、参照も、**どこにも書かれていない。**
-     カードになると**題が付き、出どころが分かり、関係が言葉になる**——
-     可視化の中身が、これで「並べ替え」ではなく**変換**になった。
-
-     根は UI ではなく**前提**だった。他人の表を他人のために整えていたので、
-     訪問者に取り分が無い。だから段を三つにした：
-     **件数を自分で答える（自分ごと）→ その件数で出る（量で殴る）→ カードになる（可視化）。**
-     **量は自分が答えた数**なので、うんざりするのは自分の申告のぶん。
-
-     だから段を二つにした。**表 → カードになる（可視化）。**
-     カードは**スクロールして選ぶ。押すと右に詳しく出る。**
-     （本人 2026-09-07：「順繰りじゃなくてスクロールして選択→詳細が右に出る→
-     目が通せるって形にして、別にOKしてくとかいらない感じにしよう」）
-
-     **捨てたもの：**順繰りの束、三択（要る／要らない／もうやった）、台帳の三つの山、
-     進みの帯。**一枚ずつ決めさせるのをやめた**——伝えたいのは
-     「読める形になった＝目が通せる」ことで、押して気持ちいいことではない。
-
-     **カードになったらスクロールさせない**（本人 2026-09-07）：
-     > カードになった時スクロールしたくないかも。順繰りで出てきて、
-     > 終わったらたまっていく感じにできないか
-
-     一枚ずつ手前に出て、押したら下（台帳）へ落ちる。束の厚みは後ろに見えている。
-     **判断が一度に一つしか目に入らない**——「一枚に判断が一つ」がここで形になる。
-
-     背景は、重い側がいちばん暗い。カードになると明るくなる。入口がいちばん明るい。
-
-     **重い側は端末の見た目にする**（本人 2026-09-07）：
-     > 松岡さん的にはこのClaudeCodeの昔の難解さが好きらしい。そういう、意味わかんない
-     > 要素を体験の最初の方にしたらいいんじゃん、それを綺麗にまとめるのがそのあと。
-
-     **難解さは見た目だけ。**ただし等幅にしただけでは足りず、
-     CLI に寄せすぎても違った（本人）：
-     > これはただみためだけ合わせただけだからなあ。もっと難解な感じでいいよ、1こめ
-     > 別に無理にClaudeCodeに寄せなくても良くて、パスタコードみたいな難解さがほしい
-     > ここに懐かし画面要素入れてもいいね。改修するの、昔のシステムのことも多いだろうし
-
-     > なんかここを昔懐かしUIにできない？あ～あったね～ってなるようなやつ
-     > エクセルのUIってこういうのに勝手に使っていいの？
-     > だからCLI寄せの方がいいと思うよって話
-
-     **製品の画面は真似しない。**Windows 95 の窓も一度作ったが、
-     ロゴも画像も使っていなくても「あの製品」と分かる寄せ方だった。
-     **端末の出力は特定の製品の意匠ではない**ので、寄せ先としてここが安全。
-     難解さは**絡まりのほう**に持たせている——項番の順に並んでいない、
-     関わりのある項が遠い、参照は番号だけで意味が書いていない。
-     **中身は読める日本語のまま。**
-     **中身は読める日本語のまま**にしてある——読めないものにすると「無理」に見えて、
-     返ってくる感情が「できるのか」（発見）になり、狙っている「こっちのほうがいい」
-     （選好）が出ない。**関係（被り・依存・未決）は、ここでは出さない。**
-     あれはカードになって初めて見えるもの。
-
-     **中身は仮。**会社について何も主張しない言葉だけにしてある。
+     ここが仮 ──────────────────────────────────────────────
+     1. ①の終わりの一手「これで、ぜんぶ？」。言葉は未決
+     2. ②の一手「カードにする」。行き先は出しているが言葉は未決
+     3. ③は塊まるごとの三択だけ。「この一枚だけ」は出していない
+     件数は 120（`TOTAL`）。増減はここだけ触れば効く。
 ================================================================ -->
 
 <style>
 :root{
-  --bg:   #e8f0f8;   /* 水色の端。明るい面 */
+  --bg:   #e8f0f8;
   --card: #ffffff;
-  --tint: #eff5fb;   /* 押せない面。影を落とさない */
-  --ink:  #251f45;   /* 紫の端。字。真っ黒は使わない */
+  --tint: #eff5fb;
+  --ink:  #251f45;
   --sub:  #5c6288;
-  --go:   #6354e0;   /* 帯の中〜紫寄り。行き先がある印 */
-
-  --dark:     #1c1a33;
-  --dark-ink: #979bbd;
+  --go:   #6354e0;
+  --frame:#d8e5f1;
+  --face: linear-gradient(118deg, #b6e2f6 0%, #c2cdf8 50%, #d8c3f3 100%);
 
   --lift1: 0 1px 2px rgba(31,25,64,.07), 0 3px 8px rgba(31,25,64,.08);
   --lift2: 0 2px 4px rgba(31,25,64,.08), 0 10px 24px rgba(31,25,64,.12);
-  --lift3: 0 8px 16px rgba(31,25,64,.12), 0 28px 56px rgba(31,25,64,.18);
   --lift0: 0 1px 1px rgba(31,25,64,.12);
 
   --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
           "Liberation Mono","Courier New",monospace;
-  /* 端末の出力（重い側だけ）。**どの製品の意匠でもない** */
+  /* 生の側だけ暗くする。**どの製品の意匠でもない**（端末の出力に寄せている）*/
   --crt-bg:  #0a1210;
   --crt-ink: #86c9a4;
   --crt-dim: #45705c;
-  --crt-hi:  #d9f5e6;
-  --crt-ref: #b8933f;
-  --crt-cmd: #5fbfa1;
 
   --r: 10px;
   --ease: cubic-bezier(.2,.7,.3,1);
-  --snap: cubic-bezier(.16,1,.3,1);   /* 前へ出るとき。速く動いて素早く止まる */
+  --snap: cubic-bezier(.16,1,.3,1);
 }
-
 *{box-sizing:border-box}
-[hidden]{display:none!important}
 html{height:100%; scrollbar-gutter:stable}
 body{
-  min-height:100%; margin:0; color:var(--ink);
+  min-height:100%; margin:0; background:var(--bg); color:var(--ink);
   font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
               system-ui,-apple-system,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased;
-  padding:32px 0 120px;
-  background:var(--dark);
-  transition:background .55s var(--ease);
+  display:flex; flex-direction:column;
+  transition:background-color .5s ease;
 }
-body:not([data-stage="wall"]){background:var(--bg)}
+/* **暗くなるのは生の側だけ**（①②）。カードになったら明るいところへ戻る */
+body[data-stage="a"],body[data-stage="b"]{background:var(--crt-bg); color:var(--crt-ink)}
 
-.sheet{width:100%; max-width:908px; margin:0 auto; padding:0 24px;   /* 908 = 860 + 24×2。入口と同じ */
-       transition:max-width .24s var(--ease)}
-/* 帯が出ているあいだだけ置き場を広げる（入口と同じ手）*/
-body.picked .sheet{max-width:1240px}
+.in{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
+.wrap{flex:1 0 auto; width:100%; max-width:1180px; margin:0 auto; padding:34px 24px 40px}
 
-/* ─ 頭の帯。**カードの段だけ出す**（入口と同じ形にして、同じサイトだと分かるように）─ */
-.topbar{display:none}
-body:not([data-stage="wall"]) .topbar{
-  display:flex; align-items:center; height:56px; background:#d8e5f1; margin-bottom:26px;
+/* ─ 頭。戻る道を常設する（009 の決めごと）─ */
+.top{flex:none; height:56px; display:flex; align-items:center;
+     background:var(--frame); transition:background-color .5s ease}
+body[data-stage="a"] .top,body[data-stage="b"] .top{background:#0d1614}
+.top .in{display:flex; align-items:baseline; gap:16px}
+.back{font-size:12.5px; color:var(--sub); text-decoration:none}
+.back:hover{color:var(--go)}
+body[data-stage="a"] .back,body[data-stage="b"] .back{color:var(--crt-dim)}
+.mark{font-size:13.5px; font-weight:700; letter-spacing:.02em}
+
+/* ─ 生の側。等幅・暗い面 ───────────────────────────────── */
+.pre{font-family:var(--mono); font-size:12px; line-height:1.9; color:var(--crt-dim);
+     margin:0 0 18px}
+.pre b{color:#5fbfa1; font-weight:400; margin-right:8px}
+
+/* ① 数件だけ。**大きめ・ゆっくり。読める。** */
+.few{list-style:none; margin:0; padding:0; max-width:760px}
+.few li{
+  font-family:var(--mono); font-size:14px; line-height:1.85; color:var(--crt-ink);
+  padding:11px 0; opacity:0; animation:rise .5s var(--ease) both;
 }
-body:not([data-stage="wall"]){padding-top:0}
-.topbar .in{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
-/* .mark は既にこのファイルで使われている（重い側で消す組）。名前を分ける */
-.topbar .brand{font-size:13.5px; font-weight:700; letter-spacing:.02em; color:var(--ink)}
+.few i{font-style:normal; color:var(--crt-dim); margin-right:12px}
+@keyframes rise{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
 
-/* ─ 頭 ───────────────────────────────────────────────── */
-.top{margin:0 2px 20px; color:var(--dark-ink); transition:color .55s var(--ease)}
-body:not([data-stage="wall"]) .top{color:var(--sub)}
-.top h1{margin:0; font-size:clamp(16px,2.2vw,20px); font-weight:700; line-height:1.5;
-        color:#e7ebf0; transition:color .55s var(--ease)}
-body:not([data-stage="wall"]) .top h1{color:var(--ink)}
-.top p{margin:10px 0 0; font-size:13px; line-height:1.8}
-.top .n{font-variant-numeric:tabular-nums; font-weight:700}
-
-/* ─ 重い側：**端末の出力** ─────────────────────────────────
-   **製品の画面は真似しない**（本人 2026-09-07：「エクセルのUIってこういうのに
-   勝手に使っていいの？」→「だからCLI寄せの方がいいと思うよって話」）。
-   端末の出力は特定の製品の意匠ではないので、寄せ先としてここが安全。
-   難解さは**組み方**に持たせる（項番の順に並んでいない／関わる項が遠い／
-   参照は番号だけ）。**中身は読める日本語のまま**——読めなくすると「無理」に振れて、
-   狙っている「こっちのほうがいい」が出ない。 */
-.stack{list-style:none; margin:0; padding:0; display:grid; gap:0}
-.stack li{
-  color:var(--dark-ink); border-radius:8px; padding:2px 10px;
-  font-size:12.5px; line-height:1.75;
+/* ② 山。**同じ材料が量の中に埋もれる** */
+.pile{
+  list-style:none; margin:0; padding:0;
+  font-family:var(--mono); font-size:10.5px; line-height:1.5; color:var(--crt-ink);
+  columns:3; column-gap:32px;
 }
-.stack li .no{display:inline-block; min-width:2.4em; color:#5d6675;
-              font-variant-numeric:tabular-nums}
-.rel,.pick,.mark{display:none}
+.pile li{break-inside:avoid; padding:1px 0; white-space:nowrap; overflow:hidden}
+.pile i{font-style:normal; color:var(--crt-dim); margin-right:8px}
+/* ①で読んだ行。**印は付けない。**埋もれることが要点なので、探せてしまうと台無し */
+.ask{margin:0 0 20px; font-family:var(--mono); font-size:13.5px; color:#9fd8bb; line-height:1.9}
+/* 一手は下端に貼りつける。**山の高さに関係なく届く** */
+.hold{position:sticky; bottom:0; padding:14px 0 4px;
+      background:linear-gradient(180deg,rgba(10,18,16,0) 0%,var(--crt-bg) 46%)}
+.hold .one{margin-top:0}
 
-/* 桁は**重い側だけの部品。**カードになったら残るのは番号と本文だけ */
-.gut,.rw,.tx,.sc,.cmd,.pre,.sum,.cur,.hdr{display:none}
-body[data-stage="wall"] .hdr{display:flex; margin:0 0 4px; padding:1px 10px;
-                             font-size:12px; line-height:1.9; color:#2f5647}
-
-/* カードでは、三つの欄が件名の下に小さく並ぶ。**表と同じ値** */
-/* 三つの欄（状態・担当・期限）は**右の帯だけ**で出す。
-   一覧のカードには出さない（一覧は目で追う場所） */
-/* 一覧では消してあるので、帯のほうを強く書く（そうしないと消えたまま）*/
-body[data-stage="seen"] .pane2 .fl{
-  display:block; margin-top:14px; font-size:12.5px; color:var(--sub); line-height:1.9;
-}
-.pane2 .fl>span{display:block}
-.pane2 .fl i{display:inline; font-style:normal; margin-right:8px; color:#8a929c}
-/* 空欄は、空欄と書く（決まっていないことを、決まっていないと書く）*/
-.pane2 .fl [data-empty]::after{content:"（空欄）"; opacity:.75}
-/* **欄そのものが無かった**ものは、そう書く（空欄とは違う。埋めない） */
-.pane2 .fl [data-none]{display:block}
-.pane2 .fl [data-none]::after{content:"（どこにも書かれていない）"; opacity:.75}
-/* 三つとも無いときは一行だけ（欄の名前を三つ並べても、言うことは一つ） */
-.pane2 .fl[data-none]>span{display:none}
-.pane2 .fl[data-none]::after{content:"状態・担当・期限は、どこにも書かれていない"; opacity:.85}
-/* 「〃」「同上」は、表の中では上の行を指しているが、
-   一枚になると指す先が無い。**何も決まっていないのと同じ**なので、そう書く */
-.pane2 .fl [data-ditto]::after{content:"（上の行と同じ）"; opacity:.75; margin-left:5px}
-
-body[data-stage="wall"]{background:var(--crt-bg)}
-body[data-stage="wall"] .stack,
-body[data-stage="wall"] .cmd,
-body[data-stage="wall"] .pre,
-body[data-stage="wall"] .sum{font-family:var(--mono)}
-
-/* 打ち込んだ一行。**$ だけ色を持つ** */
-body[data-stage="wall"] .cmd{
-  display:block; margin:0 2px 12px; font-size:12.5px; line-height:1.8;
-  color:var(--crt-dim); overflow-wrap:anywhere;
-}
-.cmd b{color:var(--crt-cmd); font-weight:400; margin-right:9px}
-
-/* 前置きとしめ。**中身のことは何も言っていない**（版・読み込み・警告・件数だけ）*/
-body[data-stage="wall"] .pre{display:block; margin:0 2px 14px; font-size:12px;
-                             line-height:1.85; color:var(--crt-dim)}
-body[data-stage="wall"] .sum{display:block; margin:16px 2px 0; font-size:12px;
-                             line-height:1.85; color:var(--crt-dim)}
-.pre div,.sum,.hdr{animation:emit 60ms linear both}   /* 遅れは JS が入れる */
-.pre .v{color:#6f9d87}
-.pre .w{color:var(--crt-ref)}
-
-/* 点滅する角 */
-body[data-stage="wall"] .cur{
-  display:inline-block; width:.55em; height:1.05em; background:var(--crt-dim);
-  vertical-align:-.18em; margin-left:2px; animation:blink 1.06s steps(1) infinite;
-}
-@keyframes blink{0%,49%{opacity:.85} 50%,100%{opacity:0}}
-
-/* 出力の一行。行番号／項番／本文／参照。**参照は本文のすぐ右に付く** */
-body[data-stage="wall"] .stack li{
-  border-radius:0; padding:1px 10px; font-size:12px; line-height:1.9;
-  color:var(--crt-ink);
-}
-body[data-stage="wall"] .ln{display:flex; align-items:baseline}
-body[data-stage="wall"] .gut{
-  display:inline-block; flex:none; min-width:3ch; text-align:right;
-  margin-right:1.5em; color:#2f5647; font-variant-numeric:tabular-nums;
-}
-/* **生の文。**題ではないので桁を持たない。長ければ折り返す */
-body[data-stage="wall"] .rw{display:block; flex:1; min-width:0}
-.fl i{display:none}   /* 欄の名前はカードのときだけ出す */
-body[data-stage="wall"] .no{display:none}
-body[data-stage="wall"] .fl{display:none}   /* 状態も担当も期限も、文章には無い */
-
-/* **Excel の塊だけ桁がある**（六つのうち一つ）。
-   表になっているものは、まだ良いほう——本人「件名になってて同じファイル内にある
-   時点でかなり整理されてる」。その「良いほう」が、これしかない。 */
-body[data-stage="wall"] .stack li[data-k="5"] .rw{
-  flex:none; width:26ch; padding-right:1.5em;
-  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
-}
-body[data-stage="wall"] .stack li[data-k="5"] .fl{display:contents}
-body[data-stage="wall"] .stack li[data-k="5"] .st,
-body[data-stage="wall"] .stack li[data-k="5"] .wh,
-body[data-stage="wall"] .stack li[data-k="5"] .dl{
-  display:inline-block; flex:none; color:var(--crt-dim);
-}
-body[data-stage="wall"] .stack li[data-k="5"] .st{width:9ch}
-body[data-stage="wall"] .stack li[data-k="5"] .wh{width:7ch}
-body[data-stage="wall"] .stack li[data-k="5"] .dl{width:10ch; font-variant-numeric:tabular-nums}
-
-/* 出力が届く感じ。**動かさない。点くだけ。**
-   間隔はばらしてある（遅れは JS が入れる）。場所は最初から取ってある＝何も跳ねない */
-@keyframes emit{from{opacity:0} to{opacity:1}}
-body[data-stage="wall"] .stack li{animation:emit 60ms linear both}
-
-/* 頭は**サイトの声**（等幅にしない）。**前提を言うのはサイトの側**で、
-   端末はその引用。前は `#` のコメントにしていたが、
-   それだと「何をする画面なのか」を言う場所が無かった（本人に指摘された）。 */
-body[data-stage="wall"] .top{margin-bottom:20px; color:#8fb3a4}
-body[data-stage="wall"] .top h1{color:#e7f3ed}
-body[data-stage="wall"] .top p b{color:#c7e3d6}
-body[data-stage="wall"] .note{color:#4d7f6a}
-
-@media (prefers-reduced-motion:reduce){
-  body[data-stage="wall"] .stack li,
-  body[data-stage="wall"] .pre div,
-  body[data-stage="wall"] .sum,
-  body[data-stage="wall"] .cur{animation:none}
-}
-
-/* ─ 山場：**一斉にカードになる段**（`seen`）───────────────────
-   **複雑で面倒なものが、カード化されて可視化される。**ここが伝えたいところ。
-   同じ 40 件が、関係ごとに固まって並ぶ——被っている／何かのために要る／
-   まだ決まっていない／印なし。**表では番号だけだったものに、言葉が付く。**
-   ここでは押せるものを置かない（進むのは下の帯の一つだけ）。 */
-body[data-stage="seen"] .stack{
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
-  gap:10px; margin-top:20px;
-}
-/* 並べ替え（群ごとに固まる）は、この段だけ */
-body[data-stage="seen"] .stack li{order:var(--o,0)}
-body[data-stage="seen"] .stack li{
-  background:var(--card); color:var(--ink); box-shadow:var(--lift1);
-  border-radius:8px; padding:12px 13px; font-size:12.5px; line-height:1.6;
-  min-height:0;
-}
-body[data-stage="seen"] .stack li .no{min-width:0; margin-right:8px; font-size:11.5px}
-/* **題は、この仕組みが付けたもの。**生の文には書かれていない */
-body[data-stage="seen"] .tx{display:inline}
-/* 出どころ。**どこから来た一行なのか**が、カードで初めて分かる */
-.pane2 .sc{display:block; margin-top:12px; font-size:12px; color:var(--sub)}
-/* 元の一行。**題と並べて置く**（すり替えていないことが、ここで見える） */
-.pane2 .rw{
-  display:block; margin-top:14px; padding:13px 15px;
-  background:var(--tint); border-radius:8px;
-  font-size:12.5px; line-height:1.85; color:var(--ink);
-}
-.pane2 .rw::before{
-  content:"元の一行"; display:block; margin-bottom:5px;
-  font-size:11px; font-weight:700; color:var(--sub);
-}
-body[data-stage="seen"] .fl{display:none}      /* 三つの欄は、決めるときに出す */
-body[data-stage="seen"] .rel{margin-top:8px; gap:4px}
-body[data-stage="seen"] .rel b{font-size:10.5px; padding:4px 7px}
-
-/* 群の名前。**`.stack li` の面と影を消すので、こちらを強く書く** */
-.gl{display:none}
-body[data-stage="seen"] .stack li.gl{
-  display:block; grid-column:1/-1; background:none; box-shadow:none;
-  padding:18px 2px 2px; font-size:12px; font-weight:700; color:var(--sub);
-}
-body[data-stage="seen"] .stack li.gl:first-child{padding-top:2px}
-body[data-stage="seen"] .stack li.gl b{color:var(--ink); font-size:16px; margin-right:7px;
-                                       font-variant-numeric:tabular-nums}
-
-/* ─ 出どころの切れ目と、表じゃない行 ────────────────────────
-   **出てくるのは表ではない。**メール・チャット・議事録・Word・PDF・Excel に
-   散らばった、**題の無い文**（本人「件名になってて同じファイル内にある時点で
-   かなり整理されてる」）。カードになると、この散らばりが消えて題が付く。 */
-.sh,.jk,.hd2{display:none}
-body[data-stage="wall"] .stack li.sh{
-  display:block; margin:22px 0 6px; padding:0 10px; color:#6f9d87;
-}
-body[data-stage="wall"] .stack li.sh:first-child{margin-top:0}
-body[data-stage="wall"] .stack li.hd2{display:flex; padding:2px 10px 4px; color:#2f5647}
-body[data-stage="wall"] .stack li.jk{display:block; padding:3px 10px; color:#45705c}
-
-/* 書かれていない欄は、桁としても出さない（空欄なのとは違う） */
-body[data-stage="wall"] .ln [data-none]{display:none}
-
-/* ─ はじめに一つ聞く。**自分ごとにする段**（`ask`）───────────────
-   他人の表を見せる前に、**自分の会社の件数を答えてもらう。**
-   出す量はその数。うんざりするのは、自分の申告のぶん。
-   聞くのは一つだけ（宿題は出さない。押せば進む）。 */
-.ask0{display:none}
-body[data-stage="ask"] .ask0{display:block; margin-top:28px}
-.q0{margin:0; font-size:15px; font-weight:700; line-height:1.7}
-.q0 span{font-size:13px; font-weight:500; color:var(--sub)}
-.opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(196px,1fr));
-      gap:12px; margin-top:14px}
-.opts button{
+/* ─ 一手。**行き先が言葉に出ている**（ジェットコースターにしない）─ */
+.one{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  text-align:left; color:inherit;
-  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
-  padding:20px 22px; font-size:14px; font-weight:700;
-  transition:transform .16s var(--ease), box-shadow .16s ease;
+  margin-top:26px; padding:15px 26px; border-radius:8px;
+  background:var(--go); color:#fff; font-size:14px; font-weight:700;
+  box-shadow:var(--lift1); transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.opts button:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-.opts button:active{transform:translateY(2px); box-shadow:var(--lift0)}
-.opts button:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-.opts button span{display:block; margin-top:7px; font-size:12px; font-weight:500; color:var(--sub)}
+.one:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.one:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.one:focus-visible{outline:2px solid #fff; outline-offset:3px}
+body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 
-/* ─ 関係の印。**カードになって初めて見える**（表では番号だけ）─────
-   束を捨てたときに、この見た目も一緒に消してしまっていた。戻した。
-   色は青紫の palette の中で三つが分かれるように置いてある——
-   **依存はサイトの色、重複は赤、未決は琥珀**（赤と琥珀は「困っている側」）。 */
-body:not([data-stage="wall"]) .rel{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px}
-.rel b{font-size:11.5px; font-weight:700; line-height:1; padding:7px 10px; border-radius:999px;
-       background:var(--tint); color:var(--sub)}
-.rel b.dup{background:#fdeaee; color:#a32c4a}
-.rel b.needs{background:#eae7fb; color:#4232b4}
-.rel b.open{background:#fdf1de; color:#8a5a12}
+/* ─ ③ カード ─────────────────────────────────────────── */
+.bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 18px}
+.bar h1{margin:0; font-size:17px; font-weight:700}
+.bar .rest{font-size:12.5px; color:var(--sub)}
 
-/* ─ 右の帯。**押したカードの中身がここに出る**（入口と同じ形）───
-   一覧はスクロールして選ぶ。**押すと右に出る。決めさせない。**
-   帯は貼りつく（`sticky`）ので、一覧を送っても中身が残る＝**目が通せる。** */
-.wrap2{display:contents}
-body[data-stage="seen"] .wrap2{display:flex; align-items:flex-start}
-body[data-stage="seen"] .stack{flex:1 1 auto; min-width:0}
-
-.pane2{display:none}
-body[data-stage="seen"] .pane2{
-  display:block; flex:none; width:0; overflow:hidden;
-  position:sticky; top:24px; transition:width .24s var(--ease);
+.deck{list-style:none; margin:0; padding:0;
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)); gap:12px}
+.deck li{display:flex}
+.cd{
+  -webkit-appearance:none; appearance:none; border:0; font:inherit; text-align:left;
+  cursor:pointer; width:100%; min-width:0;
+  background:var(--card); color:var(--ink); border-radius:var(--r);
+  box-shadow:var(--lift1); padding:15px 16px 14px;
+  display:flex; flex-direction:column; gap:9px;
+  transition:transform .16s var(--ease), box-shadow .16s ease, opacity .2s ease;
 }
-body.picked[data-stage="seen"] .pane2{width:356px}   /* 340 ＋ 空き 16 */
+.cd:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.cd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+/* **元の一行が主。**すり替えていないことが、ここで見える */
+.cd .r{font-size:12.5px; line-height:1.65; color:var(--ink);
+       display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+/* 題は**機械が足したもの**なので、印の側に小さく置く */
+.cd .foot{display:flex; align-items:baseline; gap:9px; margin-top:auto}
+.cd .t{font-size:11px; font-weight:700; color:var(--sub); letter-spacing:.01em;
+       white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cd .s{font-family:var(--mono); font-size:10px; color:#96a0bd; flex:none}
 
-/* 中身は固定幅。**帯が伸びるあいだ、文字が組み直されない** */
-.pane2 .box{
-  width:340px; margin-left:16px; padding:22px 24px;
+/* 印。**同じ件には同じ色。**見抜いたのは機械 */
+.cd{border-left:4px solid transparent}
+.cd.k0{border-left-color:#7cc4e8} .cd.k1{border-left-color:#8f9ff0}
+.cd.k2{border-left-color:#b58fe6} .cd.k3{border-left-color:#6fc3a6}
+.cd.k4{border-left-color:#e2a86a} .cd.k5{border-left-color:#e08a9a}
+.cd.k6{border-left-color:#5fa8d0} .cd.k7{border-left-color:#a0b06a}
+.cd.k8{border-left-color:#c98fc0} .cd.k9{border-left-color:#7f8fd8}
+.cd.k10{border-left-color:#6bbfbf} .cd.k11{border-left-color:#d69a7a}
+
+/* **同じ印が光る。**押す前に「これから何枚まとめて決まるか」が見えていないと、
+   押した結果が驚きになる（画面内から予測できる変化にする）。
+   仲間以外を沈めるのではなく、仲間を持ち上げる——**沈めると数が分からなくなる** */
+.cd.lit{box-shadow:var(--lift2); transform:translateY(-3px); background:#f7f3ff}
+.cd.lit .t{color:var(--go)}
+.cd.sel{outline:2px solid var(--go); outline-offset:2px}
+/* 片付いたものは**消えるだけ**（減った、を見せるのは下の束） */
+.deck li.gone{display:none}
+
+/* ─ 決める帯。選んだ一枚と、その塊への三択 ───────────── */
+.pick{
+  position:sticky; bottom:0; margin-top:18px; padding:16px 18px;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
-  animation:swap2 .18s var(--ease);
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
 }
-@keyframes swap2{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
-.pane2 .no{display:inline-block; min-width:0; margin-right:10px; font-size:12.5px; color:var(--sub)}
-.pane2 .tx{display:inline; font-size:16px; font-weight:700; line-height:1.55}
-.pane2 .rel{margin-top:14px}
-
-/* 押したカードは沈む。**カードと同じ言い方**（新しい印を足さない） */
-body[data-stage="seen"] .stack li.pick2,
-body[data-stage="seen"] .stack li.pick2:hover{
-  transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint);
-}
-body[data-stage="seen"] .stack li:not(.gl){cursor:pointer;
-  transition:transform .16s var(--ease), box-shadow .16s ease}
-body[data-stage="seen"] .stack li:not(.gl):hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-body[data-stage="seen"] .stack li:not(.gl):focus-visible{outline:2px solid var(--go); outline-offset:3px}
-
-/* ─ 下の帯。押すところは常にここ。あとで台帳になる ───────────── */
-.book{
-  position:fixed; left:0; right:0; bottom:0; z-index:80;
-  background:var(--card); box-shadow:0 -2px 4px rgba(20,26,32,.06), 0 -12px 32px rgba(20,26,32,.10);
-  padding:16px 0;
-}
-.book .in{max-width:908px; margin:0 auto; padding:0 24px; display:flex; align-items:flex-end;
-          gap:20px; flex-wrap:wrap}
-.go{
+.pick[hidden]{display:none}
+.pick .who{flex:1 1 220px; min-width:0}
+.pick .who b{display:block; font-size:14px; line-height:1.5}
+.pick .who span{font-size:12px; color:var(--sub)}
+.pick .btns{display:flex; gap:9px; flex-wrap:wrap}
+.three{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  margin-left:auto; text-align:left;
-  background:var(--go); color:#fff; border-radius:9px; box-shadow:var(--lift1);
-  padding:14px 22px; font-size:14px; font-weight:700; line-height:1.4;
-  transition:transform .16s var(--ease), box-shadow .16s ease;
+  padding:12px 16px; border-radius:8px; background:var(--tint); color:var(--ink);
+  font-size:13px; font-weight:700; box-shadow:var(--lift1);
+  transition:transform .12s var(--ease), box-shadow .12s ease;
 }
-.go:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.go:active{transform:translateY(1px); box-shadow:var(--lift0)}
-.go:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-.go span{display:block; margin-top:4px; font-size:11.5px; font-weight:500; color:rgba(255,255,255,.76)}
-body[data-stage="wall"] .go{margin-left:0}
+.three:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.three:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.three:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.three em{font-style:normal; color:var(--sub); font-weight:500; margin-left:7px; font-size:11px}
 
-/* ─ 終わり ───────────────────────────────────────────── */
-/* 理念。**一覧の下に置く**（通り終わってから名前が付く。
-   「ここまでにする」を押させるのはやめた） */
-.end{display:none; background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
-     padding:40px; margin-top:26px}
-body[data-stage="seen"] .end{display:block}
-.end h2{margin:0; font-size:clamp(19px,3vw,27px); font-weight:700; line-height:1.55}
-.end p{margin:20px 0 0; font-size:13.5px; color:var(--sub); line-height:1.95}
+/* 片付いた束。**厚みだけ。数字の派手さは足さない** */
+.done{margin-top:16px; display:flex; align-items:baseline; gap:14px; font-size:12.5px; color:var(--sub)}
+.done .stack{flex:1 1 auto; height:10px; border-radius:5px; background:var(--tint); overflow:hidden}
+.done .stack i{display:block; height:100%; width:0; background:var(--go); opacity:.55;
+               transition:width .3s var(--ease)}
 
-/* ホーム。**下の帯に常設する**（本人 2026-09-07：「常にホームに戻れるように
-   しておいて」）。ページの末尾に置くと、重い側では 40 行の下、
-   カードの段では消えていた。**いつも同じ場所に一つだけ。** */
-.home{
-  flex:none; display:block; text-decoration:none; color:inherit;
-  background:var(--card); border-radius:8px; box-shadow:var(--lift1);
-  padding:11px 16px; font-size:13px; font-weight:700; white-space:nowrap;
-  transition:transform .16s var(--ease), box-shadow .16s ease;
+/* ─ ④ 名前が付く ────────────────────────────────────── */
+.end{max-width:760px}
+.end .face{
+  background:var(--face); border-radius:var(--r); box-shadow:var(--lift2);
+  padding:40px 34px; animation:rise .6s var(--ease) both;
 }
-.home:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.home:active{transform:translateY(1px); box-shadow:var(--lift0)}
-.home:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.end h2{margin:0; font-size:clamp(18px,2.6vw,26px); font-weight:700; line-height:1.5}
+.end .said{margin:18px 0 0; font-size:13.5px; line-height:1.9; color:rgba(37,31,69,.74)}
+.end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
 
+.foot{flex:none; background:var(--frame); transition:background-color .5s ease}
+body[data-stage="a"] .foot,body[data-stage="b"] .foot{background:#0d1614}
+.foot .in{padding:22px 24px 26px}
+.note{margin:0; font-size:11.5px; line-height:1.85; color:var(--sub)}
+body[data-stage="a"] .note,body[data-stage="b"] .note{color:var(--crt-dim)}
 
-.note{margin:22px 2px 0; font-size:11.5px; line-height:1.9; color:var(--dark-ink);
-      transition:color .55s var(--ease)}
-body:not([data-stage="wall"]) .note{color:var(--sub)}
+[data-stage] .st{display:none}
+body[data-stage="a"] .st-a,body[data-stage="b"] .st-b,
+body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
-@media (max-width:520px){
-  body{padding:24px 16px 130px}
-  .end{padding:28px 24px}
+@media (max-width:900px){ .pile{columns:2} }
+@media (max-width:560px){ .pile{columns:1} .few li{font-size:13px} }
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
 }
 </style>
 </head>
-<body data-stage="ask">
+<body data-stage="a">
 
-<!-- 頭の帯。**カードの段だけ出す。**入口と同じ形なので、戻ってきたと分かる -->
-<header class="topbar">
-  <div class="in"><span class="brand">株式会社アルターデザインコンサルティング</span></div>
+<header class="top">
+  <div class="in">
+    <a class="back" href="index.html">← もどる</a>
+    <span class="mark">株式会社アルターデザインコンサルティング</span>
+  </div>
 </header>
 
-<main class="sheet">
+<main class="wrap">
 
-  <div class="top">
-    <!-- **できない指示を出さない。**事実だけ置いて、押すところは下の帯に一つ。 -->
-    <h1 id="h">たまっているものを片付ける</h1>
-    <p id="p"><b>作っているものの例です。</b>まず一つだけ教えてください——
-    出す量は、その件数にします。<span class="n" id="n" hidden>0</span></p>
-  </div>
+  <!-- ① あるなあ。**数件だけ。聞かない。読ませる。** -->
+  <section class="st st-a">
+    <p class="pre"><b>$</b>読み込み  mail / chat / 議事録 / docx / pdf / xlsx</p>
+    <ul class="few" id="few"></ul>
+    <button class="one" id="go-b">これで、ぜんぶ？</button>
+  </section>
 
-  <!-- はじめに一つだけ聞く。**他人の表を見せる前に、自分ごとにする。**
-       出す量はここで答えた数（量で殴るのを、自分の申告でやる） -->
-  <div class="ask0" id="ask0">
-    <p class="q0">決まったこと・困っていることは、いま何件くらいたまっていますか？<br>
-    <span>メール、チャット、議事録、Word、PDF、Excel——ぜんぶ合わせて。</span></p>
-    <div class="opts">
-      <button type="button" data-n="36">36 件くらい<span>だいたい把握できている</span></button>
-      <button type="button" data-n="120">120 件くらい<span>あちこちに散っている</span></button>
-      <button type="button" data-n="402">400 件以上<span>誰も全部は見ていない</span></button>
-      <button type="button" data-n="402" data-unknown>数えたことがない<span>いちばん多い形で出します</span></button>
+  <!-- ② 一瞬の不快。**同じものが量の中に埋もれる。やらせない。** -->
+  <!-- 問いは山の**上**に置く。下に置いたら、山を越えないと問いに届かなかった
+       （画面で見つけた）。一手は下端に貼りつける——山は好きなだけ高くていい -->
+  <section class="st st-b">
+    <p class="pre" id="count"></p>
+    <p class="ask">この中から、要るものと要らないものに分けてください。</p>
+    <ul class="pile" id="pile"></ul>
+    <div class="hold"><button class="one" id="go-c">カードにする</button></div>
+  </section>
+
+  <!-- ③ 快。**塊で押せる。**見抜くのは機械、決めるのは人 -->
+  <section class="st st-c">
+    <div class="bar">
+      <h1>同じ件には同じ印が付いています</h1>
+      <span class="rest" id="rest"></span>
     </div>
-  </div>
+    <ul class="deck" id="deck"></ul>
 
-  <!-- 打ち込んだ一行と前置き。**製品の画面は真似しない。**
-       端末の出力は特定の製品の意匠ではないので、ここに寄せる。
-       前置きは版・読み込み・警告だけで、**中身の関係は一言も出さない。** -->
-  <p class="cmd"><b>$</b>alter scan --all-sources --deep | alter graph --resolve 2&gt;&amp;1 | tee scan.log</p>
+    <div class="pick" id="pick" hidden>
+      <div class="who">
+        <b id="pick-t"></b>
+        <span id="pick-n"></span>
+      </div>
+      <div class="btns">
+        <button class="three" data-v="need">要る<em>1</em></button>
+        <button class="three" data-v="drop">要らない<em>2</em></button>
+        <button class="three" data-v="done">もうやった<em>3</em></button>
+      </div>
+    </div>
 
-  <div class="pre">
-    <div class="v">alter 0.4.1-rc2 (build 8f3ac1) · node v24.18.0 · win32-x64</div>
-    <div id="rd">reading  mail / chat / 議事録 / docx / pdf / xlsx</div>
-    <div class="w">warn  no title field in 5 of 6 sources</div>
-    <div class="w">warn  mixed encodings (utf-8, cp932)</div>
-    <div class="w">warn  同じ話が別の出どころに出ている</div>
-    <div>resolving refs across sources …</div>
-  </div>
+    <div class="done">
+      <span id="done-n">決めた 0 件</span>
+      <span class="stack"><i id="done-bar"></i></span>
+    </div>
+  </section>
 
-  <!-- 出力の本体。**桁（No・状態・担当・期限・参照）は重い側だけの部品で、
-       カードになったら番号と件名が前に出て、三つの欄は下に小さく並ぶ。** -->
-  <!-- 一覧と、押したカードの中身が出る帯。カードの段だけ横に並ぶ -->
-  <div class="wrap2">
-    <ul class="stack" id="stack"></ul>
-    <aside class="pane2" id="pane2"></aside>
-  </div>
-
-  <!-- しめ。数字は JS が入れる（実際の件数と合わせる） -->
-  <p class="sum" id="sum"></p>
-
-  <!-- 理念。一覧の下（通り終わってから名前が付く） -->
-  <div class="end">
-    <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
-    <p>読める形にして、目を通せるようにする。<b>これが、作っているものです。</b></p>
-  </div>
-
-  <p class="note">これは仮の中身です。実際のメールや議事録ではありません。カードに付く題は、生の一行には書かれていないもの（この仕組みが付けるもの）です。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
+  <!-- ④ 名前が付く。**通り終わってから** -->
+  <section class="st st-d">
+    <div class="end">
+      <div class="face">
+        <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
+        <p class="said">同じ量です。形だけ変えました。</p>
+      </div>
+      <div class="again">
+        <button class="one" id="again">もう一度</button>
+        <a class="one" href="index.html" style="text-decoration:none">会社を見る</a>
+      </div>
+    </div>
+  </section>
 
 </main>
 
-<div class="book">
+<footer class="foot">
   <div class="in">
-    <!-- ホーム。**どの段でも、いつもここにある。**
-         「入口」は人が使う言葉ではない（本人 2026-09-07：「入口、とは呼ばないだろう」）-->
-    <a class="home" href="./">ホーム</a>
-    <button class="go" id="go">これをカードにする<span>題が付いて、関わりが見えます</span></button>
+    <p class="note">これは仮の中身です。実際のメールや議事録ではありません。カードに付く題は、生の一行には書かれていないもの（この仕組みが付けるもの）です。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月3日に確認）。</p>
   </div>
-</div>
+</footer>
 
 <script>
-/* 中身は仮。**題の付いていない、生の断片**にしてある（業種を選ばない言葉だけ）。
+(function(){
+  'use strict';
 
-   本人 2026-09-07：「件名になってて同じファイル内にある時点でかなり整理されてると
-   思うよって言ってる」——課題管理表は、もう**題が付いて一箇所に集まったもの。**
-   本当に積み上がっているのは、**メール・チャット・議事録・Word・PDF・Excel に
-   散らばった、題の無い文章。**それを出す。
+  /* 件数。**量は減らない**——②の山と③のカードは同じ 120 件。
+     減るのは手数だけ（12 群なので 12 手で終わる）。 */
+  var TOTAL = 120;
 
-   r=生の文（題ではない。そのまま読める）
-   t=カードになったときの題（**これは出力。生の文には書かれていない**）
-   s/w/d=状態・担当・期限。**書かれているものだけ入れる**（多くは無い）
-   rel … dup:[相手] 被っている／need:相手 それのために要る／open まだ決まっていない
+  /* 群 ＝ カードの題（**生の一行には書かれていない。この仕組みが付けるもの**）と、
+     その件が実際にどう書かれていたか（生の文）。
+     **題を当てるのが②で無理だと思ったところ**で、そこは機械がやる。
 
-   **出どころは 6 つ、6 行ずつ。**同じ話が、別の出どころで別の言い方で出てくる。 */
-var SRC = [
-  ['mail',   '2024-06-11 10:23', '佐藤 → 全員', 'Re: 帳票について'],
-  ['chat',   '#開発',            '2025-01-20 18:04', ''],
-  ['議事録', '2024-07-02',       '定例',       ''],
-  ['docx',   '要件メモ_v3.docx', 'p.4',        ''],
-  ['pdf',    '手順書(2019).pdf', 'p.42',       ''],
-  ['xlsx',   '課題管理.xlsx / Sheet1', 'B14〜', '']
-];
-var BLK = 6;
+     **出どころは文と対で持つ。**最初はランダムに振っていたが、
+     chat の言い方の行に pdf と付いたりして、荒れではなく**作りそこないに見えた**
+     （画面で見つけた）。同じ件が別の出どころで別の言い方で出てくるのが要点なので、
+     どの出どころの言い方かは文のほうに付いている。 */
+  var GROUPS = [
+    { t:'帳票の桁がずれる', raw:[
+      ['mail',  '先日の帳票、桁がずれているとのことでした。原因はまだ分かっていません。'],
+      ['docx',  '帳票は最大 99 行。ただし旧帳票は 50 行のまま。'],
+      ['xlsx',  '帳票の桁ずれ（再）'],
+      ['chat',  'あの帳票、また数字が一列ずれてました'],
+      ['議事録','・帳票の桁の件、報告あり。原因調査中。'] ]},
+    { t:'印刷で右端が切れる', raw:[
+      ['mail',  '印刷すると右端が切れるという話も、あわせて出ていました。'],
+      ['docx',  '印刷の余白は既定のままとする。'],
+      ['docx',  '印刷まわりはこの節に追記予定。（書きかけ）'],
+      ['chat',  '紙で出すと最後の列が見えないんですけど'],
+      ['議事録','・印刷の件は次回。'] ]},
+    { t:'権限の整理', raw:[
+      ['chat',  'あの画面、権限まわりが終わってないと直せないと思う'],
+      ['chat',  '権限の一覧、どこにあるか分かる人いますか'],
+      ['議事録','・権限の整理を進める。担当は次回決める。'],
+      ['xlsx',  '権限の件（11と同じ？）'],
+      ['pdf',   '権限の定義は別紙による。別紙は添付されていない。'] ]},
+    { t:'承認者が決まっていない', raw:[
+      ['chat',  'え、あれ課長承認でしたっけ'],
+      ['議事録','・承認は部長で運用することにする。'],
+      ['議事録','・（前回）承認は課長に変更、と記載あり。'],
+      ['xlsx',  '承認のフローは要確認'],
+      ['xlsx',  '※担当は都度確認'] ]},
+    { t:'検索が遅い', raw:[
+      ['chat',  '検索が遅いのも同じ原因？'],
+      ['docx',  '検索は 3 秒以内。※現状は満たしていない。'],
+      ['chat',  '一覧を開くのに毎回待たされます'],
+      ['議事録','・検索の速さについて報告。'],
+      ['xlsx',  '検索（遅い）'] ]},
+    { t:'取り込みで止まる', raw:[
+      ['docx',  '取り込みで止まることがある（再現手順は未記載）。'],
+      ['pdf',   '取り込みエラー時の手順は別紙による。別紙は添付されていない。'],
+      ['chat',  'また途中で止まったので手で入れ直しました'],
+      ['議事録','・取り込みの件、条件を整理してから対応。'],
+      ['xlsx',  '取込エラー（手順なし）'] ]},
+    { t:'二重登録ができてしまう', raw:[
+      ['議事録','・二重登録ができてしまう件、条件を整理してから対応。'],
+      ['pdf',   '重複の判定条件は定めていない。'],
+      ['chat',  '同じ人が二回登録されてました'],
+      ['xlsx',  '重複チェック（未定）'],
+      ['議事録','・重複の件、前にも出ていた気がする。'] ]},
+    { t:'添付が開けない', raw:[
+      ['mail',  '（添付：帳票サンプル.xlsx が開けないと連絡あり）'],
+      ['pdf',   '添付ファイルが開けない場合は担当に連絡すること。'],
+      ['chat',  'ファイル開けないんですけど壊れてます？'],
+      ['xlsx',  '添付（開けない）'],
+      ['議事録','・添付の件、報告。'] ]},
+    { t:'月次の集計が合わない', raw:[
+      ['議事録','・月次の集計が合っていないという報告。原因は調査中。'],
+      ['chat',  '月次の数字、去年と突き合わせると合いません'],
+      ['xlsx',  '集計（合わない）'],
+      ['docx',  '月次集計の定義は各部で異なる。'],
+      ['議事録','・集計の件、継続。'] ]},
+    { t:'ログの保存期間が未定', raw:[
+      ['docx',  'ログの保存期間は未定。'],
+      ['chat',  'ログっていつまで残ってるんですか'],
+      ['議事録','・ログの保存について、次回決める。'],
+      ['xlsx',  'ログ保存（未定）'],
+      ['pdf',   'ログの保管方針は定めていない。'] ]},
+    { t:'引き継ぎの記録がない', raw:[
+      ['pdf',   '引き継ぎは書面で行うこと。'],
+      ['chat',  '前任者しか知らないみたいです'],
+      ['議事録','・引き継ぎの記録について、確認する。'],
+      ['xlsx',  '引継（記録なし）'],
+      ['docx',  '担当が変わった経緯は記載されていない。'] ]},
+    { t:'手順書が古い', raw:[
+      ['pdf',   '本手順書は 2019 年時点のものである。'],
+      ['xlsx',  '※このシートは古い'],
+      ['chat',  'その手順書、たしかもう使ってないやつです'],
+      ['議事録','・手順書の更新について。'],
+      ['xlsx',  '手順書（2019）'] ]}
+  ];
 
-var ITEMS = [
-  /* ─ mail ─ */
-  {r:'先日の帳票、桁がずれているとのことでした。原因はまだ分かっていません。',
-   t:'帳票の桁がずれる', rel:{dup:[19,31]}},
-  {r:'印刷すると右端が切れるという話も、あわせて出ていました。',
-   t:'印刷で右端が切れる', rel:{dup:[24]}},
-  {r:'こちらは前にも同じ指摘をいただいた気がします。',
-   t:'同じ指摘が前にもあった', rel:{open:1}},
-  {r:'対応の担当は追って決めます。',
-   t:'担当が決まっていない', rel:{open:1}},
-  {r:'なお、ログイン後に画面が白いままになる件は別で見ています。',
-   t:'ログイン後の画面が白いまま', rel:{need:7}},
-  {r:'（添付：帳票サンプル.xlsx が開けないと連絡あり）',
-   t:'添付が開けない', rel:{dup:[27]}},
+  /* ①で読ませる数件。**うんざりさせない。**あとで②の山の中に埋もれる。
+     **五件は別の群から取る**（同じ件が並ぶと①で塊が見えてしまい、③の値打ちが減る）*/
+  var FEW = [[0,0],[2,0],[3,0],[8,0],[5,2]];
 
-  /* ─ chat ─ */
-  {r:'あの画面、権限まわりが終わってないと直せないと思う',
-   t:'権限の整理', rel:{dup:[14,33]}},
-  {r:'権限の一覧、どこにあるか分かる人いますか',
-   t:'権限の一覧が見つからない', rel:{open:1}},
-  {r:'たしか去年の議事録に書いてあった気がします',
-   t:'決定が議事録にしか残っていない', rel:{need:15}},
-  {r:'え、あれ課長承認でしたっけ',
-   t:'承認者が誰か分からない', rel:{dup:[16]}},
-  {r:'検索が遅いのも同じ原因？',
-   t:'検索が遅い', rel:{dup:[22]}},
-  {r:'別件かも。あとで見ます',
-   t:'検索の件は別かもしれない', rel:{open:1}},
+  /* ─ 札を作る。**同じ件が何度も立つ**のは荒れた材料では普通のこと ─ */
+  var seed = 20260908;
+  function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
 
-  /* ─ 議事録 ─ */
-  {r:'・月次の集計が合っていないという報告。原因は調査中。',
-   t:'月次の集計が合わない', s:'調査中'},
-  {r:'・権限の整理を進める。担当は次回決める。',
-   t:'権限の整理', rel:{dup:[7], open:1}},
-  {r:'・承認は部長で運用することにする。',
-   t:'承認者を部長にする', rel:{dup:[16]}},
-  {r:'・（前回）承認は課長に変更、と記載あり。',
-   t:'承認者を課長にする', rel:{dup:[10,15]}},
-  {r:'・二重登録ができてしまう件、条件を整理してから対応。',
-   t:'二重登録ができてしまう', rel:{need:28}},
-  {r:'・その他、特になし。',
-   t:'（内容が書かれていない）', rel:{open:1}},
+  var CARDS = [];        /* {k:群, t:題, raw:生の文, src:出どころ, n:行番号} */
+  function build(){
+    CARDS = [];
+    /* 群ごとの枚数を散らす（合計が TOTAL になるように最後で詰める）。
+       **群の大きさが違うことが要点**——一手で 14 枚片付く群もあれば 4 枚の群もある */
+    var w = GROUPS.map(function(){ return 4 + Math.floor(rnd() * 11); });
+    var sum = w.reduce(function(a,b){ return a+b; }, 0), i = 0;
+    while (sum < TOTAL){ w[i % w.length]++; sum++; i++; }
+    while (sum > TOTAL){ if (w[i % w.length] > 3){ w[i % w.length]--; sum--; } i++; }
 
-  /* ─ docx ─ */
-  {r:'帳票は最大 99 行。ただし旧帳票は 50 行のまま。',
-   t:'帳票の桁がずれる', rel:{dup:[1]}},
-  {r:'印刷の余白は既定のままとする。',
-   t:'印刷の余白', rel:{need:24}},
-  {r:'取り込みで止まることがある（再現手順は未記載）。',
-   t:'取り込みで止まる', rel:{need:26}},
-  {r:'検索は 3 秒以内。※現状は満たしていない。',
-   t:'検索が遅い', rel:{dup:[11]}},
-  {r:'ログの保存期間は未定。',
-   t:'ログの保存期間が未定', rel:{open:1}},
-  {r:'印刷まわりはこの節に追記予定。（書きかけ）',
-   t:'印刷で右端が切れる', rel:{dup:[2], open:1}},
+    /* 二周目以降の跡。**同じ文が何度も出てくるのは本当**だが、
+       一字も違わない札が三枚並ぶと荒れではなく**作りそこないに見えた**（画面で見つけた）。
+       転記や再掲の跡を付けて、同じ件だが別の一行、という形にする。 */
+    var AGAIN = ['（再掲）','※同上','（転記）','※前回分','（追記）'];   /* （再）は元の文に入っているものがあるので使わない */
 
-  /* ─ pdf ─ */
-  {r:'締めは月末の翌 3 営業日までに行うこと。',
-   t:'締め処理の順番', rel:{need:29}},
-  {r:'取り込みエラー時の手順は別紙による。別紙は添付されていない。',
-   t:'取り込みエラーの手順が無い', rel:{dup:[21], open:1}},
-  {r:'添付ファイルが開けない場合は担当に連絡すること。',
-   t:'添付が開けない', rel:{dup:[6]}},
-  {r:'重複の判定条件は定めていない。',
-   t:'重複チェックの条件が無い', rel:{open:1}},
-  {r:'本手順書は 2019 年時点のものである。',
-   t:'手順書が古い', rel:{need:25}},
-  {r:'引き継ぎは書面で行うこと。',
-   t:'引き継ぎの記録がない', rel:{open:1}},
-
-  /* ─ xlsx ─ ここだけ題が付いている（**表になっているものは、まだ良いほう**）*/
-  {r:'帳票の桁ずれ（再）', t:'帳票の桁がずれる',
-   s:'未着手', w:'', d:'2024/03', rel:{dup:[1]}},
-  {r:'同上', t:'（何を指しているか分からない）',
-   s:'対応中', w:'〃', d:'', rel:{open:1}},
-  {r:'権限の件（11と同じ？）', t:'権限の整理',
-   s:'―', w:'', d:'', rel:{dup:[7], open:1}},
-  {r:'※担当は都度確認', t:'担当が決まっていない',
-   s:'', w:'―', d:'', rel:{open:1}},
-  {r:'小計 12 件', t:'（集計行。課題ではない）',
-   s:'', w:'', d:'', rel:{open:1}},
-  {r:'（空欄）', t:'（内容が書かれていない）',
-   s:'', w:'', d:'？', rel:{open:1}}
-];
-
-var stack = document.getElementById('stack'),
-    pane2 = document.getElementById('pane2'),
-    go    = document.getElementById('go'),
-    lis   = [],
-    frag  = null,
-    N     = 0;      /* 出す件数。本人が答えた数 */
-
-/* 40 件を種にして、答えた件数まで積む。
-   **同じ件名が何度も立つ**のは、荒れた表では普通のこと（再登録・別シート）。
-   欄の値は二周目以降だけ回して、同じ行が並ばないようにする。
-   参照の番号は周ごとにずらす（周の中では絡まりが保たれる）。 */
-var WHO = ['', '〃', '田中', '鈴木', '佐藤', '高橋', '同上', '―'];
-var ST  = ['対応中', '未着手', '保留', '調査中', '進行中', '着手済み', '未定', '―', ''];
-var DL  = ['', '？', '－', '―', '2024/03', '2025/06', '2023/11', '2024/09'];
-
-function make(i){
-  var base = ITEMS[i % ITEMS.length], lap = Math.floor(i / ITEMS.length);
-  if (lap === 0) return base;
-  var o = { t: base.t, r: base.r, rel: base.rel };
-  /* 回すのは**書かれている欄だけ。**無い欄は、周が変わっても無い
-     （文章の出どころに状態や期限が生えてくることはない） */
-  if (base.s !== undefined) o.s = ST[(i * 5 + lap) % ST.length];
-  if (base.w !== undefined) o.w = WHO[(i * 3 + lap) % WHO.length];
-  if (base.d !== undefined) o.d = DL[(i * 7 + lap) % DL.length];
-  return o;
-}
-
-/* 参照の相手。周ごとにずらして、はみ出したら落とす */
-function ref(k, i){
-  var lap = Math.floor(i / ITEMS.length), t = lap * ITEMS.length + k;
-  return (t >= 1 && t <= N) ? t : 0;
-}
-
-var JUNK = ['（以下、貼り付け）', '※このシートは古い', '（転記元不明）', '※要確認'];
-
-function blockOf(i){ return Math.floor(i / BLK); }
-function kindOf(i){ return blockOf(i) % SRC.length; }
-
-function note(cls, text){
-  var l = document.createElement('li');
-  l.className = cls;
-  l.textContent = text;
-  (frag || stack).appendChild(l);
-  return l;
-}
-
-/* 出どころの切れ目。**替わるのはシートではなく、出どころ。**
-   同じ話が、別の出どころで別の言い方で出てくる。
-   桁の見出しが付くのは Excel の塊だけ（**表になっているものは、まだ良いほう**）。 */
-function head(i){
-  var idx = blockOf(i), k = kindOf(i), sr = SRC[k];
-  note('sh', '── ' + sr[0] + '  ' + sr[1] + '  ' + sr[2]
-           + (sr[3] ? '  ' + sr[3] : '') + '  [#' + (idx + 1) + ']  ' + '─'.repeat(8));
-
-  if (k === 5){
-    if (idx) note('jk', JUNK[idx % JUNK.length]);
-    var l = document.createElement('li');
-    l.className = 'hd2 ln';
-    l.dataset.k = 5;
-    l.innerHTML = '<span class="gut">No</span><span class="rw">件名</span>'
-                + '<span class="fl"><span class="st">状態</span><span class="wh">担当</span>'
-                + '<span class="dl">期限</span></span>';
-    (frag || stack).appendChild(l);
-  }
-}
-
-function build(n){
-  N = n;
-  stack.textContent = '';
-  lis = [];
-  /* 400 行を一枚ずつ差し込むと、押してから 1 秒近く待たされる。
-     まとめて作って一度で入れる */
-  frag = document.createDocumentFragment();
-  for (var i = 0; i < n; i++){
-    if (i % BLK === 0) head(i);                     /* 出どころが替わる */
-    row(make(i), i);
-    if (i % BLK === BLK - 1 && kindOf(i) === 2)   /* 議事録の終わりには署名が付く */
-      note('jk', '（以上、記録：佐藤）');
-  }
-  stack.appendChild(frag);
-  frag = null;
-  groups();
-  paint();
-}
-
-function row(it, i){
-  var n = i + 1, rel = it.rel || {};
-  var li = document.createElement('li');
-
-  /* 関係の相手。**表の段には一切出さない**——番号すら書かれていない。
-     生の材料に「参照」の桁は無いので、ここで持っているだけ
-     （カードになって初めて言葉になる） */
-  var dups = [], need = 0;
-  (rel.dup || []).forEach(function(k){ var t = ref(k, i); if (t) dups.push(t); });
-  if (rel.need) need = ref(rel.need, i);
-
-  var k = kindOf(i);
-  li.dataset.k = k;
-
-  var t = document.createElement('div');
-  t.className = 'ln';
-  /* **表の段に出るのは、行番号と生の文だけ。**
-     題も、状態も、担当も、期限も、参照も、**生の材料には無い**（誰も付けていない）。
-     カードになると**題が付き、出どころが分かり、関係が言葉になる**——
-     同じ要素に両方を持たせてあるので、端折ってはいない。 */
-  t.innerHTML = '<span class="gut">' + n + '</span>'
-              + '<span class="rw"></span>'
-              + '<span class="no">' + n + '</span>'
-              + '<span class="tx"></span>'
-              + '<span class="sc"></span>'
-              + '<span class="fl">'
-              +   '<span class="st"><i>状態</i></span>'
-              +   '<span class="wh"><i>担当</i></span>'
-              +   '<span class="dl"><i>期限</i></span>'
-              + '</span>';
-  t.querySelector('.rw').textContent = it.r;
-  t.querySelector('.tx').textContent = it.t;
-  t.querySelector('.sc').textContent =
-    SRC[k][0] + '  ' + SRC[k][1] + (SRC[k][2] ? '  ' + SRC[k][2] : '');
-
-  /* **書かれていない欄は、書かれていないと出す。**埋めない。
-     出どころが文章のときは、状態も担当も期限も**どこにも書いていない**（`data-none`）。
-     空欄は空欄のまま（Excel の塊にはある）。 */
-  [['.st', it.s], ['.wh', it.w], ['.dl', it.d]].forEach(function(p){
-    var el = t.querySelector(p[0]);
-    if (p[1] === undefined){ el.dataset.none = '1'; return; }
-    el.appendChild(document.createTextNode(p[1] || ''));
-    if (!p[1]) el.dataset.empty = '1';
-    if (p[1] === '〃' || p[1] === '同上') el.dataset.ditto = '1';
-  });
-  /* 三つとも書かれていないとき（文章の出どころはほぼこれ）は、
-     **同じ文を三度読ませない。**一行にまとめる */
-  if (it.s === undefined && it.w === undefined && it.d === undefined)
-    t.querySelector('.fl').dataset.none = '1';
-
-  li.appendChild(t);
-
-  /* 関係。**カードになって初めて見える。**表のあいだは、どこにも無い */
-  if (dups.length || need || rel.open){
-    var rb = document.createElement('div');
-    rb.className = 'rel';
-    dups.forEach(function(k){ rb.innerHTML += '<b class="dup">' + k + '番と被っている</b>'; });
-    if (need) rb.innerHTML += '<b class="needs">' + need + '番のために要る</b>';
-    if (rel.open) rb.innerHTML += '<b class="open">決まっていない</b>';
-    li.appendChild(rb);
+    GROUPS.forEach(function(g, k){
+      for (var j = 0; j < w[k]; j++){
+        var p = g.raw[j % g.raw.length], lap = Math.floor(j / g.raw.length);
+        CARDS.push({
+          k:k, t:g.t, src:p[0],
+          raw:p[1] + (lap ? '  ' + AGAIN[(j + lap * 2) % AGAIN.length] : '')
+        });
+      }
+    });
+    /* 山の並びは**混ぜる**（散らばっているのが元の状態）。
+       カードの並びは群ごとに固める（**塊で押せる**のがカードの値打ち）*/
+    for (var a = CARDS.length - 1; a > 0; a--){
+      var b = Math.floor(rnd() * (a + 1)), t = CARDS[a]; CARDS[a] = CARDS[b]; CARDS[b] = t;
+    }
+    CARDS.forEach(function(c, n){ c.n = n + 1; });
   }
 
-  /* **押すと右に出る。決めさせない。**（三択は捨てた）
-     マウスが無くても届くように、tab で回って Enter / Space で押せる */
-  li.tabIndex = 0;
-  li.onclick = function(){ pick(li, i); };
-  li.onkeydown = function(e){
-    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(li, i); }
-  };
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
-  (frag || stack).appendChild(li);
-  lis.push(li);
-}
-
-document.getElementById('n').textContent = ITEMS.length;
-
-/* ─ 可視化の段。**関係ごとに固める。**
-   一枚は一つの群に置く（印が二つあるカードは、上の群に入って両方の印を出す）*/
-var GROUPS = ['被っている', '何かのために要る', 'まだ決まっていない', '印なし'];
-function groupOf(rel){
-  if (rel.dup)  return 0;
-  if (rel.need) return 1;
-  if (rel.open) return 2;
-  return 3;
-}
-var counts0 = [0, 0, 0, 0];
-function groups(){
-  counts0 = [0, 0, 0, 0];
-  lis.forEach(function(li, i){
-    var g = groupOf(make(i).rel || {});
-    counts0[g]++;
-    /* **並べ替えはカードの段だけ。**表の段は、ファイルに入っている順のまま。
-       inline の order にすると表の段にも効いてしまい、
-       **行がシートを飛び越えてバラバラに並んでいた**（画面を見て気づいた） */
-    li.style.setProperty('--o', g * 100000 + i);
-  });
-  GROUPS.forEach(function(name, g){
-    var l = document.createElement('li');
-    l.className = 'gl';
-    l.style.setProperty('--o', g * 100000 - 1);
-    l.innerHTML = '<b>' + counts0[g] + '</b>' + name;
-    stack.appendChild(l);
-  });
-}
-
-/* しめと、点く順。**数字は出した表から数える**（合っていない数字を置かない）。
-   状態の種類と担当の空欄は、荒れの量そのもの。関係の数は出さない */
-function paint(){
-  /* 数えるのは**無いもの。**題が付いていない、状態がどこにも書かれていない——
-     荒れの量は、値の揺れではなく**書かれていないことの量**だった */
-  var untitled = 0, nost = 0;
-  for (var i = 0; i < N; i++){
-    var it = make(i);
-    if (kindOf(i) !== 5) untitled++;
-    if (it.s === undefined) nost++;
+  /* ─ ① ───────────────────────────────────────────── */
+  function paintFew(){
+    var el = document.getElementById('few');
+    el.innerHTML = FEW.map(function(p, i){
+      var r = GROUPS[p[0]].raw[p[1]];
+      return '<li style="animation-delay:' + (i * 260 + 200) + 'ms">'
+           + '<i>' + esc(r[0]) + '</i>' + esc(r[1]) + '</li>';
+    }).join('');
   }
-  /* 前置きの読み込み行も、出した件数に合わせる（数字が食い違わないように） */
-  var blocks = Math.ceil(N / BLK);
-  document.getElementById('rd').textContent =
-    'reading  mail / chat / 議事録 / docx / pdf / xlsx  … ' + blocks + ' sources';
-  document.getElementById('sum').innerHTML =
-    N + ' fragments · ' + blocks + ' sources · 題が付いていない '
-    + untitled + ' · 状態がどこにも無い ' + nost + '<br>'
-    + 'exit 0 (3 warnings)<span class="cur"></span>';
 
-  /* 件数が増えても**出そろう時間は変えない**（1.4 秒）。
-     間隔はばらす（一定だと機械の飾りに見える） */
-  var GAPS = [9, 9, 34, 12, 9, 52, 9, 18, 9, 26], _t = 60, _g = 0;
-  var scale = Math.min(1, 1400 / Math.max(1, N * 19));
-  function beat(el){
-    el.style.animationDelay = Math.round(_t) + 'ms';
-    _t += GAPS[_g++ % GAPS.length] * scale;
+  /* ─ ② 山。**一気に出す。**溜めるのではなく、量が一瞬で来る ─ */
+  function paintPile(){
+    document.getElementById('count').innerHTML =
+      '<b>$</b>' + CARDS.length + ' 件。題は付いていません。';
+    var frag = [];
+    CARDS.forEach(function(c){
+      frag.push('<li><i>' + esc(c.src) + '</i>' + esc(c.raw) + '</li>');
+    });
+    document.getElementById('pile').innerHTML = frag.join('');
   }
-  /* 点くのは**出力の全部**（出どころの切れ目・見出し・メモ行も出力の一部）。
-     群の名前（.gl）は表の段では出ないので数に入れない */
-  [].forEach.call(document.querySelectorAll('.pre div'), beat);
-  [].forEach.call(stack.querySelectorAll(':scope > li:not(.gl)'), beat);
-  beat(document.getElementById('sum'));
-}
-document.getElementById('sum').innerHTML = '';   /* paint() で入れる */
 
-/* ─ 押したカードの中身を、右の帯に出す ────────────────────────
-   **一覧はそのまま。**カードは動かないし、消えない。
-   帯の中身は**カードをそのまま写したもの**（別のものに差し替えていない）。
-   もう一度押すと閉じる。別のカードを押すと入れ替わる。 */
-var picked = null;
+  /* ─ ③ カード ─────────────────────────────────────── */
+  var deck, pick, sel = null, left = 0, decided = 0;
 
-function pick(li, i){
-  if (picked === li){ close2(); return; }
+  function paintDeck(){
+    deck = document.getElementById('deck');
+    /* 群ごとに固めて並べる。**同じ印が隣り合っているから、塊が目で分かる** */
+    var order = CARDS.slice().sort(function(a,b){ return a.k - b.k || a.n - b.n; });
+    /* **元の一行が主、題は従。**最初は題を大きく出したが、同じ題が 12 枚並んで
+       **重複か作りそこないに見えた**（画面で見つけた）。カードの正体は断片のほうで、
+       題は機械が足したもの。だから断片を読ませて、題は印の側に小さく置く。
+       これで「別々の断片が、同じ件だと分かる」という形になる。 */
+    deck.innerHTML = order.map(function(c){
+      return '<li data-k="' + c.k + '">'
+        + '<button class="cd k' + c.k + '" data-k="' + c.k + '">'
+        +   '<span class="r">' + esc(c.raw) + '</span>'
+        +   '<span class="foot"><span class="t">' + esc(c.t) + '</span>'
+        +     '<span class="s">' + esc(c.src) + ' / ' + c.n + '</span></span>'
+        + '</button></li>';
+    }).join('');
+    left = CARDS.length; decided = 0;
+    drawRest(); drawDone();
+  }
 
-  lis.forEach(function(l){ l.classList.remove('pick2'); });
-  li.classList.add('pick2');
-  picked = li;
-  document.body.classList.add('picked');
+  function drawRest(){
+    document.getElementById('rest').textContent = 'あと ' + left + ' 件';
+  }
+  function drawDone(){
+    document.getElementById('done-n').textContent = '決めた ' + decided + ' 件';
+    document.getElementById('done-bar').style.width =
+      (CARDS.length ? (decided / CARDS.length * 100) : 0) + '%';
+  }
 
-  var box = document.createElement('div');
-  box.className = 'box';
-  /* カードを写す（同じものが右に出た、が嘘にならない）。
-     元の一行・出どころ・三つの欄は同じ `.ln` の中にあるので、
-     **写すだけで付いてくる**（別のものを作って差し替えていない） */
-  var ln = li.querySelector('.ln').cloneNode(true);
-  box.appendChild(ln);
-  var rel = li.querySelector('.rel');
-  if (rel) box.appendChild(rel.cloneNode(true));
-  /* 読む順にする：**題と出どころ → 関係 → 元の一行 → 三つの欄。**
-     関係が先（そこが値打ち）。元の一行は、すり替えていない証拠として後ろ */
-  ['.rw', '.fl'].forEach(function(sel){
-    var el = ln.querySelector(sel);
-    if (el) box.appendChild(el);
+  function alive(k){
+    return Array.prototype.slice.call(deck.querySelectorAll('li:not(.gone)[data-k="' + k + '"]'));
+  }
+
+  /* 一枚選ぶと、**同じ印が光る。**「16 枚あります」はそのとき出す
+     （最初から塊で出すと、人がやるのはハンコになる。NOTES の A 案）*/
+  function choose(k){
+    deck.querySelectorAll('.cd.lit,.cd.sel').forEach(function(b){
+      b.classList.remove('lit','sel');
+    });
+    sel = k;
+    var rows = alive(k);
+    rows.forEach(function(li){ li.firstChild.classList.add('lit'); });
+    if (rows[0]) rows[0].firstChild.classList.add('sel');
+
+    document.getElementById('pick-t').textContent = GROUPS[k].t;
+    document.getElementById('pick-n').textContent =
+      '同じ印が ' + rows.length + ' 枚あります。まとめて決められます。';
+    pick.hidden = false;
+  }
+
+  /* 三択。**塊まるごと片付く。**押した数だけ「決めた」が増える */
+  function decide(){
+    if (sel === null) return;
+    var rows = alive(sel);
+    rows.forEach(function(li){ li.classList.add('gone'); });
+    left -= rows.length; decided += rows.length;
+    sel = null; pick.hidden = true;
+    drawRest(); drawDone();
+
+    if (left <= 0){ setTimeout(function(){ stage('d'); }, 260); return; }
+    /* 次の塊へ焦点を送る。**マウスが無くても続けて押せる** */
+    var next = deck.querySelector('li:not(.gone) .cd');
+    if (next) next.focus();
+  }
+
+  /* ─ 段 ───────────────────────────────────────────── */
+  function stage(s){
+    document.body.dataset.stage = s;
+    scrollTo(0, 0);
+    if (s === 'b') paintPile();
+    if (s === 'c'){ paintDeck(); var f = deck.querySelector('.cd'); if (f) f.focus(); }
+  }
+
+  function start(){
+    build(); paintFew();
+    document.body.dataset.stage = 'a';
+    pick = document.getElementById('pick');
+  }
+
+  start();
+
+  document.getElementById('go-b').addEventListener('click', function(){ stage('b'); });
+  document.getElementById('go-c').addEventListener('click', function(){ stage('c'); });
+  document.getElementById('again').addEventListener('click', function(){
+    start(); scrollTo(0, 0);
   });
 
-  pane2.textContent = '';
-  pane2.appendChild(box);
-}
+  document.addEventListener('click', function(e){
+    var cd = e.target.closest('.cd');
+    if (cd){ choose(+cd.dataset.k); return; }
+    var th = e.target.closest('.three');
+    if (th){ decide(); return; }
+  });
 
-function close2(){
-  if (!picked) return;
-  picked.classList.remove('pick2');
-  picked = null;
-  document.body.classList.remove('picked');
-  /* 帯が縮みきってから中身を消す（縮むあいだ、文字が組み直されない） */
-  setTimeout(function(){ if (!picked) pane2.textContent = ''; }, 260);
-}
-
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape' && picked){ e.preventDefault(); close2(); }
-});
-
-/* ─ 段は二つ。**表 → カードになる。**
-   カード化＝可視化がここの山場で、そのあとは目を通すだけ。
-   一枚ずつ決めさせるのはやめた（本人：「別にOKしてくとかいらない」）。 */
-/* ─ 段は三つ。**答える（自分ごと）→ 表（量）→ カード（可視化）** ───── */
-document.getElementById('n').textContent = ITEMS.length;
-go.hidden = true;              /* 答えるまで、進む先は出さない */
-
-/* 答えた件数で表を出す */
-[].forEach.call(document.querySelectorAll('.opts button'), function(b){
-  b.onclick = function(){
-    var n = +b.dataset.n;
-    build(n);
-    document.body.dataset.stage = 'wall';
-    document.getElementById('h').textContent = 'これを片付ける';
-    document.getElementById('p').innerHTML =
-      '<b>' + n + ' 件ぶん、出どころごと出しました。</b>'
-      + (b.dataset.unknown ? '（数えていないので、いちばん多い形で）' : '')
-      + 'メール・チャット・議事録・Word・PDF・Excel（仮の中身）。'
-      + '<b>一行ずつは読めますが、題も、状態も、関わりも、どこにも書かれていません。</b>';
-    go.hidden = false;
-    window.scrollTo(0, 0);
-  };
-});
-
-go.onclick = function(){
-  document.body.dataset.stage = 'seen';
-  document.getElementById('h').textContent = 'カードになった';
-  document.getElementById('p').innerHTML =
-    '<b>同じ ' + N + ' 件に、題が付きました。</b>'
-    + 'どこにも書かれていなかった関わりも、言葉になりました——'
-    + '<b>被っている ' + counts0[0] + '／何かのために要る ' + counts0[1]
-    + '／まだ決まっていない ' + counts0[2] + '</b>。'
-    + '<b>押すと、右に元の一行と出どころが出ます。</b>';
-  go.hidden = true;            /* 先はもう無い。目を通すだけ */
-  window.scrollTo(0, 0);
-};
+  /* キーでも通せる。**マウスは要らない** */
+  document.addEventListener('keydown', function(e){
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var s = document.body.dataset.stage;
+    if (s === 'a' && (e.key === 'Enter' || e.key === ' ')){
+      e.preventDefault(); stage('b'); return;
+    }
+    if (s === 'b' && (e.key === 'Enter' || e.key === ' ')){
+      e.preventDefault(); stage('c'); return;
+    }
+    if (s === 'c'){
+      if (sel !== null && '123'.indexOf(e.key) >= 0){ e.preventDefault(); decide(); return; }
+      if (e.key === 'Escape' && sel !== null){
+        e.preventDefault();
+        deck.querySelectorAll('.cd.lit,.cd.sel').forEach(function(b){ b.classList.remove('lit','sel'); });
+        sel = null; pick.hidden = true; return;
+      }
+    }
+  });
+})();
 </script>
 
 </body>
