@@ -208,7 +208,9 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
    **36 回の判断に見えていた。**いま一覧にあるのは**題とカードだけ**。
    決めるのは帯の中——**見る → 決める**の順で、分担がそのまま手順になる。 */
 .rows{list-style:none; margin:0; padding:0; flex:1 1 auto; min-width:0}
-.grp{margin-top:44px}
+/* 送り先の余裕。**貼りつく二段（頭 60 ＋ 置き場 44）に隠れないように。**
+   これを分類の側に付けていなくて、見出しが帯の下へ潜っていた（数字で見つけた）*/
+.grp{margin-top:44px; scroll-margin-top:120px}
 .grp:first-child{margin-top:0}
 .grp.gone{display:none}
 .gh{display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin:0 0 14px}
@@ -219,7 +221,10 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 /* **ゆったりさせた。**詰めると台帳に見える＝仕事に見える。
    空きがあるほうが「簡単そう」に見える */
 .cards{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:1fr; gap:10px}
+/* **貼りつく二段（頭 60 ＋ 置き場 44）の下に来る**ように余裕を持たせる。
+   押したカードをここまで送るので、**押したものと帯が横に並ぶ** */
 .cd{
+  scroll-margin-top:120px;
   -webkit-appearance:none; appearance:none; border:0; font:inherit; text-align:left;
   cursor:pointer; width:100%; min-width:0;
   background:var(--card); color:var(--ink); border-radius:8px; box-shadow:var(--lift1);
@@ -800,6 +805,16 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     btn.classList.add('sel');
     document.body.classList.add('paneopen');
     open = k;
+
+    /* **押したものと、出たものを並べる。**帯は貼りついているので画面の上に出る。
+       押したカードが下にあると、**目線と出る場所が別になる**
+       （本人 2026-09-08：「スクロールに対して出てくるものがあってないな」）。
+       だから押したカードを帯の高さまで送る。**行き先は予測できる**——
+       押したものが上に来る。すでにその高さにあるものは動かさない。 */
+    var r = btn.getBoundingClientRect();
+    if (r.top < 104 || r.top > 260){
+      btn.scrollIntoView({ block:'start', behavior: slow ? 'auto' : 'smooth' });
+    }
   }
 
   function by_u(k){
@@ -825,7 +840,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (leftRows <= 0){ setTimeout(function(){ stage('d'); }, 260); return; }
     /* 次の分類へ焦点を送る。**マウスが無くても続けて押せる** */
     var next = rowsEl.querySelector('.grp:not(.gone) .cd');
-    if (next){ next.focus(); sel = +next.dataset.k; }
+    if (next){
+      next.focus({ preventScroll:true });
+      sel = +next.dataset.k;
+      /* **次の分類の見出しから見せる。**片付いたぶん詰まるので、
+         どこを見ればいいか分からなくなる */
+      var g = next.closest('.grp');
+      if (g) g.scrollIntoView({ block:'start', behavior: slow ? 'auto' : 'smooth' });
+    }
   }
 
   /* ─ ④ ── **仕分けの答えを出す。**ここが押した意味。
