@@ -87,12 +87,35 @@ body{
 .in{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
 .wrap{flex:1 0 auto; width:100%; max-width:1180px; margin:0 auto; padding:34px 24px 40px}
 
-/* ─ 頭。戻る道を常設する（009 の決めごと）─ */
-.top{flex:none; height:56px; display:flex; align-items:center; background:var(--frame)}
-.top .in{display:flex; align-items:baseline; gap:16px}
-.back{font-size:12.5px; color:var(--sub); text-decoration:none}
-.back:hover{color:var(--go)}
-.mark{font-size:13.5px; font-weight:700; letter-spacing:.02em}
+/* ─ 頭。戻る道を常設する（009 の決めごと）─
+   **戻る道が分かりにくかった**（本人 2026-09-08：「戻る動線がずっと
+   わかりにくいかも」）。原因は三つあって、全部直した：
+
+   1. **影が無かった。**009 は「影が付いているものだけ押せる」なので、
+      薄い字だけの「もどる」は**押せるものに見えていなかった**
+   2. **行き先を言っていなかった。**「もどる」だけでは、ブラウザの戻るなのか
+      デモの前の段なのか分からない。**行き先は言葉に出す**（他の一手と同じ）
+   3. **社名の隣にあった。**間が 16px しかなくて、社名の一部に見えていた */
+/* **頭を貼りつける。**これが「戻る道が分かりにくい」の本体だった——
+   一覧は 5,500px あるので、少し送ると**頭ごと画面の外**へ行っていた
+   （実測：2,500px 送った時点で戻る道は -2,489px）。**常設と言えていなかった。**
+   ホームは短いので問題にならないが、ここは長い。 */
+.top{flex:none; position:sticky; top:0; z-index:5; height:60px;
+     display:flex; align-items:center; background:var(--frame)}
+.top .in{display:flex; align-items:center; gap:28px}
+.back{
+  flex:none; text-decoration:none;
+  padding:9px 15px; border-radius:7px;
+  background:var(--card); color:var(--ink); box-shadow:var(--lift1);
+  font-size:12.5px; font-weight:700; white-space:nowrap;
+  transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.back:hover{transform:translateY(-2px); box-shadow:var(--lift2); color:var(--go)}
+.back:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.back:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.back i{font-style:normal; margin-right:7px; color:var(--sub)}
+.mark{font-size:13.5px; font-weight:700; letter-spacing:.02em; min-width:0;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 
 /* ① 問い一つと四択。**画面に他のものを置かない**（押せば進む、が一目で分かる形）。
    問いはサイトの言葉なので、サイトの字で出す（等幅は材料のほうだけ）*/
@@ -218,9 +241,9 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
    左側にするべきだと思うよ」）。帯は画面の右端にいるので、右に棒を付けると
    ページ自身の棒と並んでしまう。`direction` を裏返して、中身だけ戻す。 */
 .panel{
-  position:sticky; top:18px; width:420px; margin-left:16px; direction:rtl;
+  position:sticky; top:78px; width:420px; margin-left:16px; direction:rtl;   /* 頭の 60 ＋ 18 */
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
-  max-height:calc(100vh - 96px); overflow:auto;
+  max-height:calc(100vh - 102px); overflow:auto;
   animation:swap .18s var(--ease);
   scrollbar-width:thin; scrollbar-color:#c3cfe0 transparent;
 }
@@ -305,7 +328,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
 <header class="top">
   <div class="in">
-    <a class="back" href="index.html">← もどる</a>
+    <a class="back" href="index.html"><i>←</i>会社のページへもどる</a>
     <span class="mark">株式会社アルターデザインコンサルティング</span>
   </div>
 </header>
@@ -371,7 +394,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       </div>
       <div class="again">
         <button class="one" id="again">もう一度</button>
-        <a class="one" href="index.html" style="text-decoration:none">会社を見る</a>
+        <a class="one" href="index.html" style="text-decoration:none">会社のページを見る</a>
       </div>
     </div>
   </section>
