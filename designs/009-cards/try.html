@@ -15,10 +15,12 @@
        カード＝不自由（一枚に一つ、書式が決まっている。だから動ける）
 
      型（感情の順）：**あるなあ → 一瞬の不快 → 快 → 自分ごと**
-       ① あるなあ  数件だけ。読める。うんざりさせない
+       ① 種        **一つだけ聞く**（何件溜まってる？）。②の量が自分の申告のぶんになる
        ② 不快      同じものが量の中に埋もれる。**無理だと分からせる（やらせない）**
        ③ 快        カードで同じ用事。**束で押せる**から終わる（12 束＝12 手）
        ④ 名前      通り終わったところに理念
+     **「あるなあ」は③の題で起きる**（12 個・短い・太い）。
+     生の文は読まれない前提で組んである（本人 2026-09-08）。
 
      分担：**見抜くのは機械、決めるのは人。**同じ件には同じ印が付いていて、
      まとめて押せる。塊を作るのは機械、三択を押すのは人。
@@ -28,11 +30,10 @@
      足すもの：重さ、影、押したときのずれ、片付いた束の厚み。
 
      ここが仮 ──────────────────────────────────────────────
-     1. ①の終わりの一手「これで、ぜんぶ？」。言葉は未決
-     2. ②の問いを二行にした（分ける前に、同じ件がいくつあるか）。まだ長い
+     1. ①の問いの言葉と四択の刻み（36／120／402／数えたことがない）
+     2. ②の問いが二行ある（分ける前に、同じ件がいくつあるか）。まだ長い
      3. ③は束まるごとの三択だけ。「この一枚だけ」は出していない
-     4. ①の量は五件。共感が起きるかは確かめていない
-     件数は 120（`TOTAL`）。増減はここだけ触れば効く（手数は 12 のまま）。
+     件数は本人が①で答えたもの（`N`）。何件でも群は 12、手数も 12。
 ================================================================ -->
 
 <style>
@@ -92,13 +93,22 @@ body[data-stage="a"] .back,body[data-stage="b"] .back{color:var(--crt-dim)}
      margin:0 0 18px}
 .pre b{color:#5fbfa1; font-weight:400; margin-right:8px}
 
-/* ① 数件だけ。**大きめ・ゆっくり。読める。** */
-.few{list-style:none; margin:0; padding:0; max-width:760px}
-.few li{
-  font-family:var(--mono); font-size:14px; line-height:1.85; color:var(--crt-ink);
-  padding:11px 0; opacity:0; animation:rise .5s var(--ease) both;
+/* ① 問い一つと四択。**画面に他のものを置かない**（押せば進む、が一目で分かる形）*/
+.q{font-family:var(--mono); font-size:clamp(15px,2.2vw,19px); line-height:2;
+   color:#cdead9; margin:8vh 0 30px; max-width:760px;
+   animation:rise .5s var(--ease) both}
+.picks{display:flex; flex-wrap:wrap; gap:10px; animation:rise .5s .18s var(--ease) both}
+.pk{
+  -webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
+  padding:15px 20px; border-radius:8px;
+  background:#132320; color:#cdead9; border:1px solid #24413a;
+  font-family:var(--mono); font-size:13.5px;
+  transition:transform .16s var(--ease), border-color .16s ease, background-color .16s ease;
 }
-.few i{font-style:normal; color:var(--crt-dim); margin-right:12px}
+.pk:hover{transform:translateY(-2px); border-color:var(--crt-ink); background:#172a26}
+.pk:active{transform:translateY(1px)}
+.pk:focus-visible{outline:2px solid var(--crt-ink); outline-offset:3px}
+.pk em{font-style:normal; color:var(--crt-dim); margin-left:10px; font-size:11px}
 @keyframes rise{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
 
 /* ② 山。**同じ材料が量の中に埋もれる** */
@@ -109,7 +119,7 @@ body[data-stage="a"] .back,body[data-stage="b"] .back{color:var(--crt-dim)}
 }
 .pile li{break-inside:avoid; padding:1px 0; white-space:nowrap; overflow:hidden}
 .pile i{font-style:normal; color:var(--crt-dim); margin-right:8px}
-/* ①で読んだ行。**印は付けない。**埋もれることが要点なので、探せてしまうと台無し */
+/* 問い。**答えさせない。**見て「無理」と分かった時点で先へ行ける */
 .ask{margin:0 0 20px; font-family:var(--mono); font-size:13.5px; color:#9fd8bb; line-height:1.9}
 .ask .sub{color:var(--crt-dim)}
 /* 一手は下端に貼りつける。**山の高さに関係なく届く** */
@@ -269,11 +279,20 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
 <main class="wrap">
 
-  <!-- ① あるなあ。**数件だけ。聞かない。読ませる。** -->
+  <!-- ① **一つだけ聞く。**自分ごとの種。
+       前は生の五件を読ませて「あるなあ」を作ろうとしていた。本人 2026-09-08：
+       「こういう文章って中まで読まれないと思った方がいいと思うよ」。
+       **読ませて作るのをやめた。**あるなあは③の題で起きる（12 個・短い・太い）。
+       ここで聞くのは、②の量を**自分の申告のぶん**にするため。
+       **聞くのは一つだけ**（宿題は出さない。押せば進む）。 -->
   <section class="st st-a">
-    <p class="pre"><b>$</b>読み込み  mail / chat / 議事録 / docx / pdf / xlsx</p>
-    <ul class="few" id="few"></ul>
-    <button class="one" id="go-b">これで、ぜんぶ？</button>
+    <p class="q">まだ決まっていない話が、<br>いま何件くらい溜まっていますか。</p>
+    <div class="picks" id="picks">
+      <button class="pk" data-n="36">36 件くらい<em>1</em></button>
+      <button class="pk" data-n="120">120 件くらい<em>2</em></button>
+      <button class="pk" data-n="402">400 件以上<em>3</em></button>
+      <button class="pk" data-n="402">数えたことがない<em>4</em></button>
+    </div>
   </section>
 
   <!-- ② 一瞬の不快。**同じものが量の中に埋もれる。やらせない。** -->
@@ -331,9 +350,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 (function(){
   'use strict';
 
-  /* 件数。**量は減らない**——②の山と③のカードは同じ 120 件。
-     減るのは手数だけ（12 群なので 12 手で終わる）。 */
-  var TOTAL = 120;
+  /* 件数は**本人が答えたもの**（①）。**量は減らない**——②の山と③のカードは同じ枚数。
+     減るのは手数だけ（12 群なので、何件でも 12 手で終わる）。 */
+  var N = 120;
 
   /* 群 ＝ カードの題（**生の一行には書かれていない。この仕組みが付けるもの**）と、
      その件が実際にどう書かれていたか（生の文）。
@@ -418,10 +437,6 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       ['xlsx',  '手順書（2019）'] ]}
   ];
 
-  /* ①で読ませる数件。**うんざりさせない。**あとで②の山の中に埋もれる。
-     **五件は別の群から取る**（同じ件が並ぶと①で塊が見えてしまい、③の値打ちが減る）*/
-  var FEW = [[0,0],[2,0],[3,0],[8,0],[5,2]];
-
   /* ─ 札を作る。**同じ件が何度も立つ**のは荒れた材料では普通のこと ─ */
   var seed = 20260908;
   function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
@@ -429,12 +444,15 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   var CARDS = [];        /* {k:群, t:題, raw:生の文, src:出どころ, n:行番号} */
   function build(){
     CARDS = [];
-    /* 群ごとの枚数を散らす（合計が TOTAL になるように最後で詰める）。
-       **群の大きさが違うことが要点**——一手で 14 枚片付く群もあれば 4 枚の群もある */
-    var w = GROUPS.map(function(){ return 4 + Math.floor(rnd() * 11); });
+    /* 群ごとの枚数を散らす。合計は**本人が答えた件数**（N）。
+       **群の大きさが違うことが要点**——一手で 30 枚片付く群もあれば 2 枚の群もある。
+       重みで割るので、36 でも 402 でも同じ形になる（群は 12、手数も 12）。 */
+    var wt = GROUPS.map(function(){ return .55 + rnd(); }),
+        tot = wt.reduce(function(a,b){ return a+b; }, 0);
+    var w = wt.map(function(x){ return Math.max(1, Math.round(x / tot * N)); });
     var sum = w.reduce(function(a,b){ return a+b; }, 0), i = 0;
-    while (sum < TOTAL){ w[i % w.length]++; sum++; i++; }
-    while (sum > TOTAL){ if (w[i % w.length] > 3){ w[i % w.length]--; sum--; } i++; }
+    while (sum < N){ w[i % w.length]++; sum++; i++; }
+    while (sum > N){ if (w[i % w.length] > 1){ w[i % w.length]--; sum--; } i++; }
 
     /* 二周目以降の跡。**同じ文が何度も出てくるのは本当**だが、
        一字も違わない札が三枚並ぶと荒れではなく**作りそこないに見えた**（画面で見つけた）。
@@ -460,14 +478,11 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
-  /* ─ ① ───────────────────────────────────────────── */
-  function paintFew(){
-    var el = document.getElementById('few');
-    el.innerHTML = FEW.map(function(p, i){
-      var r = GROUPS[p[0]].raw[p[1]];
-      return '<li style="animation-delay:' + (i * 260 + 200) + 'ms">'
-           + '<i>' + esc(r[0]) + '</i>' + esc(r[1]) + '</li>';
-    }).join('');
+  /* ─ ① 答えたものを持って②へ。**押せば進む** ─────────── */
+  function answer(n){
+    N = n;
+    build();
+    stage('b');
   }
 
   /* ─ ② 山。**一気に出す。**溜めるのではなく、量が一瞬で来る ─ */
@@ -585,19 +600,19 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
   function start(){
     sel = null;
-    build(); paintFew();
     document.body.dataset.stage = 'a';
   }
 
   start();
 
-  document.getElementById('go-b').addEventListener('click', function(){ stage('b'); });
   document.getElementById('go-c').addEventListener('click', function(){ stage('c'); });
   document.getElementById('again').addEventListener('click', function(){
     start(); scrollTo(0, 0);
   });
 
   document.addEventListener('click', function(e){
+    var pk = e.target.closest('.pk');
+    if (pk){ answer(+pk.dataset.n); return; }
     var hd = e.target.closest('.hd');
     if (hd){ choose(+hd.dataset.k); return; }
     var th = e.target.closest('.three');
@@ -608,8 +623,13 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   document.addEventListener('keydown', function(e){
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     var s = document.body.dataset.stage;
-    if (s === 'a' && (e.key === 'Enter' || e.key === ' ')){
-      e.preventDefault(); stage('b'); return;
+    if (s === 'a'){
+      var i = '1234'.indexOf(e.key);
+      if (i >= 0){
+        var pks = document.querySelectorAll('.pk');
+        if (pks[i]){ e.preventDefault(); answer(+pks[i].dataset.n); }
+      }
+      return;
     }
     if (s === 'b' && (e.key === 'Enter' || e.key === ' ')){
       e.preventDefault(); stage('c'); return;
