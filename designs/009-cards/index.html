@@ -357,13 +357,23 @@ html.boot,body.boot{overflow:hidden}   /* 送りは html 側で起きる。両�
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent);
           mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent);
 }
-/* **詰める。**行間 1.85 だと一画面に 30 行しか乗らず、量に見えなかった */
+/* **読ませない。**本人 2026-09-08：「別に中身がわかりやすくなくていいよ」。
+   一行ずつ読める速さと大きさに合わせていたのを外した。**外すと詰められる**——
+   字を小さく、行間を詰め、そのぶん速く流れる。
+   ここは玄関なので、**読めることに用が無い**（読ませるのはデモの側の仕事）。 */
+/* **横も埋める。**一列だと広い窓で右の六割が空いて、量に見えない。
+   列は JS が入れる（狭い窓では一列）。隣の列とは何の関係もない——山が並んでいるだけ */
 #boot .roll{
   position:absolute; left:0; right:0; top:0; padding:0 24px; will-change:transform;
-  font-family:var(--mono); font-size:11.5px; line-height:1.6; color:var(--crt-ink);
+  font-family:var(--mono); font-size:10.5px; line-height:1.45; color:var(--crt-ink);
   white-space:nowrap;
+  display:grid; grid-template-columns:repeat(var(--c,1),1fr);
+  column-gap:36px; align-content:start;
 }
+/* 右端で**切る。**… も付けない。途中で切れたものが積まれている、という形 */
+#boot .roll div{overflow:hidden}
 #boot .roll i{font-style:normal; color:var(--crt-dim); margin-right:10px}
+#boot .roll b{font-weight:400; color:#3d6350}   /* 機械の層。誰も読まないところ */
 
 /* 社名。**等幅ではない。**ぐちゃぐちゃ（等幅・緑）の中から、
    サイトの字（白）が一つだけ出てくる、という見え方にしている */
@@ -722,26 +732,69 @@ body.boot .mark{opacity:1}
   /* 出どころすら分からない行。**貼り集めた跡** */
   var JUNK = ['（以下、貼り付け）','※このシートは古い','（転記元不明）','※要確認','（空欄）','同上'];
 
+  /* 機械の層。**誰も読まない側**——置き場、範囲、大きさ、文字の種類。
+     読ませないと決めたので混ぜられるようになった。
+     **コードではない**（開発会社に見せない）。書類が置かれている跡だけ */
+  var MACH = [
+    '\\\\fs01\\共有\\旧\\2019\\課題管理_旧.xlsx',
+    '\\\\fs01\\共有\\部内\\_作業中\\帳票まわり(最新)\\',
+    'Sheet3!A14:F26',
+    'Sheet1!B2:H411   （見出し行なし）',
+    'charset=Shift_JIS',
+    'charset=UTF-8 (BOM あり)',
+    '添付 3 件 / 1.24MB',
+    '添付 なし（本文に「別紙参照」）',
+    'p.42 の続きは別ファイル',
+    '更新 2019-11-08  以後なし',
+    '更新 2026-02-14  作成者 不明',
+    '同名ファイル 4 件（_旧 _最新 _最新2 _final）',
+    '..\\..\\議事録\\2024\\07\\定例.docx',
+    'len 118  offset 0x1f40',
+    '読み取り専用（パスワード不明）'
+  ];
+
   var seed = 20260908;
   function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
 
   function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
   function build(){
-    var n = Math.ceil(innerHeight * 3.4 / 19) + 40, h = '', i, r, pad, dim, k, last = -1, lastj = -1;
-    /* 左端の散り。**広い窓ほど散らす**（狭い窓で散らすと折り返して読めなくなる）*/
-    var step = innerWidth > 900 ? 22 : 8;
+    /* 列。広い窓ほど増やす。**隣の列は無関係**（束が並んでいるだけ）*/
+    var c = innerWidth > 1180 ? 3 : innerWidth > 760 ? 2 : 1;
+    roll.style.setProperty('--c', c);
+
+    var colw = (innerWidth - 48 - 36 * (c - 1)) / c,
+        step = Math.max(6, Math.round(colw / 22)),
+        n = Math.ceil(innerHeight * 4.4 / 15.3) * c + 40,
+        h = '', i, r, pad, dim, k, last = -1, lastj = -1, sty;
+
+    /* 一行ぶんの飾り。左端・濃さ・**右端で切る幅**。
+       列に収まらないぶんは黙って切れる（… は付けない。切れた跡のほうが本当）。
+       ただし全部が列の右端で揃うと**壁になって作り物に見える**ので、
+       三行に一行くらいはもっと手前で切る */
+    function deco(){
+      pad = Math.floor(rnd() * 5) * step;
+      dim = (.38 + rnd() * .62).toFixed(2);
+      var cut = rnd() < .34 ? Math.round(colw * (.3 + rnd() * .55)) : 0;
+      return 'padding-left:' + pad + 'px;opacity:' + dim
+           + (cut ? ';max-width:' + cut + 'px' : '');
+    }
+
     for (i = 0; i < n; i++){
       r = rnd();
-      if (r < .06){ h += '<div>&nbsp;</div>'; continue; }
-      pad = Math.floor(rnd() * 7) * step;       /* 左端が揃わない */
-      dim = (.42 + rnd() * .58).toFixed(2);     /* 濃さもばらばら */
-      if (r < .18){
+      if (r < .035){ h += '<div>&nbsp;</div>'; continue; }
+      sty = deco();
+
+      if (r < .17){                              /* 出どころすら分からない行 */
         k = Math.floor(rnd() * JUNK.length);
         if (k === lastj) k = (k + 1) % JUNK.length;
         lastj = k; last = -1;
-        h += '<div style="padding-left:' + pad + 'px;opacity:' + dim + '">'
-           + esc(JUNK[k]) + '</div>';
+        h += '<div style="' + sty + '">' + esc(JUNK[k]) + '</div>';
+        continue;
+      }
+      if (r < .38){                              /* 機械の層。**読まれない側** */
+        h += '<div style="' + sty + '"><b>' + esc(MACH[Math.floor(rnd() * MACH.length)]) + '</b></div>';
+        lastj = -1; last = -1;
         continue;
       }
       lastj = -1;
@@ -750,7 +803,7 @@ body.boot .mark{opacity:1}
       k = Math.floor(rnd() * LINES.length);
       if (k === last) k = (k + 1) % LINES.length;
       last = k;
-      h += '<div style="padding-left:' + pad + 'px;opacity:' + dim + '"><i>'
+      h += '<div style="' + sty + '"><i>'
          + esc(LINES[k][0]) + '</i>' + esc(LINES[k][1]) + '</div>';
     }
     roll.innerHTML = h;
