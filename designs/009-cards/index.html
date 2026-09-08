@@ -229,6 +229,50 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .facts dt:first-child{margin-top:0}
 .facts dd{margin:3px 0 0; font-size:13.5px; line-height:1.8}
 
+/* ─ 所在 ────────────────────────────────────────────────────
+   **地図が主役で、住所はその見出し。**会社概要の一行だったときと逆にしてある
+   （読むものではなく、行くもの）。 */
+.addr{margin:0; font-size:14.5px; font-weight:700; line-height:1.85}
+/* 地図は面として置く。**枠線は引かない**（009 は面と影だけ）。
+   窓は 768:512 ＝ 3:2。板の束（.sheet）はその 1.5 倍の高さで、
+   所在が窓の真ん中に来る位置までずらしてある（--l / --t は文のほうに入っている）*/
+.map{
+  position:relative; margin-top:16px; aspect-ratio:3/2;
+  border-radius:8px; overflow:hidden;
+  background:var(--tint); box-shadow:var(--lift1);
+}
+.map .sheet{
+  position:absolute; left:var(--l); top:var(--t); width:133.3333%; height:150%;
+  display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(3,1fr);
+}
+.map img{display:block; width:100%; height:100%}
+/* 印。**先方の印ではなく、この site の色で描く。**下の尖りは影付きの丸を回しただけ */
+.map .pin{
+  position:absolute; left:50%; top:50%; width:15px; height:15px;
+  margin:-19px 0 0 -7.5px;                       /* 尖りの先が所在に来るように上へ */
+  background:var(--go); border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+  box-shadow:0 2px 6px rgba(31,25,64,.45);
+}
+.map .pin::after{
+  content:''; position:absolute; left:4.5px; top:4.5px; width:6px; height:6px;
+  background:#fff; border-radius:50%;
+}
+.cred{margin:9px 0 0; font-size:11px; color:var(--sub); line-height:1.6}
+.cred a{color:var(--sub)}
+
+/* 外へ出る一手。**カードの「デモを触る」と同じ作法**（右に →、色で分ける）。
+   ここだけ別の site へ行くので、行き先があることを記号で出す */
+.out{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:16px; padding:14px 18px; border-radius:8px;
+  background:var(--card); box-shadow:var(--lift1);
+  color:var(--go); font-size:13px; font-weight:700; text-decoration:none;
+  transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.out:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.out:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.out .arw{font-size:15px; line-height:1; color:rgba(99,84,224,.7)}
+
 /* 中身が決まっていない段。空の箱に見せず、決まっていないことをそう書く */
 .todo{margin:0; background:var(--tint); border-radius:8px; padding:14px 18px;
       font-size:13px; color:var(--sub); line-height:1.9}
@@ -508,15 +552,17 @@ html.boot .mark{opacity:1}
 
     <div class="card" role="button" tabindex="0" data-k="2">
       <span class="t">会社概要</span>
-      <span class="s">七項目</span>
+      <span class="s">六項目</span>
       <div class="panel">
         <div class="bar"><h2>会社概要</h2></div>
         <div class="body">
-          <!-- 公式サイトの7項目、その並び順のまま -->
+          <!-- 公式サイトの7項目、その並び順のまま。
+               **所在地だけ出した**（本人 2026-09-08：「会社概要と所在はまた話が違う
+               気がする」）。ほかの六つは**読むもの**だが、所在だけは**行くもの**なので、
+               カードを一枚立てた。足の住所はそのまま（あれは枠であって中身ではない）。 -->
           <dl class="facts">
             <dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>
             <dt>代表者</dt><dd>松岡　真功</dd>
-            <dt>所在地</dt><dd>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd>
             <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
             <dt>資本金</dt><dd>60百万円</dd>
             <dt>設立年月日</dt><dd>2025年6月</dd>
@@ -634,6 +680,64 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
+    <!-- 所在。**会社概要から出した一枚。**ほかの項目は読むものだが、これは行くもの。
+         だから地図が主役で、住所はその見出しになっている。
+         **末尾に置いてある。**間に入れると「デモを触る」が二段目へ落ちる。 -->
+    <div class="card" role="button" tabindex="0" data-k="7">
+      <span class="t">所在</span>
+      <span class="s">港区西新橋</span>
+      <div class="panel">
+        <div class="bar"><h2>所在</h2></div>
+        <div class="body">
+          <p class="addr">東京都港区西新橋3-23-5 ANYZ304<br>（御成門郵船ビル）</p>
+
+          <!-- 地図。**動く地図（iframe）はやめた。**
+               ・埋め込みは先方の UI が丸ごと入ってくる（操作ボタン・ロゴ・Cookie）。
+                 触れるものがカード一種類、が最初に崩れるのがここになる
+               ・いまの OpenStreetMap の埋め込みは **WebGL で描いている。**
+                 使えない環境では灰色の箱が残る（実際、確認に使った browser がそうだった）
+               だから**絵として置く。**地理院タイル（淡色）を 3×3 並べて、
+               真ん中に印を置いてあるだけ。動く JS も WebGL も要らない。
+               色も淡いので、この site の水色〜紫と喧嘩しない。
+
+               並べ方：一枚 256px の板を 4×3（1024×768）敷いて、見える窓は 768×512。
+               **窓より一枚ぶん大きく敷く**——ずらしたぶん端が空くので（最初これで右が抜けた）。
+               窓の真ん中に所在が来るように、板の束を左と上へずらしてある
+               （`--l` と `--t`。数字は座標から出した。手で置いていない）。
+               印はこの site の色で自分で描いている（先方の印を使わない）。
+
+               **開くまで読み込まない**（`data-src` を JS が `src` に移す）。
+               閉じたままの人の browser から、よその server へ何も出て行かない。
+
+               座標は国土地理院の住所検索から（西新橋三丁目23番、35.661716 / 139.751343）。
+               **当てずっぽうで置いていない**——OpenStreetMap の検索では出なかった。 -->
+          <div class="map">
+            <div class="sheet" style="--l:-13.7065%; --t:-0.9729%">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51621.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51621.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51621.png">
+<img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51621.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51622.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51622.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51622.png">
+<img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51622.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51623.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51623.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51623.png">
+<img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51623.png">
+            </div>
+            <span class="pin" aria-hidden="true"></span>
+          </div>
+          <p class="cred"><a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>（国土地理院）</p>
+
+          <!-- 行く人はここから自分の地図へ移る。**この一枚で終わらせない。**
+               住所で開くので、携帯なら地図アプリがそのまま立ち上がる -->
+          <a class="out" href="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%B1%E4%BA%AC%E9%83%BD%E6%B8%AF%E5%8C%BA%E8%A5%BF%E6%96%B0%E6%A9%8B3-23-5"
+             target="_blank" rel="noopener">地図アプリで開く<span class="arw">→</span></a>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </main>
@@ -651,8 +755,8 @@ html.boot .mark{opacity:1}
     <p class="fn">株式会社アルターデザインコンサルティング</p>
     <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
     <p class="fc">© 2025 株式会社アルターデザインコンサルティング</p>
-    <p class="fw">これは案です。公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉は、社名・事業の一行・サービスの題と一行・会社概要・お問い合わせ。サービスの詳細（題と一行より下）と「お知らせ」「見直してみる」は仮の中身で、「実績」は枠だけです。実装は AI（Claude）が行いました。<br>
-    数字キー 1〜6、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
+    <p class="fw">これは案です。公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉は、社名・事業の一行・サービスの題と一行・会社概要・お問い合わせ。サービスの詳細（題と一行より下）と「お知らせ」「見直してみる」は仮の中身で、「実績」は枠だけです。「所在」の地図は、公表されている所在地から出したもの（地理院タイル／国土地理院）。実装は AI（Claude）が行いました。<br>
+    数字キー 1〜7、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
   </div>
 </footer>
 
@@ -952,6 +1056,12 @@ html.boot .mark{opacity:1}
     pane.offsetWidth;                          /* 幅 0 を一度描かせてから伸ばす */
     document.body.classList.add('paneopen');
     open = card;
+
+    /* 地図の板は**開かれて初めて読み込む。**閉じたままなら、よその server へ
+       一度も出て行かない（`data-src` を一回だけ `src` に移す）*/
+    panel.querySelectorAll('img[data-src]').forEach(function(im){
+      im.src = im.dataset.src; im.removeAttribute('data-src');
+    });
 
     reach(panel.querySelector('.body'));
 
