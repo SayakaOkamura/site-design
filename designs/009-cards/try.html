@@ -17,7 +17,7 @@
      型（感情の順）：**あるなあ → 一瞬の不快 → 快 → 自分ごと**
        ① あるなあ  数件だけ。読める。うんざりさせない
        ② 不快      同じものが量の中に埋もれる。**無理だと分からせる（やらせない）**
-       ③ 快        カードで同じ用事。**塊で押せる**から終わる
+       ③ 快        カードで同じ用事。**束で押せる**から終わる（12 束＝12 手）
        ④ 名前      通り終わったところに理念
 
      分担：**見抜くのは機械、決めるのは人。**同じ件には同じ印が付いていて、
@@ -30,7 +30,7 @@
      ここが仮 ──────────────────────────────────────────────
      1. ①の終わりの一手「これで、ぜんぶ？」。言葉は未決
      2. ②の問いを二行にした（分ける前に、同じ件がいくつあるか）。まだ長い
-     3. ③は段まるごとの三択だけ。「この一枚だけ」は出していない
+     3. ③は束まるごとの三択だけ。「この一枚だけ」は出していない
      4. ①の量は五件。共感が起きるかは確かめていない
      件数は 120（`TOTAL`）。増減はここだけ触れば効く（手数は 12 のまま）。
 ================================================================ -->
@@ -135,13 +135,16 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
    そのとおりで、**見えるものが 120 枚**になっていた。いま見えるのは **12 件**で、
    カードはその中の量。**一段が一件。**（量は減らない。見え方が変わっただけ）
 
-   **押せるのは段だけ。**カードは押せない——量を出すためにある。
-   触れるものが一種類、が崩れない。 */
+   **押せるのは束だけ。**カードは 009 のまま（縮めない・作り替えない）。 */
 .bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 18px}
 .bar h1{margin:0; font-size:17px; font-weight:700}
 .bar .rest{font-size:12.5px; color:var(--sub)}
 
-.rows{list-style:none; margin:0; padding:0; display:grid; gap:12px}
+/* **二列。**一列だと右に千px 空いて、束のわりに箱が大きく見えた（画面で見つけた）。
+   狭い窓では一列に落ちる。開いた束だけは二列ぶんに広がる——中のカードを詰めないため */
+.rows{list-style:none; margin:0; padding:0;
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
+.row.on{grid-column:1 / -1}
 .row{
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
   border-left:4px solid transparent; overflow:hidden;
@@ -156,36 +159,58 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 .row.k8{border-left-color:#c98fc0} .row.k9{border-left-color:#7f8fd8}
 .row.k10{border-left-color:#6bbfbf} .row.k11{border-left-color:#d69a7a}
 
-.line{display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:13px 16px 0}
+.line{display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding:16px 18px}
 .hd{
   -webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   cursor:pointer; padding:0; margin:0; text-align:left; flex:1 1 auto; min-width:0;
-  display:flex; align-items:baseline; gap:12px;
+  display:flex; align-items:center; gap:20px;
 }
-.hd .t{font-size:14.5px; font-weight:700; line-height:1.5}
-.hd .n{font-family:var(--mono); font-size:11.5px; color:var(--sub); flex:none}
-.hd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.hd:focus-visible{outline:2px solid var(--go); outline-offset:6px; border-radius:4px}
+.hd .meta{min-width:0}
+.hd .t{display:block; font-size:15px; font-weight:700; line-height:1.5}
+.hd .n{display:block; margin-top:3px; font-family:var(--mono); font-size:11.5px; color:var(--sub)}
 .row.on .hd .t{color:var(--go)}
+
+/* ─ 束。**カードは変えない。**本人 2026-09-08：「カード自体は変えないで！そこが売りだから」。
+   一度カードを 44px の小片に縮めたのが間違い。**売っているものを縮めていた。**
+   いまは 009 のカードそのままで、**重ねて厚みを出す**だけ（§5 の「足してよい手触り」に
+   「積まれた束の厚み」が入っている）。パッと見えるのは 12 束＝12 件。 */
+.stack{position:relative; flex:none; width:236px; height:104px}
+.lay{
+  position:absolute; inset:0; background:var(--card); border-radius:8px;
+  box-shadow:var(--lift1); border-left:3px solid rgba(37,31,69,.10);
+}
+.face{
+  position:absolute; inset:0; background:var(--card); border-radius:8px;
+  box-shadow:var(--lift2); padding:13px 15px;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.face .r{
+  font-size:12.5px; line-height:16px; color:var(--ink); overflow:hidden;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; max-height:48px;
+}
+.face .s{font-family:var(--mono); font-size:10px; color:#96a0bd}
+.row.on .stack .face{box-shadow:var(--lift0); transform:translateY(2px)}
 
 /* 三択は**開いた段の頭に出る。**読み終わった位置に選択肢がある形
    （一覧の下にまとめて出す／他を畳んで貼りつける、はどちらも過去に外している）*/
 .btns{display:flex; gap:8px; flex-wrap:wrap}
 .btns[hidden]{display:none}
 
-/* 量。**押せない。**カードの形と枚数だけ出す（一枚の中身は読める） */
-.chips{list-style:none; margin:0; padding:11px 16px 14px; display:flex; flex-wrap:wrap; gap:6px}
-/* **clamp は札の中の span に掛ける。**札そのものは flex の子なので
-   display を潰され（`-webkit-box` → `flow-root`）、clamp が効かない（数字で確認した）。
-   高さで切るだけにすると**三行目の切れ端が覗いて、不具合に見えた。** */
-.chips li{
-  flex:0 1 152px; min-width:0; overflow:hidden;
-  background:var(--tint); border-radius:6px; padding:7px 9px; box-shadow:var(--lift0);
-  font-size:10.5px; line-height:15px; color:var(--ink);
+/* 開くと、その件のカードが**全部そのままの形で**下に出る。
+   ここで「別々の断片が、同じ件だった」が見える */
+.all{list-style:none; margin:0; padding:0 18px 18px;
+     display:grid; grid-template-columns:repeat(auto-fill,minmax(212px,1fr)); gap:12px;
+     animation:rise .28s var(--ease) both}
+.all[hidden]{display:none}
+.all li{
+  background:var(--card); border-radius:8px; box-shadow:var(--lift1);
+  border-left:3px solid rgba(37,31,69,.10);
+  padding:13px 15px; min-height:104px;
+  display:flex; flex-direction:column; justify-content:space-between; gap:10px;
 }
-.chips .x{
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-  height:30px;                                   /* 15px × 2 行 */
-}
+.all .r{font-size:12.5px; line-height:1.65; color:var(--ink)}
+.all .s{font-family:var(--mono); font-size:10px; color:#96a0bd}
 .chips li i{font-style:normal; font-family:var(--mono); font-size:9.5px; color:#96a0bd;
             margin-right:6px}
 
@@ -466,11 +491,27 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     CARDS.forEach(function(c){ by[c.k].push(c); });
 
     rowsEl.innerHTML = by.map(function(list, k){
+      /* 後ろの層。**五枚まで。**それ以上はずれが重なって読めなくなるだけ
+         （正確な枚数は横の「12 枚」が言う）*/
+      var lays = Math.min(list.length - 1, 5), back = '';
+      for (var i = lays; i >= 1; i--){
+        back += '<span class="lay" style="transform:translate(' + (i * 4) + 'px,'
+              + (i * 4) + 'px)"></span>';
+      }
+      var top = list[0];
       return '<li class="row k' + k + '" data-k="' + k + '">'
         + '<div class="line">'
         +   '<button class="hd" data-k="' + k + '">'
-        +     '<span class="t">' + esc(GROUPS[k].t) + '</span>'
-        +     '<span class="n">' + list.length + ' 枚</span>'
+        +     '<span class="stack">' + back
+        +       '<span class="face">'
+        +         '<span class="r">' + esc(top.raw) + '</span>'
+        +         '<span class="s">' + esc(top.src) + ' / ' + top.n + '</span>'
+        +       '</span>'
+        +     '</span>'
+        +     '<span class="meta">'
+        +       '<span class="t">' + esc(GROUPS[k].t) + '</span>'
+        +       '<span class="n">' + list.length + ' 枚</span>'
+        +     '</span>'
         +   '</button>'
         +   '<div class="btns" hidden>'
         +     '<button class="three" data-v="need">要る<em>1</em></button>'
@@ -478,8 +519,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         +     '<button class="three" data-v="done">もうやった<em>3</em></button>'
         +   '</div>'
         + '</div>'
-        + '<ul class="chips">' + list.map(function(c){
-            return '<li><span class="x"><i>' + esc(c.src) + '</i>' + esc(c.raw) + '</span></li>';
+        + '<ul class="all" hidden>' + list.map(function(c){
+            return '<li><span class="r">' + esc(c.raw) + '</span>'
+                 + '<span class="s">' + esc(c.src) + ' / ' + c.n + '</span></li>';
           }).join('') + '</ul>'
         + '</li>';
     }).join('');
@@ -506,6 +548,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     rowsEl.querySelectorAll('.row.on').forEach(function(li){
       li.classList.remove('on');
       li.querySelector('.btns').hidden = true;
+      li.querySelector('.all').hidden = true;
     });
     if (sel === k){ sel = null; return; }   /* 同じ段をもう一度＝閉じる */
     sel = k;
@@ -513,6 +556,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (!li) return;
     li.classList.add('on');
     li.querySelector('.btns').hidden = false;
+    li.querySelector('.all').hidden = false;   /* 束がほどけて、全部カードで出る */
   }
 
   /* 三択。**段まるごと片付く。**押した枚数だけ「決めた」が増える */
@@ -520,7 +564,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (sel === null) return;
     var li = rowsEl.querySelector('.row[data-k="' + sel + '"]');
     if (!li) return;
-    decided += li.querySelectorAll('.chips li').length;
+    decided += li.querySelectorAll('.all li').length;
     li.classList.add('gone');
     leftRows--; sel = null;
     drawRest(); drawDone();
