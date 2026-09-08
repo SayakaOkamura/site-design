@@ -18,7 +18,9 @@
        ① 種        **一つだけ聞く**（何件溜まってる？）。②の量が自分の申告のぶんになる
        ② 不快      同じものが量の中に埋もれる。**無理だと分からせる（やらせない）**
        ③ 快        横長のカードが一列一個。一覧に**ボタンは無い**（題とカードだけ）。
-                  押すと**右の帯**に AI の要約が出て、そこで三択。**見る → 決める**の順
+                  **まとまりは三段：断片 → 言い方 → 件。**同じ言い方は一枚にまとめて
+                  「n か所」と出す。押すと**右の帯**に AI の要約と、まとめる前の全部。
+                  そこで三択。**見る → 決める**の順
        ④ 名前      通り終わったところに理念
      **「あるなあ」は③の題で起きる**（12 個・短い・太い）。
      生の文は読まれない前提で組んである（本人 2026-09-08）。
@@ -34,7 +36,8 @@
      1. ①の問いの言葉と四択の刻み（36／120／402／数えたことがない）
      2. ②の問いが二行ある（分ける前に、同じ件がいくつあるか）。まだ長い
      3. ③の三択は分類まるごとだけ（帯の中）。「この一枚だけ」は出していない
-     件数は本人が①で答えたもの（`N`）。何件でも群は 12、手数も 12。
+     件数は本人が①で答えたもの（`N`）。**何件でも群は 12、カードは 60、手数は 12。**
+     変わるのは枚数だけ（36／120／402）——**量は数字として残る。**
 ================================================================ -->
 
 <style>
@@ -192,10 +195,8 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 .cd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 .cd .r{flex:1 1 auto; min-width:0; font-size:14px; line-height:1.7; overflow:hidden;
        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
-.cd .s{flex:none; font-family:var(--mono); font-size:11px; color:#96a0bd}
-/* 二周目以降の印。**同じ件が何度も立っていることが、ここで分かる** */
-.cd .r i{font-style:normal; margin-left:10px; font-family:var(--mono); font-size:10.5px;
-         color:#96a0bd}
+/* 「n か所」。**散っていた数がカードの上に出る** */
+.cd .s{flex:none; font-family:var(--mono); font-size:11px; color:var(--sub)}
 /* 中身が右に出ているカードは、**沈んで、面が空になる**（ホームと同じ）。
    新しい印は足していない */
 .cd.sel,.cd.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
@@ -229,8 +230,11 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .panel .who .lb{font-size:10.5px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
 .panel .who .rw{margin:5px 0 0; font-size:13.5px; font-weight:700; line-height:1.75}
 /* **元の一行は等幅で薄く。**すり替えていないことが、ここで見える */
-.panel .who .or{margin:5px 0 0; font-family:var(--mono); font-size:11.5px; line-height:1.8;
-                color:var(--sub)}
+/* 元はこう書かれていた。**まとめる前を全部並べる**（等幅・薄く）*/
+.panel .orl{list-style:none; margin:7px 0 0; padding:0; display:grid; gap:9px}
+.panel .orl li{display:grid; gap:2px}
+.panel .orl .sc{font-family:var(--mono); font-size:10px; color:#96a0bd}
+.panel .orl .tx{font-family:var(--mono); font-size:11.5px; line-height:1.7; color:var(--sub)}
 .panel .who .sr{margin:5px 0 0; font-family:var(--mono); font-size:11px; color:#96a0bd}
 .panel .made{display:block; margin-top:16px; font-size:11px; line-height:1.7; color:var(--sub)}
 /* 決めるのはここ。**読み終わった位置に選択肢がある** */
@@ -541,7 +545,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   var seed = 20260908;
   function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
 
-  var CARDS = [];        /* {k:群, t:題, raw:生の文, src:出どころ, n:行番号} */
+  var CARDS = [];        /* 断片。②の山に出る */
+  var UNITS = [];        /* まとまり。③のカード一枚ぶん {k, pt, hits:[断片]} */
   function build(){
     CARDS = [];
     /* 群ごとの枚数を散らす。合計は**本人が答えた件数**（N）。
@@ -576,6 +581,21 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       var b = Math.floor(rnd() * (a + 1)), t = CARDS[a]; CARDS[a] = CARDS[b]; CARDS[b] = t;
     }
     CARDS.forEach(function(c, n){ c.n = n + 1; });
+
+    /* **同じ言い方は一枚にまとめる。**本人 2026-09-08：
+       「同じ内容のやつばっかりになってるけど。そこまでまとめてやっとじゃない？」。
+       まとめが**件（12）で止まっていた**ので、群の中に同じ内容の札が並んでいた。
+
+       まとまりは三段になる：**断片 → 言い方 → 件。**
+       402 でも 36 でも、カードは「言い方」の数（群あたり最大五通り）。
+       **量は減っていない**——枚数は数字として残るし、カードが「n か所」と言う。 */
+    UNITS = []; var seen = {};
+    CARDS.forEach(function(c){
+      var key = c.k + String.fromCharCode(31) + c.pt;
+      if (seen[key] === undefined){ seen[key] = UNITS.length; UNITS.push({ k:c.k, pt:c.pt, hits:[] }); }
+      UNITS[seen[key]].hits.push(c);
+    });
+    UNITS.forEach(function(u, i){ u.i = i; });
   }
 
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
@@ -605,22 +625,22 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   function paintRows(){
     rowsEl = document.getElementById('rows');
     paneEl = document.getElementById('pane');
-    var by = GROUPS.map(function(){ return []; });
-    CARDS.forEach(function(c){ by[c.k].push(c); });
+    var by = GROUPS.map(function(){ return { u:[], n:0 }; });
+    UNITS.forEach(function(u){ by[u.k].u.push(u); });
+    CARDS.forEach(function(c){ by[c.k].n++; });
 
-    /* 分類ごとに見出し、その下に**横長のカードが一列一個。**重ねない
-       （本人 2026-09-08：「カード自体は横長にして、一列一個」）*/
-    rowsEl.innerHTML = by.map(function(list, k){
+    /* 分類ごとに見出し、その下に**横長のカードが一列一個。**重ねない。
+       一枚が「一つの言い方」で、右に**何か所にあったか**が出る */
+    rowsEl.innerHTML = by.map(function(g, k){
       return '<li class="grp" data-k="' + k + '">'
         + '<div class="gh">'
         +   '<span class="t">' + esc(GROUPS[k].t) + '</span>'
-        +   '<span class="n">' + list.length + ' 枚</span>'
+        +   '<span class="n">' + g.n + ' 枚 → ' + g.u.length + ' 通り</span>'
         + '</div>'
-        + '<ul class="cards">' + list.map(function(c){
-            return '<li><button class="cd" data-k="' + k + '" data-n="' + c.n + '">'
-                 + '<span class="r">' + esc(c.pt)
-                 +   (c.again ? '<i>' + esc(c.again) + '</i>' : '') + '</span>'
-                 + '<span class="s">' + esc(c.src) + ' / ' + c.n + '</span>'
+        + '<ul class="cards">' + g.u.map(function(u){
+            return '<li><button class="cd" data-k="' + k + '" data-i="' + u.i + '">'
+                 + '<span class="r">' + esc(u.pt) + '</span>'
+                 + '<span class="s">' + u.hits.length + ' か所</span>'
                  + '</button></li>';
           }).join('') + '</ul>'
         + '</li>';
@@ -658,7 +678,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      ここに出るのは**AI の要約**——カードには載せていないもの（§2）。
      だから「同じものが右に出た」ではなく「**機械が読んだ結果が出た**」になる。 */
   function look(btn){
-    var k = +btn.dataset.k, n = +btn.dataset.n;
+    var k = +btn.dataset.k, ui = +btn.dataset.i;
     var was = btn.classList.contains('sel');
     sel = k;                         /* 三択のキーは、いま見ている件に効く */
     if (was){ shut(); return; }      /* 同じカードをもう一度＝閉じる */
@@ -666,27 +686,31 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var b = rowsEl.querySelector('.cd.sel');
     if (b) b.classList.remove('sel');
 
-    var c = CARDS.filter(function(x){ return x.n === n; })[0];
-    if (!c) return;
-    var mates = CARDS.filter(function(x){ return x.k === k; });
-    var srcs = {};
-    mates.forEach(function(x){ srcs[x.src] = (srcs[x.src] || 0) + 1; });
-    var srcTxt = Object.keys(srcs).map(function(key){ return key + ' ' + srcs[key]; }).join('、');
+    var u = UNITS[ui];
+    if (!u) return;
+    var all = CARDS.filter(function(x){ return x.k === k; });
+
+    /* **同じ言い方が何か所にあったか、そのまま並べる。**
+       ここが「別々の出どころに散っていた」の証拠——
+       まとめたと言うだけでなく、**まとめる前を全部見せる。** */
+    var was2 = u.hits.map(function(h){
+      return '<li><span class="sc">' + esc(h.src) + ' / ' + h.n + '</span>'
+           + '<span class="tx">' + esc(h.raw) + '</span></li>';
+    }).join('');
 
     paneEl.innerHTML =
       '<div class="panel">'
       + '<div class="hd2"><h2>' + esc(GROUPS[k].t) + '</h2>'
-      +   '<p class="k">' + esc(c.src) + ' / ' + c.n + '　同じ件 ' + mates.length + ' 枚</p></div>'
+      +   '<p class="k">' + all.length + ' 枚 → ' + by_u(k) + ' 通り</p></div>'
       + '<div class="bd">'
       +   '<p class="sum"><b>AI の要約</b>' + esc(GROUPS[k].sum) + '</p>'
       +   '<div class="who"><span class="lb">押したカード</span>'
-      +     '<p class="rw">' + esc(c.pt) + '</p>'
+      +     '<p class="rw">' + esc(u.pt) + '</p>'
       +   '</div>'
-      +   '<div class="who"><span class="lb">元はこう書かれていた</span>'
-      +     '<p class="or">' + esc(c.raw) + '</p>'
-      +     '<p class="sr">' + esc(c.src) + ' / ' + c.n + '　同じ件 ' + mates.length + ' 枚（' + esc(srcTxt) + '）</p>'
+      +   '<div class="who"><span class="lb">元はこう書かれていた（' + u.hits.length + ' か所）</span>'
+      +     '<ul class="orl">' + was2 + '</ul>'
       +   '</div>'
-      +   '<span class="made">「' + esc(GROUPS[k].t) + '」という題は、生の一行には書かれていません。この仕組みが付けたものです。</span>'
+      +   '<span class="made">この一行と「' + esc(GROUPS[k].t) + '」という題は、どちらも生の文には書かれていません。この仕組みが付けたものです。</span>'
       +   '<div class="btns">'
       +     '<button class="three" data-k="' + k + '" data-v="need">要る<em>1</em></button>'
       +     '<button class="three" data-k="' + k + '" data-v="drop">要らない<em>2</em></button>'
@@ -699,6 +723,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     open = k;
   }
 
+  function by_u(k){
+    return UNITS.filter(function(u){ return u.k === k; }).length;
+  }
   /* 三択。**分類まるごと片付く。**押した枚数だけ「決めた」が増える */
   function decide(k){
     if (k === undefined || k === null) k = sel;
@@ -706,7 +733,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var grp = rowsEl.querySelector('.grp:not(.gone)[data-k="' + k + '"]');
     if (!grp) return;
     if (open === k) shut();
-    decided += grp.querySelectorAll('.cd').length;
+    /* **数えるのは断片。**カードは「言い方」なので、そのまま数えると枚数が合わない
+       （120 のはずが 60 と出た。画面で見つけた）*/
+    decided += CARDS.filter(function(c){ return c.k === k; }).length;
     grp.classList.add('gone');
     leftRows--; sel = null;
     drawRest(); drawDone();
