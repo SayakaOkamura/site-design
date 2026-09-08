@@ -84,7 +84,10 @@ body{
    地は最初から最後まで同じ。**暗転もしない。**
    変わるのは「面があるかないか」だけ——それが「縛るのは形」の見た目。 */
 
-.in{width:100%; max-width:908px; margin:0 auto; padding:0 24px}
+/* **中身と同じ幅。**908 はホームの寸法をそのまま持ってきていたもので、
+   ここの中身は 1180。**頭の戻る道が、一覧の左端より 200px 内側に浮いていた**
+   （本人 2026-09-08：「位置が変だよ」）。左端を揃える。 */
+.in{width:100%; max-width:1180px; margin:0 auto; padding:0 24px}
 .wrap{flex:1 0 auto; width:100%; max-width:1180px; margin:0 auto; padding:34px 24px 40px}
 
 /* ─ 頭。戻る道を常設する（009 の決めごと）─
@@ -148,10 +151,13 @@ body{
 /* 問い。**答えさせない。**見て「無理」と分かった時点で先へ行ける */
 .ask{margin:0 0 18px; font-size:15px; font-weight:700; line-height:1.8}
 .ask .sub{display:block; font-size:13px; font-weight:500; color:var(--sub)}
-/* 一手は下端に貼りつける。**山の高さに関係なく届く** */
-.hold{position:sticky; bottom:0; padding:14px 0 4px;
-      background:linear-gradient(180deg,rgba(232,240,248,0) 0%,var(--bg) 46%)}
-.hold .one{margin-top:0}
+/* **一手は問いの隣に置く。**下端に貼りつけていたら、**山の上に浮いて**
+   問いからも離れていた（本人 2026-09-08：「同じ件をまとめる、のボタンの
+   位置もちょっと不思議だな」）。**答える相手のすぐ横にある**のが素直。
+   山はその下に、証拠として続く。 */
+.ask2{display:flex; align-items:center; gap:26px; flex-wrap:wrap; margin:0 0 26px}
+.ask2 .ask{margin:0}
+.ask2 .one{margin-top:0; flex:none}
 
 /* ─ 一手。**行き先が言葉に出ている**（ジェットコースターにしない）─ */
 .one{
@@ -359,11 +365,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     <!-- 一手の言葉。**「カードにする」は外した。**本人 2026-09-08：
          「カードにするってボタン出されても何？ってなると思う」。こちらの語彙だった。
          いまは**問いの二行目に答える形**にしてある——分ける前に、同じ件がいくつあるか。
-         押すと③でその答えが出る（見出しが「120 枚は、12 件でした」）。 -->
-    <p class="ask">この中から、要るものと要らないものに分けてください。<br>
-      <span class="sub">……その前に、同じ件がいくつあるか分かりますか。</span></p>
+         押すと③でその答えが出る（見出しが「120 枚は、12 件でした」）。
+         **一手は問いの隣。**山の上に貼りつけていたのをやめた。 -->
+    <div class="ask2">
+      <p class="ask">この中から、要るものと要らないものに分けてください。<br>
+        <span class="sub">……その前に、同じ件がいくつあるか分かりますか。</span></p>
+      <button class="one" id="go-c">同じ件をまとめる</button>
+    </div>
     <ul class="pile" id="pile"></ul>
-    <div class="hold"><button class="one" id="go-c">同じ件をまとめる</button></div>
   </section>
 
   <!-- ③ 快。**塊で押せる。**見抜くのは機械、決めるのは人 -->
