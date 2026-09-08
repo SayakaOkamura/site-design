@@ -148,8 +148,30 @@ body{
   font-family:var(--mono); font-size:10.5px; line-height:1.5; color:rgba(37,31,69,.78);
   columns:3; column-gap:32px;
 }
-.pile li{break-inside:avoid; padding:1px 0; white-space:nowrap; overflow:hidden}
+.pile li{break-inside:avoid}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
+/* ─ **押せる。**ここが「判子を押す前」。
+   本人 2026-09-08：「ただ押すだけになる。その前の話」。
+   ③でどれだけ手触りを足しても、**整った札に押すだけ**では作業のまま。
+   押す前——**まだ押せない形**を手でやらせないと、③の一押しに重さが出ない。
+
+   だから山を**押させる。**一枚押すと片付く。ただし**同じ件が他に散っている**ので、
+   押しても押しても同じものが出てくる。402 枚を一枚ずつ。
+   §「②はやらせない」は**外した**——見て諦めるのと、やって諦めるのは別のことだった。 */
+.pc{
+  -webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
+  color:inherit; text-align:left; display:block; width:100%; padding:1px 3px;
+  margin:0 -3px; border-radius:3px; cursor:pointer;
+  white-space:nowrap; overflow:hidden;
+  transition:opacity .2s ease, background-color .12s ease;
+}
+.pc:hover{background:rgba(99,84,224,.1)}
+.pc:focus-visible{outline:2px solid var(--go); outline-offset:1px}
+/* 片付いた一枚。**消さない。**消すと山が縮んで「進んでいる」ように見える */
+.pc.done{opacity:.26; text-decoration:line-through; cursor:default}
+/* **いま押したのと同じ件。**押した直後に、山のあちこちで光る。
+   これが「終わらない」の証拠——一枚押しても、同じ件が 11 か所残っている */
+.pc.same{background:rgba(99,84,224,.17); box-shadow:inset 0 0 0 1px rgba(99,84,224,.42)}
 /* 問い。**答えさせない。**見て「無理」と分かった時点で先へ行ける */
 .ask{margin:0 0 18px; font-size:15px; font-weight:700; line-height:1.8}
 .ask .sub{display:block; font-size:13px; font-weight:500; color:var(--sub)}
@@ -435,6 +457,9 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .end h2{margin:0; font-size:clamp(18px,2.6vw,26px); font-weight:700; line-height:1.5}
 .end .said{margin:18px 0 0; font-size:13.5px; line-height:2; color:rgba(37,31,69,.74)}
 .end .said b{color:var(--ink); font-size:15px}
+/* 二つの手数を並べる。**同じ押すの重さが違う** */
+.end .cmp{display:block; margin-top:14px; padding-top:14px;
+          border-top:1px solid var(--frame); font-size:13px}
 .end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
 
 .foot{flex:none; background:var(--frame)}
@@ -490,8 +515,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
          押すと③でその答えが出る（見出しが「120 枚は、12 件でした」）。
          **一手は問いの隣。**山の上に貼りつけていたのをやめた。 -->
     <div class="ask2">
-      <p class="ask">この中から、要るものと要らないものに分けてください。<br>
-        <span class="sub">……その前に、同じ件がいくつあるか分かりますか。</span></p>
+      <p class="ask">この中から、要らないものを片付けてください。<br>
+        <span class="sub" id="hint">一枚押すと、片付きます。</span></p>
       <button class="one" id="go-c">同じ件をまとめる</button>
     </div>
     <ul class="pile" id="pile"></ul>
@@ -769,6 +794,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     CARDS.forEach(function(c){
       var key = c.k + String.fromCharCode(31) + c.pt;
       if (seen[key] === undefined){ seen[key] = UNITS.length; UNITS.push({ k:c.k, pt:c.pt, hits:[] }); }
+      c.u = seen[key];                 /* ②で「同じ件」を指すのに使う */
       UNITS[seen[key]].hits.push(c);
     });
     UNITS.forEach(function(u, i){ u.i = i; });
@@ -784,15 +810,41 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   }
 
   /* ─ ② 山。**一気に出す。**溜めるのではなく、量が一瞬で来る ─ */
+  /* ─ ②。**押せる山。**ここが判子を押す前 ───────────────
+     数え方は**枚**（手元の話は枚、意味の話は件）*/
+  var handled = 0;
   function paintPile(){
-    /* `$` のプロンプトは**捨てた**（端末の作法はコアから出ていない）*/
+    handled = 0;
     document.getElementById('count').textContent =
-      CARDS.length + ' 件。題は付いていません。';
+      CARDS.length + ' 枚。題は付いていません。';
+    document.getElementById('hint').textContent = '一枚押すと、片付きます。';
     var frag = [];
-    CARDS.forEach(function(c){
-      frag.push('<li><i>' + esc(c.src) + '</i>' + esc(c.raw) + '</li>');
+    CARDS.forEach(function(c, i){
+      frag.push('<li><button class="pc" data-i="' + i + '" data-u="' + c.u + '">'
+        + '<i>' + esc(c.src) + '</i>' + esc(c.raw) + '</button></li>');
     });
     document.getElementById('pile').innerHTML = frag.join('');
+  }
+
+  /* 一枚片付ける。**片付くが、同じ件が他に散っている。**
+     押した一枚は消さない——消すと山が縮んで「進んでいる」ように見える */
+  function clear1(btn){
+    if (btn.classList.contains('done')) return;
+    btn.classList.add('done');
+    handled++;
+    var pile = document.getElementById('pile');
+    pile.querySelectorAll('.pc.same').forEach(function(x){ x.classList.remove('same'); });
+    /* いま押したのと**同じ件**が、山のどこに残っているか */
+    var same = pile.querySelectorAll('.pc[data-u="' + btn.dataset.u + '"]:not(.done)');
+    same.forEach(function(x){ x.classList.add('same'); });
+
+    var left = CARDS.length - handled;
+    var h = document.getElementById('hint');
+    if (same.length && handled < 4){
+      h.textContent = 'いま押したのと同じ件が、あと ' + same.length + ' か所あります。';
+    } else {
+      h.textContent = '一枚ずつだと、あと ' + left + ' 枚。';
+    }
   }
 
   /* ─ ③ ────────────────────────────────────────────── */
@@ -1045,7 +1097,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     el.innerHTML =
       CARDS.length + ' 枚ありました。<b>やることは ' + tally.need + ' 件</b>です。<br>'
       + (rest.length ? esc(rest.join('・')) + '。' : '')
-      + '減らしたのではなく、形を変えただけです。';
+      + '減らしたのではなく、形を変えただけです。'
+      /* **②で一枚ずつ押した人には、その数を返す。**自分の手数と、まとめてからの手数。
+         点数ではない（§5 で点数は足さないと決めている）——**同じ「押す」の重さが
+         違うことを、自分の数字で見せる。**押していない人には出さない */
+      + (handled ? '<span class="cmp">山を一枚ずつ押したのは <b>' + handled
+          + ' 枚</b>。まとめてからは <b>' + GROUPS.length + ' 手</b>でした。</span>' : '');
   }
   /* ─ 段 ───────────────────────────────────────────── */
   function stage(s){
@@ -1072,6 +1129,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   document.addEventListener('click', function(e){
     var pk = e.target.closest('.pk');
     if (pk){ answer(+pk.dataset.n); return; }
+    var pc = e.target.closest('.pc');
+    if (pc){ clear1(pc); return; }
     var cd = e.target.closest('.cd');
     if (cd){ look(cd); return; }
     var th = e.target.closest('.three');
@@ -1091,6 +1150,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       return;
     }
     if (s === 'b' && (e.key === 'Enter' || e.key === ' ')){
+      /* 山の一枚に焦点があるときは、そのキーは**その一枚のもの。**
+         山を押せるようにしたので、ここで奪うと片付けたつもりが③へ飛ぶ */
+      var a = document.activeElement;
+      if (a && a.classList && a.classList.contains('pc')) return;
       e.preventDefault(); stage('c'); return;
     }
     if (s === 'c'){
