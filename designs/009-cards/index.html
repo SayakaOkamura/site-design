@@ -9,8 +9,9 @@
      ================================================================
      入口。頭（社名）と足（所在地・著作表示）で枠を作ってある。
      体験（うじゃうじゃ → カード → 仕分け）は `try.html`。
-     **手前に起動画面がある**（生の文が流れて → 社名 → 押すと社名が帯へ上がる）。
-     入口そのものは変えていない——門を前に付けただけ。CSS の最後を参照。
+     **手前に起動画面がある**（生の文が流れて → 社名 → 社名が帯へ上がる。2.5 秒）。
+     **止まらない。**押す段は無く、押すのは飛ばすためだけ。
+     入口そのものは変えていない。CSS の最後を参照。
 
      決まっていること（NOTES.md が正）
      - カードは PDF を解体した断片。押すと中身がまとまって出る。
@@ -342,13 +343,12 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
    これは幕ではない。**流れているものが、この会社が扱っているものそのもの。** */
 #boot{
   position:fixed; inset:0; z-index:60; overflow:hidden;
-  background:var(--crt-bg); cursor:pointer;
+  background:var(--crt-bg); cursor:default;   /* 押せるものではない。押せば飛ばせるだけ */
   -webkit-user-select:none; user-select:none;   /* 押した跡に文字の入力位置が残らないように */
   display:flex; align-items:center; justify-content:center;
   transition:background-color .42s ease;
 }
 html.boot,body.boot{overflow:hidden}   /* 送りは html 側で起きる。両方止める */
-#boot:focus{outline:0}   /* 画面いっぱいなので枠は出しようがない。角の点滅が入力待ちの印 */
 
 /* 流れる塊。**桁は揃えない。**左端も濃さも一行ずつ違う（貼り集めた跡）*/
 #boot .flow{
@@ -380,7 +380,8 @@ html.boot,body.boot{overflow:hidden}   /* 送りは html 側で起きる。両�
 #boot .mid{
   position:relative; text-align:center; padding:0 24px;
   opacity:0; transform:scale(1.045);
-  transition:opacity .5s var(--ease), transform .6s var(--ease);
+  /* 止まらなくなったので短くした。上がるまでに出しきる必要がある */
+  transition:opacity .38s var(--ease), transform .44s var(--ease);
 }
 #boot .nm{
   display:inline-block; white-space:nowrap; color:#fff;
@@ -389,27 +390,14 @@ html.boot,body.boot{overflow:hidden}   /* 送りは html 側で起きる。両�
   font-size:clamp(13px,4.2vw,30px); font-weight:700; letter-spacing:.02em; line-height:1.35;
   transform-origin:0 0; transition:transform .5s var(--snap);
 }
-#boot .cue{margin-top:20px; font-size:13px; transition:opacity .14s ease}
-#boot .cur{
-  display:inline-block; width:.55em; height:1.05em; background:var(--crt-ink);
-  vertical-align:-.18em; animation:blink 1.06s steps(1) infinite;
-}
-@keyframes blink{0%,49%{opacity:.9} 50%,100%{opacity:0}}
-
-/* **手が止まった人にだけ出す。**3.4 秒たっても何も来なかったとき。
-   最初から出すと、難解さが先に説明で潰れる */
-#boot .hint{
-  margin:16px 0 0; font-family:var(--mono); font-size:11.5px; color:#6b9c82;
-  opacity:0; transition:opacity .5s ease;
-}
+/* **点滅する角と「押すと開く」は落とした**（2026-09-08）。
+   止まらなくなったので、入力待ちの印は嘘になる。 */
 
 body.boot-named #boot .flow{opacity:0}
 body.boot-named #boot .mid{opacity:1; transform:none}
-body.boot-hint #boot .hint{opacity:1}
 
 /* 押した。塊も角も消えて、社名だけが帯へ上がる */
 body.boot-go #boot{background:transparent}
-body.boot-go #boot .cue,body.boot-go #boot .hint{opacity:0}
 
 /* 頭の帯。起動のあいだは暗いまま。社名が着いてから（boot-lit を外すと）明るくなる */
 body.boot .top,body.boot-lit .top{background:var(--crt-bg)}
@@ -418,9 +406,8 @@ body.boot-lit .mark{color:#fff}
 
 /* 動きを切っている環境では、流さずに社名から始める。押す段は残す */
 @media (prefers-reduced-motion:reduce){
-  #boot,#boot .flow,#boot .mid,#boot .nm,#boot .cue,#boot .hint,.top,.mark{transition:none}
+  #boot,#boot .flow,#boot .mid,#boot .nm,.top,.mark{transition:none}
   #boot .flow{display:none}
-  #boot .cur{animation:none}
 }
 </style>
 <!-- JS が動かない環境では起動画面ごと畳む。**閉じ込めない** -->
@@ -434,13 +421,13 @@ body.boot .mark{opacity:1}
 <body class="boot">
 
 <!-- 起動画面。**幕ではない。**流れているのが、この会社が扱っているものそのもの。
-     押すと社名が上の帯へ上がって、そこが社名の場所だと分かる（宿題6番）。 -->
-<div id="boot" role="button" tabindex="0" aria-label="サイトを開く">
-  <div class="flow" aria-hidden="true"><div class="roll" id="roll"></div></div>
+     社名が上の帯へ上がって、そこが社名の場所だと分かる（宿題6番）。
+     **止まらない。**押す段は無く、最後まで勝手に進む。押すと**飛ばせる**だけ。
+     だから押せるものではない——`role` も `tabindex` も持たせない。 -->
+<div id="boot" aria-hidden="true">
+  <div class="flow"><div class="roll" id="roll"></div></div>
   <div class="mid">
     <div class="nm" id="bootnm">株式会社アルターデザインコンサルティング</div>
-    <div class="cue" aria-hidden="true"><i class="cur"></i></div>
-    <p class="hint">押すと開く</p>
   </div>
 </div>
 
@@ -809,23 +796,34 @@ body.boot .mark{opacity:1}
     roll.innerHTML = h;
   }
 
+  /* **止まらない**（本人 2026-09-08：「クリックなしにする？もうロゴが収まるところまで
+     一連の流れにするとか」）。流れる → 社名が出る → 帯へ上がる、まで勝手に進む。
+     押す段は無い。**押すのは飛ばすため**（待たされないための近道。門ではない）。
+
+       0    塊が流れ出す（1200ms かけて止まる）
+       900  塊が消えて、社名が出る（380ms）
+       1560 社名が帯へ上がる（520ms）
+       2080 着地。帯が明るくなる（460ms）
+     ぜんぶで 2.5 秒。**毎回これを見るので、伸ばさない。** */
+  var FLOW = 1200, NAME = 900, GO = 1560;
   var anim = null, t1 = 0, t2 = 0, going = false;
 
   if (slow){
-    body.classList.add('boot-named','boot-hint');
+    body.classList.add('boot-named');
+    t2 = setTimeout(open, 700);          /* 流さないぶん、待たせる時間も短くする */
   } else {
     build();
     var travel = Math.max(0, roll.offsetHeight - innerHeight);
     if (roll.animate){
       anim = roll.animate(
         [{transform:'translateY(0)'}, {transform:'translateY(' + (-travel) + 'px)'}],
-        {duration:1500, easing:'cubic-bezier(.04,.62,.16,1)', fill:'forwards'});
+        {duration:FLOW, easing:'cubic-bezier(.04,.62,.16,1)', fill:'forwards'});
     }
-    t1 = setTimeout(function(){ body.classList.add('boot-named'); }, 1180);
-    t2 = setTimeout(function(){ body.classList.add('boot-hint');  }, 3400);
+    t1 = setTimeout(function(){ body.classList.add('boot-named'); }, NAME);
+    t2 = setTimeout(open, GO);
   }
 
-  /* 押した。**途中で押されたら、社名は遷移なしで出してから飛ばす**
+  /* **途中で押されたら、社名は遷移なしで出してから飛ばす**
      （半端に薄い社名が飛んでいくのを避ける）*/
   function open(){
     if (going) return;
@@ -867,7 +865,7 @@ body.boot .mark{opacity:1}
      そのあと boot-lit を外すと、帯が暗いところから明るくなる */
   function land(){
     root.classList.remove('boot');
-    body.classList.remove('boot','boot-named','boot-go','boot-hint');
+    body.classList.remove('boot','boot-named','boot-go');
     body.classList.add('boot-lit');
     boot.remove();
     /* **requestAnimationFrame では片付かない。**タブが前に出ていないと呼ばれず、
@@ -876,16 +874,19 @@ body.boot .mark{opacity:1}
     setTimeout(function(){ body.classList.remove('boot-lit'); }, 30);
   }
 
+  /* 押す・キーを叩く＝**飛ばす。**待たされないための近道で、進むのに要る操作ではない。
+      は当てない（押せるものではないので、順番に入ってはいけない）*/
+  /* 押す・キーを叩く＝**飛ばす。**待たされないための近道で、進むのに要る操作ではない。
+     だから焦点は当てない（押せるものではないので、順番に入ってはいけない）。
+     **マウスが無くても飛ばせる**——修飾キーと Tab 以外なら何でも */
   boot.addEventListener('click', open);
-  boot.focus({ preventScroll:true });
 
-  /* **マウスが無くても抜けられる。**修飾キーと Tab 以外は、何を押しても開く */
   document.addEventListener('keydown', function(e){
     if (!body.classList.contains('boot')) return;
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     if (e.key === 'Tab' || e.key === 'Shift') return;
     e.preventDefault(); e.stopPropagation();
-    open();
+    open();   /* 飛ばす */
   }, true);
 })();
 
