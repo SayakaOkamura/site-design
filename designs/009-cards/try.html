@@ -211,6 +211,10 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 /* 送り先の余裕。**貼りつく二段（頭 60 ＋ 置き場 44）に隠れないように。**
    これを分類の側に付けていなくて、見出しが帯の下へ潜っていた（数字で見つけた）*/
 .grp{margin-top:44px; scroll-margin-top:120px}
+/* **片付くときは、流れて抜ける。**前は瞬間で消えていたので「捌けた」感が無かった。
+   置き場は上にあるので、**上へ**抜ける。演出ではなく物の動き（§5 の「重さ・慣性」）*/
+.grp{transition:transform .24s var(--ease), opacity .24s ease}
+.grp.out{transform:translateY(-16px) scale(.985); opacity:0; pointer-events:none}
 .grp:first-child{margin-top:0}
 .grp.gone{display:none}
 .gh{display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin:0 0 14px}
@@ -232,7 +236,14 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
   display:flex; align-items:center; gap:24px;
   transition:transform .16s var(--ease), box-shadow .16s ease, background-color .16s ease;
 }
+/* ─ 手触り。**§5 の「足してよい」側だけ。**点数・レベル・達成演出・音は足さない。
+   本人 2026-09-08：「遊び感は無くなったな」。直しを重ねるうちに、
+   §5 が挙げていた**重さ・押したときのずれ・束の厚み**が全部落ちて、
+   画面に残っていたのは**数字と固定枠だけ**——仕事の言語だった。 */
 .cd:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+/* **押した瞬間に沈む。**ホームのカードと同じ（`.card.down`）。
+   離すと戻る。押したことが指に返る */
+.cd:active{transform:translateY(2px); box-shadow:var(--lift0); transition-duration:.06s}
 .cd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 .cd .r{flex:1 1 auto; min-width:0; font-size:14px; line-height:1.7; overflow:hidden;
        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
@@ -627,6 +638,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   var seed = 20260908;
   function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
 
+  /* 動きを切っている環境。待たずに済ませる */
+  var slow = !window.matchMedia || matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   var CARDS = [];        /* 断片。②の山に出る */
   var UNITS = [];        /* まとまり。③のカード一枚ぶん {k, pt, hits:[断片]} */
   function build(){
@@ -761,7 +775,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   /* 押すと**右の帯に出る。**ホームと同じ作法。
      ここに出るのは**AI の要約**——カードには載せていないもの（§2）。
      だから「同じものが右に出た」ではなく「**機械が読んだ結果が出た**」になる。 */
-  function look(btn){
+  function look(btn, quiet){
     var k = +btn.dataset.k, ui = +btn.dataset.i;
     var was = btn.classList.contains('sel');
     sel = k;                         /* 三択のキーは、いま見ている件に効く */
@@ -811,9 +825,11 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        （本人 2026-09-08：「スクロールに対して出てくるものがあってないな」）。
        だから押したカードを帯の高さまで送る。**行き先は予測できる**——
        押したものが上に来る。すでにその高さにあるものは動かさない。 */
-    var r = btn.getBoundingClientRect();
-    if (r.top < 104 || r.top > 260){
-      btn.scrollIntoView({ block:'start', behavior: slow ? 'auto' : 'smooth' });
+    if (!quiet){
+      var r = btn.getBoundingClientRect();
+      if (r.top < 104 || r.top > 260){
+        btn.scrollIntoView({ block:'start', behavior: slow ? 'auto' : 'smooth' });
+      }
     }
   }
 
@@ -821,6 +837,11 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     return UNITS.filter(function(u){ return u.k === k; }).length;
   }
   /* 三択。**分類まるごと片付く。**押した枚数だけ「決めた」が増える */
+  /* 三択。**分類まるごと片付く。**押した先は置き場に積まれる。
+
+     **決めたら、次の分類の帯が開く。**そうすると二手目以降は**三択だけで回る**——
+     読みたい人は帯を読み、読まない人はそのまま押せる。どちらでも一手。
+     テンポが出ないと遊びにならない（本人 2026-09-08：「遊び感は無くなったな」）。 */
   function decide(k, v){
     if (k === undefined || k === null) k = sel;
     if (k === null) return;
@@ -833,21 +854,41 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     decided += pieces;
     if (!v) v = 'need';
     tally[v]++; tally.pieces[v] += pieces;
-    grp.classList.add('gone');
     leftRows--; sel = null;
     drawRest();
 
-    if (leftRows <= 0){ setTimeout(function(){ stage('d'); }, 260); return; }
-    /* 次の分類へ焦点を送る。**マウスが無くても続けて押せる** */
-    var next = rowsEl.querySelector('.grp:not(.gone) .cd');
-    if (next){
-      next.focus({ preventScroll:true });
-      sel = +next.dataset.k;
-      /* **次の分類の見出しから見せる。**片付いたぶん詰まるので、
-         どこを見ればいいか分からなくなる */
-      var g = next.closest('.grp');
-      if (g) g.scrollIntoView({ block:'start', behavior: slow ? 'auto' : 'smooth' });
+    /* **流れて抜けてから消す。**瞬間で消すと「捌けた」感が出ない。
+       片付けは**動きの終わりと時間の両方**で拾う——片方だけに頼ると、
+       タブが前に出ていないときに `transitionend` が来ず、抜けかけで止まる
+       （ホームの帯と同じ作り）。動きを切っている環境では待たない */
+    grp.classList.add('out');
+    var settled = false;
+    function gone(){
+      if (settled) return;
+      settled = true;
+      grp.removeEventListener('transitionend', onEnd);
+      grp.classList.add('gone'); grp.classList.remove('out');
+      if (leftRows <= 0){ stage('d'); return; }
+      step();
     }
+    function onEnd(e){ if (e.target === grp) gone(); }
+    if (slow){ gone(); }
+    else {
+      grp.addEventListener('transitionend', onEnd);
+      setTimeout(gone, 320);
+    }
+  }
+
+  /* 次の分類を、見出しから見せて**帯まで開く。**
+     押した結果として次が出ているので、続けて押せる */
+  function step(){
+    var next = rowsEl.querySelector('.grp:not(.gone) .cd');
+    if (!next) return;
+    sel = +next.dataset.k;
+    var g = next.closest('.grp');
+    if (g) g.scrollIntoView({ block:'start', behavior: slow ? 'auto' : 'smooth' });
+    look(next, true);   /* 送りは step が済ませている */
+    next.focus({ preventScroll:true });
   }
 
   /* ─ ④ ── **仕分けの答えを出す。**ここが押した意味。
