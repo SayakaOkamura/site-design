@@ -9,6 +9,8 @@
      ================================================================
      入口。頭（社名）と足（所在地・著作表示）で枠を作ってある。
      体験（うじゃうじゃ → カード → 仕分け）は `try.html`。
+     **手前に起動画面がある**（生の文が流れて → 社名 → 押すと社名が帯へ上がる）。
+     入口そのものは変えていない——門を前に付けただけ。CSS の最後を参照。
 
      決まっていること（NOTES.md が正）
      - カードは PDF を解体した断片。押すと中身がまとまって出る。
@@ -42,8 +44,17 @@
   --lift3: 0 8px 16px rgba(31,25,64,.12), 0 32px 64px rgba(31,25,64,.20);
   --lift0: 0 1px 1px rgba(31,25,64,.12);
 
+  --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
+          "Liberation Mono","Courier New",monospace;
+  /* 起動画面だけ。端末の出力に寄せてある（try.html と同じ値）。
+     **どの製品の意匠でもない** */
+  --crt-bg:  #0a1210;
+  --crt-ink: #86c9a4;
+  --crt-dim: #45705c;
+
   --r: 10px;
   --ease: cubic-bezier(.2,.7,.3,1);
+  --snap: cubic-bezier(.16,1,.3,1);   /* 前へ出るとき。速く動いて素早く止まる */
 }
 
 *{box-sizing:border-box}
@@ -82,8 +93,13 @@ body.locked{overflow:hidden}
 body.paneopen .wrap{max-width:1240px}
 
 .top,.foot{flex:none; background:var(--frame)}
-.top{height:56px; display:flex; align-items:center}
-.mark{font-size:13.5px; font-weight:700; letter-spacing:.02em}
+.top{height:56px; display:flex; align-items:center; transition:background-color .46s ease}
+/* 起動の暗さは、社名が着いてから帯ごと明るくなる（下の「起動画面」を参照）。
+   opacity は飛んできた社名と入れ替わる一瞬なので、遷移させない */
+/* inline-block と行間の指定は**起動画面のため。**飛んでくる社名（#boot .nm）と
+   箱の形を揃えておかないと、着地で 15px 跳ねる（素の span は行間ぶんの余白を持たない）*/
+.mark{display:inline-block; font-size:13.5px; font-weight:700; letter-spacing:.02em;
+      line-height:1.35; color:var(--ink); transition:color .46s ease}
 
 .foot .in{padding:30px 24px 34px}
 .foot p{margin:0; font-size:12px; color:var(--sub); line-height:1.85}
@@ -310,9 +326,113 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
   .card{min-height:0}
   .card .s{padding-top:10px}
 }
+
+/* ─ 起動画面 ───────────────────────────────────────────────
+   生の文がばーっと流れて、最後に社名が出る。押すと社名が**上の帯へ上がる**。
+   暗さは帯に残って、そのあと帯ごと明るくなる。
+   **行き先は動く前から画面に出ている**（社名の行き先は、社名が置かれる場所）。
+
+   流すのは**コードではない。**009 の題材そのもの——mail / chat / 議事録 /
+   docx / pdf / xlsx の生の文。コードにすると開発会社に見えるし、
+   返ってくるのが「できるのか」になる。生の文なら「うちにもある」になる。
+   **一行一行は読めるのに、全体は追えない。**難解さは見た目だけで、中身は読める。
+
+   端末の出力に寄せている（等幅・暗い面・点滅する角）。**どの製品の意匠でもない。**
+
+   これは幕ではない。**流れているものが、この会社が扱っているものそのもの。** */
+#boot{
+  position:fixed; inset:0; z-index:60; overflow:hidden;
+  background:var(--crt-bg); cursor:pointer;
+  -webkit-user-select:none; user-select:none;   /* 押した跡に文字の入力位置が残らないように */
+  display:flex; align-items:center; justify-content:center;
+  transition:background-color .42s ease;
+}
+html.boot,body.boot{overflow:hidden}   /* 送りは html 側で起きる。両方止める */
+#boot:focus{outline:0}   /* 画面いっぱいなので枠は出しようがない。角の点滅が入力待ちの印 */
+
+/* 流れる塊。**桁は揃えない。**左端も濃さも一行ずつ違う（貼り集めた跡）*/
+#boot .flow{
+  position:absolute; inset:0; overflow:hidden;
+  transition:opacity .42s ease;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent);
+          mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent);
+}
+/* **詰める。**行間 1.85 だと一画面に 30 行しか乗らず、量に見えなかった */
+#boot .roll{
+  position:absolute; left:0; right:0; top:0; padding:0 24px; will-change:transform;
+  font-family:var(--mono); font-size:11.5px; line-height:1.6; color:var(--crt-ink);
+  white-space:nowrap;
+}
+#boot .roll i{font-style:normal; color:var(--crt-dim); margin-right:10px}
+
+/* 社名。**等幅ではない。**ぐちゃぐちゃ（等幅・緑）の中から、
+   サイトの字（白）が一つだけ出てくる、という見え方にしている */
+#boot .mid{
+  position:relative; text-align:center; padding:0 24px;
+  opacity:0; transform:scale(1.045);
+  transition:opacity .5s var(--ease), transform .6s var(--ease);
+}
+#boot .nm{
+  display:inline-block; white-space:nowrap; color:#fff;
+  /* 折り返させない（折れると帯の社名と箱の形が合わなくなる）。
+     下限 13px は 320px の窓で横にはみ出さない大きさ */
+  font-size:clamp(13px,4.2vw,30px); font-weight:700; letter-spacing:.02em; line-height:1.35;
+  transform-origin:0 0; transition:transform .5s var(--snap);
+}
+#boot .cue{margin-top:20px; font-size:13px; transition:opacity .14s ease}
+#boot .cur{
+  display:inline-block; width:.55em; height:1.05em; background:var(--crt-ink);
+  vertical-align:-.18em; animation:blink 1.06s steps(1) infinite;
+}
+@keyframes blink{0%,49%{opacity:.9} 50%,100%{opacity:0}}
+
+/* **手が止まった人にだけ出す。**3.4 秒たっても何も来なかったとき。
+   最初から出すと、難解さが先に説明で潰れる */
+#boot .hint{
+  margin:16px 0 0; font-family:var(--mono); font-size:11.5px; color:#6b9c82;
+  opacity:0; transition:opacity .5s ease;
+}
+
+body.boot-named #boot .flow{opacity:0}
+body.boot-named #boot .mid{opacity:1; transform:none}
+body.boot-hint #boot .hint{opacity:1}
+
+/* 押した。塊も角も消えて、社名だけが帯へ上がる */
+body.boot-go #boot{background:transparent}
+body.boot-go #boot .cue,body.boot-go #boot .hint{opacity:0}
+
+/* 頭の帯。起動のあいだは暗いまま。社名が着いてから（boot-lit を外すと）明るくなる */
+body.boot .top,body.boot-lit .top{background:var(--crt-bg)}
+body.boot .mark{opacity:0}
+body.boot-lit .mark{color:#fff}
+
+/* 動きを切っている環境では、流さずに社名から始める。押す段は残す */
+@media (prefers-reduced-motion:reduce){
+  #boot,#boot .flow,#boot .mid,#boot .nm,#boot .cue,#boot .hint,.top,.mark{transition:none}
+  #boot .flow{display:none}
+  #boot .cur{animation:none}
+}
 </style>
+<!-- JS が動かない環境では起動画面ごと畳む。**閉じ込めない** -->
+<noscript><style>
+body.boot{overflow:auto}
+#boot{display:none}
+body.boot .top{background:var(--frame)}
+body.boot .mark{opacity:1}
+</style></noscript>
 </head>
-<body>
+<body class="boot">
+
+<!-- 起動画面。**幕ではない。**流れているのが、この会社が扱っているものそのもの。
+     押すと社名が上の帯へ上がって、そこが社名の場所だと分かる（宿題6番）。 -->
+<div id="boot" role="button" tabindex="0" aria-label="サイトを開く">
+  <div class="flow" aria-hidden="true"><div class="roll" id="roll"></div></div>
+  <div class="mid">
+    <div class="nm" id="bootnm">株式会社アルターデザインコンサルティング</div>
+    <div class="cue" aria-hidden="true"><i class="cur"></i></div>
+    <p class="hint">押すと開く</p>
+  </div>
+</div>
 
 <!-- 頭。社名だけ。押せるものは置かない -->
 <header class="top">
@@ -528,6 +648,194 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 </footer>
 
 <script>
+/* ─ 起動画面 ───────────────────────────────────────────────
+   流す → 社名が出る → 押す → 社名が帯へ上がる、の三つだけ。
+
+   **流す文は try.html と同じ題材。**あちらが正で、ここは頭の 1.5 秒ぶんを写している
+   （読み込む段を足すと、起動画面のために取得が一本増える。写しは NOTES に書いた）。
+   並びは毎回同じ（種を固定した乱数）。**起動は儀式なので、毎回同じほうがいい。** */
+(function(){
+  var boot = document.getElementById('boot');
+  if (!boot) return;
+
+  var body = document.body,
+      roll = document.getElementById('roll'),
+      nm   = document.getElementById('bootnm'),
+      mark = document.querySelector('.mark'),
+      slow = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* 出さない場合が二つ。どちらも**用があって来ている**ので、儀式は邪魔になる。
+     - 奥へ直接来た人（`#news` など）
+     - 戻ってきた人（デモを見て「戻る」。**毎回やらせると門が関所になる**）
+       読み込み直し・新しいタブでは出る。だから「見た人と見てない人」はできない */
+  var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+  if (location.hash || (nav && nav.type === 'back_forward')){
+    body.classList.remove('boot'); boot.remove(); return;
+  }
+
+  /* **上へ戻してから止める。**再読み込みで前の送り位置が復元されることがあり、
+     止めたあとだと戻せない。戻さないと、帯が画面の外にいるまま社名がそこへ飛ぶ */
+  var root = document.documentElement;
+  function top0(){ root.scrollTop = 0; body.scrollTop = 0; }
+  top0();
+  root.classList.add('boot');
+
+  /* 生の文。**題は付いていない**（題はカードになって初めて出るもの）*/
+  var LINES = [
+    ['mail','先日の帳票、桁がずれているとのことでした。原因はまだ分かっていません。'],
+    ['mail','印刷すると右端が切れるという話も、あわせて出ていました。'],
+    ['mail','こちらは前にも同じ指摘をいただいた気がします。'],
+    ['mail','対応の担当は追って決めます。'],
+    ['mail','なお、ログイン後に画面が白いままになる件は別で見ています。'],
+    ['mail','（添付：帳票サンプル.xlsx が開けないと連絡あり）'],
+    ['chat','あの画面、権限まわりが終わってないと直せないと思う'],
+    ['chat','権限の一覧、どこにあるか分かる人いますか'],
+    ['chat','たしか去年の議事録に書いてあった気がします'],
+    ['chat','え、あれ課長承認でしたっけ'],
+    ['chat','検索が遅いのも同じ原因？'],
+    ['chat','別件かも。あとで見ます'],
+    ['議事録','・月次の集計が合っていないという報告。原因は調査中。'],
+    ['議事録','・権限の整理を進める。担当は次回決める。'],
+    ['議事録','・承認は部長で運用することにする。'],
+    ['議事録','・（前回）承認は課長に変更、と記載あり。'],
+    ['議事録','・二重登録ができてしまう件、条件を整理してから対応。'],
+    ['議事録','・その他、特になし。'],
+    ['docx','帳票は最大 99 行。ただし旧帳票は 50 行のまま。'],
+    ['docx','印刷の余白は既定のままとする。'],
+    ['docx','取り込みで止まることがある（再現手順は未記載）。'],
+    ['docx','検索は 3 秒以内。※現状は満たしていない。'],
+    ['docx','ログの保存期間は未定。'],
+    ['docx','印刷まわりはこの節に追記予定。（書きかけ）'],
+    ['pdf','締めは月末の翌 3 営業日までに行うこと。'],
+    ['pdf','取り込みエラー時の手順は別紙による。別紙は添付されていない。'],
+    ['pdf','添付ファイルが開けない場合は担当に連絡すること。'],
+    ['pdf','重複の判定条件は定めていない。'],
+    ['pdf','本手順書は 2019 年時点のものである。'],
+    ['pdf','引き継ぎは書面で行うこと。'],
+    ['xlsx','帳票の桁ずれ（再）'],
+    ['xlsx','同上'],
+    ['xlsx','権限の件（11と同じ？）'],
+    ['xlsx','※担当は都度確認'],
+    ['xlsx','小計 12 件'],
+    ['xlsx','（空欄）']
+  ];
+  /* 出どころすら分からない行。**貼り集めた跡** */
+  var JUNK = ['（以下、貼り付け）','※このシートは古い','（転記元不明）','※要確認','（空欄）','同上'];
+
+  var seed = 20260908;
+  function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  function build(){
+    var n = Math.ceil(innerHeight * 3.4 / 19) + 40, h = '', i, r, pad, dim, k, last = -1, lastj = -1;
+    /* 左端の散り。**広い窓ほど散らす**（狭い窓で散らすと折り返して読めなくなる）*/
+    var step = innerWidth > 900 ? 22 : 8;
+    for (i = 0; i < n; i++){
+      r = rnd();
+      if (r < .06){ h += '<div>&nbsp;</div>'; continue; }
+      pad = Math.floor(rnd() * 7) * step;       /* 左端が揃わない */
+      dim = (.42 + rnd() * .58).toFixed(2);     /* 濃さもばらばら */
+      if (r < .18){
+        k = Math.floor(rnd() * JUNK.length);
+        if (k === lastj) k = (k + 1) % JUNK.length;
+        lastj = k; last = -1;
+        h += '<div style="padding-left:' + pad + 'px;opacity:' + dim + '">'
+           + esc(JUNK[k]) + '</div>';
+        continue;
+      }
+      lastj = -1;
+      /* **同じ文が続けて出るのは避ける。**荒れた材料に同じ件が何度も出るのは本当だが、
+         隣り合うと荒れではなく作りそこないに見える */
+      k = Math.floor(rnd() * LINES.length);
+      if (k === last) k = (k + 1) % LINES.length;
+      last = k;
+      h += '<div style="padding-left:' + pad + 'px;opacity:' + dim + '"><i>'
+         + esc(LINES[k][0]) + '</i>' + esc(LINES[k][1]) + '</div>';
+    }
+    roll.innerHTML = h;
+  }
+
+  var anim = null, t1 = 0, t2 = 0, going = false;
+
+  if (slow){
+    body.classList.add('boot-named','boot-hint');
+  } else {
+    build();
+    var travel = Math.max(0, roll.offsetHeight - innerHeight);
+    if (roll.animate){
+      anim = roll.animate(
+        [{transform:'translateY(0)'}, {transform:'translateY(' + (-travel) + 'px)'}],
+        {duration:1500, easing:'cubic-bezier(.04,.62,.16,1)', fill:'forwards'});
+    }
+    t1 = setTimeout(function(){ body.classList.add('boot-named'); }, 1180);
+    t2 = setTimeout(function(){ body.classList.add('boot-hint');  }, 3400);
+  }
+
+  /* 押した。**途中で押されたら、社名は遷移なしで出してから飛ばす**
+     （半端に薄い社名が飛んでいくのを避ける）*/
+  function open(){
+    if (going) return;
+    going = true;
+    clearTimeout(t1); clearTimeout(t2);
+    boot.style.pointerEvents = 'none';
+
+    if (anim) anim.pause();
+
+    /* 社名を、出しきった状態に**遷移なしで**合わせてから測る。
+       出かかり（まだ scale が 1 でない）ところで押されると、
+       親の拡大ぶんだけ行き先が 10px ずれる（画面では「着地で跳ねる」に見える）*/
+    var mid = boot.querySelector('.mid');
+    mid.style.transition = 'none';
+    mid.style.transform  = 'none';
+    mid.style.opacity    = '1';
+    body.classList.add('boot-named');
+
+    void boot.offsetWidth;   /* ここまでを一度描かせてから飛ばす（rAF は当てにしない）*/
+    fly();
+  }
+
+  /* 社名を、頭の帯の社名の位置へ運ぶ。**行き先は実測**（字の大きさも位置もそこから出す）*/
+  function fly(){
+    top0();                  /* 覆っているあいだに、もう一度だけ上へ揃える */
+    var a = nm.getBoundingClientRect(), b = mark.getBoundingClientRect();
+    /* **帯の社名が二行に折れていたら飛ばさない。**320px を下回る窓で起きる。
+       箱の形が違うものへ寄せると、着地で跳ねる。飛ばさずに切り替えるほうがまし */
+    if (slow || !a.width || !b.width || b.height / b.width > a.height / a.width * 1.4){
+      land(); return;
+    }
+    nm.style.transform = 'translate(' + (b.left - a.left) + 'px,' + (b.top - a.top) + 'px)'
+                       + ' scale(' + (b.width / a.width) + ')';
+    body.classList.add('boot-go');
+    setTimeout(land, 520);
+  }
+
+  /* 着いた瞬間に本物の社名と入れ替える（どちらも白・同じ大きさなので継ぎ目は出ない）。
+     そのあと boot-lit を外すと、帯が暗いところから明るくなる */
+  function land(){
+    root.classList.remove('boot');
+    body.classList.remove('boot','boot-named','boot-go','boot-hint');
+    body.classList.add('boot-lit');
+    boot.remove();
+    /* **requestAnimationFrame では片付かない。**タブが前に出ていないと呼ばれず、
+       帯が暗いまま残る（画面で見つけた。数字には出ない）。一度描かせて、次の順番で外す */
+    void body.offsetWidth;
+    setTimeout(function(){ body.classList.remove('boot-lit'); }, 30);
+  }
+
+  boot.addEventListener('click', open);
+  boot.focus({ preventScroll:true });
+
+  /* **マウスが無くても抜けられる。**修飾キーと Tab 以外は、何を押しても開く */
+  document.addEventListener('keydown', function(e){
+    if (!body.classList.contains('boot')) return;
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'Tab' || e.key === 'Shift') return;
+    e.preventDefault(); e.stopPropagation();
+    open();
+  }, true);
+})();
+
 (function(){
   var deck  = document.getElementById('deck'),
       pane  = document.getElementById('pane'),
