@@ -158,12 +158,18 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
    （中身が右へ出て行った）。✕ は置かない——もう一度押す／別のカードを押す／Esc。
 
    ホームと違うのは**帯が貼りつく**こと。一覧が長いので、絶対配置で柱の高さに
-   合わせる手は使えない（ホームはカード六枚ぶんしかない）。 */
+   合わせる手は使えない（ホームはカード六枚ぶんしかない）。
+   **貼りつきには二つ条件がある**——外枠が柱と同じ高さ（align-items:stretch）で、
+   かつ外枠が巻き取り箱を作らない（overflow は hidden ではなく clip）。
+   両方外れていて、帯が一覧のいちばん上に置かれていた。 */
 .bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 22px}
 .bar h1{margin:0; font-size:17px; font-weight:700}
 .bar .rest{font-size:12.5px; color:var(--sub)}
 
-.cols{display:flex; align-items:flex-start}
+/* **align-items は stretch。**flex-start だと帯の外枠が中身の高さに縮んで、
+   中の position:sticky が**動ける幅を持たない**（貼りつく余地がゼロ）。
+   ホームも同じ理由で stretch にしてある。 */
+.cols{display:flex; align-items:stretch}
 
 /* 分類の見出し。**題が主役**（パッと見て読まれるのはここ）。
    **三択は一覧に置かない。**本人 2026-09-08：「やっぱりもっと簡単そうに見える
@@ -202,17 +208,24 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 .cd.sel,.cd.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
 
 /* ─ 右の帯。**カードは消えない。**中身が右へ出て、一覧が左へ寄るだけ ── */
-.pane{flex:none; width:0; overflow:hidden; transition:width .24s var(--ease)}
+/* **overflow は clip。**hidden だと巻き取り箱ができて、中の position:sticky が
+   そこに閉じ込められる——帯が一覧のいちばん上に置かれて、下のカードを押した人には
+   **何も出てこないように見えていた**（本人 2026-09-08）。clip は巻き取り箱を作らない */
+.pane{flex:none; width:0; overflow:clip; transition:width .24s var(--ease)}
 body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
-/* **貼りつく。**一覧を送っても中身が残る＝目が通せる */
+/* **貼りつく。**一覧を送っても中身が残る＝目が通せる。
+   **巻き取りの棒は左に付ける**（本人 2026-09-08：「スクロールバー付けるの
+   左側にするべきだと思うよ」）。帯は画面の右端にいるので、右に棒を付けると
+   ページ自身の棒と並んでしまう。`direction` を裏返して、中身だけ戻す。 */
 .panel{
-  position:sticky; top:18px; width:420px; margin-left:16px;
+  position:sticky; top:18px; width:420px; margin-left:16px; direction:rtl;
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
   max-height:calc(100vh - 96px); overflow:auto;
   animation:swap .18s var(--ease);
   scrollbar-width:thin; scrollbar-color:#c3cfe0 transparent;
 }
 @keyframes swap{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
+.panel > *{direction:ltr}
 .panel .hd2{padding:20px 22px 12px}
 .panel .hd2 h2{margin:0; font-size:15.5px; font-weight:700; line-height:1.5}
 .panel .hd2 .k{margin:5px 0 0; font-family:var(--mono); font-size:11px; color:var(--sub)}
