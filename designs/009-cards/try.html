@@ -29,9 +29,10 @@
 
      ここが仮 ──────────────────────────────────────────────
      1. ①の終わりの一手「これで、ぜんぶ？」。言葉は未決
-     2. ②の一手「カードにする」。行き先は出しているが言葉は未決
-     3. ③は塊まるごとの三択だけ。「この一枚だけ」は出していない
-     件数は 120（`TOTAL`）。増減はここだけ触れば効く。
+     2. ②の問いを二行にした（分ける前に、同じ件がいくつあるか）。まだ長い
+     3. ③は段まるごとの三択だけ。「この一枚だけ」は出していない
+     4. ①の量は五件。共感が起きるかは確かめていない
+     件数は 120（`TOTAL`）。増減はここだけ触れば効く（手数は 12 のまま）。
 ================================================================ -->
 
 <style>
@@ -110,6 +111,7 @@ body[data-stage="a"] .back,body[data-stage="b"] .back{color:var(--crt-dim)}
 .pile i{font-style:normal; color:var(--crt-dim); margin-right:8px}
 /* ①で読んだ行。**印は付けない。**埋もれることが要点なので、探せてしまうと台無し */
 .ask{margin:0 0 20px; font-family:var(--mono); font-size:13.5px; color:#9fd8bb; line-height:1.9}
+.ask .sub{color:var(--crt-dim)}
 /* 一手は下端に貼りつける。**山の高さに関係なく届く** */
 .hold{position:sticky; bottom:0; padding:14px 0 4px;
       background:linear-gradient(180deg,rgba(10,18,16,0) 0%,var(--crt-bg) 46%)}
@@ -127,62 +129,66 @@ body[data-stage="a"] .back,body[data-stage="b"] .back{color:var(--crt-dim)}
 .one:focus-visible{outline:2px solid #fff; outline-offset:3px}
 body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 
-/* ─ ③ カード ─────────────────────────────────────────── */
+/* ─ ③ ─────────────────────────────────────────────────
+   **段にする。**最初は 120 枚を一枚ずつ格子に並べた。本人 2026-09-08：
+   「これパッと見てカード多！ってなっちゃうかも、並べ方の問題だと思う」。
+   そのとおりで、**見えるものが 120 枚**になっていた。いま見えるのは **12 件**で、
+   カードはその中の量。**一段が一件。**（量は減らない。見え方が変わっただけ）
+
+   **押せるのは段だけ。**カードは押せない——量を出すためにある。
+   触れるものが一種類、が崩れない。 */
 .bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 18px}
 .bar h1{margin:0; font-size:17px; font-weight:700}
 .bar .rest{font-size:12.5px; color:var(--sub)}
 
-.deck{list-style:none; margin:0; padding:0;
-      display:grid; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)); gap:12px}
-.deck li{display:flex}
-.cd{
-  -webkit-appearance:none; appearance:none; border:0; font:inherit; text-align:left;
-  cursor:pointer; width:100%; min-width:0;
-  background:var(--card); color:var(--ink); border-radius:var(--r);
-  box-shadow:var(--lift1); padding:15px 16px 14px;
-  display:flex; flex-direction:column; gap:9px;
-  transition:transform .16s var(--ease), box-shadow .16s ease, opacity .2s ease;
+.rows{list-style:none; margin:0; padding:0; display:grid; gap:12px}
+.row{
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+  border-left:4px solid transparent; overflow:hidden;
+  transition:box-shadow .16s ease, transform .16s var(--ease);
 }
-.cd:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-.cd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-/* **元の一行が主。**すり替えていないことが、ここで見える */
-.cd .r{font-size:12.5px; line-height:1.65; color:var(--ink);
-       display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
-/* 題は**機械が足したもの**なので、印の側に小さく置く */
-.cd .foot{display:flex; align-items:baseline; gap:9px; margin-top:auto}
-.cd .t{font-size:11px; font-weight:700; color:var(--sub); letter-spacing:.01em;
-       white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.cd .s{font-family:var(--mono); font-size:10px; color:#96a0bd; flex:none}
+.row.gone{display:none}
+.row.on{box-shadow:var(--lift2)}
+.row.k0{border-left-color:#7cc4e8} .row.k1{border-left-color:#8f9ff0}
+.row.k2{border-left-color:#b58fe6} .row.k3{border-left-color:#6fc3a6}
+.row.k4{border-left-color:#e2a86a} .row.k5{border-left-color:#e08a9a}
+.row.k6{border-left-color:#5fa8d0} .row.k7{border-left-color:#a0b06a}
+.row.k8{border-left-color:#c98fc0} .row.k9{border-left-color:#7f8fd8}
+.row.k10{border-left-color:#6bbfbf} .row.k11{border-left-color:#d69a7a}
 
-/* 印。**同じ件には同じ色。**見抜いたのは機械 */
-.cd{border-left:4px solid transparent}
-.cd.k0{border-left-color:#7cc4e8} .cd.k1{border-left-color:#8f9ff0}
-.cd.k2{border-left-color:#b58fe6} .cd.k3{border-left-color:#6fc3a6}
-.cd.k4{border-left-color:#e2a86a} .cd.k5{border-left-color:#e08a9a}
-.cd.k6{border-left-color:#5fa8d0} .cd.k7{border-left-color:#a0b06a}
-.cd.k8{border-left-color:#c98fc0} .cd.k9{border-left-color:#7f8fd8}
-.cd.k10{border-left-color:#6bbfbf} .cd.k11{border-left-color:#d69a7a}
-
-/* **同じ印が光る。**押す前に「これから何枚まとめて決まるか」が見えていないと、
-   押した結果が驚きになる（画面内から予測できる変化にする）。
-   仲間以外を沈めるのではなく、仲間を持ち上げる——**沈めると数が分からなくなる** */
-.cd.lit{box-shadow:var(--lift2); transform:translateY(-3px); background:#f7f3ff}
-.cd.lit .t{color:var(--go)}
-.cd.sel{outline:2px solid var(--go); outline-offset:2px}
-/* 片付いたものは**消えるだけ**（減った、を見せるのは下の束） */
-.deck li.gone{display:none}
-
-/* ─ 決める帯。選んだ一枚と、その塊への三択 ───────────── */
-.pick{
-  position:sticky; bottom:0; margin-top:18px; padding:16px 18px;
-  background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
-  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+.line{display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:13px 16px 0}
+.hd{
+  -webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
+  cursor:pointer; padding:0; margin:0; text-align:left; flex:1 1 auto; min-width:0;
+  display:flex; align-items:baseline; gap:12px;
 }
-.pick[hidden]{display:none}
-.pick .who{flex:1 1 220px; min-width:0}
-.pick .who b{display:block; font-size:14px; line-height:1.5}
-.pick .who span{font-size:12px; color:var(--sub)}
-.pick .btns{display:flex; gap:9px; flex-wrap:wrap}
+.hd .t{font-size:14.5px; font-weight:700; line-height:1.5}
+.hd .n{font-family:var(--mono); font-size:11.5px; color:var(--sub); flex:none}
+.hd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.row.on .hd .t{color:var(--go)}
+
+/* 三択は**開いた段の頭に出る。**読み終わった位置に選択肢がある形
+   （一覧の下にまとめて出す／他を畳んで貼りつける、はどちらも過去に外している）*/
+.btns{display:flex; gap:8px; flex-wrap:wrap}
+.btns[hidden]{display:none}
+
+/* 量。**押せない。**カードの形と枚数だけ出す（一枚の中身は読める） */
+.chips{list-style:none; margin:0; padding:11px 16px 14px; display:flex; flex-wrap:wrap; gap:6px}
+/* **clamp は札の中の span に掛ける。**札そのものは flex の子なので
+   display を潰され（`-webkit-box` → `flow-root`）、clamp が効かない（数字で確認した）。
+   高さで切るだけにすると**三行目の切れ端が覗いて、不具合に見えた。** */
+.chips li{
+  flex:0 1 152px; min-width:0; overflow:hidden;
+  background:var(--tint); border-radius:6px; padding:7px 9px; box-shadow:var(--lift0);
+  font-size:10.5px; line-height:15px; color:var(--ink);
+}
+.chips .x{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  height:30px;                                   /* 15px × 2 行 */
+}
+.chips li i{font-style:normal; font-family:var(--mono); font-size:9.5px; color:#96a0bd;
+            margin-right:6px}
+
 .three{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   padding:12px 16px; border-radius:8px; background:var(--tint); color:var(--ink);
@@ -250,30 +256,23 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        （画面で見つけた）。一手は下端に貼りつける——山は好きなだけ高くていい -->
   <section class="st st-b">
     <p class="pre" id="count"></p>
-    <p class="ask">この中から、要るものと要らないものに分けてください。</p>
+    <!-- 一手の言葉。**「カードにする」は外した。**本人 2026-09-08：
+         「カードにするってボタン出されても何？ってなると思う」。こちらの語彙だった。
+         いまは**問いの二行目に答える形**にしてある——分ける前に、同じ件がいくつあるか。
+         押すと③でその答えが出る（見出しが「120 枚は、12 件でした」）。 -->
+    <p class="ask">この中から、要るものと要らないものに分けてください。<br>
+      <span class="sub">……その前に、同じ件がいくつあるか分かりますか。</span></p>
     <ul class="pile" id="pile"></ul>
-    <div class="hold"><button class="one" id="go-c">カードにする</button></div>
+    <div class="hold"><button class="one" id="go-c">同じ件をまとめる</button></div>
   </section>
 
   <!-- ③ 快。**塊で押せる。**見抜くのは機械、決めるのは人 -->
   <section class="st st-c">
     <div class="bar">
-      <h1>同じ件には同じ印が付いています</h1>
+      <h1 id="c-h1"></h1>
       <span class="rest" id="rest"></span>
     </div>
-    <ul class="deck" id="deck"></ul>
-
-    <div class="pick" id="pick" hidden>
-      <div class="who">
-        <b id="pick-t"></b>
-        <span id="pick-n"></span>
-      </div>
-      <div class="btns">
-        <button class="three" data-v="need">要る<em>1</em></button>
-        <button class="three" data-v="drop">要らない<em>2</em></button>
-        <button class="three" data-v="done">もうやった<em>3</em></button>
-      </div>
-    </div>
+    <ul class="rows" id="rows"></ul>
 
     <div class="done">
       <span id="done-n">決めた 0 件</span>
@@ -457,71 +456,78 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     document.getElementById('pile').innerHTML = frag.join('');
   }
 
-  /* ─ ③ カード ─────────────────────────────────────── */
-  var deck, pick, sel = null, left = 0, decided = 0;
+  /* ─ ③ ────────────────────────────────────────────── */
+  var rowsEl, sel = null, leftRows = 0, decided = 0;
 
-  function paintDeck(){
-    deck = document.getElementById('deck');
-    /* 群ごとに固めて並べる。**同じ印が隣り合っているから、塊が目で分かる** */
-    var order = CARDS.slice().sort(function(a,b){ return a.k - b.k || a.n - b.n; });
-    /* **元の一行が主、題は従。**最初は題を大きく出したが、同じ題が 12 枚並んで
-       **重複か作りそこないに見えた**（画面で見つけた）。カードの正体は断片のほうで、
-       題は機械が足したもの。だから断片を読ませて、題は印の側に小さく置く。
-       これで「別々の断片が、同じ件だと分かる」という形になる。 */
-    deck.innerHTML = order.map(function(c){
-      return '<li data-k="' + c.k + '">'
-        + '<button class="cd k' + c.k + '" data-k="' + c.k + '">'
-        +   '<span class="r">' + esc(c.raw) + '</span>'
-        +   '<span class="foot"><span class="t">' + esc(c.t) + '</span>'
-        +     '<span class="s">' + esc(c.src) + ' / ' + c.n + '</span></span>'
-        + '</button></li>';
+  function paintRows(){
+    rowsEl = document.getElementById('rows');
+    /* 一段が一件。段の中に、その件のカードが枚数ぶん入っている */
+    var by = GROUPS.map(function(){ return []; });
+    CARDS.forEach(function(c){ by[c.k].push(c); });
+
+    rowsEl.innerHTML = by.map(function(list, k){
+      return '<li class="row k' + k + '" data-k="' + k + '">'
+        + '<div class="line">'
+        +   '<button class="hd" data-k="' + k + '">'
+        +     '<span class="t">' + esc(GROUPS[k].t) + '</span>'
+        +     '<span class="n">' + list.length + ' 枚</span>'
+        +   '</button>'
+        +   '<div class="btns" hidden>'
+        +     '<button class="three" data-v="need">要る<em>1</em></button>'
+        +     '<button class="three" data-v="drop">要らない<em>2</em></button>'
+        +     '<button class="three" data-v="done">もうやった<em>3</em></button>'
+        +   '</div>'
+        + '</div>'
+        + '<ul class="chips">' + list.map(function(c){
+            return '<li><span class="x"><i>' + esc(c.src) + '</i>' + esc(c.raw) + '</span></li>';
+          }).join('') + '</ul>'
+        + '</li>';
     }).join('');
-    left = CARDS.length; decided = 0;
+
+    /* **②の問いへの答えを見出しに置く。**説明ではなく返事
+       （「同じ件がいくつあるか分かりますか」に対する答え）*/
+    document.getElementById('c-h1').textContent =
+      CARDS.length + ' 枚は、' + GROUPS.length + ' 件でした';
+    leftRows = GROUPS.length; decided = 0;
     drawRest(); drawDone();
   }
 
   function drawRest(){
-    document.getElementById('rest').textContent = 'あと ' + left + ' 件';
+    document.getElementById('rest').textContent = 'あと ' + leftRows + ' 件';
   }
   function drawDone(){
-    document.getElementById('done-n').textContent = '決めた ' + decided + ' 件';
+    document.getElementById('done-n').textContent = '決めた ' + decided + ' 枚';
     document.getElementById('done-bar').style.width =
       (CARDS.length ? (decided / CARDS.length * 100) : 0) + '%';
   }
 
-  function alive(k){
-    return Array.prototype.slice.call(deck.querySelectorAll('li:not(.gone)[data-k="' + k + '"]'));
-  }
-
-  /* 一枚選ぶと、**同じ印が光る。**「16 枚あります」はそのとき出す
-     （最初から塊で出すと、人がやるのはハンコになる。NOTES の A 案）*/
+  /* 段を押すと、**その段の頭に三択が出る。**開くのは一つだけ（他は畳まない）*/
   function choose(k){
-    deck.querySelectorAll('.cd.lit,.cd.sel').forEach(function(b){
-      b.classList.remove('lit','sel');
+    rowsEl.querySelectorAll('.row.on').forEach(function(li){
+      li.classList.remove('on');
+      li.querySelector('.btns').hidden = true;
     });
+    if (sel === k){ sel = null; return; }   /* 同じ段をもう一度＝閉じる */
     sel = k;
-    var rows = alive(k);
-    rows.forEach(function(li){ li.firstChild.classList.add('lit'); });
-    if (rows[0]) rows[0].firstChild.classList.add('sel');
-
-    document.getElementById('pick-t').textContent = GROUPS[k].t;
-    document.getElementById('pick-n').textContent =
-      '同じ印が ' + rows.length + ' 枚あります。まとめて決められます。';
-    pick.hidden = false;
+    var li = rowsEl.querySelector('.row[data-k="' + k + '"]');
+    if (!li) return;
+    li.classList.add('on');
+    li.querySelector('.btns').hidden = false;
   }
 
-  /* 三択。**塊まるごと片付く。**押した数だけ「決めた」が増える */
+  /* 三択。**段まるごと片付く。**押した枚数だけ「決めた」が増える */
   function decide(){
     if (sel === null) return;
-    var rows = alive(sel);
-    rows.forEach(function(li){ li.classList.add('gone'); });
-    left -= rows.length; decided += rows.length;
-    sel = null; pick.hidden = true;
+    var li = rowsEl.querySelector('.row[data-k="' + sel + '"]');
+    if (!li) return;
+    decided += li.querySelectorAll('.chips li').length;
+    li.classList.add('gone');
+    leftRows--; sel = null;
     drawRest(); drawDone();
 
-    if (left <= 0){ setTimeout(function(){ stage('d'); }, 260); return; }
-    /* 次の塊へ焦点を送る。**マウスが無くても続けて押せる** */
-    var next = deck.querySelector('li:not(.gone) .cd');
+    if (leftRows <= 0){ setTimeout(function(){ stage('d'); }, 260); return; }
+    /* 次の段へ焦点を送る。**マウスが無くても続けて押せる** */
+    var next = rowsEl.querySelector('.row:not(.gone) .hd');
     if (next) next.focus();
   }
 
@@ -530,13 +536,13 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     document.body.dataset.stage = s;
     scrollTo(0, 0);
     if (s === 'b') paintPile();
-    if (s === 'c'){ paintDeck(); var f = deck.querySelector('.cd'); if (f) f.focus(); }
+    if (s === 'c'){ paintRows(); var f = rowsEl.querySelector('.hd'); if (f) f.focus(); }
   }
 
   function start(){
+    sel = null;
     build(); paintFew();
     document.body.dataset.stage = 'a';
-    pick = document.getElementById('pick');
   }
 
   start();
@@ -548,8 +554,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   });
 
   document.addEventListener('click', function(e){
-    var cd = e.target.closest('.cd');
-    if (cd){ choose(+cd.dataset.k); return; }
+    var hd = e.target.closest('.hd');
+    if (hd){ choose(+hd.dataset.k); return; }
     var th = e.target.closest('.three');
     if (th){ decide(); return; }
   });
@@ -566,11 +572,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     }
     if (s === 'c'){
       if (sel !== null && '123'.indexOf(e.key) >= 0){ e.preventDefault(); decide(); return; }
-      if (e.key === 'Escape' && sel !== null){
-        e.preventDefault();
-        deck.querySelectorAll('.cd.lit,.cd.sel').forEach(function(b){ b.classList.remove('lit','sel'); });
-        sel = null; pick.hidden = true; return;
-      }
+      if (e.key === 'Escape' && sel !== null){ e.preventDefault(); choose(sel); return; }
     }
   });
 })();
