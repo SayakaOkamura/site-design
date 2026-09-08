@@ -5,13 +5,25 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 
+<!-- ─ 起動画面（OP）の入／切 ─────────────────────────────────
+     2026-09-08、本人：「OP 一旦保留にして、後でつけてって言ったら
+     付けられるようにしておいて。今はいったん取り下げ、でも保持」。
+
+     **消していない。この一行を true に戻すだけで元どおり。**
+     ほかに触るところは無い（CSS も文も、切ってあるあいだは何もしない）。
+
+     html に付けるのは body より先に決まるから——body 側だと、
+     切ってあるときに暗い面が一瞬出ることがある。 -->
+<script>var OP = false; if (OP) document.documentElement.className = 'boot';</script>
+
 <!-- 009 カード
      ================================================================
      入口。頭（社名）と足（所在地・著作表示）で枠を作ってある。
      体験（うじゃうじゃ → カード → 仕分け）は `try.html`。
-     **手前に起動画面がある**（生の文が流れて → 社名 → 社名が帯へ上がる。2.5 秒）。
-     **止まらない。**押す段は無く、押すのは飛ばすためだけ。
-     入口そのものは変えていない。CSS の最後を参照。
+     **起動画面（OP）は保留中。**作ってあるが、いまは切ってある——
+     頭の `var OP = false` を true に戻すだけで入る（2026-09-08、本人の指示）。
+     中身：生の文が流れて → 社名 → 社名が帯へ上がる。2.5 秒。止まらない。
+     入口そのものは変えていない。CSS の最後と NOTES.md を参照。
 
      決まっていること（NOTES.md が正）
      - カードは PDF を解体した断片。押すと中身がまとまって出る。
@@ -348,7 +360,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
   display:flex; align-items:center; justify-content:center;
   transition:background-color .42s ease;
 }
-html.boot,body.boot{overflow:hidden}   /* 送りは html 側で起きる。両方止める */
+html.boot,html.boot body{overflow:hidden}   /* 送りは html 側で起きる。両方止める */
 
 /* 流れる塊。**桁は揃えない。**左端も濃さも一行ずつ違う（貼り集めた跡）*/
 #boot .flow{
@@ -393,16 +405,16 @@ html.boot,body.boot{overflow:hidden}   /* 送りは html 側で起きる。両�
 /* **点滅する角と「押すと開く」は落とした**（2026-09-08）。
    止まらなくなったので、入力待ちの印は嘘になる。 */
 
-body.boot-named #boot .flow{opacity:0}
-body.boot-named #boot .mid{opacity:1; transform:none}
+html.boot-named #boot .flow{opacity:0}
+html.boot-named #boot .mid{opacity:1; transform:none}
 
 /* 押した。塊も角も消えて、社名だけが帯へ上がる */
-body.boot-go #boot{background:transparent}
+html.boot-go #boot{background:transparent}
 
 /* 頭の帯。起動のあいだは暗いまま。社名が着いてから（boot-lit を外すと）明るくなる */
-body.boot .top,body.boot-lit .top{background:var(--crt-bg)}
-body.boot .mark{opacity:0}
-body.boot-lit .mark{color:#fff}
+html.boot .top,html.boot-lit .top{background:var(--crt-bg)}
+html.boot .mark{opacity:0}
+html.boot-lit .mark{color:#fff}
 
 /* 動きを切っている環境では、流さずに社名から始める。押す段は残す */
 @media (prefers-reduced-motion:reduce){
@@ -412,13 +424,13 @@ body.boot-lit .mark{color:#fff}
 </style>
 <!-- JS が動かない環境では起動画面ごと畳む。**閉じ込めない** -->
 <noscript><style>
-body.boot{overflow:auto}
+html.boot{overflow:auto}
 #boot{display:none}
-body.boot .top{background:var(--frame)}
-body.boot .mark{opacity:1}
+html.boot .top{background:var(--frame)}
+html.boot .mark{opacity:1}
 </style></noscript>
 </head>
-<body class="boot">
+<body>
 
 <!-- 起動画面。**幕ではない。**流れているのが、この会社が扱っているものそのもの。
      社名が上の帯へ上がって、そこが社名の場所だと分かる（宿題6番）。
@@ -655,6 +667,10 @@ body.boot .mark{opacity:1}
   var boot = document.getElementById('boot');
   if (!boot) return;
 
+  /* **切ってあるあいだは、丸ごと外して何もしない**（頭の OP を参照）。
+     残っているのは、この関数と CSS と文だけ。入れるときは OP を true に戻す */
+  if (!window.OP){ boot.remove(); return; }
+
   var body = document.body,
       roll = document.getElementById('roll'),
       nm   = document.getElementById('bootnm'),
@@ -667,7 +683,7 @@ body.boot .mark{opacity:1}
        読み込み直し・新しいタブでは出る。だから「見た人と見てない人」はできない */
   var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
   if (location.hash || (nav && nav.type === 'back_forward')){
-    body.classList.remove('boot'); boot.remove(); return;
+    boot.remove(); return;
   }
 
   /* **上へ戻してから止める。**再読み込みで前の送り位置が復元されることがあり、
@@ -809,7 +825,7 @@ body.boot .mark{opacity:1}
   var anim = null, t1 = 0, t2 = 0, going = false;
 
   if (slow){
-    body.classList.add('boot-named');
+    root.classList.add('boot-named');
     t2 = setTimeout(open, 700);          /* 流さないぶん、待たせる時間も短くする */
   } else {
     build();
@@ -819,7 +835,7 @@ body.boot .mark{opacity:1}
         [{transform:'translateY(0)'}, {transform:'translateY(' + (-travel) + 'px)'}],
         {duration:FLOW, easing:'cubic-bezier(.04,.62,.16,1)', fill:'forwards'});
     }
-    t1 = setTimeout(function(){ body.classList.add('boot-named'); }, NAME);
+    t1 = setTimeout(function(){ root.classList.add('boot-named'); }, NAME);
     t2 = setTimeout(open, GO);
   }
 
@@ -840,7 +856,7 @@ body.boot .mark{opacity:1}
     mid.style.transition = 'none';
     mid.style.transform  = 'none';
     mid.style.opacity    = '1';
-    body.classList.add('boot-named');
+    root.classList.add('boot-named');
 
     void boot.offsetWidth;   /* ここまでを一度描かせてから飛ばす（rAF は当てにしない）*/
     fly();
@@ -857,21 +873,20 @@ body.boot .mark{opacity:1}
     }
     nm.style.transform = 'translate(' + (b.left - a.left) + 'px,' + (b.top - a.top) + 'px)'
                        + ' scale(' + (b.width / a.width) + ')';
-    body.classList.add('boot-go');
+    root.classList.add('boot-go');
     setTimeout(land, 520);
   }
 
   /* 着いた瞬間に本物の社名と入れ替える（どちらも白・同じ大きさなので継ぎ目は出ない）。
      そのあと boot-lit を外すと、帯が暗いところから明るくなる */
   function land(){
-    root.classList.remove('boot');
-    body.classList.remove('boot','boot-named','boot-go');
-    body.classList.add('boot-lit');
+    root.classList.remove('boot','boot-named','boot-go');
+    root.classList.add('boot-lit');
     boot.remove();
     /* **requestAnimationFrame では片付かない。**タブが前に出ていないと呼ばれず、
        帯が暗いまま残る（画面で見つけた。数字には出ない）。一度描かせて、次の順番で外す */
     void body.offsetWidth;
-    setTimeout(function(){ body.classList.remove('boot-lit'); }, 30);
+    setTimeout(function(){ root.classList.remove('boot-lit'); }, 30);
   }
 
   /* 押す・キーを叩く＝**飛ばす。**待たされないための近道で、進むのに要る操作ではない。
@@ -882,7 +897,7 @@ body.boot .mark{opacity:1}
   boot.addEventListener('click', open);
 
   document.addEventListener('keydown', function(e){
-    if (!body.classList.contains('boot')) return;
+    if (!root.classList.contains('boot')) return;
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     if (e.key === 'Tab' || e.key === 'Shift') return;
     e.preventDefault(); e.stopPropagation();
