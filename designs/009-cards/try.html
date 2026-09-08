@@ -21,7 +21,8 @@
                   **まとまりは三段：断片 → 言い方 → 件。**同じ言い方は一枚にまとめて
                   「n か所」と出す。押すと**右の帯**に AI の要約と、まとめる前の全部。
                   そこで三択。**見る → 決める**の順
-       ④ 名前      通り終わったところに理念
+       ④ 名前      通り終わったところに理念と、**仕分けの答え**
+                  （「402 枚ありました。やることは 5 件です」）
      **「あるなあ」は③の題で起きる**（12 個・短い・太い）。
      生の文は読まれない前提で組んである（本人 2026-09-08）。
 
@@ -36,6 +37,7 @@
      1. ①の問いの言葉と四択の刻み（36／120／402／数えたことがない）
      2. ②の問いが二行ある（分ける前に、同じ件がいくつあるか）。まだ長い
      3. ③の三択は分類まるごとだけ（帯の中）。「この一枚だけ」は出していない
+     4. 押した先を戻す手が無い（間違えたら「もう一度」からやり直し）
      件数は本人が①で答えたもの（`N`）。**何件でも群は 12、カードは 60、手数は 12。**
      変わるのは枚数だけ（36／120／402）——**量は数字として残る。**
 ================================================================ -->
@@ -193,7 +195,6 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
    両方外れていて、帯が一覧のいちばん上に置かれていた。 */
 .bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 22px}
 .bar h1{margin:0; font-size:17px; font-weight:700}
-.bar .rest{font-size:12.5px; color:var(--sub)}
 
 /* **align-items は stretch。**flex-start だと帯の外枠が中身の高さに縮んで、
    中の position:sticky が**動ける幅を持たない**（貼りつく余地がゼロ）。
@@ -247,9 +248,9 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
    左側にするべきだと思うよ」）。帯は画面の右端にいるので、右に棒を付けると
    ページ自身の棒と並んでしまう。`direction` を裏返して、中身だけ戻す。 */
 .panel{
-  position:sticky; top:78px; width:420px; margin-left:16px; direction:rtl;   /* 頭の 60 ＋ 18 */
+  position:sticky; top:122px; width:420px; margin-left:16px; direction:rtl;   /* 頭 60 ＋ 置き場 44 ＋ 18 */
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
-  max-height:calc(100vh - 102px); overflow:auto;
+  max-height:calc(100vh - 146px); overflow:auto;
   animation:swap .18s var(--ease);
   scrollbar-width:thin; scrollbar-color:#c3cfe0 transparent;
 }
@@ -300,19 +301,44 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .three em{font-style:normal; color:var(--sub); font-weight:500; margin-left:7px; font-size:11px}
 
 /* 片付いた束。**厚みだけ。数字の派手さは足さない** */
-.done{margin-top:16px; display:flex; align-items:baseline; gap:14px; font-size:12.5px; color:var(--sub)}
-.done .stack{flex:1 1 auto; height:10px; border-radius:5px; background:var(--tint); overflow:hidden}
-.done .stack i{display:block; height:100%; width:0; background:var(--go); opacity:.55;
-               transition:width .3s var(--ease)}
+/* ─ 置き場。**分けた先が、最初から空で見えている** ─────────────
+   本人 2026-09-08：「クリックでいるいらないって分けられることも見えないし、
+   見えたとてそれをすることに意味が見えない」。
 
-/* ─ ④ 名前が付く ────────────────────────────────────── */
+   1. **分けられることが見えなかった。**三択はカードを押すまで出てこないので、
+      パッと見では「分けるもの」だと分からない。
+      → **空の置き場を三つ、最初から出す。**箱があれば入れるものだと分かる。
+      **ボタンではないので、押せるものは増えていない**（一覧に置いた 36 個の
+      ボタンは「仕事に見える」で外した。あれとは別物）
+
+   2. **押す意味が見えなかった。**押しても消えるだけで、何も積まれなかった。
+      → **押した先が積まれる。**そして④で答えになる——
+      **402 枚あって、やることは何件か。**それが仕分けの見返り。
+      「決めた 120 枚」という数字は、何も言っていなかったので捨てた。
+
+   帯と同じく**貼りつける。**押すのは一覧の下のほうなので、
+   数が動くのが見えないと積まれた感じが出ない。 */
+.tally{
+  position:sticky; top:60px; z-index:4;
+  display:flex; align-items:baseline; gap:26px; flex-wrap:wrap;
+  margin:0 0 26px; padding:11px 0 13px;
+  background:var(--bg);
+  font-size:12.5px; color:var(--sub);
+}
+.tally span{white-space:nowrap}
+.tally b{margin-left:7px; font-family:var(--mono); font-size:14px; color:var(--ink)}
+/* 未決だけ右へ離す。**入れる先（三つ）と、まだ入れていないもの**は別の話 */
+.tally .left{margin-left:auto; color:var(--go)}
+.tally .left b{color:var(--go)}
+
 .end{max-width:760px}
 .end .face{
   background:var(--face); border-radius:var(--r); box-shadow:var(--lift2);
   padding:40px 34px; animation:rise .6s var(--ease) both;
 }
 .end h2{margin:0; font-size:clamp(18px,2.6vw,26px); font-weight:700; line-height:1.5}
-.end .said{margin:18px 0 0; font-size:13.5px; line-height:1.9; color:rgba(37,31,69,.74)}
+.end .said{margin:18px 0 0; font-size:13.5px; line-height:2; color:rgba(37,31,69,.74)}
+.end .said b{color:var(--ink); font-size:15px}
 .end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
 
 .foot{flex:none; background:var(--frame)}
@@ -379,8 +405,17 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   <section class="st st-c">
     <div class="bar">
       <h1 id="c-h1"></h1>
-      <span class="rest" id="rest"></span>
     </div>
+
+    <!-- 置き場。**分けた先が、最初から空で見えている。**ボタンではないので
+         押せるものは増えていない。押すと数が動くので、積まれていくのが見える -->
+    <div class="tally">
+      <span>要る<b id="t-need">0</b></span>
+      <span>要らない<b id="t-drop">0</b></span>
+      <span>もうやった<b id="t-done">0</b></span>
+      <span class="left">未決<b id="t-left">0</b></span>
+    </div>
+
     <div class="cols">
       <ul class="rows" id="rows"></ul>
       <!-- 中身が出る帯。**カードは消えない。**ホームと同じ作法。
@@ -388,10 +423,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       <aside class="pane" id="pane"></aside>
     </div>
 
-    <div class="done">
-      <span id="done-n">決めた 0 件</span>
-      <span class="stack"><i id="done-bar"></i></span>
-    </div>
+
   </section>
 
   <!-- ④ 名前が付く。**通り終わってから** -->
@@ -399,7 +431,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     <div class="end">
       <div class="face">
         <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
-        <p class="said">同じ量です。形だけ変えました。</p>
+        <p class="said" id="said"></p>
       </div>
       <div class="again">
         <button class="one" id="again">もう一度</button>
@@ -666,6 +698,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
   /* ─ ③ ────────────────────────────────────────────── */
   var rowsEl, paneEl, sel = null, open = null, leftRows = 0, decided = 0;
+  /* 置き場。**押した先。**件と枚の両方を持つ（枚は④で「402 枚あった」と言うため）*/
+  var tally = { need:0, drop:0, done:0, pieces:{ need:0, drop:0, done:0 } };
 
   function paintRows(){
     rowsEl = document.getElementById('rows');
@@ -695,18 +729,18 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     document.getElementById('c-h1').textContent =
       CARDS.length + ' 枚は、' + GROUPS.length + ' 件でした';
     leftRows = GROUPS.length; decided = 0; sel = null; open = null;
+    tally = { need:0, drop:0, done:0, pieces:{ need:0, drop:0, done:0 } };
     paneEl.innerHTML = '';
     document.body.classList.remove('paneopen');
-    drawRest(); drawDone();
+    drawRest();
   }
 
+  /* 置き場の数。**押した先が積まれる**（件で数える。枚は④で言う）*/
   function drawRest(){
-    document.getElementById('rest').textContent = 'あと ' + leftRows + ' 件';
-  }
-  function drawDone(){
-    document.getElementById('done-n').textContent = '決めた ' + decided + ' 枚';
-    document.getElementById('done-bar').style.width =
-      (CARDS.length ? (decided / CARDS.length * 100) : 0) + '%';
+    document.getElementById('t-need').textContent = tally.need;
+    document.getElementById('t-drop').textContent = tally.drop;
+    document.getElementById('t-done').textContent = tally.done;
+    document.getElementById('t-left').textContent = leftRows;
   }
 
   /* 帯を閉じる。**カードは沈んでいただけなので、戻すのは印を外すだけ** */
@@ -772,7 +806,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     return UNITS.filter(function(u){ return u.k === k; }).length;
   }
   /* 三択。**分類まるごと片付く。**押した枚数だけ「決めた」が増える */
-  function decide(k){
+  function decide(k, v){
     if (k === undefined || k === null) k = sel;
     if (k === null) return;
     var grp = rowsEl.querySelector('.grp:not(.gone)[data-k="' + k + '"]');
@@ -780,10 +814,13 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (open === k) shut();
     /* **数えるのは断片。**カードは「言い方」なので、そのまま数えると枚数が合わない
        （120 のはずが 60 と出た。画面で見つけた）*/
-    decided += CARDS.filter(function(c){ return c.k === k; }).length;
+    var pieces = CARDS.filter(function(c){ return c.k === k; }).length;
+    decided += pieces;
+    if (!v) v = 'need';
+    tally[v]++; tally.pieces[v] += pieces;
     grp.classList.add('gone');
     leftRows--; sel = null;
-    drawRest(); drawDone();
+    drawRest();
 
     if (leftRows <= 0){ setTimeout(function(){ stage('d'); }, 260); return; }
     /* 次の分類へ焦点を送る。**マウスが無くても続けて押せる** */
@@ -791,11 +828,26 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (next){ next.focus(); sel = +next.dataset.k; }
   }
 
+  /* ─ ④ ── **仕分けの答えを出す。**ここが押した意味。
+     「決めた 120 枚」は何も言っていなかったので捨てた。
+     言うのは**やることが何件になったか**——それが仕分けの見返り。 */
+  function paintEnd(){
+    var el = document.getElementById('said');
+    if (!el) return;
+    var rest = [];
+    if (tally.drop) rest.push('要らない ' + tally.drop + ' 件');
+    if (tally.done) rest.push('もうやった ' + tally.done + ' 件');
+    el.innerHTML =
+      CARDS.length + ' 枚ありました。<b>やることは ' + tally.need + ' 件</b>です。<br>'
+      + (rest.length ? esc(rest.join('・')) + '。' : '')
+      + '減らしたのではなく、形を変えただけです。';
+  }
   /* ─ 段 ───────────────────────────────────────────── */
   function stage(s){
     document.body.dataset.stage = s;
     scrollTo(0, 0);
     if (s === 'b') paintPile();
+    if (s === 'd') paintEnd();
     if (s === 'c'){ paintRows(); var f = rowsEl.querySelector('.cd'); if (f){ f.focus(); sel = +f.dataset.k; } }
   }
 
@@ -818,7 +870,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var cd = e.target.closest('.cd');
     if (cd){ look(cd); return; }
     var th = e.target.closest('.three');
-    if (th){ decide(+th.dataset.k); return; }
+    if (th){ decide(+th.dataset.k, th.dataset.v); return; }
   });
 
   /* キーでも通せる。**マウスは要らない** */
@@ -840,7 +892,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       /* 焦点のあるカードの件に効く。**マウスが無くても 12 手で通せる** */
       var f = document.activeElement;
       if (f && f.classList && f.classList.contains('cd')) sel = +f.dataset.k;
-      if (sel !== null && '123'.indexOf(e.key) >= 0){ e.preventDefault(); decide(sel); return; }
+      var vi = '123'.indexOf(e.key);
+      if (sel !== null && vi >= 0){ e.preventDefault(); decide(sel, ['need','drop','done'][vi]); return; }
       if (e.key === 'Escape'){ e.preventDefault(); shut(); return; }
     }
   });
