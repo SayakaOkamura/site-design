@@ -17,7 +17,8 @@
      型（感情の順）：**あるなあ → 一瞬の不快 → 快 → 自分ごと**
        ① 種        **一つだけ聞く**（何件溜まってる？）。②の量が自分の申告のぶんになる
        ② 不快      同じものが量の中に埋もれる。**無理だと分からせる（やらせない）**
-       ③ 快        カードで同じ用事。**分類ごとにまとめて押せる**から終わる（12 手）
+       ③ 快        横長のカードが一列一個。**分類ごとにまとめて押せる**から終わる（12 手）。
+                  押すと**右の帯**に AI の要約が出る（出し方はホームと同じ作法）
        ④ 名前      通り終わったところに理念
      **「あるなあ」は③の題で起きる**（12 個・短い・太い）。
      生の文は読まれない前提で組んである（本人 2026-09-08）。
@@ -138,68 +139,95 @@ body{
 body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 
 /* ─ ③ ─────────────────────────────────────────────────
-   ここまでに三度作り直している。順に：
-   1. 120 枚を格子に並べた → 「パッと見てカード多！並べ方の問題」
-   2. 同じ件を重ねて 12 束にした → 「カード多いなあ。もう少しすっきり」
-   3. 一列にして題を大きくした → **束（重ね）そのものが外された**
+   ここまでに五度作り直している。順に：
+   1. 120 枚を格子に並べる → 「パッと見てカード多！**並べ方の問題**」
+   2. 同じ件を重ねて 12 束 → 「カード多いなあ。もう少しすっきり」
+   3. 一列・題を大きく・束は右 → **束（重ね）そのものが外された**
+   4. 一覧＋分類の見出し＋直下に詳細
+   5. **出し方をホーム画面に寄せた**（いま）
 
-   > カード重ねないで。一覧でバーっと出して、クリックしたらAI要約付き詳細見れる、
-   > かつ分類わけもされてる、みたいな感じ（本人 2026-09-08）
+   > せっかくだから、出し方はホーム画面に寄せて。
+   > でもカード自体は横長にして、一列一個（本人 2026-09-08）
 
-   **重ねない。カードは全部その形で見える**——重ねていたのは、売っているものを
-   隠していたのと同じだった。「多い」は**分類の見出し**で捌く：
-   見出しが挟まるので、壁ではなく塊として読める。
+   だから中身の出し方は `index.html` と同じ作法にした：
+   **押すと右の帯に出る。カードは消えない。**沈んで面が空になるだけ
+   （中身が右へ出て行った）。✕ は置かない——もう一度押す／別のカードを押す／Esc。
 
-   **押せるものが二つになった。**カード（詳細を見る）と三択（まとめて決める）。
-   役目が違う——カードは中身、三択はサイトの操作。 */
+   ホームと違うのは**帯が貼りつく**こと。一覧が長いので、絶対配置で柱の高さに
+   合わせる手は使えない（ホームはカード六枚ぶんしかない）。 */
 .bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 22px}
 .bar h1{margin:0; font-size:17px; font-weight:700}
 .bar .rest{font-size:12.5px; color:var(--sub)}
 
+.cols{display:flex; align-items:flex-start}
+
 /* 分類の見出し。**題が主役**（パッと見て読まれるのはここ）。
    三択は見出しの右に**常時**出す——開く一手を挟まないほうが速い（12 手で終わる）*/
-.rows{list-style:none; margin:0; padding:0}
-.grp{margin-top:36px}
+.rows{list-style:none; margin:0; padding:0; flex:1 1 auto; min-width:0}
+.grp{margin-top:32px}
 .grp:first-child{margin-top:0}
 .grp.gone{display:none}
-.gh{display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin:0 0 13px}
-.gh .t{font-size:clamp(17px,1.9vw,22px); font-weight:700; line-height:1.4}
+.gh{display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin:0 0 11px}
+.gh .t{font-size:clamp(16px,1.8vw,21px); font-weight:700; line-height:1.4}
 .gh .n{font-family:var(--mono); font-size:12px; color:var(--sub)}
 .gh .btns{margin-left:auto}
 
-/* 一覧。**カードは重ならない。**全部そのままの形で並ぶ */
-.cards{list-style:none; margin:0; padding:0;
-       display:grid; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)); gap:10px}
+/* 一覧。**横長のカードが一列一個。**重ねない */
+.cards{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:1fr; gap:8px}
 .cd{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; text-align:left;
-  cursor:pointer; width:100%; min-width:0; min-height:86px;
+  cursor:pointer; width:100%; min-width:0;
   background:var(--card); color:var(--ink); border-radius:8px; box-shadow:var(--lift1);
-  padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; gap:8px;
-  transition:transform .16s var(--ease), box-shadow .16s ease;
+  padding:14px 18px;
+  display:flex; align-items:center; gap:20px;
+  transition:transform .16s var(--ease), box-shadow .16s ease, background-color .16s ease;
 }
-.cd:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.cd:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .cd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-/* 詳細が下に出ているカードは**沈む**（押されたままの見た目。新しい印は足さない）*/
-.cd.on{box-shadow:var(--lift0); transform:translateY(2px); background:var(--tint)}
-.cd .r{font-size:12px; line-height:1.6; overflow:hidden;
-       display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical}
-.cd .s{font-family:var(--mono); font-size:10px; color:#96a0bd}
+.cd .r{flex:1 1 auto; min-width:0; font-size:13px; line-height:1.6; overflow:hidden;
+       display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
+.cd .s{flex:none; font-family:var(--mono); font-size:10.5px; color:#96a0bd}
+/* 中身が右に出ているカードは、**沈んで、面が空になる**（ホームと同じ）。
+   新しい印は足していない */
+.cd.sel,.cd.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
 
-/* 詳細は**押したカードの直下**（その行のすぐ下）に差し込む。
-   一覧の下にまとめて出す／横の帯へ出す、はどちらも過去に外している。
-   **AI の要約はここにだけ載る。**カードには推論を載せない（§2）——
+/* ─ 右の帯。**カードは消えない。**中身が右へ出て、一覧が左へ寄るだけ ── */
+.pane{flex:none; width:0; overflow:hidden; transition:width .24s var(--ease)}
+body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
+/* **貼りつく。**一覧を送っても中身が残る＝目が通せる */
+.panel{
+  position:sticky; top:18px; width:420px; margin-left:16px;
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
+  max-height:calc(100vh - 96px); overflow:auto;
+  animation:swap .18s var(--ease);
+  scrollbar-width:thin; scrollbar-color:#c3cfe0 transparent;
+}
+@keyframes swap{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
+.panel .hd2{padding:20px 22px 12px}
+.panel .hd2 h2{margin:0; font-size:15.5px; font-weight:700; line-height:1.5}
+.panel .hd2 .k{margin:5px 0 0; font-family:var(--mono); font-size:11px; color:var(--sub)}
+.panel .bd{padding:0 22px 22px}
+
+/* **AI の要約はここにだけ載る。**カードには推論を載せない（§2）——
    だから分担が画面に出る：**見抜くのは機械、決めるのは人。** */
-.det{grid-column:1 / -1; animation:rise .24s var(--ease) both}
-.det .in2{background:var(--tint); border-radius:8px; padding:18px 20px}
-.det .sum{margin:0; font-size:13.5px; line-height:1.9}
-.det .sum b{display:block; margin-bottom:6px; font-family:var(--mono); font-size:10.5px;
-            font-weight:400; color:var(--go); letter-spacing:.04em}
-.det dl{margin:16px 0 0; display:grid; grid-template-columns:auto 1fr; gap:8px 18px}
-.det dt{font-size:10.5px; font-weight:700; color:var(--sub); letter-spacing:.04em; padding-top:3px}
-.det dd{margin:0; font-size:12.5px; line-height:1.7}
-.det .raw{font-family:var(--mono); font-size:11.5px}
+.sum{margin:0; padding:14px 16px; background:var(--tint); border-radius:8px;
+     font-size:13px; line-height:1.9}
+.sum b{display:block; margin-bottom:5px; font-family:var(--mono); font-size:10.5px;
+       font-weight:400; color:var(--go); letter-spacing:.04em}
+.panel dl{margin:16px 0 0}
+.panel dt{margin:15px 0 0; font-size:10.5px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
+.panel dt:first-child{margin-top:0}
+.panel dd{margin:4px 0 0; font-size:12.5px; line-height:1.75}
+.panel .raw{font-family:var(--mono); font-size:11.5px}
+.panel .made{display:block; margin-top:3px; font-size:11px; color:var(--sub)}
 
 .btns{display:flex; gap:7px; flex-wrap:wrap}
+
+@media (max-width:900px){
+  .cols{flex-direction:column}
+  body.paneopen .pane{width:100%}
+  .panel{position:static; width:100%; margin:18px 0 0; max-height:none}
+}
 .three{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   padding:9px 13px; border-radius:7px; background:var(--card); color:var(--ink);
@@ -290,7 +318,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       <h1 id="c-h1"></h1>
       <span class="rest" id="rest"></span>
     </div>
-    <ul class="rows" id="rows"></ul>
+    <div class="cols">
+      <ul class="rows" id="rows"></ul>
+      <!-- 中身が出る帯。**カードは消えない。**ホームと同じ作法。
+           ホームと違うのは**貼りつく**こと（一覧が長いので）-->
+      <aside class="pane" id="pane"></aside>
+    </div>
 
     <div class="done">
       <span id="done-n">決めた 0 件</span>
@@ -484,15 +517,16 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   }
 
   /* ─ ③ ────────────────────────────────────────────── */
-  var rowsEl, sel = null, open = null, leftRows = 0, decided = 0;
+  var rowsEl, paneEl, sel = null, open = null, leftRows = 0, decided = 0;
 
   function paintRows(){
     rowsEl = document.getElementById('rows');
+    paneEl = document.getElementById('pane');
     var by = GROUPS.map(function(){ return []; });
     CARDS.forEach(function(c){ by[c.k].push(c); });
 
-    /* 分類ごとに見出し、その下に**そのままの形のカードを全部**並べる。
-       重ねない（本人 2026-09-08：「カード重ねないで。一覧でバーっと出して」）*/
+    /* 分類ごとに見出し、その下に**横長のカードが一列一個。**重ねない
+       （本人 2026-09-08：「カード自体は横長にして、一列一個」）*/
     rowsEl.innerHTML = by.map(function(list, k){
       return '<li class="grp" data-k="' + k + '">'
         + '<div class="gh">'
@@ -517,6 +551,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     document.getElementById('c-h1').textContent =
       CARDS.length + ' 枚は、' + GROUPS.length + ' 件でした';
     leftRows = GROUPS.length; decided = 0; sel = null; open = null;
+    paneEl.innerHTML = '';
+    document.body.classList.remove('paneopen');
     drawRest(); drawDone();
   }
 
@@ -529,23 +565,27 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       (CARDS.length ? (decided / CARDS.length * 100) : 0) + '%';
   }
 
-  /* 詳細を**押したカードの直下**へ差し込む。
-     格子なので、そのカードの次に一行ぶんの枠（grid-column:1/-1）を入れると
-     ちょうど「行のすぐ下」に来る。**開くのは一つだけ。他は畳まない。** */
+  /* 帯を閉じる。**カードは沈んでいただけなので、戻すのは印を外すだけ** */
   function shut(){
-    if (!open) return;
-    var b = rowsEl.querySelector('.cd.on');
-    if (b) b.classList.remove('on');
-    open.parentNode.removeChild(open);
+    var b = rowsEl.querySelector('.cd.sel');
+    if (b) b.classList.remove('sel');
+    document.body.classList.remove('paneopen');
     open = null;
+    /* 帯が縮みきってから空にする（縮むあいだ中身が消えると、ただ消えたように見える）*/
+    setTimeout(function(){ if (!open) paneEl.innerHTML = ''; }, 260);
   }
 
+  /* 押すと**右の帯に出る。**ホームと同じ作法。
+     ここに出るのは**AI の要約**——カードには載せていないもの（§2）。
+     だから「同じものが右に出た」ではなく「**機械が読んだ結果が出た**」になる。 */
   function look(btn){
     var k = +btn.dataset.k, n = +btn.dataset.n;
-    var was = btn.classList.contains('on');
-    shut();
+    var was = btn.classList.contains('sel');
     sel = k;                         /* 三択のキーは、いま見ている件に効く */
-    if (was) return;                 /* 同じカードをもう一度＝閉じる */
+    if (was){ shut(); return; }      /* 同じカードをもう一度＝閉じる */
+
+    var b = rowsEl.querySelector('.cd.sel');
+    if (b) b.classList.remove('sel');
 
     var c = CARDS.filter(function(x){ return x.n === n; })[0];
     if (!c) return;
@@ -554,22 +594,23 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     mates.forEach(function(x){ srcs[x.src] = (srcs[x.src] || 0) + 1; });
     var srcTxt = Object.keys(srcs).map(function(key){ return key + ' ' + srcs[key]; }).join('、');
 
-    var li = document.createElement('li');
-    li.className = 'det';
-    li.innerHTML =
-      '<div class="in2">'
-      + '<p class="sum"><b>AI の要約</b>' + esc(GROUPS[k].sum) + '</p>'
-      + '<dl>'
-      +   '<dt>この一行</dt><dd class="raw">' + esc(c.raw) + '</dd>'
-      +   '<dt>出どころ</dt><dd class="raw">' + esc(c.src) + ' / ' + c.n + '</dd>'
-      +   '<dt>同じ件</dt><dd>' + mates.length + ' 枚（' + esc(srcTxt) + '）</dd>'
-      +   '<dt>題</dt><dd>' + esc(GROUPS[k].t) + '<br>'
-      +     '<span style="font-size:11px;color:var(--sub)">生の一行には書かれていません。この仕組みが付けたものです。</span></dd>'
-      + '</dl></div>';
+    paneEl.innerHTML =
+      '<div class="panel">'
+      + '<div class="hd2"><h2>' + esc(GROUPS[k].t) + '</h2>'
+      +   '<p class="k">' + esc(c.src) + ' / ' + c.n + '　同じ件 ' + mates.length + ' 枚</p></div>'
+      + '<div class="bd">'
+      +   '<p class="sum"><b>AI の要約</b>' + esc(GROUPS[k].sum) + '</p>'
+      +   '<dl>'
+      +     '<dt>この一行</dt><dd class="raw">' + esc(c.raw) + '</dd>'
+      +     '<dt>同じ件の出どころ</dt><dd>' + esc(srcTxt) + '</dd>'
+      +     '<dt>題</dt><dd>' + esc(GROUPS[k].t)
+      +       '<span class="made">生の一行には書かれていません。この仕組みが付けたものです。</span></dd>'
+      +   '</dl>'
+      + '</div></div>';
 
-    btn.classList.add('on');
-    btn.parentNode.parentNode.insertBefore(li, btn.parentNode.nextSibling);
-    open = li;
+    btn.classList.add('sel');
+    document.body.classList.add('paneopen');
+    open = k;
   }
 
   /* 三択。**分類まるごと片付く。**押した枚数だけ「決めた」が増える */
@@ -578,7 +619,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (k === null) return;
     var grp = rowsEl.querySelector('.grp:not(.gone)[data-k="' + k + '"]');
     if (!grp) return;
-    if (open && grp.contains(open)) shut();
+    if (open === k) shut();
     decided += grp.querySelectorAll('.cd').length;
     grp.classList.add('gone');
     leftRows--; sel = null;
@@ -599,7 +640,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   }
 
   function start(){
-    sel = null;
+    sel = null; open = null;
+    document.body.classList.remove('paneopen');
     document.body.dataset.stage = 'a';
   }
 
