@@ -210,7 +210,7 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 .rows{list-style:none; margin:0; padding:0; flex:1 1 auto; min-width:0}
 /* 送り先の余裕。**貼りつく二段（頭 60 ＋ 置き場 44）に隠れないように。**
    これを分類の側に付けていなくて、見出しが帯の下へ潜っていた（数字で見つけた）*/
-.grp{margin-top:44px; scroll-margin-top:120px}
+.grp{margin-top:44px; scroll-margin-top:129px}
 /* **片付くときは、流れて抜ける。**前は瞬間で消えていたので「捌けた」感が無かった。
    置き場は上にあるので、**上へ**抜ける。演出ではなく物の動き（§5 の「重さ・慣性」）*/
 .grp{transition:transform .24s var(--ease), opacity .24s ease}
@@ -228,7 +228,7 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 /* **貼りつく二段（頭 60 ＋ 置き場 44）の下に来る**ように余裕を持たせる。
    押したカードをここまで送るので、**押したものと帯が横に並ぶ** */
 .cd{
-  scroll-margin-top:120px;
+  scroll-margin-top:129px;
   -webkit-appearance:none; appearance:none; border:0; font:inherit; text-align:left;
   cursor:pointer; width:100%; min-width:0;
   background:var(--card); color:var(--ink); border-radius:8px; box-shadow:var(--lift1);
@@ -253,6 +253,38 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
    新しい印は足していない */
 .cd.sel,.cd.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
 
+/* ─ 印。**押したら、面に残る。**
+   本人 2026-09-08：「ハンコ押し要素がないんよ」。三択は文字列で、押しても
+   何も残らず、群が抜けて数字が動くだけだった——**押した跡が無かった。**
+
+   借りたのは判子の**作法**（傾いて乗る／面の上に重なる／消えない）だけ。
+   朱色の丸にはしない——**承認印に見えると経理の会社の画面になる**
+   （§「触るときの約束」で一度捨てている）。だからインクはこの案の色のまま。 */
+.mk{
+  flex:none; align-self:center;
+  padding:3px 9px 4px; border:1.5px solid currentColor; border-radius:4px;
+  font-size:10.5px; font-weight:700; letter-spacing:.08em; line-height:1.4;
+  transform:rotate(-6deg);
+  animation:press .22s var(--ease) forwards;   /* both だと、動きが始まらない環境で印が透明のまま残る */
+}
+@keyframes press{
+  from{transform:rotate(-6deg) scale(1.9); opacity:0}
+  60%{transform:rotate(-6deg) scale(.94); opacity:1}
+  to{transform:rotate(-6deg) scale(1); opacity:1}
+}
+.mk.need{color:var(--go)}
+.mk.drop{color:#a2abc4}
+.mk.done{color:var(--sub)}
+/* 印が乗ったカードは、面を退かせる（印が主役になる）*/
+.cd.stamped{background:var(--tint); box-shadow:var(--lift0); transform:none}
+.cd.stamped .r{opacity:.42}
+.cd.stamped .s{opacity:0}
+/* 帯の印は大きい。**手元の一枚に押した**ので */
+.panel .mk{position:absolute; right:26px; top:-6px; padding:7px 15px 8px;
+           font-size:15px; border-width:2px; background:var(--card);
+           border-radius:6px; box-shadow:var(--lift1)}
+.panel .act{position:relative}
+
 /* ─ 右の帯。**カードは消えない。**中身が右へ出て、一覧が左へ寄るだけ ── */
 /* **overflow は clip。**hidden だと巻き取り箱ができて、中の position:sticky が
    そこに閉じ込められる——帯が一覧のいちばん上に置かれて、下のカードを押した人には
@@ -264,9 +296,9 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
    左側にするべきだと思うよ」）。帯は画面の右端にいるので、右に棒を付けると
    ページ自身の棒と並んでしまう。`direction` を裏返して、中身だけ戻す。 */
 .panel{
-  position:sticky; top:122px; width:420px; margin-left:16px; direction:rtl;   /* 頭 60 ＋ 置き場 44 ＋ 18 */
+  position:sticky; top:131px; width:420px; margin-left:16px; direction:rtl;   /* 頭 60 ＋ 置き場 53 ＋ 18 */
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
-  max-height:calc(100vh - 146px); overflow:auto;
+  max-height:calc(100vh - 155px); overflow:auto;
   animation:swap .18s var(--ease);
   scrollbar-width:thin; scrollbar-color:#c3cfe0 transparent;
 }
@@ -342,18 +374,58 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
    帯と同じく**貼りつける。**押すのは一覧の下のほうなので、
    数が動くのが見えないと積まれた感じが出ない。 */
+/* ─ 置き場を**束**にした。数字だけだったので、
+   押しても紙が動いた気がしなかった（本人 2026-09-08：
+   「ハンコ押し要素がないんよ、かといってハンコ押す前を体験させてるわけでもない」）。
+
+   **右が薄くなって、左のどれかが厚くなる。**それだけ。
+   厚みは §5 が「足してよい」と書いた側（積まれた束の厚み）。
+   数字は残すが、**主役は厚み**——だから小さく置く。棒グラフに見えないよう、
+   紙の小口（3px ごとの線）で描く */
 .tally{
   position:sticky; top:60px; z-index:4;
-  display:flex; align-items:baseline; gap:26px; flex-wrap:wrap;
-  margin:0 0 26px; padding:11px 0 13px;
+  display:flex; align-items:flex-end; gap:30px; flex-wrap:wrap;
+  margin:0 0 26px; padding:8px 0 11px;
   background:var(--bg);
-  font-size:12.5px; color:var(--sub);
+  font-size:11.5px; color:var(--sub);
 }
-.tally span{white-space:nowrap}
-.tally b{margin-left:7px; font-family:var(--mono); font-size:14px; color:var(--ink)}
-/* 未決だけ右へ離す。**入れる先（三つ）と、まだ入れていないもの**は別の話 */
-.tally .left{margin-left:auto; color:var(--go)}
+.tally .bin{display:flex; align-items:flex-end; gap:9px; white-space:nowrap}
+/* ─ **置き場の名前が、判子になる。**
+   印はカードの面に乗るが、**カードは抜けていく**ので跡が画面に残らなかった
+   （押して 0.3 秒で消えていた。画面で見つけた）。
+   だから**置き場の名前そのものを、押された印にする。**一度何かが入ったら
+   その置き場は印を持ったまま——貼りついているので、最後まで画面に出ている。
+   足したものは無い（名前の見た目が変わるだけ）*/
+.tally em{font-style:normal; padding:3px 0; border:1.5px solid transparent;
+          transition:none}
+.tally em.on{
+  padding:3px 9px 4px; border-color:currentColor; border-radius:4px;
+  font-weight:700; letter-spacing:.06em; transform:rotate(-6deg);
+  animation:press .22s var(--ease) forwards;
+}
+.tally em.on.need{color:var(--go)}
+.tally em.on.drop{color:#a2abc4}
+.tally em.on.done{color:var(--sub)}
+.tally b{font-family:var(--mono); font-size:13px; color:var(--ink)}
+/* 束。**紙の小口。**押した先が厚くなり、押す前が薄くなる */
+/* 束。**紙の小口。**押した先が厚くなり、押す前が薄くなる。
+   小口 3px では線に見えたので 4px にした（画面で見つけた）。
+   **棚板は空でも出す**——入れる先が最初から見えている（前の節と同じ理由）*/
+.stk{
+  display:block; width:36px; height:0; border-radius:0 0 2px 2px;
+  background:repeating-linear-gradient(#fff 0 2.5px, #ccd9ec 2.5px 4px);
+  box-shadow:var(--lift0);
+  border-bottom:2px solid #b9c6da;
+  transition:height .3s var(--ease);
+}
+.stk.zero{box-shadow:none; background:none}
+/* まだ押していない束だけ右へ離す。**入れる先（三つ）と、手元にある紙**は別の話 */
+.tally .left{margin-left:auto}
 .tally .left b{color:var(--go)}
+.tally .left .stk{background:repeating-linear-gradient(#fff 0 2px, #c0c8ea 2px 3px)}
+/* 厚みの天井 34px（＝全部が一つの置き場に入ったとき）。**紙に比例させる。**
+   目盛りを付けたり、対数で膨らませたりはしない——嘘のある図になる */
+.stk{max-height:34px}
 
 .end{max-width:760px}
 .end .face{
@@ -434,10 +506,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     <!-- 置き場。**分けた先が、最初から空で見えている。**ボタンではないので
          押せるものは増えていない。押すと数が動くので、積まれていくのが見える -->
     <div class="tally">
-      <span>要る<b id="t-need">0</b></span>
-      <span>要らない<b id="t-drop">0</b></span>
-      <span>もうやった<b id="t-done">0</b></span>
-      <span class="left">未決<b id="t-left">0</b></span>
+      <span class="bin"><i class="stk" id="s-need"></i><em id="m-need">要る</em><b id="t-need">0</b></span>
+      <span class="bin"><i class="stk" id="s-drop"></i><em id="m-drop">要らない</em><b id="t-drop">0</b></span>
+      <span class="bin"><i class="stk" id="s-done"></i><em id="m-done">もうやった</em><b id="t-done">0</b></span>
+      <span class="bin left"><i class="stk" id="s-left"></i><em>まだ押していない</em><b id="t-left">0</b></span>
     </div>
 
     <div class="cols">
@@ -757,17 +829,62 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       CARDS.length + ' 枚は、' + GROUPS.length + ' 件でした';
     leftRows = GROUPS.length; decided = 0; sel = null; open = null;
     tally = { need:0, drop:0, done:0, pieces:{ need:0, drop:0, done:0 } };
+    ["need","drop","done"].forEach(function(v){
+      var lb = document.getElementById("m-" + v); if (lb) lb.className = "";   /* 印を外す */
+    });
     paneEl.innerHTML = '';
     document.body.classList.remove('paneopen');
     drawRest();
   }
 
   /* 置き場の数。**押した先が積まれる**（件で数える。枚は④で言う）*/
+  /* 置き場は**枚で数える。**厚みが紙なので、数字も紙に合わせる。
+     件（12 件）は④で出す——**手元の話は枚、意味の話は件。** */
+  function stkH(pieces){
+    if (!pieces) return 0;
+    return Math.max(6, Math.round(34 * pieces / Math.max(1, N)));   /* 6px 未満は線に見える */
+  }
+  function bin(id, pieces){
+    var b = document.getElementById(id);
+    var k = document.getElementById(id.replace("s-", "t-"));
+    if (b){ b.style.height = stkH(pieces) + "px";
+            b.classList.toggle("zero", !pieces); }
+    if (k) k.textContent = pieces + " 枚";
+  }
   function drawRest(){
-    document.getElementById('t-need').textContent = tally.need;
-    document.getElementById('t-drop').textContent = tally.drop;
-    document.getElementById('t-done').textContent = tally.done;
-    document.getElementById('t-left').textContent = leftRows;
+    bin("s-need", tally.pieces.need);
+    bin("s-drop", tally.pieces.drop);
+    bin("s-done", tally.pieces.done);
+    bin("s-left", CARDS.length - decided);
+  }
+
+  /* 動きの終わりと時間の両方で拾う。**片方だけだと、タブが後ろにあるとき止まる** */
+  function after(el, ev, ms, fn){
+    if (slow || !el){ fn(); return; }
+    var once = false;
+    function go(){ if (once) return; once = true; el.removeEventListener(ev, go); fn(); }
+    el.addEventListener(ev, go);
+    setTimeout(go, ms);
+  }
+
+  /* 印を面に置く。**帯の一枚と、一覧のカード全部。**消さない */
+  var MKW = { need:"要る", drop:"要らない", done:"もうやった" };
+  function stampAll(grp, v){
+    var w = MKW[v] || MKW.need, first = null;
+    grp.querySelectorAll(".cd").forEach(function(c){
+      if (c.querySelector(".mk")) return;
+      var m = document.createElement("span");
+      m.className = "mk " + v; m.textContent = w;
+      c.appendChild(m); c.classList.add("stamped"); c.classList.remove("sel");
+      if (!first) first = m;
+    });
+    var act = paneEl.querySelector(".act");
+    if (act && !act.querySelector(".mk")){
+      var pm = document.createElement("span");
+      pm.className = "mk " + v; pm.textContent = w;
+      act.appendChild(pm); if (!first) first = pm;
+    }
+    return first;
   }
 
   /* 帯を閉じる。**カードは沈んでいただけなので、戻すのは印を外すだけ** */
@@ -854,35 +971,52 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (k === undefined || k === null) k = sel;
     if (k === null) return;
     var grp = rowsEl.querySelector('.grp:not(.gone)[data-k="' + k + '"]');
-    if (!grp) return;
-    if (open === k) shut();
+    /* **印が乗っているあいだは二度押せない。**印を待ってから抜けるようにしたので、
+       押した直後の一瞬、群にまだ印も抜けもない時間ができた——
+       そこを連打すると同じ群が二回数えられていた（画面で見つけた。合計が 13 件になった）*/
+    if (!grp || grp.classList.contains("set")) return;
+    grp.classList.add("set");
+    if (!v) v = "need";
     /* **数えるのは断片。**カードは「言い方」なので、そのまま数えると枚数が合わない
        （120 のはずが 60 と出た。画面で見つけた）*/
     var pieces = CARDS.filter(function(c){ return c.k === k; }).length;
     decided += pieces;
-    if (!v) v = 'need';
     tally[v]++; tally.pieces[v] += pieces;
     leftRows--; sel = null;
     drawRest();
 
-    /* **流れて抜けてから消す。**瞬間で消すと「捌けた」感が出ない。
-       片付けは**動きの終わりと時間の両方**で拾う——片方だけに頼ると、
-       タブが前に出ていないときに `transitionend` が来ず、抜けかけで止まる
-       （ホームの帯と同じ作り）。動きを切っている環境では待たない */
-    grp.classList.add('out');
+    /* **押す → 印が乗る → 束が抜ける。**三段に分けた。
+       前は押した瞬間に抜けていたので、**押した跡を見る間が無かった**
+       （本人 2026-09-08：「ハンコ押し要素がないんよ」）。
+       印が乗りきってから抜ける。抜けた先は置き場の厚みになる */
+    var mk = stampAll(grp, v);
+    var lb = document.getElementById("m-" + v);
+    if (lb) lb.className = "on " + v;          /* 置き場の名前が印になる（一度きり）*/
+    after(mk, "animationend", 520, function(){ leave(grp, k); });   /* 印を見る間 */
+  }
+
+  /* 抜ける。**流れて上へ。**片付けは動きの終わりと時間の両方で拾う——
+     片方だけに頼ると、タブが前に出ていないとき抜けかけで止まる
+     （起動画面の帯と同じ作り）。動きを切っている環境では待たない */
+  function leave(grp, k){
+    grp.classList.add("out");
     var settled = false;
     function gone(){
       if (settled) return;
       settled = true;
-      grp.removeEventListener('transitionend', onEnd);
-      grp.classList.add('gone'); grp.classList.remove('out');
-      if (leftRows <= 0){ stage('d'); return; }
+      grp.removeEventListener("transitionend", onEnd);
+      grp.classList.add("gone"); grp.classList.remove("out");
+      if (open === k) open = null;
+      if (leftRows <= 0){
+        paneEl.innerHTML = ""; document.body.classList.remove("paneopen");
+        stage("d"); return;
+      }
       step();
     }
     function onEnd(e){ if (e.target === grp) gone(); }
     if (slow){ gone(); }
     else {
-      grp.addEventListener('transitionend', onEnd);
+      grp.addEventListener("transitionend", onEnd);
       setTimeout(gone, 320);
     }
   }
