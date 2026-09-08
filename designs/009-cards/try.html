@@ -17,14 +17,13 @@
      型（感情の順）：**あるなあ → 一瞬の不快 → 快 → 自分ごと**
        ① 種        **一つだけ聞く**（何件溜まってる？）。②の量が自分の申告のぶんになる
        ② 不快      同じものが量の中に埋もれる。**無理だと分からせる（やらせない）**
-       ③ 快        カードで同じ用事。**束で押せる**から終わる（12 束＝12 手）
+       ③ 快        カードで同じ用事。**分類ごとにまとめて押せる**から終わる（12 手）
        ④ 名前      通り終わったところに理念
      **「あるなあ」は③の題で起きる**（12 個・短い・太い）。
      生の文は読まれない前提で組んである（本人 2026-09-08）。
 
-     分担：**見抜くのは機械、決めるのは人。**同じ件には同じ印が付いていて、
-     まとめて押せる。塊を作るのは機械、三択を押すのは人。
-     （A「最初から塊で出す」は人がハンコになるので却下。NOTES 参照）
+     分担：**見抜くのは機械、決めるのは人。**分類と AI 要約は機械の仕事で、
+     **要約は詳細にだけ載る**（カードには推論を載せない。§2）。三択を押すのは人。
 
      出さないもの：点数・レベル・達成演出・音・**実測秒数**（「体感で」）。
      足すもの：重さ、影、押したときのずれ、片付いた束の厚み。
@@ -32,7 +31,7 @@
      ここが仮 ──────────────────────────────────────────────
      1. ①の問いの言葉と四択の刻み（36／120／402／数えたことがない）
      2. ②の問いが二行ある（分ける前に、同じ件がいくつあるか）。まだ長い
-     3. ③は束まるごとの三択だけ。「この一枚だけ」は出していない
+     3. ③の三択は分類まるごとだけ。「この一枚だけ」は出していない
      件数は本人が①で答えたもの（`N`）。何件でも群は 12、手数も 12。
 ================================================================ -->
 
@@ -139,92 +138,72 @@ body{
 body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 
 /* ─ ③ ─────────────────────────────────────────────────
-   最初は 120 枚を一枚ずつ格子に並べた。本人 2026-09-08：
-   「これパッと見てカード多！ってなっちゃうかも、並べ方の問題だと思う」。
-   そのとおりで、**見えるものが 120 枚**になっていた。いま見えるのは **12 件**で、
-   カードはその中の量。**一行が一件。**（量は減らない。見え方が変わっただけ）
+   ここまでに三度作り直している。順に：
+   1. 120 枚を格子に並べた → 「パッと見てカード多！並べ方の問題」
+   2. 同じ件を重ねて 12 束にした → 「カード多いなあ。もう少しすっきり」
+   3. 一列にして題を大きくした → **束（重ね）そのものが外された**
 
-   **押せるのは束だけ。**カードは 009 のまま（縮めない・作り替えない）。 */
-.bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 18px}
+   > カード重ねないで。一覧でバーっと出して、クリックしたらAI要約付き詳細見れる、
+   > かつ分類わけもされてる、みたいな感じ（本人 2026-09-08）
+
+   **重ねない。カードは全部その形で見える**——重ねていたのは、売っているものを
+   隠していたのと同じだった。「多い」は**分類の見出し**で捌く：
+   見出しが挟まるので、壁ではなく塊として読める。
+
+   **押せるものが二つになった。**カード（詳細を見る）と三択（まとめて決める）。
+   役目が違う——カードは中身、三択はサイトの操作。 */
+.bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 22px}
 .bar h1{margin:0; font-size:17px; font-weight:700}
 .bar .rest{font-size:12.5px; color:var(--sub)}
 
-/* **箱を捨てた。**束を白い箱に載せていたが、**画面にはカードと題だけあればいい。**
-   十二色の印も捨てた——同じ件は**重なっている**し、題が言っている。色は何も足していなかった。
-   （本人 2026-09-08：「あとは捨てよう。拾えるものはついでに拾うくらいで」）
+/* 分類の見出し。**題が主役**（パッと見て読まれるのはここ）。
+   三択は見出しの右に**常時**出す——開く一手を挟まないほうが速い（12 手で終わる）*/
+.rows{list-style:none; margin:0; padding:0}
+.grp{margin-top:36px}
+.grp:first-child{margin-top:0}
+.grp.gone{display:none}
+.gh{display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin:0 0 13px}
+.gh .t{font-size:clamp(17px,1.9vw,22px); font-weight:700; line-height:1.4}
+.gh .n{font-family:var(--mono); font-size:12px; color:var(--sub)}
+.gh .btns{margin-left:auto}
 
-   **一列に戻して、行を大きくした。**二列にしたら一画面に八件出て、
-   本人 2026-09-08：「カード多いなあ。もう少しすっきり見せられない？
-   パッと見たタイトルが読みやすく変わってるとか、一画面上の項目量減らすとか」。
-   いまは**一画面に四件。題が先に読める大きさ**で左、束は右。
-   スクロールは許容されている——**減らすのは一画面の量で、件数ではない。** */
-/* 幅を絞る。980 だと題と束のあいだに 500px 空いて、**二つの列に見えた**（画面で見つけた）*/
-.rows{list-style:none; margin:0; padding:0; max-width:760px;
-      display:grid; grid-template-columns:1fr; gap:24px}
-.row{min-width:0}
-.row.gone{display:none}
-
-.hd{
-  -webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
-  cursor:pointer; padding:0; margin:0; text-align:left; width:100%;
-  display:flex; align-items:center; justify-content:space-between; gap:32px;
+/* 一覧。**カードは重ならない。**全部そのままの形で並ぶ */
+.cards{list-style:none; margin:0; padding:0;
+       display:grid; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)); gap:10px}
+.cd{
+  -webkit-appearance:none; appearance:none; border:0; font:inherit; text-align:left;
+  cursor:pointer; width:100%; min-width:0; min-height:86px;
+  background:var(--card); color:var(--ink); border-radius:8px; box-shadow:var(--lift1);
+  padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; gap:8px;
+  transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.hd:focus-visible{outline:2px solid var(--go); outline-offset:8px; border-radius:6px}
-/* 箱が無いので、**手応えは束が持つ** */
-.hd:hover .face{transform:translateY(-3px); box-shadow:var(--lift3)}
-.face,.lay{transition:transform .16s var(--ease), box-shadow .16s ease}
-/* **題が主役。**パッと見て読まれるのはここだけ、という前提で大きくする */
-.hd .meta{flex:1 1 auto; min-width:0}
-.hd .t{display:block; font-size:clamp(19px,2.1vw,25px); font-weight:700; line-height:1.45}
-.hd .n{display:block; margin-top:7px; font-family:var(--mono); font-size:12px; color:var(--sub)}
-.row.on .hd .t{color:var(--go)}
+.cd:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.cd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+/* 詳細が下に出ているカードは**沈む**（押されたままの見た目。新しい印は足さない）*/
+.cd.on{box-shadow:var(--lift0); transform:translateY(2px); background:var(--tint)}
+.cd .r{font-size:12px; line-height:1.6; overflow:hidden;
+       display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical}
+.cd .s{font-family:var(--mono); font-size:10px; color:#96a0bd}
 
-/* ─ 束。**カードは変えない。**本人 2026-09-08：「カード自体は変えないで！そこが売りだから」。
-   一度カードを 44px の小片に縮めたのが間違い。**売っているものを縮めていた。**
-   いまは 009 のカードそのままで、**重ねて厚みを出す**だけ（§5 の「足してよい手触り」に
-   「積まれた束の厚み」が入っている）。パッと見えるのは 12 束＝12 件。 */
-.stack{position:relative; flex:none; width:236px; height:104px}
-.lay{
-  position:absolute; inset:0; background:var(--card); border-radius:8px;
-  box-shadow:var(--lift1);
-}
-.face{
-  position:absolute; inset:0; background:var(--card); border-radius:8px;
-  box-shadow:var(--lift2); padding:13px 15px;
-  display:flex; flex-direction:column; justify-content:space-between;
-}
-.face .r{
-  font-size:12.5px; line-height:16px; color:var(--ink); overflow:hidden;
-  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; max-height:48px;
-}
-.face .s{font-family:var(--mono); font-size:10px; color:#96a0bd}
-.row.on .stack .face{box-shadow:var(--lift0); transform:translateY(2px)}
+/* 詳細は**押したカードの直下**（その行のすぐ下）に差し込む。
+   一覧の下にまとめて出す／横の帯へ出す、はどちらも過去に外している。
+   **AI の要約はここにだけ載る。**カードには推論を載せない（§2）——
+   だから分担が画面に出る：**見抜くのは機械、決めるのは人。** */
+.det{grid-column:1 / -1; animation:rise .24s var(--ease) both}
+.det .in2{background:var(--tint); border-radius:8px; padding:18px 20px}
+.det .sum{margin:0; font-size:13.5px; line-height:1.9}
+.det .sum b{display:block; margin-bottom:6px; font-family:var(--mono); font-size:10.5px;
+            font-weight:400; color:var(--go); letter-spacing:.04em}
+.det dl{margin:16px 0 0; display:grid; grid-template-columns:auto 1fr; gap:8px 18px}
+.det dt{font-size:10.5px; font-weight:700; color:var(--sub); letter-spacing:.04em; padding-top:3px}
+.det dd{margin:0; font-size:12.5px; line-height:1.7}
+.det .raw{font-family:var(--mono); font-size:11.5px}
 
-/* 三択は**開いた段の頭に出る。**読み終わった位置に選択肢がある形
-   （一覧の下にまとめて出す／他を畳んで貼りつける、はどちらも過去に外している）*/
-.btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px}
-.btns[hidden]{display:none}
-
-/* 開くと、その件のカードが**全部そのままの形で**下に出る。
-   ここで「別々の断片が、同じ件だった」が見える */
-.all{list-style:none; margin:18px 0 0; padding:0;
-     display:grid; grid-template-columns:repeat(auto-fill,minmax(212px,1fr)); gap:12px;
-     animation:rise .28s var(--ease) both}
-.all[hidden]{display:none}
-.all li{
-  background:var(--card); border-radius:8px; box-shadow:var(--lift1);
-  padding:13px 15px; min-height:104px;
-  display:flex; flex-direction:column; justify-content:space-between; gap:10px;
-}
-.all .r{font-size:12.5px; line-height:1.65; color:var(--ink)}
-.all .s{font-family:var(--mono); font-size:10px; color:#96a0bd}
-.chips li i{font-style:normal; font-family:var(--mono); font-size:9.5px; color:#96a0bd;
-            margin-right:6px}
-
+.btns{display:flex; gap:7px; flex-wrap:wrap}
 .three{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  padding:12px 16px; border-radius:8px; background:var(--tint); color:var(--ink);
-  font-size:13px; font-weight:700; box-shadow:var(--lift1);
+  padding:9px 13px; border-radius:7px; background:var(--card); color:var(--ink);
+  font-size:12px; font-weight:700; box-shadow:var(--lift1);
   transition:transform .12s var(--ease), box-shadow .12s ease;
 }
 .three:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
@@ -358,73 +337,85 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      （画面で見つけた）。同じ件が別の出どころで別の言い方で出てくるのが要点なので、
      どの出どころの言い方かは文のほうに付いている。 */
   var GROUPS = [
-    { t:'帳票の桁がずれる', raw:[
+    { t:'帳票の桁がずれる',
+      sum:'帳票の行数の上限が、旧帳票と新帳票で違うまま運用されています。どちらが正かは、どこにも決まっていません。桁ずれの報告は 2024 年から続いています。', raw:[
       ['mail',  '先日の帳票、桁がずれているとのことでした。原因はまだ分かっていません。'],
       ['docx',  '帳票は最大 99 行。ただし旧帳票は 50 行のまま。'],
       ['xlsx',  '帳票の桁ずれ（再）'],
       ['chat',  'あの帳票、また数字が一列ずれてました'],
       ['議事録','・帳票の桁の件、報告あり。原因調査中。'] ]},
-    { t:'印刷で右端が切れる', raw:[
+    { t:'印刷で右端が切れる',
+      sum:'印刷の余白が既定のままで、列が紙幅を超えています。帳票の桁の件と原因が同じ可能性があります。追記予定の節が書きかけで止まっています。', raw:[
       ['mail',  '印刷すると右端が切れるという話も、あわせて出ていました。'],
       ['docx',  '印刷の余白は既定のままとする。'],
       ['docx',  '印刷まわりはこの節に追記予定。（書きかけ）'],
       ['chat',  '紙で出すと最後の列が見えないんですけど'],
       ['議事録','・印刷の件は次回。'] ]},
-    { t:'権限の整理', raw:[
+    { t:'権限の整理',
+      sum:'権限の一覧がどこにもありません。整理を進めると決めた記録はありますが、担当が決まっていません。他の直しがこれ待ちで止まっています。', raw:[
       ['chat',  'あの画面、権限まわりが終わってないと直せないと思う'],
       ['chat',  '権限の一覧、どこにあるか分かる人いますか'],
       ['議事録','・権限の整理を進める。担当は次回決める。'],
       ['xlsx',  '権限の件（11と同じ？）'],
       ['pdf',   '権限の定義は別紙による。別紙は添付されていない。'] ]},
-    { t:'承認者が決まっていない', raw:[
+    { t:'承認者が決まっていない',
+      sum:'承認者を部長にする記録と、課長にする記録の両方があります。どちらが最新かは書かれていません。担当は都度確認、という運用になっています。', raw:[
       ['chat',  'え、あれ課長承認でしたっけ'],
       ['議事録','・承認は部長で運用することにする。'],
       ['議事録','・（前回）承認は課長に変更、と記載あり。'],
       ['xlsx',  '承認のフローは要確認'],
       ['xlsx',  '※担当は都度確認'] ]},
-    { t:'検索が遅い', raw:[
+    { t:'検索が遅い',
+      sum:'3 秒以内という決めがありますが、満たしていません。一覧を開くたびに待たされる報告が続いています。原因が他の件と同じかは分かっていません。', raw:[
       ['chat',  '検索が遅いのも同じ原因？'],
       ['docx',  '検索は 3 秒以内。※現状は満たしていない。'],
       ['chat',  '一覧を開くのに毎回待たされます'],
       ['議事録','・検索の速さについて報告。'],
       ['xlsx',  '検索（遅い）'] ]},
-    { t:'取り込みで止まる', raw:[
+    { t:'取り込みで止まる',
+      sum:'途中で止まる報告がありますが、再現手順が書かれていません。エラー時の手順は別紙とされていて、その別紙は添付されていません。', raw:[
       ['docx',  '取り込みで止まることがある（再現手順は未記載）。'],
       ['pdf',   '取り込みエラー時の手順は別紙による。別紙は添付されていない。'],
       ['chat',  'また途中で止まったので手で入れ直しました'],
       ['議事録','・取り込みの件、条件を整理してから対応。'],
       ['xlsx',  '取込エラー（手順なし）'] ]},
-    { t:'二重登録ができてしまう', raw:[
+    { t:'二重登録ができてしまう',
+      sum:'同じ人が二回登録できます。重複の判定条件が定められていないため、直す範囲も決まっていません。前にも出ていた、という記録があります。', raw:[
       ['議事録','・二重登録ができてしまう件、条件を整理してから対応。'],
       ['pdf',   '重複の判定条件は定めていない。'],
       ['chat',  '同じ人が二回登録されてました'],
       ['xlsx',  '重複チェック（未定）'],
       ['議事録','・重複の件、前にも出ていた気がする。'] ]},
-    { t:'添付が開けない', raw:[
+    { t:'添付が開けない',
+      sum:'添付が開けない報告が複数の出どころにあります。開けない場合は担当に連絡、という手順だけがあり、原因には触れられていません。', raw:[
       ['mail',  '（添付：帳票サンプル.xlsx が開けないと連絡あり）'],
       ['pdf',   '添付ファイルが開けない場合は担当に連絡すること。'],
       ['chat',  'ファイル開けないんですけど壊れてます？'],
       ['xlsx',  '添付（開けない）'],
       ['議事録','・添付の件、報告。'] ]},
-    { t:'月次の集計が合わない', raw:[
+    { t:'月次の集計が合わない',
+      sum:'月次集計の定義が各部で違います。合わないという報告は続いていますが、原因は調査中のままです。', raw:[
       ['議事録','・月次の集計が合っていないという報告。原因は調査中。'],
       ['chat',  '月次の数字、去年と突き合わせると合いません'],
       ['xlsx',  '集計（合わない）'],
       ['docx',  '月次集計の定義は各部で異なる。'],
       ['議事録','・集計の件、継続。'] ]},
-    { t:'ログの保存期間が未定', raw:[
+    { t:'ログの保存期間が未定',
+      sum:'保存期間も保管方針も定めていません。次回決める、が繰り返されています。', raw:[
       ['docx',  'ログの保存期間は未定。'],
       ['chat',  'ログっていつまで残ってるんですか'],
       ['議事録','・ログの保存について、次回決める。'],
       ['xlsx',  'ログ保存（未定）'],
       ['pdf',   'ログの保管方針は定めていない。'] ]},
-    { t:'引き継ぎの記録がない', raw:[
+    { t:'引き継ぎの記録がない',
+      sum:'引き継ぎは書面で、という決めがありますが、担当が変わった経緯は記載されていません。前任者しか知らない状態です。', raw:[
       ['pdf',   '引き継ぎは書面で行うこと。'],
       ['chat',  '前任者しか知らないみたいです'],
       ['議事録','・引き継ぎの記録について、確認する。'],
       ['xlsx',  '引継（記録なし）'],
       ['docx',  '担当が変わった経緯は記載されていない。'] ]},
-    { t:'手順書が古い', raw:[
+    { t:'手順書が古い',
+      sum:'手順書は 2019 年時点のものです。もう使っていない、という話が出ていますが、差し替えた記録はありません。', raw:[
       ['pdf',   '本手順書は 2019 年時点のものである。'],
       ['xlsx',  '※このシートは古い'],
       ['chat',  'その手順書、たしかもう使ってないやつです'],
@@ -493,53 +484,39 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   }
 
   /* ─ ③ ────────────────────────────────────────────── */
-  var rowsEl, sel = null, leftRows = 0, decided = 0;
+  var rowsEl, sel = null, open = null, leftRows = 0, decided = 0;
 
   function paintRows(){
     rowsEl = document.getElementById('rows');
-    /* 一段が一件。段の中に、その件のカードが枚数ぶん入っている */
     var by = GROUPS.map(function(){ return []; });
     CARDS.forEach(function(c){ by[c.k].push(c); });
 
+    /* 分類ごとに見出し、その下に**そのままの形のカードを全部**並べる。
+       重ねない（本人 2026-09-08：「カード重ねないで。一覧でバーっと出して」）*/
     rowsEl.innerHTML = by.map(function(list, k){
-      /* 後ろの層。**五枚まで。**それ以上はずれが重なって読めなくなるだけ
-         （正確な枚数は横の「12 枚」が言う）*/
-      var lays = Math.min(list.length - 1, 5), back = '';
-      for (var i = lays; i >= 1; i--){
-        back += '<span class="lay" style="transform:translate(' + (i * 4) + 'px,'
-              + (i * 4) + 'px)"></span>';
-      }
-      var top = list[0];
-      return '<li class="row" data-k="' + k + '">'
-        +   '<button class="hd" data-k="' + k + '">'
-        +     '<span class="meta">'
-        +       '<span class="t">' + esc(GROUPS[k].t) + '</span>'
-        +       '<span class="n">' + list.length + ' 枚</span>'
-        +     '</span>'
-        +     '<span class="stack">' + back
-        +       '<span class="face">'
-        +         '<span class="r">' + esc(top.raw) + '</span>'
-        +         '<span class="s">' + esc(top.src) + ' / ' + top.n + '</span>'
-        +       '</span>'
-        +     '</span>'
-        +   '</button>'
-        +   '<div class="btns" hidden>'
-        +     '<button class="three" data-v="need">要る<em>1</em></button>'
-        +     '<button class="three" data-v="drop">要らない<em>2</em></button>'
-        +     '<button class="three" data-v="done">もうやった<em>3</em></button>'
-        +   '</div>'
-        + '<ul class="all" hidden>' + list.map(function(c){
-            return '<li><span class="r">' + esc(c.raw) + '</span>'
-                 + '<span class="s">' + esc(c.src) + ' / ' + c.n + '</span></li>';
+      return '<li class="grp" data-k="' + k + '">'
+        + '<div class="gh">'
+        +   '<span class="t">' + esc(GROUPS[k].t) + '</span>'
+        +   '<span class="n">' + list.length + ' 枚</span>'
+        +   '<span class="btns">'
+        +     '<button class="three" data-k="' + k + '" data-v="need">要る<em>1</em></button>'
+        +     '<button class="three" data-k="' + k + '" data-v="drop">要らない<em>2</em></button>'
+        +     '<button class="three" data-k="' + k + '" data-v="done">もうやった<em>3</em></button>'
+        +   '</span>'
+        + '</div>'
+        + '<ul class="cards">' + list.map(function(c){
+            return '<li><button class="cd" data-k="' + k + '" data-n="' + c.n + '">'
+                 + '<span class="r">' + esc(c.raw) + '</span>'
+                 + '<span class="s">' + esc(c.src) + ' / ' + c.n + '</span>'
+                 + '</button></li>';
           }).join('') + '</ul>'
         + '</li>';
     }).join('');
 
-    /* **②の問いへの答えを見出しに置く。**説明ではなく返事
-       （「同じ件がいくつあるか分かりますか」に対する答え）*/
+    /* **②の問いへの答えを見出しに置く。**説明ではなく返事 */
     document.getElementById('c-h1').textContent =
       CARDS.length + ' 枚は、' + GROUPS.length + ' 件でした';
-    leftRows = GROUPS.length; decided = 0;
+    leftRows = GROUPS.length; decided = 0; sel = null; open = null;
     drawRest(); drawDone();
   }
 
@@ -552,36 +529,65 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       (CARDS.length ? (decided / CARDS.length * 100) : 0) + '%';
   }
 
-  /* 段を押すと、**その段の頭に三択が出る。**開くのは一つだけ（他は畳まない）*/
-  function choose(k){
-    rowsEl.querySelectorAll('.row.on').forEach(function(li){
-      li.classList.remove('on');
-      li.querySelector('.btns').hidden = true;
-      li.querySelector('.all').hidden = true;
-    });
-    if (sel === k){ sel = null; return; }   /* 同じ段をもう一度＝閉じる */
-    sel = k;
-    var li = rowsEl.querySelector('.row[data-k="' + k + '"]');
-    if (!li) return;
-    li.classList.add('on');
-    li.querySelector('.btns').hidden = false;
-    li.querySelector('.all').hidden = false;   /* 束がほどけて、全部カードで出る */
+  /* 詳細を**押したカードの直下**へ差し込む。
+     格子なので、そのカードの次に一行ぶんの枠（grid-column:1/-1）を入れると
+     ちょうど「行のすぐ下」に来る。**開くのは一つだけ。他は畳まない。** */
+  function shut(){
+    if (!open) return;
+    var b = rowsEl.querySelector('.cd.on');
+    if (b) b.classList.remove('on');
+    open.parentNode.removeChild(open);
+    open = null;
   }
 
-  /* 三択。**段まるごと片付く。**押した枚数だけ「決めた」が増える */
-  function decide(){
-    if (sel === null) return;
-    var li = rowsEl.querySelector('.row[data-k="' + sel + '"]');
-    if (!li) return;
-    decided += li.querySelectorAll('.all li').length;
-    li.classList.add('gone');
+  function look(btn){
+    var k = +btn.dataset.k, n = +btn.dataset.n;
+    var was = btn.classList.contains('on');
+    shut();
+    sel = k;                         /* 三択のキーは、いま見ている件に効く */
+    if (was) return;                 /* 同じカードをもう一度＝閉じる */
+
+    var c = CARDS.filter(function(x){ return x.n === n; })[0];
+    if (!c) return;
+    var mates = CARDS.filter(function(x){ return x.k === k; });
+    var srcs = {};
+    mates.forEach(function(x){ srcs[x.src] = (srcs[x.src] || 0) + 1; });
+    var srcTxt = Object.keys(srcs).map(function(key){ return key + ' ' + srcs[key]; }).join('、');
+
+    var li = document.createElement('li');
+    li.className = 'det';
+    li.innerHTML =
+      '<div class="in2">'
+      + '<p class="sum"><b>AI の要約</b>' + esc(GROUPS[k].sum) + '</p>'
+      + '<dl>'
+      +   '<dt>この一行</dt><dd class="raw">' + esc(c.raw) + '</dd>'
+      +   '<dt>出どころ</dt><dd class="raw">' + esc(c.src) + ' / ' + c.n + '</dd>'
+      +   '<dt>同じ件</dt><dd>' + mates.length + ' 枚（' + esc(srcTxt) + '）</dd>'
+      +   '<dt>題</dt><dd>' + esc(GROUPS[k].t) + '<br>'
+      +     '<span style="font-size:11px;color:var(--sub)">生の一行には書かれていません。この仕組みが付けたものです。</span></dd>'
+      + '</dl></div>';
+
+    btn.classList.add('on');
+    btn.parentNode.parentNode.insertBefore(li, btn.parentNode.nextSibling);
+    open = li;
+  }
+
+  /* 三択。**分類まるごと片付く。**押した枚数だけ「決めた」が増える */
+  function decide(k){
+    if (k === undefined || k === null) k = sel;
+    if (k === null) return;
+    var grp = rowsEl.querySelector('.grp:not(.gone)[data-k="' + k + '"]');
+    if (!grp) return;
+    if (open && grp.contains(open)) shut();
+    decided += grp.querySelectorAll('.cd').length;
+    grp.classList.add('gone');
     leftRows--; sel = null;
     drawRest(); drawDone();
 
     if (leftRows <= 0){ setTimeout(function(){ stage('d'); }, 260); return; }
-    /* 次の段へ焦点を送る。**マウスが無くても続けて押せる** */
-    var next = rowsEl.querySelector('.row:not(.gone) .hd');
-    if (next) next.focus();
+    /* 次の分類へ焦点を送る。**マウスが無くても続けて押せる** */
+    var next = rowsEl.querySelector('.grp:not(.gone) .cd');
+    if (next){ next.focus(); sel = +next.dataset.k; }
   }
 
   /* ─ 段 ───────────────────────────────────────────── */
@@ -589,7 +595,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     document.body.dataset.stage = s;
     scrollTo(0, 0);
     if (s === 'b') paintPile();
-    if (s === 'c'){ paintRows(); var f = rowsEl.querySelector('.hd'); if (f) f.focus(); }
+    if (s === 'c'){ paintRows(); var f = rowsEl.querySelector('.cd'); if (f){ f.focus(); sel = +f.dataset.k; } }
   }
 
   function start(){
@@ -607,10 +613,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   document.addEventListener('click', function(e){
     var pk = e.target.closest('.pk');
     if (pk){ answer(+pk.dataset.n); return; }
-    var hd = e.target.closest('.hd');
-    if (hd){ choose(+hd.dataset.k); return; }
+    var cd = e.target.closest('.cd');
+    if (cd){ look(cd); return; }
     var th = e.target.closest('.three');
-    if (th){ decide(); return; }
+    if (th){ decide(+th.dataset.k); return; }
   });
 
   /* キーでも通せる。**マウスは要らない** */
@@ -629,8 +635,11 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       e.preventDefault(); stage('c'); return;
     }
     if (s === 'c'){
-      if (sel !== null && '123'.indexOf(e.key) >= 0){ e.preventDefault(); decide(); return; }
-      if (e.key === 'Escape' && sel !== null){ e.preventDefault(); choose(sel); return; }
+      /* 焦点のあるカードの件に効く。**マウスが無くても 12 手で通せる** */
+      var f = document.activeElement;
+      if (f && f.classList && f.classList.contains('cd')) sel = +f.dataset.k;
+      if (sel !== null && '123'.indexOf(e.key) >= 0){ e.preventDefault(); decide(sel); return; }
+      if (e.key === 'Escape'){ e.preventDefault(); shut(); return; }
     }
   });
 })();
