@@ -194,9 +194,22 @@ body{
    問いからも離れていた（本人 2026-09-08：「同じ件をまとめる、のボタンの
    位置もちょっと不思議だな」）。**答える相手のすぐ横にある**のが素直。
    山はその下に、証拠として続く。 */
-.ask2{display:flex; align-items:center; gap:26px; flex-wrap:wrap; margin:0 0 26px}
+/* ─ **問いは貼りつく。**山を送っても、答えられていない問いが目の前に残る。
+   （前は山の上に置いていた。下に置いたときは山を越えないと問いに届かなかった）*/
+.ask2{
+  position:sticky; top:60px; z-index:3;             /* 頭の下 */
+  display:flex; align-items:center; gap:26px; flex-wrap:wrap;
+  margin:0 0 22px; padding:14px 0 16px; background:var(--bg);
+}
 .ask2 .ask{margin:0}
 .ask2 .one{margin-top:0; flex:none}
+/* ─ **行き先は、壁に当たってから出す。**
+   本人 2026-09-08：「同じのまとめるってもう見えてるしなあ」。
+   最初から出ていたので、**一枚ずつ押す理由が無かった**——答えが先に置いてあった。
+   出るのは、**押してみたか、山の底まで見たか**のどちらか。
+   どちらも「壁に当たった」——やって諦めるのと、見て諦めるのは別のこと（前の節）*/
+.ask2 .one{animation:rise .28s var(--ease) both}
+@keyframes rise{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
 
 /* ─ 一手。**行き先が言葉に出ている**（ジェットコースターにしない）─ */
 .one{
@@ -532,7 +545,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     <div class="ask2">
       <p class="ask">この中から、要らないものを片付けてください。<br>
         <span class="sub" id="hint"></span></p>
-      <button class="one" id="go-c">同じ件をまとめる</button>
+      <button class="one" id="go-c" hidden>同じ件をまとめる</button>
     </div>
     <ul class="pile" id="pile"></ul>
   </section>
@@ -833,6 +846,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     document.getElementById('count').textContent =
       CARDS.length + ' 枚。題は付いていません。';
     document.getElementById('hint').textContent = '';   /* 合図は山の一行の上に置いた */
+    document.getElementById('go-c').hidden = true;      /* 行き先は壁に当たってから */
     var frag = ['<li class="tip" id="tip">押すと片付きます　↓</li>'];
     CARDS.forEach(function(c, i){
       frag.push('<li><button class="pc' + (i ? '' : ' lead') + '" data-i="' + i
@@ -841,6 +855,25 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     });
     document.getElementById('pile').innerHTML = frag.join('');
   }
+
+  /* 行き先を出す。**押してみたか、山の底まで見たか。**
+     どちらでも一度出たら、もう隠さない */
+  function offer(why){
+    var b = document.getElementById('go-c');
+    if (!b.hidden) return;
+    b.hidden = false;
+    var h = document.getElementById('hint');
+    if (why === 'end' && !handled){
+      h.textContent = '一枚ずつだと、' + CARDS.length + ' 枚あります。';
+    }
+  }
+
+  /* 山の底まで送ったら、それも「当たった」。**押さない人を塞がない** */
+  addEventListener('scroll', function(){
+    if (document.body.dataset.stage !== 'b') return;
+    var pile = document.getElementById('pile');
+    if (pile.getBoundingClientRect().bottom < innerHeight + 240) offer('end');
+  }, { passive:true });
 
   /* 一枚片付ける。**片付くが、同じ件が他に散っている。**
      押した一枚は消さない——消すと山が縮んで「進んでいる」ように見える */
@@ -859,11 +892,13 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
     var left = CARDS.length - handled;
     var h = document.getElementById('hint');
-    if (same.length && handled < 4){
+    if (same.length && handled < 3){
       h.textContent = 'いま押したのと同じ件が、あと ' + same.length + ' か所あります。';
     } else {
       h.textContent = '一枚ずつだと、あと ' + left + ' 枚。';
     }
+    /* **三枚で出す。**同じ件が散っているのを二度見てから */
+    if (handled >= 3) offer('hand');
   }
 
   /* ─ ③ ────────────────────────────────────────────── */
@@ -1173,6 +1208,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
          山を押せるようにしたので、ここで奪うと片付けたつもりが③へ飛ぶ */
       var a = document.activeElement;
       if (a && a.classList && a.classList.contains('pc')) return;
+      if (document.getElementById('go-c').hidden) return;   /* 出ていない行き先へは飛ばさない */
       e.preventDefault(); stage('c'); return;
     }
     if (s === 'c'){
