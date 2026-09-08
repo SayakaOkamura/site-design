@@ -172,9 +172,24 @@ body{
 /* **いま押したのと同じ件。**押した直後に、山のあちこちで光る。
    これが「終わらない」の証拠——一枚押しても、同じ件が 11 か所残っている */
 .pc.same{background:rgba(99,84,224,.17); box-shadow:inset 0 0 0 1px rgba(99,84,224,.42)}
+
+/* ─ **押せることが見えていなかった。**
+   本人 2026-09-08：「できるってわかんないよ、これ」。
+   生の一行に触れる合図が、hover しか無かった——**当たるまで見えない。**
+
+   402 行ぜんぶをボタンの見た目にはしない（詰めた一覧は台帳に見える＝仕事に見える。
+   §で二度捨てている）。**一行だけ、押せる姿で立たせて、そこを指す。**
+   一枚押したら合図は消える——**教えるのは一度だけ。** */
+.pile .tip{
+  break-inside:avoid; margin:0 0 5px;
+  font-size:11px; font-weight:700; color:var(--go); letter-spacing:.02em;
+}
+/* **浮いた紙にする。**白地＋細い枠は入力欄に見えた（画面で見つけた）*/
+.pc.lead{background:#fff; box-shadow:var(--lift1); color:var(--ink); padding:4px 8px; margin:2px -8px}
+.pc.lead:hover{background:#fff; box-shadow:var(--lift2)}
 /* 問い。**答えさせない。**見て「無理」と分かった時点で先へ行ける */
 .ask{margin:0 0 18px; font-size:15px; font-weight:700; line-height:1.8}
-.ask .sub{display:block; font-size:13px; font-weight:500; color:var(--sub)}
+.ask .sub{display:block; min-height:1.8em; font-size:13px; font-weight:500; color:var(--sub)}
 /* **一手は問いの隣に置く。**下端に貼りつけていたら、**山の上に浮いて**
    問いからも離れていた（本人 2026-09-08：「同じ件をまとめる、のボタンの
    位置もちょっと不思議だな」）。**答える相手のすぐ横にある**のが素直。
@@ -516,7 +531,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
          **一手は問いの隣。**山の上に貼りつけていたのをやめた。 -->
     <div class="ask2">
       <p class="ask">この中から、要らないものを片付けてください。<br>
-        <span class="sub" id="hint">一枚押すと、片付きます。</span></p>
+        <span class="sub" id="hint"></span></p>
       <button class="one" id="go-c">同じ件をまとめる</button>
     </div>
     <ul class="pile" id="pile"></ul>
@@ -817,10 +832,11 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     handled = 0;
     document.getElementById('count').textContent =
       CARDS.length + ' 枚。題は付いていません。';
-    document.getElementById('hint').textContent = '一枚押すと、片付きます。';
-    var frag = [];
+    document.getElementById('hint').textContent = '';   /* 合図は山の一行の上に置いた */
+    var frag = ['<li class="tip" id="tip">押すと片付きます　↓</li>'];
     CARDS.forEach(function(c, i){
-      frag.push('<li><button class="pc" data-i="' + i + '" data-u="' + c.u + '">'
+      frag.push('<li><button class="pc' + (i ? '' : ' lead') + '" data-i="' + i
+        + '" data-u="' + c.u + '">'
         + '<i>' + esc(c.src) + '</i>' + esc(c.raw) + '</button></li>');
     });
     document.getElementById('pile').innerHTML = frag.join('');
@@ -832,6 +848,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (btn.classList.contains('done')) return;
     btn.classList.add('done');
     handled++;
+    /* 合図は一度だけ。**押せると分かったら、もう要らない** */
+    var tip = document.getElementById('tip'); if (tip) tip.remove();
+    var ld = document.querySelector('.pc.lead'); if (ld) ld.classList.remove('lead');
     var pile = document.getElementById('pile');
     pile.querySelectorAll('.pc.same').forEach(function(x){ x.classList.remove('same'); });
     /* いま押したのと**同じ件**が、山のどこに残っているか */
