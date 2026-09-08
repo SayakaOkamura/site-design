@@ -118,7 +118,10 @@ body.paneopen .wrap{max-width:1240px}
 .foot p{margin:0; font-size:12px; color:var(--sub); line-height:1.85}
 .foot .fn{font-size:13px; font-weight:700; color:var(--ink)}
 .foot .fa{margin-top:7px}
-.foot .fc{margin-top:22px; font-size:11.5px}
+/* プライバシーポリシーは**先方が公式サイトで出しているもの**（BlueMeme の頁）*/
+.foot .fp{margin-top:22px; font-size:11.5px}
+.foot .fp a{color:var(--sub)}
+.foot .fc{margin-top:7px; font-size:11.5px}
 .foot .fw{margin-top:9px; font-size:11.5px}
 
 /* ─ 大きいカード。これだけ読めば何の会社か分かる ───────────
@@ -139,6 +142,8 @@ body.paneopen .wrap{max-width:1240px}
 /* 34px にすると、帯が出ているあいだ（柱が細くなる）社名が二行に割れる。
    **濃さで目を引くので、大きさは元のまま**で足りる */
 .head h1{margin:0; font-size:clamp(21px,3.4vw,31px); font-weight:700; letter-spacing:.01em; line-height:1.35}
+/* 二行目は公式の副文。**一行目より小さく**（並べると同じ重さに見える）*/
+.head .sub2{display:inline-block; margin-top:8px; font-size:.84em; color:rgba(37,31,69,.62)}
 .head p{margin:20px 0 0; font-size:clamp(13px,1.7vw,16px); font-weight:500;
         color:rgba(37,31,69,.74); line-height:1.7}
 
@@ -171,15 +176,23 @@ body.paneopen .wrap{max-width:1240px}
    押されたままの見た目なので、新しい印を足していない */
 .card.sel,.card.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
 
-/* デモの口。同じ大きさ・同じ形。色だけ変える（隠さない）。
-   **押すと別のページへ行く**ので、右上に → を出す
-   （本人 2026-09-07：「押すことでデモに飛ぶこともわからない」）。
-   ここだけの印。言葉で「クリックすると飛びます」とは書かない */
-.card.go{background:var(--go); color:#fff; position:relative}
-.card.go .arw{position:absolute; top:22px; right:20px; font-size:16px; line-height:1;
-              color:rgba(255,255,255,.8)}
-.card.go .s{color:rgba(255,255,255,.72)}
-.card.go:focus-visible{outline-color:var(--ink)}
+/* ─ デモの口。**箱ではなく帯。**社名と同じ幅で、箱の下に一本。
+   カードは開くもの、これは**飛ぶもの**。同じ形で並べていたので、
+   六枚の中に一枚だけ行き先の違うものが混ざっていた。
+   → は行き先の印（言葉で「クリックすると飛びます」とは書かない）*/
+.band{
+  display:flex; align-items:center; gap:22px; flex-wrap:wrap;
+  margin-top:16px; padding:22px 26px; border-radius:var(--r);
+  background:var(--go); color:#fff; text-decoration:none;
+  -webkit-user-select:none; user-select:none;
+  box-shadow:var(--lift1); transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.band .t{font-size:clamp(15px,1.8vw,17px); font-weight:700; line-height:1.4}
+.band .s{font-size:12px; font-weight:500; color:rgba(255,255,255,.72); line-height:1.6}
+.band .arw{margin-left:auto; font-size:16px; line-height:1; color:rgba(255,255,255,.8)}
+.band:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+.band.down{transform:translateY(2px); box-shadow:var(--lift0); transition-duration:.06s}
+.band:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
 
 /* ─ 右の帯。中身はここに出る ────────────────────────────────
    **カードは消えない。**中身が右へ出て、束が左へ寄るだけ。
@@ -228,6 +241,23 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .facts dt{margin:19px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em; color:var(--sub); line-height:1.5}
 .facts dt:first-child{margin-top:0}
 .facts dd{margin:3px 0 0; font-size:13.5px; line-height:1.8}
+
+/* ─ 企業理念。**会社が一番長く自分の言葉で書いているところ。**
+   だから帯の中では、まず一行を大きく出して、その下に地の文を続ける */
+.mind{margin:0 0 18px; font-size:clamp(15px,1.9vw,18px); font-weight:700; line-height:1.7}
+.panel .body > p{margin:12px 0 0; font-size:13px; line-height:2}
+.panel .body > p.mind{margin-top:0}
+
+/* 小見出し。**本物と仮を分ける**ためだけのもの */
+.lb2{margin:18px 0 7px; font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
+.lb2:first-child{margin-top:0}
+
+/* アクセス。駅・分・路線の三段。**読むより探す**ので、駅名を先に太く */
+.walk{list-style:none; margin:14px 0 0; padding:0; display:grid; gap:7px}
+.walk li{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:12.5px; line-height:1.6}
+.walk b{font-weight:700}
+.walk span{font-family:var(--mono); font-size:11.5px; color:var(--sub)}
+.walk i{font-style:normal; font-size:11px; color:#8b93b0}
 
 /* ─ 所在 ────────────────────────────────────────────────────
    **地図が主役で、住所はその見出し。**会社概要の一行だったときと逆にしてある
@@ -499,10 +529,30 @@ html.boot .mark{opacity:1}
   <!-- 社名と事業の一行。どちらも公表情報（alt-dsgn.co.jp、2026-09-03 確認）。 -->
   <div class="head">
     <h1>株式会社アルターデザインコンサルティング</h1>
-    <p>2025年6月設立／AI とローコードで、上流工程中心のシステム開発</p>
+    <p>AI × ローコードで、「上流工程中心のシステム開発」に革新を<br>
+      <span class="sub2">コンサルティングによる業務設計からエンジニアリングまでを行います</span></p>
   </div>
 
   <div class="deck" id="deck">
+
+    <!-- 企業理念。**公式サイトの navigation 四項目（企業理念／サービス／会社概要／
+         お問い合せ）のうち、これだけ丸ごと無かった**（実サイトと突き合わせて見つけた。
+         2026-09-08 再確認）。会社が自分の言葉で一番長く書いているのがここ。
+         並び順も公式どおり、先頭に置く。中身は**全文そのまま**（仮は混ぜない）。 -->
+    <div class="card" role="button" tabindex="0" data-k="1" data-hash="mind">
+      <span class="t">企業理念</span>
+      <span class="s">経営の力で「遊ぶように働く世界」をデザインする</span>
+      <div class="panel">
+        <div class="bar"><h2>企業理念</h2></div>
+        <div class="body">
+          <p class="mind">経営の力で<br>「遊ぶように働く世界」をデザインする</p>
+          <p>「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと</p>
+          <p>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと</p>
+          <p>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく</p>
+          <p>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+        </div>
+      </div>
+    </div>
 
     <!-- サービス。**中身はページにしない**（一度 service.html を作ったが、
          本人「そこまでがっつり作らなくていい。カードポップアップをクリックしたときに
@@ -510,7 +560,7 @@ html.boot .mark{opacity:1}
          **一覧は動かない**——お知らせで決めた「一覧の高さを変えない」をここでも守る。
          もう一度押すと閉じる（入口のカードと同じ押し方）。
          題と、そのすぐ下の一行が公式サイトの言葉。それより下は仮。 -->
-    <div class="card" role="button" tabindex="0" data-k="1" data-hash="svc">
+    <div class="card" role="button" tabindex="0" data-k="2" data-hash="svc">
       <span class="t">サービス</span>
       <span class="s">四本</span>
       <div class="panel">
@@ -521,25 +571,25 @@ html.boot .mark{opacity:1}
           <ul class="news">
             <li><button class="row" type="button" data-svc="01" aria-expanded="false"><span>01</span><b>人間中心の次世代業務システム開発</b></button>
               <div class="det" data-svc="01" hidden>
-                <p class="lead">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供</p>
+                <p class="lead">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>
                 <p>画面から作りません。まず、いまその仕事をしている人が何を見て何を決めているかを並べます。効率化だけを先に置くと、決めごとが人の頭の中に残ったまま、道具だけが新しくなります。</p>
               </div>
             </li>
             <li><button class="row" type="button" data-svc="02" aria-expanded="false"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></button>
               <div class="det" data-svc="02" hidden>
-                <p class="lead">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用したAI導入を支援</p>
+                <p class="lead">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>
                 <p>AI を入れる前に、何を決めるためのものかを決めます。「データがあるから使う」から始めると、出てきたものを誰も判断に使いません。決めたいことを一つに絞って、そこから逆に組みます。</p>
               </div>
             </li>
             <li><button class="row" type="button" data-svc="03" aria-expanded="false"><span>03</span><b>自律型・共創型の組織設計支援</b></button>
               <div class="det" data-svc="03" hidden>
-                <p class="lead">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現</p>
+                <p class="lead">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>
                 <p>誰が何を決めていいかを組み替えます。道具が変わると、仕事の分け方も変わります。道具だけ新しくして分け方を据え置くと、承認の列がそのまま残ります。</p>
               </div>
             </li>
             <li><button class="row" type="button" data-svc="04" aria-expanded="false"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></button>
               <div class="det" data-svc="04" hidden>
-                <p class="lead">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウドAIの導入支援</p>
+                <p class="lead">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>
                 <p>その場所で続けられる形にします。作って渡すのではなく、あとから自分たちで直せるものを置きます。直せないものは、作った側が離れた時点で止まります。</p>
               </div>
             </li>
@@ -550,7 +600,7 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <div class="card" role="button" tabindex="0" data-k="2">
+    <div class="card" role="button" tabindex="0" data-k="3">
       <span class="t">会社概要</span>
       <span class="s">六項目</span>
       <div class="panel">
@@ -572,7 +622,7 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <div class="card" role="button" tabindex="0" data-k="3">
+    <div class="card" role="button" tabindex="0" data-k="4">
       <span class="t">お問い合わせ</span>
       <span class="s">contact@alt-dsgn.co.jp</span>
       <div class="panel">
@@ -635,16 +685,6 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <!-- デモの口。**ここだけページに飛ぶ**（他のカードは開く）。
-         前は「見直してみる」だけで、**何を見直すのか・誰の話なのか・
-         押すと飛ぶのか**を何も言っていなかった（本人に指摘された）。
-         いまは「デモ」と言い、何のデモかを書き、→ で行き先があることを出す。 -->
-    <a class="card go" href="try.html" data-k="4">
-      <span class="t">デモを触る</span>
-      <span class="s">どこにもある課題管理表を、カードにして仕分けます（例）</span>
-      <span class="arw" aria-hidden="true">→</span>
-    </a>
-
     <!-- ここから下の2枚は、増えたときの並びを見るために置いてある。
          どちらも公式サイトに無いので、中身は書かない（空の箱を作らない）。
          5枚目は全幅、6枚目からは残りが分け合う。 -->
@@ -653,11 +693,19 @@ html.boot .mark{opacity:1}
          一行ずつのまま並べて、**一覧の高さを変えない。**中身はページ。 -->
     <div class="card" role="button" tabindex="0" data-k="5" data-hash="news">
       <span class="t">お知らせ</span>
-      <span class="s">五件（仮）</span>
+      <span class="s">公表分 一件</span>
       <div class="panel">
         <div class="bar"><h2>お知らせ</h2></div>
         <div class="body">
-          <p class="todo">並びを見るための<b>仮の中身</b>です。実際のお知らせではありません。</p>
+          <!-- **公表されている一件が落ちていた**（実サイトの頁頭に出ている
+               プレスリリース。実サイトと突き合わせて見つけた）。仮を五件並べておいて、
+               本物を出していなかった。**本物を上に、仮はその下に分けて置く。** -->
+          <p class="lb2">公表されているもの</p>
+          <ul class="news">
+            <li><a href="https://www.alt-dsgn.co.jp/assets/pdf/20251217_PressRelease.pdf" target="_blank" rel="noopener"><span>2025.12.17</span><b>DX推進支援を強化し、自治体・企業に向けたサービス提供を開始しました。</b></a></li>
+          </ul>
+
+          <p class="lb2">以下は並びを見るための<b>仮の中身</b>です</p>
           <ul class="news">
             <li><a href="news.html#2026-08-20"><span>2026.08.20</span><b>夏季休業のお知らせ</b></a></li>
             <li><a href="news.html#2026-06-02"><span>2026.06.02</span><b>オフィス移転のお知らせ</b></a></li>
@@ -691,6 +739,20 @@ html.boot .mark{opacity:1}
         <div class="body">
           <p class="addr">東京都港区西新橋3-23-5 ANYZ304<br>（御成門郵船ビル）</p>
 
+          <!-- 【アクセス】。**公式サイトは八駅ぶん出しているのに、こちらは落ちていた**
+               （実サイトと突き合わせて見つけた）。行くための頁なので、これは要る。
+               公式の並び（近い順）そのまま。 -->
+          <ul class="walk">
+            <li><b>御成門</b><span>徒歩2分</span><i>都営三田線</i></li>
+            <li><b>大門</b><span>徒歩10分</span><i>都営浅草線・大江戸線</i></li>
+            <li><b>神谷町</b><span>徒歩10分</span><i>東京メトロ日比谷線</i></li>
+            <li><b>汐留</b><span>徒歩12分</span><i>都営大江戸線・ゆりかもめ</i></li>
+            <li><b>虎ノ門ヒルズ</b><span>徒歩12分</span><i>東京メトロ日比谷線</i></li>
+            <li><b>虎ノ門</b><span>徒歩12分</span><i>東京メトロ銀座線</i></li>
+            <li><b>新橋</b><span>徒歩12分</span><i>JR山手線・京浜東北線</i></li>
+            <li><b>浜松町</b><span>徒歩14分</span><i>JR山手線・京浜東北線</i></li>
+          </ul>
+
           <!-- 地図。**動く地図（iframe）はやめた。**
                ・埋め込みは先方の UI が丸ごと入ってくる（操作ボタン・ロゴ・Cookie）。
                  触れるものがカード一種類、が最初に崩れるのがここになる
@@ -709,10 +771,24 @@ html.boot .mark{opacity:1}
                **開くまで読み込まない**（`data-src` を JS が `src` に移す）。
                閉じたままの人の browser から、よその server へ何も出て行かない。
 
-               座標は国土地理院の住所検索から（西新橋三丁目23番、35.661716 / 139.751343）。
-               **当てずっぽうで置いていない**——OpenStreetMap の検索では出なかった。 -->
+               座標は**公式サイトが自分で出しているもの**（会社概要に埋めてある地図の
+               中心、35.66178663 / 139.75020019 ＝ ANYZ）。ここが一番強い出どころ。
+
+               前は国土地理院の住所検索の街区点（西新橋三丁目23番、35.661716 / 139.751343）で、
+               **建物から 104m 東**だった。さらに縦のタイル計算を一枚ぶん間違えていて、
+               **印は約 270m 南東**を指していた（画面で印の下の座標を逆算して見つけた）。
+               直したので、逆算すると 35.661787 / 139.750200 に戻る。
+
+               ずらし幅の出し方（窓は 3 タイル×2 タイル、板は 4×3）：
+                 --l ＝ 50 −(X−tx0)×100/3 ％（left の％は窓の幅ぶん）
+                 --t ＝ 50 −(Y−ty0)×50 ％  （top の％は窓の高さぶん）
+               タイル 1px ＝ 0.970m（z17・この緯度）-->
           <div class="map">
-            <div class="sheet" style="--l:-13.7065%; --t:-0.9729%">
+            <div class="sheet" style="--l:0.1630%; --t:-49.3903%">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51620.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51620.png">
+              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51620.png">
+<img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51620.png">
               <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51621.png">
               <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51621.png">
               <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51621.png">
@@ -721,10 +797,6 @@ html.boot .mark{opacity:1}
               <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51622.png">
               <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51622.png">
 <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51622.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51623.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51623.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51623.png">
-<img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51623.png">
             </div>
             <span class="pin" aria-hidden="true"></span>
           </div>
@@ -740,6 +812,16 @@ html.boot .mark{opacity:1}
 
   </div>
 
+  <!-- デモの口。**箱の中から出して、社名と同じ幅の帯にした**（本人 2026-09-08：
+       「デモ、社名みたいな感じで横長にして箱の下に置くか」）。
+       箱に混ざっていると、**開くもの六枚の中に、飛ぶもの一枚**が同じ形で並んでいた。
+       形から違えてある（→ は行き先の印）。 -->
+  <a class="band" href="try.html" id="demo">
+    <span class="t">デモを触る</span>
+    <span class="s">どこにもある課題管理表を、カードにして仕分けます（例）</span>
+    <span class="arw" aria-hidden="true">→</span>
+  </a>
+
 </main>
 
 <!-- 中身が出る帯。**中身はカードの中に置いてあって、押されたときここへ移す**
@@ -754,9 +836,10 @@ html.boot .mark{opacity:1}
   <div class="in">
     <p class="fn">株式会社アルターデザインコンサルティング</p>
     <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
-    <p class="fc">© 2025 株式会社アルターデザインコンサルティング</p>
-    <p class="fw">これは案です。公式サイト（alt-dsgn.co.jp、2026年9月3日に確認）の言葉は、社名・事業の一行・サービスの題と一行・会社概要・お問い合わせ。サービスの詳細（題と一行より下）と「お知らせ」「見直してみる」は仮の中身で、「実績」は枠だけです。「所在」の地図は、公表されている所在地から出したもの（地理院タイル／国土地理院）。実装は AI（Claude）が行いました。<br>
-    数字キー 1〜7、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
+    <p class="fp"><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a></p>
+    <p class="fc">© 2025 Alter Design Consulting Co., Ltd.</p>
+    <p class="fw">これは案です。<b>公式サイト（alt-dsgn.co.jp、2026年9月8日に突き合わせ）の言葉</b>は、社名・事業の二行・企業理念の全文・サービスの題と一行・会社概要・アクセス・お知らせ一件・お問い合わせ・プライバシーポリシー。<b>仮の中身</b>はサービスの詳細（題と一行より下）と、お知らせの下五件と、デモ。「実績」は枠だけです。「所在」の地図は、公式サイトが出している座標から出したもの（地理院タイル／国土地理院）。実装は AI（Claude）が行いました。<br>
+    数字キー 1〜8、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
   </div>
 </footer>
 
@@ -1206,6 +1289,14 @@ html.boot .mark{opacity:1}
     c.addEventListener('click', function(){ press(c); show(c); });
   });
 
+  var band = document.getElementById('demo');
+  if (band){
+    band.addEventListener('pointerdown', function(){ band.classList.add('down'); });
+    ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+      document.addEventListener(ev, function(){ band.classList.remove('down'); });
+    });
+  }
+
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
     document.addEventListener(ev, function(){
       cards.forEach(function(c){ c.classList.remove('down'); });
@@ -1220,6 +1311,9 @@ html.boot .mark{opacity:1}
 
     var n = '123456789'.indexOf(e.key);
     if (n >= 0 && n < cards.length){ e.preventDefault(); cards[n].focus(); cards[n].click(); return; }
+    /* 箱の次の番はデモの帯。**箱から出したので、順番の最後に置く** */
+    var band = document.getElementById('demo');
+    if (n === cards.length && band){ e.preventDefault(); band.focus(); band.click(); return; }
 
     var i = cards.indexOf(document.activeElement);
     if (i < 0){ if (e.key.indexOf('Arrow') === 0){ e.preventDefault(); cards[0].focus(); } return; }
