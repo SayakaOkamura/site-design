@@ -275,7 +275,16 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .panel .hd2{padding:20px 22px 12px}
 .panel .hd2 h2{margin:0; font-size:15.5px; font-weight:700; line-height:1.5}
 .panel .hd2 .k{margin:5px 0 0; font-family:var(--mono); font-size:11px; color:var(--sub)}
-.panel .bd{padding:0 22px 22px}
+.panel .bd{padding:17px 22px 22px}
+
+/* ─ 手を置く場所。**帯の頭。**
+   窓 631px で三択が top 645px にいた——**毎回、押すためだけにスクロールが要った**
+   （本人 2026-09-08：「結局スクロールがいるからなあ」）。
+   下に置いていたのは「読み終わった位置に選択肢を」という前の決めごとだが、
+   **読まない人がそのまま押せる**ほうを取った（読むのは後ろで足りる）。
+   頭に上げたので、**帯がどれだけ長くても、窓がどれだけ低くても、押す場所は同じ高さ。** */
+.panel .act{padding:0 22px 17px; border-bottom:1px solid var(--frame)}
+.panel .act .rw{margin:0 0 13px}
 
 /* **AI の要約はここにだけ載る。**カードには推論を載せない（§2）——
    だから分担が画面に出る：**見抜くのは機械、決めるのは人。** */
@@ -287,7 +296,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
    要約・押した一行・三択の三つだけにした（簡単そうに見えるほうへ）*/
 .panel .who{margin:18px 0 0}
 .panel .who .lb{font-size:10.5px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
-.panel .who .rw{margin:5px 0 0; font-size:13.5px; font-weight:700; line-height:1.75}
+.panel .rw{margin:5px 0 0; font-size:13.5px; font-weight:700; line-height:1.75}
 /* **元の一行は等幅で薄く。**すり替えていないことが、ここで見える */
 /* 元はこう書かれていた。**まとめる前を全部並べる**（等幅・薄く）*/
 .panel .orl{list-style:none; margin:7px 0 0; padding:0; display:grid; gap:9px}
@@ -296,8 +305,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .panel .orl .tx{font-family:var(--mono); font-size:11.5px; line-height:1.7; color:var(--sub)}
 .panel .who .sr{margin:5px 0 0; font-family:var(--mono); font-size:11px; color:#96a0bd}
 .panel .made{display:block; margin-top:16px; font-size:11px; line-height:1.7; color:var(--sub)}
-/* 決めるのはここ。**読み終わった位置に選択肢がある** */
-.panel .btns{margin-top:20px}
+.panel .btns{margin:0}
 .btns{display:flex; gap:7px; flex-wrap:wrap}
 
 @media (max-width:900px){
@@ -800,20 +808,20 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       '<div class="panel">'
       + '<div class="hd2"><h2>' + esc(GROUPS[k].t) + '</h2>'
       +   '<p class="k">' + all.length + ' 枚 → ' + by_u(k) + ' 通り</p></div>'
-      + '<div class="bd">'
-      +   '<p class="sum"><b>AI の要約</b>' + esc(GROUPS[k].sum) + '</p>'
-      +   '<div class="who"><span class="lb">押したカード</span>'
-      +     '<p class="rw">' + esc(u.pt) + '</p>'
-      +   '</div>'
-      +   '<div class="who"><span class="lb">元はこう書かれていた（' + u.hits.length + ' か所）</span>'
-      +     '<ul class="orl">' + was2 + '</ul>'
-      +   '</div>'
-      +   '<span class="made">この一行と「' + esc(GROUPS[k].t) + '」という題は、どちらも生の文には書かれていません。この仕組みが付けたものです。</span>'
+      + '<div class="act">'
+      +   '<p class="rw">' + esc(u.pt) + '</p>'
       +   '<div class="btns">'
       +     '<button class="three" data-k="' + k + '" data-v="need">要る<em>1</em></button>'
       +     '<button class="three" data-k="' + k + '" data-v="drop">要らない<em>2</em></button>'
       +     '<button class="three" data-k="' + k + '" data-v="done">もうやった<em>3</em></button>'
       +   '</div>'
+      + '</div>'
+      + '<div class="bd">'
+      +   '<p class="sum"><b>AI の要約</b>' + esc(GROUPS[k].sum) + '</p>'
+      +   '<div class="who"><span class="lb">元はこう書かれていた（' + u.hits.length + ' か所）</span>'
+      +     '<ul class="orl">' + was2 + '</ul>'
+      +   '</div>'
+      +   '<span class="made">この一行と「' + esc(GROUPS[k].t) + '」という題は、どちらも生の文には書かれていません。この仕組みが付けたものです。</span>'
       + '</div></div>';
 
     btn.classList.add('sel');
