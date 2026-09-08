@@ -139,41 +139,44 @@ body{
 body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 
 /* ─ ③ ─────────────────────────────────────────────────
-   **段にする。**最初は 120 枚を一枚ずつ格子に並べた。本人 2026-09-08：
+   最初は 120 枚を一枚ずつ格子に並べた。本人 2026-09-08：
    「これパッと見てカード多！ってなっちゃうかも、並べ方の問題だと思う」。
    そのとおりで、**見えるものが 120 枚**になっていた。いま見えるのは **12 件**で、
-   カードはその中の量。**一段が一件。**（量は減らない。見え方が変わっただけ）
+   カードはその中の量。**一行が一件。**（量は減らない。見え方が変わっただけ）
 
    **押せるのは束だけ。**カードは 009 のまま（縮めない・作り替えない）。 */
 .bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 18px}
 .bar h1{margin:0; font-size:17px; font-weight:700}
 .bar .rest{font-size:12.5px; color:var(--sub)}
 
-/* **二列。**一列だと右に千px 空いて、束のわりに箱が大きく見えた（画面で見つけた）。
-   狭い窓では一列に落ちる。開いた束だけは二列ぶんに広がる——中のカードを詰めないため */
 /* **箱を捨てた。**束を白い箱に載せていたが、**画面にはカードと題だけあればいい。**
    十二色の印も捨てた——同じ件は**重なっている**し、題が言っている。色は何も足していなかった。
-   （本人 2026-09-08：「あとは捨てよう。拾えるものはついでに拾うくらいで」）*/
-.rows{list-style:none; margin:0; padding:0;
-      display:grid; grid-template-columns:repeat(auto-fill,minmax(500px,1fr));
-      gap:26px 20px}
+   （本人 2026-09-08：「あとは捨てよう。拾えるものはついでに拾うくらいで」）
+
+   **一列に戻して、行を大きくした。**二列にしたら一画面に八件出て、
+   本人 2026-09-08：「カード多いなあ。もう少しすっきり見せられない？
+   パッと見たタイトルが読みやすく変わってるとか、一画面上の項目量減らすとか」。
+   いまは**一画面に四件。題が先に読める大きさ**で左、束は右。
+   スクロールは許容されている——**減らすのは一画面の量で、件数ではない。** */
+/* 幅を絞る。980 だと題と束のあいだに 500px 空いて、**二つの列に見えた**（画面で見つけた）*/
+.rows{list-style:none; margin:0; padding:0; max-width:760px;
+      display:grid; grid-template-columns:1fr; gap:24px}
 .row{min-width:0}
-.row.on{grid-column:1 / -1}
 .row.gone{display:none}
 
-.line{display:flex; align-items:center; gap:20px; flex-wrap:wrap}
 .hd{
   -webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
-  cursor:pointer; padding:0; margin:0; text-align:left; flex:1 1 auto; min-width:0;
-  display:flex; align-items:center; gap:20px;
+  cursor:pointer; padding:0; margin:0; text-align:left; width:100%;
+  display:flex; align-items:center; justify-content:space-between; gap:32px;
 }
 .hd:focus-visible{outline:2px solid var(--go); outline-offset:8px; border-radius:6px}
 /* 箱が無いので、**手応えは束が持つ** */
 .hd:hover .face{transform:translateY(-3px); box-shadow:var(--lift3)}
 .face,.lay{transition:transform .16s var(--ease), box-shadow .16s ease}
-.hd .meta{min-width:0}
-.hd .t{display:block; font-size:15px; font-weight:700; line-height:1.5}
-.hd .n{display:block; margin-top:3px; font-family:var(--mono); font-size:11.5px; color:var(--sub)}
+/* **題が主役。**パッと見て読まれるのはここだけ、という前提で大きくする */
+.hd .meta{flex:1 1 auto; min-width:0}
+.hd .t{display:block; font-size:clamp(19px,2.1vw,25px); font-weight:700; line-height:1.45}
+.hd .n{display:block; margin-top:7px; font-family:var(--mono); font-size:12px; color:var(--sub)}
 .row.on .hd .t{color:var(--go)}
 
 /* ─ 束。**カードは変えない。**本人 2026-09-08：「カード自体は変えないで！そこが売りだから」。
@@ -199,7 +202,7 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
 
 /* 三択は**開いた段の頭に出る。**読み終わった位置に選択肢がある形
    （一覧の下にまとめて出す／他を畳んで貼りつける、はどちらも過去に外している）*/
-.btns{display:flex; gap:8px; flex-wrap:wrap}
+.btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px}
 .btns[hidden]{display:none}
 
 /* 開くと、その件のカードが**全部そのままの形で**下に出る。
@@ -507,18 +510,17 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
               + (i * 4) + 'px)"></span>';
       }
       var top = list[0];
-      return '<li class="row k' + k + '" data-k="' + k + '">'
-        + '<div class="line">'
+      return '<li class="row" data-k="' + k + '">'
         +   '<button class="hd" data-k="' + k + '">'
+        +     '<span class="meta">'
+        +       '<span class="t">' + esc(GROUPS[k].t) + '</span>'
+        +       '<span class="n">' + list.length + ' 枚</span>'
+        +     '</span>'
         +     '<span class="stack">' + back
         +       '<span class="face">'
         +         '<span class="r">' + esc(top.raw) + '</span>'
         +         '<span class="s">' + esc(top.src) + ' / ' + top.n + '</span>'
         +       '</span>'
-        +     '</span>'
-        +     '<span class="meta">'
-        +       '<span class="t">' + esc(GROUPS[k].t) + '</span>'
-        +       '<span class="n">' + list.length + ' 枚</span>'
         +     '</span>'
         +   '</button>'
         +   '<div class="btns" hidden>'
@@ -526,7 +528,6 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         +     '<button class="three" data-v="drop">要らない<em>2</em></button>'
         +     '<button class="three" data-v="done">もうやった<em>3</em></button>'
         +   '</div>'
-        + '</div>'
         + '<ul class="all" hidden>' + list.map(function(c){
             return '<li><span class="r">' + esc(c.raw) + '</span>'
                  + '<span class="s">' + esc(c.src) + ' / ' + c.n + '</span></li>';
