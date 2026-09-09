@@ -176,23 +176,21 @@ body.paneopen .wrap{max-width:1240px}
    押されたままの見た目なので、新しい印を足していない */
 .card.sel,.card.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
 
-/* ─ デモの口。**箱ではなく帯。**社名と同じ幅で、**顔のすぐ下・箱の上に一本。**
-   カードは開くもの、これは**飛ぶもの**。同じ形で並べていたので、
-   六枚の中に一枚だけ行き先の違うものが混ざっていた。
-   → は行き先の印（言葉で「クリックすると飛びます」とは書かない）*/
-.band{
-  display:flex; align-items:center; gap:22px; flex-wrap:wrap;
-  margin-top:16px; padding:14px 26px; border-radius:var(--r);
-  background:var(--go); color:#fff; text-decoration:none;
-  -webkit-user-select:none; user-select:none;
-  box-shadow:var(--lift1); transition:transform .16s var(--ease), box-shadow .16s ease;
-}
-.band .t{font-size:clamp(15px,1.8vw,17px); font-weight:700; line-height:1.4}
-.band .s{font-size:12px; font-weight:500; color:rgba(255,255,255,.72); line-height:1.6}
-.band .arw{margin-left:auto; font-size:16px; line-height:1; color:rgba(255,255,255,.8)}
-.band:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-.band.down{transform:translateY(2px); box-shadow:var(--lift0); transition-duration:.06s}
-.band:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
+/* ─ デモの口。**束の中の一枚。ただし飛ぶ。**
+   一度は帯にして箱から出した（2026-09-08）。理由は「開くもの六枚に、飛ぶもの一枚が
+   **同じ形で**混ざっていた」から——**白くて見分けがつかなかった。**
+   色と → が付いたので形は違う。だから束へ戻した（2026-09-09）。
+
+   **置き場は束の最後。**箱が 5 枚だと 3＋2 で右下が空くので、そこを埋める。
+   何も押しのけずに、一画面目に丸ごと入る（帯を上に置くと会社の顔に割り込んでいた）。
+
+   **代償は残っている。**束の約束は「押すと右に出る」で、この一枚だけ約束を破る。
+   緩めているのは色と → だけ（言葉で「飛びます」とは書かない）。 */
+.card.go{background:var(--go); color:#fff; position:relative}
+.card.go .s{color:rgba(255,255,255,.75); padding-right:34px}
+.card.go .arw{position:absolute; right:22px; bottom:24px;
+              font-size:16px; line-height:1; color:rgba(255,255,255,.85)}
+.card.go:focus-visible{outline-color:var(--ink)}
 
 /* ─ 右の帯。中身はここに出る ────────────────────────────────
    **カードは消えない。**中身が右へ出て、束が左へ寄るだけ。
@@ -533,20 +531,6 @@ html.boot .mark{opacity:1}
       <span class="sub2">コンサルティングによる業務設計からエンジニアリングまでを行います</span></p>
   </div>
 
-  <!-- デモの口。**箱ではなく帯。**会社の顔のすぐ下、箱の上に一本。
-       箱に混ざっていると、開くものの中に**飛ぶもの一枚**が同じ形で並んでいた。
-       形から違えてある（横長・色・→ が行き先の印）。
-
-       **箱の下から、ここへ上げた**（2026-09-09）。下に置くと、1280×575 の窓で
-       帯の頭が 626px＝**折り目（575px）の外**にいて、送らないと存在を知らない。
-       上げると帯が丸ごと入って、箱の一段目まで見える。
-       **細くしてある**（詰め 14px）ので、箱より軽い。顔 → 箱の主従は壊れない。 -->
-  <a class="band" href="try.html" id="demo">
-    <span class="t">デモを触る</span>
-    <span class="s">どこにもある課題管理表を、カードにして仕分けます（例）</span>
-    <span class="arw" aria-hidden="true">→</span>
-  </a>
-
   <div class="deck" id="deck">
 
     <!-- 企業理念。**公式サイトの navigation 四項目（企業理念／サービス／会社概要／
@@ -780,6 +764,16 @@ html.boot .mark{opacity:1}
         </div>
       </div>
     </div>
+
+    <!-- デモの口。**束の最後の一枚。**箱が 5 枚だと 3＋2 で右下が空くので、そこを埋める。
+         押しのけずに一画面目へ入る（帯にして上に置くと、会社の顔に割り込んでいた）。
+         **`div` ではなく `a`。**中身を抱えないので、押したら飛ぶ。
+         `show()` は `.panel` が無ければ素通りする。 -->
+    <a class="card go" href="try.html" id="demo" data-k="6">
+      <span class="t">デモを触る</span>
+      <span class="s">どこにもある課題管理表を、カードにして仕分けます（例）</span>
+      <span class="arw" aria-hidden="true">→</span>
+    </a>
 
   </div>
 
@@ -1252,14 +1246,6 @@ html.boot .mark{opacity:1}
     c.addEventListener('click', function(){ press(c); show(c, true); });
   });
 
-  var band = document.getElementById('demo');
-  if (band){
-    band.addEventListener('pointerdown', function(){ band.classList.add('down'); });
-    ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
-      document.addEventListener(ev, function(){ band.classList.remove('down'); });
-    });
-  }
-
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
     document.addEventListener(ev, function(){
       cards.forEach(function(c){ c.classList.remove('down'); });
@@ -1272,18 +1258,17 @@ html.boot .mark{opacity:1}
 
     if (e.key === 'Escape' && open){ e.preventDefault(); hide(); return; }
 
+    /* **デモは束に入ったので、番も並びも輪が面倒を見る**（6 番＝右下）。
+       帯だったころは輪の外に置いて、最後の番を別に付けていた（2026-09-09 に戻した） */
     var n = '123456789'.indexOf(e.key);
     if (n >= 0 && n < cards.length){ e.preventDefault(); cards[n].focus(); cards[n].click(); return; }
-    /* デモの帯は箱の次の番（5 枚のあと 6 番）。**帯が上に来ても、番は最後のまま。**
-       数字は箱の輪を歩くもので、1 を押していきなり別の頁へ飛ぶのは行き過ぎ。
-       Tab は見た目どおり帯から始まる（DOM の順） */
-    var band = document.getElementById('demo');
-    if (n === cards.length && band){ e.preventDefault(); band.focus(); band.click(); return; }
 
     var i = cards.indexOf(document.activeElement);
     if (i < 0){ if (e.key.indexOf('Arrow') === 0){ e.preventDefault(); cards[0].focus(); } return; }
 
-    /* カードは div（中に中身を抱えているため）。押す挙動は自前で用意する */
+    /* 箱は `div`（中に中身を抱えているため）。押す挙動は自前で用意する。
+       **デモだけ `a`** なので Enter は元から効くが、ここで止めて同じ道を通す
+       （空白キーも押すことにする——束の中では、どの一枚も同じ押し方でいい）*/
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); cards[i].click(); return; }
 
     var to = -1;
