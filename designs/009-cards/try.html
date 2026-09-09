@@ -51,7 +51,10 @@
   --sub:  #5c6288;
   --go:   #6354e0;
   --frame:#d8e5f1;
-  --face: linear-gradient(118deg, #b6e2f6 0%, #c2cdf8 50%, #d8c3f3 100%);
+  /* ④の面。**index の社名カードと同じ値**（2026-09-09）。
+     前はグラデーション（水色→紫）。**同じ名前の色が二つの意味になる**ので揃えた。
+     紫（--go）は「飛ぶ」の印なので、ここにも使わない */
+  --face: #251f45;
 
   --lift1: 0 1px 2px rgba(31,25,64,.07), 0 3px 8px rgba(31,25,64,.08);
   --lift2: 0 2px 4px rgba(31,25,64,.08), 0 10px 24px rgba(31,25,64,.12);
@@ -482,15 +485,15 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 
 .end{max-width:760px}
 .end .face{
-  background:var(--face); border-radius:var(--r); box-shadow:var(--lift2);
+  background:var(--face); color:#fff; border-radius:var(--r); box-shadow:var(--lift2);
   padding:40px 34px; animation:rise .6s var(--ease) both;
 }
 .end h2{margin:0; font-size:clamp(18px,2.6vw,26px); font-weight:700; line-height:1.5}
-.end .said{margin:18px 0 0; font-size:13.5px; line-height:2; color:rgba(37,31,69,.74)}
-.end .said b{color:var(--ink); font-size:15px}
+.end .said{margin:18px 0 0; font-size:13.5px; line-height:2; color:rgba(255,255,255,.78)}
+.end .said b{color:#fff; font-size:15px}
 /* 二つの手数を並べる。**同じ押すの重さが違う** */
 .end .cmp{display:block; margin-top:14px; padding-top:14px;
-          border-top:1px solid var(--frame); font-size:13px}
+          border-top:1px solid rgba(255,255,255,.22); font-size:13px}
 .end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
 
 .foot{flex:none; background:var(--frame)}
