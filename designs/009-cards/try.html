@@ -190,7 +190,11 @@ body{
    §「②はやらせない」は**外した**——見て諦めるのと、やって諦めるのは別のことだった。 */
 .pc{
   -webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
-  color:inherit; text-align:left; display:block; width:100%; padding:1px 3px;
+  color:inherit; text-align:left; display:block; width:100%;
+  /* **狙える高さにする**（2026-09-09。前は詰め 1px で 24px）。一件を追うと
+     **七回押す**ので、外すたびに別の件を消してしまう。詰めを 4px にして 30px。
+     **字と行間はそのまま**——山の密度は「量」の側なので落とさない */
+  padding:4px 3px;
   margin:0 -3px; border-radius:3px; cursor:pointer;
   white-space:nowrap; overflow:hidden;
   transition:opacity .2s ease, background-color .12s ease;
@@ -246,8 +250,8 @@ body{
 .ask2 .one{animation:rise .28s var(--ease) both}
 @keyframes rise{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
 
-/* ─ 一手。**行き先が言葉に出ている**（ジェットコースターにしない）─ */
 /* ─ 一手。**行き先が言葉に出ている** ─ */
+.one{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   margin-top:26px; padding:15px 26px; border-radius:8px;
   background:var(--go); color:#fff; font-size:14px; font-weight:700;
@@ -436,10 +440,14 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
   body.paneopen .pane{width:100%}
   .panel{position:static; width:100%; margin:18px 0 0; max-height:none}
 }
+/* **12 回押すものなので、大きくする**（2026-09-09。本人：「ボタン小さくてやりにくい」）。
+   前は 63×37。**一件につき一回、12 件ぶん押す**のに、指でも狙いが要る大きさだった。
+   いま 詰め 14/20・字 13.5px で **90×48 前後**（指の目安 44px を越える）。
+   **三つ並ぶので、幅は行の中に収まる。** */
 .three{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  padding:9px 13px; border-radius:7px; background:var(--card); color:var(--ink);
-  font-size:12px; font-weight:700; box-shadow:var(--lift1);
+  padding:14px 20px; border-radius:8px; background:var(--card); color:var(--ink);
+  font-size:13.5px; font-weight:700; box-shadow:var(--lift1);
   transition:transform .12s var(--ease), box-shadow .12s ease;
 }
 .three:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
