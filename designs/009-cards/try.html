@@ -705,14 +705,17 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 .pick3{
   -webkit-appearance:none; appearance:none; cursor:pointer; text-align:left;
   font-family:var(--mono); font-size:12.5px; font-weight:700;
-  padding:11px 13px; border-radius:2px; min-width:118px;
+  /* 番号は右端に置く。**float だと長い札で字にぶつかった**（「決める人がいない3」。
+     画面で見つけた）。並べて置いて、あいだを空ける */
+  display:flex; justify-content:space-between; align-items:baseline; gap:16px;
+  padding:11px 13px; border-radius:2px; min-width:150px;
   border:1px solid #b9c8dc; background:var(--card); color:var(--ink);
   transition:border-color .12s ease, background-color .12s ease;
 }
 .pick3:hover{border-color:var(--go); background:rgba(99,84,224,.07)}
 .pick3:active{background:rgba(99,84,224,.14)}
 .pick3:focus-visible{outline:2px solid var(--go); outline-offset:2px}
-.pick3 em{font-style:normal; float:right; color:var(--sub); font-weight:500}
+.pick3 em{font-style:normal; flex:none; color:var(--sub); font-weight:500}
 /* 待ちに回した行の印。**どう放したか**が三通りある */
 .work .held .mk{
   text-decoration:none; display:inline-block; margin-right:7px;
@@ -724,7 +727,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
    横並びなら、器が何段伸びても一手は上端から動かない。詰めだけ落とす */
 @media (max-width:620px){
   .work .card2{gap:12px}
-  .pick3{padding:10px 10px; min-width:96px; font-size:12px}
+  .pick3{padding:10px 10px; min-width:124px; font-size:12px; gap:10px}
   /* 狭い窓は蓋をやめて、**一手を必ず次の行に置く**（幅を狭めると問いの段が
      三行四行になる）。場所は最初から取ってあるので、出ても動かない。
      注記は二行になるので、二行ぶん取っておく */
@@ -1179,7 +1182,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        **どの向きに詰まるかを本人に選ばせる。**三つともゼロは動かない——
        変わるのは**穴の形**（深くなる／広がる／止まる）。
        読む必要はない。中身を読まずに向きだけ決めるのが、この場の実際の作法 */
-    var TRY = { now:0, later:0, ask:0 };
+    var TRY = { self:0, up:0, none:0 };
     var BACK = [];         /* 後にしたもの。三手あとに戻ってくる */
     var USED = {};         /* 出した鍵。同じものを続けて出さない */
     var KEYS = [];         /* 全部の鍵（件.行）*/
@@ -1321,7 +1324,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       + '<div class="ln rw">' + rawHTML(c) + '</div>'
       /* **番号の札をやめた。**`待ち 0192` は片付いて見えた——
          **手をつけて放したものが、生の形のまま下に溜まる。**薄いのは止まっている印 */
-      + (HELD.length ? '<div class="held"><span class="hh">手をつけたまま</span>'
+      + (HELD.length ? '<div class="held"><span class="hh">決まらないまま</span>'
           + HELD.slice(-3).reverse().map(function(h){
               /* **どう放したかを印で出す。**穴の形が人によって違うのが見える */
               return '<div class="hl rw"><u class="mk">' + h.mk + '</u>'
@@ -1330,51 +1333,50 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         + '</div>' : '')
       /* **三つとも同じ重さで置く。**どれかを目立たせると、また一択に戻る */
       + '</div><div class="go">'
-      +   '<button class="pick3" data-v="now">今やる<em>1</em></button>'
-      +   '<button class="pick3" data-v="later">後にする<em>2</em></button>'
-      +   '<button class="pick3" data-v="ask">人に聞く<em>3</em></button>'
+      +   '<button class="pick3" data-v="self">自分で決める<em>1</em></button>'
+      +   '<button class="pick3" data-v="up">上に上げる<em>2</em></button>'
+      +   '<button class="pick3" data-v="none">決める人がいない<em>3</em></button>'
       + '</div></div>';
     sayCount();
   }
 
-  /* ─ ②の三択 ───────────────────────────────
-     **どれを押しても、片付いた行はゼロのまま。**変わるのは**詰まり方**——
+  /* ─ ②の問いと三択 ─────────────────────────────
+     **問いは自分の側に向いている**（2026-09-09、本人：「選ぶって自分ごとに
+     するってことで、**選ぶって考えるってことなんだよ。自分はどうかって**。
+     カードの選択とか今の2の選択は、**処理であって選択じゃない**」）。
 
-       今やる  → 前提が欠けている。**その前提の件が割り込む**（深くなる）
-       後にする → 待ちへ。**新しく届いたものが前に来る**（広がる）。三手あとに戻ってくる
-       人に聞く → 待ちへ。**返事は来ない**（戻ってこない）。別の件が前に来る
+     前は「今やる／後にする／人に聞く」——**画面の中の一件をどう処理するか**で、
+     自分について何も考えないまま押せた。読んでいない一件の処理なので、
+     決めているものが無い。だから何回押しても押した人のものにならない。
 
-     前は「片付ける」の一択で、**押しても押した人によって何も変わらなかった**
-     （本人 2026-09-09：「今ただのクリック作業なんだよ」）。
-     **操作を重くしたのではない**（§「不快感を与える要素は操作性じゃない」）——
-     一手の重さは同じで、**選べるようにした**だけ。自分の選んだ穴が④で返る。
+     いまの問いは「**これ、あなたのところでは誰が決めますか**」。
+     正解が無く、画面のどこにも答えが書いていない。**自分の職場を見ないと答えられない。**
+     題材は全部「決まっていない話」なので、聞くことはこれしかない。
 
-     **中身は読まなくていい。**向きだけ決める——読まずに向きを決めるのが、
-     この場の実際の作法。読ませようとしたのは §「読む段で選ばせた」で外している */
-  var MKW2 = { now:'前提待ち', later:'後回し', ask:'返事待ち' };
+     **どれを答えても、片付いた行はゼロのまま。**変わるのは詰まり方——
 
-  /* 次に前へ出す鍵。**戻りが来ていればそれが先。**なければ向きなりに引く */
-  function nextKey(v){
-    if (BACK.length && BACK[0].at <= steps){
-      var back = BACK.shift();
-      return { key:back.key, why:'後にしたものが戻りました' };
+       自分で決める     → 決めようとすると**前提が欠けている**。その前提の件が割り込む（**深くなる**）
+       上に上げる       → 待ちへ。**返事は来ない**。三手あとに**決まらないまま戻ってくる**
+       決める人がいない → 待ちへ。**同じ話が別の出どころでまた届く**（**同じところを回る**）
+
+     **中身は読まなくていい**（§「中身は読まれない前提」）——読まずに
+     「うちだと誰が決めるか」を答えるのが、この場の実際の作法。
+     読ませて選ばせるのは §「読む段で選ばせた」で外している */
+  var MKW2 = { self:'前提がない', up:'返事待ち', none:'決める人なし' };
+
+  /* 同じ件の別の記録を前に出す（深くなる／回る向き）*/
+  function sameCase(why){
+    var mine = keyCard(NOW), g = mine && GROUPS[mine.k];
+    if (!g) return null;
+    var i0 = +NOW.split('.')[1];
+    for (var j = 1; j < g.raw.length; j++){
+      var i2 = (i0 + j) % g.raw.length;
+      if (i2 !== i0) return { key:mine.k + '.' + i2, why:why };
     }
-    if (v === 'now'){
-      var cut = CUT[NOW];
-      if (cut) return { key:cut.to, why:cut.why + '　これが先です' };
-      /* **鎖が切れていても、今やるは深くなる向きを守る。**
-         同じ件の別の記録を前に出す（後にする／人に聞くは別の件へ）*/
-      var mine = keyCard(NOW), g = mine && GROUPS[mine.k];
-      if (g){
-        var i0 = +NOW.split('.')[1];
-        for (var j = 1; j < g.raw.length; j++){
-          var i2 = (i0 + j) % g.raw.length;
-          if (i2 !== i0) return { key:mine.k + '.' + i2,
-                                  why:'同じ件に別の記録があります　これが先です' };
-        }
-      }
-    }
-    /* 後にする／人に聞く／鎖が切れたとき。**別の件から引く**（同じ件は続けない）*/
+    return null;
+  }
+  /* 別の件を前に出す（返事を待っているあいだに来るもの）*/
+  function otherCase(why){
     if (!KEYS.length) KEYS = allKeys();
     var here = keyCard(NOW), pool = [], i;
     for (i = 0; i < KEYS.length; i++){
@@ -1386,9 +1388,29 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (!pool.length){ USED = {}; pool = KEYS.slice(); }
     var pick = pool[Math.floor(rnd() * pool.length)];
     USED[pick] = 1;
-    return { key:pick, why:(v === 'ask' ? '返事待ちのまま、別の件です' : '新しく届きました') };
+    return { key:pick, why:why };
   }
 
+  /* 次に前へ出す鍵。**上に上げたものが戻っていればそれが先** */
+  function nextKey(v){
+    if (BACK.length && BACK[0].at <= steps){
+      var back = BACK.shift();
+      return { key:back.key, why:'上に上げたものが、決まらずに戻りました' };
+    }
+    if (v === 'self'){
+      /* 決めようとすると前提が欠けている。**鎖があればそこへ、無ければ同じ件の中へ** */
+      var cut = CUT[NOW];
+      if (cut) return { key:cut.to, why:cut.why + '　これが先です' };
+      var deep = sameCase('同じ件に別の記録があります　これが先です');
+      if (deep) return deep;
+    }
+    if (v === 'none'){
+      /* 誰も動かないので、**同じ話が別の出どころでまた出てくる** */
+      var loop = sameCase('同じ話が、別のところからまた来ました');
+      if (loop) return loop;
+    }
+    return otherCase(v === 'up' ? '返事はまだ来ません。別の件です' : '新しく届きました');
+  }
   document.addEventListener('click', function(e){
     var b = e.target.closest && e.target.closest('.pick3');
     if (!b || document.body.dataset.stage !== 'b') return;
@@ -1404,8 +1426,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     ADDED++;
     steps++;
     addRow(mine);                        /* 壁が一行増える */
-    /* **後にしたものは戻ってくる。**人に聞いたものは戻ってこない */
-    if (v === 'later') BACK.push({ key:was, at:steps + 3 });
+    /* **上に上げたものは、決まらないまま戻ってくる。**それ以外は戻らない */
+    if (v === 'up') BACK.push({ key:was, at:steps + 3 });
 
     var nx = nextKey(v);
     paintWork(nx.key, nx.why);
@@ -1424,12 +1446,19 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      **量は数字（402）と、連鎖が終わらないことで出す。** */
   function paintPile(){
     steps = 0; ADDED = 0; inSeen = {}; HELD = [];
-    TRY = { now:0, later:0, ask:0 }; BACK = []; USED = {}; KEYS = allKeys();
+    TRY = { self:0, up:0, none:0 }; BACK = []; USED = {}; KEYS = allKeys();
     /* **締めを出して、言い切る**（2026-09-09）。「〜てみてください」は誘いで、
        **やらされている感が出ない。**締めは材料にある
        （`pdf 締めは月末の翌 3 営業日までに行うこと。`）*/
     var ask = document.querySelector('.ask2 .ask');
-    if (ask && ask.firstChild) ask.firstChild.textContent = '締めは明後日です。順に片付けてください。';
+    /* **問いを自分の側に向ける**（2026-09-09、本人：「選ぶって自分ごとにする
+       ってことで、選ぶって考えるってことなんだよ。自分はどうかって。
+       カードの選択とか今の2の選択は、**処理であって選択じゃない**」）。
+       前は「順に片付けてください」——**画面の中のものについての操作**で、
+       自分について何も考えないまま押せた。
+       題材は全部「決まっていない話」なので、聞くことは一つしかない */
+    if (ask && ask.firstChild) ask.firstChild.textContent =
+      '締めは明後日です。これ、あなたのところでは誰が決めますか。';
     document.getElementById('hint').textContent = '';
     document.getElementById('go-c').classList.remove('on');
 
@@ -1855,9 +1884,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
           + esc(GROUPS[LAST].t) + '」</b>で止まっています。</span>' : '')
       /* **自分がどう詰まらせたかを返す**（2026-09-09）。②の三択は人によって
          混ざりが違う。**同じ 0 件でも、穴の形が違う**——それが自分ごとの行き先 */
-      + (steps ? '<span class="cmp">向きは<b>やってみた ' + TRY.now
-          + ' 回</b>・<b>後にした ' + TRY.later + ' 回</b>・<b>人に聞いた '
-          + TRY.ask + ' 回</b>。<b>片付いたのは 0 件</b>です。</span>' : '')
+      + (steps ? '<span class="cmp">誰が決めるかは<b>自分 ' + TRY.self
+          + ' 回</b>・<b>上 ' + TRY.up + ' 回</b>・<b>決める人がいない '
+          + TRY.none + ' 回</b>と答えました。<b>片付いたのは 0 件</b>です。</span>' : '')
       /* **②で一枚ずつ押した人には、その数を返す。**自分の手数と、まとめてからの手数。
          点数ではない（§5 で点数は足さないと決めている）——**同じ「押す」の重さが
          違うことを、自分の数字で見せる。**押していない人には出さない */
