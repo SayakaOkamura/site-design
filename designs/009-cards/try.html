@@ -561,96 +561,49 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 body[data-stage="a"] .st-a,
 body[data-stage="b"] .st-b,
 body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
-/* ─ 来たもの（②の上）───────────────────────────────────
-   **追っているあいだに降ってくる行。**二行まで。古いものから消える。
-   面を少し濃くして、連鎖（自分が開いたもの）と別のものだと分かるようにする */
-.inbox{list-style:none; margin:0 0 14px; padding:0; max-width:900px;
-       font-family:var(--mono); font-size:12.5px}
-.inbox li{
-  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
-  padding:7px 10px; margin-bottom:2px; border-radius:5px;
-  background:rgba(224,84,84,.10);
-  animation:rise .34s var(--ease) backwards;
+/* ─ 数の帯（②の頭）─────────────────────────────────────
+   **読まれない前提**なので、状況は数で言う（本人 2026-09-09：
+   「中身は読まれないと思った方がいいって」）。
+   **残りは減らない。待ちは増える。片付いたは 0 のまま。** */
+.tape{
+  display:flex; gap:26px; flex-wrap:wrap; margin:0 0 6px;
+  font-family:var(--mono); font-size:12px; color:var(--sub);
 }
-.inbox .now{color:#b4453f; font-weight:700; flex:none}
-.inbox .src{color:#98a2bd; flex:none; min-width:44px}
-.inbox .tx{flex:1 1 260px; min-width:0; color:rgba(37,31,69,.9)}
+.tape b{color:var(--ink); font-weight:700}
+.tape .up{color:#b4453f}
+.tape .wait b{color:#b4453f}
 
-/* ─ 絡まり（②の本体）───────────────────────────────────
-   **一つ追うと、別の件がついてくる。**押した行の下に一段、右へ寄って出る。
-   **スクロールされない前提**（本人 2026-09-09）——だから連鎖は**問いのすぐ下**に積む。
-   壁の中で開くと、押すたびに下へ伸びて画面から出ていく。
-
-   参照は**番号だけ。**何がどう関わっているかは書かない（起動画面の作法と同じ）。
-   **二つ出す**ので、どちらを追うかで道が変わる。**輪になっている**ので、
-   追い続けると戻ってくる（循環参照）。 */
-/* **幅は 900px まで。**全幅にすると参照が右端まで飛んで、行と参照が遠くなる */
-.chain{list-style:none; margin:0 0 26px; padding:0; max-width:900px;
-       font-family:var(--mono); font-size:12.5px}
-.chain li{
-  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
-  padding:7px 10px; margin-bottom:2px; border-radius:5px;
-  background:rgba(99,84,224,.07);
-  animation:rise .34s var(--ease) backwards;
+/* ─ いまの一件（②の本体）───────────────────────────────
+   **一枚だけ。位置は動かない。**押すと**別の件に差し替わる**——
+   順に進めたいのに、割り込まれる。
+   **積み上げない**（前は下へ伸びて画面から出ていった）。 */
+.work{max-width:760px; margin:0 0 26px}
+.work .card2{
+  background:var(--card); border-radius:10px; box-shadow:var(--lift2);
+  padding:22px 24px 20px; animation:rise .34s var(--ease) backwards;
+  /* **高さを固定する。**札の有無や待ちの折り返しで器が伸び縮みすると、
+     **一手の位置が動く**（一件目だけ上にいた。画面で見つけた）。
+     並びは上から詰めて、一手は下に貼る */
+  min-height:214px; display:flex; flex-direction:column;
 }
-.chain li.on{background:rgba(99,84,224,.16)}
-.chain .no{color:var(--go); font-weight:700; flex:none}
-.chain .src{color:#98a2bd; flex:none; min-width:44px}
-.chain .tx{flex:1 1 260px; min-width:0; color:rgba(37,31,69,.9)}
-/* 参照。**押せるのはここだけ。**行そのものは読むもの */
-.chain .ref{
-  -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  padding:6px 12px; border-radius:6px; flex:none;
-  background:var(--card); color:var(--go); font-weight:700;
-  box-shadow:var(--lift1); transition:transform .12s var(--ease), box-shadow .12s ease;
+.work .go{margin-top:auto}
+/* 割り込みの札。**なぜ先に来たかを一言だけ。**読まなくても色で分かる */
+.work .why{
+  display:inline-block; margin:0 0 12px; padding:5px 10px; border-radius:5px;
+  background:rgba(224,84,84,.13); color:#b4453f;
+  font-size:11.5px; font-weight:700; letter-spacing:.02em;
 }
-.chain .ref:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.chain .ref:active{transform:translateY(1px); box-shadow:var(--lift0)}
-.chain .ref:focus-visible{outline:2px solid var(--go); outline-offset:2px}
-.chain .ref.used{background:none; box-shadow:none; color:var(--sub); cursor:default}
-/* **もう出した行への道。**戻ってきたことが分かる印 */
-.chain .ref em{font-style:normal; color:#b4453f}
-.chain .tip{background:none; padding-left:0; color:var(--sub)}
-/* ─ 五行（もう使っていない。読む段は絡まりに置き換えた）───────
-   **五行を読める大きさで、ゆっくり出す。**
-   もとの設計にはあった段（NOTES：「① あるなあ｜生の一行が五つだけ。
-   読める大きさ、ゆっくり出る｜一手（これで、ぜんぶ？）」）。
-
-   **読むだけの段ではなくなった**（2026-09-09。本人：「二ページ目も特に、
-   何見せられてるのかって感じ」「一意でない操作をさせる必要がある」）。
-   **選ばせる。**選ぶには読むしかないので、読む動線は残る。
-   そして**選んだ一件が②③④まで付いてくる**——人によって残るものが違う。
-
-   **山の行と同じ形にはしない**（あちらは押して消すもの、これは選ぶもの）。 */
-.read{list-style:none; margin:0; padding:0; max-width:680px}
-.read li{
-  margin:0 0 20px; font-size:clamp(14px,1.9vw,16.5px); line-height:1.95;
-  animation:rise .62s var(--ease) backwards;
+.work .ln{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+          font-family:var(--mono); font-size:13.5px; line-height:1.7}
+.work .ln i{font-style:normal; color:#98a2bd; min-width:44px; flex:none}
+.work .ln span{flex:1 1 240px; min-width:0; color:var(--ink)}
+/* 待たされている件。**札だけ積む**（一行に収まる。数は帯が言う）*/
+.work .held{margin:16px 0 0; display:flex; gap:6px; flex-wrap:wrap}
+.work .held em{
+  font-style:normal; font-family:var(--mono); font-size:11px;
+  padding:4px 8px; border-radius:4px; background:var(--tint); color:var(--sub);
 }
-.read i{
-  display:inline-block; min-width:52px; margin-right:12px;
-  font-family:var(--mono); font-size:12px; font-style:normal;
-  color:var(--sub); vertical-align:baseline;
-}
-/* **押せる五行。**読むものであり、選ぶもの。
-   面は白いカード——**この案の押せるものはカード**なので、山の行とは形から違える。
-   選ぶと沈む（③のカードと同じ押し方）*/
-.read .rd{
-  -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  display:block; width:100%; text-align:left;
-  padding:16px 20px; border-radius:8px;
-  background:var(--card); color:inherit;
-  box-shadow:var(--lift1);
-  transition:transform .14s var(--ease), box-shadow .14s ease, background-color .14s ease;
-}
-.read .rd:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.read .rd:active{transform:translateY(1px); box-shadow:var(--lift0)}
-.read .rd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-/* 選んだ一枚。**沈んで、色が付く。**②③④まで付いてくる相手 */
-.read .rd.on,.read .rd.on:hover{
-  transform:translateY(1px); box-shadow:var(--lift0);
-  background:rgba(99,84,224,.12);
-}
+/* 一手の位置は上の `margin-top:auto` が下に貼る */
 
 @media (max-width:760px){ .pile{columns:1} }
 @media (max-width:560px){ .few li{font-size:13px} }
@@ -734,12 +687,16 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
          **同じ件のコピーではなく、別の件への連鎖。**
          参照は**番号だけ**——何がどう関わっているかは書かない（起動画面と同じ作法）。
          **二つ出すので、どちらを追うかで道が変わる**（一意でない操作）。 -->
-    <!-- **追っているあいだに、来る。**本人 2026-09-09：「やらなきゃいけないのに
-         **片付けさせられてる感がない**」。誰も催促してこないし、溜まりも増えなかった。
-         参照を一つ追うたび、ここに一行来る。**二行までしか出さない**——
-         連鎖の上で溜めると下へ伸びて画面から出る。**増えたことは数字が言う。** -->
-    <ul class="inbox" id="inbox"></ul>
-    <ol class="chain" id="chain"></ol>
+    <!-- **順に進めたいのに、邪魔される**（2026-09-09。本人：「さっき、
+         **順に進めていきたいのに邪魔する、からまる**ってはなししたよね。
+         そういう方向でできないの」）。
+
+         **数の帯・いまの一件・一手**の三つだけ。**積み上げない**（スクロールされない）。
+         **一手の位置は動かない**（前の形は押す場所が下へ進んでいって操作性が悪かった）。
+         **読まなくても分かる**——押すと**別の件に差し替わって、待ちが増える。**
+         デモは見せるもので、**操作は見続けてもらうための手綱**（本人）。 -->
+    <p class="tape" id="tape"></p>
+    <div class="work" id="work"></div>
     <!-- 壁。**量。押せない。**やることは上の連鎖のほうにある -->
     <ul class="pile" id="pile"></ul>
   </section>
@@ -1044,54 +1001,39 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     stage('b');            /* ②へ。**頭は五行だけ**で、選ぶと山が落ちてくる */
   }
 
-  /* ─ ②の本体 ── **絡まり。**一つ追うと、別の件がついてくる ───────
-     本人 2026-09-09：「400 もあったら**どれから片付けるって発想すらない**と思う。
-     一やろうとしたら他が絡まってついてきて、それといたら次…ってなるんじゃないかな。
-     **最初の方にパスタコードの話をしたのはそれ**」。
+    var steps = 0, LAST = 3, HELD = [], ADDED = 0, inSeen = {}, NOW = null;
 
-     **だから選ばせない。最初の一行はこちらが出す。**
-     押すのは**参照（→ 番号）**だけ。押すと、その先の一行が一段下に出る。
+  /* ─ 割り込みの組（2026-09-09）──────────────────────────
+     **順に進めたいのに、押すと別の件が先に来る。**
+     「これが先です」の中身は、**いま扱っている一件と食い違っているもの。**
+     材料はもとから入っている（前回と違う／別紙が無い／担当が決まっていない）。
 
-     **繋がりは「話題が近い」ではなく「食い違っている」で組む**（2026-09-09）。
-     本人：「**うわ～～～めんどくせ～～～～～～～と思わせたい**わけな。
-     **それが解消されるのがここの軸**じゃん」／
-     「**不快感を与える要素は操作性じゃないよ**」。
-
-     **前は話題で繋いでいた**（帳票 → 集計 → 検索）。追っても**別の行が出るだけ**で、
-     読んでも何も起きなかった。**不快を操作の重さで作ろうとしていた**——
-     七回押させる／押しても済まない／催促が降ってくる。**中身の話ではなかった。**
-
-     いまは**行と行**を繋ぐ。**行き先はどれも、いま読んだ行と食い違っている**か、
-     **決まっていない**か、**前提が無い**か、**戻ってくる**。
-
-       ・承認は部長で運用する → **（前回）承認は課長に変更、と記載あり**
-       ・権限の定義は別紙による → **別紙は添付されていない**
-       ・検索は 3 秒以内 → **※現状は満たしていない**
-       ・担当は次回決める → **※担当は都度確認**
-       ・重複の判定条件は定めていない → **ログの保管方針は定めていない**
-
-     **そして③がこれを解く。**AI の要約が「どちらが正かは、どこにも決まっていません」と
-     一行で言う。**②の痛みと③の要約が、同じ矛盾を指している。それが軸。**
-
-     鍵は `件.行`（GROUPS の添字）。**行き先は二つ。**
-     すでに出した行へ戻る道には ↺ を付ける（**戻ったことが分かる**）*/
-  var REF = {
-    '3.0': ['3.1','3.3'],
-    '3.1': ['3.2','3.3'],  '3.2': ['3.4','3.1'],  '3.3': ['3.2','2.2'],  '3.4': ['2.2','10.4'],
-    '2.2': ['2.1','3.4'],  '2.1': ['2.4','10.1'], '2.4': ['11.0','5.1'],
-    '0.1': ['0.4','1.1'],  '0.4': ['0.1','8.0'],
-    '1.1': ['1.2','0.1'],  '1.2': ['11.0','1.4'], '1.4': ['1.2','9.2'],
-    '4.1': ['4.3','9.0'],  '4.3': ['4.1','8.4'],
-    '5.1': ['5.3','2.4'],  '5.3': ['6.0','5.1'],
-    '6.0': ['6.1','5.3'],  '6.1': ['6.4','9.4'],  '6.4': ['6.1','0.4'],
-    '7.1': ['3.4','7.4'],  '7.4': ['7.1','8.4'],
-    '8.0': ['8.3','8.4'],  '8.3': ['8.0','0.1'],  '8.4': ['8.0','4.3'],
-    '9.0': ['9.2','9.4'],  '9.2': ['9.4','1.4'],  '9.4': ['6.1','9.0'],
-    '10.0': ['10.4','11.0'], '10.1': ['10.4','10.0'], '10.4': ['10.1','3.4'],
-    '11.0': ['11.1','11.3'], '11.1': ['11.0','8.3'], '11.3': ['11.0','1.2']
+     鍵は `件.行`（GROUPS の添字）。`why` は**一言だけ**——
+     **読まれない前提**なので、色と短い札で分かるようにする。 */
+  var CUT = {
+    '3.1': { to:'3.2', why:'前回と違います' },
+    '3.2': { to:'3.4', why:'決まっていません' },
+    '3.4': { to:'2.2', why:'決まっていません' },
+    '2.2': { to:'2.4', why:'前提がありません' },
+    '2.4': { to:'11.0', why:'古い記録です' },
+    '11.0': { to:'11.1', why:'また出ています' },
+    '11.1': { to:'8.3', why:'前回と違います' },
+    '8.3': { to:'0.1', why:'二つあります' },
+    '0.1': { to:'0.4', why:'また出ています' },
+    '0.4': { to:'8.0', why:'調査中のままです' },
+    '8.0': { to:'4.1', why:'満たしていません' },
+    '4.1': { to:'9.0', why:'決まっていません' },
+    '9.0': { to:'9.4', why:'決まっていません' },
+    '9.4': { to:'6.1', why:'決まっていません' },
+    '6.1': { to:'6.4', why:'また出ています' },
+    '6.4': { to:'5.1', why:'前提がありません' },
+    '5.1': { to:'5.3', why:'先送りされています' },
+    '5.3': { to:'10.4', why:'記録がありません' },
+    '10.4': { to:'10.1', why:'人がいません' },
+    '10.1': { to:'3.1', why:'また出ています' }   /* 一周して戻る */
   };
-  /* 鍵 → 山の中の一枚（項番と出どころを取るため）。
-     `pt` は言い方ごとに一つなので、それで引ける */
+
+  /* 鍵 → 山の中の一枚（項番と出どころを取る）。`pt` は言い方ごとに一つ */
   function keyCard(key){
     var p = key.split('.'), g = +p[0], i = +p[1];
     var pt = GROUPS[g].raw[i][2], hit = null;
@@ -1099,126 +1041,79 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (!hit) CARDS.some(function(c){ if (c.k === g && c.pt === pt){ hit = c; return true; } });
     return hit;
   }
-  var chainEl, chainSeen = {}, steps = 0, LAST = null;   /* LAST ＝ 最後に追いついた件 */
-  var ADDED = 0, inSeen = {}, chainU = {};   /* ADDED ＝ 追っているあいだに来た数 */
+  function no(c){ return ('000' + c.n).slice(-4); }
 
-  /* 頭の一行。**増えたら、増えたと言う。** */
+  /* 数の帯。**残りは減らない。待ちは増える。片付いたは 0 のまま。** */
   function sayCount(){
-    var el = document.getElementById('count');
+    var el = document.getElementById('tape');
     if (!el) return;
-    el.innerHTML = ADDED
-      ? CARDS.length + ' 枚 → <b>' + (CARDS.length + ADDED) + ' 枚</b>。'
-        + '追っているあいだに <b>' + ADDED + ' 件</b>来ました。'
-      : '<b>' + CARDS.length + ' 枚</b>、題は付いていません。関わりは番号だけです。';
+    el.innerHTML =
+      '<span>残り <b>' + (CARDS.length + ADDED) + ' 件</b>'
+      + (ADDED ? ' <span class="up">+' + ADDED + '</span>' : '') + '</span>'
+      + '<span class="wait">待たされている <b>' + HELD.length + ' 件</b></span>'
+      + '<span>片付いた <b>0 件</b></span>';
   }
 
-  /* **一件来る。**mail と chat だけ（あれは届くもの。議事録や手順書は届かない）。
-     出すのは二行まで——上で溜めると連鎖が下へ伸びて画面から出る。
-     **増えたことは数字が言う**（画面に積まない）*/
-  function incoming(){
-    var pick = null;
-    CARDS.some(function(c){
-      /* **連鎖に出ている言い方は避ける。**同じ文が上と下に並ぶと、
-         催促ではなく作りそこないに見えた（画面で見つけた）*/
-      if ((c.src === 'mail' || c.src === 'chat') && !inSeen[c.n]
-          && !chainSeen[c.n] && !chainU[c.u]){ pick = c; return true; }
-    });
-    if (!pick) return;
-    inSeen[pick.n] = 1; ADDED++;
-    var box = document.getElementById('inbox');
-    var li = document.createElement('li');
-    li.innerHTML = '<span class="now">いま来ました</span>'
-                 + '<span class="src">' + esc(pick.src) + '</span>'
-                 + '<span class="tx">' + esc(pick.raw) + '</span>';
-    box.insertBefore(li, box.firstChild);
-    while (box.children.length > 2) box.removeChild(box.lastChild);
+  /* いまの一件を出す。**位置は動かない。**カードごと差し替える */
+  function paintWork(key, why){
+    NOW = key;
+    var c = keyCard(key), el = document.getElementById('work');
+    if (!c || !el) return;
+    LAST = c.k;
+    el.innerHTML = '<div class="card2">'
+      + (why ? '<p class="why">' + esc(why) + '　これが先です</p>' : '')
+      + '<div class="ln"><i>' + esc(c.src) + '</i><span>' + esc(c.raw) + '</span></div>'
+      + (HELD.length ? '<div class="held">' + HELD.map(function(t){
+          return '<em>待ち ' + t + '</em>'; }).join('') + '</div>' : '')
+      + '<div class="go"><button class="one" id="fix">片付ける</button></div>'
+      + '</div>';
     sayCount();
   }
 
-  function no(c){ return ('000' + c.n).slice(-4); }
-
-  /* 一行足す。**行き先は二つ**（REF の組）。どちらを追うかで道が変わる。
-     **すでに出した行への道には ↺**——戻ってきたことが分かる */
-  var keySeen = {};
-  function chainAdd(key, depth){
-    var c = keyCard(key);
-    if (!c) return null;
-    keySeen[key] = 1; chainSeen[c.n] = 1; chainU[c.u] = 1;
-    var li = document.createElement('li');
-    li.style.marginLeft = Math.min(depth, 5) * 16 + 'px';
-    var refs = (REF[key] || []).map(function(t){
-      var tc = keyCard(t);
-      if (!tc) return '';
-      return '<button class="ref" data-k="' + t + '" data-d="' + (depth + 1) + '">→ '
-             + no(tc) + (keySeen[t] ? ' <em>↺</em>' : '') + '</button>';
-    }).join('');
-    li.innerHTML = '<span class="no">' + no(c) + '</span>'
-                 + '<span class="src">' + esc(c.src) + '</span>'
-                 + '<span class="tx">' + esc(c.raw) + '</span>' + refs;
-    li.dataset.k = key;
-    chainEl.appendChild(li);
-    return li;
-  }
-
-  /* 参照を押す。**押した先が出る。**押した参照は印だけ残して、もう押せない */
+  /* **押しても片付かない。**いまのは待ちに回って、食い違っている件が先に来る。
+     **一件来る**（追っているあいだに届いたもの）*/
   document.addEventListener('click', function(e){
-    var ref = e.target.closest && e.target.closest('.ref');
-    if (!ref || document.body.dataset.stage !== 'b' || ref.classList.contains('used')) return;
-    var tip = document.getElementById('c-tip'); if (tip) tip.remove();
-    ref.parentNode.querySelectorAll('.ref').forEach(function(x){ x.classList.add('used'); });
-    ref.parentNode.classList.remove('on');
-    var key = ref.dataset.k;
-    var li = chainAdd(key, +ref.dataset.d);
-    if (!li) return;
-    li.classList.add('on');
-    steps++; LAST = +key.split('.')[0];
-    /* **追うと、来る。**一手で一件、三手めからは二件（追えば追うほど増える）*/
-    /* **一手で一件だけ。**二件にしていたが、中身で効かせるので数で押さない */
-    incoming();
+    var b = e.target.closest && e.target.closest('#fix');
+    if (!b || document.body.dataset.stage !== 'b') return;
+    var cut = CUT[NOW];
+    if (!cut) return;
+    var mine = keyCard(NOW);
+    if (mine) HELD.push(no(mine));
+    while (HELD.length > 6) HELD.shift();
+    ADDED++;
+    steps++;
+    paintWork(cut.to, cut.why);
     var h = document.getElementById('hint');
-    /* **落ちは「終わらないのに増える」。**追った数と、来た数を並べる */
-    if (steps >= 3) h.textContent = '一件も終わっていないのに、' + ADDED + ' 件増えました。';
-    if (steps >= 3) offer('hand');
+    if (steps >= 3){
+      h.textContent = '一件も片付いていません。待ちが ' + HELD.length + ' 件になりました。';
+      offer('hand');
+    }
   });
+
   /* ─ ②の壁 ── **量。押せない。** ─────────────────────
      **やることは上の連鎖のほう。**壁は押す対象ではなく、背景。
      **スクロールされない前提**なので、壁は 402 行のうち 6〜7% しか出ない
      （二列 201 段 × 27px ＝ 5,400px。画面に出るのは 350px ぶん）。
      **量は数字（402）と、連鎖が終わらないことで出す。** */
   function paintPile(){
-    steps = 0; chainSeen = {}; chainU = {}; keySeen = {}; ADDED = 0; inSeen = {};
-    document.getElementById('inbox').innerHTML = '';
-    sayCount();
+    steps = 0; ADDED = 0; inSeen = {}; HELD = [];
     /* **締めを出して、言い切る**（2026-09-09）。「〜てみてください」は誘いで、
        **やらされている感が出ない。**締めは材料にある
        （`pdf 締めは月末の翌 3 営業日までに行うこと。`）*/
     var ask = document.querySelector('.ask2 .ask');
-    if (ask && ask.firstChild) ask.firstChild.textContent = '締めは明後日です。一件、片付けてください。';
+    if (ask && ask.firstChild) ask.firstChild.textContent = '締めは明後日です。順に片付けてください。';
     document.getElementById('hint').textContent = '';
     document.getElementById('go-c').hidden = true;
 
-    /* 壁。**button ではない。**押せるものは連鎖の参照だけ */
+    /* 壁。**button ではない。**押せるのは「片付ける」だけ */
     document.getElementById('pile').innerHTML = CARDS.map(function(c){
       return '<li class="pc" data-i="' + c.n + '"><i>' + esc(c.src) + '</i>' + esc(c.raw) + '</li>';
     }).join('');
 
-    /* 連鎖の一行目は**こちらが出す**（選ばせない）。
-       毎回同じところから始める——**種を固定した並びなので、話も毎回同じ** */
-    chainEl = document.getElementById('chain');
-    chainEl.innerHTML = '';
-    /* **始まりは「え、あれ課長承認でしたっけ」。**誰かの問い一つから始まって、
-       追うほど決まっていないところへ入っていく */
-    LAST = 3;
-    var li = chainAdd('3.0', 0);
-    if (li){
-      li.classList.add('on');
-      var tip = document.createElement('li');
-      tip.id = 'c-tip'; tip.className = 'tip';
-      tip.textContent = '→ を押すと、その先が出ます';
-      chainEl.appendChild(tip);
-    }
+    /* 一件目は**こちらが出す**（「どれから片付けるって発想すらない」ので）。
+       決めごとの一行から始まる——**押すと、前回と違う記録が先に来る。** */
+    paintWork('3.1', '');
   }
-
 
   /* ─ まとまる ── **②から③へ渡る一瞬。**402 が 12 になるところを見せる ───
      手順は四つ。
@@ -1631,18 +1526,17 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
          人によってここに出る題も枚数も違う。**自分が選んだものが最後に戻ってくる。** */
       /* **追った先の件名を返す**（2026-09-09。前は「最初に選んだ一行」）。
          **どこまで絡んだかは人によって違う**——一意でない操作の行き先 */
-      + (steps ? '<span class="cmp">たどり着いたのは <b>「'
-          + esc(GROUPS[LAST].t) + '」</b>でした。'
-          + (ADDED ? '追っているあいだに <b>' + ADDED + ' 件</b>来ています。' : '')
-          + '</span>' : '')
+      /* **待たされた件数を返す**（2026-09-09。前は「たどり着いた先」）。
+         **順に片付けようとして、一件も終わらなかった**のがそのまま数字になる */
+      + (steps ? '<span class="cmp">順に片付けようとして、<b>'
+          + steps + ' 件</b>が待ちに回りました。最後は <b>「'
+          + esc(GROUPS[LAST].t) + '」</b>で止まっています。</span>' : '')
       /* **②で一枚ずつ押した人には、その数を返す。**自分の手数と、まとめてからの手数。
          点数ではない（§5 で点数は足さないと決めている）——**同じ「押す」の重さが
          違うことを、自分の数字で見せる。**押していない人には出さない */
-      /* **絡まりを追った人には、その数を返す**（2026-09-09。前は「押した枚数」）。
-         追った先はどれも終わっていない。まとめてからは一手で一件 */
-      + (steps ? '<span class="cmp">絡まりを追ったのは <b>' + (steps + 1)
-          + ' 件</b>。どれも終わっていません。まとめてからは <b>' + done
-          + ' 手</b>でした。</span>' : '');
+      /* **まとめてからの手数と並べる。**同じ「押す」の重さが違う */
+      + (steps ? '<span class="cmp">まとめてからは <b>' + done
+          + ' 手</b>で ' + done + ' 件が決まりました。</span>' : '');
   }
 
   /* ─ 段 ───────────────────────────────────────────── */
@@ -1655,8 +1549,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        前は一番上のカード。**選択が③でも続いていることを、開く場所で言う** */
     if (s === 'c'){
       paintRows();
-      /* **最後に追いついた件から開く**（2026-09-09。前は「選んだ件」）。
-         絡まりを追った先が、そのまま③の入口になる */
+      /* **最後に止まっていた件から開く**（2026-09-09）。
+         ②で待たされていたものが、そのまま③の入口になる */
       var f = (LAST !== null && rowsEl.querySelector('.cd[data-k="' + LAST + '"]'))
               || rowsEl.querySelector('.cd');
       if (f){ f.focus(); sel = +f.dataset.k; }
