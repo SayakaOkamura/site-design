@@ -67,6 +67,13 @@
   --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,
           "Liberation Mono","Courier New",monospace;
 
+  /* ②の山だけが使う字面。**出どころごとに字面が違う**のが「揃っていない」の芯。
+     ゴシック（メール・チャット・議事録）／明朝（文書・PDF）／等幅（表）。
+     **意匠は借りない**——製品の色や記号は使わない。字面と作法だけ */
+  --sans: "Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",
+          system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mincho: "Hiragino Mincho ProN","Yu Mincho","YuMincho","MS PMincho",serif;
+
   --r: 10px;
   --ease: cubic-bezier(.2,.7,.3,1);
   --snap: cubic-bezier(.16,1,.3,1);
@@ -156,6 +163,52 @@ body{
   columns:2; column-gap:40px;
 }
 .pile li{break-inside:avoid}
+
+/* ─ 揃っていない（②の要）─────────────────────────────────
+   **書式も形態も何もかも揃っていないのが前段階であるべき**（2026-09-09、本人：
+   「その時点でカードになってたら別に必要ない。**変化が大きいほど手ごたえになる**」）。
+
+   前は 402 行を**同じ一行の形**に流し込んで揃えていた。**揃えたら③が要らなくなる。**
+   出どころごとに、**字面・大きさ・幅・枠・頭の印**を変える。
+
+   **意匠は借りない**（§「製品の UI は真似しない」）——
+   借りるのは作法だけ（件名がある／セルに番地がある／箇条書きに中点がある）。
+   Excel の緑や Outlook の青は使わない。**この案の色のまま形だけ崩す。** */
+/* **形は変えるが、密度は落とさない。**明朝の行間を 2.05 → 1.8、余白も詰めた
+   （2026-09-09、画面で見つけた）。広げると「息が抜ける」——②は抜かせない側。
+   揃っていないのは**字面・大きさ・幅・枠・頭の印**で足りている。 */
+
+/* 出どころごとの形。**山（.pile）でも、いまの一件（.work .ln）でも同じ形。**
+   同じ字が同じ形で出ないと「揃っていない」が嘘になるので、共通の `.rw` に付ける */
+.rw .m{                        /* mail：件名が上に付く。左に細い縦線。ゴシック */
+  font-family:var(--sans); font-size:12.5px; line-height:1.7;
+  border-left:2px solid #cdd8ea; padding-left:10px; margin:5px 0;
+}
+.rw .m b{display:block; font-size:11px; font-weight:700; color:var(--sub); letter-spacing:.02em}
+.rw .c{                        /* chat：小さく、寄る。薄い。話し言葉 */
+  font-family:var(--sans); font-size:12px; line-height:1.55;
+  margin:3px 0 3px 20px; color:rgba(37,31,69,.66);
+}
+.rw .g{                        /* 議事録：中点始まり。字は本文と同じゴシック */
+  font-family:var(--sans); font-size:12.5px; line-height:1.7; margin:3px 0 3px 4px;
+}
+.rw .d{                        /* docx：明朝のべた書き。行間が広い。一番大きい */
+  font-family:var(--mincho); font-size:14px; line-height:1.8; margin:6px 0;
+}
+.rw .p{                        /* pdf：細い枠に閉じた明朝。小さい */
+  font-family:var(--mincho); font-size:11.5px; line-height:1.6; margin:6px 0;
+  border:1px solid #d5deec; padding:4px 9px; border-radius:2px;
+}
+.rw .x{                        /* xlsx：セル。番地が付く。等幅 */
+  display:flex; gap:0; margin:2px 0;
+  font-family:var(--mono); font-size:11px; line-height:1.5;
+}
+.rw .x u{
+  text-decoration:none; flex:none; min-width:78px; padding:2px 6px;
+  border:1px solid #d5deec; border-right:0; background:var(--tint); color:var(--sub);
+}
+.rw .x s{text-decoration:none; flex:1 1 auto; min-width:0; padding:2px 8px; border:1px solid #d5deec}
+
 /* ─ まとまる動き（②→③のあいだ）─────────────────────────
    **落差そのものが画面に無かった**（2026-09-09。押すと即③で、
    402 が 12 になる瞬間だけ切り替えで飛んでいた）。
@@ -169,20 +222,34 @@ body{
    動かすのは**見えている行だけ。**402 行ぜんぶに transform を掛けると、
    三段組の再計算で固まる。外の行は見えないので、その場で消す。 */
 .pile.gather{pointer-events:none}
-.pile.gather li{transition:transform .82s var(--snap), opacity .5s ease}
-.pile.gather li.out{opacity:0}
-.pile.gather li.keep .pc{background:rgba(99,84,224,.14); border-radius:4px;
-                         transition:opacity .18s ease, font-size .18s ease}
-/* **題が付く一拍。**寄るのはコードの仕事、**題を付けるのは AI の仕事。**
-   二つを続けて見せる（2026-09-09。前は寄るところだけ見せて、
-   **題が付く瞬間は切り替えの中に残っていた**）。
-   一行ずつ 35ms ずらすが、**一つの波に見える幅**にしてある——
-   機械は一回で全部やるので、12 回の出来事に見せない */
-.pile.gather li.keep.fade .pc{opacity:0}
-.pile.gather li.keep.titled .pc{
-  font-family:inherit; font-size:13.5px; font-weight:700;
-  color:var(--ink); background:rgba(99,84,224,.10);
+/* **12 行が着く先が、帯と一件の器と重なっていた**（2026-09-09、画面で見つけた）。
+   着く先は画面の真ん中なので、②の器を引く。**枠は動かさない**——透くだけ */
+body.gathering .ask2, body.gathering .tape, body.gathering .work{
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
 }
+.pile.gather li{transition:transform .82s var(--snap), opacity .5s ease}
+/* 窓の外の行。**その場で消えるだけ**（見えていないので動かさない）*/
+.pile.gather li.out{opacity:0}
+/* 窓の中の行。**消えるのを遅らせる**——全部いっぺんに透くと、寄るところが
+   一つも見えないまま題だけ出た（画面で見つけた）。着いてから消える */
+.pile.gather li.fly{
+  opacity:0;
+  transition:transform .82s var(--snap), opacity .38s ease .40s;
+}
+/* **着地点は 12 個。**壁の行を着地点にしていたころは、窓に入る行の数で
+   件数が変わった（4〜7 になった。画面で数えた）。いまは 12 の点を先に置く。
+   **枠は動かない**——固定の面に題が浮くだけ。送りも寄り引きもしない */
+.fold{position:fixed; inset:0; z-index:5; pointer-events:none}
+/* 題。**ここで初めて字面が揃う**——明朝・等幅・箇条書きが、同じ一つの書式になる。
+   ③のカードの題と同じ字。**これが「まとまった」の中身** */
+.ft{
+  position:absolute; opacity:0; transform:translateY(7px);
+  font-family:var(--sans); font-size:13.5px; font-weight:700; line-height:1.5;
+  color:var(--ink); background:rgba(99,84,224,.10);
+  border-radius:4px; padding:4px 10px; white-space:nowrap;
+  transition:opacity .26s ease, transform .26s var(--ease);
+}
+.ft.on{opacity:1; transform:none}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
 /* ─ **押せる。**ここが「判子を押す前」。
    本人 2026-09-08：「ただ押すだけになる。その前の話」。
@@ -578,25 +645,38 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
    順に進めたいのに、割り込まれる。
    **積み上げない**（前は下へ伸びて画面から出ていった）。 */
 .work{max-width:760px; margin:0 0 26px}
+/* いまの一件の器。**面ではない**（2026-09-09、本人：「これはカードでは？？？
+   見やすいし」→「その時点でカードになってたら別に必要ない。変化が大きいほど
+   手ごたえになる」）。前は白い面＋影で、②の中でここだけ整っていた。
+   **地の上の一段**にする——上下の細い線だけで場所を示す。丸みも影も持たない。
+   高さの固定（下）は残す：一手の位置が動かないため */
 .work .card2{
-  background:var(--card); border-radius:10px; box-shadow:var(--lift2);
-  padding:22px 24px 20px; animation:rise .34s var(--ease) backwards;
-  /* **高さを固定する。**札の有無や待ちの折り返しで器が伸び縮みすると、
-     **一手の位置が動く**（一件目だけ上にいた。画面で見つけた）。
-     並びは上から詰めて、一手は下に貼る */
-  min-height:214px; display:flex; flex-direction:column;
+  background:transparent; border-radius:0; box-shadow:none;
+  border-top:1px solid var(--frame); border-bottom:1px solid var(--frame);
+  padding:18px 2px 16px; animation:rise .34s var(--ease) backwards;
+  /* **一手を右に置く**（2026-09-09）。前は高さを 214px に固定して一手を下に
+     貼っていた。位置は動かないが、短い一件のときに中央が空く。
+     横に並べれば、器は中身なりの高さで済み、**上端からの位置は変わらない** */
+  display:flex; align-items:flex-start; gap:24px;
 }
-.work .go{margin-top:auto}
+.work .bd{flex:1 1 auto; min-width:0}
+.work .go{flex:none; margin:0}
+.work .one{margin-top:0}   /* 一件の一行と頭を揃える */
+/* 狭いと縦に折れる。**折れたら位置が動く**ので、そのときだけ高さを固定する */
+@media (max-width:620px){
+  .work .card2{display:block; min-height:232px; position:relative}
+  .work .go{position:absolute; left:2px; bottom:16px}
+}
 /* 割り込みの札。**なぜ先に来たかを一言だけ。**読まなくても色で分かる */
 .work .why{
   display:inline-block; margin:0 0 12px; padding:5px 10px; border-radius:5px;
   background:rgba(224,84,84,.13); color:#b4453f;
   font-size:11.5px; font-weight:700; letter-spacing:.02em;
 }
-.work .ln{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
-          font-family:var(--mono); font-size:13.5px; line-height:1.7}
-.work .ln i{font-style:normal; color:#98a2bd; min-width:44px; flex:none}
-.work .ln span{flex:1 1 240px; min-width:0; color:var(--ink)}
+/* いまの一件も**その出どころの形のまま**。ここで整えたら③が要らなくなる。
+   器は形を持たない——横並びも等幅も外して、中の `.rw` に任せる */
+.work .ln{min-width:0}
+.work .ln>*{margin-top:0}
 /* 待たされている件。**札だけ積む**（一行に収まる。数は帯が言う）*/
 .work .held{margin:16px 0 0; display:flex; gap:6px; flex-wrap:wrap}
 .work .held em{
@@ -698,7 +778,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     <p class="tape" id="tape"></p>
     <div class="work" id="work"></div>
     <!-- 壁。**量。押せない。**やることは上の連鎖のほうにある -->
-    <ul class="pile" id="pile"></ul>
+    <ul class="pile rw" id="pile"></ul>
   </section>
 
   <!-- ③ 快。**塊で押せる。**見抜くのは機械、決めるのは人 -->
@@ -1043,6 +1123,27 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   }
   function no(c){ return ('000' + c.n).slice(-4); }
 
+  /* ─ 生の一行を、**その出どころの形のまま**出す ───────────────────
+     ②は「ごちゃごちゃしてて書式も形態も何もかも揃っていない」のが前段階
+     （本人 2026-09-09）。ここでカードになっていたら、③でまとまる意味がない。
+     **変化が大きいほど手ごたえになる。**
+     借りるのは**作法だけ**——メールは件名が上に付く、議事録は中点で始まる、
+     表はセルに番地が付く。**意匠は借りない**（表計算の緑やメールの青は使わない）。 */
+  var SUBJ = ['件名：ご連絡','件名：確認のお願い','件名：Re: ご連絡'];
+  function cell(c){
+    var col = 'BCDEFGH'.charAt(c.n % 7), row = 2 + (c.n * 7) % 400;
+    return 'Sheet' + (1 + c.n % 3) + '!' + col + row;
+  }
+  function rawHTML(c){
+    var t = esc(c.raw);
+    if (c.src === 'mail')   return '<div class="m"><b>' + SUBJ[c.n % 3] + '</b>' + t + '</div>';
+    if (c.src === 'chat')   return '<div class="c">' + t + '</div>';
+    if (c.src === '議事録') return '<div class="g">' + t + '</div>';
+    if (c.src === 'pdf')    return '<div class="p">' + t + '</div>';
+    if (c.src === 'xlsx')   return '<div class="x"><u>' + cell(c) + '</u><s>' + t + '</s></div>';
+    return '<div class="d">' + t + '</div>';   /* docx：べた書き */
+  }
+
   /* 数の帯。**残りは減らない。待ちは増える。片付いたは 0 のまま。** */
   function sayCount(){
     var el = document.getElementById('tape');
@@ -1060,12 +1161,18 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var c = keyCard(key), el = document.getElementById('work');
     if (!c || !el) return;
     LAST = c.k;
-    el.innerHTML = '<div class="card2">'
+    /* **一手は右に置く。**下に貼っていたときは、器の高さを 232px に固定して
+       いないと位置が動いた。固定すると、短い一件のときに 90px の空きが
+       中央にできる——**空きは落ち着いて見えるので、②とは逆を向く**（画面で数えた）。
+       右に出すと、器は中身の高さで済み、押す場所は上端から動かない */
+    el.innerHTML = '<div class="card2"><div class="bd">'
       + (why ? '<p class="why">' + esc(why) + '　これが先です</p>' : '')
-      + '<div class="ln"><i>' + esc(c.src) + '</i><span>' + esc(c.raw) + '</span></div>'
+      /* いまの一件も**その出どころの形**で出す。押すたびに形が変わる——
+         **揃っていないことが、ここでも起きる** */
+      + '<div class="ln rw">' + rawHTML(c) + '</div>'
       + (HELD.length ? '<div class="held">' + HELD.map(function(t){
           return '<em>待ち ' + t + '</em>'; }).join('') + '</div>' : '')
-      + '<div class="go"><button class="one" id="fix">片付ける</button></div>'
+      + '</div><div class="go"><button class="one" id="fix">片付ける</button></div>'
       + '</div>';
     sayCount();
   }
@@ -1107,7 +1214,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
     /* 壁。**button ではない。**押せるのは「片付ける」だけ */
     document.getElementById('pile').innerHTML = CARDS.map(function(c){
-      return '<li class="pc" data-i="' + c.n + '"><i>' + esc(c.src) + '</i>' + esc(c.raw) + '</li>';
+      return '<li class="pc" data-i="' + c.n + '">' + rawHTML(c) + '</li>';
     }).join('');
 
     /* 一件目は**こちらが出す**（「どれから片付けるって発想すらない」ので）。
@@ -1130,77 +1237,69 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var tip = document.getElementById('tip'); if (tip) tip.remove();
     document.getElementById('go-c').hidden = true;   /* 動いているあいだに二度押させない */
 
-    var vh = innerHeight, lis = [].slice.call(pile.querySelectorAll('li'));
-    var head = {}, keep = [], x0 = 1e9;
+    /* **着地点は 12。**前は「見えている行のうち件ごとの一番上」を着地点にしていた。
+       出どころごとの形にしたら行が高くなり、**窓に入る行が減って着地点が 4〜7 に
+       落ちた**（画面で数えた）。402 が 12 になる画面で 4 しか出ないのは嘘になる。
+       いまは 12 の点を先に置いて、**見えている行はそこへ寄って消える。**
+       件の数は窓の高さで変わらない。 */
+    var vh = innerHeight, gap = 34, n = GROUPS.length,
+        top = Math.max(96, (vh - n * gap) / 2),
+        x0  = pile.getBoundingClientRect().left;
 
-    lis.forEach(function(li){
-      if (!li.classList.contains('pc')) return;   /* 壁の行だけ。**li そのものが .pc** */
-      var r = li.getBoundingClientRect();
-      li._r = r;
-      li._k = CARDS[+li.dataset.i - 1].k;
-      li._vis = r.top > 70 && r.bottom < vh - 30 && r.width > 0;
-      if (li._vis && head[li._k] === undefined){
-        head[li._k] = li; keep.push(li);
-        if (r.left < x0) x0 = r.left;
-      }
+    var fold = document.createElement('div');
+    fold.className = 'fold';
+    GROUPS.forEach(function(g, k){
+      var d = document.createElement('div');
+      d.className = 'ft';
+      d.textContent = g.t;                       /* 生の一行 → 題 */
+      d.style.left = x0 + 'px';
+      d.style.top  = (top + k * gap) + 'px';
+      fold.appendChild(d);
     });
-
-    /* 件の順に並べる（③の一覧と同じ順。**着いた先で並びが変わらない**）*/
-    keep.sort(function(a, b){ return a._k - b._k; });
-
-    var n = Math.max(1, keep.length),
-        top = Math.max(96, (vh - n * 34) / 2),
-        gap = Math.min(34, (vh - top - 40) / n);
+    document.body.appendChild(fold);
 
     pile.classList.add('gather');
+    /* ②の器を引く。**12 行の着く先と重なっていた** */
+    document.body.classList.add('gathering');
     /* 一度描かせてから動かす（クラスと transform を同じ枠で入れると効かない）*/
     void pile.offsetWidth;
 
+    /* **動かすのは見えている行だけ。**402 行に transform を掛けると、
+       二段組の再計算で固まる。外の行は見えないので、その場で消す */
+    var lis = [].slice.call(pile.querySelectorAll('li.pc'));
     lis.forEach(function(li){
-      if (!li._r) return;
-      if (head[li._k] === li){
-        var i = keep.indexOf(li);
-        li.classList.add('keep');
-        li.style.transform = 'translate(' + (x0 - li._r.left) + 'px,'
-                           + (top + i * gap - li._r.top) + 'px)';
-        return;
+      var r = li.getBoundingClientRect();
+      if (r.width <= 0 || r.top < 70 || r.bottom > vh - 20){
+        li.classList.add('out'); return;   /* 見えていない行はその場で消す */
       }
-      li.classList.add('out');
-      var h = head[li._k];
-      if (li._vis && h){                       /* 見えている行だけ、寄せてから消す */
-        li.style.transform = 'translate(' + (h._r.left - li._r.left) + 'px,'
-                           + (h._r.top - li._r.top) + 'px)';
-      }
+      li.classList.add('fly');
+      var k = CARDS[+li.dataset.i - 1].k;
+      li.style.transform = 'translate(' + (x0 - r.left) + 'px,'
+                         + (top + k * gap - r.top) + 'px)';
     });
 
-    /* **寄りきってから、題が付く。**ここが二つ目の仕事——
-       **寄せるのはコード、題を付けるのは AI。**続けて見せると、
-       どちらが何をしたかが順番で分かる（言葉で説明していない）。
+    /* **寄りきってから、題が付く。**寄せるのはコード、題を付けるのは AI。
+       続けて見せると、どちらが何をしたかが順番で分かる（言葉で説明していない）。
        一行ずつ 35ms ずらすのは**一つの波に見せる**ため（12 回の出来事にしない）。
 
        **timer は全部覚えて、片付けで止める。**タブが前に出ていないと
        setTimeout が 1 秒刻みに丸められて、**片付けのあとに題が付いた**
-       （画面で見つけた。段が③になっているのに `titled` が残っていた）*/
-    var ts = [];
+       （画面で見つけた） */
+    var ts = [], fts = [].slice.call(fold.children);
     ts.push(setTimeout(function(){
-      keep.forEach(function(li, i){
-        ts.push(setTimeout(function(){
-          li.classList.add('fade');
-          ts.push(setTimeout(function(){
-            li.textContent = GROUPS[li._k].t;        /* 生の一行 → 題 */
-            li.classList.remove('fade');
-            li.classList.add('titled');
-          }, 180));
-        }, i * 35));
+      fts.forEach(function(d, i){
+        ts.push(setTimeout(function(){ d.classList.add('on'); }, i * 35));
       });
-    }, 840));
+    }, 700));
 
     ts.push(setTimeout(function(){
       ts.forEach(clearTimeout);
+      fold.remove();
       pile.classList.remove('gather');
+      document.body.classList.remove('gathering');
       lis.forEach(function(li){
         li.style.transform = '';
-        li.classList.remove('out','keep','fade','titled');
+        li.classList.remove('out','fly');
       });
       stage('c');                                        /* ここで一覧が組み直される */
     }, 1880));
