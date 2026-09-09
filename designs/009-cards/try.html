@@ -152,6 +152,21 @@ body{
   columns:3; column-gap:32px;
 }
 .pile li{break-inside:avoid}
+/* ─ まとまる動き（②→③のあいだ）─────────────────────────
+   **落差そのものが画面に無かった**（2026-09-09。押すと即③で、
+   402 が 12 になる瞬間だけ切り替えで飛んでいた）。
+   入口のカードに「402 行が 12 件になります」と書いているのに、
+   **その一瞬をデモが見せていない**のは筋が通らない。
+
+   **行き先は動きの最後に画面に出ている**（12 行が残る）ので、
+   「ジェットコースターにしない」＝**動きの行き先が画面に出ているか**は満たしている。
+
+   動かすのは**見えている行だけ。**402 行ぜんぶに transform を掛けると、
+   三段組の再計算で固まる。外の行は見えないので、その場で消す。 */
+.pile.gather{pointer-events:none}
+.pile.gather li{transition:transform .82s var(--snap), opacity .5s ease}
+.pile.gather li.out{opacity:0}
+.pile.gather li.keep .pc{background:rgba(99,84,224,.14); border-radius:4px}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
 /* ─ **押せる。**ここが「判子を押す前」。
    本人 2026-09-08：「ただ押すだけになる。その前の話」。
@@ -992,6 +1007,72 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     document.querySelectorAll('#pile .pc.seen').forEach(function(x){ x.classList.remove('seen'); });
   }
 
+
+  /* ─ まとまる ── **②から③へ渡る一瞬。**402 が 12 になるところを見せる ───
+     手順は四つ。
+       1. 見えている行から、**件ごとに一番上の一枚**を選ぶ（＝残る 12 行）
+       2. 残らない行は、**自分の件の残る一枚へ寄って**消える
+       3. 残る 12 行は、**左の柱に等間隔**で並び直す（③の一覧の位置に近づける）
+       4. 少し置いてから③へ
+     **見えていない行は動かさない**——三段組で 402 行に transform を掛けると固まる。
+     見えないので、その場で消えれば足りる。 */
+  function gather(){
+    var pile = document.getElementById('pile');
+    if (slow || !pile){ stage('c'); return; }
+
+    var tip = document.getElementById('tip'); if (tip) tip.remove();
+    document.getElementById('go-c').hidden = true;   /* 動いているあいだに二度押させない */
+
+    var vh = innerHeight, lis = [].slice.call(pile.querySelectorAll('li'));
+    var head = {}, keep = [], x0 = 1e9;
+
+    lis.forEach(function(li){
+      var b = li.querySelector('.pc'); if (!b) return;
+      var r = li.getBoundingClientRect();
+      li._r = r;
+      li._k = CARDS[+b.dataset.i].k;
+      li._vis = r.top > 70 && r.bottom < vh - 30 && r.width > 0;
+      if (li._vis && head[li._k] === undefined){
+        head[li._k] = li; keep.push(li);
+        if (r.left < x0) x0 = r.left;
+      }
+    });
+
+    /* 件の順に並べる（③の一覧と同じ順。**着いた先で並びが変わらない**）*/
+    keep.sort(function(a, b){ return a._k - b._k; });
+
+    var n = Math.max(1, keep.length),
+        top = Math.max(96, (vh - n * 34) / 2),
+        gap = Math.min(34, (vh - top - 40) / n);
+
+    pile.classList.add('gather');
+    /* 一度描かせてから動かす（クラスと transform を同じ枠で入れると効かない）*/
+    void pile.offsetWidth;
+
+    lis.forEach(function(li){
+      if (!li._r) return;
+      if (head[li._k] === li){
+        var i = keep.indexOf(li);
+        li.classList.add('keep');
+        li.style.transform = 'translate(' + (x0 - li._r.left) + 'px,'
+                           + (top + i * gap - li._r.top) + 'px)';
+        return;
+      }
+      li.classList.add('out');
+      var h = head[li._k];
+      if (li._vis && h){                       /* 見えている行だけ、寄せてから消す */
+        li.style.transform = 'translate(' + (h._r.left - li._r.left) + 'px,'
+                           + (h._r.top - li._r.top) + 'px)';
+      }
+    });
+
+    setTimeout(function(){
+      pile.classList.remove('gather');
+      lis.forEach(function(li){ li.style.transform = ''; li.classList.remove('out','keep'); });
+      stage('c');
+    }, 1180);
+  }
+
   /* 行き先を出す。**押してみたか、山の底まで見たか。**
      どちらでも一度出たら、もう隠さない */
   function offer(why){
@@ -1361,7 +1442,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   start();
 
   document.getElementById('go-b').addEventListener('click', function(){ stage('b'); });
-  document.getElementById('go-c').addEventListener('click', function(){ stage('c'); });
+  document.getElementById('go-c').addEventListener('click', gather);
   /* **途中で④へ。**帯を片付けてから移る（全部さばいた道と同じ順。
      残したまま移ると、戻ったとき中身が二枚になる）*/
   document.getElementById('go-d').addEventListener('click', function(){
@@ -1413,7 +1494,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       var a = document.activeElement;
       if (a && a.classList && a.classList.contains('pc')) return;
       if (document.getElementById('go-c').hidden) return;   /* 出ていない行き先へは飛ばさない */
-      e.preventDefault(); stage('c'); return;
+      e.preventDefault(); gather(); return;
     }
     if (s === 'c'){
       /* 焦点のあるカードの件に効く。**マウスが無くても 12 手で通せる** */
