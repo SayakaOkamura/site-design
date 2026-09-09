@@ -248,6 +248,9 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
    両方外れていて、帯が一覧のいちばん上に置かれていた。 */
 .bar{display:flex; align-items:baseline; gap:20px; flex-wrap:wrap; margin:0 0 22px}
 .bar h1{margin:0; font-size:17px; font-weight:700}
+/* 見出しの隣に立つ一手（③の「ここまでで見る」）。**`.one` の上の空きは
+   ②で問いの下に置くための 26px** なので、行に並べるときだけ外す */
+.bar .one{margin-top:0; padding:11px 20px}
 
 /* **align-items は stretch。**flex-start だと帯の外枠が中身の高さに縮んで、
    中の position:sticky が**動ける幅を持たない**（貼りつく余地がゼロ）。
@@ -560,6 +563,15 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   <section class="st st-c">
     <div class="bar">
       <h1 id="c-h1"></h1>
+      <!-- **三件さばいたら出る行き先。**②の「同じ件をまとめる」と同じ作法
+           （②は三枚押したら出る。`offer('hand')`）。**塞がない**——
+           押さなければ 12 件そのまま続く。量は減らしていない。
+
+           **無いと④に着けなかった。**④が出る条件は `leftRows <= 0` だけで、
+           12 件を全部さばくまで出ない。機械の最速（読む時間ゼロ）で③だけ 33〜38 秒、
+           押す回数は通しで 25 回前後。本人 2026-09-08：
+           「これ多分最後の画面までたどり着く人ほぼいないよ」——測ったら、そのとおりだった。 -->
+      <button class="one" id="go-d" hidden>ここまでで見る</button>
     </div>
 
     <!-- 置き場。**分けた先が、最初から空で見えている。**ボタンではないので
@@ -589,6 +601,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         <p class="said" id="said"></p>
       </div>
       <div class="again">
+        <!-- **途中で来た人だけに出る。**一覧は組み直さないので、
+             押した跡（抜けた件・置き場の数）はそのまま残っている。
+             これが無いと「ここまでで見る」が一方通行の扉になる -->
+        <button class="one" id="go-back" hidden>続きを仕分ける</button>
         <button class="one" id="again">もう一度</button>
         <a class="one" href="index.html" style="text-decoration:none">会社のページを見る</a>
       </div>
@@ -874,6 +890,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     }
   }
 
+
+  /* ③の行き先。**一度出たら、もう隠さない**（②の `offer` と同じ） */
+  function offerEnd(){
+    var b = document.getElementById('go-d');
+    if (!b || !b.hidden) return;
+    b.hidden = false;
+  }
+
   /* 山の底まで送ったら、それも「当たった」。**押さない人を塞がない** */
   addEventListener('scroll', function(){
     if (document.body.dataset.stage !== 'b') return;
@@ -915,6 +939,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   function paintRows(){
     rowsEl = document.getElementById('rows');
     paneEl = document.getElementById('pane');
+    /* **やり直したら行き先も引っ込める**（②の `paintPile` が go-c を隠すのと同じ）*/
+    var gd = document.getElementById('go-d'); if (gd) gd.hidden = true;
     var by = GROUPS.map(function(){ return { u:[], n:0 }; });
     UNITS.forEach(function(u){ by[u.k].u.push(u); });
     CARDS.forEach(function(c){ by[c.k].n++; });
@@ -1107,6 +1133,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     leftRows--; sel = null;
     drawRest();
 
+    /* **三件さばいたら行き先を出す。**②の `offer('hand')` と同じ数字。
+       残りが 0 なら出さない——そのときは自分で最後まで着く */
+    if (GROUPS.length - leftRows >= 3 && leftRows > 0) offerEnd();
+
     /* **押す → 印が乗る → 束が抜ける。**三段に分けた。
        前は押した瞬間に抜けていたので、**押した跡を見る間が無かった**
        （本人 2026-09-08：「ハンコ押し要素がないんよ」）。
@@ -1157,22 +1187,40 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
   /* ─ ④ ── **仕分けの答えを出す。**ここが押した意味。
      「決めた 120 枚」は何も言っていなかったので捨てた。
-     言うのは**やることが何件になったか**——それが仕分けの見返り。 */
+     言うのは**やることが何件になったか**——それが仕分けの見返り。
+
+     **途中で来た人にも同じ形で返す**（2026-09-09）。数字を全部さばいた体で
+     出すと嘘になるので、**残りを先に言ってから**同じ三行を出す。
+     手数も**実際に押した数**で言う（12 手と決め打ちしていた）。 */
   function paintEnd(){
     var el = document.getElementById('said');
     if (!el) return;
+    var done = GROUPS.length - leftRows;          /* さばいた件数 */
+    var half = leftRows > 0;
     var rest = [];
     if (tally.drop) rest.push('要らない ' + tally.drop + ' 件');
     if (tally.done) rest.push('もうやった ' + tally.done + ' 件');
+
+    /* **戻り道は、途中で来た人にだけ。**最後まで行った人には出す先が無い */
+    var back = document.getElementById('go-back');
+    if (back) back.hidden = !half;
+
+    /* **途中の人に「やることは N 件」は言わない。**あれは全部さばいた答えで、
+       途中で出すと「3 件を決めた／やることは 3 件」と同じ数字が二度出て、
+       意味の違う数字がぶつかる（画面で見つけた）。
+       途中に返すのは**枚が件になったこと**——それが落差そのもの。 */
     el.innerHTML =
-      CARDS.length + ' 枚ありました。<b>やることは ' + tally.need + ' 件</b>です。<br>'
-      + (rest.length ? esc(rest.join('・')) + '。' : '')
-      + '減らしたのではなく、形を変えただけです。'
+      (half
+        ? '<b>' + CARDS.length + ' 枚が ' + GROUPS.length + ' 件</b>になりました。<br>'
+            + 'ここまでで ' + done + ' 件を決めています。'
+        : CARDS.length + ' 枚ありました。<b>やることは ' + tally.need + ' 件</b>です。'
+            + (rest.length ? esc(rest.join('・')) + '。' : ''))
+      + '<br>減らしたのではなく、形を変えただけです。'
       /* **②で一枚ずつ押した人には、その数を返す。**自分の手数と、まとめてからの手数。
          点数ではない（§5 で点数は足さないと決めている）——**同じ「押す」の重さが
          違うことを、自分の数字で見せる。**押していない人には出さない */
       + (handled ? '<span class="cmp">山を一枚ずつ押したのは <b>' + handled
-          + ' 枚</b>。まとめてからは <b>' + GROUPS.length + ' 手</b>でした。</span>' : '');
+          + ' 枚</b>。まとめてからは <b>' + done + ' 手</b>でした。</span>' : '');
   }
   /* ─ 段 ───────────────────────────────────────────── */
   function stage(s){
@@ -1192,6 +1240,19 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   start();
 
   document.getElementById('go-c').addEventListener('click', function(){ stage('c'); });
+  /* **途中で④へ。**帯を片付けてから移る（全部さばいた道と同じ順。
+     残したまま移ると、戻ったとき中身が二枚になる）*/
+  document.getElementById('go-d').addEventListener('click', function(){
+    paneEl.innerHTML = ''; document.body.classList.remove('paneopen'); open = null;
+    stage('d');
+  });
+  /* **続きへ戻る。**`stage('c')` は使わない——あれは `paintRows()` で
+     一覧を組み直すので、押した跡（抜けた件）が消える。段だけ切り替える */
+  document.getElementById('go-back').addEventListener('click', function(){
+    document.body.dataset.stage = 'c'; scrollTo(0, 0);
+    var f = rowsEl.querySelector('.grp:not(.gone) .cd');
+    if (f){ f.focus(); sel = +f.dataset.k; }
+  });
   document.getElementById('again').addEventListener('click', function(){
     start(); scrollTo(0, 0);
   });
