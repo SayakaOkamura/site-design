@@ -667,28 +667,39 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   display:flex; align-items:flex-start; gap:24px;
 }
 .work .bd{flex:1 1 auto; min-width:0}
-/* 一手。**書いてあることは毎回違う**（行き先の名前）**が、押す場所は動かない。**
-   幅と高さを固定してある——字の長さでボタンが伸びると押す場所が動く。
-   形は③の三択（丸い・ゴシック・カードの上）と分けた。②はまだ形の付いて
-   いない世界なので、**角は立てて、字は等幅** */
-.work .go{flex:none; margin:0}
-.one2{
-  -webkit-appearance:none; appearance:none; cursor:pointer; text-align:left;
-  font-family:var(--mono); font-size:12.5px; font-weight:700; line-height:1.4;
-  display:flex; align-items:center;
-  width:186px; height:52px; padding:10px 14px; border-radius:2px;   /* 高さも固定 */
-  border:1px solid #b9c8dc; background:var(--card); color:var(--ink);
-  transition:border-color .12s ease, background-color .12s ease;
+.work .go{display:none}   /* 一手のボタンは無くなった */
+/* ─ 突ける語 ─────────────────────────────────────
+   **触れるものはこれだけ。**点線の下線がその印。
+   固定の場所に「次へ」を置くと、何が書いてあっても作業になる
+   （2026-09-09、本人：「もう少し作業感なくしたい」）。
+   突く場所は毎回違うが、**目が見ているのは同じ一行**なので追いかけずに済む。
+   語は文の一部なので、字面（明朝・等幅・箇条書き）はその行のものを継ぐ */
+.tap{
+  -webkit-appearance:none; appearance:none; cursor:pointer;
+  border:0; background:none; font:inherit; color:inherit;
+  /* **文の中に居させる。**button の既定（inline-block）だと行の中で浮く。
+     下線は border ではなく text-decoration——**border は字ではなく em 枠の下**に
+     引かれるので、和字だと 8px 下に離れた（画面で見つけた）*/
+  display:inline; vertical-align:baseline; line-height:inherit;
+  padding:0; margin:0;
+  text-decoration:underline dashed #7c92ba;
+  text-decoration-thickness:1px; text-underline-offset:3px;
 }
-.one2:hover{border-color:var(--go); background:rgba(99,84,224,.07)}
-.one2:active{background:rgba(99,84,224,.14)}
-.one2:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+.tap:hover{background:rgba(99,84,224,.15); text-decoration-color:var(--go)}
+.tap:focus-visible{outline:2px solid var(--go); outline-offset:1px}
+/* **行き止まりでは、触れるものが壁に移る。**言葉は増やさない——
+   壁ぜんぶに薄い地が敷かれて、触れる面がそちらに移ったことだけを言う
+   （402 行に点線を引いたら、壊れた画面に見えた。画面で見つけた）*/
+/* **濃さが入れ替わる。**行き止まった一行は退き、壁が前に出る——
+   言葉を足さずに「ここは終わり／あっちが生きている」を言う */
+body.stuck .work .ln{opacity:.45}
+body.stuck .pile .pc{cursor:pointer; background:rgba(99,84,224,.055)}
+body.stuck .pile .pc:hover{background:rgba(99,84,224,.16)}
 /* 狭い窓でも**横並びのまま。**前は縦に折って高さ 232px 固定＋一手を下に貼って
    いたが、待ちが溜まると器が 232px を超えて**一手が下へ逃げた**（2026-09-09）。
    横並びなら、器が何段伸びても一手は上端から動かない。詰めだけ落とす */
 @media (max-width:620px){
   .work .card2{gap:12px}
-  .one2{width:132px; height:56px; padding:9px 10px; font-size:12px}   /* 二行になる幅なので高さを取る */
   /* 狭い窓は蓋をやめて、**一手を必ず次の行に置く**（幅を狭めると問いの段が
      三行四行になる）。場所は最初から取ってあるので、出ても動かない。
      注記は二行になるので、二行ぶん取っておく */
@@ -1136,50 +1147,94 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        押すと次の材料が出てくる。数えない。説明しない。
        辿った先にまた別のものがあって、**最後に「無い」で終わる。** */
     var LAST = 3, steps = 0, dead = 0;
-    var ti = 0, si = 0, atEnd = false;   /* いまの道／何歩目／行き止まりにいるか */
+    var NOW = '3.0', stuck = false;      /* いま前にある一行／突ける語が無いか */
     var WALKED = [];                     /* 見に行った先。生のまま溜まる（印は付けない）*/
-  /* ─ 辿る道（2026-09-09）─────────────────────────────
-     **一歩ごとに、材料が次の場所を指している。**指しているものを見に行くと、
-     また別の場所を指している。最後は**探しているものが無い**で終わる。
+  /* ─ 突ける語（2026-09-09）───────────────────────────
+     **作業感の正体は、同じ場所のボタンを押し続けること。**
+     行き先の名前が書いてあっても、押す場所が固定なら「次へ」でしかない
+     （本人：「これをもう少し作業感なくしたい」）。
 
-     こちらは何も説明しない。**「無い」と言っているのは材料のほう**——
-     「別紙は添付されていない。」「※担当は都度確認」「原因調査中。」
-     一行ごとの鍵は `件.行`（GROUPS の添字）。ボタンの言葉は**行き先の名前**で、
-     こちらの語彙（片付ける／まとめる）ではない。 */
-  var TRAIL = [
-    /* 承認は誰がするのか → 権限の別紙が無い */
-    { steps:[ ['3.0', '議事録を見る'],
-              ['3.1', '前回の議事録を見る'],
-              ['3.2', 'どちらが最新か確かめる'],
-              ['3.3', '担当を確かめる'],
-              ['3.4', '権限の一覧を見る'] ], end:'2.4' },
-    /* 添付が開けない → もとの帳票 → 原因は調査中のまま */
-    { steps:[ ['7.2', '手順書を見る'],
-              ['7.1', '担当を確かめる'],
-              ['7.3', 'もとの連絡を見る'],
-              ['7.0', 'その帳票を見る'],
-              ['0.1', 'どちらが正か確かめる'] ], end:'0.4' },
-    /* 取り込みで止まる → 手順の別紙が無い */
-    { steps:[ ['5.2', '記録を見る'],
-              ['5.3', '整理した条件を見る'],
-              ['5.4', '手順書を見る'],
-              ['5.0', 'エラー時の手順を見る'] ], end:'5.1' },
-    /* 引き継ぎ → 経緯が書かれていない */
-    { steps:[ ['10.1', '引き継ぎ書を見る'],
-              ['10.0', 'その書面を見る'],
-              ['10.3', '記録を探す'],
-              ['10.2', '経緯を見る'] ], end:'10.4' },
-    /* 手順書 → 新しい版が無い */
-    { steps:[ ['11.2', '手順書を見る'],
-              ['11.0', '更新の記録を見る'],
-              ['11.3', '最新の版を見る'],
-              ['11.4', '別の版を探す'] ], end:'11.1' },
-    /* ログ → 保管方針を定めていない */
-    { steps:[ ['9.1', '方針を見る'],
-              ['9.0', '決めた記録を見る'],
-              ['9.2', '次回の記録を見る'],
-              ['9.3', '保管方針を見る'] ], end:'9.4' }
-  ];
+     **突くのは、文の中の曖昧な語のほう。**
+     「要確認」「調査中」「次回決める」「都度確認」「別紙」「前任者」「未定」——
+     **決まっていないことが、語になって 材料の中に立っている。**
+     突くと、それが決まっているはずの場所へ行く。行った先にまた曖昧な語がある。
+     最後は**探しているものが無い**で終わる。
+
+     これで三つ変わる：
+       ・押す場所が毎回違う（文の中なので、目は同じ一行を見ている）
+       ・**読まないと突けない**——「あるある」は読んだときに来る
+       ・語が二つある行は**分かれ道**。次に何が起きるかが決まっていない
+
+     `[語, 行き先の鍵]`。語は**その行の文に必ず含まれている**（下の verify で確かめた）*/
+  var TAP = {
+    /* 帳票の桁 */
+    '0.3': [['また', '0.2']],
+    '0.2': [['（再）', '0.0']],
+    '0.0': [['原因', '0.4']],
+    '0.1': [['旧帳票', '0.2'], ['99 行', '0.4']],
+    /* 印刷 */
+    '1.3': [['最後の列', '1.1']],
+    '1.1': [['既定のまま', '1.4']],
+    '1.4': [['次回', '1.2']],
+    '1.0': [['あわせて', '1.3']],
+    /* 権限 */
+    '2.0': [['権限まわり', '2.1']],
+    '2.1': [['一覧', '2.2']],
+    '2.2': [['次回決める', '2.3'], ['整理', '2.4']],
+    '2.3': [['11と同じ？', '2.4']],
+    /* 承認者 */
+    '3.0': [['課長承認', '3.1']],
+    '3.1': [['部長', '3.2'], ['運用', '3.3']],
+    '3.2': [['記載あり', '3.3']],
+    '3.3': [['要確認', '3.4']],
+    '3.4': [['都度確認', '2.4']],
+    /* 検索 */
+    '4.2': [['毎回', '4.3']],
+    '4.3': [['報告', '4.1']],
+    '4.1': [['満たしていない', '4.4']],
+    '4.0': [['同じ原因', '0.4']],
+    /* 取り込み */
+    '5.2': [['また', '5.3']],
+    '5.3': [['整理してから', '5.4']],
+    '5.4': [['手順なし', '5.0']],
+    '5.0': [['再現手順', '5.1']],
+    /* 二重登録 */
+    '6.2': [['二回', '6.0']],
+    '6.0': [['条件', '6.3']],
+    '6.3': [['未定', '6.1']],
+    '6.4': [['前にも出ていた', '6.1']],
+    /* 添付 */
+    '7.2': [['壊れてます', '7.1']],
+    '7.1': [['担当', '7.3']],
+    '7.3': [['開けない', '7.0']],
+    '7.0': [['帳票サンプル.xlsx', '0.1']],
+    /* 月次 */
+    '8.1': [['合いません', '8.0']],
+    '8.0': [['調査中', '8.3']],
+    '8.3': [['各部で異なる', '8.4']],
+    '8.2': [['合わない', '8.3']],
+    /* ログ */
+    '9.1': [['いつまで', '9.0']],
+    '9.0': [['未定', '9.2']],
+    '9.2': [['次回決める', '9.3']],
+    '9.3': [['未定', '9.4']],
+    /* 引き継ぎ */
+    '10.1': [['前任者', '10.0']],
+    '10.0': [['書面', '10.3']],
+    '10.3': [['記録なし', '10.2']],
+    '10.2': [['確認する', '10.4']],
+    /* 手順書 */
+    '11.2': [['もう使ってない', '11.0']],
+    '11.0': [['2019 年時点', '11.3']],
+    '11.3': [['更新', '11.4']],
+    '11.4': [['2019', '11.1']]
+  };
+
+  /* **行き止まり。**突ける語が無い行——「無い」と言っているのは材料のほう。
+     ここで触れるものが**壁に移る**（同じ点線の下線が付く）*/
+  /* 件ごとの入口。行き止まりで壁の一行を突くと、その件のここから始まる */
+  var ENTRY = ['0.3','1.3','2.0','3.0','4.2','5.2',
+               '6.2','7.2','8.1','9.1','10.1','11.2'];
   /* 鍵 → 山の中の一枚（項番と出どころを取る）。`pt` は言い方ごとに一つ */
   function keyCard(key){
     var p = key.split('.'), g = +p[0], i = +p[1];
@@ -1201,8 +1256,31 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var col = 'BCDEFGH'.charAt(c.n % 7), row = 2 + (c.n * 7) % 400;
     return 'Sheet' + (1 + c.n % 3) + '!' + col + row;
   }
-  function rawHTML(c){
-    var t = esc(c.raw);
+  /* 突ける語を、文の中に埋める。**先に印を置いてから札に替える**——
+     escape のあとで直に差し替えると、入れたばかりの属性の中にも当たる */
+  /* 突ける語を、文の中に埋める。**先に印を置いてから札に替える**——
+     escape のあとで直に差し替えると、入れたばかりの属性の中にも当たる。
+     印の文字はコード値で作る（source に \u 書きを残したら、生成のたびに
+     **エスケープが一段ずつ減って正規表現が壊れた。**画面で見つけた）*/
+  var PH1 = String.fromCharCode(1), PH2 = String.fromCharCode(2);
+  function taps(t, list){
+    if (!list) return t;
+    var out = t, mark = [], i, at;
+    for (i = 0; i < list.length; i++){
+      at = out.indexOf(list[i][0]);
+      if (at < 0) continue;
+      out = out.slice(0, at) + PH1 + mark.length + PH2
+          + out.slice(at + list[i][0].length);
+      mark.push(list[i]);
+    }
+    for (i = 0; i < mark.length; i++){
+      out = out.split(PH1 + i + PH2).join(
+        '<button class="tap" data-to="' + mark[i][1] + '">' + mark[i][0] + '</button>');
+    }
+    return out;
+  }
+  function rawHTML(c, list){
+    var t = taps(esc(c.raw), list);
     if (c.src === 'mail')   return '<div class="m"><b>' + SUBJ[c.n % 3] + '</b>' + t + '</div>';
     if (c.src === 'chat')   return '<div class="c">' + t + '</div>';
     if (c.src === '議事録') return '<div class="g">' + t + '</div>';
@@ -1216,38 +1294,35 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      片付いていないことは、辿っても着かないことで分かる（④が数で返す）。 */
   /* ─ いま目の前にあるもの ───────────────────────────
      **位置は動かない。**器は面を持たない（上下の細い線だけ）。
-     下に、**見に行った先が生のまま溜まる**（印も見出しも付けない——
-     整った札を貼ると、荒れたものが片付いて見える）。
-     一手は右上。**書いてあることは毎回違うが、押す場所は動かない**
-     （幅を固定してある。字の長さでボタンが伸びると押す場所が動く）*/
-  function here(){ return atEnd ? TRAIL[ti].end : TRAIL[ti].steps[si][0]; }
-  function label(){ return atEnd ? 'べつの件を見る' : TRAIL[ti].steps[si][1]; }
+     下に、**見に行った先が生のまま溜まる**（印も見出しも付けない）。
 
+     **一手のボタンは無い。**触れるのは**文の中の曖昧な語**だけ
+     （2026-09-09、本人：「もう少し作業感なくしたい」）。
+     固定の場所に「次へ」があるかぎり、何が書いてあっても作業になる。
+     突く場所は毎回違うが、**目が見ているのは同じ一行**なので追いかけずに済む */
   function paintWork(){
-    var c = keyCard(here()), el = document.getElementById('work');
+    var c = keyCard(NOW), el = document.getElementById('work');
     if (!c || !el) return;
     LAST = c.k;
+    stuck = !TAP[NOW];
+    document.body.classList.toggle('stuck', stuck);
     el.innerHTML = '<div class="card2"><div class="bd">'
-      + '<div class="ln rw">' + rawHTML(c) + '</div>'
+      + '<div class="ln rw">' + rawHTML(c, TAP[NOW]) + '</div>'
       + (WALKED.length ? '<div class="held">'
           + WALKED.slice(-4).reverse().map(function(h){
               return '<div class="hl rw">' + rawHTML(h) + '</div>'; }).join('')
         + '</div>' : '')
-      + '</div><div class="go"><button class="one2" id="look">'
-      +   esc(label())
-      + '</button></div></div>';
+      + '</div></div>';
   }
 
-  /* **一歩進む。**見ていたものは下に溜まり、指していた先が前に出る。
-     行き止まりに当たったら、次の道の一歩目へ */
-  function walk(){
-    var c = keyCard(here());
+  /* 一歩。いま前にあるものは下に溜まり、突いた語の行き先が前に出る */
+  function go(key){
+    var c = keyCard(NOW);
     if (c) WALKED.push(c);
     steps++;
-    if (atEnd){ atEnd = false; ti = (ti + 1) % TRAIL.length; si = 0; }
-    else if (si + 1 < TRAIL[ti].steps.length){ si++; }
-    else {
-      atEnd = true; dead++;
+    NOW = key;
+    if (!TAP[key]){
+      dead++;
       /* **行き止まりが「壁に当たった」。**行き先はここで出す
          （§「行き先は、壁に当たってから出す」）*/
       offer('hand');
@@ -1256,9 +1331,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   }
 
   document.addEventListener('click', function(e){
-    var b = e.target.closest && e.target.closest('#look');
-    if (!b || document.body.dataset.stage !== 'b') return;
-    walk();
+    if (document.body.dataset.stage !== 'b') return;
+    var t = e.target.closest && e.target.closest('.tap');
+    if (t){ go(t.dataset.to); return; }
+    /* **行き止まりでは、触れるものが壁に移る。**
+       突いた行の件の入口から始まる（どれを掴むかは人によって違う）*/
+    if (!stuck) return;
+    var li = e.target.closest && e.target.closest('#pile .pc');
+    if (li && li.dataset.k !== undefined) go(ENTRY[+li.dataset.k]);
   });
   /* ─ ②の壁 ── **量。押せない。** ─────────────────────
      **やることは上の連鎖のほう。**壁は押す対象ではなく、背景。
@@ -1266,7 +1346,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      （二列 201 段 × 27px ＝ 5,400px。画面に出るのは 350px ぶん）。
      **量は数字（402）と、連鎖が終わらないことで出す。** */
   function paintPile(){
-    steps = 0; dead = 0; ti = 0; si = 0; atEnd = false; WALKED = [];
+    steps = 0; dead = 0; NOW = '3.0'; stuck = false; WALKED = [];
+    document.body.classList.remove('stuck');
     /* **締めを出して、言い切る**（2026-09-09）。「〜てみてください」は誘いで、
        **やらされている感が出ない。**締めは材料にある
        （`pdf 締めは月末の翌 3 営業日までに行うこと。`）*/
