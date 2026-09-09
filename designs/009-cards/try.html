@@ -561,6 +561,21 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 body[data-stage="a"] .st-a,
 body[data-stage="b"] .st-b,
 body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
+/* ─ 来たもの（②の上）───────────────────────────────────
+   **追っているあいだに降ってくる行。**二行まで。古いものから消える。
+   面を少し濃くして、連鎖（自分が開いたもの）と別のものだと分かるようにする */
+.inbox{list-style:none; margin:0 0 14px; padding:0; max-width:900px;
+       font-family:var(--mono); font-size:12.5px}
+.inbox li{
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  padding:7px 10px; margin-bottom:2px; border-radius:5px;
+  background:rgba(224,84,84,.10);
+  animation:rise .34s var(--ease) backwards;
+}
+.inbox .now{color:#b4453f; font-weight:700; flex:none}
+.inbox .src{color:#98a2bd; flex:none; min-width:44px}
+.inbox .tx{flex:1 1 260px; min-width:0; color:rgba(37,31,69,.9)}
+
 /* ─ 絡まり（②の本体）───────────────────────────────────
    **一つ追うと、別の件がついてくる。**押した行の下に一段、右へ寄って出る。
    **スクロールされない前提**（本人 2026-09-09）——だから連鎖は**問いのすぐ下**に積む。
@@ -717,6 +732,11 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
          **同じ件のコピーではなく、別の件への連鎖。**
          参照は**番号だけ**——何がどう関わっているかは書かない（起動画面と同じ作法）。
          **二つ出すので、どちらを追うかで道が変わる**（一意でない操作）。 -->
+    <!-- **追っているあいだに、来る。**本人 2026-09-09：「やらなきゃいけないのに
+         **片付けさせられてる感がない**」。誰も催促してこないし、溜まりも増えなかった。
+         参照を一つ追うたび、ここに一行来る。**二行までしか出さない**——
+         連鎖の上で溜めると下へ伸びて画面から出る。**増えたことは数字が言う。** -->
+    <ul class="inbox" id="inbox"></ul>
     <ol class="chain" id="chain"></ol>
     <!-- 壁。**量。押せない。**やることは上の連鎖のほうにある -->
     <ul class="pile" id="pile"></ul>
@@ -1043,6 +1063,40 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     [3,4,0],[5,10,1],[9,0,4],[4,8,3],[7,2,11],[1,5,10]
   ];
   var chainEl, chainSeen = {}, steps = 0, LAST = null;   /* LAST ＝ 最後に追いついた件 */
+  var ADDED = 0, inSeen = {}, chainU = {};   /* ADDED ＝ 追っているあいだに来た数 */
+
+  /* 頭の一行。**増えたら、増えたと言う。** */
+  function sayCount(){
+    var el = document.getElementById('count');
+    if (!el) return;
+    el.innerHTML = ADDED
+      ? CARDS.length + ' 枚 → <b>' + (CARDS.length + ADDED) + ' 枚</b>。'
+        + '追っているあいだに <b>' + ADDED + ' 件</b>来ました。'
+      : '<b>' + CARDS.length + ' 枚</b>、題は付いていません。関わりは番号だけです。';
+  }
+
+  /* **一件来る。**mail と chat だけ（あれは届くもの。議事録や手順書は届かない）。
+     出すのは二行まで——上で溜めると連鎖が下へ伸びて画面から出る。
+     **増えたことは数字が言う**（画面に積まない）*/
+  function incoming(){
+    var pick = null;
+    CARDS.some(function(c){
+      /* **連鎖に出ている言い方は避ける。**同じ文が上と下に並ぶと、
+         催促ではなく作りそこないに見えた（画面で見つけた）*/
+      if ((c.src === 'mail' || c.src === 'chat') && !inSeen[c.n]
+          && !chainSeen[c.n] && !chainU[c.u]){ pick = c; return true; }
+    });
+    if (!pick) return;
+    inSeen[pick.n] = 1; ADDED++;
+    var box = document.getElementById('inbox');
+    var li = document.createElement('li');
+    li.innerHTML = '<span class="now">いま来ました</span>'
+                 + '<span class="src">' + esc(pick.src) + '</span>'
+                 + '<span class="tx">' + esc(pick.raw) + '</span>';
+    box.insertBefore(li, box.firstChild);
+    while (box.children.length > 2) box.removeChild(box.lastChild);
+    sayCount();
+  }
 
   function no(c){ return ('000' + c.n).slice(-4); }
 
@@ -1056,7 +1110,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
   /* 一行足す。**参照は二つ。**どちらを追うかで道が変わる */
   function chainAdd(c, depth, from){
-    chainSeen[c.n] = 1;
+    chainSeen[c.n] = 1; chainU[c.u] = 1;
     var li = document.createElement('li');
     li.style.marginLeft = Math.min(depth, 5) * 16 + 'px';
     /* **来た道は出さない。**三つのうち二つ。戻る道が要るなら上の行がまだ画面にある */
@@ -1086,9 +1140,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var li = chainAdd(c, +ref.dataset.d, +ref.dataset.f);
     li.classList.add('on');
     steps++; LAST = c.k;
+    /* **追うと、来る。**一手で一件、三手めからは二件（追えば追うほど増える）*/
+    incoming();
+    if (steps >= 3) incoming();
     var h = document.getElementById('hint');
-    /* **落ちは「一件も終わっていない」。**追うほど増えるだけ */
-    if (steps >= 3) h.textContent = '一件も終わっていません。たどった先が ' + (steps + 1) + ' 件になりました。';
+    /* **落ちは「終わらないのに増える」。**追った数と、来た数を並べる */
+    if (steps >= 3) h.textContent = '一件も終わっていないのに、' + ADDED + ' 件増えました。';
     if (steps >= 3) offer('hand');
   });
   /* ─ ②の壁 ── **量。押せない。** ─────────────────────
@@ -1097,11 +1154,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      （二列 201 段 × 27px ＝ 5,400px。画面に出るのは 350px ぶん）。
      **量は数字（402）と、連鎖が終わらないことで出す。** */
   function paintPile(){
-    steps = 0; chainSeen = {};
-    document.getElementById('count').innerHTML =
-      '<b>' + CARDS.length + ' 枚</b>、題は付いていません。関わりは番号だけです。';
+    steps = 0; chainSeen = {}; chainU = {}; ADDED = 0; inSeen = {};
+    document.getElementById('inbox').innerHTML = '';
+    sayCount();
+    /* **締めを出して、言い切る**（2026-09-09）。「〜てみてください」は誘いで、
+       **やらされている感が出ない。**締めは材料にある
+       （`pdf 締めは月末の翌 3 営業日までに行うこと。`）*/
     var ask = document.querySelector('.ask2 .ask');
-    if (ask && ask.firstChild) ask.firstChild.textContent = '一件、片付けてみてください。';
+    if (ask && ask.firstChild) ask.firstChild.textContent = '締めは明後日です。一件、片付けてください。';
     document.getElementById('hint').textContent = '';
     document.getElementById('go-c').hidden = true;
 
@@ -1539,7 +1599,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       /* **追った先の件名を返す**（2026-09-09。前は「最初に選んだ一行」）。
          **どこまで絡んだかは人によって違う**——一意でない操作の行き先 */
       + (steps ? '<span class="cmp">たどり着いたのは <b>「'
-          + esc(GROUPS[LAST].t) + '」</b>でした。</span>' : '')
+          + esc(GROUPS[LAST].t) + '」</b>でした。'
+          + (ADDED ? '追っているあいだに <b>' + ADDED + ' 件</b>来ています。' : '')
+          + '</span>' : '')
       /* **②で一枚ずつ押した人には、その数を返す。**自分の手数と、まとめてからの手数。
          点数ではない（§5 で点数は足さないと決めている）——**同じ「押す」の重さが
          違うことを、自分の数字で見せる。**押していない人には出さない */
