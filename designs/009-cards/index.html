@@ -721,9 +721,19 @@ html.boot .mark{opacity:1}
                  触れるものがカード一種類、が最初に崩れるのがここになる
                ・いまの OpenStreetMap の埋め込みは **WebGL で描いている。**
                  使えない環境では灰色の箱が残る（実際、確認に使った browser がそうだった）
-               だから**絵として置く。**地理院タイル（淡色）を 3×3 並べて、
-               真ん中に印を置いてあるだけ。動く JS も WebGL も要らない。
-               色も淡いので、この site の水色〜紫と喧嘩しない。
+               だから**絵として置く。**タイルを 4×3 敷いて、真ん中に印を置いてあるだけ。
+               動く JS も WebGL も要らない。
+
+               **タイルは OpenStreetMap（2026-09-09 に地理院から替えた）。**
+               本人：「地図あれ良くあるサイトみたいにできないの？普通の地図」。
+               地理院は淡色も標準も**地形図の作法**で、卍・文・⊗ と建物の輪郭が並ぶ。
+               色を替えても「普通のサイトの地図」にはならなかった（標準は橙が強くて悪化した）。
+               OSM は道路が白と黄、公園が緑、店の名前が入る——**見慣れた地図の顔。**
+
+               **出どころの宿題が残っている。**`tile.openstreetmap.org` は
+               OSM 財団のサーバで、**大量アクセス向けではない**（規約が重い利用を断っている）。
+               案として置くぶんには収まるが、**会社の本番に載せるなら別の出どころ**
+               （鍵の要る配信元か、自前で配る）を決める話になる。→ 下の項目21
 
                並べ方：一枚 256px の板を 4×3（1024×768）敷いて、見える窓は 768×512。
                **窓より一枚ぶん大きく敷く**——ずらしたぶん端が空くので（最初これで右が抜けた）。
@@ -748,22 +758,22 @@ html.boot .mark{opacity:1}
                タイル 1px ＝ 0.970m（z17・この緯度）-->
           <div class="map">
             <div class="sheet" style="--l:0.1630%; --t:-49.3903%">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51620.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51620.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51620.png">
-<img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51620.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51621.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51621.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51621.png">
-<img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51621.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116416/51622.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116417/51622.png">
-              <img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116418/51622.png">
-<img alt="" data-src="https://cyberjapandata.gsi.go.jp/xyz/pale/17/116419/51622.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116416/51620.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116417/51620.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116418/51620.png">
+<img alt="" data-src="https://tile.openstreetmap.org/17/116419/51620.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116416/51621.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116417/51621.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116418/51621.png">
+<img alt="" data-src="https://tile.openstreetmap.org/17/116419/51621.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116416/51622.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116417/51622.png">
+              <img alt="" data-src="https://tile.openstreetmap.org/17/116418/51622.png">
+<img alt="" data-src="https://tile.openstreetmap.org/17/116419/51622.png">
             </div>
             <span class="pin" aria-hidden="true"></span>
           </div>
-          <p class="cred"><a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>（国土地理院）</p>
+          <p class="cred">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</p>
 
           <!-- 行く人はここから自分の地図へ移る。**この一枚で終わらせない。**
                住所で開くので、携帯なら地図アプリがそのまま立ち上がる -->
@@ -801,7 +811,7 @@ html.boot .mark{opacity:1}
     <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
     <p class="fp"><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a></p>
     <p class="fc">© 2025 Alter Design Consulting Co., Ltd.</p>
-    <p class="fw">これは案です。<b>公式サイト（alt-dsgn.co.jp、2026年9月9日に突き合わせ）の言葉</b>は、社名・事業の二行・企業理念の全文・サービスの題と一行・会社概要・アクセス・お問い合わせ・プライバシーポリシー。<b>仮の中身</b>はサービスの詳細（題と一行より下）と、デモ。「所在」の地図は、公式サイトが出している座標から出したもの（地理院タイル／国土地理院）。実装は AI（Claude）が行いました。<br>
+    <p class="fw">これは案です。<b>公式サイト（alt-dsgn.co.jp、2026年9月9日に突き合わせ）の言葉</b>は、社名・事業の二行・企業理念の全文・サービスの題と一行・会社概要・アクセス・お問い合わせ・プライバシーポリシー。<b>仮の中身</b>はサービスの詳細（題と一行より下）と、デモ。「所在」の地図は、公式サイトが出している座標から出したもの（地図は OpenStreetMap）。実装は AI（Claude）が行いました。<br>
     数字キー 1〜6、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
   </div>
 </footer>
