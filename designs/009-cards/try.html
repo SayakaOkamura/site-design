@@ -134,6 +134,10 @@ body{
    問いはサイトの言葉なので、サイトの字で出す（等幅は材料のほうだけ）*/
 .q{font-size:clamp(17px,2.4vw,23px); font-weight:700; line-height:1.75;
    margin:9vh 0 30px; max-width:760px; animation:rise .5s var(--ease) both}
+/* 問いの下の一行。**これはデモだと先に言う場所。**診断の入口に見えていた
+   （2026-09-09）。太らせない——読ませたいのは問いのほう */
+.qs{margin:-18px 0 26px; max-width:760px; font-size:13.5px; color:var(--sub);
+    animation:rise .5s .1s var(--ease) both}
 .picks{display:flex; flex-wrap:wrap; gap:12px; animation:rise .5s .18s var(--ease) both}
 .pk{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
@@ -766,13 +770,22 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        「こういう文章って中まで読まれないと思った方がいいと思うよ」。
        **読ませて作るのをやめた。**あるなあは③の題で起きる（12 個・短い・太い）。
        ここで聞くのは、②の量を**自分の申告のぶん**にするため。
-       **聞くのは一つだけ**（宿題は出さない。押せば進む）。 -->
+       **聞くのは一つだけ**（宿題は出さない。押せば進む）。
+
+       **②と同じものを名指す**（2026-09-09。本人：「①の画面が固有の診断っぽい
+       のに②でどっか行くから定まらない」）。前は「まだ決まっていない話が、いま
+       何件くらい溜まっていますか」——**会社ぜんぶを診る問い**だった。
+       診断の入口は診断の答えを約束するが、②が返すのは仮の課題管理表で、
+       ④が返すのは理念。**約束していないものを約束していた。**
+       いまは**②に出るものを名指して、選んだ数で動くと先に言う**——
+       問いは残す（量が自分の申告のぶんでないと、壁が他人事になる）。 -->
   <section class="st st-a">
-    <p class="q">まだ決まっていない話が、<br>いま何件くらい溜まっていますか。</p>
+    <p class="q">手元の課題管理表は、<br>いま何行たまっていますか。</p>
+    <p class="qs">選んだ数で、この先が動きます。</p>
     <div class="picks" id="picks">
-      <button class="pk" data-n="36">36 件くらい<em>1</em></button>
-      <button class="pk" data-n="120">120 件くらい<em>2</em></button>
-      <button class="pk" data-n="402">400 件以上<em>3</em></button>
+      <button class="pk" data-n="36">36 行くらい<em>1</em></button>
+      <button class="pk" data-n="120">120 行くらい<em>2</em></button>
+      <button class="pk" data-n="402">400 行以上<em>3</em></button>
       <button class="pk" data-n="402">数えたことがない<em>4</em></button>
     </div>
   </section>
@@ -1207,10 +1220,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var el = document.getElementById('tape');
     if (!el) return;
     el.innerHTML =
-      '<span class="cell">残り <b id="nrem">' + (CARDS.length + ADDED) + ' 件</b>'
+      '<span class="cell">残り <b id="nrem">' + (CARDS.length + ADDED) + ' 行</b>'
       + (ADDED ? ' <span class="up">+' + ADDED + '</span>' : '') + '</span>'
-      + '<span class="cell wait">待たされている <b id="nwait">' + HELD.length + ' 件</b></span>'
-      + '<span class="cell">片付いた <b class="zero">0 件</b></span>';
+      + '<span class="cell wait">待たされている <b id="nwait">' + HELD.length + ' 行</b></span>'
+      + '<span class="cell">片付いた <b class="zero">0 行</b></span>';
   }
 
   /* **数が動くのを、字ではなく動きで出す**（2026-09-09。本人：「②のストレス性を
@@ -1271,7 +1284,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       + (HELD.length ? '<div class="held"><span class="hh">手をつけたまま</span>'
           + HELD.slice(-3).reverse().map(function(h){
               return '<div class="hl rw">' + rawHTML(h) + '</div>'; }).join('')
-          + (HELD.length > 3 ? '<span class="hh">ほか ' + (HELD.length - 3) + ' 件</span>' : '')
+          + (HELD.length > 3 ? '<span class="hh">ほか ' + (HELD.length - 3) + ' 行</span>' : '')
         + '</div>' : '')
       + '</div><div class="go"><button class="one" id="fix">片付ける</button></div>'
       + '</div>';
@@ -1294,7 +1307,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     bump();                             /* 帯の数が跳ねる */
     var h = document.getElementById('hint');
     if (steps >= 3){
-      h.textContent = '一件も片付いていません。待ちが ' + HELD.length + ' 件になりました。';
+      h.textContent = '一件も片付いていません。待ちが ' + HELD.length + ' 行になりました。';
       offer('hand');
     }
   });
@@ -1469,14 +1482,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       return '<li class="grp" data-k="' + k + '">'
         + '<button class="cd" data-k="' + k + '">'
         +   '<span class="r">' + esc(GROUPS[k].t) + '</span>'
-        +   '<span class="s">' + g.n + ' 枚</span>'   /* 通りは 12 枚とも 5 で、面では死んだ数字 */
+        +   '<span class="s">' + g.n + ' 行</span>'   /* 通りは 12 件とも 5 で、面では死んだ数字 */
         + '</button>'
         + '</li>';
     }).join('');
 
     /* **②の問いへの答えを見出しに置く。**説明ではなく返事 */
     document.getElementById('c-h1').textContent =
-      CARDS.length + ' 枚は、' + GROUPS.length + ' 件でした';
+      CARDS.length + ' 行は、' + GROUPS.length + ' 件でした';
     leftRows = GROUPS.length; decided = 0; sel = null; open = null;
     tally = { need:0, drop:0, done:0, pieces:{ need:0, drop:0, done:0 } };
     ["need","drop","done"].forEach(function(v){
@@ -1499,7 +1512,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var k = document.getElementById(id.replace("s-", "t-"));
     if (b){ b.style.height = stkH(pieces) + "px";
             b.classList.toggle("zero", !pieces); }
-    if (k) k.textContent = pieces + " 枚";
+    if (k) k.textContent = pieces + " 行";
   }
   function drawRest(){
     bin("s-need", tally.pieces.need);
@@ -1582,7 +1595,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     paneEl.innerHTML =
       '<div class="panel">'
       + '<div class="hd2"><h2>' + esc(GROUPS[k].t) + '</h2>'
-      +   '<p class="k">' + all.length + ' 枚 → ' + by_u(k) + ' 通り</p></div>'
+      +   '<p class="k">' + all.length + ' 行 → ' + by_u(k) + ' 通り</p></div>'
       + '<div class="act">'
       +   '<div class="btns">'
       +     '<button class="three" data-k="' + k + '" data-v="need">要る<em>1</em></button>'
@@ -1720,9 +1733,9 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        途中に返すのは**枚が件になったこと**——それが落差そのもの。 */
     el.innerHTML =
       (half
-        ? '<b>' + CARDS.length + ' 枚が ' + GROUPS.length + ' 件</b>になりました。<br>'
+        ? '<b>' + CARDS.length + ' 行が ' + GROUPS.length + ' 件</b>になりました。<br>'
             + 'ここまでで ' + done + ' 件を決めています。'
-        : CARDS.length + ' 枚ありました。<b>やることは ' + tally.need + ' 件</b>です。'
+        : CARDS.length + ' 行ありました。<b>やることは ' + tally.need + ' 件</b>です。'
             + (rest.length ? esc(rest.join('・')) + '。' : ''))
       + '<br>減らしたのではなく、形を変えただけです。'
       /* **最初に選んだ一件を返す**（2026-09-09）。**一意でない操作の行き先**——
@@ -1732,7 +1745,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       /* **待たされた件数を返す**（2026-09-09。前は「たどり着いた先」）。
          **順に片付けようとして、一件も終わらなかった**のがそのまま数字になる */
       + (steps ? '<span class="cmp">順に片付けようとして、<b>'
-          + steps + ' 件</b>が待ちに回りました。最後は <b>「'
+          + steps + ' 行</b>が待ちに回りました。最後は <b>「'
           + esc(GROUPS[LAST].t) + '」</b>で止まっています。</span>' : '')
       /* **②で一枚ずつ押した人には、その数を返す。**自分の手数と、まとめてからの手数。
          点数ではない（§5 で点数は足さないと決めている）——**同じ「押す」の重さが
