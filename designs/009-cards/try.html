@@ -2,8 +2,6 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>デモ｜株式会社アルターデザインコンサルティング</title>
 
 <!-- 009 デモ ─ **ざっくり版**（2026-09-08 に組み直した）
      ================================================================
@@ -546,19 +544,17 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 body[data-stage="a"] .st-a,body[data-stage="r"] .st-r,
 body[data-stage="b"] .st-b,
 body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
-
 /* ─ 読む段（②の前）───────────────────────────────────
-   **ここだけ、押すものが無い時間。**五行を読める大きさで、ゆっくり出す。
-   本人 2026-09-09：「ただの作業になってて、**読む動線がない**」。
-   通しで②7回・③20回ちょっと押して④に着くのに、**一度も読まずに着けていた。**
-
+   **五行を読める大きさで、ゆっくり出す。**
    もとの設計にはあった段（NOTES：「① あるなあ｜生の一行が五つだけ。
    読める大きさ、ゆっくり出る｜一手（これで、ぜんぶ？）」）。
-   「読ませて作るのをやめた」で四択に差し替えたが、**あるなあを③の題に預けた結果、
-   題が押す対象なので読む間が消えた。**ここへ戻す。
 
-   **山の行と同じ形にはしない**（あちらは押すもの、これは読むもの）——
-   大きさ・行間・出どころの位置で別物にしてある。 */
+   **読むだけの段ではなくなった**（2026-09-09。本人：「二ページ目も特に、
+   何見せられてるのかって感じ」「一意でない操作をさせる必要がある」）。
+   **選ばせる。**選ぶには読むしかないので、読む動線は残る。
+   そして**選んだ一件が②③④まで付いてくる**——人によって残るものが違う。
+
+   **山の行と同じ形にはしない**（あちらは押して消すもの、これは選ぶもの）。 */
 .read{list-style:none; margin:0; padding:0; max-width:680px}
 .read li{
   margin:0 0 20px; font-size:clamp(14px,1.9vw,16.5px); line-height:1.95;
@@ -569,9 +565,27 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   font-family:var(--mono); font-size:12px; font-style:normal;
   color:var(--sub); vertical-align:baseline;
 }
-/* 一手は五行が出そろってから。**読む前に押せると、読む段でなくなる** */
+/* **押せる五行。**読むものであり、選ぶもの。
+   面は白いカード——**この案の押せるものはカード**なので、山の行とは形から違える。
+   選ぶと沈む（③のカードと同じ押し方）*/
+.read .rd{
+  -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
+  display:block; width:100%; text-align:left;
+  padding:16px 20px; border-radius:8px;
+  background:var(--card); color:inherit;
+  box-shadow:var(--lift1);
+  transition:transform .14s var(--ease), box-shadow .14s ease, background-color .14s ease;
+}
+.read .rd:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.read .rd:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.read .rd:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+/* 選んだ一枚。**沈んで、色が付く。**②③④まで付いてくる相手 */
+.read .rd.on,.read .rd.on:hover{
+  transform:translateY(1px); box-shadow:var(--lift0);
+  background:rgba(99,84,224,.12);
+}
+/* 一手は選んでから。**押すものがある段なので、押したことが合図になる** */
 .st-r .one{margin-top:34px}
-body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
 @media (max-width:900px){ .pile{columns:2} }
 @media (max-width:560px){ .pile{columns:1} .few li{font-size:13px} }
@@ -613,7 +627,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        **見出しも説明も置かない。**①で「何件くらい溜まっていますか」に答えた直後なので、
        黙って出れば「そのうちの五つ」と読める。 -->
   <section class="st st-r">
-    <p class="cnt">そのうちの、五つです。</p>
+    <!-- **問いを置いて、押させる**（2026-09-09。本人：「二ページ目も特に、
+         何見せられてるのかって感じだなあ。やっぱり何かしら、
+         **一意でない操作**をさせる必要があると思うよ」）。
+         前は五行を出して読ませるだけ——**押すものが無い＝見せられているだけ**だった。
+         **選ばせると、読む理由ができる**（選ぶには読むしかない）。
+         そして**選んだ一件が、②③④まで付いてくる**——一意でない操作＝
+         **人によって残るものが違う。** -->
+    <p class="cnt">今日、どれから片付けますか。</p>
     <ul class="read" id="read"></ul>
     <button class="one" id="go-b" hidden>これで、ぜんぶ？</button>
   </section>
@@ -971,15 +992,35 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       if (pick.indexOf(GROUPS[k].raw[0]) < 0) pick.push(GROUPS[k].raw[0]);
     }
     READ = pick.map(function(p){ return p[1]; });   /* 山で光らせる相手 */
+    /* **押せる五行。**選んだものが `CHOSE` に入って、②③④まで付いてくる */
     el.innerHTML = pick.map(function(p, i){
       return '<li style="animation-delay:' + (slow ? 0 : (i * .46).toFixed(2)) + 's">'
-        + '<i>' + esc(p[0]) + '</i>' + esc(p[1]) + '</li>';
+        + '<button class="rd" data-i="' + i + '">'
+        +   '<i>' + esc(p[0]) + '</i>' + esc(p[1])
+        + '</button></li>';
     }).join('');
-    /* **一手は出そろってから。**先に出すと、読む前に押されて読む段でなくなる */
+    CHOSE = null;
+    /* **一手は選んでから。**時間で出していたのをやめた——
+       **押すものがある段になったので、押したことが合図になる** */
     b.hidden = true;
     clearTimeout(readT);
-    readT = setTimeout(function(){ b.hidden = false; }, slow ? 0 : 5 * 460 + 260);
   }
+
+  /* 五行のどれかを選ぶ。**一意でない操作**——選んだ件が最後まで付いてくる */
+  var CHOSE = null;
+  document.addEventListener('click', function(e){
+    var rd = e.target.closest && e.target.closest('.rd');
+    if (!rd || document.body.dataset.stage !== 'r') return;
+    var el = document.getElementById('read');
+    el.querySelectorAll('.rd').forEach(function(x){ x.classList.remove('on'); });
+    rd.classList.add('on');
+    var raw = READ[+rd.dataset.i];
+    /* 選んだ一行が、どの件のものか */
+    for (var k = 0; k < GROUPS.length; k++){
+      if (GROUPS[k].raw.some(function(p){ return p[1] === raw; })){ CHOSE = { k:k, raw:raw }; break; }
+    }
+    document.getElementById('go-b').hidden = false;
+  });
 
   /* ─ ② 山。**一気に出す。**溜めるのではなく、量が一瞬で来る ─ */
   /* ─ ②。**押せる山。**ここが判子を押す前 ───────────────
@@ -987,19 +1028,26 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   var handled = 0;
   function paintPile(){
     handled = 0;
-    /* **読む段と繋げる**（2026-09-09。本人：「402 件への動線がなくて、
-       いきなり出てきた感じになってる」）。五行を読ませておいて、次の画面で
+    /* **読む段と繋げる**（2026-09-09）。五行を読ませておいて、次の画面で
        402 枚を落とすと、**別の話が来たように見えていた。**
-       **読んだ行が、この山の中にいることを言う。**下で光らせるのと対で効かせる */
-    document.getElementById('count').innerHTML =
-      'いま読んだ五行も、この中にあります。<b>' + CARDS.length + ' 枚</b>、題は付いていません。';
+       **選んだ一行が、この山の中にいることを言う。**下で光らせるのと対で効かせる。
+       選ばずに来ることはない（選ばないと一手が出ない）が、念のため両方書く */
+    var chose = CHOSE && GROUPS[CHOSE.k];
+    document.getElementById('count').innerHTML = chose
+      ? 'いま選んだ一行も、この中にあります。<b>' + CARDS.length + ' 枚</b>、題は付いていません。'
+      : 'いま読んだ五行も、この中にあります。<b>' + CARDS.length + ' 枚</b>、題は付いていません。';
+    /* **問いも選んだものを受ける。**「一件だけ」が、**その一件**になる */
+    var ask = document.querySelector('.ask2 .ask');
+    if (ask && ask.firstChild) ask.firstChild.textContent =
+      chose ? 'その一件を、片付けてみてください。' : '一件だけ、片付けてみてください。';
     document.getElementById('hint').textContent = '';   /* 合図は山の一行の上に置いた */
     document.getElementById('go-c').hidden = true;      /* 行き先は壁に当たってから */
     var frag = ['<li class="tip" id="tip">押すと片付きます　↓</li>'];
     /* **転記や追記が付いていない一枚**を先に探す。読んだのは素の文なので、
        「（追記）」が付いた写しを光らせると、読んだ行と別物に見える（画面で見つけた）*/
     var mark = {}, want = {};
-    READ.forEach(function(t){ want[t] = 1; });
+    /* **選んだ一行だけ光らせる**（前は読んだ五行ぜんぶ）。選択が続いていることを、目でも言う */
+    (CHOSE ? [CHOSE.raw] : READ).forEach(function(t){ want[t] = 1; });
     CARDS.forEach(function(c){ c.wasRead = false; });
     CARDS.forEach(function(c){
       if (c.again) return;
@@ -1464,12 +1512,19 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         : CARDS.length + ' 枚ありました。<b>やることは ' + tally.need + ' 件</b>です。'
             + (rest.length ? esc(rest.join('・')) + '。' : ''))
       + '<br>減らしたのではなく、形を変えただけです。'
+      /* **最初に選んだ一件を返す**（2026-09-09）。**一意でない操作の行き先**——
+         人によってここに出る題も枚数も違う。**自分が選んだものが最後に戻ってくる。** */
+      + (CHOSE ? '<span class="cmp">最初に選んだ一行は <b>「'
+          + esc(GROUPS[CHOSE.k].t) + '」</b>で、<b>'
+          + CARDS.filter(function(c){ return c.k === CHOSE.k; }).length
+          + ' か所</b>に散らばっていました。</span>' : '')
       /* **②で一枚ずつ押した人には、その数を返す。**自分の手数と、まとめてからの手数。
          点数ではない（§5 で点数は足さないと決めている）——**同じ「押す」の重さが
          違うことを、自分の数字で見せる。**押していない人には出さない */
       + (handled ? '<span class="cmp">山を一枚ずつ押したのは <b>' + handled
           + ' 枚</b>。まとめてからは <b>' + done + ' 手</b>でした。</span>' : '');
   }
+
   /* ─ 段 ───────────────────────────────────────────── */
   function stage(s){
     document.body.dataset.stage = s;
@@ -1477,7 +1532,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (s === 'r') paintRead();
     if (s === 'b') paintPile();
     if (s === 'd') paintEnd();
-    if (s === 'c'){ paintRows(); var f = rowsEl.querySelector('.cd'); if (f){ f.focus(); sel = +f.dataset.k; } }
+    /* ③に着いたら、**選んだ件から始める**（2026-09-09）。
+       前は一番上のカード。**選択が③でも続いていることを、開く場所で言う** */
+    if (s === 'c'){
+      paintRows();
+      var f = (CHOSE && rowsEl.querySelector('.cd[data-k="' + CHOSE.k + '"]'))
+              || rowsEl.querySelector('.cd');
+      if (f){ f.focus(); sel = +f.dataset.k; }
+    }
   }
 
   function start(){
