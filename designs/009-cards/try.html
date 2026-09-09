@@ -146,8 +146,14 @@ body{
 .cnt{margin:0 0 6px; font-family:var(--mono); font-size:11.5px; color:var(--sub)}
 .pile{
   list-style:none; margin:0; padding:0;
-  font-family:var(--mono); font-size:10.5px; line-height:1.5; color:rgba(37,31,69,.78);
-  columns:3; column-gap:32px;
+  /* **10.5px から 12px へ**（2026-09-09。本人：「単に読みにくいんだって」）。
+     壁は高くなるが、**読めない字は「量」ではなく「模様」に見える。**
+     402 が効くのは、**一行ずつ本物だと分かるから。** */
+  font-family:var(--mono); font-size:12px; line-height:1.6; color:rgba(37,31,69,.82);
+  /* **三列だと 402 行のうち 74 行が右端で切れていた**（画面で数えた）。
+     二列にすると 0。**切れた行は読めないので、量ではなく模様になる。**
+     壁は縦に伸びるが、それは量の側なので構わない */
+  columns:2; column-gap:40px;
 }
 .pile li{break-inside:avoid}
 /* ─ まとまる動き（②→③のあいだ）─────────────────────────
@@ -198,11 +204,14 @@ body{
   transition:opacity .2s ease, background-color .12s ease;
 }
 .pc:hover{background:rgba(99,84,224,.1)}
-/* **読んできた五行。**山に出た直後だけ光って、2.6 秒で馴染む。
-   402 枚が「別の話」に見えていたのを、**目で繋ぐ**ための印。
-   残すと「この五行が特別」になって山が均一でなくなるので、消す */
-.pc.seen{background:rgba(99,84,224,.16); opacity:1;
-         transition:background-color 1.1s ease .9s, opacity .2s ease}
+/* **選んだ件。最初から光っている**（2026-09-09。本人：「何したらいい画面か
+   わかんない」）。前は一度押すまで光らなかったので、**その一件が壁のどこに
+   あるか見えず、始められなかった。**
+   最初から出しておけば、**読まなくても「散らばっている」が形で分かる。**
+   これが「終わらない」の証拠——一枚押しても、まだ 39 か所ある */
+.pc.same{background:rgba(99,84,224,.17); box-shadow:inset 0 0 0 1px rgba(99,84,224,.42)}
+/* 選んだ**その一行**だけ、少し濃い。どこから始めたかが残る */
+.pc.seen{background:rgba(99,84,224,.32); box-shadow:inset 0 0 0 1px rgba(99,84,224,.6)}
 .pc:focus-visible{outline:2px solid var(--go); outline-offset:1px}
 /* **押した行。**取り消し線はやめた（2026-09-09）——**済みになっていないのに、
    済みの見た目をしていた。**いまは「もう押した」だけを薄さで言う */
@@ -217,9 +226,6 @@ body{
 .snag b{position:absolute; left:8px; top:7px; font-weight:400; color:var(--go)}
 .snag i{font-style:normal; color:#98a2bd; margin-right:8px}
 .snag .n{margin-left:auto; padding-left:10px; color:var(--go); font-weight:700; white-space:nowrap}
-/* **いま押したのと同じ件。**押した直後に、山のあちこちで光る。
-   これが「終わらない」の証拠——一枚押しても、同じ件が 11 か所残っている */
-.pc.same{background:rgba(99,84,224,.17); box-shadow:inset 0 0 0 1px rgba(99,84,224,.42)}
 
 /* ─ **押せることが見えていなかった。**
    本人 2026-09-08：「できるってわかんないよ、これ」。
@@ -596,8 +602,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   background:rgba(99,84,224,.12);
 }
 
-@media (max-width:900px){ .pile{columns:2} }
-@media (max-width:560px){ .pile{columns:1} .few li{font-size:13px} }
+@media (max-width:760px){ .pile{columns:1} }
+@media (max-width:560px){ .few li{font-size:13px} }
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important; transition:none !important}
 }
@@ -1041,12 +1047,15 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     handled = 0;
     /* **読む段と繋げる**（2026-09-09）。五行を読ませておいて、次の画面で
        402 枚を落とすと、**別の話が来たように見えていた。**
-       **選んだ一行が、この山の中にいることを言う。**下で光らせるのと対で効かせる。
-       選ばずに来ることはない（選ばないと一手が出ない）が、念のため両方書く */
+       **頭の一行で、光っているものが何かを言う**（2026-09-09）。
+       前は「いま選んだ一行も、この中にあります」——**選んだ一行の話をしていて、
+       散らばりの話をしていなかった。**数字を出すと、状況が一行で終わる */
     var chose = CHOSE && GROUPS[CHOSE.k];
+    var mineN = CHOSE ? CARDS.filter(function(c){ return c.k === CHOSE.k; }).length : 0;
     document.getElementById('count').innerHTML = chose
-      ? 'いま選んだ一行も、この中にあります。<b>' + CARDS.length + ' 枚</b>、題は付いていません。'
-      : 'いま読んだ五行も、この中にあります。<b>' + CARDS.length + ' 枚</b>、題は付いていません。';
+      ? '<b>' + CARDS.length + ' 枚</b>、題は付いていません。'
+        + '<b>光っている ' + mineN + ' か所</b>が、選んだ一件です。'
+      : '<b>' + CARDS.length + ' 枚</b>、題は付いていません。';
     /* **問いも選んだものを受ける。**「一件だけ」が、**その一件**になる */
     var ask = document.querySelector('.ask2 .ask');
     if (ask && ask.firstChild) ask.firstChild.textContent =
@@ -1061,36 +1070,31 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        消さないと決めてある）。**片付くと言われて残るから、分からない。**
        **起きることをそのまま書く**——押すと取り消し線が付いて、済みになる。 */
     var frag = ['<li class="tip" id="tip">押してみてください　↓</li>'];
-    /* **転記や追記が付いていない一枚**を先に探す。読んだのは素の文なので、
-       「（追記）」が付いた写しを光らせると、読んだ行と別物に見える（画面で見つけた）*/
-    var mark = {}, want = {};
-    /* **選んだ一行だけ光らせる**（前は読んだ五行ぜんぶ）。選択が続いていることを、目でも言う */
-    (CHOSE ? [CHOSE.raw] : READ).forEach(function(t){ want[t] = 1; });
-    CARDS.forEach(function(c){ c.wasRead = false; });
-    CARDS.forEach(function(c){
-      if (c.again) return;
-      if (want[c.raw] && !mark[c.raw]){ mark[c.raw] = 1; c.wasRead = true; }
-    });
-    CARDS.forEach(function(c){                       /* 素のものが無ければ写しでも拾う */
-      var head = c.raw.split('  ')[0];
-      if (want[head] && !mark[head]){ mark[head] = 1; c.wasRead = true; }
-    });
+    /* **選んだ件を、最初から光らせる**（2026-09-09。前は一度押すまで光らなかった）。
+       **その一件が壁のどこにあるか見えないと、始められない。**
+       群まるごと（`c.k === CHOSE.k`）に印を付けて、
+       **選んだその一行**だけ濃くする（どこから始めたかが残る）。
+       印は消さない——**散らばっているのが、この画面の言いたいこと。** */
+    var mine = null;
+    if (CHOSE){
+      CARDS.forEach(function(c){ c.lit = (c.k === CHOSE.k); c.head = false; });
+      /* 素の文（転記や追記が付いていない一枚）を、選んだその一行として扱う */
+      CARDS.some(function(c){
+        if (c.k === CHOSE.k && !c.again && c.raw === CHOSE.raw){ c.head = true; mine = c; return true; }
+      });
+      if (!mine) CARDS.some(function(c){
+        if (c.k === CHOSE.k && c.raw.split('  ')[0] === CHOSE.raw){ c.head = true; return true; }
+      });
+    } else {
+      CARDS.forEach(function(c){ c.lit = false; c.head = false; });
+    }
     CARDS.forEach(function(c, i){
-      frag.push('<li><button class="pc' + (i ? '' : ' lead') + (c.wasRead ? ' seen' : '')
+      frag.push('<li><button class="pc' + (i ? '' : ' lead')
+        + (c.lit ? ' same' : '') + (c.head ? ' seen' : '')
         + '" data-i="' + i + '" data-u="' + c.u + '">'
         + '<i>' + esc(c.src) + '</i>' + esc(c.raw) + '</button></li>');
     });
     document.getElementById('pile').innerHTML = frag.join('');
-    /* 印は**押すまで。**2.6 秒で消していたら、402 行の壁に出た直後なので
-       見つける前に消えていた（画面で見つけた）。**役目は目を繋ぐことなので、
-       手が動いたら終わり。**動かない人のために時間でも消す */
-    clearTimeout(seenT);
-    seenT = setTimeout(unseen, slow ? 0 : 9000);
-  }
-  var seenT = 0;
-  function unseen(){
-    clearTimeout(seenT);
-    document.querySelectorAll('#pile .pc.seen').forEach(function(x){ x.classList.remove('seen'); });
   }
 
 
@@ -1228,18 +1232,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      間違いを指摘するのではなく、**その行が持っている欠けを見せるだけ。** */
   function clear1(btn){
     if (btn.classList.contains('done')) return;
-    unseen();                       /* 手が動いたら、読んできた印は役目を終える */
     btn.classList.add('done');
     handled++;
     /* 合図は一度だけ。**押せると分かったら、もう要らない** */
     var tip = document.getElementById('tip'); if (tip) tip.remove();
     var ld = document.querySelector('.pc.lead'); if (ld) ld.classList.remove('lead');
-    var pile = document.getElementById('pile');
-    pile.querySelectorAll('.pc.same').forEach(function(x){ x.classList.remove('same'); });
-    /* いま押したのと**同じ件**が、山のどこに残っているか */
+    /* **印は消さない・付け直さない。**選んだ件は最初から光っていて、
+       **散らばっているのが、この画面の言いたいこと。** */
     var k = CARDS[+btn.dataset.i].k;
-    var same = pile.querySelectorAll('.pc[data-u="' + btn.dataset.u + '"]:not(.done)');
-    same.forEach(function(x){ x.classList.add('same'); });
 
     /* **別の言い方**を一つ探す（同じ文をもう一度出しても引っかかりにならない）。
        無ければ同じ件の別の一枚 */
