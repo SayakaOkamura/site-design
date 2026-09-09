@@ -502,9 +502,35 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .foot{flex:none; background:var(--frame)}
 .foot .in{padding:22px 24px 26px}
 .note{margin:0; font-size:11.5px; line-height:1.85; color:var(--sub)}
-
 [data-stage] .st{display:none}
-body[data-stage="a"] .st-a,body[data-stage="b"] .st-b,
+body[data-stage="a"] .st-a,body[data-stage="r"] .st-r,
+body[data-stage="b"] .st-b,
+body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
+
+/* ─ 読む段（②の前）───────────────────────────────────
+   **ここだけ、押すものが無い時間。**五行を読める大きさで、ゆっくり出す。
+   本人 2026-09-09：「ただの作業になってて、**読む動線がない**」。
+   通しで②7回・③20回ちょっと押して④に着くのに、**一度も読まずに着けていた。**
+
+   もとの設計にはあった段（NOTES：「① あるなあ｜生の一行が五つだけ。
+   読める大きさ、ゆっくり出る｜一手（これで、ぜんぶ？）」）。
+   「読ませて作るのをやめた」で四択に差し替えたが、**あるなあを③の題に預けた結果、
+   題が押す対象なので読む間が消えた。**ここへ戻す。
+
+   **山の行と同じ形にはしない**（あちらは押すもの、これは読むもの）——
+   大きさ・行間・出どころの位置で別物にしてある。 */
+.read{list-style:none; margin:0; padding:0; max-width:680px}
+.read li{
+  margin:0 0 20px; font-size:clamp(14px,1.9vw,16.5px); line-height:1.95;
+  animation:rise .62s var(--ease) backwards;
+}
+.read i{
+  display:inline-block; min-width:52px; margin-right:12px;
+  font-family:var(--mono); font-size:12px; font-style:normal;
+  color:var(--sub); vertical-align:baseline;
+}
+/* 一手は五行が出そろってから。**読む前に押せると、読む段でなくなる** */
+.st-r .one{margin-top:34px}
 body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
 @media (max-width:900px){ .pile{columns:2} }
@@ -539,6 +565,16 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       <button class="pk" data-n="402">400 件以上<em>3</em></button>
       <button class="pk" data-n="402">数えたことがない<em>4</em></button>
     </div>
+  </section>
+
+  <!-- 読む段。**①と②のあいだ。押すものが無い唯一の時間。**
+       五行がゆっくり出て、出そろってから「これで、ぜんぶ？」が来る。
+       **押すと 402 枚が落ちてくる**——読んだ五行は、その中に埋もれている。
+       **見出しも説明も置かない。**①で「何件くらい溜まっていますか」に答えた直後なので、
+       黙って出れば「そのうちの五つ」と読める。 -->
+  <section class="st st-r">
+    <ul class="read" id="read"></ul>
+    <button class="one" id="go-b" hidden>これで、ぜんぶ？</button>
   </section>
   <!-- ② 一瞬の不快。**同じものが量の中に埋もれる。やらせない。** -->
   <!-- 問いは山の**上**に置く。下に置いたら、山を越えないと問いに届かなかった
@@ -871,7 +907,34 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   function answer(n){
     N = n;
     build();
-    stage('b');
+    stage('r');            /* **山の前に、読む段。**②へは「これで、ぜんぶ？」で行く */
+  }
+
+  /* ─ 読む段 ── **五行だけ。押すものが無い。** ───────────
+     出どころを散らして選ぶ（mail ばかり五行だと、一人の受信箱に見える）。
+     足りなければ順に足す。**どれも②の山の中に実在する一行**——
+     作り足すと「山に無い話を読ませた」ことになる */
+  var readT = 0;
+  function paintRead(){
+    var el = document.getElementById('read'), b = document.getElementById('go-b');
+    if (!el) return;
+    var used = {}, pick = [], k;
+    for (k = 0; k < GROUPS.length && pick.length < 5; k++){
+      var p = GROUPS[k].raw[0];
+      if (used[p[0]]) continue;
+      used[p[0]] = 1; pick.push(p);
+    }
+    for (k = 0; k < GROUPS.length && pick.length < 5; k++){
+      if (pick.indexOf(GROUPS[k].raw[0]) < 0) pick.push(GROUPS[k].raw[0]);
+    }
+    el.innerHTML = pick.map(function(p, i){
+      return '<li style="animation-delay:' + (slow ? 0 : (i * .46).toFixed(2)) + 's">'
+        + '<i>' + esc(p[0]) + '</i>' + esc(p[1]) + '</li>';
+    }).join('');
+    /* **一手は出そろってから。**先に出すと、読む前に押されて読む段でなくなる */
+    b.hidden = true;
+    clearTimeout(readT);
+    readT = setTimeout(function(){ b.hidden = false; }, slow ? 0 : 5 * 460 + 260);
   }
 
   /* ─ ② 山。**一気に出す。**溜めるのではなく、量が一瞬で来る ─ */
@@ -1246,6 +1309,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   function stage(s){
     document.body.dataset.stage = s;
     scrollTo(0, 0);
+    if (s === 'r') paintRead();
     if (s === 'b') paintPile();
     if (s === 'd') paintEnd();
     if (s === 'c'){ paintRows(); var f = rowsEl.querySelector('.cd'); if (f){ f.focus(); sel = +f.dataset.k; } }
@@ -1259,6 +1323,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
   start();
 
+  document.getElementById('go-b').addEventListener('click', function(){ stage('b'); });
   document.getElementById('go-c').addEventListener('click', function(){ stage('c'); });
   /* **途中で④へ。**帯を片付けてから移る（全部さばいた道と同じ順。
      残したまま移ると、戻ったとき中身が二枚になる）*/
@@ -1299,6 +1364,11 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         if (pks[i]){ e.preventDefault(); answer(+pks[i].dataset.n); }
       }
       return;
+    }
+    /* 読む段。**出そろう前は効かない**（画面と同じで、先へ飛ばさない）*/
+    if (s === 'r' && (e.key === 'Enter' || e.key === ' ')){
+      if (document.getElementById('go-b').hidden) return;
+      e.preventDefault(); stage('b'); return;
     }
     if (s === 'b' && (e.key === 'Enter' || e.key === ' ')){
       /* 山の一枚に焦点があるときは、そのキーは**その一枚のもの。**
