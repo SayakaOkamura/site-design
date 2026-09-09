@@ -308,30 +308,30 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
       font-size:13px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
 
-/* お知らせの一覧。**一件が一行。ここでは開かない。**
+/* 行の一覧。**一件が一行。ここでは開かない。**
    押せるので影を落とす（押せない面 = --tint で影なし、を守る）。 */
-.news{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:9px}
+.rows{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:9px}
 /* 行と中身を縦に積む。**flex にしておくと、改行（空白）が行を作らない**
    （中身を行の中に入れたとき、これが無いと一覧が 5px 高くなって帯からあふれた）*/
-.news>li{display:flex; flex-direction:column}
-.news a,.news .row{
+.rows>li{display:flex; flex-direction:column}
+.rows a,.rows .row{
   display:flex; align-items:baseline; gap:18px; text-decoration:none; color:inherit;
   background:var(--card); border-radius:8px; box-shadow:var(--lift1);
   padding:15px 20px;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 /* 行き先があるものは a、その場で開くものは button。**見た目は同じ**（寸法も揃える）*/
-.news .row{-webkit-appearance:none; appearance:none; border:0; width:100%;
+.rows .row{-webkit-appearance:none; appearance:none; border:0; width:100%;
            font:inherit; text-align:left; cursor:pointer}
-.news a:hover,.news .row:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
-.news a:active,.news .row:active{transform:translateY(1px); box-shadow:var(--lift0)}
-.news a:focus-visible,.news .row:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+.rows a:hover,.rows .row:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.rows a:active,.rows .row:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.rows a:focus-visible,.rows .row:focus-visible{outline:2px solid var(--go); outline-offset:2px}
 
 /* 開いている行・選ばれている行は沈む。**カードと同じ言い方**（押されたまま、面が空） */
-.news .row[aria-expanded="true"],
-.news .row[aria-expanded="true"]:hover,
-.news .row[aria-pressed="true"],
-.news .row[aria-pressed="true"]:hover{
+.rows .row[aria-expanded="true"],
+.rows .row[aria-expanded="true"]:hover,
+.rows .row[aria-pressed="true"],
+.rows .row[aria-pressed="true"]:hover{
   transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint);
 }
 
@@ -340,12 +340,12 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
    押しただけでは飛ばない（飛ぶのは緑の一枚だけ）。 */
 .q{margin:18px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em;
    color:var(--sub); line-height:1.5}
-.q + .news{margin-top:9px}
+.q + .rows{margin-top:9px}
 .step[hidden]{display:none}
 
 /* 外に出る一枚だけ色を持つ。**緑＝行き先がある**（入口の体験カードと同じ）*/
-.news .send{background:var(--go); color:#fff}
-.news .send:hover{box-shadow:var(--lift2)}
+.rows .send{background:var(--go); color:#fff}
+.rows .send:hover{box-shadow:var(--lift2)}
 
 /* 選んだ一本の中身。**押した行のすぐ下に入る。**
    だから**他の選択肢が中身の上と下に残る**——読み終わったところに次がある
@@ -359,17 +359,17 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
    （本人 2026-09-07：「進め方とか出てくるものとか別に要らないよ。説明だけでいい」）。
    公式の一行のすぐ下に、こちらが書いた説明が一段だけ続く */
 .det p{margin:12px 0 0; font-size:13.5px; line-height:1.9}
-.news span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
+.rows span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
            font-variant-numeric:tabular-nums; letter-spacing:.02em}
-.news b{font-size:13.5px; font-weight:700; line-height:1.6}
+.rows b{font-size:13.5px; font-weight:700; line-height:1.6}
 @media (max-width:520px){
-  .news a{display:block}
-  .news span{display:block; margin-bottom:6px}
+  .rows a{display:block}
+  .rows span{display:block; margin-bottom:6px}
 }
 
-.news + .todo{margin-top:10px}   /* 一覧の下に断りを置くとき。四行＋断りが帯に収まる高さ */
+.rows + .todo{margin-top:10px}   /* 一覧の下に断りを置くとき。四行＋断りが帯に収まる高さ */
 .q + .todo{margin-top:8px}       /* 見出しの下に断りを置くとき＝**選ぶ前に読む** */
-.todo + .news{margin-top:10px}
+.todo + .rows{margin-top:10px}
 
 .lead{margin:0 0 14px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
@@ -557,7 +557,7 @@ html.boot .mark{opacity:1}
     <!-- サービス。**中身はページにしない**（一度 service.html を作ったが、
          本人「そこまでがっつり作らなくていい。カードポップアップをクリックしたときに
          出してくれるくらいで」）。押すと**一覧の下**に出る。
-         **一覧は動かない**——お知らせで決めた「一覧の高さを変えない」をここでも守る。
+         **一覧は動かない**——開くと下が押し下げられて、次の一行を見るのに毎回スクロールすることになる。
          もう一度押すと閉じる（入口のカードと同じ押し方）。
          題と、そのすぐ下の一行が公式サイトの言葉。それより下は仮。 -->
     <div class="card" role="button" tabindex="0" data-k="2" data-hash="svc">
@@ -568,14 +568,14 @@ html.boot .mark{opacity:1}
         <div class="body">
           <!-- **事例が乗るのはここ**（中身に段をもう一つ足すだけ）。
                いまは中身が無いので置かない（空の箱を作らない）。 -->
-          <ul class="news">
+          <ul class="rows">
             <li><button class="row" type="button" data-svc="01" aria-expanded="false"><span>01</span><b>人間中心の次世代業務システム開発</b></button>
               <div class="det" data-svc="01" hidden>
                 <p class="lead">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>
                 <p>画面から作りません。まず、いまその仕事をしている人が何を見て何を決めているかを並べます。効率化だけを先に置くと、決めごとが人の頭の中に残ったまま、道具だけが新しくなります。</p>
               </div>
             </li>
-            <li><button class="row" type="button" data-svc="02" aria-expanded="false"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></button>
+            <li><button class="row" type="button" data-svc="02" aria-expanded="false"><span>02</span><b>AI による意思決定支援と事業変革支援</b></button>
               <div class="det" data-svc="02" hidden>
                 <p class="lead">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>
                 <p>AI を入れる前に、何を決めるためのものかを決めます。「データがあるから使う」から始めると、出てきたものを誰も判断に使いません。決めたいことを一つに絞って、そこから逆に組みます。</p>
@@ -616,7 +616,7 @@ html.boot .mark{opacity:1}
             <dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業</dd>
             <dt>資本金</dt><dd>60百万円</dd>
             <dt>設立年月日</dt><dd>2025年6月</dd>
-            <dt>株主</dt><dd>株式会社BlueMeme／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
+            <dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
           </dl>
         </div>
       </div>
@@ -656,7 +656,7 @@ html.boot .mark{opacity:1}
                （本人 2026-09-07：「ご用件ってカテゴリの下。3件の一番上。先に説明」）
                押す前に、押したら何が起きるかを読んでから選ぶ -->
           <p class="todo">選んだ内容が<b>件名と本文に入った</b>メールが開きます。</p>
-          <ul class="news" data-ask="kind">
+          <ul class="rows" data-ask="kind">
             <li><button class="row" type="button" aria-pressed="false" data-val="サービスに関するご相談"><b>サービスに関するご相談</b></button></li>
             <li><button class="row" type="button" aria-pressed="false" data-val="掲載のご依頼"><b>掲載のご依頼</b></button></li>
             <li><button class="row" type="button" aria-pressed="false" data-val="その他ご質問"><b>その他ご質問</b></button></li>
@@ -665,9 +665,9 @@ html.boot .mark{opacity:1}
           <!-- 相談のときだけ、もう一段。**選ばないと出ない**（先に全部見せない） -->
           <div class="step" data-when="サービスに関するご相談" hidden>
             <p class="q">対象のサービス</p>
-            <ul class="news" data-ask="svc">
+            <ul class="rows" data-ask="svc">
               <li><button class="row" type="button" aria-pressed="false" data-val="人間中心の次世代業務システム開発"><span>01</span><b>人間中心の次世代業務システム開発</b></button></li>
-              <li><button class="row" type="button" aria-pressed="false" data-val="AIによる意思決定支援と事業変革支援"><span>02</span><b>AIによる意思決定支援と事業変革支援</b></button></li>
+              <li><button class="row" type="button" aria-pressed="false" data-val="AI による意思決定支援と事業変革支援"><span>02</span><b>AI による意思決定支援と事業変革支援</b></button></li>
               <li><button class="row" type="button" aria-pressed="false" data-val="自律型・共創型の組織設計支援"><span>03</span><b>自律型・共創型の組織設計支援</b></button></li>
               <li><button class="row" type="button" aria-pressed="false" data-val="地域格差の解消を目指したデジタル支援"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></button></li>
               <li><button class="row" type="button" aria-pressed="false" data-val="まだ決まっていない"><b>まだ決まっていない</b></button></li>
@@ -677,7 +677,7 @@ html.boot .mark{opacity:1}
           <!-- ここだけ外に出る。だから色が付いていて、何が起きるかを一行で書いてある。
                **最初から出ている**（選んでいなければ、そのままメールが開くだけ）-->
           <div class="step" id="send">
-            <ul class="news">
+            <ul class="rows">
               <li><a class="row send" id="sendto" href="mailto:contact@alt-dsgn.co.jp"><b id="sendlb">メールを開く</b></a></li>
             </ul>
           </div>
@@ -685,53 +685,10 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <!-- ここから下の2枚は、増えたときの並びを見るために置いてある。
-         どちらも公式サイトに無いので、中身は書かない（空の箱を作らない）。
-         5枚目は全幅、6枚目からは残りが分け合う。 -->
-    <!-- 一覧はカードの中。**ただし中では開かせない。**
-         開くと下が押し下げられて、次の一件を見るのに毎回スクロールすることになる。
-         一行ずつのまま並べて、**一覧の高さを変えない。**中身はページ。 -->
-    <div class="card" role="button" tabindex="0" data-k="5" data-hash="news">
-      <span class="t">お知らせ</span>
-      <span class="s">公表分 一件</span>
-      <div class="panel">
-        <div class="bar"><h2>お知らせ</h2></div>
-        <div class="body">
-          <!-- **公表されている一件が落ちていた**（実サイトの頁頭に出ている
-               プレスリリース。実サイトと突き合わせて見つけた）。仮を五件並べておいて、
-               本物を出していなかった。**本物を上に、仮はその下に分けて置く。** -->
-          <p class="lb2">公表されているもの</p>
-          <ul class="news">
-            <li><a href="https://www.alt-dsgn.co.jp/assets/pdf/20251217_PressRelease.pdf" target="_blank" rel="noopener"><span>2025.12.17</span><b>DX推進支援を強化し、自治体・企業に向けたサービス提供を開始しました。</b></a></li>
-          </ul>
-
-          <p class="lb2">以下は並びを見るための<b>仮の中身</b>です</p>
-          <ul class="news">
-            <li><a href="news.html#2026-08-20"><span>2026.08.20</span><b>夏季休業のお知らせ</b></a></li>
-            <li><a href="news.html#2026-06-02"><span>2026.06.02</span><b>オフィス移転のお知らせ</b></a></li>
-            <li><a href="news.html#2026-04-10"><span>2026.04.10</span><b>コーポレートサイトを公開しました</b></a></li>
-            <li><a href="news.html#2025-12-26"><span>2025.12.26</span><b>年末年始の休業について</b></a></li>
-            <li><a href="news.html#2025-06-30"><span>2025.06.30</span><b>会社設立のお知らせ</b></a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" role="button" tabindex="0" data-k="6">
-      <span class="t">実績</span>
-      <span class="s">未定</span>
-      <div class="panel">
-        <div class="bar"><h2>実績</h2></div>
-        <div class="body">
-          <p class="todo">中身はまだ決めていません。社名を出すかどうかも決まっていません。</p>
-        </div>
-      </div>
-    </div>
-
     <!-- 所在。**会社概要から出した一枚。**ほかの項目は読むものだが、これは行くもの。
          だから地図が主役で、住所はその見出しになっている。
          **末尾に置いてある。**間に入れると「デモを触る」が二段目へ落ちる。 -->
-    <div class="card" role="button" tabindex="0" data-k="7">
+    <div class="card" role="button" tabindex="0" data-k="5">
       <span class="t">所在</span>
       <span class="s">港区西新橋</span>
       <div class="panel">
@@ -743,8 +700,8 @@ html.boot .mark{opacity:1}
                （実サイトと突き合わせて見つけた）。行くための頁なので、これは要る。
                公式の並び（近い順）そのまま。 -->
           <ul class="walk">
-            <li><b>御成門</b><span>徒歩2分</span><i>都営三田線</i></li>
-            <li><b>大門</b><span>徒歩10分</span><i>都営浅草線・大江戸線</i></li>
+            <li><b>御成門</b><span>徒歩2分</span><i>都営地下鉄三田線</i></li>
+            <li><b>大門</b><span>徒歩10分</span><i>都営地下鉄浅草線・大江戸線</i></li>
             <li><b>神谷町</b><span>徒歩10分</span><i>東京メトロ日比谷線</i></li>
             <li><b>汐留</b><span>徒歩12分</span><i>都営大江戸線・ゆりかもめ</i></li>
             <li><b>虎ノ門ヒルズ</b><span>徒歩12分</span><i>東京メトロ日比谷線</i></li>
@@ -838,8 +795,8 @@ html.boot .mark{opacity:1}
     <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
     <p class="fp"><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a></p>
     <p class="fc">© 2025 Alter Design Consulting Co., Ltd.</p>
-    <p class="fw">これは案です。<b>公式サイト（alt-dsgn.co.jp、2026年9月8日に突き合わせ）の言葉</b>は、社名・事業の二行・企業理念の全文・サービスの題と一行・会社概要・アクセス・お知らせ一件・お問い合わせ・プライバシーポリシー。<b>仮の中身</b>はサービスの詳細（題と一行より下）と、お知らせの下五件と、デモ。「実績」は枠だけです。「所在」の地図は、公式サイトが出している座標から出したもの（地理院タイル／国土地理院）。実装は AI（Claude）が行いました。<br>
-    数字キー 1〜8、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
+    <p class="fw">これは案です。<b>公式サイト（alt-dsgn.co.jp、2026年9月9日に突き合わせ）の言葉</b>は、社名・事業の二行・企業理念の全文・サービスの題と一行・会社概要・アクセス・お問い合わせ・プライバシーポリシー。<b>仮の中身</b>はサービスの詳細（題と一行より下）と、デモ。「所在」の地図は、公式サイトが出している座標から出したもの（地理院タイル／国土地理院）。実装は AI（Claude）が行いました。<br>
+    数字キー 1〜6、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
   </div>
 </footer>
 
@@ -865,7 +822,7 @@ html.boot .mark{opacity:1}
       slow = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
 
   /* 出さない場合が二つ。どちらも**用があって来ている**ので、儀式は邪魔になる。
-     - 奥へ直接来た人（`#news` など）
+     - 奥へ直接来た人（`#mind` など）
      - 戻ってきた人（デモを見て「戻る」。**毎回やらせると門が関所になる**）
        読み込み直し・新しいタブでは出る。だから「見た人と見てない人」はできない */
   var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
@@ -1180,7 +1137,7 @@ html.boot .mark{opacity:1}
     setTimeout(settle, d * 1000 + 60);
   }
 
-  /* 記事から戻ってきたら、その一覧を出した状態で始める（印は show が残す）*/
+  /* 印つきの URL（`#mind` など）で来たら、そのカードを開いた状態で始める */
   function reopen(){
     var k = location.hash.slice(1);
     if (!k) return;
