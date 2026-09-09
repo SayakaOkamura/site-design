@@ -270,29 +270,17 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
    （読むものではなく、行くもの）。 */
 .addr{margin:0; font-size:14.5px; font-weight:700; line-height:1.85}
 /* 地図は面として置く。**枠線は引かない**（009 は面と影だけ）。
-   窓は 768:512 ＝ 3:2。板の束（.sheet）はその 1.5 倍の高さで、
-   所在が窓の真ん中に来る位置までずらしてある（--l / --t は文のほうに入っている）*/
+   **中身は公式サイトと同じ Google の埋め込み**（2026-09-09）。
+   窓の形だけこちらが決めて、`iframe` を面いっぱいに敷く。
+   公式は 389×294 の決め打ちだが、ここは柱の幅に合わせて伸びる。 */
 .map{
   position:relative; margin-top:16px; aspect-ratio:3/2;
   border-radius:8px; overflow:hidden;
   background:var(--tint); box-shadow:var(--lift1);
 }
-.map .sheet{
-  position:absolute; left:var(--l); top:var(--t); width:133.3333%; height:150%;
-  display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(3,1fr);
-}
-.map img{display:block; width:100%; height:100%}
-/* 印。**先方の印ではなく、この site の色で描く。**下の尖りは影付きの丸を回しただけ */
-.map .pin{
-  position:absolute; left:50%; top:50%; width:15px; height:15px;
-  margin:-19px 0 0 -7.5px;                       /* 尖りの先が所在に来るように上へ */
-  background:var(--go); border-radius:50% 50% 50% 0; transform:rotate(-45deg);
-  box-shadow:0 2px 6px rgba(31,25,64,.45);
-}
-.map .pin::after{
-  content:''; position:absolute; left:4.5px; top:4.5px; width:6px; height:6px;
-  background:#fff; border-radius:50%;
-}
+/* **`iframe` は行内要素なので、下に隙間ができる。**`block` にして消す。
+   枠線は先方の既定で付くので 0 にする（009 は線を引かない）*/
+.map iframe{display:block; width:100%; height:100%; border:0}
 .cred{margin:9px 0 0; font-size:11px; color:var(--sub); line-height:1.6}
 .cred a{color:var(--sub)}
 
@@ -716,64 +704,36 @@ html.boot .mark{opacity:1}
             <li><b>浜松町</b><span>徒歩14分</span><i>JR山手線・京浜東北線</i></li>
           </ul>
 
-          <!-- 地図。**動く地図（iframe）はやめた。**
-               ・埋め込みは先方の UI が丸ごと入ってくる（操作ボタン・ロゴ・Cookie）。
-                 触れるものがカード一種類、が最初に崩れるのがここになる
-               ・いまの OpenStreetMap の埋め込みは **WebGL で描いている。**
-                 使えない環境では灰色の箱が残る（実際、確認に使った browser がそうだった）
-               だから**絵として置く。**タイルを 4×3 敷いて、真ん中に印を置いてあるだけ。
-               動く JS も WebGL も要らない。
+          <!-- 地図。**公式サイトと同じ Google の埋め込み**（2026-09-09）。
+               本人「地図あれ良くあるサイトみたいにできないの？普通の地図」→
+               公式を見たら**そこが既に Google の iframe だった**（389×294、ピンは ANYZ）。
+               こちらが使っていた座標も、元はこの埋め込みの中心。
+               **一番「よくあるサイト」は、会社が既に選んでいるものだった。**
 
-               **タイルは OpenStreetMap（2026-09-09 に地理院から替えた）。**
-               本人：「地図あれ良くあるサイトみたいにできないの？普通の地図」。
-               地理院は淡色も標準も**地形図の作法**で、卍・文・⊗ と建物の輪郭が並ぶ。
-               色を替えても「普通のサイトの地図」にはならなかった（標準は橙が強くて悪化した）。
-               OSM は道路が白と黄、公園が緑、店の名前が入る——**見慣れた地図の顔。**
+               **決めごとを一つ外している。**「触れるものはカード一種類」。
+               動かせる地図は二種類目の触れるもので、先方の操作ボタンとロゴも入ってくる。
+               外した理由は**会社に合わせるほうを取ったから**（本人の判断）。
 
-               **出どころの宿題が残っている。**`tile.openstreetmap.org` は
-               OSM 財団のサーバで、**大量アクセス向けではない**（規約が重い利用を断っている）。
-               案として置くぶんには収まるが、**会社の本番に載せるなら別の出どころ**
-               （鍵の要る配信元か、自前で配る）を決める話になる。→ 下の項目21
+               **Cookie の反対理由は、この会社には効かない**——
+               公式サイトは Google タグ（GT-PHCGVJBT）を既に読み込んでいる。
 
-               並べ方：一枚 256px の板を 4×3（1024×768）敷いて、見える窓は 768×512。
-               **窓より一枚ぶん大きく敷く**——ずらしたぶん端が空くので（最初これで右が抜けた）。
-               窓の真ん中に所在が来るように、板の束を左と上へずらしてある
-               （`--l` と `--t`。数字は座標から出した。手で置いていない）。
-               印はこの site の色で自分で描いている（先方の印を使わない）。
+               **`src` は公式のものをそのまま。**`pb=` は Google が作る印で、
+               手で組み立てるものではない。会社自身の埋め込みなので、写して困らない。
 
                **開くまで読み込まない**（`data-src` を JS が `src` に移す）。
                閉じたままの人の browser から、よその server へ何も出て行かない。
+               `loading="lazy"` も残してあるが、効くのは `src` が入ったあと。
 
-               座標は**公式サイトが自分で出しているもの**（会社概要に埋めてある地図の
-               中心、35.66178663 / 139.75020019 ＝ ANYZ）。ここが一番強い出どころ。
-
-               前は国土地理院の住所検索の街区点（西新橋三丁目23番、35.661716 / 139.751343）で、
-               **建物から 104m 東**だった。さらに縦のタイル計算を一枚ぶん間違えていて、
-               **印は約 270m 南東**を指していた（画面で印の下の座標を逆算して見つけた）。
-               直したので、逆算すると 35.661787 / 139.750200 に戻る。
-
-               ずらし幅の出し方（窓は 3 タイル×2 タイル、板は 4×3）：
-                 --l ＝ 50 −(X−tx0)×100/3 ％（left の％は窓の幅ぶん）
-                 --t ＝ 50 −(Y−ty0)×50 ％  （top の％は窓の高さぶん）
-               タイル 1px ＝ 0.970m（z17・この緯度）-->
+               **捨てたもの**：地理院／OSM のタイルを 4×3 敷いていた板、ずらし幅の計算、
+               自前で描いていた印。**出典表記も要らなくなった**（先方の中に入っている）。
+               座標の検算（`../009-cards/NOTES.md`「地図は逆算で検算」）も、
+               埋め込みに任せたので出番が無くなった。 -->
           <div class="map">
-            <div class="sheet" style="--l:0.1630%; --t:-49.3903%">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116416/51620.png">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116417/51620.png">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116418/51620.png">
-<img alt="" data-src="https://tile.openstreetmap.org/17/116419/51620.png">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116416/51621.png">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116417/51621.png">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116418/51621.png">
-<img alt="" data-src="https://tile.openstreetmap.org/17/116419/51621.png">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116416/51622.png">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116417/51622.png">
-              <img alt="" data-src="https://tile.openstreetmap.org/17/116418/51622.png">
-<img alt="" data-src="https://tile.openstreetmap.org/17/116419/51622.png">
-            </div>
-            <span class="pin" aria-hidden="true"></span>
+            <iframe
+              data-src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2208.652316518989!2d139.75020019000598!3d35.66178663856873!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188b1b4cad0425%3A0x20c61c8a06a303bc!2sANYZ!5e0!3m2!1sja!2sjp!4v1773913262406!5m2!1sja!2sjp"
+              title="株式会社アルターデザインコンサルティングの所在地（東京都港区西新橋3-23-5 ANYZ304）"
+              loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
-          <p class="cred">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</p>
 
           <!-- 行く人はここから自分の地図へ移る。**この一枚で終わらせない。**
                住所で開くので、携帯なら地図アプリがそのまま立ち上がる -->
@@ -811,7 +771,7 @@ html.boot .mark{opacity:1}
     <p class="fa">東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
     <p class="fp"><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a></p>
     <p class="fc">© 2025 Alter Design Consulting Co., Ltd.</p>
-    <p class="fw">これは案です。<b>公式サイト（alt-dsgn.co.jp、2026年9月9日に突き合わせ）の言葉</b>は、社名・事業の二行・企業理念の全文・サービスの題と一行・会社概要・アクセス・お問い合わせ・プライバシーポリシー。<b>仮の中身</b>はサービスの詳細（題と一行より下）と、デモ。「所在」の地図は、公式サイトが出している座標から出したもの（地図は OpenStreetMap）。実装は AI（Claude）が行いました。<br>
+    <p class="fw">これは案です。<b>公式サイト（alt-dsgn.co.jp、2026年9月9日に突き合わせ）の言葉</b>は、社名・事業の二行・企業理念の全文・サービスの題と一行・会社概要・アクセス・お問い合わせ・プライバシーポリシー。<b>仮の中身</b>はサービスの詳細（題と一行より下）と、デモ。「所在」の地図は、公式サイトが載せている Google の埋め込みをそのまま使っています。実装は AI（Claude）が行いました。<br>
     数字キー 1〜6、Tab と矢印でも押せます。もう一度押すと閉じます。</p>
   </div>
 </footer>
@@ -1113,10 +1073,11 @@ html.boot .mark{opacity:1}
     document.body.classList.add('paneopen');
     open = card;
 
-    /* 地図の板は**開かれて初めて読み込む。**閉じたままなら、よその server へ
-       一度も出て行かない（`data-src` を一回だけ `src` に移す）*/
-    panel.querySelectorAll('img[data-src]').forEach(function(im){
-      im.src = im.dataset.src; im.removeAttribute('data-src');
+    /* 地図は**開かれて初めて読み込む。**閉じたままなら、よその server へ
+       一度も出て行かない（`data-src` を一回だけ `src` に移す）。
+       **`img` だけでなく `iframe` も拾う**——地図が Google の埋め込みになったので */
+    panel.querySelectorAll('[data-src]').forEach(function(el){
+      el.src = el.dataset.src; el.removeAttribute('data-src');
     });
 
     reach(panel.querySelector('.body'));
