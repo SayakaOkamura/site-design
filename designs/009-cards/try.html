@@ -167,7 +167,18 @@ body{
 .pile.gather{pointer-events:none}
 .pile.gather li{transition:transform .82s var(--snap), opacity .5s ease}
 .pile.gather li.out{opacity:0}
-.pile.gather li.keep .pc{background:rgba(99,84,224,.14); border-radius:4px}
+.pile.gather li.keep .pc{background:rgba(99,84,224,.14); border-radius:4px;
+                         transition:opacity .18s ease, font-size .18s ease}
+/* **題が付く一拍。**寄るのはコードの仕事、**題を付けるのは AI の仕事。**
+   二つを続けて見せる（2026-09-09。前は寄るところだけ見せて、
+   **題が付く瞬間は切り替えの中に残っていた**）。
+   一行ずつ 35ms ずらすが、**一つの波に見える幅**にしてある——
+   機械は一回で全部やるので、12 回の出来事に見せない */
+.pile.gather li.keep.fade .pc{opacity:0}
+.pile.gather li.keep.titled .pc{
+  font-family:inherit; font-size:13.5px; font-weight:700;
+  color:var(--ink); background:rgba(99,84,224,.10);
+}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
 /* ─ **押せる。**ここが「判子を押す前」。
    本人 2026-09-08：「ただ押すだけになる。その前の話」。
@@ -1067,11 +1078,38 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       }
     });
 
-    setTimeout(function(){
+    /* **寄りきってから、題が付く。**ここが二つ目の仕事——
+       **寄せるのはコード、題を付けるのは AI。**続けて見せると、
+       どちらが何をしたかが順番で分かる（言葉で説明していない）。
+       一行ずつ 35ms ずらすのは**一つの波に見せる**ため（12 回の出来事にしない）。
+
+       **timer は全部覚えて、片付けで止める。**タブが前に出ていないと
+       setTimeout が 1 秒刻みに丸められて、**片付けのあとに題が付いた**
+       （画面で見つけた。段が③になっているのに `titled` が残っていた）*/
+    var ts = [];
+    ts.push(setTimeout(function(){
+      keep.forEach(function(li, i){
+        ts.push(setTimeout(function(){
+          li.classList.add('fade');
+          ts.push(setTimeout(function(){
+            var b = li.querySelector('.pc');
+            if (b) b.textContent = GROUPS[li._k].t;      /* 生の一行 → 題 */
+            li.classList.remove('fade');
+            li.classList.add('titled');
+          }, 180));
+        }, i * 35));
+      });
+    }, 840));
+
+    ts.push(setTimeout(function(){
+      ts.forEach(clearTimeout);
       pile.classList.remove('gather');
-      lis.forEach(function(li){ li.style.transform = ''; li.classList.remove('out','keep'); });
-      stage('c');
-    }, 1180);
+      lis.forEach(function(li){
+        li.style.transform = '';
+        li.classList.remove('out','keep','fade','titled');
+      });
+      stage('c');                                        /* ここで一覧が組み直される */
+    }, 1880));
   }
 
   /* 行き先を出す。**押してみたか、山の底まで見たか。**
