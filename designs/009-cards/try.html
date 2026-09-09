@@ -169,6 +169,11 @@ body{
   transition:opacity .2s ease, background-color .12s ease;
 }
 .pc:hover{background:rgba(99,84,224,.1)}
+/* **読んできた五行。**山に出た直後だけ光って、2.6 秒で馴染む。
+   402 枚が「別の話」に見えていたのを、**目で繋ぐ**ための印。
+   残すと「この五行が特別」になって山が均一でなくなるので、消す */
+.pc.seen{background:rgba(99,84,224,.16); opacity:1;
+         transition:background-color 1.1s ease .9s, opacity .2s ease}
 .pc:focus-visible{outline:2px solid var(--go); outline-offset:1px}
 /* 片付いた一枚。**消さない。**消すと山が縮んで「進んでいる」ように見える */
 .pc.done{opacity:.26; text-decoration:line-through; cursor:default}
@@ -573,6 +578,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        **見出しも説明も置かない。**①で「何件くらい溜まっていますか」に答えた直後なので、
        黙って出れば「そのうちの五つ」と読める。 -->
   <section class="st st-r">
+    <p class="cnt">そのうちの、五つです。</p>
     <ul class="read" id="read"></ul>
     <button class="one" id="go-b" hidden>これで、ぜんぶ？</button>
   </section>
@@ -599,13 +605,15 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     <div class="ask2">
       <p class="ask">一件だけ、片付けてみてください。<br>
         <span class="sub" id="hint"></span></p>
-      <!-- **誰がやるかを言い切る**（2026-09-09。前は「同じ件をまとめる」）。
-           本人：「推測は AI がやってるって割と露骨に言うとか、そういう意味」。
-           **AI は会社が選んだ制約の三つ目（人が書かない）**なのに、
-           画面では「この仕組み」と呼んで隠していた。
-           ここは**動作の瞬間**なので、名乗らせるのに一番効く場所。
-           **説明ではない**——ボタン自身の名前を、やる者の名前にしただけ。 -->
-      <button class="one" id="go-c" hidden>AI にまとめさせる</button>
+      <!-- **ここは AI ではない。**一度「AI にまとめさせる」にして、**間違いだった**
+           （2026-09-09、本人：「まとめてるのは AI じゃないよ。そこは普通にコードがやってる」）。
+           **同じ件を集めるのは決まった処理。**推論ではないので、AI の名を出すと嘘になる。
+
+           **AI が出るのは、書かれていないものを書いたところだけ**——
+           カードの題と、帯の「AI の要約」。分担は NOTES にある通り：
+           **分類は機械、要約と題は AI、決めるのは人。**
+           「露骨に言う」は正しいが、**やっていないことまで名乗らせない。** -->
+      <button class="one" id="go-c" hidden>同じ件をまとめる</button>
     </div>
     <ul class="pile" id="pile"></ul>
   </section>
@@ -914,7 +922,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      出どころを散らして選ぶ（mail ばかり五行だと、一人の受信箱に見える）。
      足りなければ順に足す。**どれも②の山の中に実在する一行**——
      作り足すと「山に無い話を読ませた」ことになる */
-  var readT = 0;
+  var readT = 0, READ = [];
   function paintRead(){
     var el = document.getElementById('read'), b = document.getElementById('go-b');
     if (!el) return;
@@ -927,6 +935,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     for (k = 0; k < GROUPS.length && pick.length < 5; k++){
       if (pick.indexOf(GROUPS[k].raw[0]) < 0) pick.push(GROUPS[k].raw[0]);
     }
+    READ = pick.map(function(p){ return p[1]; });   /* 山で光らせる相手 */
     el.innerHTML = pick.map(function(p, i){
       return '<li style="animation-delay:' + (slow ? 0 : (i * .46).toFixed(2)) + 's">'
         + '<i>' + esc(p[0]) + '</i>' + esc(p[1]) + '</li>';
@@ -943,17 +952,44 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   var handled = 0;
   function paintPile(){
     handled = 0;
-    document.getElementById('count').textContent =
-      CARDS.length + ' 枚。題は付いていません。';
+    /* **読む段と繋げる**（2026-09-09。本人：「402 件への動線がなくて、
+       いきなり出てきた感じになってる」）。五行を読ませておいて、次の画面で
+       402 枚を落とすと、**別の話が来たように見えていた。**
+       **読んだ行が、この山の中にいることを言う。**下で光らせるのと対で効かせる */
+    document.getElementById('count').innerHTML =
+      'いま読んだ五行も、この中にあります。<b>' + CARDS.length + ' 枚</b>、題は付いていません。';
     document.getElementById('hint').textContent = '';   /* 合図は山の一行の上に置いた */
     document.getElementById('go-c').hidden = true;      /* 行き先は壁に当たってから */
     var frag = ['<li class="tip" id="tip">押すと片付きます　↓</li>'];
+    /* **転記や追記が付いていない一枚**を先に探す。読んだのは素の文なので、
+       「（追記）」が付いた写しを光らせると、読んだ行と別物に見える（画面で見つけた）*/
+    var mark = {}, want = {};
+    READ.forEach(function(t){ want[t] = 1; });
+    CARDS.forEach(function(c){ c.wasRead = false; });
+    CARDS.forEach(function(c){
+      if (c.again) return;
+      if (want[c.raw] && !mark[c.raw]){ mark[c.raw] = 1; c.wasRead = true; }
+    });
+    CARDS.forEach(function(c){                       /* 素のものが無ければ写しでも拾う */
+      var head = c.raw.split('  ')[0];
+      if (want[head] && !mark[head]){ mark[head] = 1; c.wasRead = true; }
+    });
     CARDS.forEach(function(c, i){
-      frag.push('<li><button class="pc' + (i ? '' : ' lead') + '" data-i="' + i
-        + '" data-u="' + c.u + '">'
+      frag.push('<li><button class="pc' + (i ? '' : ' lead') + (c.wasRead ? ' seen' : '')
+        + '" data-i="' + i + '" data-u="' + c.u + '">'
         + '<i>' + esc(c.src) + '</i>' + esc(c.raw) + '</button></li>');
     });
     document.getElementById('pile').innerHTML = frag.join('');
+    /* 印は**押すまで。**2.6 秒で消していたら、402 行の壁に出た直後なので
+       見つける前に消えていた（画面で見つけた）。**役目は目を繋ぐことなので、
+       手が動いたら終わり。**動かない人のために時間でも消す */
+    clearTimeout(seenT);
+    seenT = setTimeout(unseen, slow ? 0 : 9000);
+  }
+  var seenT = 0;
+  function unseen(){
+    clearTimeout(seenT);
+    document.querySelectorAll('#pile .pc.seen').forEach(function(x){ x.classList.remove('seen'); });
   }
 
   /* 行き先を出す。**押してみたか、山の底まで見たか。**
@@ -987,6 +1023,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      押した一枚は消さない——消すと山が縮んで「進んでいる」ように見える */
   function clear1(btn){
     if (btn.classList.contains('done')) return;
+    unseen();                       /* 手が動いたら、読んできた印は役目を終える */
     btn.classList.add('done');
     handled++;
     /* 合図は一度だけ。**押せると分かったら、もう要らない** */
