@@ -176,13 +176,13 @@ body.paneopen .wrap{max-width:1240px}
    押されたままの見た目なので、新しい印を足していない */
 .card.sel,.card.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
 
-/* ─ デモの口。**箱ではなく帯。**社名と同じ幅で、箱の下に一本。
+/* ─ デモの口。**箱ではなく帯。**社名と同じ幅で、**顔のすぐ下・箱の上に一本。**
    カードは開くもの、これは**飛ぶもの**。同じ形で並べていたので、
    六枚の中に一枚だけ行き先の違うものが混ざっていた。
    → は行き先の印（言葉で「クリックすると飛びます」とは書かない）*/
 .band{
   display:flex; align-items:center; gap:22px; flex-wrap:wrap;
-  margin-top:16px; padding:22px 26px; border-radius:var(--r);
+  margin-top:16px; padding:14px 26px; border-radius:var(--r);
   background:var(--go); color:#fff; text-decoration:none;
   -webkit-user-select:none; user-select:none;
   box-shadow:var(--lift1); transition:transform .16s var(--ease), box-shadow .16s ease;
@@ -533,6 +533,20 @@ html.boot .mark{opacity:1}
       <span class="sub2">コンサルティングによる業務設計からエンジニアリングまでを行います</span></p>
   </div>
 
+  <!-- デモの口。**箱ではなく帯。**会社の顔のすぐ下、箱の上に一本。
+       箱に混ざっていると、開くものの中に**飛ぶもの一枚**が同じ形で並んでいた。
+       形から違えてある（横長・色・→ が行き先の印）。
+
+       **箱の下から、ここへ上げた**（2026-09-09）。下に置くと、1280×575 の窓で
+       帯の頭が 626px＝**折り目（575px）の外**にいて、送らないと存在を知らない。
+       上げると帯が丸ごと入って、箱の一段目まで見える。
+       **細くしてある**（詰め 14px）ので、箱より軽い。顔 → 箱の主従は壊れない。 -->
+  <a class="band" href="try.html" id="demo">
+    <span class="t">デモを触る</span>
+    <span class="s">どこにもある課題管理表を、カードにして仕分けます（例）</span>
+    <span class="arw" aria-hidden="true">→</span>
+  </a>
+
   <div class="deck" id="deck">
 
     <!-- 企業理念。**公式サイトの navigation 四項目（企業理念／サービス／会社概要／
@@ -768,16 +782,6 @@ html.boot .mark{opacity:1}
     </div>
 
   </div>
-
-  <!-- デモの口。**箱の中から出して、社名と同じ幅の帯にした**（本人 2026-09-08：
-       「デモ、社名みたいな感じで横長にして箱の下に置くか」）。
-       箱に混ざっていると、**開くもの六枚の中に、飛ぶもの一枚**が同じ形で並んでいた。
-       形から違えてある（→ は行き先の印）。 -->
-  <a class="band" href="try.html" id="demo">
-    <span class="t">デモを触る</span>
-    <span class="s">どこにもある課題管理表を、カードにして仕分けます（例）</span>
-    <span class="arw" aria-hidden="true">→</span>
-  </a>
 
 </main>
 
@@ -1083,7 +1087,7 @@ html.boot .mark{opacity:1}
     p.owner.setAttribute('aria-expanded', 'false');
   }
 
-  function show(card){
+  function show(card, pressed){
     if (open === card){ hide(); return; }      /* 同じカードをもう一度＝閉じる */
     var panel = card.querySelector('.panel');
     if (!panel) return;                        /* 行き先があるカード（体験）は素通り */
@@ -1105,12 +1109,14 @@ html.boot .mark{opacity:1}
 
     reach(panel.querySelector('.body'));
 
-    /* 記事を読んで戻ってきたとき、一覧が出たまま戻るように印を残す。
+    /* 開いたカードを URL に残す（`#mind` など）。人に送れる・戻っても開いている。
        replaceState なので、閉じたあと「戻る」で開き直したりはしない。 */
     if (card.dataset.hash) history.replaceState(null, '', '#' + card.dataset.hash);
 
-    /* 横に余裕が無いときは束の下に出るので、見えるところまで運ぶ */
-    if (innerWidth <= 1119) pane.scrollIntoView({ block:'nearest', behavior:'smooth' });
+    /* 横に余裕が無いときは束の下に出るので、見えるところまで運ぶ。
+       **押されたときだけ。**読み込み直しで開き直した（reopen）ときに送ると、
+       戻ってきた送り位置の上から、さらに送ることになる（開くたび位置がずれていく）*/
+    if (pressed && innerWidth <= 1119) pane.scrollIntoView({ block:'nearest', behavior:'smooth' });
   }
 
   function hide(){
@@ -1243,7 +1249,7 @@ html.boot .mark{opacity:1}
 
   cards.forEach(function(c){
     c.addEventListener('pointerdown', function(){ c.classList.add('down'); });
-    c.addEventListener('click', function(){ press(c); show(c); });
+    c.addEventListener('click', function(){ press(c); show(c, true); });
   });
 
   var band = document.getElementById('demo');
@@ -1268,7 +1274,9 @@ html.boot .mark{opacity:1}
 
     var n = '123456789'.indexOf(e.key);
     if (n >= 0 && n < cards.length){ e.preventDefault(); cards[n].focus(); cards[n].click(); return; }
-    /* 箱の次の番はデモの帯。**箱から出したので、順番の最後に置く** */
+    /* デモの帯は箱の次の番（5 枚のあと 6 番）。**帯が上に来ても、番は最後のまま。**
+       数字は箱の輪を歩くもので、1 を押していきなり別の頁へ飛ぶのは行き過ぎ。
+       Tab は見た目どおり帯から始まる（DOM の順） */
     var band = document.getElementById('demo');
     if (n === cards.length && band){ e.preventDefault(); band.focus(); band.click(); return; }
 
