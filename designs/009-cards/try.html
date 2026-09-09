@@ -554,7 +554,13 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     <div class="ask2">
       <p class="ask">この中から、要らないものを片付けてください。<br>
         <span class="sub" id="hint"></span></p>
-      <button class="one" id="go-c" hidden>同じ件をまとめる</button>
+      <!-- **誰がやるかを言い切る**（2026-09-09。前は「同じ件をまとめる」）。
+           本人：「推測は AI がやってるって割と露骨に言うとか、そういう意味」。
+           **AI は会社が選んだ制約の三つ目（人が書かない）**なのに、
+           画面では「この仕組み」と呼んで隠していた。
+           ここは**動作の瞬間**なので、名乗らせるのに一番効く場所。
+           **説明ではない**——ボタン自身の名前を、やる者の名前にしただけ。 -->
+      <button class="one" id="go-c" hidden>AI にまとめさせる</button>
     </div>
     <ul class="pile" id="pile"></ul>
   </section>
@@ -615,7 +621,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
 <footer class="foot">
   <div class="in">
-    <p class="note">これは仮の中身です。実際のメールや議事録ではありません。カードに付く題は、生の一行には書かれていないもの（この仕組みが付けるもの）です。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月9日に確認）。</p>
+    <p class="note">これは仮の中身です。実際のメールや議事録ではありません。カードに付く題は、生の一行には書かれていないもの（<b>AI</b> が付けるもの）です。会社の言葉として出ているのは、終わりに出る理念だけです（alt-dsgn.co.jp、2026年9月9日に確認）。</p>
   </div>
 </footer>
 
@@ -627,7 +633,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      減るのは手数だけ（12 群なので、何件でも 12 手で終わる）。 */
   var N = 120;
 
-  /* 群 ＝ カードの題（**生の一行には書かれていない。この仕組みが付けるもの**）と、
+  /* 群 ＝ カードの題（**生の一行には書かれていない。AI が付けるもの**）と、
      その件が実際にどう書かれていたか。
      **題を当てるのが②で無理だと思ったところ**で、そこは機械がやる。
 
@@ -1086,7 +1092,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       +   '<div class="who"><span class="lb">この件は ' + us.length + ' 通りの言い方で、' + all.length + ' か所に書かれていた</span>'
       +     '<ul class="uul">' + was2 + '</ul>'
       +   '</div>'
-      +   '<span class="made">「' + esc(GROUPS[k].t) + '」という題も、上の ' + us.length + ' 行も、生の文には書かれていません。この仕組みが付けたものです。</span>'
+      +   '<span class="made">「' + esc(GROUPS[k].t) + '」という題も、上の ' + us.length + ' 行も、生の文には書かれていません。<b>AI</b> が付けたものです。</span>'
       + '</div></div>';
 
     btn.classList.add('sel');
