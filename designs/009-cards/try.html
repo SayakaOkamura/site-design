@@ -271,6 +271,16 @@ body.gathering .ask2, body.gathering .tape, body.gathering .work{
   transition:opacity .2s ease, background-color .12s ease;
 }
 .pc:hover{background:rgba(99,84,224,.1)}
+/* **届いた一行。**押すと壁が増えるのを目で見せる（2026-09-09）。
+   上から差し込まれて、赤みが 1.5s で引く。**枠は動かない**——7px 落ちるだけ。
+   `both` は付けない：残すと transform:none が居座って、まとまるときの寄せを止める */
+.pile li.came{animation:dropin .34s var(--ease), tint 1.5s ease-out}
+@keyframes dropin{from{opacity:0; transform:translateY(-7px)} to{opacity:1; transform:none}}
+@keyframes tint{
+  0%{background:rgba(224,84,84,.22)}
+  60%{background:rgba(224,84,84,.11)}
+  100%{background:transparent}
+}
 /* **選んだ件。最初から光っている**（2026-09-09。本人：「何したらいい画面か
    わかんない」）。前は一度押すまで光らなかったので、**その一件が壁のどこに
    あるか見えず、始められなかった。**
@@ -322,14 +332,22 @@ body.gathering .ask2, body.gathering .tape, body.gathering .work{
   display:flex; align-items:center; gap:26px; flex-wrap:wrap;
   margin:0 0 22px; padding:14px 0 16px; background:var(--bg);
 }
-.ask2 .ask{margin:0}
+/* **問いの幅に蓋をする。**flex の折り返しは中身の max-content で決まるので、
+   注記が一行入っただけで問いが広がり、**一手が次の行へ落ちた**——そこから下が
+   まるごと 76px 下がって、②の「片付ける」が動いた（2026-09-09、560px で数えた）。
+   蓋をすれば折り返しは起きない。広い窓では中身のほうが短いので見た目は変わらない */
+.ask2 .ask{margin:0; max-width:calc(100% - 200px)}
 .ask2 .one{margin-top:0; flex:none}
 /* ─ **行き先は、壁に当たってから出す。**
    本人 2026-09-08：「同じのまとめるってもう見えてるしなあ」。
    最初から出ていたので、**一枚ずつ押す理由が無かった**——答えが先に置いてあった。
    出るのは、**押してみたか、山の底まで見たか**のどちらか。
    どちらも「壁に当たった」——やって諦めるのと、見て諦めるのは別のこと（前の節）*/
-.ask2 .one{animation:rise .28s var(--ease) both}
+/* **場所は最初から取っておく**（2026-09-09。狭い窓で、この一手が出た瞬間に
+   行が折れて、②の「片付ける」が 79px 下へ逃げた。画面で数えた）。
+   `hidden` で消すと折り返しが変わるので、**見えないだけにする** */
+#go-c{visibility:hidden}
+#go-c.on{visibility:visible; animation:rise .28s var(--ease) both}
 @keyframes rise{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
 
 /* ─ 一手。**行き先が言葉に出ている** ─ */
@@ -636,9 +654,25 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   display:flex; gap:26px; flex-wrap:wrap; margin:0 0 6px;
   font-family:var(--mono); font-size:12px; color:var(--sub);
 }
-.tape b{color:var(--ink); font-weight:700}
+.tape b{display:inline-block; color:var(--ink); font-weight:700}
 .tape .up{color:#b4453f}
 .tape .wait b{color:#b4453f}
+/* **片付いた 0 は死んでいる。**二つ跳ねて、これだけ動かない（2026-09-09）*/
+.tape .zero{color:#98a2bd}
+.tape .cell{position:relative}
+/* 押したときだけ跳ねる。**枠は動かない**——字が一つ、0.34s ふくらむだけ */
+.tape .pop{animation:pop .34s var(--snap)}
+@keyframes pop{0%{transform:none} 30%{transform:scale(1.3)} 100%{transform:none}}
+.tape .plus{
+  position:absolute; left:100%; top:-1px; margin-left:7px; white-space:nowrap;
+  font-style:normal; font-weight:700; color:#b4453f; pointer-events:none;
+  animation:plus .8s var(--ease) forwards;
+}
+@keyframes plus{
+  0%{opacity:0; transform:translateY(5px)}
+  22%{opacity:1; transform:translateY(0)}
+  100%{opacity:0; transform:translateY(-15px)}
+}
 
 /* ─ いまの一件（②の本体）───────────────────────────────
    **一枚だけ。位置は動かない。**押すと**別の件に差し替わる**——
@@ -662,10 +696,18 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 .work .bd{flex:1 1 auto; min-width:0}
 .work .go{flex:none; margin:0}
 .work .one{margin-top:0}   /* 一件の一行と頭を揃える */
-/* 狭いと縦に折れる。**折れたら位置が動く**ので、そのときだけ高さを固定する */
+/* 狭い窓でも**横並びのまま。**前は縦に折って高さ 232px 固定＋一手を下に貼って
+   いたが、待ちが溜まると器が 232px を超えて**一手が下へ逃げた**（2026-09-09）。
+   横並びなら、器が何段伸びても一手は上端から動かない。詰めだけ落とす */
 @media (max-width:620px){
-  .work .card2{display:block; min-height:232px; position:relative}
-  .work .go{position:absolute; left:2px; bottom:16px}
+  .work .card2{gap:12px}
+  .work .one{padding:14px 14px; font-size:13px}
+  /* 狭い窓は蓋をやめて、**一手を必ず次の行に置く**（幅を狭めると問いの段が
+     三行四行になる）。場所は最初から取ってあるので、出ても動かない。
+     注記は二行になるので、二行ぶん取っておく */
+  .ask2 .ask{max-width:none}
+  #go-c{flex:0 0 100%}
+  .ask .sub{min-height:3.6em}
 }
 /* 割り込みの札。**なぜ先に来たかを一言だけ。**読まなくても色で分かる */
 .work .why{
@@ -678,7 +720,23 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 .work .ln{min-width:0}
 .work .ln>*{margin-top:0}
 /* 待たされている件。**札だけ積む**（一行に収まる。数は帯が言う）*/
-.work .held{margin:16px 0 0; display:flex; gap:6px; flex-wrap:wrap}
+/* 待ちに回ったもの。**番号の札をやめた**（2026-09-09。本人：「②のストレス性を
+   もうちょっと直感的に上げたい」）。等幅で揃った `待ち 0192` は片付いて見えた。
+   **手をつけて放したものが、生の形のまま下に溜まる。**薄いのは止まっている印。
+   溜まると器が下へ伸びて壁を押すが、**一手は右上なので位置は動かない。**
+   見せるのは直近三つだけ（それ以上は数で言う）——**壁の見える高さを食う**ので、
+   四つにすると窓に残る壁が 124px しかなかった（画面で数えた。量が出ない）*/
+.work .held{
+  margin:12px 0 0; padding:8px 0 0; border-top:1px dashed #c3d1e3;
+}
+.work .held .hh{
+  display:block; font-family:var(--mono); font-size:10.5px;
+  color:#b4453f; letter-spacing:.04em; margin:0 0 3px;
+}
+.work .held .hl{
+  opacity:.44; border-left:2px solid #d3dee9; padding-left:9px; margin:0;
+}
+.work .held .hl>*{margin:1px 0}      /* 中の形は残す。上下だけ詰める */
 .work .held em{
   font-style:normal; font-family:var(--mono); font-size:11px;
   padding:4px 8px; border-radius:4px; background:var(--tint); color:var(--sub);
@@ -750,7 +808,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
            カードの題と、帯の「AI の要約」。分担は NOTES にある通り：
            **分類は機械、要約と題は AI、決めるのは人。**
            「露骨に言う」は正しいが、**やっていないことまで名乗らせない。** -->
-      <button class="one" id="go-c" hidden>同じ件をまとめる</button>
+      <button class="one" id="go-c">同じ件をまとめる</button>
     </div>
     <!-- **五行と山を、同じ画面に入れた**（2026-09-09。本人：「5択？
          わざわざここがある意味がよく分からん」）。
@@ -1149,10 +1207,48 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var el = document.getElementById('tape');
     if (!el) return;
     el.innerHTML =
-      '<span>残り <b>' + (CARDS.length + ADDED) + ' 件</b>'
+      '<span class="cell">残り <b id="nrem">' + (CARDS.length + ADDED) + ' 件</b>'
       + (ADDED ? ' <span class="up">+' + ADDED + '</span>' : '') + '</span>'
-      + '<span class="wait">待たされている <b>' + HELD.length + ' 件</b></span>'
-      + '<span>片付いた <b>0 件</b></span>';
+      + '<span class="cell wait">待たされている <b id="nwait">' + HELD.length + ' 件</b></span>'
+      + '<span class="cell">片付いた <b class="zero">0 件</b></span>';
+  }
+
+  /* **数が動くのを、字ではなく動きで出す**（2026-09-09。本人：「②のストレス性を
+     もうちょっと直感的に上げたい」）。帯は読まれない前提なので、増えたことが
+     字の中にしかなかった。**二つ跳ねて、一つは 0 のまま動かない**——
+     それがこの画面の言いたいこと。押す場所は動かないし、枠も動かない */
+  function bump(){
+    ['nrem','nwait'].forEach(function(id){
+      var b = document.getElementById(id);
+      if (!b) return;
+      b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+    });
+    var host = document.querySelector('#tape .cell');
+    if (!host) return;
+    var p = document.createElement('i');
+    p.className = 'plus'; p.textContent = '+1';
+    host.appendChild(p);
+    setTimeout(function(){ p.remove(); }, 800);
+  }
+
+  /* **押すと、壁が一行増える。**数字だけが増えて壁が動かないと、
+     「増えた」が帯の字の中にしか無い。届くのは**同じ話の別の言い方**——
+     一件を追っているあいだに、別の出どころから同じ件が入ってくる。
+     **枠は動かない**（行が一つ 7px 落ちるだけ。§「ジェットコースターにしない」）*/
+  var MARK = ['（再掲）','※同上','（転記）','※前回分','（追記）'];
+  function addRow(c){
+    var pile = document.getElementById('pile');
+    if (!pile || !c) return;
+    var g = GROUPS[c.k], p = g.raw[Math.floor(rnd() * g.raw.length)];
+    var li = document.createElement('li');
+    li.className = 'pc came';
+    li.dataset.k = c.k;                        /* まとまるときの行き先 */
+    li.innerHTML = rawHTML({ k:c.k, src:p[0], n:CARDS.length + ADDED,
+                             raw:p[1] + '　' + MARK[ADDED % MARK.length] });
+    pile.insertBefore(li, pile.firstChild);
+    /* **`both` で止めない**——止めると transform:none が残って、
+       まとまるときの寄せが効かなくなる（animation は inline style に勝つ）*/
+    setTimeout(function(){ li.classList.remove('came'); }, 1600);
   }
 
   /* いまの一件を出す。**位置は動かない。**カードごと差し替える */
@@ -1170,8 +1266,13 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       /* いまの一件も**その出どころの形**で出す。押すたびに形が変わる——
          **揃っていないことが、ここでも起きる** */
       + '<div class="ln rw">' + rawHTML(c) + '</div>'
-      + (HELD.length ? '<div class="held">' + HELD.map(function(t){
-          return '<em>待ち ' + t + '</em>'; }).join('') + '</div>' : '')
+      /* **番号の札をやめた。**`待ち 0192` は片付いて見えた——
+         **手をつけて放したものが、生の形のまま下に溜まる。**薄いのは止まっている印 */
+      + (HELD.length ? '<div class="held"><span class="hh">手をつけたまま</span>'
+          + HELD.slice(-3).reverse().map(function(h){
+              return '<div class="hl rw">' + rawHTML(h) + '</div>'; }).join('')
+          + (HELD.length > 3 ? '<span class="hh">ほか ' + (HELD.length - 3) + ' 件</span>' : '')
+        + '</div>' : '')
       + '</div><div class="go"><button class="one" id="fix">片付ける</button></div>'
       + '</div>';
     sayCount();
@@ -1185,11 +1286,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var cut = CUT[NOW];
     if (!cut) return;
     var mine = keyCard(NOW);
-    if (mine) HELD.push(no(mine));
-    while (HELD.length > 6) HELD.shift();
+    if (mine) HELD.push(mine);          /* 番号ではなく**その一件**を持つ */
     ADDED++;
     steps++;
+    if (mine) addRow(mine);             /* 壁が一行増える */
     paintWork(cut.to, cut.why);
+    bump();                             /* 帯の数が跳ねる */
     var h = document.getElementById('hint');
     if (steps >= 3){
       h.textContent = '一件も片付いていません。待ちが ' + HELD.length + ' 件になりました。';
@@ -1210,11 +1312,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var ask = document.querySelector('.ask2 .ask');
     if (ask && ask.firstChild) ask.firstChild.textContent = '締めは明後日です。順に片付けてください。';
     document.getElementById('hint').textContent = '';
-    document.getElementById('go-c').hidden = true;
+    document.getElementById('go-c').classList.remove('on');
 
     /* 壁。**button ではない。**押せるのは「片付ける」だけ */
     document.getElementById('pile').innerHTML = CARDS.map(function(c){
-      return '<li class="pc" data-i="' + c.n + '">' + rawHTML(c) + '</li>';
+      return '<li class="pc" data-i="' + c.n + '" data-k="' + c.k + '">'
+           + rawHTML(c) + '</li>';
     }).join('');
 
     /* 一件目は**こちらが出す**（「どれから片付けるって発想すらない」ので）。
@@ -1235,7 +1338,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (slow || !pile){ stage('c'); return; }
 
     var tip = document.getElementById('tip'); if (tip) tip.remove();
-    document.getElementById('go-c').hidden = true;   /* 動いているあいだに二度押させない */
+    document.getElementById('go-c').classList.remove('on');   /* 動いているあいだに二度押させない */
 
     /* **着地点は 12。**前は「見えている行のうち件ごとの一番上」を着地点にしていた。
        出どころごとの形にしたら行が高くなり、**窓に入る行が減って着地点が 4〜7 に
@@ -1273,7 +1376,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         li.classList.add('out'); return;   /* 見えていない行はその場で消す */
       }
       li.classList.add('fly');
-      var k = CARDS[+li.dataset.i - 1].k;
+      var k = +li.dataset.k;             /* 途中で届いた行も同じように寄る */
+      if (isNaN(k)) return;
       li.style.transform = 'translate(' + (x0 - r.left) + 'px,'
                          + (top + k * gap - r.top) + 'px)';
     });
@@ -1309,8 +1413,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      どちらでも一度出たら、もう隠さない */
   function offer(why){
     var b = document.getElementById('go-c');
-    if (!b.hidden) return;
-    b.hidden = false;
+    if (b.classList.contains('on')) return;
+    b.classList.add('on');
     var h = document.getElementById('hint');
     /* **追わずに底まで送った人**にも行き先を出す（塞がない）*/
     if (why === 'end' && !steps){
@@ -1710,7 +1814,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       var a = document.activeElement;
       /* 山の一枚と五行の一枚は、そのキーが**その一枚のもの** */
       if (a && a.classList && (a.classList.contains('pc') || a.classList.contains('rd'))) return;
-      if (document.getElementById('go-c').hidden) return;   /* 出ていない行き先へは飛ばさない */
+      if (!document.getElementById('go-c').classList.contains('on')) return;   /* 出ていない行き先へは飛ばさない */
       e.preventDefault(); gather(); return;
     }
     if (s === 'c'){
