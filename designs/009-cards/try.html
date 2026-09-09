@@ -698,14 +698,33 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   display:flex; align-items:flex-start; gap:24px;
 }
 .work .bd{flex:1 1 auto; min-width:0}
-.work .go{flex:none; margin:0}
-.work .one{margin-top:0}   /* 一件の一行と頭を揃える */
+/* 三択は右に縦に並ぶ。**上端から数えた位置なので、器が何段伸びても動かない。**
+   形は③の三択（丸い・ゴシック・カードの上）と分けてある——②はまだ形の付いて
+   いない世界なので、**角は立てて、字は等幅。**どれも同じ重さ（2026-09-09）*/
+.work .go{flex:none; margin:0; display:flex; flex-direction:column; gap:8px}
+.pick3{
+  -webkit-appearance:none; appearance:none; cursor:pointer; text-align:left;
+  font-family:var(--mono); font-size:12.5px; font-weight:700;
+  padding:11px 13px; border-radius:2px; min-width:118px;
+  border:1px solid #b9c8dc; background:var(--card); color:var(--ink);
+  transition:border-color .12s ease, background-color .12s ease;
+}
+.pick3:hover{border-color:var(--go); background:rgba(99,84,224,.07)}
+.pick3:active{background:rgba(99,84,224,.14)}
+.pick3:focus-visible{outline:2px solid var(--go); outline-offset:2px}
+.pick3 em{font-style:normal; float:right; color:var(--sub); font-weight:500}
+/* 待ちに回した行の印。**どう放したか**が三通りある */
+.work .held .mk{
+  text-decoration:none; display:inline-block; margin-right:7px;
+  font-family:var(--mono); font-size:10px; color:#b4453f;
+  border:1px solid rgba(180,69,63,.34); border-radius:2px; padding:0 4px;
+}
 /* 狭い窓でも**横並びのまま。**前は縦に折って高さ 232px 固定＋一手を下に貼って
    いたが、待ちが溜まると器が 232px を超えて**一手が下へ逃げた**（2026-09-09）。
    横並びなら、器が何段伸びても一手は上端から動かない。詰めだけ落とす */
 @media (max-width:620px){
   .work .card2{gap:12px}
-  .work .one{padding:14px 14px; font-size:13px}
+  .pick3{padding:10px 10px; min-width:96px; font-size:12px}
   /* 狭い窓は蓋をやめて、**一手を必ず次の行に置く**（幅を狭めると問いの段が
      三行四行になる）。場所は最初から取ってあるので、出ても動かない。
      注記は二行になるので、二行ぶん取っておく */
@@ -737,9 +756,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   display:block; font-family:var(--mono); font-size:10.5px;
   color:#b4453f; letter-spacing:.04em; margin:0 0 3px;
 }
-.work .held .hl{
-  opacity:.44; border-left:2px solid #d3dee9; padding-left:9px; margin:0;
-}
+/* **印は薄くしない。**どう放したかは、この画面で一番読ませたいもの。
+   薄くするのは生の中身のほう（止まっている印）*/
+.work .held .hl{border-left:2px solid #d3dee9; padding-left:9px; margin:0}
+.work .held .hl>div{opacity:.44}
 .work .held .hl>*{margin:1px 0}      /* 中の形は残す。上下だけ詰める */
 .work .held em{
   font-style:normal; font-family:var(--mono); font-size:11px;
@@ -1153,6 +1173,16 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   }
 
     var steps = 0, LAST = 3, HELD = [], ADDED = 0, inSeen = {}, NOW = null;
+    /* **②の三択。**前は一択（「片付ける」だけ）で、**押しても押した人によって
+       何も変わらなかった**（2026-09-09、本人：「今ただのクリック作業なんだよ」。
+       §「読む段で選ばせた」で一度出た話が、②に残っていた）。
+       **どの向きに詰まるかを本人に選ばせる。**三つともゼロは動かない——
+       変わるのは**穴の形**（深くなる／広がる／止まる）。
+       読む必要はない。中身を読まずに向きだけ決めるのが、この場の実際の作法 */
+    var TRY = { now:0, later:0, ask:0 };
+    var BACK = [];         /* 後にしたもの。三手あとに戻ってくる */
+    var USED = {};         /* 出した鍵。同じものを続けて出さない */
+    var KEYS = [];         /* 全部の鍵（件.行）*/
 
   /* ─ 割り込みの組（2026-09-09）──────────────────────────
      **順に進めたいのに、押すと別の件が先に来る。**
@@ -1183,6 +1213,15 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     '10.4': { to:'10.1', why:'人がいません' },
     '10.1': { to:'3.1', why:'また出ています' }   /* 一周して戻る */
   };
+
+  /* 鍵の総覧。**後にする／人に聞く**の行き先はここから引く（絡まりの鎖ではない）*/
+  function allKeys(){
+    var out = [];
+    GROUPS.forEach(function(g, k){
+      for (var i = 0; i < g.raw.length; i++) out.push(k + '.' + i);
+    });
+    return out;
+  }
 
   /* 鍵 → 山の中の一枚（項番と出どころを取る）。`pt` は言い方ごとに一つ */
   function keyCard(key){
@@ -1275,7 +1314,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        中央にできる——**空きは落ち着いて見えるので、②とは逆を向く**（画面で数えた）。
        右に出すと、器は中身の高さで済み、押す場所は上端から動かない */
     el.innerHTML = '<div class="card2"><div class="bd">'
-      + (why ? '<p class="why">' + esc(why) + '　これが先です</p>' : '')
+      /* **合図は向きごとに違う。**前は何を押しても「〜これが先です」だった */
+      + (why ? '<p class="why">' + esc(why) + '</p>' : '')
       /* いまの一件も**その出どころの形**で出す。押すたびに形が変わる——
          **揃っていないことが、ここでも起きる** */
       + '<div class="ln rw">' + rawHTML(c) + '</div>'
@@ -1283,28 +1323,93 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
          **手をつけて放したものが、生の形のまま下に溜まる。**薄いのは止まっている印 */
       + (HELD.length ? '<div class="held"><span class="hh">手をつけたまま</span>'
           + HELD.slice(-3).reverse().map(function(h){
-              return '<div class="hl rw">' + rawHTML(h) + '</div>'; }).join('')
+              /* **どう放したかを印で出す。**穴の形が人によって違うのが見える */
+              return '<div class="hl rw"><u class="mk">' + h.mk + '</u>'
+                   + rawHTML(h.c) + '</div>'; }).join('')
           + (HELD.length > 3 ? '<span class="hh">ほか ' + (HELD.length - 3) + ' 行</span>' : '')
         + '</div>' : '')
-      + '</div><div class="go"><button class="one" id="fix">片付ける</button></div>'
-      + '</div>';
+      /* **三つとも同じ重さで置く。**どれかを目立たせると、また一択に戻る */
+      + '</div><div class="go">'
+      +   '<button class="pick3" data-v="now">今やる<em>1</em></button>'
+      +   '<button class="pick3" data-v="later">後にする<em>2</em></button>'
+      +   '<button class="pick3" data-v="ask">人に聞く<em>3</em></button>'
+      + '</div></div>';
     sayCount();
   }
 
-  /* **押しても片付かない。**いまのは待ちに回って、食い違っている件が先に来る。
-     **一件来る**（追っているあいだに届いたもの）*/
+  /* ─ ②の三択 ───────────────────────────────
+     **どれを押しても、片付いた行はゼロのまま。**変わるのは**詰まり方**——
+
+       今やる  → 前提が欠けている。**その前提の件が割り込む**（深くなる）
+       後にする → 待ちへ。**新しく届いたものが前に来る**（広がる）。三手あとに戻ってくる
+       人に聞く → 待ちへ。**返事は来ない**（戻ってこない）。別の件が前に来る
+
+     前は「片付ける」の一択で、**押しても押した人によって何も変わらなかった**
+     （本人 2026-09-09：「今ただのクリック作業なんだよ」）。
+     **操作を重くしたのではない**（§「不快感を与える要素は操作性じゃない」）——
+     一手の重さは同じで、**選べるようにした**だけ。自分の選んだ穴が④で返る。
+
+     **中身は読まなくていい。**向きだけ決める——読まずに向きを決めるのが、
+     この場の実際の作法。読ませようとしたのは §「読む段で選ばせた」で外している */
+  var MKW2 = { now:'前提待ち', later:'後回し', ask:'返事待ち' };
+
+  /* 次に前へ出す鍵。**戻りが来ていればそれが先。**なければ向きなりに引く */
+  function nextKey(v){
+    if (BACK.length && BACK[0].at <= steps){
+      var back = BACK.shift();
+      return { key:back.key, why:'後にしたものが戻りました' };
+    }
+    if (v === 'now'){
+      var cut = CUT[NOW];
+      if (cut) return { key:cut.to, why:cut.why + '　これが先です' };
+      /* **鎖が切れていても、今やるは深くなる向きを守る。**
+         同じ件の別の記録を前に出す（後にする／人に聞くは別の件へ）*/
+      var mine = keyCard(NOW), g = mine && GROUPS[mine.k];
+      if (g){
+        var i0 = +NOW.split('.')[1];
+        for (var j = 1; j < g.raw.length; j++){
+          var i2 = (i0 + j) % g.raw.length;
+          if (i2 !== i0) return { key:mine.k + '.' + i2,
+                                  why:'同じ件に別の記録があります　これが先です' };
+        }
+      }
+    }
+    /* 後にする／人に聞く／鎖が切れたとき。**別の件から引く**（同じ件は続けない）*/
+    if (!KEYS.length) KEYS = allKeys();
+    var here = keyCard(NOW), pool = [], i;
+    for (i = 0; i < KEYS.length; i++){
+      var k = KEYS[i];
+      if (USED[k]) continue;
+      if (here && +k.split('.')[0] === here.k) continue;   /* 同じ件は前に出さない */
+      pool.push(k);
+    }
+    if (!pool.length){ USED = {}; pool = KEYS.slice(); }
+    var pick = pool[Math.floor(rnd() * pool.length)];
+    USED[pick] = 1;
+    return { key:pick, why:(v === 'ask' ? '返事待ちのまま、別の件です' : '新しく届きました') };
+  }
+
   document.addEventListener('click', function(e){
-    var b = e.target.closest && e.target.closest('#fix');
+    var b = e.target.closest && e.target.closest('.pick3');
     if (!b || document.body.dataset.stage !== 'b') return;
-    var cut = CUT[NOW];
-    if (!cut) return;
-    var mine = keyCard(NOW);
-    if (mine) HELD.push(mine);          /* 番号ではなく**その一件**を持つ */
+    var v = b.dataset.v, mine = keyCard(NOW), was = NOW;
+    if (!mine) return;
+
+    /* **同じ行を二度数えない。**後にしたものが戻ってきて、また放されることが
+       あるので、印は**最後に放したときのもの**に上書きする。
+       これで「待たされている N 行」が行の数のまま（手数は steps が持つ）*/
+    HELD = HELD.filter(function(h){ return h.c !== mine; });
+    HELD.push({ c:mine, mk:MKW2[v] });   /* 生の一件＋どう放したかの印 */
+    TRY[v]++;
     ADDED++;
     steps++;
-    if (mine) addRow(mine);             /* 壁が一行増える */
-    paintWork(cut.to, cut.why);
-    bump();                             /* 帯の数が跳ねる */
+    addRow(mine);                        /* 壁が一行増える */
+    /* **後にしたものは戻ってくる。**人に聞いたものは戻ってこない */
+    if (v === 'later') BACK.push({ key:was, at:steps + 3 });
+
+    var nx = nextKey(v);
+    paintWork(nx.key, nx.why);
+    bump();                              /* 帯の数が跳ねる */
     var h = document.getElementById('hint');
     if (steps >= 3){
       h.textContent = '一件も片付いていません。待ちが ' + HELD.length + ' 行になりました。';
@@ -1319,6 +1424,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      **量は数字（402）と、連鎖が終わらないことで出す。** */
   function paintPile(){
     steps = 0; ADDED = 0; inSeen = {}; HELD = [];
+    TRY = { now:0, later:0, ask:0 }; BACK = []; USED = {}; KEYS = allKeys();
     /* **締めを出して、言い切る**（2026-09-09）。「〜てみてください」は誘いで、
        **やらされている感が出ない。**締めは材料にある
        （`pdf 締めは月末の翌 3 営業日までに行うこと。`）*/
@@ -1745,8 +1851,13 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       /* **待たされた件数を返す**（2026-09-09。前は「たどり着いた先」）。
          **順に片付けようとして、一件も終わらなかった**のがそのまま数字になる */
       + (steps ? '<span class="cmp">順に片付けようとして、<b>'
-          + steps + ' 行</b>が待ちに回りました。最後は <b>「'
+          + HELD.length + ' 行</b>が待ちに回りました。最後は <b>「'
           + esc(GROUPS[LAST].t) + '」</b>で止まっています。</span>' : '')
+      /* **自分がどう詰まらせたかを返す**（2026-09-09）。②の三択は人によって
+         混ざりが違う。**同じ 0 件でも、穴の形が違う**——それが自分ごとの行き先 */
+      + (steps ? '<span class="cmp">向きは<b>やってみた ' + TRY.now
+          + ' 回</b>・<b>後にした ' + TRY.later + ' 回</b>・<b>人に聞いた '
+          + TRY.ask + ' 回</b>。<b>片付いたのは 0 件</b>です。</span>' : '')
       /* **②で一枚ずつ押した人には、その数を返す。**自分の手数と、まとめてからの手数。
          点数ではない（§5 で点数は足さないと決めている）——**同じ「押す」の重さが
          違うことを、自分の数字で見せる。**押していない人には出さない */
@@ -1820,6 +1931,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         if (pks[i]){ e.preventDefault(); answer(+pks[i].dataset.n); }
       }
       return;
+    }
+    if (s === 'b'){
+      /* ②の三択も数字で。**③と同じ並び順**（左から 1・2・3）*/
+      var bi = '123'.indexOf(e.key);
+      if (bi >= 0){
+        var p3 = document.querySelectorAll('.pick3');
+        if (p3[bi]){ e.preventDefault(); p3[bi].click(); return; }
+      }
     }
     if (s === 'b' && (e.key === 'Enter' || e.key === ' ')){
       /* 山の一枚に焦点があるときは、そのキーは**その一枚のもの。**
