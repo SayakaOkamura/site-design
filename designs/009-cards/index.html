@@ -106,8 +106,6 @@ body.locked{overflow:hidden}
 }
 .stack{flex:1 1 auto; min-width:0}
 
-/* 帯が出ているあいだだけ置き場を広げる。**束は左へ寄るだけで、消えない** */
-body.paneopen .wrap{max-width:1240px}
 
 .top,.foot{flex:none; background:var(--frame)}
 .top{height:56px; display:flex; align-items:center; transition:background-color .46s ease}
@@ -180,9 +178,6 @@ body.paneopen .wrap{max-width:1240px}
 .card:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 .card.down{transform:translateY(2px); box-shadow:var(--lift0); transition-duration:.06s}
 
-/* 中身が右に出ているカードは、**沈んで、面が空になる**（中身が右へ出て行った）。
-   押されたままの見た目なので、新しい印を足していない */
-.card.sel,.card.sel:hover{transform:translateY(2px); box-shadow:var(--lift0); background:var(--tint)}
 
 /* ─ デモの口。**束の中の一枚。ただし飛ぶ。**
    一度は帯にして箱から出した（2026-09-08）。理由は「開くもの六枚に、飛ぶもの一枚が
@@ -200,42 +195,70 @@ body.paneopen .wrap{max-width:1240px}
               font-size:16px; line-height:1; color:rgba(255,255,255,.85)}
 .card.go:focus-visible{outline-color:var(--ink)}
 
-/* ─ 右の帯。中身はここに出る ────────────────────────────────
-   **カードは消えない。**中身が右へ出て、束が左へ寄るだけ。
-   だから戻るのに部品が要らない——**もう一度押す／別のカードを押す。**
-   ✕ は置いていない（Esc も効くが、無くても戻れる）。 */
-.pane{flex:none; position:relative; width:0; overflow:hidden; transition:width .24s var(--ease)}
-.pane:empty{display:none}
-body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
+/* ─ 裏表。**浮いて、大きくなって、裏を向く**（2026-09-10）──────────────
+   > 右に出るとズレて押す場所ズレるから**裏表にして、カード自体をクリックして
+   > 戻せるようにしようか**。スクロールとかはそのまま
+   > **裏むくときにポップして**（本人 2026-09-10）
 
-/* 中身は固定幅。**帯が伸びるあいだ、文字が組み直されない** */
-.panel{display:none}
+   前は右に帯（420px）を出して、置き場を 1180 → 1240 に広げて束を左へ寄せていた。
+   **押した瞬間にカードが左へ動くので、もう一度押す場所が変わっていた。**
 
-/* **帯の高さは、左の柱（社名＋カード）とぴったり同じにする。**
-   長い中身は帯の中で送る（ページを伸ばさない）。
-   仕掛け：帯を絶対配置にして、外枠（.pane）の高さに一切足さない。
-   外枠は align-items:stretch で柱と同じ高さになる。 */
-.pane .panel{
-  position:absolute; top:0; bottom:0; left:16px; width:420px;
+   いまは**カードが束から浮いて、真ん中まで来ながら裏を向く。**
+   浮いているあいだ格子には**同じ大きさの空きが残る**ので、
+   **他のカードは一枚も動かない。**もう一度押すと、元の場所へ戻って束に沈む。
+
+   **行き先はどのカードも同じ、窓の真ん中**（2026-09-10。本人：「位置は全部一律
+   真ん中でいい」）。一度は元の場所に留めて右と下へ伸ばしたが、
+   **右端の列だけ左へ寄る**ことになって、カードによって挙動が違っていた。 */
+.deck{position:relative}
+.card.two{
+  position:relative; padding:0; transform-style:preserve-3d;
+  transition:transform .44s var(--ease), width .44s var(--ease), height .44s var(--ease),
+             left .44s var(--ease), top .44s var(--ease), box-shadow .3s ease;
+}
+.card.two .fr,.card.two .bk{
+  position:absolute; inset:0; border-radius:var(--r);
+  backface-visibility:hidden; -webkit-backface-visibility:hidden;
   display:flex; flex-direction:column; overflow:hidden;
-  -webkit-user-select:text; user-select:text;
-  background:var(--card); border-radius:var(--r); box-shadow:var(--lift2);
-  animation:swap .18s var(--ease);
 }
-.pane .bar{flex:none}
-.pane .body{
-  flex:1; min-height:0; overflow:auto;              /* 送るのは中身だけ。題は残る */
-  scrollbar-width:thin; scrollbar-color:#c3cfe0 transparent;
-}
-/* 送れることは、切れた文字と細い棒で分かる（言葉で足さない）*/
-.pane .body::-webkit-scrollbar{width:8px}
-.pane .body::-webkit-scrollbar-track{background:transparent}
-.pane .body::-webkit-scrollbar-thumb{background:#c3cfe0; border-radius:4px; border:2px solid transparent; background-clip:content-box}
-.pane .body:focus-visible{outline:2px solid var(--go); outline-offset:-2px}
-@keyframes swap{from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none}}
+.card.two .fr{padding:26px 22px 24px}
+/* 裏。**面の色は同じ**——同じ一枚の裏なので、別の紙にしない */
+.card.two .bk{transform:rotateY(180deg); background:var(--card)}
+/* **半分回るまで、裏は出さない。**地図の `iframe` が 3D の途中で表に透ける */
+.card.two .bk{visibility:hidden; transition:visibility 0s linear .22s}
+.card.two.flip .bk{visibility:visible}
+.card.two.flip .fr{visibility:hidden; transition:visibility 0s linear .22s}
+/* 浮いているあいだ。**画面に対して固定**——行き先が窓の真ん中なので、
+   置き場ではなく窓を基準にする。大きさと位置は JS が入れる */
+.card.two.up{position:fixed; z-index:40; box-shadow:var(--lift3)}
+/* 回っているあいだ、手触りの上下は掛けない（回転と混ざる）*/
+.card.two.flip,.card.two.flip:hover,.card.two.flip.down{transform:rotateY(180deg)}
+/* 浮いた跡。**格子に同じ大きさの空きを残す**ので、他のカードが動かない */
+.hold{min-height:128px}
 
-.bar{padding:24px 26px 14px}
-.bar h2{margin:0; font-size:17px; font-weight:700; line-height:1.4}
+/* 裏の中身。**題は残って、下だけ送る**（前の帯と同じ）*/
+.card.two .bk .bar{flex:none}
+/* **送り棒の場所は常に取っておく**（`scrollbar-gutter:stable`）。
+   取らないと、測るとき 600px・出すとき 590px になって、**一行ぶん（26px）増える**——
+   その一行のせいで送り棒が出て、また幅が減る。**測りと結果が食い違う**（画面で見つけた）*/
+.card.two .bk .body{
+  flex:1; min-height:0; overflow:auto; scrollbar-gutter:stable;
+  scrollbar-width:thin; scrollbar-color:#c3cfe0 transparent;
+  -webkit-user-select:text; user-select:text;
+}
+.card.two .bk .body::-webkit-scrollbar{width:8px}
+.card.two .bk .body::-webkit-scrollbar-track{background:transparent}
+.card.two .bk .body::-webkit-scrollbar-thumb{background:#c3cfe0; border-radius:4px; border:2px solid transparent; background-clip:content-box}
+.card.two .bk .body:focus-visible{outline:2px solid var(--go); outline-offset:-2px}
+
+/* 題のまわり。**縮んだカードでも窮屈に見えないように少し広げた**（2026-09-10、
+   本人：「縮めてるカード、もうちょい上下に余裕ほしい」）*/
+.bar{padding:28px 26px 18px}
+/* 裏の題。**17 → 21px**（2026-09-10、本人：「ポップ開けたときのタイトルの文字
+   おおきくするかラインとかで分けるかして」）。**罫は引かない**——
+   会社概要で「灰色の板をやめた。分けるのは空きでやる」と決めてあるので、
+   同じ議論に戻さない。**題を大きくして、下に空きを取る**（`.bar` の詰め 28/18px）*/
+.bar h2{margin:0; font-size:21px; font-weight:700; line-height:1.4}
 .body{padding:0 26px 26px}
 
 /* ─ 中身。押せないものは影を落とさない（影＝押せる、のルール）─ */
@@ -251,8 +274,8 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 /* ─ 企業理念。**会社が一番長く自分の言葉で書いているところ。**
    だから帯の中では、まず一行を大きく出して、その下に地の文を続ける */
 .mind{margin:0 0 18px; font-size:clamp(15px,1.9vw,18px); font-weight:700; line-height:1.7}
-.panel .body > p{margin:12px 0 0; font-size:13px; line-height:2}
-.panel .body > p.mind{margin-top:0}
+.bk .body > p{margin:12px 0 0; font-size:13px; line-height:2}
+.bk .body > p.mind{margin-top:0}
 
 /* 小見出し。**本物と仮を分ける**ためだけのもの */
 .lb2{margin:18px 0 7px; font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
@@ -368,8 +391,8 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .lead{margin:0 0 14px; font-size:14px; line-height:1.9}
 .mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
 /* 帯の中では宛先が先。押す前に行き先が分かる */
-.pane .mail{font-size:15px}
-.pane .mail + .q{margin-top:14px}
+.bk .mail{font-size:15px}
+.bk .mail + .q{margin-top:14px}
 .mail a{color:var(--go); text-decoration:none}
 .mail a:hover{text-decoration:underline}
 
@@ -382,18 +405,7 @@ body.paneopen .pane{width:436px}          /* 420 ＋ 空き 16 */
 .deck .card:nth-child(4){animation-delay:.18s}
 @media (prefers-reduced-motion:reduce){
   .head,.deck .card{animation:none}
-  .wrap,.pane{transition:none}
-  .pane .panel{animation:none}
-}
-
-/* 横に帯を置く余裕が無い。**束の下に出す**（カードは一枚も動かない）*/
-@media (max-width:1119px){
-  .wrap{flex-direction:column}
-  body.paneopen .wrap{max-width:908px}
-  .pane,body.paneopen .pane{width:auto; overflow:visible; transition:none}
-  /* 束の下に出るので、高さを合わせる相手がいない。中身の高さで出す */
-  .pane .panel{position:static; width:auto; margin-top:16px; overflow:visible}
-  .pane .body{overflow:visible}
+  .card.two{transition:none}
 }
 
 @media (max-width:720px){
@@ -539,10 +551,14 @@ html.boot .mark{opacity:1}
          お問い合せ）のうち、これだけ丸ごと無かった**（実サイトと突き合わせて見つけた。
          2026-09-08 再確認）。会社が自分の言葉で一番長く書いているのがここ。
          並び順も公式どおり、先頭に置く。中身は**全文そのまま**（仮は混ぜない）。 -->
-    <div class="card" role="button" tabindex="0" data-k="1" data-hash="mind">
+    <div class="card two" role="button" tabindex="0" data-k="1" data-hash="mind">
+      <!-- 表 -->
+      <div class="fr">
       <span class="t">企業理念</span>
       <span class="s">経営の力で「遊ぶように働く世界」をデザインする</span>
-      <div class="panel">
+      </div>
+      <!-- 裏。**同じ一枚の裏。**もう一度押すと表へ戻る -->
+      <div class="bk">
         <div class="bar"><h2>企業理念</h2></div>
         <div class="body">
           <p class="mind">経営の力で<br>「遊ぶように働く世界」をデザインする</p>
@@ -560,10 +576,14 @@ html.boot .mark{opacity:1}
          **一覧は動かない**——開くと下が押し下げられて、次の一行を見るのに毎回スクロールすることになる。
          もう一度押すと閉じる（入口のカードと同じ押し方）。
          題と、そのすぐ下の一行が公式サイトの言葉。それより下は仮。 -->
-    <div class="card" role="button" tabindex="0" data-k="2" data-hash="svc">
+    <div class="card two" role="button" tabindex="0" data-k="2" data-hash="svc">
+      <!-- 表 -->
+      <div class="fr">
       <span class="t">サービス</span>
       <span class="s">四本</span>
-      <div class="panel">
+      </div>
+      <!-- 裏。**同じ一枚の裏。**もう一度押すと表へ戻る -->
+      <div class="bk">
         <div class="bar"><h2>サービス</h2></div>
         <div class="body">
           <!-- **事例が乗るのはここ**（中身に段をもう一つ足すだけ）。
@@ -600,10 +620,14 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <div class="card" role="button" tabindex="0" data-k="3">
+    <div class="card two" role="button" tabindex="0" data-k="3">
+      <!-- 表 -->
+      <div class="fr">
       <span class="t">会社概要</span>
       <span class="s">六項目</span>
-      <div class="panel">
+      </div>
+      <!-- 裏。**同じ一枚の裏。**もう一度押すと表へ戻る -->
+      <div class="bk">
         <div class="bar"><h2>会社概要</h2></div>
         <div class="body">
           <!-- 公式サイトの7項目、その並び順のまま。
@@ -622,10 +646,14 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <div class="card" role="button" tabindex="0" data-k="4">
+    <div class="card two" role="button" tabindex="0" data-k="4">
+      <!-- 表 -->
+      <div class="fr">
       <span class="t">お問い合わせ</span>
       <span class="s">contact@alt-dsgn.co.jp</span>
-      <div class="panel">
+      </div>
+      <!-- 裏。**同じ一枚の裏。**もう一度押すと表へ戻る -->
+      <div class="bk">
         <div class="bar"><h2>お問い合わせ</h2></div>
         <div class="body" id="ask">
           <!-- **宛先が先。**押す前に、どこへ行くのかが分かるように
@@ -688,10 +716,14 @@ html.boot .mark{opacity:1}
     <!-- 所在。**会社概要から出した一枚。**ほかの項目は読むものだが、これは行くもの。
          だから地図が主役で、住所はその見出しになっている。
          **末尾に置いてある。**間に入れると「デモを触る」が二段目へ落ちる。 -->
-    <div class="card" role="button" tabindex="0" data-k="5">
+    <div class="card two" role="button" tabindex="0" data-k="5">
+      <!-- 表 -->
+      <div class="fr">
       <span class="t">所在</span>
       <span class="s">港区西新橋</span>
-      <div class="panel">
+      </div>
+      <!-- 裏。**同じ一枚の裏。**もう一度押すと表へ戻る -->
+      <div class="bk">
         <div class="bar"><h2>所在</h2></div>
         <div class="body">
           <p class="addr">東京都港区西新橋3-23-5 ANYZ304<br>（御成門郵船ビル）</p>
@@ -758,7 +790,7 @@ html.boot .mark{opacity:1}
     <!-- デモの口。**束の最後の一枚。**箱が 5 枚だと 3＋2 で右下が空くので、そこを埋める。
          押しのけずに一画面目へ入る（帯にして上に置くと、会社の顔に割り込んでいた）。
          **`div` ではなく `a`。**中身を抱えないので、押したら飛ぶ。
-         `show()` は `.panel` が無ければ素通りする。 -->
+         `show()` は `.bk` が無ければ素通りする。 -->
     <a class="card go" href="try.html" id="demo" data-k="6">
       <span class="t">デモを触る</span>
       <!-- **入口に落差を出す**（2026-09-09）。前は「どこにもある課題管理表を、
@@ -776,10 +808,6 @@ html.boot .mark{opacity:1}
   </div>
 
 </main>
-
-<!-- 中身が出る帯。**中身はカードの中に置いてあって、押されたときここへ移す**
-     （複製しない。だから「同じものが右に出た」が嘘にならない）-->
-<aside class="pane" id="pane"></aside>
 
 </div>
 
@@ -1047,14 +1075,12 @@ html.boot .mark{opacity:1}
 
 (function(){
   var deck  = document.getElementById('deck'),
-      pane  = document.getElementById('pane'),
       cards = Array.prototype.slice.call(deck.querySelectorAll('.card')),
-      open  = null;   /* いま中身が右に出ているカード */
+      open  = null;   /* いま裏を見せているカード */
 
-  /* 中身はカードの中に置いてある。持ち主を覚えておいて、閉じたら返す */
+  /* 中身はカードの裏にある。**動かさない**——回るだけ */
   cards.forEach(function(c){
-    var p = c.querySelector('.panel');
-    if (p){ p.owner = c; c.setAttribute('aria-expanded', 'false'); }
+    if (c.querySelector('.bk')) c.setAttribute('aria-expanded', 'false');
   });
 
   /* 段が揃うように列を割る。一段に入る上限を先に決めて、
@@ -1062,78 +1088,158 @@ html.boot .mark{opacity:1}
      6枚 → 2段 → 3枚ずつ。7枚 → 2段 → 4＋3。 */
   function relayout(){
     var n = deck.querySelectorAll('.card').length;
-    var max = innerWidth <= 420 ? 1 : innerWidth <= 720 ? 2 : 4;
+    /* **裏がカードの中に入ったので、カードの幅が中身の幅になった**（2026-09-10）。
+       前は中身が右の帯（420px）に出ていたので、狭い窓でも幅が足りていた。
+       いまは 745px で三列にすると一枚 230px——**裏が読めない。**
+       1000px までは二列にする（一枚 465px）*/
+    var max = innerWidth <= 420 ? 1 : innerWidth <= 1000 ? 2 : 4;
     var rows = Math.max(1, Math.ceil(n / max));
     deck.style.setProperty('--cols', Math.ceil(n / rows));
   }
   relayout();
   window.addEventListener('resize', relayout);
 
-  /* 帯に残っている中身を持ち主へ返す。
-     閉じかけの最中に別のカードが押されても、二枚が混ざらない */
-  function drain(){
-    var p = pane.querySelector('.panel');
-    if (!p) return;
-    p.owner.appendChild(p);
-    p.owner.classList.remove('sel');
-    p.owner.setAttribute('aria-expanded', 'false');
+  /* ─ 浮かせて、大きくして、裏を向ける ──────────────────────────
+     **束は一枚も動かない。**浮いたカードの跡には同じ大きさの空き（`.hold`）を残す。
+     大きさと位置は JS が入れる——CSS だけだと、元の位置から動かさずに
+     「右と下だけ伸ばす」ができない（格子の段が伸びてしまう）。
+
+     **左上は動かさない。**押した場所（カードの頭）がそのままなので、
+     もう一度押す場所も変わらない。右端の列だけ、はみ出すぶん左へ寄せる。 */
+  var hold = null;
+
+  /* **中身の素の高さ。**大きいものは上限で頭打ち、**小さいものは中身に合わせる**
+     （本人 2026-09-10：「でかいのはちょうどいいくらいの上限、小さいやつは
+     文字に合わせる、でいいんじゃない。今あってないように見える」）。
+
+     **`scrollHeight` では測れない**——あれは**箱より小さくならない**（中身が短いと
+     箱の高さをそのまま返す）ので、縮む方向に効かない。
+     いったん `.body` を伸ばしきって `offsetHeight` を読み、すぐ戻す。
+     **測るのは、カードが目標の幅になってから**（幅が動いている最中に測ると、
+     細いまま＝縦に長く出る）。 */
+  /* **中身ぴったりにしない。**下に少し残す——ぴったりだと窮屈に見える
+     （本人 2026-09-10：「縮めてるカード、もうちょい上下に余裕ほしい」）。
+     上限に当たっているカードには効かない（そちらは元から送りがある）*/
+  var SLACK = 28;
+
+  function need(card){
+    var bar = card.querySelector('.bk .bar'), body = card.querySelector('.bk .body');
+    if (!bar || !body) return 0;
+    /* **overflow は触らない。**`visible` にすると中身の上下の余白が外へ抜けて
+       （マージンの相殺）、**実際より小さく出た**（理念で 26px。画面で見つけた）。
+       `auto` のままなら囲いが立つので、余白は中に残る */
+    var f = body.style.flex, h = body.style.height;
+    body.style.flex = 'none'; body.style.height = 'auto';
+    var got = bar.offsetHeight + body.offsetHeight;
+    body.style.flex = f; body.style.height = h;
+    return got;
+  }
+
+  /* 中身が変わったら合わせ直す（サービスの一本を開く／お問い合わせの段が出る）。
+     **上端は動かさない**——読んでいる最中に箱が上下すると目が置いていかれる
+     （窓からはみ出すぶんだけ寄せる）。**`reach()` からは呼ばない**——
+     あれは開いた直後にも走るので、幅が動いている最中に測ることになる */
+  function fit(){
+    if (!open) return;
+    var p = popTo(), h = Math.max(200, Math.min(need(open) + SLACK, p.h));
+    var t = Math.max(16, Math.min(parseFloat(open.style.top) || 0, innerHeight - h - 16));
+    open.style.height = h + 'px';
+    open.style.top = t + 'px';
+  }
+
+  /* 行き先。**どのカードも同じ、窓の真ん中**（2026-09-10 に大きくした）。
+     前は 560 × min(72vh, 560)。**高さの 560 上限が効いて、画面が大きいほど
+     「小さい」になっていた**（800px の窓でも 1000px の窓でも 560px）。
+
+     **高さの上限を 720 へ。**幅は 560 → 600 で止める——日本語で 40 字あたりが
+     読みやすい幅で、理念とサービスの説明は読み物なので、広げると一行が長くなる。
+
+     一度 84vh／760 まで上げたが**戻した**（2026-09-10。本人：「スクロールが
+     あること自体は良いんだって。サービスもそう。地図もそう」）。
+     **中身が本当に長いところに送りが付くのは、直すところではない。**
+     直すのは「**中身は入っているのに送り棒が付く**」ほうだけで、
+     それは大きさを一律に戻した時点で消えていた。 */
+  function popTo(){
+    var w = Math.min(600, innerWidth - 32),
+        h = Math.min(Math.round(innerHeight * 0.78), 720);
+    return { w:w, h:h, l:Math.round((innerWidth - w) / 2), t:Math.round((innerHeight - h) / 2) };
   }
 
   function show(card, pressed){
-    if (open === card){ hide(); return; }      /* 同じカードをもう一度＝閉じる */
-    var panel = card.querySelector('.panel');
-    if (!panel) return;                        /* 行き先があるカード（体験）は素通り */
+    if (open === card){ hide(); return; }      /* 同じカードをもう一度＝束へ戻る */
+    var back = card.querySelector('.bk');
+    if (!back) return;                         /* 行き先があるカード（体験）は素通り */
 
-    drain();
-    pane.appendChild(panel);
-    card.classList.add('sel');
+    if (open) hide(true);
+
+    /* **いまの場所から出発する。**窓の座標で測る（浮いたら固定になるので）*/
+    var r = card.getBoundingClientRect();
+
+    hold = document.createElement('div');
+    hold.className = 'hold';
+    hold.style.height = Math.round(r.height) + 'px';
+    card.parentNode.insertBefore(hold, card);
+
+    card.classList.add('up');
+    card.style.top = r.top + 'px';  card.style.left  = r.left + 'px';
+    card.style.width = r.width + 'px'; card.style.height = r.height + 'px';
+    void card.offsetWidth;                     /* 元の場所を一度描かせてから動かす */
+
+    /* **目標の幅で一度測る。**動きを切って測り、元へ戻し、動きを戻してから目標へ——
+       同じ枠の中で済ませるので、途中の姿は描かれない */
+    var p = popTo();
+    card.style.transition = 'none';
+    card.style.width = p.w + 'px'; card.style.height = p.h + 'px';
+    void card.offsetWidth;
+    var h = Math.max(200, Math.min(need(card) + SLACK, p.h));
+    card.style.width = r.width + 'px'; card.style.height = r.height + 'px';
+    void card.offsetWidth;
+    card.style.transition = '';
+
+    card.style.top = Math.round((innerHeight - h) / 2) + 'px';
+    card.style.left = p.l + 'px';
+    card.style.width = p.w + 'px'; card.style.height = h + 'px';
+    card.classList.add('flip');
     card.setAttribute('aria-expanded', 'true');
-
-    pane.offsetWidth;                          /* 幅 0 を一度描かせてから伸ばす */
-    document.body.classList.add('paneopen');
     open = card;
 
-    /* 地図は**開かれて初めて読み込む。**閉じたままなら、よその server へ
-       一度も出て行かない（`data-src` を一回だけ `src` に移す）。
-       **`img` だけでなく `iframe` も拾う**——地図が Google の埋め込みになったので */
-    panel.querySelectorAll('[data-src]').forEach(function(el){
+    /* 地図は**裏が向いて初めて読み込む。**表のままなら、よその server へ
+       一度も出て行かない（`data-src` を一回だけ `src` に移す）*/
+    back.querySelectorAll('[data-src]').forEach(function(el){
       el.src = el.dataset.src; el.removeAttribute('data-src');
     });
+    reach(back.querySelector('.body'));
 
-    reach(panel.querySelector('.body'));
-
-    /* 開いたカードを URL に残す（`#mind` など）。人に送れる・戻っても開いている。
-       replaceState なので、閉じたあと「戻る」で開き直したりはしない。 */
-    if (card.dataset.hash) history.replaceState(null, '', '#' + card.dataset.hash);
-
-    /* 横に余裕が無いときは束の下に出るので、見えるところまで運ぶ。
-       **押されたときだけ。**読み込み直しで開き直した（reopen）ときに送ると、
-       戻ってきた送り位置の上から、さらに送ることになる（開くたび位置がずれていく）*/
-    if (pressed && innerWidth <= 1119) pane.scrollIntoView({ block:'nearest', behavior:'smooth' });
+    /* **印の無いカードへ移ったら、印も消す**（前のカードの `#mind` が URL に残って、
+       読み込み直すと違うカードが開いた）*/
+    history.replaceState(null, '',
+      card.dataset.hash ? '#' + card.dataset.hash : location.pathname);
   }
 
-  function hide(){
+  function hide(quick){
     if (!open) return;
-    var card = open;
-    open = null;
-    document.body.classList.remove('paneopen');
-    if (card.dataset.hash) history.replaceState(null, '', location.pathname);
+    var card = open, h = hold;
+    open = null; hold = null;
+    card.setAttribute('aria-expanded', 'false');
+    card.classList.remove('flip');
+    history.replaceState(null, '', location.pathname);
 
-    /* 帯が縮みきってから中身を返す。動きを切っている環境では transitionend が
-       来ないので、時間でも片付ける（片方だけに頼ると中身が出たまま残る）*/
-    var settled = false;
     function settle(){
-      if (settled) return;
-      settled = true;
-      pane.removeEventListener('transitionend', onEnd);
-      if (!open) drain();                      /* この間に別のカードが開いたら触らない */
-      card.focus();
+      card.classList.remove('up');
+      card.style.top = card.style.left = card.style.width = card.style.height = '';
+      if (h && h.parentNode) h.parentNode.removeChild(h);
     }
-    function onEnd(e){ if (e.target === pane && e.propertyName === 'width') settle(); }
+    if (quick){ settle(); return; }
 
-    pane.addEventListener('transitionend', onEnd);
-    var d = parseFloat(getComputedStyle(pane).transitionDuration) || 0;
-    setTimeout(settle, d * 1000 + 60);
+    /* **跡（`.hold`）のいまの場所へ戻す。**送られていても、そこが正しい行き先 */
+    var hr = h ? h.getBoundingClientRect() : card.getBoundingClientRect();
+    card.style.top = hr.top + 'px'; card.style.left = hr.left + 'px';
+    card.style.width = hr.width + 'px'; card.style.height = hr.height + 'px';
+    var d = parseFloat(getComputedStyle(card).transitionDuration) || 0;
+    setTimeout(settle, d * 1000 + 40);
+
+    /* **送らない**（`preventScroll`）。焦点を戻すだけで送ると、画面が動いた */
+    card.focus({ preventScroll:true });
   }
 
   /* 印つきの URL（`#mind` など）で来たら、そのカードを開いた状態で始める */
@@ -1172,8 +1278,23 @@ html.boot .mark{opacity:1}
     if (!on){                                            /* 同じ行をもう一度＝閉じる */
       row.setAttribute('aria-expanded', 'true');
       row.parentNode.querySelector('.det').hidden = false;
+
+      /* **押した行を、送り箱の一番上へ**（2026-09-10。本人：「開いた項目がちゃんと
+         画面内に、スクロールせず見れるようにしたい」）。
+         開くと中身が下に伸びるので、下のほうの行を押すと**中身が箱の外に出ていた。**
+         上へ寄せれば、行と中身が同じ画面に入る。
+         **他の行は畳まない**ので、寄せたあとも上下に選択肢が残る（前からの決めごと）。
+         最後の行は上まで来られない（下に送る余地が無い）が、
+         そのときは箱の底まで行くので、中身は全部見える。 */
+      var d = row.getBoundingClientRect().top - box.getBoundingClientRect().top - 6;
+      if (d){
+        var to = box.scrollTop + d;
+        if (box.scrollTo) box.scrollTo({ top:to, behavior:'smooth' });
+        else box.scrollTop = to;
+      }
     }
     reach(box);
+    fit();                                     /* 開いた／畳んだぶん、箱も合わせる */
   });
 
   /* お問い合わせ。**押しても飛ばない。選ぶだけ。**
@@ -1218,6 +1339,7 @@ html.boot .mark{opacity:1}
       document.getElementById('sendlb').textContent =
         pick.kind ? 'この内容でメールを開く' : 'メールを開く';
       reach(ask);
+      fit();                                   /* 段が出たぶん、箱も合わせる */
     }
 
     /* 選んだものを件名と本文に入れる。**書かずに用件ができている。**
@@ -1240,9 +1362,56 @@ html.boot .mark{opacity:1}
     setTimeout(function(){ c.classList.remove('down'); }, 110);
   }
 
+  /* **裏の中の押しものが先**（2026-09-10。本人：「ポップ内にクリックがあるときに
+     戻って行っちゃうから、内部選択肢のクリックを優先にして」）。
+     浮いているあいだ、カード全体が「もう一度押すと戻る」になっているので、
+     **裏に並んだサービスの一本や、お問い合わせの三択を押しても戻っていた。**
+
+     裏の中の押しもの（`button`／`a`／入力欄）を押したときは、カードを戻さない。
+     **戻すのは、裏の何も無いところを押したときと、Esc。** */
+  /* **沈むのは外でも中でも。守るのは押しものだけ**
+     （本人 2026-09-10：「外でも中でも閉じてほしいかな〜。今度は中が動いてない」）。
+
+     ここは三度書き直している：
+       1. 中は全部沈む（＝サービスの一本を押しても沈んだ）
+       2. 中の押しものだけ守る（＝**カード自身が `role="button"` なので、
+          `closest` がカードに当たって、裏のどこを押しても守られた**）
+       3. 中は全部守る（＝**中で沈めなくなった**）
+     いまは 2 を、**見つけた押しものが裏の中にあることまで確かめる**形で直したもの。
+
+     守るのは `button`／`a`／入力欄だけ。**それ以外は、中でも外でも沈む。** */
+  function inner(e){
+    var t = e.target;
+    if (!t || !t.closest) return false;
+    var bk = t.closest('.bk');
+    if (!bk) return false;
+    var hit = t.closest('button, a, input, textarea, select, label');
+    return !!hit && bk.contains(hit);
+  }
+
   cards.forEach(function(c){
-    c.addEventListener('pointerdown', function(){ c.classList.add('down'); });
-    c.addEventListener('click', function(){ press(c); show(c, true); });
+    c.addEventListener('pointerdown', function(e){
+      if (inner(e)) return;                    /* 沈む手触りも出さない */
+      c.classList.add('down');
+    });
+    c.addEventListener('click', function(e){
+      if (inner(e)) return;
+      /* **開いているものがあるなら、まず沈める。**別のカードを押しても
+         入れ替わらない——浮いているカードの外は、**どこを押しても沈むだけ**
+         （本人 2026-09-10：「外側押すやつも尚ってない」——外側の見えている
+         ところの大半が他のカードなので、入れ替わると「効いていない」に見える）*/
+      if (open && open !== c){ hide(); return; }
+      press(c); show(c, true);
+    });
+  });
+
+  /* **外を押しても沈む**（2026-09-10。本人：「ポップの外側クリックでも行けるようにして」）。
+     カードの中の押しものは、カード自身の click が先に走って `open` を入れ替えるので、
+     ここに来たときには**もう「中」になっている**——別のカードへ移るときも沈まない。 */
+  document.addEventListener('click', function(e){
+    if (!open || !e.target.closest) return;
+    if (e.target.closest('.card') === open) return;
+    hide();
   });
 
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
@@ -1260,7 +1429,13 @@ html.boot .mark{opacity:1}
     /* **デモは束に入ったので、番も並びも輪が面倒を見る**（6 番＝右下）。
        帯だったころは輪の外に置いて、最後の番を別に付けていた（2026-09-09 に戻した） */
     var n = '123456789'.indexOf(e.key);
-    if (n >= 0 && n < cards.length){ e.preventDefault(); cards[n].focus(); cards[n].click(); return; }
+    /* 数字は**入れ替えたい**（外を押したときとは別の話）。
+       `click` を通すと「まず沈める」に当たるので、直に開ける */
+    if (n >= 0 && n < cards.length){
+      e.preventDefault(); cards[n].focus();
+      if (cards[n].querySelector('.bk')) show(cards[n], true); else cards[n].click();
+      return;
+    }
 
     var i = cards.indexOf(document.activeElement);
     if (i < 0){ if (e.key.indexOf('Arrow') === 0){ e.preventDefault(); cards[0].focus(); } return; }
