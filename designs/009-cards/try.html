@@ -521,6 +521,37 @@ body[data-stage="c"] .wrap{padding-top:20px}
 }
 .ghd .gv{visibility:hidden}
 .ghd:hover{transform:none; box-shadow:none}
+
+/* ─ 内訳 ── **押すと、その一件がどの一行から来たのかが出る**（2026-09-10）───
+   本人：「12 件、片づけるよりクリックで内訳見せるとか、いかがか」。
+   **生の一行**（等幅・薄い）の下に、**機械が付けた読み解き**。
+   「題を付けたのは AI」を、言葉ではなく現物で見せる場所。
+   **開いている札は浮かない**——浮くと中身と離れて見える */
+.gdet{display:none}
+.gset.open .gdet{
+  display:block; background:var(--card); box-shadow:var(--lift1);
+  border-radius:0 0 7px 7px; margin-top:-7px; padding:6px 16px 14px;
+  animation:rise .22s var(--ease) both;
+}
+.gset.open .gitem{border-radius:7px 7px 0 0}
+.gset.open .gitem:hover{transform:none; box-shadow:var(--lift1)}
+.glist{list-style:none; margin:0; padding:0}
+.glist li{
+  display:grid; grid-template-columns:78px minmax(0,1fr); gap:0 12px;
+  padding:9px 0; border-top:1px solid rgba(37,31,69,.08);
+}
+/* 出どころ。**②のタブと同じ言葉** */
+.gs{font-family:var(--mono); font-size:11px; color:var(--sub); padding-top:2px}
+.gx{min-width:0}
+/* 生の一行。**そのまま**——直していない、が分かるように等幅で薄く */
+.gq{display:block; font-family:var(--mono); font-size:11.5px; line-height:1.6;
+    color:rgba(37,31,69,.62)}
+/* 読み解き。**書かれていないものが書いてある**（AI の仕事）*/
+.gp{display:block; margin-top:3px; font-size:12.5px; line-height:1.65; color:var(--ink)}
+.gp::before{content:'→ '; color:var(--go); font-weight:700}
+.gmore{margin:10px 0 0; font-size:11.5px; color:var(--sub)}
+/* 決めるのは人。**見てから押す** */
+.one.small{margin-top:14px; padding:9px 18px; font-size:12.5px}
 /* 見出しの下の一行。**数字は一度だけ**——一件ごとの内訳を読ませると表に戻る */
 .csub{margin:-6px 0 16px; font-size:12.5px; line-height:1.8; color:var(--sub)}
 .csub b{color:var(--ink)}
@@ -1145,7 +1176,10 @@ body[data-stage="c"] .st-c{display:block}
 
     /* 追いかけている先を押したら鎖が伸びる。**別の行を押したら、そこから鎖を引き直す** */
     if (stuck && stuck === c) trail.push(c);
-    else { trail = [c]; need = 2 + (c.n % 2); }   /* 2〜3 か所で通る */
+    /* **4〜5 か所で通る**（本人 2026-09-10：「2 のとこもっと辿ってほしい」）。
+       2〜3 では「引っかかった」で終わって、**辿らされている**まで行かなかった。
+       上限は 6（出どころの数）——辿った出どころは避けるので、それ以上は伸びない */
+    else { trail = [c]; need = 4 + (c.n % 2); }
 
     if (trail.length >= need){ through(); return; }
     var b = nextBlock(c);
@@ -1297,8 +1331,57 @@ body[data-stage="c"] .st-c{display:block}
       +   '<span class="gt">' + esc(GROUPS[k].t) + '</span>'
       +   '<span class="gsq" aria-hidden="true">' + sq + '</span>'
       +   '<span class="gn">' + byG[k].length + ' 行 ／ ' + cnt + ' か所</span>'
-      +   '<span class="gv">片付ける</span>'
-      + '</button>';
+      +   '<span class="gv">内訳</span>'
+      + '</button>'
+      + '<div class="gdet"></div>';
+  }
+
+  /* ─ 内訳を開く ── **押すと中身が出る**（2026-09-10）──────────────
+     > 12 件、**片づけるよりクリックで内訳見せる**とか、いかがか（本人 2026-09-10）
+
+     ②を長くした（4〜5 か所）ぶん、**③は見る側に寄せた。**
+     四角は「どこに散っていたか」までしか言わない。**押すと、その一件が
+     どの一行から来たのかが出る**——生の一行と、機械が付けた読み解きが並ぶ。
+     「題を付けたのは AI」を、**言葉ではなく現物で**見せる場所。
+
+     **「片付ける」は開いた中に残す。**③の分担は「見抜くのは機械、決めるのは人」
+     （C 案・2026-09-08 合意）。**見てから決める**でないと、決める場所が無い。
+
+     **畳まない**——ほかの件を開いても閉じない（§「開いた中身は行の直下に」）。
+     **出すのは群の生の一行だけ**（5〜6 行）。402 行ぜんぶ出すと描画が止まる（09-10） */
+  function detHTML(k){
+    var g = GROUPS[k], rest = byG[k].length - g.raw.length;
+    /* **並びは四角と同じ**（②のタブ順）——上の升と下の一覧で順が違うと、
+       同じものを二度読むことになる */
+    var ord = TABS.map(function(t){ return t[0]; });
+    var rows = g.raw.slice().sort(function(a, b){
+      return ord.indexOf(a[0]) - ord.indexOf(b[0]);
+    });
+    return '<ul class="glist">'
+      + rows.map(function(p){
+          return '<li>'
+            +   '<span class="gs">' + esc(NAME[p[0]] || p[0]) + '</span>'
+            +   '<span class="gx"><span class="gq">' + esc(p[1]) + '</span>'
+            +     '<span class="gp">' + esc(p[2]) + '</span></span>'
+            + '</li>';
+        }).join('')
+      + '</ul>'
+      + (rest > 0 ? '<p class="gmore">同じ話が、ほかに ' + rest + ' 行。</p>' : '')
+      + '<button class="one small gdo" data-k="' + k + '">片付ける</button>';
+  }
+
+  function toggle(k){
+    var set = setsEl && setsEl.querySelector('.gset[data-k="' + k + '"]');
+    if (!set || set.classList.contains('going')) return;
+    var box = set.querySelector('.gdet');
+    if (set.classList.contains('open')){
+      set.classList.remove('open'); box.innerHTML = '';
+      set.querySelector('.gv').textContent = '内訳';
+      return;
+    }
+    box.innerHTML = detHTML(k);
+    set.classList.add('open');
+    set.querySelector('.gv').textContent = '閉じる';
   }
 
   function paintRows(){
@@ -1389,8 +1472,11 @@ body[data-stage="c"] .st-c{display:block}
 
   document.addEventListener('click', function(e){
     if (document.body.dataset.stage !== 'c' || !e.target.closest) return;
+    /* 中の「片付ける」が先。**札の押しは開け閉め** */
+    var d = e.target.closest('.gdo');
+    if (d){ clearGroup(+d.dataset.k); return; }
     var b = e.target.closest('.gitem');
-    if (b) clearGroup(+b.dataset.k);
+    if (b && !b.classList.contains('ghd')) toggle(+b.dataset.k);
   });
 
   /* ─ ④ ── **出口の三段をそのまま置く**（2026-09-10。本人：「出口は変える気ない」）。
