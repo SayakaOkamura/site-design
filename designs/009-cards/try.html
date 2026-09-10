@@ -1022,7 +1022,7 @@ body[data-stage="c"] .st-c{display:block}
         go   = document.getElementById('go-c');
     hint.textContent = '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
                      + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
-    gone = 0; trail = []; stuck = null;
+    gone = 0; trail = []; stuck = null; ready = null;
     go.classList.remove('on');
     tab = 'xlsx';
     paintTabs();
@@ -1048,8 +1048,11 @@ body[data-stage="c"] .st-c{display:block}
     var el = document.getElementById('how');
     if (!el || gone) return;
     el.innerHTML = 'タブを押すと、その出どころが見られます。'
+      /* **予告しない**（本人 2026-09-10：「『片付けにいけます』はもうやることの
+         予告になってるから徒労感がない」）。**押せば片付く、と書いてある。**
+         押して初めて「引っかかっている」が出るから、空振りになる */
       + '<b>' + (tab === 'xlsx' ? '行の左のチェック' : '行') + 'を押すと、'
-      + 'その行を片付けにいけます。</b>';
+      + 'その行が片付きます。</b>';
     stick();
   }
 
@@ -1074,7 +1077,8 @@ body[data-stage="c"] .st-c{display:block}
       .map(function(c){
         /* 辿った行は**止まったまま残る**、追いかけている先は**脈を打つ**。
            タブを跨いで描き直すので、印は札のほうから引く */
-        var cl = trail.indexOf(c) >= 0 ? ' class="wait"' : (stuck === c ? ' class="aim"' : '');
+        var cl = (stuck === c || ready === c) ? ' class="aim"'
+               : (trail.indexOf(c) >= 0 ? ' class="wait"' : '');
         return '<li' + cl + ' data-k="' + c.k + '" data-i="' + c.n + '">'
              + (src === 'xlsx' ? rowHTML(c) : srcHTML(c)) + '</li>';
       }).join('');
@@ -1123,7 +1127,7 @@ body[data-stage="c"] .st-c{display:block}
               mail:'の返信待ちです', chat:'で確認中です',
               '議事録':'の決定待ちです', docx:'の記載待ちです',
               pdf:'を見ないと分かりません'};
-  var trail = [], stuck = null, need = 0;
+  var trail = [], stuck = null, need = 0, ready = null;
 
   function label(c){ return NAME[c.src] + ' #' + no(c); }
   function findCard(num){
@@ -1174,46 +1178,51 @@ body[data-stage="c"] .st-c{display:block}
      いまは**元の出どころへ戻って、前提が右から順に片付き、最後に元の一行が片付く。**
      終わりの言葉も「やっと 1 件」から「**やっと 課題管理表 #009 が片付きました**」へ——
      片付いたのは件数ではなく、**始めた一行。** */
+  /* ─ 通った ── **最後の一押しは人がやる**（2026-09-10）───────────
+     > 最後戻って来た時のは**自分で押すよ。前提タスクなんでしょ？**（本人 2026-09-10）
+
+     戻ってきて、勝手に ☑ が入って消えていた。**前提を片付けたのは自分**なのに、
+     肝心の一行は機械が片付けている。**通ったのは「押せるようになった」まで**で、
+     押すのは人。§「見抜くのは機械、決めるのは人」と同じ線。
+
+     解けた行は**脈を打って待つ**（追いかけていたときと同じ印）。 */
   function through(){
-    var k = trail.length, list = trail.slice(), first = list[0];
-    stuck = null;
-    /* **元のタスクへ戻る。**前提が片付くところは、始めた場所から見る */
+    var first = trail[0];
+    stuck = null; ready = first;
+    /* **元のタスクへ戻る。**前提が落ちたところは、始めた場所から見る */
     tab = first.src; paintTabs(); paintRowsOf(tab);
     var top = document.querySelector('#pile li[data-i="' + first.n + '"]');
     if (top && !slow) top.scrollIntoView({block:'center', behavior:'smooth'});
-    var el = document.getElementById('how');
-
-    function fin(){
-      var nums = list.map(function(c){ return c.n; });
-      var row = document.querySelector('#pile li[data-i="' + first.n + '"]');
-      if (row){
-        row.classList.remove('wait','aim','pick');
-        var ck = row.querySelector('.c-ck'); if (ck) ck.classList.add('on');
-        row.classList.add('gone');
-      }
-      setTimeout(function(){
-        nums.forEach(function(num){
-          for (var i = 0; i < CARDS.length; i++)
-            if (CARDS[i].n === num){ CARDS.splice(i, 1); break; }
-        });
-        N = CARDS.length; gone += k; trail = [];
-        /* **回数は言わない**（本人 2026-09-10：「終わらねえ〜はベクトルがちょっと違う」）。
-           言うのは**一行にかかった手数**と、引き算そのもの */
-        el.innerHTML = '<b>' + k + ' か所たどって、やっと ' + esc(label(first))
-                     + ' が片付きました。</b>' + MAX + ' → ' + N + ' 行。';
-        document.getElementById('hint').textContent =
-          '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
-          + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
-        document.getElementById('go-c').classList.add('on');
-        paintTabs(); paintRowsOf(tab); stick();
-      }, 320);
-    }
-
-    if (slow){ fin(); return; }
-    /* **一拍だけ置く。**戻ってきた画面で、始めた行に目が行ってから片付く */
-    el.innerHTML = '<b>' + (k - 1) + ' か所ぶんの前提が、片付きました。</b>';
+    document.getElementById('how').innerHTML =
+      '<b>' + (trail.length - 1) + ' か所ぶんの前提が、片付きました。</b>'
+      + '<span class="tr">' + esc(label(first)) + '</span> が、押せるようになりました。';
     stick();
-    setTimeout(fin, 560);
+  }
+
+  /* 解けた一行を、人が押した */
+  function finish1(li){
+    var list = trail.slice(), first = ready, k = list.length;
+    ready = null; trail = []; stuck = null;
+    li.classList.remove('wait','aim','pick');
+    var ck = li.querySelector('.c-ck'); if (ck) ck.classList.add('on');
+    li.classList.add('gone');
+    setTimeout(function(){
+      list.forEach(function(c){
+        for (var i = 0; i < CARDS.length; i++)
+          if (CARDS[i].n === c.n){ CARDS.splice(i, 1); break; }
+      });
+      N = CARDS.length; gone += k;
+      /* **回数は言わない**（本人 2026-09-10：「終わらねえ〜はベクトルがちょっと違う」）。
+         言うのは**一行にかかった手数**と、引き算そのもの */
+      document.getElementById('how').innerHTML =
+        '<b>' + k + ' か所たどって、やっと ' + esc(label(first))
+        + ' が片付きました。</b>' + MAX + ' → ' + N + ' 行。';
+      document.getElementById('hint').textContent =
+        '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
+        + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
+      document.getElementById('go-c').classList.add('on');
+      paintTabs(); paintRowsOf(tab); stick();
+    }, 320);
   }
 
   function press(li){
@@ -1223,6 +1232,10 @@ body[data-stage="c"] .st-c{display:block}
     picked = true; clearTimeout(waitT);
     var pk = document.querySelector('#pile li.pick');
     if (pk) pk.classList.remove('pick');
+
+    /* **解けた一行を押した。**ここが「達成」——前提を落としたのは自分 */
+    if (ready && ready === c){ finish1(li); return; }
+    ready = null;   /* 別の行を押したら、解けた状態は捨てる */
 
     /* 追いかけている先を押したら鎖が伸びる。**別の行を押したら、そこから鎖を引き直す** */
     if (stuck && stuck === c) trail.push(c);
