@@ -360,8 +360,10 @@ body.landing .gset{opacity:0}
   font-family:var(--sans);
 }
 .how b{color:var(--go); font-weight:700}
-/* 辿ってきた道。**何か所目かが見えていないと、ただ動かないに見える** */
+/* いまどこに居るか。**道は書かない**（2026-09-10。数で足りる）*/
 .how .tr{font-family:var(--mono); font-weight:700; color:var(--ink)}
+/* 何か所目か。**深さはこれだけで出る** */
+.how .cnt{color:var(--ink); margin-right:6px}
 /* 見に行く。**紫は「飛ぶ」の印**（§色の決め） */
 .how .jump{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
@@ -370,8 +372,6 @@ body.landing .gset{opacity:0}
   box-shadow:var(--lift1); transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 .how .jump:hover{transform:translateY(-1px); box-shadow:var(--lift2)}
-/* 落ちた前提の印。**右から順に付く** */
-.how .ok{font-style:normal; color:var(--go); font-weight:700; margin-right:4px}
 .how .jump:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .how .jump:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 
@@ -1145,11 +1145,19 @@ body[data-stage="c"] .st-c{display:block}
     return null;
   }
 
-  /* 辿っている途中を、表の上に出す。**何か所目かが見えていないと、ただ動かないに見える** */
+  /* ─ 辿っている途中 ── **数だけでいい**（2026-09-10）─────────────
+     > 4 か所辿って〜みたいなの、**数カウントあるなら別に辿った経路書かなくていい**よ
+     > （本人 2026-09-10）
+
+     道を全部書いていた（「課題管理表 #009 → 議事録 #095 → 仕様書 #326 は、…」）。
+     深さは**数で足りる**し、四つ並ぶと帯の中で折り返す。
+     残すのは**何か所目か・いまどこか・次はどこか**の三つだけ。 */
   function showTrail(){
     var el = document.getElementById('how');
     if (!el || !stuck) return;
-    el.innerHTML = '<span class="tr">' + esc(trail.map(label).join(' → ')) + '</span> は、'
+    var here = trail[trail.length - 1];
+    el.innerHTML = '<b class="cnt">' + trail.length + ' か所目。</b>'
+      + '<span class="tr">' + esc(label(here)) + '</span> は、'
       + '<b>' + esc(label(stuck)) + '</b>' + WHY[stuck.src] + '。'
       + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>';
     stick();
@@ -1166,12 +1174,6 @@ body[data-stage="c"] .st-c{display:block}
      いまは**元の出どころへ戻って、前提が右から順に片付き、最後に元の一行が片付く。**
      終わりの言葉も「やっと 1 件」から「**やっと 課題管理表 #009 が片付きました**」へ——
      片付いたのは件数ではなく、**始めた一行。** */
-  function trailLine(from){
-    return trail.map(function(c, i){
-      return (i >= from ? '<i class="ok">✓</i>' : '') + esc(label(c));
-    }).join(' → ');
-  }
-
   function through(){
     var k = trail.length, list = trail.slice(), first = list[0];
     stuck = null;
@@ -1208,18 +1210,10 @@ body[data-stage="c"] .st-c{display:block}
     }
 
     if (slow){ fin(); return; }
-    /* **右から順に、前提が落ちる。**辿った先はいま画面に無いので、道の側で見せる */
-    var i = k - 1;
-    (function step(){
-      if (i < 1){
-        el.innerHTML = '<span class="tr">' + trailLine(1) + '</span>'
-                     + ' <b>前提が、片付きました。</b>';
-        stick(); setTimeout(fin, 400); return;
-      }
-      el.innerHTML = '<span class="tr">' + trailLine(i) + '</span>'
-                   + ' <b>前提が、片付きました。</b>';
-      stick(); i--; setTimeout(step, 320);
-    })();
+    /* **一拍だけ置く。**戻ってきた画面で、始めた行に目が行ってから片付く */
+    el.innerHTML = '<b>' + (k - 1) + ' か所ぶんの前提が、片付きました。</b>';
+    stick();
+    setTimeout(fin, 560);
   }
 
   function press(li){
