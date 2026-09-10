@@ -1171,12 +1171,26 @@ body[data-stage="c"] .st-c{display:block}
     for (var i = 0; i < CARDS.length; i++) if (CARDS[i].n === num) return CARDS[i];
     return null;
   }
-  /* 引っかかり先。**必ず別のタブ**から、まだ辿っていないものを選ぶ */
+  /* ─ 出どころの深さ ── **症状から元へ、一方向にしか進まない**（2026-09-10）───
+     > **辿るの逆じゃない？**多分今根幹の原因から辿ってるよね（本人 2026-09-10）
+
+     行き先を番号だけで選んでいたので、**途中で浅いほうへ戻っていた**——
+     五本のうち三本（議事録 → チャット、仕様書 → 議事録）。
+     鎖の終点がチャットになると「**根幹の原因がチャットの一言**」になって、
+     辿った向きが逆に見える。
+
+     台帳（症状）→ やりとり → 決定 → 決めごと → 元資料。**下へしか行かない。**
+     終点は必ず**書かれていない／決まっていない**もの側に来る。 */
+  var DEEP = {xlsx:1, chat:2, mail:3, '議事録':4, docx:5, pdf:6};
+
+  /* 引っかかり先。**いまより深い出どころ**から、まだ辿っていないものを選ぶ */
   function nextBlock(c){
     if (!CARDS.length) return null;
-    for (var t = 1; t <= 60; t++){
+    var mine = DEEP[c.src] || 1;
+    for (var t = 1; t <= 80; t++){
       var b = CARDS[(c.n * 7 + t * 31) % CARDS.length];
       if (!b || b === c) continue;
+      if ((DEEP[b.src] || 1) <= mine) continue;   /* **浅いほうへは戻らない** */
       /* **まだ行っていない出どころ**から選ぶ——同じタブへ戻ると
          「3 か所」と言いながら 2 か所しか回っていないことになる（画面で見つけた）*/
       if (trail.some(function(x){ return x.src === b.src; })) continue;
