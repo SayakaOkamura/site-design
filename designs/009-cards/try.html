@@ -158,7 +158,7 @@ body{
 
    数字（402）では量が実感できない（本人：「こんだけ件数作っておいて
    ろくに見られないだろう」——画面に出るのは 13 行）。**手で見に行ける形にした。** */
-.tabs{display:flex; flex-wrap:wrap; gap:4px; margin:0 0 -1px}
+.tabs{display:flex; flex-wrap:wrap; gap:4px; margin:0 0 -1px; padding:0}
 .tb{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   font-family:var(--mono); font-size:12px; line-height:1;
@@ -167,7 +167,10 @@ body{
   transition:background-color .14s ease, color .14s ease;
 }
 .tb:hover{background:rgba(255,255,255,.85); color:var(--ink)}
-.tb.on{background:var(--frame); color:var(--ink); font-weight:700}
+/* 選んでいるタブは**箱と同じ白**。紙が一枚手前に来ている形（下の線を消す）*/
+.tb.on{background:var(--card); color:var(--ink); font-weight:700;
+       border:1px solid var(--rule); border-bottom-color:var(--card);
+       padding:8px 13px; position:relative; z-index:1}
 .tb:focus-visible{outline:2px solid var(--go); outline-offset:2px}
 .tb em{font-style:normal; margin-left:9px; color:var(--sub); font-weight:400}
 .tb.on em{color:var(--ink)}
@@ -187,21 +190,39 @@ body{
 .pile .p{font-family:var(--mincho); font-size:11.5px; line-height:1.6;
          border:1px solid #d5deec; padding:4px 9px; border-radius:2px}
 
+/* ─ **表が細い**（本人 2026-09-10）─────────────────────────────
+   罫線が下線だけ・列が四つ・字が薄い、で**表というより一覧**に見えていた。
+   1132px のうち 700px が件名の空きで、**痩せて見えていた。**
+
+   直したのは三つ——**縦の罫線を入れた**（升目になる）、
+   **列を二つ足した**（起票日・分類。**どちらも半分は空欄**なので、
+   埋まっていない列が四つに増える）、**行を詰めた**（26px → 22px。
+   同じ窓で 13 行 → 16 行見える＝「多い」が強くなる）。
+
+   **備考の列は戻さない**——「チャット参照」が表に書いてあるのが
+   そもそもおかしい、が指摘の中身だった（タブに分けた時点で参照先は別の場所）。 */
 .sheet{
-/* 備考の列は捨てた。**「チャット参照」が表に書いてあるのが、そもそもおかしい**
-     （タブに分けた時点で、参照先は別の場所にある）*/
-  --cols:30px 52px minmax(0,1fr) 72px 78px 62px 72px;
-  font-family:var(--mono); font-size:12px; line-height:1.5;
-  padding:0 10px;                    /* **横の詰めはここ一箇所。**見出しと行で
-                                        別々に持たせたら 1fr が 20px ずれた */
+  --cols:34px 46px 84px 62px minmax(0,1fr) 72px 78px 62px;
+  --rule:#ccd6e6;                    /* 升目の線。**紙の罫より少し濃い** */
+  font-family:var(--mono); font-size:11.5px; line-height:1.45;
 }
+/* **overflow は触らない。**囲んだ箱に overflow:hidden を付けたら、
+   その箱が巻き取る場所になって、**貼りつく見出しが箱の上 60px に居座り、
+   一行目がその裏に隠れた**（画面で見つけた。§ホームの採寸と同じ罠）*/
+.sheet.grid{background:var(--card); border:1px solid var(--rule)}
 /* 見出しの行。**貼りつく**——送っても列が何か分かる */
 .sheet .hd{
   position:sticky; top:60px; z-index:2;
   display:grid; grid-template-columns:var(--cols);
-  gap:0 10px; padding:7px 0; background:var(--frame);
-  font-size:11px; font-weight:700; color:var(--sub); letter-spacing:.02em;
+  gap:0; padding:0; background:#dbe4f2; border-bottom:1px solid var(--rule);
+  font-size:10.5px; font-weight:700; color:var(--sub); letter-spacing:.02em;
 }
+.sheet .hd > span{
+  padding:6px 8px; border-right:1px solid var(--rule);
+  min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.sheet .hd > span:last-child{border-right:0}
+.sheet:not(.grid){padding:0 10px}
 .pile{list-style:none; margin:0; padding:0; columns:auto}
 .pile li{
   padding:5px 0; margin:0;
@@ -209,7 +230,16 @@ body{
   color:rgba(37,31,69,.82); cursor:pointer;
   transition:background-color .12s ease, opacity .2s ease;
 }
-.sheet.grid .pile li{display:grid; grid-template-columns:var(--cols); gap:0 10px}
+.sheet.grid .pile li{
+  display:grid; grid-template-columns:var(--cols); gap:0;
+  padding:0; margin:0; border-radius:0;
+  border-bottom:1px solid #e4eaf3;
+}
+.sheet.grid .pile li > span{padding:3px 8px; border-right:1px solid #eaeff6}
+.sheet.grid .pile li > span:last-child{border-right:0}
+/* **一行おきに薄く敷く。**表計算の作法（意匠は借りない——色は地の色のまま）*/
+.sheet.grid .pile li:nth-child(even){background:rgba(37,31,69,.025)}
+.sheet.grid .pile li:hover{background:rgba(99,84,224,.11)}
 .pile li:hover{background:rgba(99,84,224,.09)}
 
 .pile li > span{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -219,12 +249,24 @@ body{
 .pile .c-no{color:#98a2bd}
 .pile .c-ti{color:var(--ink)}
 /* **埋まっていないところが、そのまま見える。**空欄に印は打たない */
-.pile .c-st,.pile .c-pi,.pile .c-dl{color:var(--sub)}
-/* チェック欄。**表ならチェック**（本人 2026-09-10）——
-   「片付ける」という札より、表の作法のほうが手が出る */
-.pile .c-ck{color:#9aa6c2; font-size:13px; line-height:1.3}
-.pile li:hover .c-ck{color:var(--go)}
-.pile li.gone .c-ck{color:var(--go)}
+.pile .c-st,.pile .c-pi,.pile .c-dl,.pile .c-up,.pile .c-kd{color:var(--sub)}
+/* ─ チェック欄。**押すものの顔をしていなかった**（本人 2026-09-10：
+   「クリックしなきゃいけないっていうのもわかりにくい」）。
+   文字の □ は**書いてあるだけ**に見える。**升目にして、指を乗せると光る。** */
+.pile .c-ck{font-size:0; text-align:center}
+.pile .c-ck::before{
+  content:''; display:inline-block; width:12px; height:12px; vertical-align:middle;
+  border:1.5px solid #a9b5cd; border-radius:2px; background:#fff;
+  transition:border-color .12s ease, background-color .12s ease, box-shadow .12s ease;
+}
+.pile li:hover .c-ck::before{border-color:var(--go); box-shadow:0 0 0 3px rgba(99,84,224,.16)}
+.pile .c-ck.on::before{background:var(--go); border-color:var(--go)}
+/* **最初の一行だけ、脈を打つ。**教えるのは一度だけ（押したら止まる）*/
+.pile li.pick .c-ck::before{border-color:var(--go); animation:tap 1.7s ease-in-out infinite}
+@keyframes tap{
+  0%,100%{box-shadow:0 0 0 0 rgba(99,84,224,.4)}
+  55%    {box-shadow:0 0 0 6px rgba(99,84,224,0)}
+}
 /* 未読の印。**通知の顔**。付いていない行にも同じ場所を空けておく（行頭が揃う）*/
 .pile .dot{
   display:inline-block; width:6px; height:6px; border-radius:50%;
@@ -288,14 +330,14 @@ body.landing .gset{opacity:0}
    **自分のせいにしない。**402 行は来る前からあるもので、
    押したから増えるのではない（本人 2026-09-10：「一手打って増える、は
    その人のせいになっちゃいそう」）。 */
-/* 表以外のタブでは格子が無いので、合図は右端へ寄せる（下へ折れていた）*/
-.sheet:not(.grid) .pile li.pick{display:flex; align-items:center; gap:14px}
-.sheet:not(.grid) .pile li.pick > div{flex:1 1 auto; min-width:0}
-.sheet:not(.grid) .pile li.pick .c-ac{flex:none}
-.pile li.pick{background:var(--card); box-shadow:var(--lift1); border-bottom-color:transparent}
-.pile li.pick:hover{background:var(--card); box-shadow:var(--lift2)}
-/* 一手の合図。**列を崩さない**ように、いちばん右の枠に入れる */
-.pile .c-ac{color:var(--go); font-weight:700; text-align:right}
+/* ─ 合図の置き場所。**右端は遠すぎた**（本人 2026-09-10：「片付ける表記が端すぎる」）。
+   1132px の表で、チェック欄（左端）と「片付ける」（右端）が
+   **1100px 離れていた**——どっちを押すのか分からない。
+
+   **右端の枠ごと捨てて、押す場所そのものに寄せた**——表の上の一行（下の .how）で
+   一度だけ言葉にして、あとは**チェックが脈を打つ**。 */
+.sheet.grid .pile li.pick{background:rgba(99,84,224,.07)}
+.sheet:not(.grid) .pile li.pick{background:var(--card); box-shadow:var(--lift1)}
 /* 抜けるところ。**一行ぶんしか動かない**——それが「効かない」の中身 */
 .pile li.gone{
   opacity:0; transform:translate(14px,-4px);
@@ -306,6 +348,14 @@ body.landing .gset{opacity:0}
 /* 問い。**答えさせない。**見て「無理」と分かった時点で先へ行ける */
 .ask{margin:0 0 18px; font-size:15px; font-weight:700; line-height:1.8}
 .ask .sub{display:block; min-height:1.8em; font-size:13px; font-weight:500; color:var(--sub)}
+/* ─ **何をしている画面か**（本人 2026-09-10：「何してる画面かがわからない」）。
+   題は「ある会社の、課題まわりです」だけで、**タブが何か・押していいのか**を
+   どこにも書いていなかった。**表のすぐ上、左端**——チェック欄の真上に置く。 */
+.how{
+  margin:0 0 7px; font-size:12px; line-height:1.7; color:var(--sub);
+  font-family:var(--sans);
+}
+.how b{color:var(--go); font-weight:700}
 /* **一手は問いの隣に置く。**下端に貼りつけていたら、**山の上に浮いて**
    問いからも離れていた（本人 2026-09-08：「同じ件をまとめる、のボタンの
    位置もちょっと不思議だな」）。**答える相手のすぐ横にある**のが素直。
@@ -448,6 +498,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 }
 
 @media (max-width:760px){ .pile{columns:1} }
+/* 狭い窓では、足した二列を畳む。**升目が潰れると「多い」より「読めない」になる** */
+@media (max-width:860px){
+  .sheet{--cols:32px 44px minmax(0,1fr) 70px 76px 58px}
+  .sheet .hd > span:nth-child(3), .sheet .hd > span:nth-child(4),
+  .pile .c-up, .pile .c-kd{display:none}
+}
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important; transition:none !important}
 }
@@ -478,7 +534,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   <section class="st st-b">
     <!-- **問いは貼りつく。**山を送っても、答えられていない問いが目の前に残る -->
     <div class="ask2">
-      <p class="ask">ある会社の、課題まわりです。<br>
+      <p class="ask">ある会社に、たまっている課題です。<br>
         <span class="sub" id="hint"></span></p>
       <!-- **ここは AI ではない。**同じ件を集めるのは決まった処理で、推論ではない
            （本人 2026-09-09：「まとめてるのは AI じゃないよ」）。
@@ -487,12 +543,17 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     </div>
     <!-- 課題管理表そのもの。**見慣れた形**——列は No.／件名／状態／担当／期限／備考。
          **状態と担当が埋まっていない**のが本体で、備考が表の外へ飛ばす -->
+    <!-- **何をしている画面か**を、表のすぐ上・左端に一行だけ置く
+         （本人 2026-09-10：「何してる画面かがわからない」）。
+         右端の「片付ける」を捨てた代わりでもある（同：「片付ける表記が端すぎる」）-->
+    <p class="how" id="how">タブを押すと、その出どころが見られます。<b>行の左のチェックを押すと、その 1 行が片付きます。</b></p>
+    <!-- タブ＝出どころ。**一つの表にまとまっていないのが本当。**
+         **囲みの外**に置く——紙が一枚手前に来ている形にしたいので -->
+    <div class="tabs" id="tabs"></div>
     <div class="sheet grid" id="sheet">
-      <!-- タブ＝出どころ。**一つの表にまとまっていないのが本当** -->
-      <div class="tabs" id="tabs"></div>
       <div class="hd">
-        <span></span><span>No.</span><span>件名</span><span>状態</span><span>担当</span>
-        <span>期限</span><span></span>
+        <span></span><span>No.</span><span>起票日</span><span>分類</span><span>件名</span>
+        <span>状態</span><span>担当</span><span>期限</span>
       </div>
       <ul class="pile" id="pile"></ul>
     </div>
@@ -768,7 +829,11 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      入っていないことを入力したことになる。 */
   var ST  = ['','要確認','','調査中','','未定','','継続'],
       PIC = ['','','都度確認','','前任者','','',''],
-      DUE = ['','次回','','','次回','','',''];
+      DUE = ['','次回','','','次回','','',''],
+      /* 起票日。**古い。**いつのものか分かる列があるのに、半分は空欄 */
+      UP  = ['2019/04/11','','2021/08/03','','2018/11/26','2022/02/14','','2020/07/09'],
+      /* 分類。**分けるつもりはあった**列。半分は空欄 */
+      KND = ['運用','','障害','仕様','','運用','','' ];
 
   function no(c){ return ('000' + c.n).slice(-3); }
 
@@ -794,13 +859,14 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   }
   function rowHTML(c){
     var i = c.n;
-    return '<span class="c-ck">□</span>'
+    return '<span class="c-ck"></span>'
          + '<span class="c-no">' + no(c) + '</span>'
+         + '<span class="c-up">' + UP[(i + 3) % 8] + '</span>'
+         + '<span class="c-kd">' + KND[(i + 5) % 8] + '</span>'
          + '<span class="c-ti">' + esc(c.raw) + '</span>'
          + '<span class="c-st">' + ST[i % 8] + '</span>'
          + '<span class="c-pi">' + PIC[i % 8] + '</span>'
-         + '<span class="c-dl">' + DUE[i % 8] + '</span>'
-         + '<span class="c-ac"></span>';
+         + '<span class="c-dl">' + DUE[i % 8] + '</span>';
   }
 
   /* ─ ② **山は最初からそこにある。触るのは人のほう**（2026-09-10）───────
@@ -817,20 +883,33 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
      **押せるのは、見えている行ぜんぶ。**ただし**ボタンの見た目にするのは一行だけ**——
      402 行ぜんぶを押せる姿にすると、詰めた一覧が台帳＝仕事に見える（§で二度捨てている）。
      一行だけ立たせて指す。**教えるのは一度だけ。** */
-  var waitT = 0, picked = false;
+  var waitT = 0, picked = false, gone = 0;
 
   function paintPile(){
     clearTimeout(waitT);
     picked = false;
     var hint = document.getElementById('hint'),
         go   = document.getElementById('go-c');
-    hint.textContent = 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
+    hint.textContent = '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
+                     + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
+    gone = 0;
+    sayHow();
     go.classList.remove('on');
     tab = 'xlsx';
     paintTabs();
     paintRowsOf(tab);
     /* **押さない人を塞がない。**待っても行き先は出る */
     waitT = setTimeout(function(){ go.classList.add('on'); }, 9000);
+  }
+
+  /* 表の上の一行。**押す場所のすぐ上で、一度だけ言う。**
+     片付けたあとは引き算に入れ替わる（下の clearOne）*/
+  function sayHow(){
+    var el = document.getElementById('how');
+    if (!el || gone) return;
+    el.innerHTML = 'タブを押すと、その出どころが見られます。'
+      + '<b>' + (tab === 'xlsx' ? '行の左のチェック' : '行') + 'を押すと、'
+      + 'その 1 行が片付きます。</b>';
   }
 
   /* タブ。**枚数が「散らばっている」、件数が「量」** */
@@ -855,19 +934,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         return '<li data-k="' + c.k + '" data-i="' + c.n + '">'
              + (src === 'xlsx' ? rowHTML(c) : srcHTML(c)) + '</li>';
       }).join('');
-    /* 合図。**一行だけ、押せる姿で立たせる**（押せるのは全部）*/
+    /* 合図。**一行だけ、チェックが脈を打つ**（押せるのは全部）。
+       **右端の「片付ける」は捨てた**——チェック欄から 1100px 離れていた
+       （本人 2026-09-10：「片付ける表記が端すぎる」）。言葉は表の上に一度だけ */
     if (!picked){
       var first = pile.querySelector('li');
-      if (first){
-        first.classList.add('pick');
-        var ac = first.querySelector('.c-ac');
-        if (ac) ac.textContent = '片付ける';
-        else {
-          var tg = document.createElement('span');
-          tg.className = 'c-ac tag'; tg.textContent = '　片付ける';
-          first.appendChild(tg);
-        }
-      }
+      if (first) first.classList.add('pick');
     }
   }
 
@@ -876,7 +948,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     var b = e.target.closest('.tb');
     if (!b) return;
     tab = b.dataset.s;
-    paintTabs(); paintRowsOf(tab);
+    paintTabs(); paintRowsOf(tab); sayHow();
   });
 
   /* 一行だけ片付ける。**減らない**のがこの一手の中身 */
@@ -895,7 +967,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     li.classList.remove('pick');
     /* 表なら**チェックが入ってから**抜ける（押した跡が一瞬見える）*/
     var ck = li.querySelector('.c-ck');
-    if (ck) ck.textContent = '☑';
+    if (ck) ck.classList.add('on');
     li.classList.add('gone');
     setTimeout(function(){
       if (li.parentNode) li.parentNode.removeChild(li);
@@ -906,8 +978,19 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         if (CARDS[i].n === num){ CARDS.splice(i, 1); break; }
       }
       N = CARDS.length;
+      gone++;
+      /* ─ **「終わらねえ」ではなく「多すぎてやる気出ねえ」**（本人 2026-09-10：
+         「多すぎてやる気出ねえ〜の方にしたいんであって**終わらねえ〜はベクトルが
+         ちょっと違う**し今そうにもなってない」）。
+
+         前は「一行ずつだと、あと 401 回。」と出していた。あれは**回数**の話で、
+         賽の河原（09-09 に一度捨てた形）に戻っていた。**数えさせない。**
+         引き算をそのまま置いて、**動かなさは目で見てもらう。** */
+      document.getElementById('how').innerHTML =
+        '<b>' + gone + ' 行、片付きました。</b>' + MAX + ' → ' + N + ' 行。';
       document.getElementById('hint').textContent =
-        'ぜんぶで ' + N + ' 行。一行ずつだと、あと ' + N + ' 回。';
+        '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
+        + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
       document.getElementById('go-c').classList.add('on');
       paintTabs();
     }, 300);
