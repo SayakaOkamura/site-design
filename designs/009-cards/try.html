@@ -158,7 +158,15 @@ body{
 
    数字（402）では量が実感できない（本人：「こんだけ件数作っておいて
    ろくに見られないだろう」——画面に出るのは 13 行）。**手で見に行ける形にした。** */
-.tabs{display:flex; flex-wrap:wrap; gap:4px; margin:0 0 -1px; padding:0}
+/* **タブは常に上に出しておく**（本人 2026-09-10）——402 行を送っている間、
+   いま何を見ているかと、ほかに何があるかが消える。
+   貼りつく順は 頭（60px）→ 題の帯 → **タブ** → 表の見出し。
+   高さは折り返しで変わるので、JS が測って --stick / --stick2 に入れる */
+.tabs{
+  position:sticky; top:var(--stick,140px); z-index:3;
+  display:flex; flex-wrap:wrap; gap:4px; margin:0 0 -1px;
+  padding:2px 0 0; background:var(--bg);
+}
 .tb{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   font-family:var(--mono); font-size:12.5px; line-height:1;
@@ -213,7 +221,7 @@ body{
 /* 見出しの行。**貼りつく**——送っても列が何か分かる */
 /* **帯の下に貼りつく。**60px 固定にしていたら、題の帯と重なった */
 .sheet .hd{
-  position:sticky; top:var(--stick,140px); z-index:2;
+  position:sticky; top:var(--stick2,182px); z-index:2;
   display:grid; grid-template-columns:var(--cols);
   gap:0; padding:0; background:#dbe4f2; border-bottom:1px solid var(--rule);
   font-size:11.5px; font-weight:700; color:var(--sub); letter-spacing:.02em;
@@ -1055,7 +1063,11 @@ body[data-stage="c"] .st-c{display:block}
   function stick(){
     var a = document.querySelector('.ask2');
     if (!a) return;
-    document.documentElement.style.setProperty('--stick', (60 + a.offsetHeight) + 'px');
+    var s1 = 60 + a.offsetHeight;
+    var t  = document.getElementById('tabs');
+    var r  = document.documentElement.style;
+    r.setProperty('--stick',  s1 + 'px');
+    r.setProperty('--stick2', (s1 + (t ? t.offsetHeight : 0)) + 'px');
   }
   addEventListener('resize', stick);
 
@@ -1121,7 +1133,7 @@ body[data-stage="c"] .st-c{display:block}
     var b = e.target.closest('.tb');
     if (!b) return;
     tab = b.dataset.s;
-    paintTabs(); paintRowsOf(tab); sayHow();
+    paintTabs(); paintRowsOf(tab); sayHow(); stick();
   });
 
   /* ─ 引っかかる ── **押しても、そのままは通らない**（2026-09-10）──────────
