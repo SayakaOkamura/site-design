@@ -479,7 +479,7 @@ body[data-stage="c"] .wrap{padding-top:20px}
 .gitem:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .gitem:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 /* 動詞は②と同じ「片付ける」。**変わったのは相手の形だけ**だと言葉でも揃える */
-.gv{margin-left:auto; font-size:12.5px; font-weight:700; color:var(--go); white-space:nowrap}
+.gv{margin-left:8px; font-size:12.5px; font-weight:700; color:var(--go); white-space:nowrap}
 
 /* ─ 抜ける ─────────────────────────────────────────────
    **押した札が右へ抜けて、下が詰まる。**空きが残ると「減った」、
@@ -490,9 +490,25 @@ body[data-stage="c"] .wrap{padding-top:20px}
   overflow:hidden; opacity:0;
   transition:max-height .42s var(--snap), margin-bottom .42s var(--snap), opacity .24s ease;
 }
-.gt{font-size:14px; font-weight:700; min-width:0}
+.gt{font-size:14px; font-weight:700; min-width:0; flex:1 1 auto;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 /* 行数。**点数ではない**——材料の量。この題が何行ぶんか */
-.gn{font-family:var(--mono); font-size:12px; color:var(--sub); white-space:nowrap}
+.gn{font-family:var(--mono); font-size:12px; color:var(--sub); white-space:nowrap;
+    flex:none; min-width:96px; text-align:right}
+/* ─ 内訳の四角。**②のタブと同じ並び**——塗ってあるところに、この件の行がある。
+   **色は足さない**（§捨てた --crt-*）。濃さだけで「ある／ない」*/
+/* **題が余白を全部取る。**auto の余白を二つ置くと分け合って、
+   四角の位置が題の長さでずれた（画面で見つけた）*/
+.gsq{align-self:center; display:flex; gap:3px; flex:none}
+.gsq .sq{
+  width:8px; height:8px; border-radius:2px;
+  background:none; border:1px solid rgba(37,31,69,.22);
+}
+.gsq .sq.on{background:rgba(37,31,69,.5); border-color:rgba(37,31,69,.5)}
+/* 見出しの下の一行。**数字は一度だけ**——一件ごとの内訳を読ませると表に戻る */
+.csub{margin:-6px 0 16px; font-size:12.5px; line-height:1.8; color:var(--sub)}
+.csub b{color:var(--ink)}
+.csub .lg{display:block; font-size:11.5px; color:var(--sub); opacity:.85}
 
 
 /* ③の下に出る。**段を分けない**（2026-09-10）——
@@ -529,6 +545,8 @@ body[data-stage="c"] .st-c{display:block}
 }
 
 @media (max-width:760px){ .pile{columns:1} }
+/* 狭い窓では四角を畳む。**題と行数が先** */
+@media (max-width:620px){ .gsq{display:none} .gn{min-width:0} }
 /* 狭い窓では、足した二列を畳む。**升目が潰れると「多い」より「読めない」になる** */
 @media (max-width:860px){
   .sheet{--cols:32px 44px minmax(0,1fr) 70px 76px 58px}
@@ -597,6 +615,8 @@ body[data-stage="c"] .st-c{display:block}
            ほかにやることが無いので、隠す理由が無い -->
       <button class="one" id="go-d">最後に</button>
     </div>
+    <!-- **内訳の読み方**。四角は②のタブと同じ並び -->
+    <p class="csub" id="c-sub"></p>
     <div id="sets"></div>
 
     <!-- ④ **③の下に出る。段を分けない**（本人 2026-09-10：「最後のカードいる？
@@ -1225,10 +1245,33 @@ body[data-stage="c"] .st-c{display:block}
      **「片付ける」は外した**（2026-09-10。本人：「この方針で行くなら
      片付けるところは入れなくていい。意味ないから」）。
      ②で選ばせず、③でも仕分けさせないなら、**片付けの一手だけ残しても処理でしかない。** */
+  /* ─ 内訳 ── **この一件が、どこから来たのか**（2026-09-10）─────────
+     > これがこうなった**内訳とかパッと見でわかる**といいかもね（本人 2026-09-10）
+
+     ②で 1 件を辿るのに 3 か所まわった。**③はそれが 12 件ぶん並んでいる**のに、
+     画面には「25 行」としか出ていなかった。**どこに散っていたかが消えていた。**
+
+     **四角は②のタブと同じ並び**（課題管理表・メール・チャット・議事録・仕様書・別紙）。
+     塗ってあるところに、この件の行がある。**数は出さない**——
+     パッと見で要るのは「**どれも 4〜6 か所にまたがっている**」だけで、
+     一件ごとの内訳の数字は、読ませると表に戻る。 */
+  function places(k){
+    var by = {};
+    byG[k].forEach(function(c){ by[c.src] = (by[c.src] || 0) + 1; });
+    return by;
+  }
   function item(k){
+    var by = places(k), cnt = 0;
+    var sq = TABS.map(function(t){
+      var v = by[t[0]] || 0;
+      if (v) cnt++;
+      return '<i class="sq' + (v ? ' on' : '') + '" title="'
+           + esc(t[1]) + ' ' + v + ' 行"></i>';
+    }).join('');
     return '<button class="gitem" data-k="' + k + '">'
       +   '<span class="gt">' + esc(GROUPS[k].t) + '</span>'
-      +   '<span class="gn">' + byG[k].length + ' 行</span>'
+      +   '<span class="gsq" aria-hidden="true">' + sq + '</span>'
+      +   '<span class="gn">' + byG[k].length + ' 行 ／ ' + cnt + ' か所</span>'
       +   '<span class="gv">片付ける</span>'
       + '</button>';
   }
@@ -1254,6 +1297,17 @@ body[data-stage="c"] .st-c{display:block}
     /* **②の量に対する返事。**説明ではない */
     document.getElementById('c-h1').textContent =
       N + ' 行は、' + order.length + ' 件でした';
+    /* **散らばりの幅を、数字で一度だけ。**②で辿ったのは 1 件ぶん、
+       ここに並んでいるのは同じことが 12 件ぶん */
+    var lo = 9, hi = 0;
+    order.forEach(function(k){
+      var c = 0, by = places(k);
+      TABS.forEach(function(t){ if (by[t[0]]) c++; });
+      if (c < lo) lo = c; if (c > hi) hi = c;
+    });
+    document.getElementById('c-sub').innerHTML =
+      'どれも <b>' + (lo === hi ? lo : lo + '〜' + hi) + ' か所</b>にまたがっていました。'
+      + '<span class="lg">四角は出どころ（②のタブと同じ並び）。塗ってあるところに、この件の行があります。</span>';
     leftG = order.length; firstCleared = null; cleared = 0;
     var box = document.getElementById('end');
     if (box) box.hidden = true;
