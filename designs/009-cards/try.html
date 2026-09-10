@@ -1166,12 +1166,14 @@ body[data-stage="c"] .st-c{display:block}
   function showTrail(){
     var el = document.getElementById('how');
     if (!el || !stuck) return;
-    var here = trail[trail.length - 1];
     /* **数も出さない**（本人 2026-09-10：「1 か所目表記もいらない」）。
        途中で何か所目かが分かると**進み具合**になる——どこまで続くか分からないのが
-       この場の中身。数を言うのは**終わったあとに一度だけ**（「4 か所たどって」）*/
-    el.innerHTML = '<span class="tr">' + esc(label(here)) + '</span> は、'
-      + '<b>' + esc(label(stuck)) + '</b>' + WHY[stuck.src] + '。'
+       この場の中身。数を言うのは**終わったあとに一度だけ**（「4 か所たどって」）。
+
+       **押した行は目の前にある**（印が付いている）ので、名指ししない。
+       言うのは**チェックが入らなかった**ことと、**どこ待ちか**の二つ */
+    el.innerHTML = '<b>まだ終わっていません。</b>'
+      + '<span class="tr">' + esc(label(stuck)) + '</span>' + WHY[stuck.src] + '。'
       + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>';
     stick();
   }
@@ -1265,7 +1267,25 @@ body[data-stage="c"] .st-c{display:block}
     if (!b){ through(); return; }
     stuck = b;
     li.classList.remove('aim');   /* 追いついた印は消す。**次の先へ移る** */
-    li.classList.add('wait');
+    /* ─ **押した瞬間、チェックは入る**（2026-09-10）────────────────
+       > チェックリストって、**押す時って終わった時**じゃん？（本人 2026-09-10）
+
+       そのとおりで、**押す＝終わった**。押す人は終わったつもりで押している。
+       だから**入れさせる。**そのうえで**戻る**——終わっていなかったのは
+       本人のせいではなく、**まだ落ちていない前提があるから**
+       （§理念「原因は会社の介入」）。
+
+       入れさせずに弾くと「押せない仕組み」になって、**自分のせいに見える。** */
+    var ck = li.querySelector('.c-ck');
+    if (ck && !slow){
+      ck.classList.add('on');
+      setTimeout(function(){
+        ck.classList.remove('on');
+        li.classList.add('wait');
+      }, 430);
+    } else {
+      li.classList.add('wait');
+    }
     showTrail();
   }
 
