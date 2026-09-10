@@ -575,6 +575,8 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
 /* 見出しの下の一行。**数字は一度だけ**——一件ごとの内訳を読ませると表に戻る */
 .csub{margin:-6px 0 16px; font-size:13.5px; line-height:1.85; color:var(--sub)}
 .csub b{color:var(--ink)}
+/* ③が出す問い。**12 件はその選択肢** */
+.csub .q{display:inline-block; margin-right:9px; font-size:14.5px; color:var(--ink)}
 .csub .lg{display:block; font-size:12.5px; color:var(--sub); opacity:1}
 .csub .lg b{color:var(--sub); font-weight:700}
 
@@ -1531,8 +1533,18 @@ body[data-stage="c"] .st-c{display:block}
       TABS.forEach(function(t){ if (by[t[0]]) c++; });
       if (c < lo) lo = c; if (c > hi) hi = c;
     });
+    /* ─ ③が出す問い ── **どこから手を付けますか**（2026-09-10）─────────
+       > **どこから手を付ける？みたいな感じに思っていきたい**ですね（本人 2026-09-10）
+
+       ②は「どこから手を付けたらいいか分からない」で終わる（398 行、
+       一行に 4 か所）。③はそこに**答えられる状態**を出しているのに、
+       画面は「402 行は、12 件でした」と**起きたこと**しか言っていなかった。
+
+       **問いをここで初めて立てる。**12 件はその選択肢、内訳は選ぶための材料、
+       ④の「一つずつなら、手が付けられます」がその返事になる。 */
     document.getElementById('c-sub').innerHTML =
-      'どれも <b>' + (lo === hi ? lo : lo + '〜' + hi) + ' か所</b>にまたがっていました。'
+      '<b class="q">どこから手を付けますか。</b>'
+      + 'どれも <b>' + (lo === hi ? lo : lo + '〜' + hi) + ' か所</b>にまたがっていました。'
       /* **何がやって、誰が**（本人 2026-09-10：「ただ整理するだけを
          何がやって誰が、っていうのも見せたいか？」）。**③で一行だけ。**
          ②で言うと押す前の種明かしになる（09-08「同じのまとめるってもう見えてるしなあ」）。
