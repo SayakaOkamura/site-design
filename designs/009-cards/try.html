@@ -368,6 +368,21 @@ body.landing .gset{opacity:0}
   font-family:var(--sans);
 }
 .how b{color:var(--go); font-weight:700}
+/* 押した行の言葉。**答えの中に置く**——読ませようとせず、読む場所に置く */
+.how .qt{color:var(--ink); font-weight:700}
+.how .qt::before{content:'「'} .how .qt::after{content:'」'}
+/* 着いた先の二行。**注釈は付けない**——読んだ人が繋げる */
+.how .pair{display:block}
+.how .pl{
+  display:block; padding:3px 0 3px 12px; border-left:2px solid #cdd8ea;
+  color:var(--sub); line-height:1.75;
+}
+.how .pl.now{border-left-color:var(--go); color:var(--ink)}
+.how .pl i{
+  font-style:normal; font-family:var(--mono); font-size:11.5px;
+  color:#8b97b8; margin-right:12px;
+}
+.how .pl.now i{color:var(--go)}
 /* いまどこに居るか。**道は書かない**（2026-09-10。数で足りる）*/
 .how .tr{font-family:var(--mono); font-weight:700; color:var(--ink)}
 /* 見に行く。**紫は「飛ぶ」の印**（§色の決め） */
@@ -1085,6 +1100,24 @@ body[data-stage="c"] .st-c{display:block}
     stick();
   }
 
+  /* ─ 着いた先で、**二つを並べる**（2026-09-10）─────────────────
+     > なんで次々めぐらされてるのかがわかんないのが気になる（本人 2026-09-10）
+
+     **同じ一件が、別の場所に別の言葉で書いてある**——それがめぐらされる理由。
+     着いたところで、来た行と着いた行を**並べて置く。注釈は付けない。**
+     「同じ話じゃん、書き方が違うだけ」と**読んだ人に思わせる。**
+     「同じ件です」と書くと、③の仕事を②が先に喋ることになる。二行だけなら読まれる。 */
+  function showPair(from, to){
+    var el = document.getElementById('how');
+    if (!el || !from || !to) return;
+    el.innerHTML =
+      '<span class="pair">'
+      +   '<span class="pl"><i>' + esc(label(from)) + '</i>' + esc(from.raw) + '</span>'
+      +   '<span class="pl now"><i>' + esc(label(to)) + '</i>' + esc(to.raw) + '</span>'
+      + '</span>';
+    stick();
+  }
+
   /* タブ。**枚数が「散らばっている」、件数が「量」** */
   function paintTabs(){
     var box = document.getElementById('tabs');
@@ -1171,33 +1204,47 @@ body[data-stage="c"] .st-c{display:block}
     for (var i = 0; i < CARDS.length; i++) if (CARDS[i].n === num) return CARDS[i];
     return null;
   }
-  /* ─ 出どころの深さ ── **症状から元へ、一方向にしか進まない**（2026-09-10）───
+  /* ─ 辿る向きは**タブの並びのまま**（2026-09-10）─────────────────
      > **辿るの逆じゃない？**多分今根幹の原因から辿ってるよね（本人 2026-09-10）
+     > ── **どこで終わるでもいいし根幹がチャットの可能性自体は全然あると思うけど、
+     > どうせ書かれてる内容まで読まれないよ**（同）
 
-     行き先を番号だけで選んでいたので、**途中で浅いほうへ戻っていた**——
-     五本のうち三本（議事録 → チャット、仕様書 → 議事録）。
-     鎖の終点がチャットになると「**根幹の原因がチャットの一言**」になって、
-     辿った向きが逆に見える。
+     一度**意味で深さを付けた**（台帳 → やりとり → 決定 → 決めごと → 元資料）。
+     **それは要らなかった。**終点がチャットでもおかしくないし、
+     そもそも**行の中身は読まれない。**
 
-     台帳（症状）→ やりとり → 決定 → 決めごと → 元資料。**下へしか行かない。**
-     終点は必ず**書かれていない／決まっていない**もの側に来る。 */
-  var DEEP = {xlsx:1, chat:2, mail:3, '議事録':4, docx:5, pdf:6};
+     読まれるのは**タブの位置**。だから向きの基準もそこ——
+     **タブの並びを左から右へ。**左へ戻ると、それだけで逆に見える。
+     （前の深さは チャット < メール で、**タブの並び（メール・チャット）と逆**だった）*/
+  function depth(src){
+    for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === src) return i;
+    return 0;
+  }
 
   /* 引っかかり先。**いまより深い出どころ**から、まだ辿っていないものを選ぶ */
+  /* ─ 行き先は**同じ件の中**（2026-09-10）───────────────────────
+     > **なんで次々めぐらされてるのかがわかんない**のが気になるんだよね（本人 2026-09-10）
+
+     行き先を番号だけで選んでいたので、**鎖が件をまたいでいた。**
+     「課題管理表 #009」と「議事録 #095」が**別々の話**なら、
+     めぐらされる理由は本当に無い。読んでも繋がらないし、
+     ③が「402 行は 12 件」と言うのとも食い違っていた。
+
+     いまは**同じ件の中だけ**を辿る。だから辿った 3〜4 行は**本当に同じ一件**で、
+     ②で歩いた道が、そのまま③の「40 行が 1 件」になる。
+
+     **飛ばさない**——いちばん近い出どころへ一段ずつ（タブの並びの順）。 */
   function nextBlock(c){
-    if (!CARDS.length) return null;
-    var mine = DEEP[c.src] || 1;
-    for (var t = 1; t <= 80; t++){
-      var b = CARDS[(c.n * 7 + t * 31) % CARDS.length];
-      if (!b || b === c) continue;
-      if ((DEEP[b.src] || 1) <= mine) continue;   /* **浅いほうへは戻らない** */
-      /* **まだ行っていない出どころ**から選ぶ——同じタブへ戻ると
-         「3 か所」と言いながら 2 か所しか回っていないことになる（画面で見つけた）*/
+    var mine = depth(c.src), pick = null;
+    for (var i = 0; i < CARDS.length; i++){
+      var b = CARDS[i];
+      if (b === c || b.k !== c.k) continue;      /* **同じ件の中だけ** */
+      if (depth(b.src) <= mine) continue;        /* **左へは戻らない** */
       if (trail.some(function(x){ return x.src === b.src; })) continue;
-      if (b.src === c.src || trail.indexOf(b) >= 0) continue;
-      return b;
+      if (trail.indexOf(b) >= 0) continue;
+      if (!pick || depth(b.src) < depth(pick.src)) pick = b;   /* 一段ずつ */
     }
-    return null;
+    return pick;
   }
 
   /* ─ 辿っている途中 ── **数だけでいい**（2026-09-10）─────────────
@@ -1220,7 +1267,12 @@ body[data-stage="c"] .st-c{display:block}
        議事録やチャットにチェックは無い——あそこで押したのは
        「終わった」ではなく「**見に行った**」。同じ言葉で返すと嘘になる */
     var here = trail[trail.length - 1];
+    /* **押した行の言葉を、答えの中に置く**（2026-09-10）。
+       読ませようとするのではなく、**読む場所に置く**——
+       押した直後は「なんで片付かないの」と思っている瞬間なので、
+       そこに文字があれば読まれる */
     el.innerHTML = '<b>' + (here.src === 'xlsx' ? 'まだ終わっていません。' : 'ここも止まっています。') + '</b>'
+      + '<span class="qt">' + esc(here.raw) + '</span>は、'
       + '<span class="tr">' + esc(label(stuck)) + '</span>' + WHY[stuck.src] + '。'
       + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>';
     stick();
@@ -1371,9 +1423,11 @@ body[data-stage="c"] .st-c{display:block}
     /* 見に行く。**タブが替わって、その行が真ん中に来る**（探させない）*/
     if (e.target.closest('#jump')){
       if (!stuck) return;
+      var from = trail[trail.length - 1], to = stuck;
       tab = stuck.src; paintTabs(); paintRowsOf(tab);
       var t = document.querySelector('#pile li.aim');
       if (t) t.scrollIntoView({block:'center', behavior: slow ? 'auto' : 'smooth'});
+      showPair(from, to);
       return;
     }
     var li = e.target.closest('#pile li');
