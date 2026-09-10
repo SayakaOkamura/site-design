@@ -211,8 +211,9 @@ body{
    一行目がその裏に隠れた**（画面で見つけた。§ホームの採寸と同じ罠）*/
 .sheet.grid{background:var(--card); border:1px solid var(--rule)}
 /* 見出しの行。**貼りつく**——送っても列が何か分かる */
+/* **帯の下に貼りつく。**60px 固定にしていたら、題の帯と重なった */
 .sheet .hd{
-  position:sticky; top:60px; z-index:2;
+  position:sticky; top:var(--stick,140px); z-index:2;
   display:grid; grid-template-columns:var(--cols);
   gap:0; padding:0; background:#dbe4f2; border-bottom:1px solid var(--rule);
   font-size:10.5px; font-weight:700; color:var(--sub); letter-spacing:.02em;
@@ -273,6 +274,9 @@ body{
   background:var(--go); margin-right:8px; vertical-align:middle;
 }
 .pile .dot.off{background:none}
+/* 番号。**どの出どころにも出す**——辿る先を番号で呼ぶので、無いと探せない */
+.pile .rid{font-style:normal; font-family:var(--mono); font-size:10.5px;
+           color:#9aa6c2; margin-right:9px; letter-spacing:0}
 
 /* ─ まとまる動き（②→③のあいだ）── **③の実物へ着地させる**（2026-09-10）───
    前は画面の真ん中に 12 個の点を置いて、そこへ寄せてから③へ切り替えていた。
@@ -352,10 +356,33 @@ body.landing .gset{opacity:0}
    題は「ある会社の、課題まわりです」だけで、**タブが何か・押していいのか**を
    どこにも書いていなかった。**表のすぐ上、左端**——チェック欄の真上に置く。 */
 .how{
-  margin:0 0 7px; font-size:12px; line-height:1.7; color:var(--sub);
+  flex:1 0 100%; margin:0; font-size:12px; line-height:1.7; color:var(--sub);
   font-family:var(--sans);
 }
 .how b{color:var(--go); font-weight:700}
+/* 辿ってきた道。**何か所目かが見えていないと、ただ動かないに見える** */
+.how .tr{font-family:var(--mono); font-weight:700; color:var(--ink)}
+/* 見に行く。**紫は「飛ぶ」の印**（§色の決め） */
+.how .jump{
+  -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
+  margin-left:10px; padding:5px 12px; border-radius:6px;
+  background:var(--go); color:#fff; font-size:11.5px; font-weight:700;
+  box-shadow:var(--lift1); transition:transform .16s var(--ease), box-shadow .16s ease;
+}
+.how .jump:hover{transform:translateY(-1px); box-shadow:var(--lift2)}
+.how .jump:active{transform:translateY(1px); box-shadow:var(--lift0)}
+.how .jump:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+
+/* ─ 引っかかっている行 ── **色は足さない**（§捨てた --crt-*）。
+   **手は付けた、でも止まっている**を、灰で埋めたチェックと薄い地で出す。
+   紫にしないのは、紫が「進む・飛ぶ」の印だから */
+.pile li.wait,
+.sheet.grid .pile li.wait{background:rgba(37,31,69,.075)}
+.pile li.wait .c-ck::before{background:#c3cadb; border-color:#a9b5cd}
+/* いま見に行く先。**脈を打つ**——探させない */
+.pile li.aim,
+.sheet.grid .pile li.aim{background:rgba(99,84,224,.14)}
+.pile li.aim .c-ck::before{border-color:var(--go); animation:tap 1.2s ease-in-out infinite}
 /* **一手は問いの隣に置く。**下端に貼りつけていたら、**山の上に浮いて**
    問いからも離れていた（本人 2026-09-08：「同じ件をまとめる、のボタンの
    位置もちょっと不思議だな」）。**答える相手のすぐ横にある**のが素直。
@@ -364,8 +391,8 @@ body.landing .gset{opacity:0}
    （前は山の上に置いていた。下に置いたときは山を越えないと問いに届かなかった）*/
 .ask2{
   position:sticky; top:60px; z-index:3;             /* 頭の下 */
-  display:flex; align-items:center; gap:26px; flex-wrap:wrap;
-  margin:0 0 22px; padding:14px 0 16px; background:var(--bg);
+  display:flex; align-items:center; column-gap:26px; row-gap:9px; flex-wrap:wrap;
+  margin:0 0 14px; padding:14px 0 14px; background:var(--bg);
 }
 /* **問いの幅に蓋をする。**flex の折り返しは中身の max-content で決まるので、
    注記が一行入っただけで問いが広がり、**一手が次の行へ落ちた**——そこから下が
@@ -540,13 +567,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
            （本人 2026-09-09：「まとめてるのは AI じゃないよ」）。
            AI が出るのは、書かれていないものを書いたところ＝カードの題だけ -->
       <button class="one" id="go-c">まとめてもらう</button>
+      <!-- **辿っている途中は、貼りつく帯の中に置く**——見に行った先で
+           「なぜここに居るのか」が画面から消えていた（画面で見つけた）-->
+      <p class="how" id="how"></p>
     </div>
     <!-- 課題管理表そのもの。**見慣れた形**——列は No.／件名／状態／担当／期限／備考。
          **状態と担当が埋まっていない**のが本体で、備考が表の外へ飛ばす -->
-    <!-- **何をしている画面か**を、表のすぐ上・左端に一行だけ置く
-         （本人 2026-09-10：「何してる画面かがわからない」）。
-         右端の「片付ける」を捨てた代わりでもある（同：「片付ける表記が端すぎる」）-->
-    <p class="how" id="how">タブを押すと、その出どころが見られます。<b>行の左のチェックを押すと、その 1 行が片付きます。</b></p>
     <!-- タブ＝出どころ。**一つの表にまとまっていないのが本当。**
          **囲みの外**に置く——紙が一枚手前に来ている形にしたいので -->
     <div class="tabs" id="tabs"></div>
@@ -845,17 +871,21 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   /* 表以外は、その出どころの形のまま。**借りるのは作法だけ** */
   var SUBJ = ['件名：ご連絡','件名：確認のお願い','件名：Re: ご連絡'];
   function srcHTML(c){
+    /* **番号は、どの出どころにも出す。**辿る先を「議事録 #166」と呼ぶのに、
+       議事録の側に番号が無いと**探せない**（画面で見つけた）。
+       同じ番号があちこちに出ることで、**一つの件が散らばっている**のも見える */
+    var id = '<i class="rid">#' + no(c) + '</i>';
     var t = esc(c.raw);
     /* **未読の印。**放っておかれているものが、放っておかれている顔をしている
        （本人 2026-09-10：「メールも何かしら相談してる感じにするとか、
        通知のアイコンを通知っぽくするとか」）。
        中身は足していない——**印だけ。** */
     var un = (c.n % 3 === 0) ? '<i class="dot"></i>' : '<i class="dot off"></i>';
-    if (c.src === 'mail')   return '<div class="m"><b>' + un + SUBJ[c.n % 3] + '</b>' + t + '</div>';
-    if (c.src === 'chat')   return '<div class="c">' + un + t + '</div>';
-    if (c.src === '議事録') return '<div class="g">・' + t.replace(/^・/, '') + '</div>';
-    if (c.src === 'pdf')    return '<div class="p">' + t + '</div>';
-    return '<div class="d">' + t + '</div>';   /* docx：明朝のべた書き */
+    if (c.src === 'mail')   return '<div class="m"><b>' + un + id + SUBJ[c.n % 3] + '</b>' + t + '</div>';
+    if (c.src === 'chat')   return '<div class="c">' + un + id + t + '</div>';
+    if (c.src === '議事録') return '<div class="g">' + id + '・' + t.replace(/^・/, '') + '</div>';
+    if (c.src === 'pdf')    return '<div class="p">' + id + t + '</div>';
+    return '<div class="d">' + id + t + '</div>';   /* docx：明朝のべた書き */
   }
   function rowHTML(c){
     var i = c.n;
@@ -892,15 +922,25 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
         go   = document.getElementById('go-c');
     hint.textContent = '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
                      + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
-    gone = 0;
-    sayHow();
+    gone = 0; trail = []; stuck = null;
     go.classList.remove('on');
     tab = 'xlsx';
     paintTabs();
     paintRowsOf(tab);
+    sayHow();   /* **tab を決めたあと**——先に呼ぶと前のタブの言い方が残る */
+    stick();
     /* **押さない人を塞がない。**待っても行き先は出る */
     waitT = setTimeout(function(){ go.classList.add('on'); }, 9000);
   }
+
+  /* 貼りつく帯の高さを測って、表の見出しをその下に貼る。
+     **60px 固定にしていたら題の帯と重なった**（帯は折り返しで高さが変わる）*/
+  function stick(){
+    var a = document.querySelector('.ask2');
+    if (!a) return;
+    document.documentElement.style.setProperty('--stick', (60 + a.offsetHeight) + 'px');
+  }
+  addEventListener('resize', stick);
 
   /* 表の上の一行。**押す場所のすぐ上で、一度だけ言う。**
      片付けたあとは引き算に入れ替わる（下の clearOne）*/
@@ -909,7 +949,8 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     if (!el || gone) return;
     el.innerHTML = 'タブを押すと、その出どころが見られます。'
       + '<b>' + (tab === 'xlsx' ? '行の左のチェック' : '行') + 'を押すと、'
-      + 'その 1 行が片付きます。</b>';
+      + 'その行を片付けにいけます。</b>';
+    stick();
   }
 
   /* タブ。**枚数が「散らばっている」、件数が「量」** */
@@ -931,7 +972,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     sheet.classList.toggle('grid', src === 'xlsx');
     pile.innerHTML = shown().filter(function(c){ return c.src === src; })
       .map(function(c){
-        return '<li data-k="' + c.k + '" data-i="' + c.n + '">'
+        /* 辿った行は**止まったまま残る**、追いかけている先は**脈を打つ**。
+           タブを跨いで描き直すので、印は札のほうから引く */
+        var cl = trail.indexOf(c) >= 0 ? ' class="wait"' : (stuck === c ? ' class="aim"' : '');
+        return '<li' + cl + ' data-k="' + c.k + '" data-i="' + c.n + '">'
              + (src === 'xlsx' ? rowHTML(c) : srcHTML(c)) + '</li>';
       }).join('');
     /* 合図。**一行だけ、チェックが脈を打つ**（押せるのは全部）。
@@ -951,55 +995,129 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     paintTabs(); paintRowsOf(tab); sayHow();
   });
 
-  /* 一行だけ片付ける。**減らない**のがこの一手の中身 */
-  /* **何行でも片付けられる**（2026-09-10。本人：「この形だと、むしろ一件しか
-     片付けられないのはもったいない」）。タブに分けたので、**片付けても
-     同じ件が別のタブに残っている**——そこが「終わらない」の中身で、
-     一回で止めると出てこない。
+  /* ─ 引っかかる ── **押しても、そのままは通らない**（2026-09-10）──────────
+     > **でも全部ストレートに片付きはするんだ**（本人 2026-09-10）
+     >
+     > 押してみたら**これ引っかかってる**ってなって、それ押しに行ったら
+     > **また引っかかって、それでやっと通る**、みたいな体験でもさせたら（同）
 
-     09-09 の「押しても片付かない」とは別物。**あれは押しても消えなかった**（賽の河原）。
-     いまは**消える。でも減った気がしない。** */
-  function clearOne(li){
-    if (!li || li.classList.contains('gone')) return;
-    picked = true;                             /* 合図はもう出さない（教えるのは一度だけ）*/
-    clearTimeout(waitT);
-    var num = +li.dataset.i;
-    li.classList.remove('pick');
-    /* 表なら**チェックが入ってから**抜ける（押した跡が一瞬見える）*/
-    var ck = li.querySelector('.c-ck');
-    if (ck) ck.classList.add('on');
-    li.classList.add('gone');
+     どの行を押しても同じように消えていたので、**手でも普通にさばける、
+     ただ数が多いだけ**の画面になっていた。実際の課題管理表は逆で、
+     **開いても片付かない行のほうが多い**——担当が空欄、状態が「要確認」、
+     期限が「次回」。片付けるには**別紙を見に行くか、前任者に聞くしかない。**
+
+     **引っかかり先は、必ず別のタブ。**そこが要で、「散らばっている」が
+     言葉ではなく**足で分かる**——表の一行を片付けるのに議事録を開き、
+     その議事録がチャット待ちになっている。
+
+     **賽の河原（09-09 に捨てた形）とは別物。**あれは**押しても何も起きない。**
+     これは**毎回ちがう場所へ進んで、2〜3 か所で必ず通る。**
+     出るのは「終わらねえ」ではなく「**1 件にこれだけかかるのか**」。
+
+     通ると**鎖ごと片付く**——3 行が 1 件だった。
+     **③の「402 行は、12 件でした」の前振りになっている。** */
+  var NAME = {xlsx:'課題管理表', mail:'メール', chat:'チャット',
+              '議事録':'議事録', docx:'仕様書', pdf:'別紙'};
+  /* 止まっている理由は、**その場所の言い方**で言う */
+  var WHY  = {xlsx:'と同じ件です。先にそちらから',
+              mail:'の返信待ちです', chat:'で確認中です',
+              '議事録':'の決定待ちです', docx:'の記載待ちです',
+              pdf:'を見ないと分かりません'};
+  var trail = [], stuck = null, need = 0;
+
+  function label(c){ return NAME[c.src] + ' #' + no(c); }
+  function findCard(num){
+    for (var i = 0; i < CARDS.length; i++) if (CARDS[i].n === num) return CARDS[i];
+    return null;
+  }
+  /* 引っかかり先。**必ず別のタブ**から、まだ辿っていないものを選ぶ */
+  function nextBlock(c){
+    if (!CARDS.length) return null;
+    for (var t = 1; t <= 60; t++){
+      var b = CARDS[(c.n * 7 + t * 31) % CARDS.length];
+      if (!b || b === c) continue;
+      /* **まだ行っていない出どころ**から選ぶ——同じタブへ戻ると
+         「3 か所」と言いながら 2 か所しか回っていないことになる（画面で見つけた）*/
+      if (trail.some(function(x){ return x.src === b.src; })) continue;
+      if (b.src === c.src || trail.indexOf(b) >= 0) continue;
+      return b;
+    }
+    return null;
+  }
+
+  /* 辿っている途中を、表の上に出す。**何か所目かが見えていないと、ただ動かないに見える** */
+  function showTrail(){
+    var el = document.getElementById('how');
+    if (!el || !stuck) return;
+    el.innerHTML = '<span class="tr">' + esc(trail.map(label).join(' → ')) + '</span> は、'
+      + '<b>' + esc(label(stuck)) + '</b>' + WHY[stuck.src] + '。'
+      + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>';
+    stick();
+  }
+
+  /* 通った。**鎖ごと片付く**——辿った 3 行は、もともと 1 件だった */
+  function through(){
+    var k = trail.length, nums = trail.map(function(c){ return c.n; });
+    nums.forEach(function(num){
+      var el = document.querySelector('#pile li[data-i="' + num + '"]');
+      if (!el) return;
+      el.classList.remove('wait','aim','pick');
+      var ck = el.querySelector('.c-ck'); if (ck) ck.classList.add('on');
+      el.classList.add('gone');
+    });
+    trail = []; stuck = null;
     setTimeout(function(){
-      if (li.parentNode) li.parentNode.removeChild(li);
-      /* **片付けた一行は、札からも抜く。**残すと③が「402 行は、12 件でした」と言って、
-         ②で 401 行にしたのと食い違う（画面で見つけた）。
-         **タブで絞っているので、並び順ではなく番号で探す** */
-      for (var i = 0; i < CARDS.length; i++){
-        if (CARDS[i].n === num){ CARDS.splice(i, 1); break; }
-      }
-      N = CARDS.length;
-      gone++;
-      /* ─ **「終わらねえ」ではなく「多すぎてやる気出ねえ」**（本人 2026-09-10：
-         「多すぎてやる気出ねえ〜の方にしたいんであって**終わらねえ〜はベクトルが
-         ちょっと違う**し今そうにもなってない」）。
-
-         前は「一行ずつだと、あと 401 回。」と出していた。あれは**回数**の話で、
-         賽の河原（09-09 に一度捨てた形）に戻っていた。**数えさせない。**
-         引き算をそのまま置いて、**動かなさは目で見てもらう。** */
+      nums.forEach(function(num){
+        for (var i = 0; i < CARDS.length; i++)
+          if (CARDS[i].n === num){ CARDS.splice(i, 1); break; }
+      });
+      N = CARDS.length; gone += k;
+      /* **回数は言わない**（本人 2026-09-10：「終わらねえ〜はベクトルがちょっと違う」）。
+         言うのは**一件にかかった手数**と、引き算そのもの */
       document.getElementById('how').innerHTML =
-        '<b>' + gone + ' 行、片付きました。</b>' + MAX + ' → ' + N + ' 行。';
+        '<b>' + k + ' か所たどって、やっと 1 件。</b>' + MAX + ' → ' + N + ' 行。';
+      stick();
       document.getElementById('hint').textContent =
         '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
         + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
       document.getElementById('go-c').classList.add('on');
-      paintTabs();
-    }, 300);
+      paintTabs(); paintRowsOf(tab);
+    }, 320);
+  }
+
+  function press(li){
+    if (!li || li.classList.contains('gone')) return;
+    var c = findCard(+li.dataset.i);
+    if (!c) return;
+    picked = true; clearTimeout(waitT);
+    var pk = document.querySelector('#pile li.pick');
+    if (pk) pk.classList.remove('pick');
+
+    /* 追いかけている先を押したら鎖が伸びる。**別の行を押したら、そこから鎖を引き直す** */
+    if (stuck && stuck === c) trail.push(c);
+    else { trail = [c]; need = 2 + (c.n % 2); }   /* 2〜3 か所で通る */
+
+    if (trail.length >= need){ through(); return; }
+    var b = nextBlock(c);
+    if (!b){ through(); return; }
+    stuck = b;
+    li.classList.remove('aim');   /* 追いついた印は消す。**次の先へ移る** */
+    li.classList.add('wait');
+    showTrail();
   }
 
   document.addEventListener('click', function(e){
     if (document.body.dataset.stage !== 'b' || !e.target.closest) return;
+    /* 見に行く。**タブが替わって、その行が真ん中に来る**（探させない）*/
+    if (e.target.closest('#jump')){
+      if (!stuck) return;
+      tab = stuck.src; paintTabs(); paintRowsOf(tab);
+      var t = document.querySelector('#pile li.aim');
+      if (t) t.scrollIntoView({block:'center', behavior: slow ? 'auto' : 'smooth'});
+      return;
+    }
     var li = e.target.closest('#pile li');
-    if (li) clearOne(li);
+    if (li) press(li);
   });
 
   /* ─ まとまる ── **②から③へ渡る一瞬。行が寄って、題が付く** ─────────
