@@ -478,19 +478,22 @@ body[data-stage="c"] .wrap{padding-top:20px}
 .gitem:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .gitem:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .gitem:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-/* 動詞は②と同じ「片付ける」。**変わったのは相手の形だけ**だと言葉でも揃える */
-.gv{margin-left:8px; font-size:12.5px; font-weight:700; color:var(--go); white-space:nowrap}
+/* ─ ③から「片付ける」を外した（2026-09-10）──────────────────────
+   > ここまで来たら**「片づける」にする必要ないというか、2 でやってることと
+   > 3 の型付けってイコールじゃない、対応表だから**（本人 2026-09-10）
 
-/* ─ 抜ける ─────────────────────────────────────────────
-   **押した札が右へ抜けて、下が詰まる。**空きが残ると「減った」、
-   詰まると「片付いた」。**点数・演出・音は足さない**（§5）*/
-.gset.out .gitem{transform:translate(18px,-4px); opacity:0;
-                 transition:transform .26s var(--ease), opacity .22s ease}
-.gset.shut{
-  overflow:hidden; opacity:0;
-  transition:max-height .42s var(--snap), margin-bottom .42s var(--snap), opacity .24s ease;
-}
-.gt{font-size:14px; font-weight:700; min-width:0; flex:1 1 auto;
+   そのとおりで、**②は片付ける、③は引き当てる。**別の仕事だった。
+   ②で辿ったのは「この一行を片付けるには、どこを見に行くか」で、
+   ③に出ているのは「**402 行のどれが、12 件のどれに当たるか**」——**対応表。**
+   表は片付けるものではない。**引くもの。**
+
+   ③で押せるのは**件（内訳が右に出る）と「最後に」だけ。**
+   出口は「最後に」で出す（片付け切って出る道は無くなった）。
+
+   **捨てたもの：**.gdo「片付ける」、clearGroup、.gset.out／.gset.shut、
+   leftG／cleared／firstCleared、.two-col.empty。 */
+.gt{
+font-size:14px; font-weight:700; min-width:0; flex:1 1 auto;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 /* 行数。**点数ではない**——材料の量。この題が何行ぶんか */
 .gn{font-family:var(--mono); font-size:12px; color:var(--sub); white-space:nowrap;
@@ -533,9 +536,6 @@ body[data-stage="c"] .wrap{padding-top:20px}
    あれは**並びが動く一覧**での話で、③は 12 件が固定。条件が違うので右に出した。
    狭い窓では下へ回るので、そのときは押した先へ送る。 */
 .two-col{display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:26px; align-items:start}
-/* 一件も残っていないとき。**中身の無い枠は畳む** */
-.two-col.empty{grid-template-columns:minmax(0,1fr); gap:0}
-.two-col.empty .side, .two-col.empty .ghd{display:none}
 .side{position:sticky; top:76px}
 .sidein{
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
@@ -563,8 +563,6 @@ body[data-stage="c"] .wrap{padding-top:20px}
 .gp{display:block; margin-top:3px; font-size:12.5px; line-height:1.65; color:var(--ink)}
 .gp::before{content:'→ '; color:var(--go); font-weight:700}
 .gmore{margin:10px 0 0; font-size:11.5px; color:var(--sub)}
-/* 決めるのは人。**見てから押す** */
-.one.small{margin-top:14px; padding:9px 18px; font-size:12.5px}
 /* 見出しの下の一行。**数字は一度だけ**——一件ごとの内訳を読ませると表に戻る */
 .csub{margin:-6px 0 16px; font-size:12.5px; line-height:1.8; color:var(--sub)}
 .csub b{color:var(--ink)}
@@ -1322,7 +1320,7 @@ body[data-stage="c"] .st-c{display:block}
      多段組を 12 個積むのは重い。**押せるものだけ面を持つ**は 009 の決めごとなので、
      待っている群は**面も行も持たない一段**にする。中身は押せるようになってから出す。
      残りが題と行数で並んでいるのが、そのまま「残りも同じ一手」の見た目になる。 */
-  var setsEl = null, order = [], byG = null, leftG = 0, firstCleared = null, cleared = 0;
+  var setsEl = null, order = [], byG = null;
 
   /* 一件。**押せない。**面はあるが影は無い——§「面と影があるものだけ掴める」。
      整った札に見えて、触るものではない。
@@ -1396,8 +1394,7 @@ body[data-stage="c"] .st-c{display:block}
             + '</li>';
         }).join('')
       + '</ul>'
-      + (rest > 0 ? '<p class="gmore">同じ話が、ほかに ' + rest + ' 行。</p>' : '')
-      + '<button class="one small gdo" data-k="' + k + '">片付ける</button>';
+      + (rest > 0 ? '<p class="gmore">同じ話が、ほかに ' + rest + ' 行。</p>' : '');
   }
 
   /* 何も選んでいないとき。**空の箱を置かない**——何をすればいいかだけ書く */
@@ -1406,7 +1403,7 @@ body[data-stage="c"] .st-c{display:block}
   function select(k){
     var set = setsEl && setsEl.querySelector('.gset[data-k="' + k + '"]');
     var box = document.getElementById('sidein');
-    if (!set || !box || set.classList.contains('going')) return;
+    if (!set || !box) return;
     /* もう一度押したら閉じる（選び直しは付け替えるだけ）*/
     if (set.classList.contains('on')){
       set.classList.remove('on'); box.innerHTML = EMPTY; return;
@@ -1469,11 +1466,8 @@ body[data-stage="c"] .st-c{display:block}
 
          「塗ってあるところに〜」は捨てた——**列に名前が付いたので、見れば分かる。** */
       + '<span class="lg">寄せたのは決まった処理、<b>題を付けたのは AI</b> です。</span>';
-    leftG = order.length; firstCleared = null; cleared = 0;
     var side = document.getElementById('sidein');
     if (side) side.innerHTML = EMPTY;
-    var tc = document.querySelector('.two-col');
-    if (tc) tc.classList.remove('empty');
     var box = document.getElementById('end');
     if (box) box.hidden = true;
     var fin = document.getElementById('go-d');
@@ -1482,46 +1476,8 @@ body[data-stage="c"] .st-c{display:block}
 
   /* 片付ける。**押した札が抜けて、下が詰まる。**
      ②で 401 回だったものが、③では 12 回。**同じ「片付ける」の重さが違う。** */
-  function clearGroup(k){
-    if (!setsEl) return;
-    var set = setsEl.querySelector('.gset[data-k="' + k + '"]');
-    if (!set || set.classList.contains('going')) return;
-    set.classList.add('going');
-    if (!firstCleared) firstCleared = GROUPS[k].t;
-    leftG--; cleared++;
-
-    function done(){
-      if (set.classList.contains('on')){
-        var box = document.getElementById('sidein');
-        if (box) box.innerHTML = EMPTY;
-      }
-      set.classList.remove('on'); set.innerHTML = '';
-      /* **一件も残っていないなら、名前の段と右の箱も畳む。**
-         中身の無い枠が残ると、出口の隣に空箱が並ぶ（画面で見つけた）*/
-      if (leftG <= 0){
-        var tc = document.querySelector('.two-col');
-        if (tc) tc.classList.add('empty');
-        finish();
-      }
-    }
-    if (slow){ set.style.display = 'none'; done(); return; }
-
-    set.style.maxHeight = set.scrollHeight + 'px';
-    void set.offsetWidth;
-    set.classList.add('out');
-    setTimeout(function(){
-      set.classList.add('shut');
-      void set.offsetWidth;
-      set.style.maxHeight = '0px'; set.style.marginBottom = '0px';
-      setTimeout(function(){ set.style.display = 'none'; done(); }, 420);
-    }, 260);
-  }
-
   document.addEventListener('click', function(e){
     if (document.body.dataset.stage !== 'c' || !e.target.closest) return;
-    /* 中の「片付ける」が先。**札の押しは開け閉め** */
-    var d = e.target.closest('.gdo');
-    if (d){ clearGroup(+d.dataset.k); return; }
     var b = e.target.closest('.gitem');
     if (b && !b.classList.contains('ghd')) select(+b.dataset.k);
   });
