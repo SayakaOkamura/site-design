@@ -362,8 +362,6 @@ body.landing .gset{opacity:0}
 .how b{color:var(--go); font-weight:700}
 /* いまどこに居るか。**道は書かない**（2026-09-10。数で足りる）*/
 .how .tr{font-family:var(--mono); font-weight:700; color:var(--ink)}
-/* 何か所目か。**深さはこれだけで出る** */
-.how .cnt{color:var(--ink); margin-right:6px}
 /* 見に行く。**紫は「飛ぶ」の印**（§色の決め） */
 .how .jump{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
@@ -380,7 +378,16 @@ body.landing .gset{opacity:0}
    紫にしないのは、紫が「進む・飛ぶ」の印だから */
 .pile li.wait,
 .sheet.grid .pile li.wait{background:rgba(37,31,69,.075)}
-.pile li.wait .c-ck::before{background:#c3cadb; border-color:#a9b5cd}
+/* ─ **待っている行に、チェックは入らない**（2026-09-10）───────────
+   > **解決したからチェックを押すはずなのに、それができてない。
+   > 押そうとしてる時点で終わってるはず**（本人 2026-09-10）
+
+   灰色で塗っていた。**塗ったチェックは「済」に見える**——
+   終わっていない行に済の印が付いていた。
+   **チェックは「終わった」の記録**であって、「やってみた」の記録ではない。
+   待ちは**破線の空き枠**で出す（押したが、まだ入れられない）。
+   入るのは、前提が落ちて**人がもう一度押したときだけ。** */
+.pile li.wait .c-ck::before{background:none; border-style:dashed; border-color:#98a5c0}
 /* いま見に行く先。**脈を打つ**——探させない */
 .pile li.aim,
 .sheet.grid .pile li.aim{background:rgba(99,84,224,.14)}
@@ -1160,8 +1167,10 @@ body[data-stage="c"] .st-c{display:block}
     var el = document.getElementById('how');
     if (!el || !stuck) return;
     var here = trail[trail.length - 1];
-    el.innerHTML = '<b class="cnt">' + trail.length + ' か所目。</b>'
-      + '<span class="tr">' + esc(label(here)) + '</span> は、'
+    /* **数も出さない**（本人 2026-09-10：「1 か所目表記もいらない」）。
+       途中で何か所目かが分かると**進み具合**になる——どこまで続くか分からないのが
+       この場の中身。数を言うのは**終わったあとに一度だけ**（「4 か所たどって」）*/
+    el.innerHTML = '<span class="tr">' + esc(label(here)) + '</span> は、'
       + '<b>' + esc(label(stuck)) + '</b>' + WHY[stuck.src] + '。'
       + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>';
     stick();
