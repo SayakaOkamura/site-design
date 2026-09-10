@@ -1048,11 +1048,47 @@ body[data-stage="c"] .st-c{display:block}
      **押せるのは、見えている行ぜんぶ。**ただし**ボタンの見た目にするのは一行だけ**——
      402 行ぜんぶを押せる姿にすると、詰めた一覧が台帳＝仕事に見える（§で二度捨てている）。
      一行だけ立たせて指す。**教えるのは一度だけ。** */
-  var waitT = 0, hintT = 0, hinted = false, picked = false, gone = 0;
+  /* ─ 合図と行き先は、**時間ではなく壁で出す**（2026-09-10）───────────
+     > **今それ秒数管理なの？**（本人 2026-09-10）
+
+     6 秒で一行を指す／9 秒で「整理する」を出す、にしていた。**秒は壁ではない。**
+     喋っている間にも、読んでいる間にも出る。
+     §「行き先は、壁に当たってから出す。出るのは、**押してみたか、山の底まで見たか**」
+     ——そこへ戻した。
+
+     | | 出る条件 |
+     | 指す（一行） | **底まで送った、またはタブを 2 枚見た。**かつ、まだ押していない |
+     | 「整理する」 | **押して引っかかった／底まで送った／タブを 3 枚見た** |
+
+     どれも**その人が何かをした結果**で、待っただけでは出ない。 */
+  var hinted = false, picked = false, gone = 0, seen = {}, bottom = false;
+
+  function tabsSeen(){ var k = 0; for (var x in seen) if (seen[x]) k++; return k; }
+
+  function wall(){
+    if (document.body.dataset.stage !== 'b') return;
+    var k = tabsSeen();
+    /* 指す。**動いているのに、まだ一度も押していない人にだけ** */
+    if (!picked && !hinted && (bottom || k >= 2)){
+      hinted = true; paintRowsOf(tab);
+    }
+    /* 行き先。**壁に当たった** */
+    if (picked || bottom || k >= 3){
+      var go = document.getElementById('go-c');
+      if (go) go.classList.add('on');
+    }
+  }
+
+  /* 山の底。**402 行を送り切った＝見て諦めた** */
+  addEventListener('scroll', function(){
+    if (bottom || document.body.dataset.stage !== 'b') return;
+    if (scrollY + innerHeight >= document.documentElement.scrollHeight - 60){
+      bottom = true; wall();
+    }
+  }, { passive:true });
 
   function paintPile(){
-    clearTimeout(waitT); clearTimeout(hintT);
-    picked = false; hinted = false;
+    picked = false; hinted = false; bottom = false; seen = {};
     var hint = document.getElementById('hint'),
         go   = document.getElementById('go-c');
     hint.textContent = '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
@@ -1062,15 +1098,9 @@ body[data-stage="c"] .st-c{display:block}
     tab = 'xlsx';
     paintTabs();
     paintRowsOf(tab);
+    seen[tab] = 1;
     sayHow();   /* **tab を決めたあと**——先に呼ぶと前のタブの言い方が残る */
     stick();
-    /* **6 秒は指さない。**迷う時間が「どこから手を付けるか」 */
-    hintT = setTimeout(function(){
-      hinted = true;
-      if (!picked) paintRowsOf(tab);
-    }, 6000);
-    /* **押さない人を塞がない。**待っても行き先は出る */
-    waitT = setTimeout(function(){ go.classList.add('on'); }, 9000);
   }
 
   /* 貼りつく帯の高さを測って、表の見出しをその下に貼る。
@@ -1166,6 +1196,7 @@ body[data-stage="c"] .st-c{display:block}
     var b = e.target.closest('.tb');
     if (!b) return;
     tab = b.dataset.s;
+    seen[tab] = 1;
     paintTabs(); paintRowsOf(tab);
     /* **鎖の途中でタブを押しても、道を消さない**（画面で見つけた）。
        前は案内文で上書きしていたので、**見に行くボタンごと消えて、
@@ -1173,7 +1204,7 @@ body[data-stage="c"] .st-c{display:block}
     if (stuck)      showTrail();
     else if (ready) saySolved();
     else            sayHow();
-    stick();
+    stick(); wall();
   });
 
   /* ─ 引っかかる ── **押しても、そのままは通らない**（2026-09-10）──────────
@@ -1382,7 +1413,7 @@ body[data-stage="c"] .st-c{display:block}
     if (!li || li.classList.contains('gone')) return;
     var c = findCard(+li.dataset.i);
     if (!c) return;
-    picked = true; clearTimeout(waitT); clearTimeout(hintT);
+    picked = true;
     var pk = document.querySelector('#pile li.pick');
     if (pk) pk.classList.remove('pick');
 
@@ -1417,6 +1448,7 @@ body[data-stage="c"] .st-c{display:block}
     var b = nextBlock(c);
     if (!b){ settle(li, c); return; }
     stuck = b;
+    wall();                       /* **押して引っかかった＝壁** */
     li.classList.remove('aim');   /* 追いついた印は消す。**次の先へ移る** */
     /* ─ **押した瞬間、チェックは入る**（2026-09-10）────────────────
        > チェックリストって、**押す時って終わった時**じゃん？（本人 2026-09-10）
@@ -1470,7 +1502,6 @@ body[data-stage="c"] .st-c{display:block}
   function gather(){
     var pile = document.getElementById('pile');
     if (slow || !pile){ stage('c'); return; }
-    clearTimeout(waitT);
     document.getElementById('go-c').classList.remove('on');   /* 二度押させない */
 
     /* 1. 写す。**窓の中だけだと 13 行しか飛ばなかった**（画面で数えた）。
