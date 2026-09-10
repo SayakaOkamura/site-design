@@ -495,7 +495,9 @@ body[data-stage="c"] .wrap{padding-top:20px}
 .gn{font-family:var(--mono); font-size:12px; color:var(--sub); white-space:nowrap}
 
 
-.end{max-width:760px}
+/* ③の下に出る。**段を分けない**（2026-09-10）——
+   前は面ごと切り替わっていたので、**12 件が画面から消えてから**出口が出ていた */
+.end{max-width:760px; margin-top:34px}
 .end .face{
   background:var(--face); color:#fff; border-radius:var(--r); box-shadow:var(--lift2);
   padding:40px 34px; animation:rise .6s var(--ease) both;
@@ -507,13 +509,15 @@ body[data-stage="c"] .wrap{padding-top:20px}
 .end .cmp{display:block; margin-top:14px; padding-top:14px;
           border-top:1px solid rgba(255,255,255,.22); font-size:13px}
 .end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
+/* 出口が出たら「最後に」は要らない。**場所は残す**（消すと題が動く）*/
+.one.gone{visibility:hidden; pointer-events:none}
 
 .foot{flex:none; background:var(--frame)}
 .foot .in{padding:22px 24px 26px}
 .note{margin:0; font-size:11.5px; line-height:1.85; color:var(--sub)}
 [data-stage] .st{display:none}
 body[data-stage="b"] .st-b,
-body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
+body[data-stage="c"] .st-c{display:block}
 /* 狭い窓。**②の問いと一手だけ。**蓋をやめて、一手を必ず次の行に置く
    （場所は最初から取ってあるので、出ても位置は動かない）。
    `.work`／`.tap`／`body.stuck` は 2026-09-10 に消えた——
@@ -594,11 +598,12 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
       <button class="one" id="go-d">最後に</button>
     </div>
     <div id="sets"></div>
-  </section>
 
-  <!-- ④ 名前が付く。**通り終わってから** -->
-  <section class="st st-d">
-    <div class="end">
+    <!-- ④ **③の下に出る。段を分けない**（本人 2026-09-10：「最後のカードいる？
+         もう合体させたら」）。前は面ごと切り替わっていたので、
+         **12 件が画面から消えてから**出口の言葉が出ていた。
+         いまは**残っている件が見えたまま**、その下に出る -->
+    <div class="end" id="end" hidden>
       <div class="face">
         <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
         <p class="said" id="said"></p>
@@ -1250,6 +1255,10 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     document.getElementById('c-h1').textContent =
       N + ' 行は、' + order.length + ' 件でした';
     leftG = order.length; firstCleared = null; cleared = 0;
+    var box = document.getElementById('end');
+    if (box) box.hidden = true;
+    var fin = document.getElementById('go-d');
+    if (fin) fin.classList.remove('gone');
   }
 
   /* 片付ける。**押した札が抜けて、下が詰まる。**
@@ -1264,7 +1273,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
 
     function done(){
       set.classList.remove('open'); set.innerHTML = '';
-      if (leftG <= 0) stage('d');
+      if (leftG <= 0) finish();
     }
     if (slow){ set.style.display = 'none'; done(); return; }
 
@@ -1301,13 +1310,25 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
        驚き　　　　　一手で N 行が片付いた
        打ち消さない　減らしたのではなく、形を変えただけ（**面倒は消えない**）
        着地　　　　　**残りも、同じ一手** */
-  function paintEnd(){
-    var el = document.getElementById('said');
-    if (!el) return;
+  /* 出口。**③の下に出す**（2026-09-10。本人：「最後のカードいる？もう合体させたら」）。
+     段を切り替えていたので、**12 件が消えてから**出口が出ていた——
+     09-10 の「せっかく 12 件にまとめたのに下に行っちゃって見えない」と同じ形。
+     いまは**残っている件が見えたまま**、その下に出る。
+
+     **一行目（「N 行が、12 件になりました」）は落とした。**すぐ上の見出しが
+     「N 行は、12 件でした」と言っているので、同じ画面に二度は要らない。
+     残るのは**言い足りていない二行**だけ。 */
+  function finish(){
+    var box = document.getElementById('end'),
+        el  = document.getElementById('said'),
+        f   = document.getElementById('go-d');
+    if (!box || !el || !box.hidden) return;
     el.innerHTML =
-      '<b>' + N + ' 行が、' + order.length + ' 件</b>になりました。'
-      + '<span class="cmp">減らしたのではなく、形を変えただけです。<br>'
-      +   '<b>一つずつなら、手が付けられます。</b></span>';
+      '減らしたのではなく、形を変えただけです。<br>'
+      + '<b>一つずつなら、手が付けられます。</b>';
+    box.hidden = false;
+    if (f) f.classList.add('gone');           /* 行き先が出たら「最後に」は要らない */
+    if (!slow) box.scrollIntoView({block:'end', behavior:'smooth'});
   }
 
   /* ─ 段 ───────────────────────────────────────────── */
@@ -1316,7 +1337,6 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
     scrollTo(0, 0);
     if (s === 'b') paintPile();
     if (s === 'c') paintRows();   /* 12 件を並べるだけ。開かない */
-    if (s === 'd') paintEnd();
   }
 
   /* **やり直すと札も作り直す**——②で一行抜いてあるので、`build()` を通さないと
@@ -1325,7 +1345,7 @@ body[data-stage="c"] .st-c,body[data-stage="d"] .st-d{display:block}
   start();
 
   document.getElementById('go-c').addEventListener('click', gather);
-  document.getElementById('go-d').addEventListener('click', function(){ stage('d'); });
+  document.getElementById('go-d').addEventListener('click', finish);
   document.getElementById('again').addEventListener('click', function(){
     start(); scrollTo(0, 0);
   });
