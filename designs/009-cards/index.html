@@ -117,14 +117,14 @@ body.locked{overflow:hidden}
       line-height:1.35; color:var(--ink); transition:color .46s ease}
 
 .foot .in{padding:30px 24px 34px}
-.foot p{margin:0; font-size:12px; color:var(--sub); line-height:1.85}
+.foot p{margin:0; font-size:12.5px; color:var(--sub); line-height:1.9}
 .foot .fn{font-size:13px; font-weight:700; color:var(--ink)}
 .foot .fa{margin-top:7px}
 /* プライバシーポリシーは**先方が公式サイトで出しているもの**（BlueMeme の頁）*/
-.foot .fp{margin-top:22px; font-size:11.5px}
+.foot .fp{margin-top:22px; font-size:12.5px}
 .foot .fp a{color:var(--sub)}
-.foot .fc{margin-top:7px; font-size:11.5px}
-.foot .fw{margin-top:9px; font-size:11.5px}
+.foot .fc{margin-top:7px; font-size:12.5px}
+.foot .fw{margin-top:9px; font-size:12.5px}
 
 /* ─ 大きいカード。これだけ読めば何の会社か分かる ───────────
    **でかいのに最初に目がいかなかった**（本人 2026-09-07）。
@@ -171,7 +171,7 @@ body.locked{overflow:hidden}
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 .card .t{font-size:clamp(15px,1.8vw,17px); font-weight:700; line-height:1.4}
-.card .s{margin-top:auto; padding-top:14px; font-size:12px; font-weight:500; color:var(--sub); line-height:1.6}
+.card .s{margin-top:auto; padding-top:14px; font-size:13px; font-weight:500; color:var(--sub); line-height:1.6}
 
 /* 手触りは物理から出す。点数も演出も足さない */
 .card:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
@@ -267,7 +267,7 @@ body.locked{overflow:hidden}
    （項目のあいだと、項目名と中身のあいだが、どちらも 2px だった）。
    分けるのは空きでやる：中身のすぐ上に項目名、項目のあいだは広く空ける。 */
 .facts{margin:0}
-.facts dt{margin:19px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em; color:var(--sub); line-height:1.5}
+.facts dt{margin:19px 0 0; font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--sub); line-height:1.5}
 .facts dt:first-child{margin-top:0}
 .facts dd{margin:3px 0 0; font-size:13.5px; line-height:1.8}
 
@@ -278,15 +278,15 @@ body.locked{overflow:hidden}
 .bk .body > p.mind{margin-top:0}
 
 /* 小見出し。**本物と仮を分ける**ためだけのもの */
-.lb2{margin:18px 0 7px; font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
+.lb2{margin:18px 0 7px; font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
 .lb2:first-child{margin-top:0}
 
 /* アクセス。駅・分・路線の三段。**読むより探す**ので、駅名を先に太く */
 .walk{list-style:none; margin:14px 0 0; padding:0; display:grid; gap:7px}
-.walk li{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:12.5px; line-height:1.6}
+.walk li{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:13.5px; line-height:1.65}
 .walk b{font-weight:700}
-.walk span{font-family:var(--mono); font-size:11.5px; color:var(--sub)}
-.walk i{font-style:normal; font-size:11px; color:#8b93b0}
+.walk span{font-family:var(--mono); font-size:12.5px; color:var(--sub)}
+.walk i{font-style:normal; font-size:12px; color:#7b84a4}
 
 /* ─ 所在 ────────────────────────────────────────────────────
    **地図が主役で、住所はその見出し。**会社概要の一行だったときと逆にしてある
@@ -304,7 +304,7 @@ body.locked{overflow:hidden}
 /* **`iframe` は行内要素なので、下に隙間ができる。**`block` にして消す。
    枠線は先方の既定で付くので 0 にする（009 は線を引かない）*/
 .map iframe{display:block; width:100%; height:100%; border:0}
-.cred{margin:9px 0 0; font-size:11px; color:var(--sub); line-height:1.6}
+.cred{margin:9px 0 0; font-size:12px; color:var(--sub); line-height:1.65}
 .cred a{color:var(--sub)}
 
 /* 外へ出る一手。**カードの「デモを触る」と同じ作法**（右に →、色で分ける）。
@@ -355,7 +355,7 @@ body.locked{overflow:hidden}
 /* ─ 問いの見出しと段（お問い合わせ）─────────────────────────
    組み立て方は体験と同じ。**カードを押していくと、書かずに中身ができる。**
    押しただけでは飛ばない（飛ぶのは緑の一枚だけ）。 */
-.q{margin:18px 0 0; font-size:11.5px; font-weight:700; letter-spacing:.04em;
+.q{margin:18px 0 0; font-size:12.5px; font-weight:700; letter-spacing:.04em;
    color:var(--sub); line-height:1.5}
 .q + .rows{margin-top:9px}
 .step[hidden]{display:none}
@@ -376,7 +376,7 @@ body.locked{overflow:hidden}
    （本人 2026-09-07：「進め方とか出てくるものとか別に要らないよ。説明だけでいい」）。
    公式の一行のすぐ下に、こちらが書いた説明が一段だけ続く */
 .det p{margin:12px 0 0; font-size:13.5px; line-height:1.9}
-.rows span{flex:none; font-size:12px; font-weight:600; color:var(--sub);
+.rows span{flex:none; font-size:13px; font-weight:600; color:var(--sub);
            font-variant-numeric:tabular-nums; letter-spacing:.02em}
 .rows b{font-size:13.5px; font-weight:700; line-height:1.6}
 @media (max-width:520px){
