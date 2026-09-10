@@ -1166,7 +1166,14 @@ body[data-stage="c"] .st-c{display:block}
     var b = e.target.closest('.tb');
     if (!b) return;
     tab = b.dataset.s;
-    paintTabs(); paintRowsOf(tab); sayHow(); stick();
+    paintTabs(); paintRowsOf(tab);
+    /* **鎖の途中でタブを押しても、道を消さない**（画面で見つけた）。
+       前は案内文で上書きしていたので、**見に行くボタンごと消えて、
+       辿っている最中の鎖に戻れなくなっていた**（生で見せるときに詰む）*/
+    if (stuck)      showTrail();
+    else if (ready) saySolved();
+    else            sayHow();
+    stick();
   });
 
   /* ─ 引っかかる ── **押しても、そのままは通らない**（2026-09-10）──────────
@@ -1325,11 +1332,18 @@ body[data-stage="c"] .st-c{display:block}
       tab = first.src; paintTabs(); paintRowsOf(tab);
       var top = document.querySelector('#pile li[data-i="' + first.n + '"]');
       if (top && !slow) top.scrollIntoView({block:'center', behavior:'smooth'});
-      document.getElementById('how').innerHTML =
-        '<b>' + esc(label(c)) + ' が片付きました。</b>'
-        + '<span class="tr">' + esc(label(first)) + '</span> が、押せるようになりました。';
+      saySolved(esc(label(c)));
       stick();
     }, slow ? 0 : 520);
+  }
+
+  /* 解けた状態の言葉。**タブを移っても呼び直せる**ようにしておく */
+  function saySolved(doneLabel){
+    if (!ready) return;
+    document.getElementById('how').innerHTML =
+      (doneLabel ? '<b>' + doneLabel + ' が片付きました。</b>' : '')
+      + '<span class="tr">' + esc(label(ready)) + '</span> が、押せるようになりました。';
+    stick();
   }
 
   /* 終わりの言葉。**一行にかかった手数**と、引き算 */
@@ -1388,7 +1402,15 @@ body[data-stage="c"] .st-c{display:block}
        （行を押す → 「見る →」を押す）ので、**か所 × 2 − 1** が手数。
        3〜4 か所＝**5〜7 回**——2 桁の手前に余裕がある。
        上限は 6（出どころの数）——辿った出どころは避けるので、それ以上は伸びない */
-    else { trail = [c]; need = 3 + (c.n % 2); }
+    else {
+      /* **前の鎖の印を消してから引き直す**（画面で見つけた）。
+         残しておくと、関係の無い行に破線のチェックが溜まる */
+      [].forEach.call(document.querySelectorAll('#pile li.wait, #pile li.aim'), function(x){
+        x.classList.remove('wait','aim');
+        var k = x.querySelector('.c-ck'); if (k) k.classList.remove('on');
+      });
+      trail = [c]; need = 3 + (c.n % 2);
+    }
 
     /* **前提が無い＝ここは本当に終わる。**押した人の言うとおり */
     if (trail.length >= need){ settle(li, c); return; }
