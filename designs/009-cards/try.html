@@ -654,7 +654,10 @@ body[data-stage="c"] .st-c{display:block}
   <section class="st st-b">
     <!-- **問いは貼りつく。**山を送っても、答えられていない問いが目の前に残る -->
     <div class="ask2">
-      <p class="ask">ある会社に、たまっている課題です。<br>
+      <!-- **②が出す問い**（本人 2026-09-10：「どこから手を付ける？みたいな感じに
+           思っていきたいですね」）。ここでは**答えられない。**
+           同じ一文が③でもう一度出て、そこでは**答えられる**（12 件が並ぶ）-->
+      <p class="ask">ある会社に、たまっている課題です。どこから手を付けますか。<br>
         <span class="sub" id="hint"></span></p>
       <!-- **「まとめてもらう」をやめた**（本人 2026-09-10：「まとめてもらう、って文言
            変えたい」→「整理する、とかにしたい」）。**デモの中でここだけ〜てもらう**で、
@@ -1022,11 +1025,11 @@ body[data-stage="c"] .st-c{display:block}
      **押せるのは、見えている行ぜんぶ。**ただし**ボタンの見た目にするのは一行だけ**——
      402 行ぜんぶを押せる姿にすると、詰めた一覧が台帳＝仕事に見える（§で二度捨てている）。
      一行だけ立たせて指す。**教えるのは一度だけ。** */
-  var waitT = 0, picked = false, gone = 0;
+  var waitT = 0, hintT = 0, hinted = false, picked = false, gone = 0;
 
   function paintPile(){
-    clearTimeout(waitT);
-    picked = false;
+    clearTimeout(waitT); clearTimeout(hintT);
+    picked = false; hinted = false;
     var hint = document.getElementById('hint'),
         go   = document.getElementById('go-c');
     hint.textContent = '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
@@ -1038,6 +1041,11 @@ body[data-stage="c"] .st-c{display:block}
     paintRowsOf(tab);
     sayHow();   /* **tab を決めたあと**——先に呼ぶと前のタブの言い方が残る */
     stick();
+    /* **6 秒は指さない。**迷う時間が「どこから手を付けるか」 */
+    hintT = setTimeout(function(){
+      hinted = true;
+      if (!picked) paintRowsOf(tab);
+    }, 6000);
     /* **押さない人を塞がない。**待っても行き先は出る */
     waitT = setTimeout(function(){ go.classList.add('on'); }, 9000);
   }
@@ -1091,10 +1099,18 @@ body[data-stage="c"] .st-c{display:block}
         return '<li' + cl + ' data-k="' + c.k + '" data-i="' + c.n + '">'
              + (src === 'xlsx' ? rowHTML(c) : srcHTML(c)) + '</li>';
       }).join('');
-    /* 合図。**一行だけ、チェックが脈を打つ**（押せるのは全部）。
+    /* ─ 合図は**あとから**出す（2026-09-10）───────────────────
+       > **どこから手を付ける？みたいな感じに思っていきたい**ですね（本人 2026-09-10）
+
+       最初の一行を最初から指していた。**指した時点で「どこから」が消える**——
+       始める場所をこちらが決めていた。**6 秒は指さない。**
+       そのあいだが「どこから手を付けるか」を考える時間で、
+       **どの行を押しても引っかかる**ので、選んだ結果は変わらない。
+
+       6 秒たっても動かない人にだけ指す（§「押さない人を塞がない」）。
        **右端の「片付ける」は捨てた**——チェック欄から 1100px 離れていた
        （本人 2026-09-10：「片付ける表記が端すぎる」）。言葉は表の上に一度だけ */
-    if (!picked){
+    if (hinted && !picked){
       var first = pile.querySelector('li');
       if (first) first.classList.add('pick');
     }
@@ -1242,7 +1258,7 @@ body[data-stage="c"] .st-c{display:block}
     if (!li || li.classList.contains('gone')) return;
     var c = findCard(+li.dataset.i);
     if (!c) return;
-    picked = true; clearTimeout(waitT);
+    picked = true; clearTimeout(waitT); clearTimeout(hintT);
     var pk = document.querySelector('#pile li.pick');
     if (pk) pk.classList.remove('pick');
 
