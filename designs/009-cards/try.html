@@ -499,16 +499,33 @@ body[data-stage="c"] .wrap{padding-top:20px}
    **色は足さない**（§捨てた --crt-*）。濃さだけで「ある／ない」*/
 /* **題が余白を全部取る。**auto の余白を二つ置くと分け合って、
    四角の位置が題の長さでずれた（画面で見つけた）*/
-.gsq{align-self:center; display:flex; gap:3px; flex:none}
+.gsq{
+  align-self:center; flex:none;
+  display:grid; grid-template-columns:repeat(6, 52px);
+  justify-items:center; align-items:center;
+}
 .gsq .sq{
-  width:8px; height:8px; border-radius:2px;
+  width:9px; height:9px; border-radius:2px;
   background:none; border:1px solid rgba(37,31,69,.22);
 }
 .gsq .sq.on{background:rgba(37,31,69,.5); border-color:rgba(37,31,69,.5)}
+/* ─ 名前の段。**札と同じ骨格**（.gitem）で作って、面と影だけ外す。
+   見えない題・行数・「片付ける」が、そのまま列の位置を決める */
+.gsq .sn{
+  font-style:normal; font-size:10px; line-height:1.2; color:var(--sub);
+  white-space:nowrap; letter-spacing:.01em;
+}
+.ghd{
+  background:none; box-shadow:none; cursor:default;
+  padding-top:0; padding-bottom:6px;
+}
+.ghd .gv{visibility:hidden}
+.ghd:hover{transform:none; box-shadow:none}
 /* 見出しの下の一行。**数字は一度だけ**——一件ごとの内訳を読ませると表に戻る */
 .csub{margin:-6px 0 16px; font-size:12.5px; line-height:1.8; color:var(--sub)}
 .csub b{color:var(--ink)}
-.csub .lg{display:block; font-size:11.5px; color:var(--sub); opacity:.85}
+.csub .lg{display:block; font-size:11.5px; color:var(--sub); opacity:.9}
+.csub .lg b{color:var(--sub); font-weight:700}
 
 
 /* ③の下に出る。**段を分けない**（2026-09-10）——
@@ -546,7 +563,7 @@ body[data-stage="c"] .st-c{display:block}
 
 @media (max-width:760px){ .pile{columns:1} }
 /* 狭い窓では四角を畳む。**題と行数が先** */
-@media (max-width:620px){ .gsq{display:none} .gn{min-width:0} }
+@media (max-width:900px){ .gsq{display:none} .gn{min-width:0} .ghd{display:none} }
 /* 狭い窓では、足した二列を畳む。**升目が潰れると「多い」より「読めない」になる** */
 @media (max-width:860px){
   .sheet{--cols:32px 44px minmax(0,1fr) 70px 76px 58px}
@@ -585,10 +602,18 @@ body[data-stage="c"] .st-c{display:block}
     <div class="ask2">
       <p class="ask">ある会社に、たまっている課題です。<br>
         <span class="sub" id="hint"></span></p>
-      <!-- **ここは AI ではない。**同じ件を集めるのは決まった処理で、推論ではない
+      <!-- **「まとめてもらう」をやめた**（本人 2026-09-10：「まとめてもらう、って文言
+           変えたい」→「整理する、とかにしたい」）。**デモの中でここだけ〜てもらう**で、
+           ほかは全部言い切り（片付ける／〜を見る →／最後に／もう一度）。
+           しかも理念（「楽をすることではなく」「やらされるでなくやりたい」）と
+           出口（「これならちょっとずつでもできるかも」）から見て、
+           **ここで「頼む」に切り替わるのは向きが逆。**
+           機械の仕事は寄る動きと題が付く一拍で見えているので、言葉で言わない。
+
+           **ここは AI ではない。**同じ件を集めるのは決まった処理で、推論ではない
            （本人 2026-09-09：「まとめてるのは AI じゃないよ」）。
            AI が出るのは、書かれていないものを書いたところ＝カードの題だけ -->
-      <button class="one" id="go-c">まとめてもらう</button>
+      <button class="one" id="go-c">整理する</button>
       <!-- **辿っている途中は、貼りつく帯の中に置く**——見に行った先で
            「なぜここに居るのか」が画面から消えていた（画面で見つけた）-->
       <p class="how" id="how"></p>
@@ -930,7 +955,7 @@ body[data-stage="c"] .st-c{display:block}
      一度にどん →「何が起こってるんだろう」。**
      共通しているのは**人が頼む前に画面が動いている**こと。頼んでいない動きは
      意図が伝わらない。**頼む前は止まっている、頼んだら動く**に一本化した
-     （寄せる動きは「まとめてもらう」を押したあとなので、一度も引っかかっていない）。
+     （寄せる動きは「整理する」を押したあとなので、一度も引っかかっていない）。
 
      滞在時間は**一手のほうが持つ**（本人 2026-09-10：「そうするならせめて
      見えてる状態で何かする→片付け、にしないと」）。
@@ -1290,9 +1315,22 @@ body[data-stage="c"] .st-c{display:block}
 
     /* **12 件が並んだ状態が、まとめる動きの着地点であり、③の姿。**
        開かない。崩さない。押させない */
-    setsEl.innerHTML = order.map(function(k){
-      return '<div class="gset" data-k="' + k + '">' + item(k) + '</div>';
-    }).join('');
+    /* **四角だけでは分からない**（本人 2026-09-10：「それ四角だけだとたぶん
+       わかんないな」）。名前を上に一段置く——**札とまったく同じ骨格**で作って、
+       見えない中身（題・行数・片付ける）で幅を揃える。
+       別の組み方で並べると、窓の幅が変わった瞬間に列がずれる */
+    setsEl.innerHTML =
+      '<div class="gitem ghd" aria-hidden="true">'
+      +   '<span class="gt"></span>'
+      +   '<span class="gsq">' + TABS.map(function(t){
+            return '<i class="sn">' + esc(t[1]) + '</i>';
+          }).join('') + '</span>'
+      +   '<span class="gn"></span>'
+      +   '<span class="gv">片付ける</span>'
+      + '</div>'
+      + order.map(function(k){
+          return '<div class="gset" data-k="' + k + '">' + item(k) + '</div>';
+        }).join('');
 
     /* **②の量に対する返事。**説明ではない */
     document.getElementById('c-h1').textContent =
@@ -1307,7 +1345,14 @@ body[data-stage="c"] .st-c{display:block}
     });
     document.getElementById('c-sub').innerHTML =
       'どれも <b>' + (lo === hi ? lo : lo + '〜' + hi) + ' か所</b>にまたがっていました。'
-      + '<span class="lg">四角は出どころ（②のタブと同じ並び）。塗ってあるところに、この件の行があります。</span>';
+      /* **何がやって、誰が**（本人 2026-09-10：「ただ整理するだけを
+         何がやって誰が、っていうのも見せたいか？」）。**③で一行だけ。**
+         ②で言うと押す前の種明かしになる（09-08「同じのまとめるってもう見えてるしなあ」）。
+         結果を見たあとなら「これは魔法ではない」が効く。
+         **footer の楽屋に落ちていた事実を、一行だけ引き上げた。**
+
+         「塗ってあるところに〜」は捨てた——**列に名前が付いたので、見れば分かる。** */
+      + '<span class="lg">寄せたのは決まった処理、<b>題を付けたのは AI</b> です。</span>';
     leftG = order.length; firstCleared = null; cleared = 0;
     var box = document.getElementById('end');
     if (box) box.hidden = true;
