@@ -501,7 +501,7 @@ body[data-stage="c"] .wrap{padding-top:20px}
    四角の位置が題の長さでずれた（画面で見つけた）*/
 .gsq{
   align-self:center; flex:none;
-  display:grid; grid-template-columns:repeat(6, 52px);
+  display:grid; grid-template-columns:repeat(6, 44px);
   justify-items:center; align-items:center;
 }
 .gsq .sq{
@@ -512,29 +512,42 @@ body[data-stage="c"] .wrap{padding-top:20px}
 /* ─ 名前の段。**札と同じ骨格**（.gitem）で作って、面と影だけ外す。
    見えない題・行数・「片付ける」が、そのまま列の位置を決める */
 .gsq .sn{
-  font-style:normal; font-size:10px; line-height:1.2; color:var(--sub);
+  font-style:normal; font-size:9.5px; line-height:1.2; color:var(--sub);
   white-space:nowrap; letter-spacing:.01em;
 }
 .ghd{
   background:none; box-shadow:none; cursor:default;
   padding-top:0; padding-bottom:6px;
 }
-.ghd .gv{visibility:hidden}
 .ghd:hover{transform:none; box-shadow:none}
 
-/* ─ 内訳 ── **押すと、その一件がどの一行から来たのかが出る**（2026-09-10）───
-   本人：「12 件、片づけるよりクリックで内訳見せるとか、いかがか」。
-   **生の一行**（等幅・薄い）の下に、**機械が付けた読み解き**。
-   「題を付けたのは AI」を、言葉ではなく現物で見せる場所。
-   **開いている札は浮かない**——浮くと中身と離れて見える */
-.gdet{display:none}
-.gset.open .gdet{
-  display:block; background:var(--card); box-shadow:var(--lift1);
-  border-radius:0 0 7px 7px; margin-top:-7px; padding:6px 16px 14px;
-  animation:rise .22s var(--ease) both;
+/* ─ 内訳は右 ── **12 件の並びを崩さない**（2026-09-10）─────────────
+   > 12 件、片づけるよりクリックで内訳見せるとか、いかがか
+   > ── この**内訳の出し方を右に出すやつ**にするか（本人 2026-09-10）
+
+   一度は行の直下に開いた。**開くたびに 12 件の並びが動く**——
+   「せっかく 12 件にまとめたのに下に行っちゃって見えない」（09-10）と同じ形。
+   **③の要は 12 件が並んだ姿**なので、そこを動かさない側を取った。
+
+   **§「開いた中身は行の直下に」（三度外した）には触っている。**
+   あれは**並びが動く一覧**での話で、③は 12 件が固定。条件が違うので右に出した。
+   狭い窓では下へ回るので、そのときは押した先へ送る。 */
+.two-col{display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:26px; align-items:start}
+/* 一件も残っていないとき。**中身の無い枠は畳む** */
+.two-col.empty{grid-template-columns:minmax(0,1fr); gap:0}
+.two-col.empty .side, .two-col.empty .ghd{display:none}
+.side{position:sticky; top:76px}
+.sidein{
+  background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+  padding:20px 22px 22px;
 }
-.gset.open .gitem{border-radius:7px 7px 0 0}
-.gset.open .gitem:hover{transform:none; box-shadow:var(--lift1)}
+.sempty{margin:0; font-size:12.5px; line-height:1.9; color:var(--sub)}
+.sempty b{color:var(--ink)}
+.sh{margin:0; font-size:15px; font-weight:700; line-height:1.5}
+.sn2{margin:4px 0 10px; font-family:var(--mono); font-size:11.5px; color:var(--sub)}
+/* 選ばれている札。**面を持ち上げない**——右と繋がっているので動かさない */
+.gset.on .gitem{background:rgba(99,84,224,.09); box-shadow:var(--lift2)}
+.gset.on .gitem:hover{transform:none}
 .glist{list-style:none; margin:0; padding:0}
 .glist li{
   display:grid; grid-template-columns:78px minmax(0,1fr); gap:0 12px;
@@ -594,7 +607,8 @@ body[data-stage="c"] .st-c{display:block}
 
 @media (max-width:760px){ .pile{columns:1} }
 /* 狭い窓では四角を畳む。**題と行数が先** */
-@media (max-width:900px){ .gsq{display:none} .gn{min-width:0} .ghd{display:none} }
+@media (max-width:1080px){ .two-col{grid-template-columns:minmax(0,1fr)} .side{position:static} }
+@media (max-width:820px){ .gsq{display:none} .gn{min-width:0} .ghd{display:none} }
 /* 狭い窓では、足した二列を畳む。**升目が潰れると「多い」より「読めない」になる** */
 @media (max-width:860px){
   .sheet{--cols:32px 44px minmax(0,1fr) 70px 76px 58px}
@@ -673,7 +687,12 @@ body[data-stage="c"] .st-c{display:block}
     </div>
     <!-- **内訳の読み方**。四角は②のタブと同じ並び -->
     <p class="csub" id="c-sub"></p>
-    <div id="sets"></div>
+    <!-- **内訳は右に出す**（本人 2026-09-10：「この内訳の出し方を右に出すやつにするか」）。
+         下に開くと 12 件の並びが動く——**12 件が並んだ姿を崩さない**のが③の要 -->
+    <div class="two-col">
+      <div id="sets"></div>
+      <aside class="side"><div class="sidein" id="sidein"></div></aside>
+    </div>
 
     <!-- ④ **③の下に出る。段を分けない**（本人 2026-09-10：「最後のカードいる？
          もう合体させたら」）。前は面ごと切り替わっていたので、
@@ -1331,9 +1350,7 @@ body[data-stage="c"] .st-c{display:block}
       +   '<span class="gt">' + esc(GROUPS[k].t) + '</span>'
       +   '<span class="gsq" aria-hidden="true">' + sq + '</span>'
       +   '<span class="gn">' + byG[k].length + ' 行 ／ ' + cnt + ' か所</span>'
-      +   '<span class="gv">内訳</span>'
-      + '</button>'
-      + '<div class="gdet"></div>';
+      + '</button>';
   }
 
   /* ─ 内訳を開く ── **押すと中身が出る**（2026-09-10）──────────────
@@ -1357,7 +1374,13 @@ body[data-stage="c"] .st-c{display:block}
     var rows = g.raw.slice().sort(function(a, b){
       return ord.indexOf(a[0]) - ord.indexOf(b[0]);
     });
-    return '<ul class="glist">'
+    /* **か所は出どころの数。**生の一行の数ではない——同じ出どころに二行あることがある
+       （画面で見つけた。札は 4 か所、内訳は 5 か所と出ていた）*/
+    var seen = {}, cnt = 0;
+    rows.forEach(function(q){ if (!seen[q[0]]){ seen[q[0]] = 1; cnt++; } });
+    return '<h2 class="sh">' + esc(g.t) + '</h2>'
+      + '<p class="sn2">' + byG[k].length + ' 行 ／ ' + cnt + ' か所</p>'
+      + '<ul class="glist">'
       + rows.map(function(p){
           return '<li>'
             +   '<span class="gs">' + esc(NAME[p[0]] || p[0]) + '</span>'
@@ -1370,18 +1393,22 @@ body[data-stage="c"] .st-c{display:block}
       + '<button class="one small gdo" data-k="' + k + '">片付ける</button>';
   }
 
-  function toggle(k){
+  /* 何も選んでいないとき。**空の箱を置かない**——何をすればいいかだけ書く */
+  var EMPTY = '<p class="sempty">件を押すと、<b>その一件がどの一行から来たのか</b>が出ます。</p>';
+
+  function select(k){
     var set = setsEl && setsEl.querySelector('.gset[data-k="' + k + '"]');
-    if (!set || set.classList.contains('going')) return;
-    var box = set.querySelector('.gdet');
-    if (set.classList.contains('open')){
-      set.classList.remove('open'); box.innerHTML = '';
-      set.querySelector('.gv').textContent = '内訳';
-      return;
+    var box = document.getElementById('sidein');
+    if (!set || !box || set.classList.contains('going')) return;
+    /* もう一度押したら閉じる（選び直しは付け替えるだけ）*/
+    if (set.classList.contains('on')){
+      set.classList.remove('on'); box.innerHTML = EMPTY; return;
     }
+    [].forEach.call(setsEl.querySelectorAll('.gset.on'), function(g){ g.classList.remove('on'); });
+    set.classList.add('on');
     box.innerHTML = detHTML(k);
-    set.classList.add('open');
-    set.querySelector('.gv').textContent = '閉じる';
+    /* 狭い窓では右が下へ回る。**押した先が画面の外にあると気づかれない** */
+    if (!slow && innerWidth <= 1000) box.scrollIntoView({block:'nearest', behavior:'smooth'});
   }
 
   function paintRows(){
@@ -1409,7 +1436,6 @@ body[data-stage="c"] .st-c{display:block}
             return '<i class="sn">' + esc(t[1]) + '</i>';
           }).join('') + '</span>'
       +   '<span class="gn"></span>'
-      +   '<span class="gv">片付ける</span>'
       + '</div>'
       + order.map(function(k){
           return '<div class="gset" data-k="' + k + '">' + item(k) + '</div>';
@@ -1437,6 +1463,10 @@ body[data-stage="c"] .st-c{display:block}
          「塗ってあるところに〜」は捨てた——**列に名前が付いたので、見れば分かる。** */
       + '<span class="lg">寄せたのは決まった処理、<b>題を付けたのは AI</b> です。</span>';
     leftG = order.length; firstCleared = null; cleared = 0;
+    var side = document.getElementById('sidein');
+    if (side) side.innerHTML = EMPTY;
+    var tc = document.querySelector('.two-col');
+    if (tc) tc.classList.remove('empty');
     var box = document.getElementById('end');
     if (box) box.hidden = true;
     var fin = document.getElementById('go-d');
@@ -1454,8 +1484,18 @@ body[data-stage="c"] .st-c{display:block}
     leftG--; cleared++;
 
     function done(){
-      set.classList.remove('open'); set.innerHTML = '';
-      if (leftG <= 0) finish();
+      if (set.classList.contains('on')){
+        var box = document.getElementById('sidein');
+        if (box) box.innerHTML = EMPTY;
+      }
+      set.classList.remove('on'); set.innerHTML = '';
+      /* **一件も残っていないなら、名前の段と右の箱も畳む。**
+         中身の無い枠が残ると、出口の隣に空箱が並ぶ（画面で見つけた）*/
+      if (leftG <= 0){
+        var tc = document.querySelector('.two-col');
+        if (tc) tc.classList.add('empty');
+        finish();
+      }
     }
     if (slow){ set.style.display = 'none'; done(); return; }
 
@@ -1476,7 +1516,7 @@ body[data-stage="c"] .st-c{display:block}
     var d = e.target.closest('.gdo');
     if (d){ clearGroup(+d.dataset.k); return; }
     var b = e.target.closest('.gitem');
-    if (b && !b.classList.contains('ghd')) toggle(+b.dataset.k);
+    if (b && !b.classList.contains('ghd')) select(+b.dataset.k);
   });
 
   /* ─ ④ ── **出口の三段をそのまま置く**（2026-09-10。本人：「出口は変える気ない」）。
