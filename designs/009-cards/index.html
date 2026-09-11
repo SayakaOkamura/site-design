@@ -183,29 +183,22 @@ body.locked{overflow:hidden}
    **上は今までの六枚のまま。それが目次になって、中身が下に段として続く。**
    押すと**開く**のではなく**下の該当箇所へ飛ぶ**ので、
    「押さないと読めない」も「三段」も起きない。**デモの紫は一画面目に残る。** */
-/* **左に格子、右に中身**（2026-09-11。本人：「ならやっぱり右にしたら？」）。
-   上下に分けると、格子は一画面目にあっても**送ったら消える**。
-   左右なら**格子はずっと居る**——一覧もデモの紫も、読んでいるあいだずっと画面にある。
-   右は**最初から全部縦に並んでいる**ので、**押さずに読める**（送るだけ）。
-   格子を押すと、右がその段へ飛ぶ。**開閉ではなく移動。** */
-.two-up{display:grid; grid-template-columns:400px minmax(0,1fr); gap:26px;
-        align-items:start; margin-top:16px}
-.deck.toc{grid-template-columns:repeat(2,1fr); gap:14px; margin:0;
-          position:sticky; top:84px}
-.deck.toc .card{min-height:118px; padding:22px 18px 20px;
+/* **左右はやめた**（2026-09-11。本人：「ん〜〜〜〜〜見にくい」）——
+   400px の柱に六枚を入れたら**題が三行に折れ**、右の本文も 420px で細切れになった。
+   **両方が痩せた**うえ、視線が二本に割れてどちらを読むのか迷う。
+   **上に格子（元のまま・全幅・3×2）、下に中身**に戻す。
+   一画面目の絵は前とほぼ同じで、デモの紫もそこにある。
+   押すと**開く**のではなく**下の段へ飛ぶ**ので、「押さないと読めない」も「三段」も起きない。
+   送ると格子は消えるが、**それは普通のページと同じこと。** */
+.deck.toc{grid-template-columns:repeat(3,1fr); gap:16px; margin-top:16px}
+.deck.toc .card{min-height:128px; padding:26px 22px 24px;
                 display:flex; flex-direction:column; cursor:pointer}
-.deck.toc .card .t{font-size:17px}
-.deck.toc .card .s{padding-top:10px; font-size:13.5px}
 .deck.toc .card:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-#deck{margin:0}
+#deck{margin-top:26px}
 /* 飛んだ先が頭の下に潜らないように */
-.card.two{scroll-margin-top:92px}
-/* 狭い窓では上下に戻す（横に二本は無理）*/
-@media (max-width:1000px){
-  .two-up{grid-template-columns:minmax(0,1fr); gap:22px}
-  .deck.toc{position:static; grid-template-columns:repeat(3,1fr)}
-}
-@media (max-width:640px){ .deck.toc{grid-template-columns:repeat(2,1fr)} }
+.card.two{scroll-margin-top:26px}
+@media (max-width:900px){ .deck.toc{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:560px){ .deck.toc{grid-template-columns:minmax(0,1fr)} }
 /* 読む順。**デモは中身を読んだあと、問い合わせの手前**（腰を上げる直前に置く）*/
 .deck > [data-k="1"]{order:1} .deck > [data-k="2"]{order:2} .deck > [data-k="3"]{order:3}
 .deck > [data-k="5"]{order:4} .deck > [data-k="6"]{order:5} .deck > [data-k="4"]{order:6}
@@ -1369,12 +1362,7 @@ html.boot .mark{opacity:1}
       }
       toc.appendChild(tile);
     });
-    /* 左右に二本。**格子は貼りついて、右だけが送られる** */
-    var pair = document.createElement('div');
-    pair.className = 'two-up';
-    deck.parentNode.insertBefore(pair, deck);
-    pair.appendChild(toc);
-    pair.appendChild(deck);
+    deck.parentNode.insertBefore(toc, deck);
   })();
   window.addEventListener('pageshow', reopen);
   window.addEventListener('hashchange', reopen);
