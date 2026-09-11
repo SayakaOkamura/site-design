@@ -331,7 +331,7 @@ body{
   /* **着くまで消えない**（2026-09-11）。前は 340〜760ms で薄くなっていて、
      到着（800ms）の前に消えていた——**行は宙で消え、着地は見えない。**
      いまは着いた 600ms から 260ms で抜ける＝**題と入れ替わる。** */
-  transition:transform .8s var(--snap), opacity .26s ease .60s;
+  transition:transform .8s var(--snap), opacity .34s ease .48s;
 }
 /* ─ **②→③のつなぎ**（2026-09-11。本人：「2→3 の動線の中で見せたい。
    着地点じゃなくてつなぎとして何か欲しい」）────────────────────
@@ -1899,8 +1899,13 @@ body[data-stage="c"] .st-c{display:block}
     layer.className = 'flylayer';
     var clones = [];
     var src = [], repEl = document.getElementById('rep');
+    /* **間引く**（2026-09-11）。報告書は一件ぶんなので**行き先が一本**——
+       見えているぶん全部（28 本）を送ると、扇に散らしても**まだ密**だった。
+       **一つ飛ばしで拾う。**密度が半分になって、吸い込まれる形が見える */
     if (repEl && tangledK !== null)
-      [].forEach.call(repEl.querySelectorAll('.reps li'), function(li){ src.push([li, tangledK]); });
+      [].forEach.call(repEl.querySelectorAll('.reps li'), function(li, ix){
+        if (ix % 2 === 0) src.push([li, tangledK]);
+      });
     [].forEach.call(pile.querySelectorAll('li'), function(li){ src.push([li, +li.dataset.k]); });
     src.forEach(function(p){
       if (clones.length >= 90) return;
@@ -1927,13 +1932,24 @@ body[data-stage="c"] .st-c{display:block}
       g.style.animationDelay = (i * 35) + 'ms';    /* **一つの波に見せる** */
     });
 
-    /* 3. 寄せる */
+    /* ─ 3. 寄せる。**重ねない**（2026-09-11、本人：「文字がぎゅってなってる瞬間の
+       見た目が結構きもいな…」）────────────────────────────────
+       報告書から飛ぶときは**28 本が同じ一行に集まる**ので、着く手前で
+       **文字が真っ黒な塊**になっていた（画面で見つけた）。
+       着地点を**行の幅いっぱいに扇状へ散らして**、`scale(.92)` → **`.55`** で
+       小さくしながら消す。**塊にならずに、吸い込まれて見える。**
+       読ませるのは着いたあとの題なので、飛んでいる字は読めなくてよい */
+    var many = clones.length > 1 ? clones.length - 1 : 1;
     void layer.offsetWidth;
-    clones.forEach(function(c){
+    clones.forEach(function(c, i){
       var t = target[c.k];
       if (!t){ c.el.style.opacity = 0; return; }
-      c.el.style.transform = 'translate(' + (t.left + 16 - c.x) + 'px,'
-                           + (t.top + 9 - c.y) + 'px) scale(.92)';
+      /* 行の幅で扇に散らす（同じ件へ集まるものほど散る）*/
+      var sp = Math.min(t.width - 40, 420);
+      var dx = (i / many - .5) * sp;
+      var dy = ((i % 5) - 2) * 5;
+      c.el.style.transform = 'translate(' + (t.left + 16 + dx - c.x) + 'px,'
+                           + (t.top + 9 + dy - c.y) + 'px) scale(.55)';
       c.el.style.opacity = 0;
     });
 
@@ -2003,18 +2019,19 @@ body[data-stage="c"] .st-c{display:block}
   }
   function item(k){
     var by = places(k), cnt = 0;
-    var sq = SRC5.map(function(t){
-      var v = by[t[0]] || 0;
-      if (v) cnt++;
-      return '<i class="sq' + (v ? ' on' : '') + '" title="'
-           + esc(t[1]) + ' ' + v + ' 件"></i>';
-    }).join('');
+    /* **四角は外した**（2026-09-11、本人：「メール/チャット/…とかのやつ
+       **もう残骸**だよね、いらんな」）。あれは**402 行が六つの出どころに散らばって**
+       いたころの印で、**散らばりそのものが中身**だった。
+       いまは**課題は課題管理表にしかなく**、メール等は起票のもと。
+       どこから入ってきたかは**内訳が言葉で言う**し、行には「4 か所」と数で出ている。
+       そのうえ**290px も食って、決めごとの題を圧迫していた。**
+       数え（`cnt`）だけ残す */
+    SRC5.forEach(function(t){ if (by[t[0]]) cnt++; });
     /* **並ぶのは決めごと**（2026-09-11）。問題の名前（`t`）ではなく、
        **決まっていないこと**（`u`）を出す——②の行き止まりで出た言葉と同じ。
        ここが「課題が多い」から「**決まっていないことが少ない**」に変わる場所 */
     return '<button class="gitem" data-k="' + k + '">'
       +   '<span class="gt">' + esc(GROUPS[k].u) + '</span>'
-      +   '<span class="gsq" aria-hidden="true">' + sq + '</span>'
       +   '<span class="gn">' + byG[k].length + ' 件 ／ ' + cnt + ' か所</span>'
       + '</button>';
   }
@@ -2182,7 +2199,6 @@ body[data-stage="c"] .st-c{display:block}
       set.classList.add('done');
       var gn = set.querySelector('.gn');
       if (gn) gn.textContent = cnt + ' 件 片付きました';
-      [].forEach.call(set.querySelectorAll('.gsq .sq'), function(x){ x.classList.add('on'); });
     }
     document.getElementById('sidein').innerHTML =
       '<h2 class="sh">決めました</h2>'
@@ -2254,14 +2270,8 @@ body[data-stage="c"] .st-c{display:block}
        見えない中身（題・行数・片付ける）で幅を揃える。
        別の組み方で並べると、窓の幅が変わった瞬間に列がずれる */
     setsEl.innerHTML =
-      '<div class="gitem ghd" aria-hidden="true">'
-      +   '<span class="gt"></span>'
-      +   '<span class="gsq">' + SRC5.map(function(t){
-            return '<i class="sn">' + esc(t[1]) + '</i>';
-          }).join('') + '</span>'
-      +   '<span class="gn"></span>'
-      + '</div>'
-      + order.map(function(k){
+      /* 名前の段も外した（§四角は外した。指す先が無くなったので）*/
+      order.map(function(k){
           return '<div class="gset' + (k === tangledK ? ' from2' : '')
                + '" data-k="' + k + '">' + item(k) + '</div>';
         }).join('');
