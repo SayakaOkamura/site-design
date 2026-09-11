@@ -805,9 +805,22 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
 .scmp{margin:16px 0 0; font-size:15px; line-height:2; color:var(--sub)}
 .scmp b{color:var(--ink); font-weight:700}
 /* 決まった件。**抜かない。**12 の並びは崩さず、済の印だけ付ける */
-.gset.done .gitem{opacity:.5; box-shadow:var(--lift0); cursor:default}
+/* ─ 行の捺印欄（§三拍目）。**決裁欄の小さい版**。
+   名前が入ったあとに、一つずつ付く */
+.gbox{flex:none; align-self:center; width:24px; height:24px; border-radius:50%;
+      border:1px dashed rgba(37,31,69,.3); opacity:0}
+body.sealed .gbox{animation:boxin .28s var(--ease) both; animation-delay:var(--bd,0ms)}
+@keyframes boxin{
+  from{opacity:0; transform:scale(.55)}
+  to  {opacity:1; transform:scale(1)}
+}
+.seal.sm{width:24px; height:24px; border-width:1.5px; font-size:11px}
+/* 済んだ行。**印だけは薄めない**——決めた記録なので */
+.gset.done .gitem{box-shadow:var(--lift0); cursor:default}
+.gset.done .gt,.gset.done .gn{opacity:.5}
 .gset.done .gitem:hover{transform:none; box-shadow:var(--lift0)}
-.gset.done .gt::before{content:'✓ '; color:var(--go); font-weight:700}
+/* **✓ は外した**（2026-09-11、§三拍目）。済の印は**捺した判子のほう**になったので、
+   一つの済みに印が二つ並んでいた（右端に朱、題の頭に紫の ✓）*/
 
 /* ─ 内訳は右 ── **12 件の並びを崩さない**（2026-09-10）─────────────
    > 12 件、片づけるよりクリックで内訳見せるとか、いかがか
@@ -1708,7 +1721,7 @@ body[data-stage="c"] .st-c{display:block}
   }
 
   function paintPile(){
-    document.body.classList.remove('naming','named');
+    document.body.classList.remove('naming','named','sealed');
     picked = false; hinted = false; bottom = false; tangledN = 0;
     trail = []; stray = []; stuck = null; need = 0; repN = 0; tangledK = null;
     document.getElementById('hint').textContent =
@@ -2057,7 +2070,8 @@ body[data-stage="c"] .st-c{display:block}
   function gather(){
     var pile = document.getElementById('pile');
     /* 動きを切っている環境では、伏せたままにしない */
-    if (slow || !pile){ document.body.classList.add('named'); stage('c'); return; }
+    if (slow || !pile){ document.body.classList.add('named');
+                        document.body.classList.add('sealed'); stage('c'); return; }
     document.getElementById('go-c').classList.remove('on');   /* 二度押させない */
 
     /* 1. 写す。**窓の中だけだと 13 行しか飛ばなかった**（画面で数えた）。
@@ -2164,7 +2178,23 @@ body[data-stage="c"] .st-c{display:block}
     setTimeout(function(){
       document.body.classList.remove('naming');
       document.body.classList.add('named');      /* ここで名前が入る */
-    }, 1900);   /* **積み終わってから**（760 + 60×11 + 460 ≒ 1880）。二拍を重ねない */   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
+    }, 1900);
+    /* ─ **三拍目。うちがやったこと**（2026-09-11、本人：「2 から 3 になる過程で
+       うちの介入が入ってる、って話ならできていいと思う。で、**そうなったっていうのが
+       見えない**からって話をさっきしたね」）────────────────────────
+       画面に出ていた出来事は二つだけだった——**寄る（決まった処理）／題が付く（AI）。**
+       三つ目の担い手（§三つ目の担い手）は**文で言っているだけ**で、
+       **そうなった瞬間がどこにも映っていない。**一行足して済ませていた。
+       うちが実際にやったのは「**決裁できる形に揃えた**」こと——二択と代償を用意して、
+       捺せば進む状態にした。それは**行を開いた人しか見ていなかった。**
+       **12 行の右端に、空の捺印欄が付く。**これで担い手三つに、それぞれ瞬間がある。
+       「残っているのは、捺すことだけです」が**主張ではなく絵**になる */
+    setTimeout(function(){
+      [].forEach.call(document.querySelectorAll('#sets .gset'), function(g, i){
+        g.style.setProperty('--bd', (i * 40) + 'ms');
+      });
+      document.body.classList.add('sealed');
+    }, 2500);   /* 名前が入り終わる（1900 + 45×11 ≒ 2400）すぐあと */   /* **積み終わってから**（760 + 60×11 + 460 ≒ 1880）。二拍を重ねない */   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
     /* **着いた形のまま置く**（2026-09-10。本人：「せっかく 12 件にまとめたのに
        それが下に行っちゃって見えない」「モーションで出たときと形変わるし」）。
        着地の直後に一件目を開けていたので、**12 件が並んだ絵が 0.5 秒で崩れて、
@@ -2235,9 +2265,11 @@ body[data-stage="c"] .st-c{display:block}
     /* **並ぶのは決めごと**（2026-09-11）。問題の名前（`t`）ではなく、
        **決まっていないこと**（`u`）を出す——②の行き止まりで出た言葉と同じ。
        ここが「課題が多い」から「**決まっていないことが少ない**」に変わる場所 */
+    /* 右端の**空の捺印欄**（§三拍目）。出るのは名前が入ったあと */
     return '<button class="gitem" data-k="' + k + '">'
       +   '<span class="gt">' + esc(GROUPS[k].u) + '</span>'
       +   '<span class="gn">' + byG[k].length + ' 件 ／ ' + cnt + ' か所</span>'
+      +   '<i class="gbox"></i>'
       + '</button>';
   }
 
@@ -2418,6 +2450,9 @@ body[data-stage="c"] .st-c{display:block}
       set.classList.add('done');
       var gn = set.querySelector('.gn');
       if (gn) gn.textContent = cnt + ' 件 片付きました';
+      /* 行の捺印欄にも印が入る（§三拍目）。**同じ欄が埋まる** */
+      var gb = set.querySelector('.gbox');
+      if (gb){ gb.className = 'seal sm'; gb.textContent = '決'; }
     }
     document.getElementById('sidein').innerHTML =
       '<h2 class="sh">決めました</h2>'
