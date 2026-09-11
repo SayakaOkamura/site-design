@@ -890,7 +890,9 @@ body[data-stage="c"] .st-c{display:block}
 
 <header class="top">
   <div class="in">
-    <a class="back" href="index.html"><i>←</i>会社のページへもどる</a>
+    <!-- 行き先は**入ってきたところ**に書き換わる（§読んだところへ戻す）。
+         書き換わらなければトップ——6 枚目の札から来た人はそれでいい -->
+    <a class="back" id="back" href="index.html"><i>←</i>会社のページへもどる</a>
     <span class="mark">株式会社アルターデザインコンサルティング</span>
   </div>
 </header>
@@ -1015,7 +1017,7 @@ body[data-stage="c"] .st-c{display:block}
              下書きを組み立てるのに、**デモから出た人だけがその仕掛けを通らない。**
              `?from=demo` を付けて渡すと、向こうで**ご用件が一つ入った状態**で開く -->
         <a class="one go1" href="index.html?from=demo#contact" style="text-decoration:none">相談してみる</a>
-        <a class="one" href="index.html" style="text-decoration:none">会社のページを見る</a>
+        <a class="one" id="back2" href="index.html" style="text-decoration:none">会社のページを見る</a>
         <button class="one" id="again">もう一度</button>
       </div>
     </div>
@@ -1588,6 +1590,22 @@ body[data-stage="c"] .st-c{display:block}
       bottom = true; wall();
     }
   }, { passive:true });
+
+  /* ─ **読んだところへ戻す**（2026-09-11、本人：「動線が足りない感じがする、全域で」）──
+     戻り先が**いつもトップ**だった。理念を読んでここへ来た人も、サービス 01 を読んで
+     来た人も、戻ると**6 枚の頭**——**さっき読んでいたところには戻らない。**
+     入り口の側が `?from=mind` `?from=svc` を付けて渡してくるので、
+     **それを行き先に足すだけ**（知らない値は無視してトップ）。
+     6 枚目の札には付けない——**あそこはトップから来ている。** */
+  (function(){
+    var m = /(?:^|[?&])from=([a-z]+)/.exec(location.search);
+    var to = m && {mind:'#mind', svc:'#svc'}[m[1]];
+    if (!to) return;
+    ['back', 'back2'].forEach(function(id){
+      var a = document.getElementById(id);
+      if (a) a.href = 'index.html' + to;
+    });
+  })();
 
   /* 貼りつく段は**頭 → 問いの帯 → 表の見出し**の三段になった（タブが減ったぶん一段減る）*/
   function stick(){
