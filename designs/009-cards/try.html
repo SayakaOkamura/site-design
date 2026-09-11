@@ -319,15 +319,33 @@ body{
   white-space:nowrap; overflow:hidden;
   font-family:var(--mono); font-size:12px; line-height:1.6;
   color:rgba(37,31,69,.82); padding:4px 3px;
-  transition:transform .8s var(--snap), opacity .42s ease .34s;
+  /* **着くまで消えない**（2026-09-11）。前は 340〜760ms で薄くなっていて、
+     到着（800ms）の前に消えていた——**行は宙で消え、着地は見えない。**
+     いまは着いた 600ms から 260ms で抜ける＝**題と入れ替わる。** */
+  transition:transform .8s var(--snap), opacity .26s ease .60s;
 }
-/* ③は透明で待っていて、行が着くころに出る。**題が付くのはここ**——
-   寄せるのはコード、題を付けるのは AI。順番で分かる（言葉で説明していない）*/
-body.landing .gset{opacity:0}
+/* ─ **②→③のつなぎ**（2026-09-11。本人：「2→3 の動線の中で見せたい。
+   着地点じゃなくてつなぎとして何か欲しい」）────────────────────
+   前は `body.landing .gset{opacity:0}` で**12 件ごと透明**にしていた。
+   行は**見えない的**へ飛んで、着く前に消える。見えるのは「山がふわっと消えて、
+   12 件が現れた」だけで、**どの行がどこへ行ったかは一度も映っていない。**
+   だから③で「本当に整理されてるのか」が確かめられなかった
+   （§「41 行のうち 5 行しか見えない」）。
+
+   **透明で待つのは中身だけにした。**面（12 本の受け皿）は最初から見えている——
+   **的がある。**行はそこへ乗って、乗った瞬間に**題・行数・印が入る。**
+   ③は「並んでいた」ではなく「**この行たちが、これになった**」になる。
+   寄せるのはコード、題を付けるのは AI——順番はそのまま（言葉で説明していない）*/
+body.landing .gt,
+body.landing .gn,
+body.landing .gsq{opacity:0}
 /* **出るのは transition ではなく animation。**クラスを外して 0 → 1 に流す作りは、
    遅延を付け外しすると `currentTime` 0 のまま止まった（画面で見つけた）。
    `both` の animation なら、遅延のあいだ 0 で待って、終わったら 1 で残る */
-.gset.up{animation:rise .36s var(--ease) both}
+/* **出るのは中身**（面はもう出ている）。波の遅れは `.gset` に入れてあるので継ぐ */
+.gset.up .gt,
+.gset.up .gn,
+.gset.up .gsq{animation:rise .36s var(--ease) both; animation-delay:inherit}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
 /* ─ 山。**押せない。見るだけ**（2026-09-10）────────────────────
    一度は「押させる」、次は「五行から選ばせる」にしていた。どちらも外した：
@@ -1599,7 +1617,7 @@ body[data-stage="c"] .st-c{display:block}
         g.classList.add('up');
       });
       document.body.classList.remove('landing');
-    }, 620);
+    }, 760);   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
     /* **着いた形のまま置く**（2026-09-10。本人：「せっかく 12 件にまとめたのに
        それが下に行っちゃって見えない」「モーションで出たときと形変わるし」）。
        着地の直後に一件目を開けていたので、**12 件が並んだ絵が 0.5 秒で崩れて、
