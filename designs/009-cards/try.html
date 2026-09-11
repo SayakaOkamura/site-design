@@ -282,6 +282,18 @@ body{
   background:var(--go); margin-right:8px; vertical-align:middle;
 }
 .pile .dot.off{background:none}
+/* ─ 出どころの側の升目（2026-09-11）──────────────────────────
+   表の外では**場所だけ取って、顔は出さない。**出どころは出どころの形のまま。
+   顔が出るのは**指している行・止まっている行・片付いた行**だけ——
+   §「一行だけ立たせて指す。教えるのは一度だけ」。
+   `opacity` で出す（`display` で出すと、出た瞬間に行の字がずれる）*/
+.pile li div .c-ck{margin-right:9px}
+.pile li div .c-ck::before{opacity:0; transition:opacity .16s ease}
+.pile li.aim div .c-ck::before,
+.pile li.wait div .c-ck::before,
+.pile li.gone div .c-ck::before{opacity:1}
+/* 指している行だけ、指の形にする */
+.pile li.aim,.pile li.pick{cursor:pointer}
 /* 番号。**どの出どころにも出す**——辿る先を番号で呼ぶので、無いと探せない */
 .pile .rid{font-style:normal; font-family:var(--mono); font-size:11.5px;
            color:#8b97b8; margin-right:9px; letter-spacing:0}
@@ -366,6 +378,15 @@ body.landing .gset{opacity:0}
 .how{
   flex:1 0 100%; margin:0; font-size:13px; line-height:1.75; color:var(--sub);
   font-family:var(--sans);
+  /* **場所は最初から取っておく**（2026-09-11）——#go-c と同じ理由。
+     この一行は**一行 → 一行＋ボタン → 二行**と背が変わる。`.ask2` は
+     sticky で、その高さが `--stick` と表の位置の両方を決めているので、
+     背が変わるたびに**山ぜんぶが上下する。**
+     「〜が押せるようになりました」が出た直後に山が 24px 上がって、
+     狙った行の**一つ下**を押した（画面で数えた）。押し間違えても何も出ない——
+     別の鎖が黙って始まるので、**間違えたことに気づけない。**
+     二行ぶん取っておけば、どの文が出ても山は動かない */
+  min-height:58px;
 }
 .how b{color:var(--go); font-weight:700}
 /* 押した行の言葉。**答えの中に置く**——読ませようとせず、読む場所に置く */
@@ -503,7 +524,11 @@ body[data-stage="c"] .wrap{padding-top:20px}
 .gitem{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   display:flex; align-items:baseline; gap:14px; width:100%; text-align:left;
-  padding:8px 16px; border-radius:7px;
+  /* **窓の高さに合わせて詰める**（2026-09-11）。8px 決め打ちだと
+     12 件の下端が 780px になり、**見える高さが 780 未満の窓では最後の一件が切れる。**
+     この案の要は「12 件が一画面に収まった」なので、そこが切れると要が消える。
+     広い窓では 8px のまま（＝いままでと同じ見た目）、狭い窓でだけ詰まる */
+  padding:clamp(3px, calc((100vh - 596px) / 24), 8px) 16px; border-radius:7px;
   background:var(--card); color:var(--ink); box-shadow:var(--lift1);
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
@@ -1016,11 +1041,17 @@ body[data-stage="c"] .st-c{display:block}
        通知のアイコンを通知っぽくするとか」）。
        中身は足していない——**印だけ。** */
     var un = (c.n % 3 === 0) ? '<i class="dot"></i>' : '<i class="dot off"></i>';
-    if (c.src === 'mail')   return '<div class="m"><b>' + un + id + SUBJ[c.n % 3] + '</b>' + t + '</div>';
-    if (c.src === 'chat')   return '<div class="c">' + un + id + t + '</div>';
-    if (c.src === '議事録') return '<div class="g">' + id + '・' + t.replace(/^・/, '') + '</div>';
-    if (c.src === 'pdf')    return '<div class="p">' + id + t + '</div>';
-    return '<div class="d">' + id + t + '</div>';   /* docx：明朝のべた書き */
+    /* **升目は、どの出どころにも置く**（2026-09-11）。
+       指す印（脈を打つチェック）は `.c-ck` に付いていて、`.c-ck` は表にしか
+       無かった——**辿った先は五回に四回まで表の外**なので、
+       着いた行が薄紫になるだけで、**押すところが無い画面**になっていた。
+       ふだんは出さない（§「借りるのは作法だけ」）。出るのは指している一行だけ */
+    var ck = '<i class="c-ck"></i>';
+    if (c.src === 'mail')   return '<div class="m"><b>' + ck + un + id + SUBJ[c.n % 3] + '</b>' + t + '</div>';
+    if (c.src === 'chat')   return '<div class="c">' + ck + un + id + t + '</div>';
+    if (c.src === '議事録') return '<div class="g">' + ck + id + '・' + t.replace(/^・/, '') + '</div>';
+    if (c.src === 'pdf')    return '<div class="p">' + ck + id + t + '</div>';
+    return '<div class="d">' + ck + id + t + '</div>';   /* docx：明朝のべた書き */
   }
   function rowHTML(c){
     var i = c.n;
