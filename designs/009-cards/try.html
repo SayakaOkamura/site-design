@@ -844,16 +844,23 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
 .end .lead[hidden]{display:none}
 /* 着地。**決めるまでは面の中はこれ一行**（§打ち消しをやめて、理念で終える）*/
 .end h2{margin:0; font-size:clamp(20.5px,3vw,30px); font-weight:700; line-height:1.5}
-/* 理念。**面の外、いちばん最後。**会社が喋る場所なので面には入れない——
+/* ─ 理念。**面の外、いちばん最後。**会社が喋る場所なので面には入れない——
    入れると訪問者のやったことの見出しになる（§6）。
-   ただし**小さい一行ではもう足りない**（本人：「最後に出すのはそれであるべき」）*/
-.end .creed{margin:26px 2px 0; padding-top:22px;
-            border-top:1px solid rgba(37,31,69,.14)}
+   **大きくはしない**（2026-09-11、本人：「こんなにでかでかでなくてもいいかな。
+   もうちょっとスタイリッシュに書くかね」）——一度 21px・太字で置いたが、
+   **面のすぐ下にもう一つ見出しが立った**形になった。
+   それ以上に、**デモは最初から最後まで「前」の世界**で、遊ぶように働いている状態は
+   一度も画面に出ていない。**通していないものを大きく掲げると、そこが空く。**
+   通っているのは「やらされる」でなく「やりたい」の一点だけなので、
+   **奥付の作法で置く**——短い罫、小さい題、太らせない本文。読む人は読む */
+.end .creed{margin:24px 2px 0}
+.end .creed::before{content:''; display:block; width:34px; height:1px;
+                    background:rgba(37,31,69,.3); margin-bottom:17px}
 .end .creed p{margin:0}
-.end .cn{font-size:13px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
-.end .c1{margin-top:10px; font-size:clamp(17px,2.2vw,21px); font-weight:700;
-         line-height:1.7; color:var(--ink)}
-.end .c2{margin-top:9px; font-size:15px; line-height:1.9; color:var(--sub)}
+.end .cn{font-size:11.5px; font-weight:700; letter-spacing:.16em; color:var(--sub)}
+.end .c1{margin-top:9px; font-size:16.5px; font-weight:500; line-height:1.85;
+         letter-spacing:.02em; color:var(--ink)}
+.end .c2{margin-top:6px; font-size:13.5px; line-height:1.95; color:var(--sub)}
 /* 二つの手数を並べる。**同じ押すの重さが違う** */
 .end .cmp{display:block; margin-top:14px; padding-top:14px;
           border-top:1px solid rgba(255,255,255,.22); font-size:16px}
