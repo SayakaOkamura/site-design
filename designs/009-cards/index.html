@@ -469,6 +469,17 @@ body.locked{overflow:hidden}
 .lead{margin:0 0 14px; font-size:16px; line-height:1.9}
 .mail{margin:0; font-size:clamp(19.5px,2.8vw,25.5px); font-weight:700; letter-spacing:.01em}
 /* 帯の中では宛先が先。押す前に行き先が分かる */
+/* できた下書き（§できた下書きを画面に出す）。**紙の顔にする**——
+   これから送られる物そのものなので、面も影も持たせない */
+.draft{margin-top:20px}
+.draft[hidden]{display:none}
+.dr{margin-top:10px; padding:18px 20px; border-radius:8px;
+    background:var(--tint); font-size:15px; line-height:1.95}
+.dr p{display:flex; gap:14px; margin:0}
+.dr p + p{margin-top:10px; padding-top:10px; border-top:1px solid rgba(37,31,69,.1)}
+.dr i{font-style:normal; flex:none; width:44px; font-size:13px; color:var(--sub); padding-top:2px}
+.dr b{font-weight:700}
+.dr span{white-space:pre-line}
 .bk .mail{font-size:17.5px}
 .bk .mail + .q{margin-top:14px}
 .mail a{color:var(--go); text-decoration:none}
@@ -778,6 +789,24 @@ html.boot .mark{opacity:1}
               <li><button class="row" type="button" aria-pressed="false" data-val="地域格差の解消を目指したデジタル支援"><span>04</span><b>地域格差の解消を目指したデジタル支援</b></button></li>
               <li><button class="row" type="button" aria-pressed="false" data-val="まだ決まっていない"><b>まだ決まっていない</b></button></li>
             </ul>
+          </div>
+
+          <!-- ─ **できた下書きを画面に出す**（2026-09-11、外からの指摘）───────
+               「カードを押していくと、**書かずに用件ができている**」と決めてあるのに、
+               **できている姿がどこにも出ていなかった。**`mailto:` の中身はメーラーを
+               開くまで見えず、画面で変わるのは**ボタンのラベル一行だけ。**
+               体験の側（try）は**変換の前後が画面に並ぶ**（生の一行と、付いた題が対で出る）。
+               ここには**それが無かった。**押した手応えの行き先がほぼゼロだった。
+
+               あわせて**段が増える感じも消える**——押すと選択肢の段が増える形
+               （3 → 5）だったのが、**下書きが一行ずつ育つ**形になる。
+               体験は 69 → 12 → 1 で減るのに、ここだけ増えていた -->
+          <div class="draft" id="draft" hidden>
+            <p class="q">できた下書き</p>
+            <div class="dr">
+              <p><i>件名</i><b id="d-sub"></b></p>
+              <p><i>本文</i><span id="d-body"></span></p>
+            </div>
           </div>
 
           <!-- ここだけ外に出る。だから色が付いていて、何が起きるかを一行で書いてある。
@@ -1487,6 +1516,15 @@ html.boot .mark{opacity:1}
       /* **送る一枚は隠さない。**何も選んでいなければ、そのままメールが開くだけ。
          押す前に「押したら何が起きるか」が見えているほうがいい */
       sendto.href = mailto();
+      /* **押すたびに、下書きが育つ**（§できた下書きを画面に出す）*/
+      var d = draft(), box = document.getElementById('draft');
+      if (box){
+        box.hidden = !d;
+        if (d){
+          document.getElementById('d-sub').textContent  = d.sub;
+          document.getElementById('d-body').textContent = d.body;
+        }
+      }
       document.getElementById('sendlb').textContent =
         pick.kind ? 'この内容でメールを開く' : 'メールを開く';
       reach(ask);
@@ -1495,15 +1533,41 @@ html.boot .mark{opacity:1}
 
     /* 選んだものを件名と本文に入れる。**書かずに用件ができている。**
        何も選んでいなければ、ただの宛先（件名も本文も付けない） */
+    /* ─ 選んだものから、**一文を立てる**（2026-09-11、外からの指摘）──────────
+       前は**転記**だった——押した文字列がそのまま本文へ移るだけ
+       （「サービスに関するご相談」→「ご用件：サービスに関するご相談」）。
+       体験の核は**変換**（生の一行 → 書かれていない題）なのに、
+       ここは**同じ文字が場所を移るだけ**で、押した意味が「入力の代わり」に留まっていた。
+       いまは**選んだものから、書いていない一文が立つ。**
+       その一文はデモの言葉に繋がる（「いま決まっていないこと」「どこから手を付けるか」）——
+       §「理念とデモの接続は切ってある」の穴を、**用件の側から一行だけ繋ぐ。**
+
+       **「会社名とお名前をお書きください」は外した**（同じ指摘）——
+       書かずに済む組み立てをしておいて、**最後にいちばん固有な部分を書かせて**いた。
+       差出人はメールの From で分かる。**締めが「結局書くのか」で終わらない。** */
+    function line1(){
+      if (pick.kind !== 'サービスに関するご相談')
+        return pick.kind === '掲載のご依頼'
+          ? '掲載の可否と時期について、うかがいたい。'
+          : '上のどれにも当てはまらない用件です。';
+      if (!pick.svc || pick.svc === 'まだ決まっていない')
+        return 'どこから手を付けるか、相談したい。';
+      return 'いま決まっていないことを、相談したい。';
+    }
+    function draft(){
+      if (!pick.kind) return null;
+      var lines = ['ご用件：' + pick.kind];
+      if (pick.svc) lines.push('対象：' + pick.svc);
+      lines.push(line1());
+      return { sub: pick.kind, body: lines.join('\n') };
+    }
     function mailto(){
       var to = 'mailto:contact@alt-dsgn.co.jp';
       if (!pick.kind) return to;
 
-      var lines = ['ご用件：' + pick.kind];
-      if (pick.svc) lines.push('対象のサービス：' + pick.svc);
-      lines.push('', '（差し支えなければ、会社名とお名前をお書きください）');
-      return to + '?subject=' + encodeURIComponent(pick.kind)
-                + '&body='    + encodeURIComponent(lines.join('\n'));
+      var d = draft();
+      return to + '?subject=' + encodeURIComponent(d.sub)
+                + '&body='    + encodeURIComponent(d.body);
     }
   }
 
