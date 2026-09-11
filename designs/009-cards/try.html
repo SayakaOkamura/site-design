@@ -120,14 +120,14 @@ body{
   flex:none; text-decoration:none;
   padding:9px 15px; border-radius:7px;
   background:var(--card); color:var(--ink); box-shadow:var(--lift1);
-  font-size:12.5px; font-weight:700; white-space:nowrap;
+  font-size:14.5px; font-weight:700; white-space:nowrap;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 .back:hover{transform:translateY(-2px); box-shadow:var(--lift2); color:var(--go)}
 .back:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .back:focus-visible{outline:2px solid var(--go); outline-offset:3px}
 .back i{font-style:normal; margin-right:7px; color:var(--sub)}
-.mark{font-size:13.5px; font-weight:700; letter-spacing:.02em; min-width:0;
+.mark{font-size:15.5px; font-weight:700; letter-spacing:.02em; min-width:0;
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 
 /* ─ ② **課題管理表そのもの**（2026-09-10）────────────────────────
@@ -169,7 +169,7 @@ body{
 }
 .tb{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-  font-family:var(--mono); font-size:12.5px; line-height:1;
+  font-family:var(--mono); font-size:14.5px; line-height:1;
   padding:9px 14px; border-radius:6px 6px 0 0;
   background:rgba(255,255,255,.5); color:var(--sub);
   transition:background-color .14s ease, color .14s ease;
@@ -188,14 +188,14 @@ body{
 /* ─ 出どころごとの形。**借りるのは作法だけ**——メールは件名が上に付く、
    議事録は中点で始まる、表はセルに番地が付く。**意匠は借りない**
    （表計算の緑やメールの青は使わない）*/
-.pile .m{font-family:var(--sans); font-size:13.5px; line-height:1.75;
+.pile .m{font-family:var(--sans); font-size:15.5px; line-height:1.75;
          border-left:2px solid #cdd8ea; padding-left:10px}
-.pile .m b{display:block; font-size:12px; font-weight:700; color:var(--sub); letter-spacing:.02em}
-.pile .c{font-family:var(--sans); font-size:13px; line-height:1.65;
+.pile .m b{display:block; font-size:14px; font-weight:700; color:var(--sub); letter-spacing:.02em}
+.pile .c{font-family:var(--sans); font-size:15px; line-height:1.65;
          margin-left:20px; color:rgba(37,31,69,.75)}
-.pile .g{font-family:var(--sans); font-size:13.5px; line-height:1.75}
-.pile .d{font-family:var(--mincho); font-size:15px; line-height:1.85}
-.pile .p{font-family:var(--mincho); font-size:13px; line-height:1.7;
+.pile .g{font-family:var(--sans); font-size:15.5px; line-height:1.75}
+.pile .d{font-family:var(--mincho); font-size:17.5px; line-height:1.85}
+.pile .p{font-family:var(--mincho); font-size:15px; line-height:1.7;
          border:1px solid #d5deec; padding:4px 9px; border-radius:2px}
 
 /* ─ **表が細い**（本人 2026-09-10）─────────────────────────────
@@ -210,9 +210,9 @@ body{
    **備考の列は戻さない**——「チャット参照」が表に書いてあるのが
    そもそもおかしい、が指摘の中身だった（タブに分けた時点で参照先は別の場所）。 */
 .sheet{
-  --cols:34px 48px 88px 64px minmax(0,1fr) 74px 80px 64px;
+  --cols:38px 54px 102px 72px minmax(0,1fr) 84px 92px 72px;   /* 字を 1.15 倍にしたので列も広げた（起票日が「2019/04…」で切れていた）*/
   --rule:#ccd6e6;                    /* 升目の線。**紙の罫より少し濃い** */
-  font-family:var(--mono); font-size:12.5px; line-height:1.5;
+  font-family:var(--mono); font-size:14.5px; line-height:1.5;
 }
 /* **overflow は触らない。**囲んだ箱に overflow:hidden を付けたら、
    その箱が巻き取る場所になって、**貼りつく見出しが箱の上 60px に居座り、
@@ -224,7 +224,7 @@ body{
   position:sticky; top:var(--stick2,182px); z-index:2;
   display:grid; grid-template-columns:var(--cols);
   gap:0; padding:0; background:#dbe4f2; border-bottom:1px solid var(--rule);
-  font-size:11.5px; font-weight:700; color:var(--sub); letter-spacing:.02em;
+  font-size:13px; font-weight:700; color:var(--sub); letter-spacing:.02em;
 }
 .sheet .hd > span{
   padding:6px 8px; border-right:1px solid var(--rule);
@@ -295,7 +295,7 @@ body{
 /* 指している行だけ、指の形にする */
 .pile li.aim,.pile li.pick{cursor:pointer}
 /* 番号。**どの出どころにも出す**——辿る先を番号で呼ぶので、無いと探せない */
-.pile .rid{font-style:normal; font-family:var(--mono); font-size:11.5px;
+.pile .rid{font-style:normal; font-family:var(--mono); font-size:13px;
            color:#8b97b8; margin-right:9px; letter-spacing:0}
 
 /* ─ まとまる動き（②→③のあいだ）── **③の実物へ着地させる**（2026-09-10）───
@@ -317,7 +317,7 @@ body{
 .flylayer{position:fixed; inset:0; z-index:6; pointer-events:none}
 .fc{
   white-space:nowrap; overflow:hidden;
-  font-family:var(--mono); font-size:12px; line-height:1.6;
+  font-family:var(--mono); font-size:14px; line-height:1.6;
   color:rgba(37,31,69,.82); padding:4px 3px;
   /* **着くまで消えない**（2026-09-11）。前は 340〜760ms で薄くなっていて、
      到着（800ms）の前に消えていた——**行は宙で消え、着地は見えない。**
@@ -388,13 +388,13 @@ body.landing .gsq{opacity:0}
 
 
 /* 問い。**答えさせない。**見て「無理」と分かった時点で先へ行ける */
-.ask{margin:0 0 18px; font-size:15px; font-weight:700; line-height:1.8}
-.ask .sub{display:block; min-height:1.8em; font-size:13.5px; font-weight:500; color:var(--sub)}
+.ask{margin:0 0 18px; font-size:17.5px; font-weight:700; line-height:1.8}
+.ask .sub{display:block; min-height:1.8em; font-size:15.5px; font-weight:500; color:var(--sub)}
 /* ─ **何をしている画面か**（本人 2026-09-10：「何してる画面かがわからない」）。
    題は「ある会社の、課題まわりです」だけで、**タブが何か・押していいのか**を
    どこにも書いていなかった。**表のすぐ上、左端**——チェック欄の真上に置く。 */
 .how{
-  flex:1 0 100%; margin:0; font-size:13px; line-height:1.75; color:var(--sub);
+  flex:1 0 100%; margin:0; font-size:15px; line-height:1.75; color:var(--sub);
   font-family:var(--sans);
   /* **場所は最初から取っておく**（2026-09-11）——#go-c と同じ理由。
      この一行は**一行 → 一行＋ボタン → 二行**と背が変わる。`.ask2` は
@@ -404,7 +404,7 @@ body.landing .gsq{opacity:0}
      狙った行の**一つ下**を押した（画面で数えた）。押し間違えても何も出ない——
      別の鎖が黙って始まるので、**間違えたことに気づけない。**
      二行ぶん取っておけば、どの文が出ても山は動かない */
-  min-height:58px;
+  min-height:67px;
 }
 .how b{color:var(--go); font-weight:700}
 /* 押した行の言葉。**答えの中に置く**——読ませようとせず、読む場所に置く */
@@ -418,14 +418,14 @@ body.landing .gsq{opacity:0}
 }
 .how .pl.now{border-left-color:var(--go); color:var(--ink)}
 .how .pl i{
-  font-style:normal; font-family:var(--mono); font-size:11.5px;
+  font-style:normal; font-family:var(--mono); font-size:13px;
   color:#8b97b8; margin-right:12px;
 }
 .how .pl.now i{color:var(--go)}
 /* 起票のもと。**課題ではなく、入ってきたもの**——押す先ではないので、面も影も持たない */
 .how .src{display:block; margin-top:8px; padding-left:12px;
           border-left:2px solid #cdd8ea; color:var(--sub); line-height:1.75}
-.how .src i{font-style:normal; font-family:var(--mono); font-size:11.5px;
+.how .src i{font-style:normal; font-family:var(--mono); font-size:13px;
             color:#8b97b8; margin-right:12px}
 /* **タブは外した**（2026-09-11）。出どころが対等に六枚並んでいたのは、
    六つとも押す対象だったころの形。いまは課題だけが押せる */
@@ -436,7 +436,7 @@ body.landing .gsq{opacity:0}
 .how .jump{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   margin-left:10px; padding:5px 12px; border-radius:6px;
-  background:var(--go); color:#fff; font-size:12.5px; font-weight:700;
+  background:var(--go); color:#fff; font-size:14.5px; font-weight:700;
   box-shadow:var(--lift1); transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 .how .jump:hover{transform:translateY(-1px); box-shadow:var(--lift2)}
@@ -477,7 +477,7 @@ body.landing .gsq{opacity:0}
    注記が一行入っただけで問いが広がり、**一手が次の行へ落ちた**——そこから下が
    まるごと 76px 下がって、②の「片付ける」が動いた（2026-09-09、560px で数えた）。
    蓋をすれば折り返しは起きない。広い窓では中身のほうが短いので見た目は変わらない */
-.ask2 .ask{margin:0; max-width:calc(100% - 200px)}
+.ask2 .ask{margin:0; max-width:calc(100% - 230px)}
 .ask2 .one{margin-top:0; flex:none}
 /* ─ **行き先は、壁に当たってから出す。**
    本人 2026-09-08：「同じのまとめるってもう見えてるしなあ」。
@@ -495,7 +495,7 @@ body.landing .gsq{opacity:0}
 .one{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
   margin-top:26px; padding:15px 26px; border-radius:8px;
-  background:var(--go); color:#fff; font-size:14px; font-weight:700;
+  background:var(--go); color:#fff; font-size:16px; font-weight:700;
   box-shadow:var(--lift1); transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 .one:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
@@ -528,7 +528,7 @@ body[data-stage="c"] .one:focus-visible{outline-color:var(--ink)}
      はみ出したら、まとめた意味が見えない。頭も一行も詰めた */
   margin:0 0 14px; padding:11px 0 12px; background:var(--bg);
 }
-.bar h1{margin:0; font-size:clamp(15px,2vw,19px); font-weight:700; line-height:1.5}
+.bar h1{margin:0; font-size:clamp(17.5px,2.3vw,22px); font-weight:700; line-height:1.5}
 .bar .one{margin-top:0; flex:none; margin-left:auto}
 
 /* 群。**器は面を持たない。**面を持つのは題だけ——
@@ -554,7 +554,7 @@ body[data-stage="c"] .wrap{padding-top:20px}
      12 件の下端が 780px になり、**見える高さが 780 未満の窓では最後の一件が切れる。**
      この案の要は「12 件が一画面に収まった」なので、そこが切れると要が消える。
      広い窓では 8px のまま（＝いままでと同じ見た目）、狭い窓でだけ詰まる */
-  padding:clamp(3px, calc((100vh - 596px) / 24), 8px) 16px; border-radius:7px;
+  padding:clamp(3px, calc((100vh - 630px) / 24), 8px) 16px; border-radius:7px;
   background:var(--card); color:var(--ink); box-shadow:var(--lift1);
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
@@ -576,11 +576,11 @@ body[data-stage="c"] .wrap{padding-top:20px}
    **捨てたもの：**.gdo「片付ける」、clearGroup、.gset.out／.gset.shut、
    leftG／cleared／firstCleared、.two-col.empty。 */
 .gt{
-font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
+font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 /* 行数。**点数ではない**——材料の量。この題が何行ぶんか */
-.gn{font-family:var(--mono); font-size:12.5px; color:var(--sub); white-space:nowrap;
-    flex:none; width:106px; text-align:right}   /* **min-width では駄目。**中身が超えると広がって、名前の段と 2px ずれた */
+.gn{font-family:var(--mono); font-size:14.5px; color:var(--sub); white-space:nowrap;
+    flex:none; width:122px; text-align:right}   /* **min-width では駄目。**中身が超えると広がって、名前の段と 2px ずれた */
 /* ─ 内訳の四角。**②のタブと同じ並び**——塗ってあるところに、この件の行がある。
    **色は足さない**（§捨てた --crt-*）。濃さだけで「ある／ない」*/
 /* **題が余白を全部取る。**auto の余白を二つ置くと分け合って、
@@ -598,7 +598,7 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
 /* ─ 名前の段。**札と同じ骨格**（.gitem）で作って、面と影だけ外す。
    見えない題・行数・「片付ける」が、そのまま列の位置を決める */
 .gsq .sn{
-  font-style:normal; font-size:11px; line-height:1.2; color:var(--sub);
+  font-style:normal; font-size:12.5px; line-height:1.2; color:var(--sub);
   white-space:nowrap; letter-spacing:.01em;
 }
 .ghd{
@@ -620,24 +620,24 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
    **同じ材料が、こちらでは 70 行、③では 1 行。** */
 .rep{margin:18px 0 0; background:var(--card); border-radius:var(--r);
      box-shadow:var(--lift1); padding:30px 34px}
-.rep h2{margin:0; font-family:var(--mincho); font-size:17px; font-weight:700; line-height:1.6}
-.rep .repsub{margin:9px 0 0; font-family:var(--mono); font-size:11.5px; color:var(--sub)}
+.rep h2{margin:0; font-family:var(--mincho); font-size:19.5px; font-weight:700; line-height:1.6}
+.rep .repsub{margin:9px 0 0; font-family:var(--mono); font-size:13px; color:var(--sub)}
 .reps{list-style:none; margin:20px 0 0; padding:0;
-      font-family:var(--mincho); font-size:13.5px; line-height:1.9}
+      font-family:var(--mincho); font-size:15.5px; line-height:1.9}
 .reps li{display:flex; gap:14px; padding:5px 0; border-top:1px solid rgba(37,31,69,.07)}
-.reps i{font-style:normal; font-family:var(--mono); font-size:11.5px; color:#8b97b8;
-        flex:none; width:84px; padding-top:3px}
-.reps b{font-weight:400; color:var(--sub); font-size:12px; flex:none; width:66px; padding-top:2px}
+.reps i{font-style:normal; font-family:var(--mono); font-size:13px; color:#8b97b8;
+        flex:none; width:97px; padding-top:3px}
+.reps b{font-weight:400; color:var(--sub); font-size:14px; flex:none; width:76px; padding-top:2px}
 .reps span{min-width:0}
 /* 章。**報告書の顔**——これがあるだけで「誰かが作った」になる */
-.rep .reph{margin:26px 0 10px; font-family:var(--mincho); font-size:14px;
+.rep .reph{margin:26px 0 10px; font-family:var(--mincho); font-size:16px;
            font-weight:700; color:var(--ink)}
 /* 結論。**七十三項目の末尾に、一行。**囲みも色も付けない——
    目立たせると「ここが答えです」になって、探した苦労が消える */
-.rep .repc{margin:10px 0 0; font-family:var(--mincho); font-size:14px;
+.rep .repc{margin:10px 0 0; font-family:var(--mincho); font-size:16px;
            line-height:2; color:var(--ink)}
-.rep .repc span{display:block; font-size:12.5px; color:var(--sub)}
-.rep .repend{margin:26px 0 0; padding-top:16px; font-size:13px; color:var(--sub);
+.rep .repc span{display:block; font-size:14.5px; color:var(--sub)}
+.rep .repend{margin:26px 0 0; padding-top:16px; font-size:15px; color:var(--sub);
              border-top:1px solid rgba(37,31,69,.12)}
 .rep .repend b{color:var(--ink)}
 @media (max-width:700px){
@@ -652,8 +652,8 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
    AI もローコードも名指ししない——**見抜いたのは機械、決めたのは人、追いついたのは自動。**
    **一度だけ。**残りは盤面に置いたまま送る（§「全部は片付けさせない」）*/
 .sdec{margin:16px 0 0; padding-top:14px; border-top:1px solid rgba(37,31,69,.12);
-      font-size:13px; line-height:1.8; color:var(--sub)}
-.sdec b{display:block; color:var(--ink); font-size:13.5px; margin-bottom:4px}
+      font-size:15px; line-height:1.8; color:var(--sub)}
+.sdec b{display:block; color:var(--ink); font-size:15.5px; margin-bottom:4px}
 .pks{display:flex; flex-direction:column; gap:8px; margin-top:10px}
 .pk{-webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
     text-align:left; padding:10px 14px; border-radius:7px;
@@ -662,10 +662,10 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
 .pk:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .pk:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .pk:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
-.pk b{display:block; color:#fff; font-size:13.5px; font-weight:700; margin:0}
-.pk span{display:block; font-size:12px; color:rgba(255,255,255,.8); margin-top:3px}
+.pk b{display:block; color:#fff; font-size:15.5px; font-weight:700; margin:0}
+.pk span{display:block; font-size:14px; color:rgba(255,255,255,.8); margin-top:3px}
 /* 決めたあと。**数は二つだけ並べる**——同じ押すの重さが違う */
-.scmp{margin:16px 0 0; font-size:13px; line-height:2; color:var(--sub)}
+.scmp{margin:16px 0 0; font-size:15px; line-height:2; color:var(--sub)}
 .scmp b{color:var(--ink); font-weight:700}
 /* 決まった件。**抜かない。**12 の並びは崩さず、済の印だけ付ける */
 .gset.done .gitem{opacity:.5; box-shadow:var(--lift0); cursor:default}
@@ -683,16 +683,16 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
    **§「開いた中身は行の直下に」（三度外した）には触っている。**
    あれは**並びが動く一覧**での話で、③は 12 件が固定。条件が違うので右に出した。
    狭い窓では下へ回るので、そのときは押した先へ送る。 */
-.two-col{display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:26px; align-items:start}
+.two-col{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:26px; align-items:start}
 .side{position:sticky; top:76px}
 .sidein{
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
   padding:20px 22px 22px;
 }
-.sempty{margin:0; font-size:13.5px; line-height:1.9; color:var(--sub)}
+.sempty{margin:0; font-size:15.5px; line-height:1.9; color:var(--sub)}
 .sempty b{color:var(--ink)}
-.sh{margin:0; font-size:16.5px; font-weight:700; line-height:1.5}
-.sn2{margin:4px 0 10px; font-family:var(--mono); font-size:12.5px; color:var(--sub)}
+.sh{margin:0; font-size:19px; font-weight:700; line-height:1.5}
+.sn2{margin:4px 0 10px; font-family:var(--mono); font-size:14.5px; color:var(--sub)}
 /* 選ばれている札。**面を持ち上げない**——右と繋がっているので動かさない */
 .gset.on .gitem{background:rgba(99,84,224,.09); box-shadow:var(--lift2)}
 .gset.on .gitem:hover{transform:none}
@@ -702,21 +702,21 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
   padding:9px 0; border-top:1px solid rgba(37,31,69,.08);
 }
 /* 出どころ。**②のタブと同じ言葉** */
-.gs{font-family:var(--mono); font-size:12px; color:var(--sub); padding-top:3px}
+.gs{font-family:var(--mono); font-size:14px; color:var(--sub); padding-top:3px}
 .gx{min-width:0}
 /* 生の一行。**そのまま**——直していない、が分かるように等幅で薄く */
-.gq{display:block; font-family:var(--mono); font-size:12.5px; line-height:1.7;
+.gq{display:block; font-family:var(--mono); font-size:14.5px; line-height:1.7;
     color:rgba(37,31,69,.72)}
 /* 読み解き。**書かれていないものが書いてある**（AI の仕事）*/
-.gp{display:block; margin-top:4px; font-size:13.5px; line-height:1.7; color:var(--ink)}
+.gp{display:block; margin-top:4px; font-size:15.5px; line-height:1.7; color:var(--ink)}
 .gp::before{content:'→ '; color:var(--go); font-weight:700}
-.gmore{margin:12px 0 0; font-size:12.5px; color:var(--sub)}
+.gmore{margin:12px 0 0; font-size:14.5px; color:var(--sub)}
 /* 見出しの下の一行。**数字は一度だけ**——一件ごとの内訳を読ませると表に戻る */
-.csub{margin:-6px 0 16px; font-size:13.5px; line-height:1.85; color:var(--sub)}
+.csub{margin:-6px 0 16px; font-size:15.5px; line-height:1.85; color:var(--sub)}
 .csub b{color:var(--ink)}
 /* ③が出す問い。**12 件はその選択肢** */
-.csub .q{display:inline-block; margin-right:9px; font-size:14.5px; color:var(--ink)}
-.csub .lg{display:block; font-size:12.5px; color:var(--sub); opacity:1}
+.csub .q{display:inline-block; margin-right:9px; font-size:16.5px; color:var(--ink)}
+.csub .lg{display:block; font-size:14.5px; color:var(--sub); opacity:1}
 .csub .lg b{color:var(--sub); font-weight:700}
 
 
@@ -728,15 +728,15 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
   padding:40px 34px; animation:rise .6s var(--ease) both;
 }
 /* **打ち消し → 着地**の順。大きいのは着地（2026-09-11）*/
-.end .lead{margin:0 0 13px; font-size:14.5px; line-height:1.9; color:rgba(255,255,255,.82)}
-.end h2{margin:0; font-size:clamp(18px,2.6vw,26px); font-weight:700; line-height:1.5}
+.end .lead{margin:0 0 13px; font-size:16.5px; line-height:1.9; color:rgba(255,255,255,.82)}
+.end h2{margin:0; font-size:clamp(20.5px,3vw,30px); font-weight:700; line-height:1.5}
 /* 理念。**面の外・小さく一行**——ここで一番大きいものではない */
-.end .creed{margin:16px 2px 0; font-size:12.5px; line-height:1.9; color:var(--sub)}
-.end .creed i{font-style:normal; font-weight:700; font-size:11.5px;
+.end .creed{margin:16px 2px 0; font-size:14.5px; line-height:1.9; color:var(--sub)}
+.end .creed i{font-style:normal; font-weight:700; font-size:13px;
               letter-spacing:.04em; margin-right:12px}
 /* 二つの手数を並べる。**同じ押すの重さが違う** */
 .end .cmp{display:block; margin-top:14px; padding-top:14px;
-          border-top:1px solid rgba(255,255,255,.22); font-size:14px}
+          border-top:1px solid rgba(255,255,255,.22); font-size:16px}
 .end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
 /* 外へ出る一手だけ、色を持つ（§「紫は進む・飛ぶの印」）*/
 .end .go1{background:var(--go); color:#fff}
@@ -744,7 +744,7 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
 
 .foot{flex:none; background:var(--frame)}
 .foot .in{padding:22px 24px 26px}
-.note{margin:0; font-size:12.5px; line-height:1.9; color:var(--sub)}
+.note{margin:0; font-size:14.5px; line-height:1.9; color:var(--sub)}
 [data-stage] .st{display:none}
 body[data-stage="b"] .st-b,
 body[data-stage="c"] .st-c{display:block}
@@ -764,7 +764,7 @@ body[data-stage="c"] .st-c{display:block}
 @media (max-width:820px){ .gsq{display:none} .gn{width:auto} .ghd{display:none} }
 /* 狭い窓では、足した二列を畳む。**升目が潰れると「多い」より「読めない」になる** */
 @media (max-width:860px){
-  .sheet{--cols:32px 44px minmax(0,1fr) 70px 76px 58px}
+  .sheet{--cols:36px 50px minmax(0,1fr) 80px 88px 66px}
   .sheet .hd > span:nth-child(3), .sheet .hd > span:nth-child(4),
   .pile .c-up, .pile .c-kd{display:none}
 }
@@ -1947,7 +1947,7 @@ body[data-stage="c"] .st-c{display:block}
       return '<p class="scmp"><b>残りも、同じ一手です。</b></p>';
     if (!g.d) return '';
     return '<div class="sdec"><b>' + esc(g.u) + '</b>'
-      + 'どちらでも進みます。<b style="display:inline;font-size:13px">決めないと進みません。</b>'
+      + 'どちらでも進みます。<b style="display:inline;font-size:15px">決めないと進みません。</b>'
       + '<div class="pks">'
       + g.d.map(function(a, ai){
           return '<button class="pk" data-k="' + k + '" data-a="' + ai + '">'

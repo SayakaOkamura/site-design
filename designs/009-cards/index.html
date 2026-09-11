@@ -113,18 +113,18 @@ body.locked{overflow:hidden}
    opacity は飛んできた社名と入れ替わる一瞬なので、遷移させない */
 /* inline-block と行間の指定は**起動画面のため。**飛んでくる社名（#boot .nm）と
    箱の形を揃えておかないと、着地で 15px 跳ねる（素の span は行間ぶんの余白を持たない）*/
-.mark{display:inline-block; font-size:13.5px; font-weight:700; letter-spacing:.02em;
+.mark{display:inline-block; font-size:15.5px; font-weight:700; letter-spacing:.02em;
       line-height:1.35; color:var(--ink); transition:color .46s ease}
 
 .foot .in{padding:30px 24px 34px}
-.foot p{margin:0; font-size:12.5px; color:var(--sub); line-height:1.9}
-.foot .fn{font-size:13px; font-weight:700; color:var(--ink)}
+.foot p{margin:0; font-size:14.5px; color:var(--sub); line-height:1.9}
+.foot .fn{font-size:15px; font-weight:700; color:var(--ink)}
 .foot .fa{margin-top:7px}
 /* プライバシーポリシーは**先方が公式サイトで出しているもの**（BlueMeme の頁）*/
-.foot .fp{margin-top:22px; font-size:12.5px}
+.foot .fp{margin-top:22px; font-size:14.5px}
 .foot .fp a{color:var(--sub)}
-.foot .fc{margin-top:7px; font-size:12.5px}
-.foot .fw{margin-top:9px; font-size:12.5px}
+.foot .fc{margin-top:7px; font-size:14.5px}
+.foot .fw{margin-top:9px; font-size:14.5px}
 
 /* ─ 大きいカード。これだけ読めば何の会社か分かる ───────────
    **でかいのに最初に目がいかなかった**（本人 2026-09-07）。
@@ -147,10 +147,10 @@ body.locked{overflow:hidden}
 }
 /* 34px にすると、帯が出ているあいだ（柱が細くなる）社名が二行に割れる。
    **濃さで目を引くので、大きさは元のまま**で足りる */
-.head h1{margin:0; font-size:clamp(21px,3.4vw,31px); font-weight:700; letter-spacing:.01em; line-height:1.35}
+.head h1{margin:0; font-size:clamp(24px,3.9vw,35.5px); font-weight:700; letter-spacing:.01em; line-height:1.35}
 /* 二行目は公式の副文。**一行目より小さく**（並べると同じ重さに見える）*/
 .head .sub2{display:inline-block; margin-top:8px; font-size:.84em; color:rgba(255,255,255,.62)}
-.head p{margin:20px 0 0; font-size:clamp(13px,1.7vw,16px); font-weight:500;
+.head p{margin:20px 0 0; font-size:clamp(15px,2vw,18.5px); font-weight:500;
         color:rgba(255,255,255,.78); line-height:1.7}
 
 /* ─ 押せるカード ───────────────────────────────────────── */
@@ -170,8 +170,8 @@ body.locked{overflow:hidden}
   display:flex; flex-direction:column;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
-.card .t{font-size:clamp(15px,1.8vw,17px); font-weight:700; line-height:1.4}
-.card .s{margin-top:auto; padding-top:14px; font-size:13px; font-weight:500; color:var(--sub); line-height:1.6}
+.card .t{font-size:clamp(17.5px,2.1vw,19.5px); font-weight:700; line-height:1.4}
+.card .s{margin-top:auto; padding-top:14px; font-size:15px; font-weight:500; color:var(--sub); line-height:1.6}
 
 /* 手触りは物理から出す。点数も演出も足さない */
 .card:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
@@ -192,7 +192,7 @@ body.locked{overflow:hidden}
 .card.go{background:var(--go); color:#fff; position:relative}
 .card.go .s{color:rgba(255,255,255,.75); padding-right:34px}
 .card.go .arw{position:absolute; right:22px; bottom:24px;
-              font-size:16px; line-height:1; color:rgba(255,255,255,.85)}
+              font-size:18.5px; line-height:1; color:rgba(255,255,255,.85)}
 .card.go:focus-visible{outline-color:var(--ink)}
 
 /* ─ 裏表。**浮いて、大きくなって、裏を向く**（2026-09-10）──────────────
@@ -258,7 +258,7 @@ body.locked{overflow:hidden}
    おおきくするかラインとかで分けるかして」）。**罫は引かない**——
    会社概要で「灰色の板をやめた。分けるのは空きでやる」と決めてあるので、
    同じ議論に戻さない。**題を大きくして、下に空きを取る**（`.bar` の詰め 28/18px）*/
-.bar h2{margin:0; font-size:21px; font-weight:700; line-height:1.4}
+.bar h2{margin:0; font-size:24px; font-weight:700; line-height:1.4}
 .body{padding:0 26px 26px}
 
 /* ─ 中身。押せないものは影を落とさない（影＝押せる、のルール）─ */
@@ -267,31 +267,31 @@ body.locked{overflow:hidden}
    （項目のあいだと、項目名と中身のあいだが、どちらも 2px だった）。
    分けるのは空きでやる：中身のすぐ上に項目名、項目のあいだは広く空ける。 */
 .facts{margin:0}
-.facts dt{margin:19px 0 0; font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--sub); line-height:1.5}
+.facts dt{margin:19px 0 0; font-size:14px; font-weight:700; letter-spacing:.04em; color:var(--sub); line-height:1.5}
 .facts dt:first-child{margin-top:0}
-.facts dd{margin:3px 0 0; font-size:13.5px; line-height:1.8}
+.facts dd{margin:3px 0 0; font-size:15.5px; line-height:1.8}
 
 /* ─ 企業理念。**会社が一番長く自分の言葉で書いているところ。**
    だから帯の中では、まず一行を大きく出して、その下に地の文を続ける */
-.mind{margin:0 0 18px; font-size:clamp(15px,1.9vw,18px); font-weight:700; line-height:1.7}
-.bk .body > p{margin:12px 0 0; font-size:13px; line-height:2}
+.mind{margin:0 0 18px; font-size:clamp(17.5px,2.2vw,20.5px); font-weight:700; line-height:1.7}
+.bk .body > p{margin:12px 0 0; font-size:15px; line-height:2}
 .bk .body > p.mind{margin-top:0}
 
 /* 小見出し。**本物と仮を分ける**ためだけのもの */
-.lb2{margin:18px 0 7px; font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
+.lb2{margin:18px 0 7px; font-size:14px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
 .lb2:first-child{margin-top:0}
 
 /* アクセス。駅・分・路線の三段。**読むより探す**ので、駅名を先に太く */
 .walk{list-style:none; margin:14px 0 0; padding:0; display:grid; gap:7px}
-.walk li{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:13.5px; line-height:1.65}
+.walk li{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; font-size:15.5px; line-height:1.65}
 .walk b{font-weight:700}
-.walk span{font-family:var(--mono); font-size:12.5px; color:var(--sub)}
-.walk i{font-style:normal; font-size:12px; color:#7b84a4}
+.walk span{font-family:var(--mono); font-size:14.5px; color:var(--sub)}
+.walk i{font-style:normal; font-size:14px; color:#7b84a4}
 
 /* ─ 所在 ────────────────────────────────────────────────────
    **地図が主役で、住所はその見出し。**会社概要の一行だったときと逆にしてある
    （読むものではなく、行くもの）。 */
-.addr{margin:0; font-size:14.5px; font-weight:700; line-height:1.85}
+.addr{margin:0; font-size:16.5px; font-weight:700; line-height:1.85}
 /* 地図は面として置く。**枠線は引かない**（009 は面と影だけ）。
    **中身は公式サイトと同じ Google の埋め込み**（2026-09-09）。
    窓の形だけこちらが決めて、`iframe` を面いっぱいに敷く。
@@ -304,7 +304,7 @@ body.locked{overflow:hidden}
 /* **`iframe` は行内要素なので、下に隙間ができる。**`block` にして消す。
    枠線は先方の既定で付くので 0 にする（009 は線を引かない）*/
 .map iframe{display:block; width:100%; height:100%; border:0}
-.cred{margin:9px 0 0; font-size:12px; color:var(--sub); line-height:1.65}
+.cred{margin:9px 0 0; font-size:14px; color:var(--sub); line-height:1.65}
 .cred a{color:var(--sub)}
 
 /* 外へ出る一手。**カードの「デモを触る」と同じ作法**（右に →、色で分ける）。
@@ -313,16 +313,16 @@ body.locked{overflow:hidden}
   display:flex; align-items:center; justify-content:space-between;
   margin-top:16px; padding:14px 18px; border-radius:8px;
   background:var(--card); box-shadow:var(--lift1);
-  color:var(--go); font-size:13px; font-weight:700; text-decoration:none;
+  color:var(--go); font-size:15px; font-weight:700; text-decoration:none;
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
 .out:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .out:focus-visible{outline:2px solid var(--go); outline-offset:3px}
-.out .arw{font-size:15px; line-height:1; color:rgba(99,84,224,.7)}
+.out .arw{font-size:17.5px; line-height:1; color:rgba(99,84,224,.7)}
 
 /* 中身が決まっていない段。空の箱に見せず、決まっていないことをそう書く */
 .todo{margin:0; background:var(--tint); border-radius:8px; padding:14px 18px;
-      font-size:13px; color:var(--sub); line-height:1.9}
+      font-size:15px; color:var(--sub); line-height:1.9}
 .todo b{color:var(--ink)}
 
 /* 行の一覧。**一件が一行。ここでは開かない。**
@@ -355,7 +355,7 @@ body.locked{overflow:hidden}
 /* ─ 問いの見出しと段（お問い合わせ）─────────────────────────
    組み立て方は体験と同じ。**カードを押していくと、書かずに中身ができる。**
    押しただけでは飛ばない（飛ぶのは緑の一枚だけ）。 */
-.q{margin:18px 0 0; font-size:12.5px; font-weight:700; letter-spacing:.04em;
+.q{margin:18px 0 0; font-size:14.5px; font-weight:700; letter-spacing:.04em;
    color:var(--sub); line-height:1.5}
 .q + .rows{margin-top:9px}
 .step[hidden]{display:none}
@@ -371,14 +371,14 @@ body.locked{overflow:hidden}
    **事例が乗るのはここ**——段をもう一つ足すだけで入る。 */
 .det{margin-top:10px}
 .det[hidden]{display:none}
-.det .lead{margin:0; font-size:13px; line-height:1.9; color:var(--sub)}
+.det .lead{margin:0; font-size:15px; line-height:1.9; color:var(--sub)}
 /* **説明だけ。**段（進め方・出てくるもの）は落とした
    （本人 2026-09-07：「進め方とか出てくるものとか別に要らないよ。説明だけでいい」）。
    公式の一行のすぐ下に、こちらが書いた説明が一段だけ続く */
-.det p{margin:12px 0 0; font-size:13.5px; line-height:1.9}
-.rows span{flex:none; font-size:13px; font-weight:600; color:var(--sub);
+.det p{margin:12px 0 0; font-size:15.5px; line-height:1.9}
+.rows span{flex:none; font-size:15px; font-weight:600; color:var(--sub);
            font-variant-numeric:tabular-nums; letter-spacing:.02em}
-.rows b{font-size:13.5px; font-weight:700; line-height:1.6}
+.rows b{font-size:15.5px; font-weight:700; line-height:1.6}
 @media (max-width:520px){
   .rows a{display:block}
   .rows span{display:block; margin-bottom:6px}
@@ -388,10 +388,10 @@ body.locked{overflow:hidden}
 .q + .todo{margin-top:8px}       /* 見出しの下に断りを置くとき＝**選ぶ前に読む** */
 .todo + .rows{margin-top:10px}
 
-.lead{margin:0 0 14px; font-size:14px; line-height:1.9}
-.mail{margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:700; letter-spacing:.01em}
+.lead{margin:0 0 14px; font-size:16px; line-height:1.9}
+.mail{margin:0; font-size:clamp(19.5px,2.8vw,25.5px); font-weight:700; letter-spacing:.01em}
 /* 帯の中では宛先が先。押す前に行き先が分かる */
-.bk .mail{font-size:15px}
+.bk .mail{font-size:17.5px}
 .bk .mail + .q{margin-top:14px}
 .mail a{color:var(--go); text-decoration:none}
 .mail a:hover{text-decoration:underline}
@@ -463,7 +463,7 @@ html.boot,html.boot body{overflow:hidden}   /* 送りは html 側で起きる。
    列は JS が入れる（狭い窓では一列）。隣の列とは何の関係もない——山が並んでいるだけ */
 #boot .roll{
   position:absolute; left:0; right:0; top:0; padding:0 24px; will-change:transform;
-  font-family:var(--mono); font-size:10.5px; line-height:1.45; color:var(--crt-ink);
+  font-family:var(--mono); font-size:12px; line-height:1.45; color:var(--crt-ink);
   white-space:nowrap;
   display:grid; grid-template-columns:repeat(var(--c,1),1fr);
   column-gap:36px; align-content:start;
@@ -485,7 +485,7 @@ html.boot,html.boot body{overflow:hidden}   /* 送りは html 側で起きる。
   display:inline-block; white-space:nowrap; color:#fff;
   /* 折り返させない（折れると帯の社名と箱の形が合わなくなる）。
      下限 13px は 320px の窓で横にはみ出さない大きさ */
-  font-size:clamp(13px,4.2vw,30px); font-weight:700; letter-spacing:.02em; line-height:1.35;
+  font-size:clamp(15px,4.8vw,34.5px); font-weight:700; letter-spacing:.02em; line-height:1.35;
   transform-origin:0 0; transition:transform .5s var(--snap);
 }
 /* **点滅する角と「押すと開く」は落とした**（2026-09-08）。
