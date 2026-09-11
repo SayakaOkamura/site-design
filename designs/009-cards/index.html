@@ -738,7 +738,8 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <div class="card two" role="button" tabindex="0" data-k="4">
+    <!-- `#contact` で開ける。デモの出口から来る（§デモの余熱を相談に渡す）-->
+    <div class="card two" role="button" tabindex="0" data-k="4" data-hash="contact">
       <!-- 表 -->
       <div class="fr">
       <span class="t">お問い合わせ</span>
@@ -1405,12 +1406,32 @@ html.boot .mark{opacity:1}
     card.focus({ preventScroll:true });
   }
 
-  /* 印つきの URL（`#mind` など）で来たら、そのカードを開いた状態で始める */
+  /* ─ 印つきの URL（`#mind` など）で来たら、そのカードを開いた状態で始める。
+     **動いていなかった**（2026-09-11、§デモの余熱を相談に渡す のときに気づいた）——
+     中で呼んでいる `show()` は**裏返す実装のころの関数**で、めくるのをやめて
+     「行の直下に開く」に作り替えたときに消えている。`open` も窓の `window.open` を
+     拾っていた。**`#mind` も `#svc` も、一度も開いたことがない。**
+     いまは札をそのまま押す（`deck` の click に任せる＝開き方が一本になる）*/
   function reopen(){
     var k = location.hash.slice(1);
     if (!k) return;
-    var card = deck.querySelector('[data-hash="' + k + '"]');
-    if (card && open !== card) show(card);
+    var card = document.querySelector('#deck [data-hash="' + k + '"]');
+    if (!card || card.classList.contains('open')) return;
+    card.click();
+    /* **印で来た人は、そこまで送る。**`#contact` には `id` が無いので
+       ブラウザは動かない——押した札が折り目の下にあると、
+       **開いたことに気づかないまま会社の顔を見ている。**
+       **二度送る**（2026-09-11、画面で数えた）。`pageshow` の直後に測ると
+       **まだ上が育っていない**（字が入ると頭の帯が伸びる）——一度目で 210px 送っても、
+       落ち着いたころには札が 226px 下にいた。**測り直して、もう一度送る。** */
+    function sendTo(){
+      var top = document.querySelector('.top');
+      var y = card.getBoundingClientRect().top + scrollY - ((top ? top.offsetHeight : 0) + 14);
+      scrollTo(0, Math.max(0, y));
+    }
+    requestAnimationFrame(sendTo);
+    setTimeout(sendTo, 320);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(sendTo);
   }
   /* **地図は畳まなくなったので、最初に載せる**（2026-09-11、§畳むのをやめた）。
      前は「開いたときに `data-src` を `src` へ移す」——開かないので**空の箱**のままだった。
@@ -1540,6 +1561,23 @@ html.boot .mark{opacity:1}
     });
 
     drawAsk();   /* 最初から出ている状態に揃える */
+
+    /* ─ **デモの余熱を相談に渡す**（2026-09-11、本人：「動線が足りない感じがする、全域で」）──
+       デモの出口の「相談してみる」は**素の `mailto:`** だった——いちばん気持ちが
+       動いた直後に、**何も持たないメーラー**が開く。こちらは押した内容で下書きを
+       組み立てるのに、**デモから来た人だけがその仕掛けを通らない。**
+       いまは `index.html?from=demo#contact` で来るので、**ご用件を一つ入れておく。**
+       入れるのは**一段だけ**（本人：「勝手に書いてくれるまでしなくてもいい。
+       ちょっとサポートしてくれるくらいで」）——対象のサービスは選ばない。
+       出るのは**ご用件の一行が入った下書き**まで。文面はこちらで書かない */
+    if (location.search.indexOf('from=demo') >= 0){
+      var first = ask.querySelector('.row[data-val="サービスに関するご相談"]');
+      if (first){
+        pick.kind = 'サービスに関するご相談';
+        first.setAttribute('aria-pressed', 'true');
+        drawAsk();
+      }
+    }
 
     function drawAsk(){
       /* 段の出し入れ。出ていない段の選択は残さない */
