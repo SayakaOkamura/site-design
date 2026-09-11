@@ -368,7 +368,7 @@ body.landing .side, body.naming .side{opacity:0}
    それでも§366 と同じ作法に揃うので、animation のほうを採る）*/
 body.named .gt,
 body.named .gn,
-body.named .gsq{animation:rise .3s var(--ease) both; animation-delay:var(--nd,0ms)}
+body.named .gsq{animation:namein .34s var(--ease) both; animation-delay:var(--nd,0ms)}
 body.named #c-h1,
 body.named #c-sub,
 body.named .side{animation:rise .34s var(--ease) both}
@@ -378,7 +378,22 @@ body.named .side{animation:rise .34s var(--ease) both}
 /* **面ごと積み上がる**（§集まった結果に見せる）。波の遅れは `.gset` に入れてある。
    中身は `animation` ではなく `transition` で入れる（§二拍に分ける）——
    `naming` を外した瞬間に効かせたいので、クラスの付け外しで動くほうがいい */
-.gset.up{animation:rise .36s var(--ease) both}
+/* ─ **もっと強く**（2026-09-11、本人：「なんか上下に動いたな、くらいしか
+   感じられない、今」）────────────────────────────────────
+   `rise` は 8px のフェードで、**12 枚が一斉にふわっとする**だけだった。
+   **下から積み上がる**形にする——30px 下から、わずかに行き過ぎて戻る（重さ）。
+   一枚ずつの間隔も 35ms → **60ms**（12 枚で 660ms。**一枚ずつだと分かる**）。
+   足しているのは§5 の**重さ**と**わずかなずれ**だけ。点数も達成演出も無い */
+@keyframes stack{
+  0%  {opacity:0; transform:translateY(30px) scale(.975)}
+  64% {opacity:1; transform:translateY(-5px) scale(1.004)}
+  100%{opacity:1; transform:none}
+}
+@keyframes namein{
+  0%  {opacity:0; transform:translateY(8px)}
+  100%{opacity:1; transform:none}
+}
+.gset.up{animation:stack .46s var(--ease) both}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
 /* ─ 山。**押せない。見るだけ**（2026-09-10）────────────────────
    一度は「押させる」、次は「五行から選ばせる」にしていた。どちらも外した：
@@ -1969,7 +1984,7 @@ body[data-stage="c"] .st-c{display:block}
     [].forEach.call(document.querySelectorAll('#sets .gset'), function(g, i){
       var r = g.getBoundingClientRect();
       target[+g.dataset.k] = r;
-      g.style.animationDelay = (i * 35) + 'ms';    /* **一つの波に見せる** */
+      g.style.animationDelay = (i * 60) + 'ms';    /* **一枚ずつだと分かる間隔** */
     });
 
     /* ─ 3. 寄せる。**重ねない**（2026-09-11、本人：「文字がぎゅってなってる瞬間の
@@ -1989,7 +2004,7 @@ body[data-stage="c"] .st-c{display:block}
       var dx = (i / many - .5) * sp;
       var dy = ((i % 5) - 2) * 5;
       c.el.style.transform = 'translate(' + (t.left + 16 + dx - c.x) + 'px,'
-                           + (t.top + 9 + dy - c.y) + 'px) scale(.55)';
+                           + (t.top + 9 + dy - c.y) + 'px) scale(.68)';
       c.el.style.opacity = 0;
     });
 
@@ -2005,7 +2020,7 @@ body[data-stage="c"] .st-c{display:block}
     setTimeout(function(){
       [].forEach.call(document.querySelectorAll('#sets .gset'), function(g, i){
         g.classList.add('up');
-        g.style.setProperty('--nd', (i * 30) + 'ms');   /* 名前が入る順 */
+        g.style.setProperty('--nd', (i * 45) + 'ms');   /* 名前が入る順 */
       });
       document.body.classList.remove('landing');
       document.body.classList.add('naming');            /* 面だけ。題はまだ */
@@ -2013,7 +2028,7 @@ body[data-stage="c"] .st-c{display:block}
     setTimeout(function(){
       document.body.classList.remove('naming');
       document.body.classList.add('named');      /* ここで名前が入る */
-    }, 1180);   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
+    }, 1900);   /* **積み終わってから**（760 + 60×11 + 460 ≒ 1880）。二拍を重ねない */   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
     /* **着いた形のまま置く**（2026-09-10。本人：「せっかく 12 件にまとめたのに
        それが下に行っちゃって見えない」「モーションで出たときと形変わるし」）。
        着地の直後に一件目を開けていたので、**12 件が並んだ絵が 0.5 秒で崩れて、
