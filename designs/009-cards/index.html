@@ -175,6 +175,37 @@ body.locked{overflow:hidden}
    §「一覧はカード、中身はページ」「用はカード一枚で着く」を覆す——
    **あの決めは案置き場のインデックスから引き継いだ形で、会社サイトの用（読む）に合っていない。** */
 .deck{grid-template-columns:minmax(0,1fr); gap:22px}
+
+/* ─ **一画面目の格子は残す**（2026-09-11。本人：「**あの形状、パッと見で全部
+   みえるっていうのがいいところ**だから、そこは外さないようにしよう」）────
+   縦一列にしただけだと、**あの形の値打ち（一覧性）が消えて、デモへの動線も薄くなる**
+   （デモが 4 画面下がった）。**両方立てる。**
+   **上は今までの六枚のまま。それが目次になって、中身が下に段として続く。**
+   押すと**開く**のではなく**下の該当箇所へ飛ぶ**ので、
+   「押さないと読めない」も「三段」も起きない。**デモの紫は一画面目に残る。** */
+/* **左に格子、右に中身**（2026-09-11。本人：「ならやっぱり右にしたら？」）。
+   上下に分けると、格子は一画面目にあっても**送ったら消える**。
+   左右なら**格子はずっと居る**——一覧もデモの紫も、読んでいるあいだずっと画面にある。
+   右は**最初から全部縦に並んでいる**ので、**押さずに読める**（送るだけ）。
+   格子を押すと、右がその段へ飛ぶ。**開閉ではなく移動。** */
+.two-up{display:grid; grid-template-columns:400px minmax(0,1fr); gap:26px;
+        align-items:start; margin-top:16px}
+.deck.toc{grid-template-columns:repeat(2,1fr); gap:14px; margin:0;
+          position:sticky; top:84px}
+.deck.toc .card{min-height:118px; padding:22px 18px 20px;
+                display:flex; flex-direction:column; cursor:pointer}
+.deck.toc .card .t{font-size:17px}
+.deck.toc .card .s{padding-top:10px; font-size:13.5px}
+.deck.toc .card:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
+#deck{margin:0}
+/* 飛んだ先が頭の下に潜らないように */
+.card.two{scroll-margin-top:92px}
+/* 狭い窓では上下に戻す（横に二本は無理）*/
+@media (max-width:1000px){
+  .two-up{grid-template-columns:minmax(0,1fr); gap:22px}
+  .deck.toc{position:static; grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:640px){ .deck.toc{grid-template-columns:repeat(2,1fr)} }
 /* 読む順。**デモは中身を読んだあと、問い合わせの手前**（腰を上げる直前に置く）*/
 .deck > [data-k="1"]{order:1} .deck > [data-k="2"]{order:2} .deck > [data-k="3"]{order:3}
 .deck > [data-k="5"]{order:4} .deck > [data-k="6"]{order:5} .deck > [data-k="4"]{order:6}
@@ -1311,6 +1342,40 @@ html.boot .mark{opacity:1}
   document.querySelectorAll('[data-src]').forEach(function(el){
     el.src = el.dataset.src; el.removeAttribute('data-src');
   });
+  /* ─ **目次を組む**（2026-09-11、§一画面目の格子は残す）──────────────
+     六枚の表紙（`.fr`）を、そのままの見た目で上に出す。押すと下の段へ飛ぶ。
+     デモは**上にも下にも置く**——上は「ここにある」と知らせる口、
+     下は**読み終わったところの一手**（腰を上げる直前）。同じ行き先だが役が違う */
+  (function(){
+    var deck = document.getElementById('deck');
+    if (!deck) return;
+    var toc = document.createElement('div');
+    toc.className = 'deck toc';
+    [].forEach.call(deck.children, function(c){
+      var k = c.dataset.k, tile;
+      if (c.classList.contains('go')){
+        tile = document.createElement('a');
+        tile.className = 'card go';
+        tile.href = c.getAttribute('href');
+        tile.innerHTML = c.innerHTML;
+      } else {
+        var fr = c.querySelector('.fr');
+        if (!fr) return;
+        c.id = 'sec-' + k;
+        tile = document.createElement('a');
+        tile.className = 'card';
+        tile.href = '#sec-' + k;
+        tile.innerHTML = fr.innerHTML;
+      }
+      toc.appendChild(tile);
+    });
+    /* 左右に二本。**格子は貼りついて、右だけが送られる** */
+    var pair = document.createElement('div');
+    pair.className = 'two-up';
+    deck.parentNode.insertBefore(pair, deck);
+    pair.appendChild(toc);
+    pair.appendChild(deck);
+  })();
   window.addEventListener('pageshow', reopen);
   window.addEventListener('hashchange', reopen);
 
