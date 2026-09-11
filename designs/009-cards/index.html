@@ -442,7 +442,12 @@ body.locked{overflow:hidden}
    （本人「中身の上下にそのまま他の選択肢も置いておいて、一つ開けたら他閉じる形」）。
    新しい面は作らない（帯の白の上に直に組む）。
    **事例が乗るのはここ**——段をもう一つ足すだけで入る。 */
-.det{margin-top:10px}
+/* **説明は題の頭に揃える**（2026-09-11。本人：「サービス、全部空いてるところから
+   始まってない？」）——行の箱は 221px から始まるが、題は 276px から始まる
+   （左の詰め 20px ＋ 番号 17px ＋ 空き 18px ＝ 55px）。説明を箱の外枠に合わせていたので、
+   **どれも題より 55px 左＝何も無いところから始まって**いた。画面で数えた */
+.det{margin-top:10px; padding-left:55px}
+@media (max-width:640px){ .det{padding-left:20px} }
 .det[hidden]{display:none}
 .det .lead{margin:0; font-size:15px; line-height:1.9; color:var(--sub)}
 /* **説明だけ。**段（進め方・出てくるもの）は落とした
