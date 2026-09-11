@@ -1126,6 +1126,9 @@ body[data-stage="c"] .st-c{display:block}
 
      どれも**その人が何かをした結果**で、待っただけでは出ない。 */
   var hinted = false, picked = false, gone = 0, seen = {}, bottom = false;
+  /* **外れて押した行**（§押し間違えても終わらない）。鎖とは別に持つ——
+     `trail` に混ぜると `need`（何か所で通るか）が狂う */
+  var stray = [];
 
   function tabsSeen(){ var k = 0; for (var x in seen) if (seen[x]) k++; return k; }
 
@@ -1157,7 +1160,7 @@ body[data-stage="c"] .st-c{display:block}
         go   = document.getElementById('go-c');
     hint.textContent = '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
                      + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
-    gone = 0; trail = []; stuck = null; ready = null;
+    gone = 0; trail = []; stray = []; stuck = null; ready = null;
     go.classList.remove('on');
     tab = 'xlsx';
     paintTabs();
@@ -1234,7 +1237,7 @@ body[data-stage="c"] .st-c{display:block}
         /* 辿った行は**止まったまま残る**、追いかけている先は**脈を打つ**。
            タブを跨いで描き直すので、印は札のほうから引く */
         var cl = (stuck === c || ready === c) ? ' class="aim"'
-               : (trail.indexOf(c) >= 0 ? ' class="wait"' : '');
+               : (trail.indexOf(c) >= 0 || stray.indexOf(c) >= 0 ? ' class="wait"' : '');
         return '<li' + cl + ' data-k="' + c.k + '" data-i="' + c.n + '">'
              + (src === 'xlsx' ? rowHTML(c) : srcHTML(c)) + '</li>';
       }).join('');
@@ -1423,13 +1426,21 @@ body[data-stage="c"] .st-c{display:block}
     if (!trail.length){ closing(c, 1); return; }
     var first = trail[0];
     ready = first;
+    /* ─ **間そのものは悪くない**（2026-09-11。本人：「モーションで間繋いだりする
+       時間が発生するのは良いと思うよ」）──────────────────────
+       ②の待ちを一度ぜんぶ詰めて、**戻した。**押した瞬間のチェック（430ms）も、
+       最後の一押しのあと（320ms）も、抜ける動き（.22s）も、**動きが繋いでいる。**
+       削るのは**動きが終わったあとの無反応**だけ——ここは 520ms で、
+       行は 260ms で抜け終わるのに、**残りの 260ms は本当に何も起きていない。**
+       抜ける動きに合わせて 360ms にした（戻りの滑らかさはそのまま）。
+       しんどいのは**中身**（押しても通らない・辿らされる）で、そこは触らない */
     setTimeout(function(){
       tab = first.src; paintTabs(); paintRowsOf(tab);
       var top = document.querySelector('#pile li[data-i="' + first.n + '"]');
       if (top && !slow) top.scrollIntoView({block:'center', behavior:'smooth'});
       saySolved(esc(label(c)));
       stick();
-    }, slow ? 0 : 520);
+    }, slow ? 0 : 360);
   }
 
   /* 解けた状態の言葉。**タブを移っても呼び直せる**ようにしておく */
@@ -1457,7 +1468,7 @@ body[data-stage="c"] .st-c{display:block}
   /* 解けた一行を、人が押した。**奥の一行はもう抜けている**ので、残りをここで抜く */
   function finish1(li){
     var list = trail.slice(), first = ready, k = list.length + 1;
-    ready = null; trail = []; stuck = null;
+    ready = null; trail = []; stray = []; stuck = null;
     li.classList.remove('wait','aim','pick');
     var ck = li.querySelector('.c-ck'); if (ck) ck.classList.add('on');
     li.classList.add('gone');
@@ -1473,6 +1484,28 @@ body[data-stage="c"] .st-c{display:block}
     }, 320);
   }
 
+  /* 鎖から外れた行を押した。**押した手ごたえは返す。鎖は捨てない** */
+  function offTrack(li, c, back){
+    if (stray.indexOf(c) < 0) stray.push(c);
+    li.classList.remove('aim');
+    var ck = li.querySelector('.c-ck');
+    if (ck && !slow){
+      ck.classList.add('on');
+      setTimeout(function(){ ck.classList.remove('on'); li.classList.add('wait'); }, 430);
+    } else {
+      li.classList.add('wait');
+    }
+    /* 同じ出どころに居るなら、その場で脈が戻る */
+    var t = document.querySelector('#pile li[data-i="' + back.n + '"]');
+    if (t) t.classList.add('aim');
+    document.getElementById('how').innerHTML =
+      '<b>この行も止まっています。</b>'
+      + '<span class="tr">' + esc(label(back)) + '</span>'
+      + (ready ? ' が、まだ押せます。' : ' を追いかけている途中です。')
+      + '<button class="jump" id="back">' + esc(label(back)) + ' へ戻る →</button>';
+    stick();
+  }
+
   function press(li){
     if (!li || li.classList.contains('gone')) return;
     var c = findCard(+li.dataset.i);
@@ -1483,7 +1516,24 @@ body[data-stage="c"] .st-c{display:block}
 
     /* **解けた一行を押した。**ここが「達成」——前提を落としたのは自分 */
     if (ready && ready === c){ finish1(li); return; }
-    ready = null;   /* 別の行を押したら、解けた状態は捨てる */
+
+    /* ─ **押し間違えても終わらない**（2026-09-11。本人：「押し間違えると
+       終わりなのが気になる」）────────────────────────────
+       前は**別の行を押した瞬間に鎖を捨てて**、そこから新しい鎖を引き直していた。
+       3〜4 か所たどった先の「**押せるようになりました**」で一行ずれて押すと、
+       **たどったぶんが黙って消える。**エラーも出ないので、
+       **間違えたことにすら気づけない**（画面で数えた。合図の直後は
+       行の位置も動いていたので、狙って外した）。
+
+       いまは**鎖を保つ。**押した行には正直に返し（☑ → 待ち。§「押す＝終わった」）、
+       **追いかけている先を指し直して、戻る道を出す。**
+       弾かないので§「入れさせずに弾くと、自分のせいに見える」も守れる。
+       徒労感は**中身**（どれを押しても止まっている）で出す側であって、
+       **操作の罰**で出すものではない */
+    var back = ready || stuck;
+    if (back && back !== c && trail.length){ offTrack(li, c, back); return; }
+
+    ready = null;   /* 追いかけていないときに別の行を押したら、解けた状態は捨てる */
 
     /* 追いかけている先を押したら鎖が伸びる。**別の行を押したら、そこから鎖を引き直す** */
     if (stuck && stuck === c) trail.push(c);
@@ -1539,6 +1589,18 @@ body[data-stage="c"] .st-c{display:block}
   document.addEventListener('click', function(e){
     if (document.body.dataset.stage !== 'b' || !e.target.closest) return;
     /* 見に行く。**タブが替わって、その行が真ん中に来る**（探させない）*/
+    /* **戻る。**外れて押したあと、追いかけている先へ帰る（§押し間違えても終わらない）*/
+    if (e.target.closest('#back')){
+      var bk = ready || stuck;
+      if (!bk) return;
+      tab = bk.src; paintTabs(); paintRowsOf(tab);
+      var bt = document.querySelector('#pile li.aim');
+      if (bt && !slow) bt.scrollIntoView({block:'center', behavior:'smooth'});
+      /* 戻った先はもう目の前にいるので、**「見る →」は出し直さない**——出どころの対で置く */
+      if (ready) saySolved('');
+      else showPair(trail[trail.length - 1], stuck);
+      return;
+    }
     if (e.target.closest('#jump')){
       if (!stuck) return;
       var from = trail[trail.length - 1], to = stuck;
