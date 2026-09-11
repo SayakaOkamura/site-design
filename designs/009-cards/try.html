@@ -1455,7 +1455,7 @@ body[data-stage="c"] .st-c{display:block}
 
   function paintPile(){
     picked = false; hinted = false; bottom = false; tangledN = 0;
-    trail = []; stray = []; stuck = null; need = 0;
+    trail = []; stray = []; stuck = null; need = 0; repN = 0;
     document.getElementById('hint').textContent =
       'メール・チャット・議事録で出た話が、ここに起票されています。ぜんぶで '
       + N + ' 件。状態も担当も、埋まっていません。';
@@ -1551,6 +1551,9 @@ body[data-stage="c"] .st-c{display:block}
     ['pdf','詳細は別紙による。'],
     ['pdf','本紙は写しである。原本の所在は不明。']
   ];
+  /* 報告書を開いたか。**開いた人にだけ、③で対比を言う**——
+     開いていない人に「報告書では 73 項目」と言っても、見ていないものとは比べられない */
+  var repN = 0;
   function two(v){ return ('0' + v).slice(-2); }
   function history(k){
     /* **`byG` は③で作られる。**②の時点ではまだ無いので、札から直に引く */
@@ -1589,6 +1592,7 @@ body[data-stage="c"] .st-c{display:block}
        目立たせると「ここが答えです」になって、探した苦労のほうが消える。
        **調査はもう済んでいる。報告書もある。決まっていないだけ。**
        ③はこれと同じ結論を、**報告書なしで**出す */
+    repN = items.length;
     var ver = 2 + (k % 3), cut1 = Math.round(out.length * .42), cut2 = Math.round(out.length * .74);
     var CH = ['一、経緯', '二、関係先への確認', '三、過去の記録との照合'];
     return '<div class="rep" id="rep">'
@@ -2012,7 +2016,10 @@ body[data-stage="c"] .st-c{display:block}
       /* **数は二つだけ並べる。**同じ押すの重さが違う */
       + '<p class="scmp">'
       + (tangledN ? '②では <b>' + tangledN + ' 件</b> たどって、<b>1 件も動きませんでした。</b><br>' : '')
-      + '③では <b>1 回</b> 決めて、<b>' + cnt + ' 件</b> 動きました。</p>'
+      + '③では <b>1 回</b> 決めて、<b>' + cnt + ' 件</b> 動きました。'
+      /* **対比は、見た人にだけ**（§カード＝パッと見て判断できる単位） */
+      + (repN ? '<br>同じ結論に、報告書では <b>' + repN + ' 項目</b>かかっていました。' : '')
+      + '</p>'
       + '<p class="gmore">残りの ' + (order.length - 1) + ' も、同じ一手です。</p>';
     /* ④の一行目。**片付けたのではなく、決めた** */
     var lead = document.getElementById('lead');
