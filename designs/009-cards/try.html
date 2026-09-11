@@ -646,6 +646,15 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
   .reps i,.reps b{width:auto; display:inline-block; margin-right:10px}
 }
 
+/* ─ さっき辿った件（§どの決めごとに行き当たったか）──────────────────
+   **先頭に上げない**（12 件が並んだ姿が③の要）。**字も行に入れない**——
+   一度「さっき辿った件」と書いたら、**題が「行数の上限をど…」で切れた**（画面で見つけた）。
+   行には**帯と淡い地**だけ置いて、**言葉は右の箱**に出す（そこは自動で開いている）*/
+.gset.from2 .gitem{background:rgba(99,84,224,.07);
+                   box-shadow:var(--lift1), inset 3px 0 0 var(--go)}
+/* 右の箱の一行 */
+.sfrom{margin:10px 0 0; font-size:13px; line-height:1.8; color:var(--go); font-weight:700}
+
 /* ─ 決める ── **③でただ一つ押せるもの**（2026-09-11）────────────
    ②で 3〜4 件たどって**一件も動かなかった。**ここで**一つ決めると 7 件動く。**
    押し方も相手も動詞も同じで、**重さだけが違う。**それが説明なしの「革新」で、
@@ -1405,6 +1414,10 @@ body[data-stage="c"] .st-c{display:block}
   var trail = [], stuck = null, need = 0;
   /* ②で何件たどって、何件動いたか。**③の一手と並べるために覚えておく** */
   var tangledN = 0;
+  /* **どの決めごとに行き当たったか**（2026-09-11。本人：「飛んだあと、
+     **今回辿ったやつがどれだったのか見たい**」）。③は 12 件が並ぶだけなので、
+     **さっき自分が辿った一件が、どれなのか分からなかった。** */
+  var tangledK = null;
 
   var NAME = {xlsx:'課題管理表', mail:'メール', chat:'チャット', '議事録':'議事録',
               docx:'仕様書', pdf:'別紙'};
@@ -1455,7 +1468,7 @@ body[data-stage="c"] .st-c{display:block}
 
   function paintPile(){
     picked = false; hinted = false; bottom = false; tangledN = 0;
-    trail = []; stray = []; stuck = null; need = 0; repN = 0;
+    trail = []; stray = []; stuck = null; need = 0; repN = 0; tangledK = null;
     document.getElementById('hint').textContent =
       'メール・チャット・議事録で出た話が、ここに起票されています。ぜんぶで '
       + N + ' 件。状態も担当も、埋まっていません。';
@@ -1652,7 +1665,7 @@ body[data-stage="c"] .st-c{display:block}
      （「②では 4 件たどって、1 件も動きませんでした。③では 1 回決めて、7 件動きました」）。
      **徒労は道具で、着地ではない。** */
   function tangle(){
-    stuck = null; tangledN = trail.length;
+    stuck = null; tangledN = trail.length; tangledK = trail[0].k;
     var u = GROUPS[trail[0].k].u, k = trail.length;
     document.getElementById('how').innerHTML =
       '<b>' + k + ' 件たどって、根本原因に行き当たりました。</b>'
@@ -1836,8 +1849,12 @@ body[data-stage="c"] .st-c{display:block}
       [].forEach.call(document.querySelectorAll('#sets .gset'), function(g){
         g.classList.remove('up'); g.style.animationDelay = '';
       });
+      /* **さっき辿った件の内訳を開いておく**（§どの決めごとに行き当たったか）。
+         12 件の並びは動かない（内訳は右の箱に出るので）。
+         ②を飛ばした人には印も内訳も出ない——**見ていないものは指せない** */
+      if (tangledK !== null) select(tangledK);
       /* 着いたら**押せる相手に焦点を置く**（③で押せるのは件だけ）*/
-      var f = document.querySelector('#sets .gset .gitem');
+      var f = document.querySelector('#sets .gset' + (tangledK !== null ? '.from2' : '') + ' .gitem');
       if (f) f.focus({ preventScroll:true });
     }, 1560);
   }
@@ -1924,6 +1941,8 @@ body[data-stage="c"] .st-c{display:block}
     SRC5.forEach(function(t){ if (by[t[0]]) cnt++; });
     return '<h2 class="sh">' + esc(g.u) + '</h2>'
       + '<p class="sn2">' + esc(g.t) + '　' + byG[k].length + ' 件 ／ ' + cnt + ' か所</p>'
+      + (k === tangledK && tangledN
+          ? '<p class="sfrom">②で辿った ' + tangledN + ' 件は、この決めごとでした。</p>' : '')
       + '<ul class="glist">'
       + rows.map(function(p){
           return '<li>'
@@ -2076,7 +2095,8 @@ body[data-stage="c"] .st-c{display:block}
       +   '<span class="gn"></span>'
       + '</div>'
       + order.map(function(k){
-          return '<div class="gset" data-k="' + k + '">' + item(k) + '</div>';
+          return '<div class="gset' + (k === tangledK ? ' from2' : '')
+               + '" data-k="' + k + '">' + item(k) + '</div>';
         }).join('');
 
     /* **②の量に対する返事。**説明ではない */
