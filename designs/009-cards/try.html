@@ -699,6 +699,9 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
 .end .cmp{display:block; margin-top:14px; padding-top:14px;
           border-top:1px solid rgba(255,255,255,.22); font-size:14px}
 .end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
+/* 外へ出る一手だけ、色を持つ（§「紫は進む・飛ぶの印」）*/
+.end .go1{background:var(--go); color:#fff}
+.end .go1:hover{background:var(--go)}
 
 .foot{flex:none; background:var(--frame)}
 .foot .in{padding:22px 24px 26px}
@@ -823,16 +826,23 @@ body[data-stage="c"] .st-c{display:block}
            その真上に理念を置くと**やったことの見出し**として読まれる。
            それは「会社が提供するコンテンツ」の側で、§6 が混ぜるなと言っている形 -->
       <div class="face">
-        <p class="lead" id="lead">減らしたのではなく、形を変えただけです。</p>
+        <!-- **減ってもいないし、まとまってもいない**（2026-09-11）。
+             69 件の課題が 12 の決めごとだった、というのは**正体が違った**という話。
+             「減らしたのではなく、形を変えただけ」は 402 → 12 のころの言葉だった -->
+        <p class="lead" id="lead">減ったのではありません。課題ではなく、決めごとだったというだけです。</p>
         <h2>一つずつなら、手が付けられます。</h2>
       </div>
       <!-- 理念は**面の外へ、小さく一行。**入口のカードと同じ呼び方で置く——
            会社の言葉として置いてある、と分かるだけの形
            （§「理念は最後に出る。先に出すと標語に戻る」——出す場所は変えていない）-->
       <p class="creed"><i>企業理念</i>経営の力で「遊ぶように働く世界」をデザインする</p>
+      <!-- **外に出る口**（2026-09-11）。前は「もう一度」と「会社のページを見る」だけで、
+           デモ→index、index→デモの**円環**になっていた。
+           いちばん気持ちが動いた直後に、外へ出る道が無かった -->
       <div class="again">
-        <button class="one" id="again">もう一度</button>
+        <a class="one go1" href="mailto:contact@alt-dsgn.co.jp" style="text-decoration:none">相談してみる</a>
         <a class="one" href="index.html" style="text-decoration:none">会社のページを見る</a>
+        <button class="one" id="again">もう一度</button>
       </div>
     </div>
   </section>
@@ -855,7 +865,7 @@ body[data-stage="c"] .st-c{display:block}
      前は 402＝メール・チャット・議事録まで含めた**記録の総数**だった。
      いまは**課題だけを数える**——メールは課題ではないので、足せない。
      落差は 402 → 12 から **84 → 12** に小さくなるが、**言っていることが本当**になる */
-  var MAX = 84;
+  var MAX = 69;
 
   /* 群 ＝ カードの題（**生の一行には書かれていない。AI が付けるもの**）と、
      その件が実際にどう書かれていたか。
@@ -1210,11 +1220,15 @@ body[data-stage="c"] .st-c{display:block}
 
      いまは**課題管理表の 84 件だけが札。**メール・チャット・議事録・仕様書・別紙は
      **起票のもと**として、その課題にぶら下がる（`from`）。押す先ではなく、証拠。 */
+  /* **きっかり同数はやめる**（2026-09-11）。12 群がぜんぶ 7 件だと、
+     数えられる代わりに**作り物に見える。**4〜7 件で散らす——
+     **一つ決めて動く数が群ごとに違う**のも、そのほうが本当 */
+  var SIZES = [7,6,4,7,5,6,5,7,4,6,7,5];   /* 合計 69 */
   function build(){
     CARDS = [];
     GROUPS.forEach(function(g, k){
       var pool = g.raw.filter(function(p){ return p[0] !== 'xlsx'; });
-      g.x.forEach(function(r, j){
+      g.x.slice(0, SIZES[k] || g.x.length).forEach(function(r, j){
         CARDS.push({ k:k, t:g.t, u:g.u, src:'xlsx',
                      raw:r[0], col:r, from:pool[j % pool.length] });
       });
@@ -1779,11 +1793,55 @@ body[data-stage="c"] .st-c{display:block}
   /* 何も選んでいないとき。**空の箱を置かない**——何をすればいいかだけ書く */
   /* 決めた。**その決めごとにぶら下がっていた課題が、まとめて片付く。**
      **札は抜かない**——12 の並びは崩さず、済の印だけ付ける（§「12 件が並んだ姿」）*/
+  /* ─ **決めたら、実際に動かす**（2026-09-11）───────────────────
+     前は「7 件 動きました」と**文字で言っているだけ**で、何も動いていなかった。
+     ②の山はもう画面に無いので、動いた件は視界の外にいる。
+     **言葉が手触りの代わりをしていた。**
+     §5「**報酬を足すとゲームになる。手触りを足してもゲームにならない**」——
+     点数も達成演出も音も足さない。**動いたものが、動くだけ。**
+     使うのは②→③と同じ寄せる仕掛け（`.flylayer`／`.fc`）で、飾りは増やさない */
+  function flyIn(k, set){
+    if (slow || !set) return;
+    var col = document.getElementById('sets').getBoundingClientRect(),
+        r   = set.getBoundingClientRect(),
+        w   = Math.min(520, col.width - 32);
+    var layer = document.createElement('div');
+    layer.className = 'flylayer';
+    var made = [];
+    byG[k].forEach(function(c, i){
+      var d = document.createElement('div');
+      d.className = 'fc';
+      d.textContent = c.raw;
+      var x = col.left + 16 + (i % 3) * 26,
+          y = innerHeight + 24 + i * 30;     /* **折り目の下から上がってくる** */
+      d.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;width:' + w + 'px';
+      layer.appendChild(d);
+      made.push([d, col.left + 16 - x, r.top + 9 - y]);
+    });
+    document.body.appendChild(layer);
+    void layer.offsetWidth;
+    made.forEach(function(m, i){
+      m[0].style.transitionDelay = (i * 45) + 'ms';
+      m[0].style.transform = 'translate(' + m[1] + 'px,' + m[2] + 'px) scale(.92)';
+      m[0].style.opacity = 0;
+    });
+    setTimeout(function(){ if (layer.parentNode) layer.remove(); }, 1900);
+  }
+
   function decide(k, ai){
     if (decided !== null) return;
     var g = GROUPS[k], a = g.d[ai], cnt = byG[k].length;
     decided = k;
+    /* 二度押させない */
+    [].forEach.call(document.querySelectorAll('#sidein .pk'), function(b){ b.disabled = true; });
     var set = setsEl && setsEl.querySelector('.gset[data-k="' + k + '"]');
+    flyIn(k, set);
+    /* **着いたころに済の印が入る。**先に印を出すと、飛んでくる意味が無くなる */
+    setTimeout(function(){ landed(k, ai, set, cnt); }, slow ? 0 : 760);
+  }
+
+  function landed(k, ai, set, cnt){
+    var g = GROUPS[k], a = g.d[ai];
     if (set){
       set.classList.add('done');
       var gn = set.querySelector('.gn');
@@ -1801,7 +1859,7 @@ body[data-stage="c"] .st-c{display:block}
       + '<p class="gmore">残りの ' + (order.length - 1) + ' も、同じ一手です。</p>';
     /* ④の一行目。**片付けたのではなく、決めた** */
     var lead = document.getElementById('lead');
-    if (lead) lead.textContent = '片付けたのではなく、決めただけです。';
+    if (lead) lead.textContent = '決めたのは、ひとつだけです。';
   }
 
   var EMPTY = '<p class="sempty">決めごとを押すと、<b>どの一行から来たのか</b>が出ます。</p>';
@@ -1883,10 +1941,12 @@ body[data-stage="c"] .st-c{display:block}
          **footer の楽屋に落ちていた事実を、一行だけ引き上げた。**
 
          「塗ってあるところに〜」は捨てた——**列に名前が付いたので、見れば分かる。** */
-      + '<span class="lg">寄せたのは決まった処理、<b>題を付けたのは AI</b> です。</span>';
+      /* **指す先を今の画面に合わせた**（2026-09-11）。並んでいるのは「題」ではなく
+         「決めごと」なので、「題を付けたのは AI」は指す先を失っていた */
+      + '<span class="lg">寄せたのは決まった処理、<b>決めごとの名前を付けたのは AI</b> です。</span>';
     decided = null;
     var lead = document.getElementById('lead');
-    if (lead) lead.textContent = '減らしたのではなく、形を変えただけです。';
+      if (lead) lead.textContent = '減ったのではありません。課題ではなく、決めごとだったというだけです。';
     var side = document.getElementById('sidein');
     if (side) side.innerHTML = EMPTY;
   }
