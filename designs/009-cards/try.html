@@ -676,6 +676,18 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
 .pk:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
 .pk b{display:block; color:#fff; font-size:15.5px; font-weight:700; margin:0}
 .pk span{display:block; font-size:14px; color:rgba(255,255,255,.8); margin-top:3px}
+/* 埋まったところ（§決まったので、埋まりました）。**前が薄く、後ろが濃い**——
+   §「行が寄って、題が付く」と同じ並べ方で、**変換の前後を対で置く** */
+.sfill{margin:18px 0 0; padding-top:14px; border-top:1px solid rgba(37,31,69,.12);
+       font-size:13px; font-weight:700; color:var(--ink)}
+.fl{list-style:none; margin:10px 0 0; padding:0; font-size:13px; line-height:1.8}
+.fl li{padding:9px 0; border-top:1px solid rgba(37,31,69,.07)}
+.fl li:first-child{border-top:0}
+.fl i{font-style:normal; display:block; font-size:12px; color:var(--sub)}
+.fl .was{display:block; color:var(--sub)}
+.fl .now{display:block; color:var(--go); font-weight:700}
+.fl .now::before{content:'→ '}
+
 /* 決めたあと。**数は二つだけ並べる**——同じ押すの重さが違う */
 .scmp{margin:16px 0 0; font-size:15px; line-height:2; color:var(--sub)}
 .scmp b{color:var(--ink); font-weight:700}
@@ -2054,6 +2066,38 @@ body[data-stage="c"] .st-c{display:block}
     setTimeout(function(){ landed(k, ai, set, cnt); }, slow ? 0 : 760);
   }
 
+  /* ─ **決まったので、埋まりました**（2026-09-11）────────────────────
+     決めたあとに出るのが「7 件 動きました」＝**帳簿の数だけ**だった。
+     主張は「**決めれば下流は追いつく**」なのに、**追いついた姿がどこにも無い。**
+     変わったのが件数だけなら、それは**整理の言葉**で、決めごとの話になっていない。
+
+     材料は②で証拠として見せてある——「※この節は追記予定。」「詳細は別紙による。」
+     「・本件、次回へ持ち越し。」**空いていたのは、そこ。**
+     決めた瞬間に、**その空欄が埋まる。**AI もローコードも名指ししない——
+     **決めたら、書かれていなかったところが書かれた**が絵で出る。
+
+     最後の一行は伏線の回収。報告書の結論に
+     「（**決定の時期および権限については、別途。**）」と書いてあって、
+     **決めごとが決まらないのは、決める人が決まっていないから**という本当の詰まりを
+     置いたまま拾っていなかった。**決めたのは、いま、この画面。** */
+  var WROTE = {docx:'仕様書', pdf:'別紙', '議事録':'議事録'};
+  function filled(k, a){
+    var rows = GROUPS[k].raw.filter(function(p){ return WROTE[p[0]]; }).slice(0, 2);
+    var out = rows.map(function(p){
+      var now = (p[0] === '議事録')
+        ? '決定：' + a[0] + '（2026/09/11）'
+        : a[0] + '（2026/09/11 決定）';
+      return '<li><i>' + esc(WROTE[p[0]]) + '</i>'
+           + '<span class="was">' + esc(p[1]) + '</span>'
+           + '<span class="now">' + esc(now) + '</span></li>';
+    });
+    out.push('<li><i>報告書</i>'
+      + '<span class="was">（決定の時期および権限については、別途。）</span>'
+      + '<span class="now">2026/09/11、この画面で決定</span></li>');
+    return '<p class="sfill">決まったので、埋まりました</p>'
+         + '<ul class="fl">' + out.join('') + '</ul>';
+  }
+
   function landed(k, ai, set, cnt){
     var g = GROUPS[k], a = g.d[ai];
     if (set){
@@ -2066,6 +2110,7 @@ body[data-stage="c"] .st-c{display:block}
       '<h2 class="sh">決めました</h2>'
       + '<p class="sn2">' + esc(g.u) + '</p>'
       + '<div class="sdec"><b>' + esc(a[0]) + '</b>' + esc(a[1]) + '</div>'
+      + filled(k, a)
       /* ─ **②を対比の相手にしない**（2026-09-11、本人）────────────────
          > 徒労はこっちに従ってやったのに徒労なんですよって**明かされる形になるのがおかしい**
          > って指摘だったでしょ。**徒労は道中で味わうものであって、結論にしたらストレスになる。**
