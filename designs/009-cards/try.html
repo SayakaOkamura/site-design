@@ -629,7 +629,15 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
         flex:none; width:84px; padding-top:3px}
 .reps b{font-weight:400; color:var(--sub); font-size:12px; flex:none; width:66px; padding-top:2px}
 .reps span{min-width:0}
-.rep .repend{margin:22px 0 0; padding-top:16px; font-size:13px; color:var(--sub);
+/* 章。**報告書の顔**——これがあるだけで「誰かが作った」になる */
+.rep .reph{margin:26px 0 10px; font-family:var(--mincho); font-size:14px;
+           font-weight:700; color:var(--ink)}
+/* 結論。**七十三項目の末尾に、一行。**囲みも色も付けない——
+   目立たせると「ここが答えです」になって、探した苦労が消える */
+.rep .repc{margin:10px 0 0; font-family:var(--mincho); font-size:14px;
+           line-height:2; color:var(--ink)}
+.rep .repc span{display:block; font-size:12.5px; color:var(--sub)}
+.rep .repend{margin:26px 0 0; padding-top:16px; font-size:13px; color:var(--sub);
              border-top:1px solid rgba(37,31,69,.12)}
 .rep .repend b{color:var(--ink)}
 @media (max-width:700px){
@@ -1572,13 +1580,31 @@ body[data-stage="c"] .st-c{display:block}
              + '<span>' + esc(it[1]) + '</span></li>');
       ms += (10 + Math.floor(rh() * 38)) * 86400000;
     });
+    /* ─ **調査報告のかたちにする**（2026-09-11。本人：「ん〜一行だけ？
+       **その一行を探して、結果が膨大な報告資料になっちゃったりするのが大変なところ**
+       じゃない？」）────────────────────────────────────
+       そのとおりで、時系列の丸写しだと**ただの記録**だった。大変なのは
+       **その一行に辿り着くために、報告書が一冊できていること。**
+       だから章を立てて、末尾に**結論を一行だけ**置く。囲みも色も付けない——
+       目立たせると「ここが答えです」になって、探した苦労のほうが消える。
+       **調査はもう済んでいる。報告書もある。決まっていないだけ。**
+       ③はこれと同じ結論を、**報告書なしで**出す */
+    var ver = 2 + (k % 3), cut1 = Math.round(out.length * .42), cut2 = Math.round(out.length * .74);
+    var CH = ['一、経緯', '二、関係先への確認', '三、過去の記録との照合'];
     return '<div class="rep" id="rep">'
-      + '<h2>経緯：' + esc(g.u) + '</h2>'
-      + '<p class="repsub">' + first + ' 〜 ' + last + '　全 ' + items.length + ' 件'
-      + '　課題管理表・メール・チャット・議事録・仕様書・別紙より</p>'
-      + '<ol class="reps">' + out.join('') + '</ol>'
-      + '<p class="repend">ここまでが、さきほどの <b>' + list.length + ' 件</b>ぶんの経緯です。'
-      + '決まっていないのは、いまも <b>' + esc(g.u) + '</b> の一つだけ。</p>'
+      + '<h2>調査報告：' + esc(g.t) + '（第 ' + ver + ' 版）</h2>'
+      + '<p class="repsub">情報システム部　／　' + first + ' 着手・' + last + ' 現在'
+      + '　／　全 ' + items.length + ' 項目</p>'
+      + '<p class="reph">' + CH[0] + '</p>'
+      + '<ol class="reps">' + out.slice(0, cut1).join('') + '</ol>'
+      + '<p class="reph">' + CH[1] + '</p>'
+      + '<ol class="reps">' + out.slice(cut1, cut2).join('') + '</ol>'
+      + '<p class="reph">' + CH[2] + '</p>'
+      + '<ol class="reps">' + out.slice(cut2).join('') + '</ol>'
+      + '<p class="reph">四、結論</p>'
+      + '<p class="repc">' + esc(g.u) + '　が決まっていない。'
+      + '<span>（決定の時期および権限については、別途。）</span></p>'
+      + '<p class="repend">この報告書は、' + last + ' から更新されていません。</p>'
       + '</div>';
   }
 
@@ -1628,7 +1654,7 @@ body[data-stage="c"] .st-c{display:block}
       '<b>' + k + ' 件たどって、根本原因に行き当たりました。</b>'
       + '<span class="tr">' + esc(u) + '</span> が決まっていません。'
       /* **知ろうとすると、長い**（§経緯）。押したい人だけ押す */
-      + '<button class="jump" id="hist">経緯を見る →</button>';
+      + '<button class="jump" id="hist">調査報告を見る →</button>';
     [].forEach.call(document.querySelectorAll('#pile li.aim'), function(x){
       x.classList.remove('aim'); x.classList.add('wait');
     });
