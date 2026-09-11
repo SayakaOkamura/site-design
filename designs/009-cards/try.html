@@ -686,8 +686,10 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
       font-size:15px; line-height:1.8; color:var(--sub)}
 .sdec b{display:block; color:var(--ink); font-size:15.5px; margin-bottom:4px}
 .pks{display:flex; flex-direction:column; gap:8px; margin-top:10px}
+/* **決めるはもう少し小さく**（2026-09-11、本人：「決めるやつでかいかも」）。
+   一つ 76px あって、二つで箱の半分を占めていた。詰めと添えの字を落とす */
 .pk{-webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-    text-align:left; padding:10px 14px; border-radius:7px;
+    text-align:left; padding:9px 14px; border-radius:7px;
     background:var(--go); color:#fff; box-shadow:var(--lift1);
     transition:transform .16s var(--ease), box-shadow .16s ease}
 .pk:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
@@ -697,8 +699,8 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
    **教えるのは一度だけ**（指を乗せたら止まる）*/
 .pks .pk:first-child{animation:tap 1.8s ease-in-out infinite}
 .pks:hover .pk,.pks .pk:focus-visible{animation:none}
-.pk b{display:block; color:#fff; font-size:15.5px; font-weight:700; margin:0}
-.pk span{display:block; font-size:14px; color:rgba(255,255,255,.8); margin-top:3px}
+.pk b{display:block; color:#fff; font-size:15px; font-weight:700; margin:0}
+.pk span{display:block; font-size:13px; color:rgba(255,255,255,.78); margin-top:2px; line-height:1.5}
 /* 埋まったところ（§決まったので、埋まりました）。**前が薄く、後ろが濃い**——
    §「行が寄って、題が付く」と同じ並べ方で、**変換の前後を対で置く** */
 .sfill{margin:18px 0 0; padding-top:14px; border-top:1px solid rgba(37,31,69,.12);
@@ -730,7 +732,11 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
    **§「開いた中身は行の直下に」（三度外した）には触っている。**
    あれは**並びが動く一覧**での話で、③は 12 件が固定。条件が違うので右に出した。
    狭い窓では下へ回るので、そのときは押した先へ送る。 */
-.two-col{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:26px; align-items:start}
+/* **右の箱を広げた**（2026-09-11、本人：「右に出るやつもうちょい大きくてもいいんじゃない」
+   「みぎのはこじたいがもっとでかくていいってことね」）。360px では
+   根拠の一行が三行に折れていた。**四角を外して左に余りが出た**ので、そこを回す
+   （左 746px → 626px。決めごとの題はいちばん長いもので 240px なので余裕がある）*/
+.two-col{display:grid; grid-template-columns:minmax(0,1fr) 480px; gap:26px; align-items:start}
 .side{position:sticky; top:76px}
 .sidein{
   background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
