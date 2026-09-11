@@ -345,13 +345,26 @@ body{
    **的がある。**行はそこへ乗って、乗った瞬間に**題・行数・印が入る。**
    ③は「並んでいた」ではなく「**この行たちが、これになった**」になる。
    寄せるのはコード、題を付けるのは AI——順番はそのまま（言葉で説明していない）*/
+/* ─ **集まった結果に見せる**（2026-09-11、本人：「現状ページが変わった感じに
+   なってるから。**集約感が出ない**」）─────────────────────────
+   ③が**完成した姿のまま丸ごと現れて**、そこへ文字が飛んできていた。
+   だから「集まった」ではなく「**画面が差し替わった**」に見える。
+   飛んでいるあいだは**③をほぼ空にする**——題も副題も右の箱も出さず、
+   面は**うっすら**だけ残す（的は要る）。行が着いてから、**一本ずつ積み上がる。**
+   名前が付くのはそのあと（§「寄せるのはコード、題を付けるのは AI」の順はそのまま）*/
+body.landing .gset{opacity:.16}
 body.landing .gt,
 body.landing .gn,
 body.landing .gsq{opacity:0}
+body.landing #c-h1,
+body.landing #c-sub,
+body.landing .side{opacity:0}
+#c-h1,#c-sub,.side{transition:opacity .34s ease}
 /* **出るのは transition ではなく animation。**クラスを外して 0 → 1 に流す作りは、
    遅延を付け外しすると `currentTime` 0 のまま止まった（画面で見つけた）。
    `both` の animation なら、遅延のあいだ 0 で待って、終わったら 1 で残る */
-/* **出るのは中身**（面はもう出ている）。波の遅れは `.gset` に入れてあるので継ぐ */
+/* **面ごと積み上がる**（§集まった結果に見せる）。波の遅れは `.gset` に入れてある */
+.gset.up{animation:rise .36s var(--ease) both}
 .gset.up .gt,
 .gset.up .gn,
 .gset.up .gsq{animation:rise .36s var(--ease) both; animation-delay:inherit}
@@ -680,6 +693,10 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
 .pk:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .pk:active{transform:translateY(1px); box-shadow:var(--lift0)}
 .pk:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
+/* **最初の一つだけ脈を打つ**（§終わった感を消す）。②で指した行と同じ手触り——
+   **教えるのは一度だけ**（指を乗せたら止まる）*/
+.pks .pk:first-child{animation:tap 1.8s ease-in-out infinite}
+.pks:hover .pk,.pks .pk:focus-visible{animation:none}
 .pk b{display:block; color:#fff; font-size:15.5px; font-weight:700; margin:0}
 .pk span{display:block; font-size:14px; color:rgba(255,255,255,.8); margin-top:3px}
 /* 埋まったところ（§決まったので、埋まりました）。**前が薄く、後ろが濃い**——
@@ -1866,22 +1883,37 @@ body[data-stage="c"] .st-c{display:block}
        402 行が 12 件になるところで 13 行しか動かないのは嘘になるので、
        **折り目の下 700px ぶんまで写す**——下から画面に入ってきて、そのまま列に着く。
        写すのは実在する行だけ（作らない）。上限は 90 枚（それ以上は重くなる）*/
+    /* ─ **いま画面にあるものから寄せる**（2026-09-11、本人：「まとめる過程を
+       モーションで見せられたりしない？**繋がらない感じがする**」）────────
+       写す先を `#pile` だけにしていたので、**報告書を表の上に出した日から、
+       寄せる動きが一度も起きていなかった**——辿り終えた人は報告書を見ていて、
+       表は **3772px 下**。対象が一つも取れず、**飛んだ札は 0**（画面で数えた）。
+       ③が**何の続きなのか分からない**まま出ていた。
+
+       **報告書の項目も寄せる。**73 項目はぜんぶ**同じ一件**なので、
+       **一本の行に収束する**——「この報告書ぜんぶが、この一行になった」が絵で出る。
+       表が見えている位置で押した人は、これまで通り**行が 12 件に散る。**
+       どちらの場所で押しても、**目の前のものが寄る。** */
     var vh = innerHeight;
     var layer = document.createElement('div');
     layer.className = 'flylayer';
     var clones = [];
-    [].forEach.call(pile.querySelectorAll('li'), function(li){
+    var src = [], repEl = document.getElementById('rep');
+    if (repEl && tangledK !== null)
+      [].forEach.call(repEl.querySelectorAll('.reps li'), function(li){ src.push([li, tangledK]); });
+    [].forEach.call(pile.querySelectorAll('li'), function(li){ src.push([li, +li.dataset.k]); });
+    src.forEach(function(p){
       if (clones.length >= 90) return;
-      var r = li.getBoundingClientRect();
+      var li = p[0], r = li.getBoundingClientRect();
       if (r.width <= 0 || r.top < 66 || r.top > vh + 700) return;
       var d = document.createElement('div');
       d.className = 'fc';
       /* **飛ばすのは件名だけ。**表の格子ごと写すと、飛んでいる途中で列が崩れる */
-      d.textContent = (li.querySelector('.c-ti') || li).textContent;
+      d.textContent = (li.querySelector('.c-ti') || li.querySelector('span') || li).textContent;
       d.style.left = r.left + 'px'; d.style.top = r.top + 'px';
       d.style.width = r.width + 'px'; d.style.position = 'fixed';
       layer.appendChild(d);
-      clones.push({ el:d, k:+li.dataset.k, x:r.left, y:r.top });
+      clones.push({ el:d, k:p[1], x:r.left, y:r.top });
     });
     document.body.appendChild(layer);
 
@@ -2259,10 +2291,13 @@ body[data-stage="c"] .st-c{display:block}
     document.getElementById('c-sub').innerHTML =
       '<b class="q">どこから手を付けますか。</b>'
       + 'どれも <b>' + (lo === hi ? lo : lo + '〜' + hi) + ' か所</b>から入ってきていました。'
-      /* **終着点を先に言う**（2026-09-11、本人：「このデモの終着点が見えにくいかも」）。
-         ③は 12 件が並ぶだけで、**あと何をしたら終わりなのかが画面に無かった。**
-         入口のカードで「最後にひとつ決めてもらいます」と予告してあるので、**ここで回収する** */
-      + '<b class="q2">このあと、ひとつ決めてもらいます。</b>'
+      /* ─ **終わった感を消す**（2026-09-11、本人：「変わった後押させたいなら、
+         **もう一回やってみて**みたいな動線が必要なわけだけど。その動線がないし、
+         **そもそももう終わった感が強い**」）────────────────────────
+         見出しが「12 の決めごと**でした**」＝完了形、12 件が整然と並ぶ＝片付いた絵、
+         次の一手は説明文の中に埋もれていた。**ここが終わりではない**と先に言う。
+         言葉は②から借りる（「まだ終わっていません」）——**同じ動作の続き**だと分かる */
+      + '<b class="q2">まだ終わっていません。ひとつ決めると、ぶら下がっている課題が動きます。</b>'
       /* **何がやって、誰が**（本人 2026-09-10：「ただ整理するだけを
          何がやって誰が、っていうのも見せたいか？」）。**③で一行だけ。**
          ②で言うと押す前の種明かしになる（09-08「同じのまとめるってもう見えてるしなあ」）。
