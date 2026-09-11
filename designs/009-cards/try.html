@@ -563,7 +563,7 @@ body[data-stage="c"] .wrap{padding-top:20px}
      12 件の下端が 780px になり、**見える高さが 780 未満の窓では最後の一件が切れる。**
      この案の要は「12 件が一画面に収まった」なので、そこが切れると要が消える。
      広い窓では 8px のまま（＝いままでと同じ見た目）、狭い窓でだけ詰まる */
-  padding:clamp(3px, calc((100vh - 630px) / 24), 8px) 16px; border-radius:7px;
+  padding:clamp(3px, calc((100vh - 665px) / 24), 8px) 16px;   /* 副題に予告の一行が増えたぶん（2026-09-11）*/ border-radius:7px;
   background:var(--card); color:var(--ink); box-shadow:var(--lift1);
   transition:transform .16s var(--ease), box-shadow .16s ease;
 }
@@ -744,6 +744,8 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
 /* 見出しの下の一行。**数字は一度だけ**——一件ごとの内訳を読ませると表に戻る */
 .csub{margin:-6px 0 16px; font-size:15.5px; line-height:1.85; color:var(--sub)}
 .csub b{color:var(--ink)}
+/* 次の一手の予告（§終着点を先に言う）*/
+.csub .q2{display:block; margin-top:6px; color:var(--go)}
 /* ③が出す問い。**12 件はその選択肢** */
 .csub .q{display:inline-block; margin-right:9px; font-size:16.5px; color:var(--ink)}
 .csub .lg{display:block; font-size:14.5px; color:var(--sub); opacity:1}
@@ -2014,6 +2016,13 @@ body[data-stage="c"] .st-c{display:block}
       + '<p class="sn2">' + esc(g.t) + '　' + byG[k].length + ' 件 ／ ' + cnt + ' か所</p>'
       + (k === tangledK && tangledN
           ? '<p class="sfrom">②で辿った ' + tangledN + ' 件は、この決めごとでした。</p>' : '')
+      /* ─ **決めるを上、根拠を下**（2026-09-11、本人：「多分辿り着かないな」）─────
+         根拠 5 行が上にあったせいで、**二択が 1189px ＝折り目の下**にいた（画面で数えた）。
+         押す口が画面の外にあるので、**終着点まで辿り着かない。**
+         §「見てから決める」（09-08 の C 案）は**②で果たしている**——
+         辿った件については、生の一行も、止まっている理由も、調査報告も、もう見ている。
+         ③でもう一度見せてから決めさせる必要は無い。**根拠は、読みたい人が下で読む。** */
+      + pickHTML(k)
       + '<ul class="glist">'
       + rows.map(function(p){
           return '<li>'
@@ -2023,8 +2032,7 @@ body[data-stage="c"] .st-c{display:block}
             + '</li>';
         }).join('')
       + '</ul>'
-      + '<p class="gmore">この ' + rows.length + ' つのもとから、課題が ' + byG[k].length + ' 件立っています。</p>'
-      + pickHTML(k);
+      + '<p class="gmore">この ' + rows.length + ' つのもとから、課題が ' + byG[k].length + ' 件立っています。</p>';
   }
 
   /* ─ **決める**（2026-09-11）───────────────────────────────
@@ -2040,8 +2048,11 @@ body[data-stage="c"] .st-c{display:block}
        言わない（内訳は出す。決める二択は出さない＝一度きりは変えない）*/
     if (decided !== null) return '';
     if (!g.d) return '';
-    return '<div class="sdec"><b>' + esc(g.u) + '</b>'
-      + 'どちらでも進みます。<b style="display:inline;font-size:15px">決めないと進みません。</b>'
+    /* **急に出さない**（2026-09-11、本人：「どちらでも進みます。決めないと進みません。
+       のやつが急」）。前は**箱の題と同じ言葉をもう一度置いて**、そのまま二択が出ていた。
+       **見出しを立てて、ここが最後の一手だと分かるようにする。** */
+    return '<div class="sdec"><b>決める</b>'
+      + 'どちらを選んでも進みます。<b style="display:inline;font-size:15px">決めないと、進みません。</b>'
       + '<div class="pks">'
       + g.d.map(function(a, ai){
           return '<button class="pk" data-k="' + k + '" data-a="' + ai + '">'
@@ -2248,6 +2259,10 @@ body[data-stage="c"] .st-c{display:block}
     document.getElementById('c-sub').innerHTML =
       '<b class="q">どこから手を付けますか。</b>'
       + 'どれも <b>' + (lo === hi ? lo : lo + '〜' + hi) + ' か所</b>から入ってきていました。'
+      /* **終着点を先に言う**（2026-09-11、本人：「このデモの終着点が見えにくいかも」）。
+         ③は 12 件が並ぶだけで、**あと何をしたら終わりなのかが画面に無かった。**
+         入口のカードで「最後にひとつ決めてもらいます」と予告してあるので、**ここで回収する** */
+      + '<b class="q2">このあと、ひとつ決めてもらいます。</b>'
       /* **何がやって、誰が**（本人 2026-09-10：「ただ整理するだけを
          何がやって誰が、っていうのも見せたいか？」）。**③で一行だけ。**
          ②で言うと押す前の種明かしになる（09-08「同じのまとめるってもう見えてるしなあ」）。
