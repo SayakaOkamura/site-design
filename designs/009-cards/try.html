@@ -640,8 +640,29 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
    §5 の線でいうと**手触りの側**（報酬ではない。点数も達成演出も無い。ただ長い）。
    ついでに§「AI の仕事が体験の中に出てこない」がここで解ける——
    **同じ材料が、こちらでは 70 行、③では 1 行。** */
+/* ─ **置かれる動き**（2026-09-11、本人：「報告書作成もモーション欲しい」）──────
+   **「作っています」は出せない。**この報告書はもう書いてあるもの
+   （情報システム部が 2024/10/22 に作った第 2 版）で、いま集めているわけではない。
+   生成の顔を付けると**「調査はもう済んでいる。決まっていないだけ」という芯が消える。**
+   出せるのは**厚い束が置かれる**ところ——§5 の足すリストの「**積まれた束の厚み**」。
+   少し上から落ちて、**わずかに沈んで戻る**（重さ）。下に紙が二枚見えている（厚み）。
+   報酬は足していない——点数も達成演出も無い。**物がそこに置かれるだけ。** */
+@keyframes thud{
+  0%  {opacity:0; transform:translateY(-24px)}
+  60% {opacity:1; transform:translateY(5px)}
+  100%{opacity:1; transform:none}
+}
 .rep{margin:18px 0 0; background:var(--card); border-radius:var(--r);
-     box-shadow:var(--lift1); padding:30px 34px}
+     box-shadow:var(--lift1); padding:30px 34px;
+     position:relative; animation:thud .44s var(--ease) both}
+/* 後ろに重なっている紙。**上端に置く**——報告書は 3000px あるので、
+   下端に置いたら**画面に入らなかった**（画面で見つけた）。
+   一枚目の後ろに紙が重なっている形。**厚みは飾りではなく、73 項目そのもの** */
+.rep::before,.rep::after{content:''; position:absolute; z-index:-1;
+  top:-7px; left:14px; right:14px; height:16px;
+  background:var(--card); border-radius:var(--r) var(--r) 0 0;
+  box-shadow:0 -2px 6px rgba(37,31,69,.06)}
+.rep::after{top:-14px; left:30px; right:30px}
 .rep h2{margin:0; font-family:var(--mincho); font-size:19.5px; font-weight:700; line-height:1.6}
 .rep .repsub{margin:9px 0 0; font-family:var(--mono); font-size:13px; color:var(--sub)}
 .reps{list-style:none; margin:20px 0 0; padding:0;
