@@ -241,6 +241,9 @@ body.locked{overflow:hidden}
    緩めているのは色と → だけ（言葉で「飛びます」とは書かない）。 */
 .card.go{background:var(--go); color:#fff; position:relative}
 .card.go .s{color:rgba(255,255,255,.75); padding-right:34px}
+/* 掛かる手間。**行を分けて、一段落とす**（§時間は行を分ける）*/
+.card .tm{display:block; margin-top:6px; font-style:normal; font-size:14px}
+.card.go .tm{color:rgba(255,255,255,.55)}
 .card.go .arw{position:absolute; right:22px; bottom:24px;
               font-size:18.5px; line-height:1; color:rgba(255,255,255,.85)}
 .card.go:focus-visible{outline-color:var(--ink)}
@@ -669,7 +672,7 @@ html.boot .mark{opacity:1}
       <!-- 表 -->
       <div class="fr">
       <span class="t">サービス</span>
-      <span class="s">四本</span>
+      <span class="s">4 本</span>
       </div>
       <!-- 裏。**同じ一枚の裏。**もう一度押すと表へ戻る -->
       <div class="bk">
@@ -713,7 +716,7 @@ html.boot .mark{opacity:1}
       <!-- 表 -->
       <div class="fr">
       <span class="t">会社概要</span>
-      <span class="s">六項目</span>
+      <span class="s">6 項目</span>
       </div>
       <!-- 裏。**同じ一枚の裏。**もう一度押すと表へ戻る -->
       <div class="bk">
@@ -955,7 +958,11 @@ html.boot .mark{opacity:1}
            （§「二行は欲しいな」）。「デモを触る」の下なので、体験だと分かれば足りる。
            §「理念とデモの接続は切ってある（口で言う）」は**仮提出では通るが、
            サイト単体では穴**だった。ここで一行だけ繋ぐ -->
-      <span class="s">実際に体験してみる。一、二分</span>
+      <!-- **時間は行を分ける**（2026-09-11、本人：「時間入れるなら改行して。
+           あとローマ数字」）——やることと掛かる手間は**別の事実**なので、
+           一文に畳むと手間がやることの説明の続きに見える。**数は算用数字に揃えた**
+           （ほかの五枚の「四本」「六項目」も。表の 69／12 と同じ書き方になる）-->
+      <span class="s">実際に体験してみる<i class="tm">1〜2 分</i></span>
       <span class="arw" aria-hidden="true">→</span>
     </a>
 
