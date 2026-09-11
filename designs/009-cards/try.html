@@ -636,15 +636,17 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
   background:var(--face); color:#fff; border-radius:var(--r); box-shadow:var(--lift2);
   padding:40px 34px; animation:rise .6s var(--ease) both;
 }
+/* **打ち消し → 着地**の順。大きいのは着地（2026-09-11）*/
+.end .lead{margin:0 0 13px; font-size:14.5px; line-height:1.9; color:rgba(255,255,255,.82)}
 .end h2{margin:0; font-size:clamp(18px,2.6vw,26px); font-weight:700; line-height:1.5}
-.end .said{margin:18px 0 0; font-size:14.5px; line-height:2; color:rgba(255,255,255,.86)}
-.end .said b{color:#fff; font-size:16px}
+/* 理念。**面の外・小さく一行**——ここで一番大きいものではない */
+.end .creed{margin:16px 2px 0; font-size:12.5px; line-height:1.9; color:var(--sub)}
+.end .creed i{font-style:normal; font-weight:700; font-size:11.5px;
+              letter-spacing:.04em; margin-right:12px}
 /* 二つの手数を並べる。**同じ押すの重さが違う** */
 .end .cmp{display:block; margin-top:14px; padding-top:14px;
           border-top:1px solid rgba(255,255,255,.22); font-size:14px}
 .end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
-/* 出口が出たら「最後に」は要らない。**場所は残す**（消すと題が動く）*/
-.one.gone{visibility:hidden; pointer-events:none}
 
 .foot{flex:none; background:var(--frame)}
 .foot .in{padding:22px 24px 26px}
@@ -741,9 +743,11 @@ body[data-stage="c"] .st-c{display:block}
   <section class="st st-c">
     <div class="bar">
       <h1 id="c-h1"></h1>
-      <!-- ③に押せるものはこれだけ。**最初から出す**——
-           ほかにやることが無いので、隠す理由が無い -->
-      <button class="one" id="go-d">最後に</button>
+      <!-- **「最後に」は外した**（2026-09-11。本人：「最後に、とか別に要らないって
+           話だったはず」）。09-10 の「もう合体させたら」で④を③の下に入れたとき、
+           **出口を開ける一押しだけが残っていた**——同じ画面にあるものを
+           出す／出さないのボタン。③は**引くところ**（対応表）なので、
+           次へ進める一手は要らない。押せるのは件だけになった -->
     </div>
     <!-- **内訳の読み方**。四角は②のタブと同じ並び -->
     <p class="csub" id="c-sub"></p>
@@ -758,11 +762,22 @@ body[data-stage="c"] .st-c{display:block}
          もう合体させたら」）。前は面ごと切り替わっていたので、
          **12 件が画面から消えてから**出口の言葉が出ていた。
          いまは**残っている件が見えたまま**、その下に出る -->
-    <div class="end" id="end" hidden>
+    <div class="end" id="end">
+      <!-- **大きいのは着地のほう**（2026-09-11）。前は理念が h2・26px で、
+           「一つずつなら、手が付けられます」が 16px——**④はここへ着けると
+           決めてあるのに、大きさが逆だった。**
+           §6「理念 ＝ 会社が遊ぶように働く。商品の説明ではない／主語は会社自身で、
+           訪問者でも客でもない」——人がいま感じているのは**自分の 402 行**の話なので、
+           その真上に理念を置くと**やったことの見出し**として読まれる。
+           それは「会社が提供するコンテンツ」の側で、§6 が混ぜるなと言っている形 -->
       <div class="face">
-        <h2>経営の力で「遊ぶように働く世界」をデザインする</h2>
-        <p class="said" id="said"></p>
+        <p class="lead">減らしたのではなく、形を変えただけです。</p>
+        <h2>一つずつなら、手が付けられます。</h2>
       </div>
+      <!-- 理念は**面の外へ、小さく一行。**入口のカードと同じ呼び方で置く——
+           会社の言葉として置いてある、と分かるだけの形
+           （§「理念は最後に出る。先に出すと標語に戻る」——出す場所は変えていない）-->
+      <p class="creed"><i>企業理念</i>経営の力で「遊ぶように働く世界」をデザインする</p>
       <div class="again">
         <button class="one" id="again">もう一度</button>
         <a class="one" href="index.html" style="text-decoration:none">会社のページを見る</a>
@@ -1595,7 +1610,8 @@ body[data-stage="c"] .st-c{display:block}
       [].forEach.call(document.querySelectorAll('#sets .gset'), function(g){
         g.classList.remove('up'); g.style.animationDelay = '';
       });
-      var f = document.getElementById('go-d');
+      /* 着いたら**押せる相手に焦点を置く**（③で押せるのは件だけ）*/
+      var f = document.querySelector('#sets .gset .gitem');
       if (f) f.focus({ preventScroll:true });
     }, 1560);
   }
@@ -1768,10 +1784,6 @@ body[data-stage="c"] .st-c{display:block}
       + '<span class="lg">寄せたのは決まった処理、<b>題を付けたのは AI</b> です。</span>';
     var side = document.getElementById('sidein');
     if (side) side.innerHTML = EMPTY;
-    var box = document.getElementById('end');
-    if (box) box.hidden = true;
-    var fin = document.getElementById('go-d');
-    if (fin) fin.classList.remove('gone');
   }
 
   /* 片付ける。**押した札が抜けて、下が詰まる。**
@@ -1806,18 +1818,10 @@ body[data-stage="c"] .st-c{display:block}
      **一行目（「N 行が、12 件になりました」）は落とした。**すぐ上の見出しが
      「N 行は、12 件でした」と言っているので、同じ画面に二度は要らない。
      残るのは**言い足りていない二行**だけ。 */
-  function finish(){
-    var box = document.getElementById('end'),
-        el  = document.getElementById('said'),
-        f   = document.getElementById('go-d');
-    if (!box || !el || !box.hidden) return;
-    el.innerHTML =
-      '減らしたのではなく、形を変えただけです。<br>'
-      + '<b>一つずつなら、手が付けられます。</b>';
-    box.hidden = false;
-    if (f) f.classList.add('gone');           /* 行き先が出たら「最後に」は要らない */
-    if (!slow) box.scrollIntoView({block:'end', behavior:'smooth'});
-  }
+  /* **出口は畳まない**（2026-09-11）。③が出た時点で、その下に置いてある。
+     畳んでおくと、開ける一押し（「最後に」）が要る——それは
+     **同じ画面にあるものを出す／出さないボタン**で、次へ進む一手ではなかった。
+     ③が出たとき折り目の下にいるので、**12 件が並んだ姿は崩れない。** */
 
   /* ─ 段 ───────────────────────────────────────────── */
   function stage(s){
@@ -1833,7 +1837,6 @@ body[data-stage="c"] .st-c{display:block}
   start();
 
   document.getElementById('go-c').addEventListener('click', gather);
-  document.getElementById('go-d').addEventListener('click', finish);
   document.getElementById('again').addEventListener('click', function(){
     start(); scrollTo(0, 0);
   });
