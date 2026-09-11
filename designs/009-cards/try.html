@@ -422,6 +422,14 @@ body.landing .gsq{opacity:0}
   color:#8b97b8; margin-right:12px;
 }
 .how .pl.now i{color:var(--go)}
+/* 起票のもと。**課題ではなく、入ってきたもの**——押す先ではないので、面も影も持たない */
+.how .src{display:block; margin-top:8px; padding-left:12px;
+          border-left:2px solid #cdd8ea; color:var(--sub); line-height:1.75}
+.how .src i{font-style:normal; font-family:var(--mono); font-size:11.5px;
+            color:#8b97b8; margin-right:12px}
+/* **タブは外した**（2026-09-11）。出どころが対等に六枚並んでいたのは、
+   六つとも押す対象だったころの形。いまは課題だけが押せる */
+#tabs:empty{display:none}
 /* いまどこに居るか。**道は書かない**（2026-09-10。数で足りる）*/
 .how .tr{font-family:var(--mono); font-weight:700; color:var(--ink)}
 /* 見に行く。**紫は「飛ぶ」の印**（§色の決め） */
@@ -579,7 +587,7 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
    四角の位置が題の長さでずれた（画面で見つけた）*/
 .gsq{
   align-self:center; flex:none;
-  display:grid; grid-template-columns:repeat(6, 58px);
+  display:grid; grid-template-columns:repeat(5, 58px);
   justify-items:center; align-items:center;
 }
 .gsq .sq{
@@ -817,7 +825,11 @@ body[data-stage="c"] .st-c{display:block}
 
   /* 件数は**本人が答えたもの**（①）。**量は減らない**——②の山と③のカードは同じ枚数。
      減るのは手数だけ（12 群なので、何件でも 12 手で終わる）。 */
-  var MAX = 402;   /* 札はここまで先に作る。出す枚数はつまみが決める */
+  /* **課題の数**（2026-09-11。本人：「402 にこだわらなくても」）。
+     前は 402＝メール・チャット・議事録まで含めた**記録の総数**だった。
+     いまは**課題だけを数える**——メールは課題ではないので、足せない。
+     落差は 402 → 12 から **84 → 12** に小さくなるが、**言っていることが本当**になる */
+  var MAX = 84;
 
   /* 群 ＝ カードの題（**生の一行には書かれていない。AI が付けるもの**）と、
      その件が実際にどう書かれていたか。
@@ -836,6 +848,9 @@ body[data-stage="c"] .st-c{display:block}
      どの出どころの言い方かは文のほうに付いている。 */
   var GROUPS = [
     { t:'帳票の桁がずれる',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'行数の上限をどちらに揃えるか',
       x:[ ['月次帳票で、右端の列の桁がずれる','2019/04/11','障害','調査中','',''],
           ['旧帳票と新帳票で行数の上限が違う（99行／50行）','2018/11/26','仕様','','','次回'],
           ['帳票レイアウトの正本がどれか分からない','2020/07/09','仕様','要確認','前任者',''],
@@ -855,6 +870,9 @@ body[data-stage="c"] .st-c{display:block}
       ['議事録', '・帳票の桁の件、報告あり。原因調査中。',
        '桁の件は「調査中」のまま止まっている'] ]},
     { t:'印刷で右端が切れる',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'印刷の体裁をどうするか',
       x:[ ['印刷すると右端の列が切れる','2019/04/11','障害','調査中','',''],
           ['印刷余白の既定値を見直すか未決','2020/07/09','仕様','未定','','次回'],
           ['印刷仕様の節が書きかけのまま','2018/11/26','仕様','要確認','',''],
@@ -876,6 +894,9 @@ body[data-stage="c"] .st-c{display:block}
       ['議事録', '・印刷の件は次回。',
        '印刷の件は次回へ先送りされた'] ]},
     { t:'権限の整理',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'権限の定義をどこに置くか',
       x:[ ['権限の一覧がどこにあるか分からない','2019/04/11','運用','調査中','',''],
           ['権限の整理、担当が次回決めのまま','2018/11/26','','未定','','次回'],
           ['権限定義の別紙が添付されていない','2020/07/09','仕様','要確認','',''],
@@ -895,6 +916,9 @@ body[data-stage="c"] .st-c{display:block}
       ['pdf', '権限の定義は別紙による。別紙は添付されていない。',
        '定義は別紙、その別紙が無い'] ]},
     { t:'承認者が決まっていない',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'承認者を誰にするか',
       x:[ ['承認のフローが確定していない','2018/11/26','運用','要確認','','次回'],
           ['承認者を部長とする記録と、課長とする記録の両方がある','2019/04/11','仕様','調査中','',''],
           ['承認者が不在のときの代理が決まっていない','2020/07/09','運用','未定','',''],
@@ -914,6 +938,9 @@ body[data-stage="c"] .st-c{display:block}
       ['xlsx', '担当は都度確認、という運用のまま',
        '担当が決まらないまま、運用だけ回っている'] ]},
     { t:'検索が遅い',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'速さの基準をどこに置くか',
       x:[ ['一覧の検索に 3 秒以上かかる','2019/04/11','障害','調査中','',''],
           ['件数の多い顧客で、特に待たされる','2020/07/09','障害','継続','',''],
           ['3 秒以内という要件を満たしていない','2018/11/26','仕様','要確認','','次回'],
@@ -933,6 +960,9 @@ body[data-stage="c"] .st-c{display:block}
       ['xlsx', '一覧の検索に 3 秒以上かかる',
        '3 秒を超える、と立っている'] ]},
     { t:'取り込みで止まる',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'止まったときにどうするか',
       x:[ ['取り込みが途中で止まることがある','2019/04/11','障害','調査中','',''],
           ['再現手順が記載されていない','2018/11/26','仕様','要確認','','次回'],
           ['エラー時の手順が別紙とされ、その別紙が無い','2020/07/09','運用','未定','',''],
@@ -952,6 +982,9 @@ body[data-stage="c"] .st-c{display:block}
       ['xlsx', '取り込みが途中で止まることがある',
        '止まることがある、と立っている'] ]},
     { t:'二重登録ができてしまう',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'何をもって重複とするか',
       x:[ ['同じ人を二回登録できてしまう','2019/04/11','障害','調査中','',''],
           ['重複の判定条件が定められていない','2018/11/26','仕様','未定','','次回'],
           ['既存データに重複が何件あるか、集計していない','2020/07/09','運用','要確認','',''],
@@ -971,6 +1004,9 @@ body[data-stage="c"] .st-c{display:block}
       ['議事録', '・重複の件、前にも出ていた気がする。',
        '前にも出ていた、と書かれている'] ]},
     { t:'添付が開けない',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'添付の扱いをどう決めるか',
       x:[ ['送付した添付ファイルが開けない、と連絡があった','2019/04/11','障害','調査中','',''],
           ['開けない原因が特定できていない','2018/11/26','障害','要確認','',''],
           ['開けない場合は担当に連絡、という手順だけがある','2020/07/09','運用','','都度確認','次回'],
@@ -990,6 +1026,9 @@ body[data-stage="c"] .st-c{display:block}
       ['議事録', '・添付の件、報告。',
        '報告だけがあり、対応が書かれていない'] ]},
     { t:'月次の集計が合わない',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'どの数字を正とするか',
       x:[ ['月次の集計が、前年と突き合わせると合わない','2019/04/11','障害','調査中','',''],
           ['月次集計の定義が、部署ごとに違う','2018/11/26','仕様','要確認','','次回'],
           ['どの数字を正とするか決まっていない','2020/07/09','仕様','未定','',''],
@@ -1009,6 +1048,9 @@ body[data-stage="c"] .st-c{display:block}
       ['議事録', '・集計の件、継続。',
        '「継続」のまま持ち越されている'] ]},
     { t:'ログの保存期間が未定',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'ログをいつまで残すか',
       x:[ ['ログの保存期間が定められていない','2019/04/11','仕様','未定','','次回'],
           ['ログの保管方針そのものが無い','2018/11/26','仕様','要確認','',''],
           ['いつまで残っているのか、誰も把握していない','2020/07/09','運用','調査中','都度確認',''],
@@ -1028,6 +1070,9 @@ body[data-stage="c"] .st-c{display:block}
       ['pdf', 'ログの保管方針は定めていない。',
        '保管の方針そのものが無い'] ]},
     { t:'引き継ぎの記録がない',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'引き継ぎを何で残すか',
       x:[ ['担当が変わった経緯が記録されていない','2019/04/11','運用','要確認','',''],
           ['引き継ぎは書面で、という決めだけがある','2018/11/26','仕様','','','次回'],
           ['前任者しか知らない手順が残っている','2020/07/09','運用','調査中','前任者',''],
@@ -1047,6 +1092,9 @@ body[data-stage="c"] .st-c{display:block}
       ['docx', '担当が変わった経緯は記載されていない。',
        '担当が変わった経緯が書かれていない'] ]},
     { t:'手順書が古い',
+      /* **決めごと**（2026-09-11）。この群の課題は、どれもこれが決まらないと動かない。
+         ②の行き止まりであり、③に並ぶのはこの言葉のほう */
+      u:'手順書をどう維持するか',
       x:[ ['手順書が 2019 年時点のまま','2019/04/11','仕様','要確認','','次回'],
           ['現場ではもう使っていない手順書が残っている','2020/07/09','運用','調査中','',''],
           ['手順書を差し替えた記録がない','2018/11/26','運用','未定','前任者',''],
@@ -1078,65 +1126,32 @@ body[data-stage="c"] .st-c{display:block}
   /* **言い方（UNITS）は外した**（2026-09-10）。断片 → 言い方 → 件 の三段は、
      ③が「言い方の一覧」だったころのもの。いまの③は②と同じ山（断片）を
      群ごとに固めるだけなので、中間の段が要らない */
+  /* ─ 札を作る。**課題は課題管理表にしかない**（2026-09-11）─────────
+     > メールが来る→課題に追加される→解こうとする→絡まってる、ってなるのがいいのでは？
+     > **メールが解決項目になってるのも変だし**（本人 2026-09-11）
+
+     前は六つの出どころの行を**全部ひとしく札にして**、どれも押して片付ける対象に
+     していた。**メールは課題ではない。**入ってきたものが起票されて、はじめて課題になる。
+     「チャット #038 を片付ける」は、そもそも成立していなかった。
+
+     いまは**課題管理表の 84 件だけが札。**メール・チャット・議事録・仕様書・別紙は
+     **起票のもと**として、その課題にぶら下がる（`from`）。押す先ではなく、証拠。 */
   function build(){
     CARDS = [];
-    var N = MAX;
-    /* 群ごとの枚数を散らす。合計は**本人が答えた件数**（N）。
-       **群の大きさが違うことが要点**——一手で 30 枚片付く群もあれば 2 枚の群もある。
-       **最大数ぶん一度だけ作って、頭から N 枚を出す**（2026-09-10）——
-       つまみを動かすたびに作り直すと多段組が組み直しになる。
-       山は混ぜてあるので、頭から N 枚でも件はばらける。 */
-    /* ─ **課題管理表は重複させない**（2026-09-11。本人：「課題管理表に書いてるなら
-       多少まとまった内容のはず。**重複するのはここじゃないんじゃないか**」）───
-       前は**どの出どころも同じ一文を使い回して**「※同上」「（再掲）」を付けていた。
-       台帳までそうなっていたので、**台帳そのものが荒れて見えていた**——
-       あれは荒れた材料ではなく、**作りそこない**に見える側だった。
-       いまは**台帳ぶんを先に置く**（一件につき七行。どれも別のチケットとして
-       正しく立っていて、**七行とも同じ一つの問題**）。
-       **言い直しが起きるのは残りの五つ。**チャットで同じ話が何度も出る、
-       議事録に転記される、別紙に再掲される——**そちらは重複するのが本当。**
-       これで「402 行が 12 件」の意味も変わる——**ゴミが 402 行あるのではなく、
-       まともに立っている 402 行が、実は 12 個の問題。** */
     GROUPS.forEach(function(g, k){
-      g.x.forEach(function(r){
-        CARDS.push({ k:k, t:g.t, src:'xlsx', raw:r[0], col:r, pt:'', again:'' });
+      var pool = g.raw.filter(function(p){ return p[0] !== 'xlsx'; });
+      g.x.forEach(function(r, j){
+        CARDS.push({ k:k, t:g.t, u:g.u, src:'xlsx',
+                     raw:r[0], col:r, from:pool[j % pool.length] });
       });
     });
-
-    var rest = N - CARDS.length;
-    var wt = GROUPS.map(function(){ return .55 + rnd(); }),
-        tot = wt.reduce(function(a,b){ return a+b; }, 0);
-    var w = wt.map(function(x){ return Math.max(1, Math.round(x / tot * rest)); });
-    var sum = w.reduce(function(a,b){ return a+b; }, 0), i = 0;
-    while (sum < rest){ w[i % w.length]++; sum++; i++; }
-    while (sum > rest){ if (w[i % w.length] > 1){ w[i % w.length]--; sum--; } i++; }
-
-    /* 二周目以降の跡。**同じ文が何度も出てくるのは本当**だが、
-       一字も違わない札が三枚並ぶと荒れではなく**作りそこないに見えた**（画面で見つけた）。
-       転記や再掲の跡を付けて、同じ件だが別の一行、という形にする。 */
-    var AGAIN = ['（再掲）','※同上','（転記）','※前回分','（追記）'];   /* （再）は元の文に入っているものがあるので使わない */
-
-    GROUPS.forEach(function(g, k){
-      /* **台帳はここで作らない**（上で置いた）。言い直すのは残りの五つだけ */
-      var pool = g.raw.filter(function(p){ return p[0] !== 'xlsx'; });
-      for (var j = 0; j < w[k]; j++){
-        var p = pool[j % pool.length], lap = Math.floor(j / pool.length);
-        CARDS.push({
-          k:k, t:g.t, src:p[0],
-          raw:p[1] + (lap ? '  ' + AGAIN[(j + lap * 2) % AGAIN.length] : ''),
-          pt:p[2],                        /* **カードに出る一行。**機械が書いたもの */
-          again:lap ? AGAIN[(j + lap * 2) % AGAIN.length] : ''
-        });
-      }
-    });
-    /* 山の並びは**混ぜる**（散らばっているのが元の状態）。
-       カードの並びは群ごとに固める（**塊で押せる**のがカードの値打ち）*/
+    /* 並びは混ぜる。**同じ件の課題が離れて立っている**のが元の状態 */
     for (var a = CARDS.length - 1; a > 0; a--){
       var b = Math.floor(rnd() * (a + 1)), t = CARDS[a]; CARDS[a] = CARDS[b]; CARDS[b] = t;
     }
     CARDS.forEach(function(c, n){ c.n = n + 1; });
-
   }
+
 
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
@@ -1163,6 +1178,11 @@ body[data-stage="c"] .st-c{display:block}
   function no(c){ return ('000' + c.n).slice(-3); }
 
   /* タブ＝出どころ。**課題管理表が一枚目**（いちばん見るところ）*/
+  /* **起票のもとの五つ**（2026-09-11）。課題管理表は外す——
+     課題はぜんぶそこに立っているので、印にしても全部点いてしまう。
+     ③の四角が言うのは「**この決めごとに絡む課題は、どこから入ってきたか**」 */
+  var SRC5 = [['mail','メール'],['chat','チャット'],
+              ['議事録','議事録'],['docx','仕様書'],['pdf','別紙']];
   var TABS = [['xlsx','課題管理表'],['mail','メール'],['chat','チャット'],
               ['議事録','議事録'],['docx','仕様書'],['pdf','別紙']];
   var tab = 'xlsx';
@@ -1236,28 +1256,48 @@ body[data-stage="c"] .st-c{display:block}
      | 「整理する」 | **押して引っかかった／底まで送った／タブを 3 枚見た** |
 
      どれも**その人が何かをした結果**で、待っただけでは出ない。 */
-  var hinted = false, picked = false, gone = 0, seen = {}, bottom = false;
-  /* **外れて押した行**（§押し間違えても終わらない）。鎖とは別に持つ——
-     `trail` に混ぜると `need`（何か所で通るか）が狂う */
+  /* ─ ②を組み替えた（2026-09-11）──────────────────────────────
+     > メールが来る→課題に追加される→解こうとする→絡まってる、ってなるのがいいのでは？
+     > **メールが解決項目になってるのも変だし**（本人 2026-09-11）
+
+     **押せるのは課題だけ。**メール・チャット・議事録・仕様書・別紙は起票のもとで、
+     押した課題の下に**証拠**として出る。辿る先は**別の課題**。
+     3〜4 件たどった先で、**どれも同じ一つのことが決まっていない**に行き当たる。
+
+     **ここでは何も片付かない。**片付かないのが本当だから
+     （§「②は失敗させない。無理だと分からせる」）。前は「やっと一行片付きました」で
+     終わっていたが、あれは**メールを片付けていた**ころの出口だった。
+     ②の答えは「課題が多い」ではなく「**決まっていないことが少ない**」。
+
+     **捨てたもの：**タブ（`TABS`／`paintTabs`／`tabsSeen`／`seen`）、
+     出どころの深さ（`depth`／`WHY`）、片付け（`settle`／`finish1`／`closing`／
+     `saySolved`／`ready`／`gone`）。 */
+  var hinted = false, picked = false, bottom = false;
+  /* **外れて押した課題**（§押し間違えても終わらない）。鎖とは別に持つ */
   var stray = [];
+  var trail = [], stuck = null, need = 0;
 
-  function tabsSeen(){ var k = 0; for (var x in seen) if (seen[x]) k++; return k; }
+  var NAME = {xlsx:'課題管理表', mail:'メール', chat:'チャット', '議事録':'議事録',
+              docx:'仕様書', pdf:'別紙'};
 
+  function label(c){ return '#' + no(c); }
+  function findCard(num){
+    for (var i = 0; i < CARDS.length; i++) if (CARDS[i].n === num) return CARDS[i];
+    return null;
+  }
+
+  /* ─ 合図は**時間ではなく壁で出す**（2026-09-10、そのまま）──────────
+     | | 出る条件 |
+     | 指す（一件） | **底まで送った。**かつ、まだ押していない |
+     | 「整理する」 | **押して引っかかった／底まで送った** | */
   function wall(){
     if (document.body.dataset.stage !== 'b') return;
-    var k = tabsSeen();
-    /* 指す。**動いているのに、まだ一度も押していない人にだけ** */
-    if (!picked && !hinted && (bottom || k >= 2)){
-      hinted = true; paintRowsOf(tab);
-    }
-    /* 行き先。**壁に当たった** */
-    if (picked || bottom || k >= 3){
+    if (!picked && !hinted && bottom){ hinted = true; paintList(); }
+    if (picked || bottom){
       var go = document.getElementById('go-c');
       if (go) go.classList.add('on');
     }
   }
-
-  /* 山の底。**402 行を送り切った＝見て諦めた** */
   addEventListener('scroll', function(){
     if (bottom || document.body.dataset.stage !== 'b') return;
     if (scrollY + innerHeight >= document.documentElement.scrollHeight - 60){
@@ -1265,56 +1305,64 @@ body[data-stage="c"] .st-c{display:block}
     }
   }, { passive:true });
 
-  function paintPile(){
-    picked = false; hinted = false; bottom = false; seen = {};
-    var hint = document.getElementById('hint'),
-        go   = document.getElementById('go-c');
-    hint.textContent = '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
-                     + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
-    gone = 0; trail = []; stray = []; stuck = null; ready = null;
-    go.classList.remove('on');
-    tab = 'xlsx';
-    paintTabs();
-    paintRowsOf(tab);
-    seen[tab] = 1;
-    sayHow();   /* **tab を決めたあと**——先に呼ぶと前のタブの言い方が残る */
-    stick();
-  }
-
-  /* 貼りつく帯の高さを測って、表の見出しをその下に貼る。
-     **60px 固定にしていたら題の帯と重なった**（帯は折り返しで高さが変わる）*/
+  /* 貼りつく段は**頭 → 問いの帯 → 表の見出し**の三段になった（タブが減ったぶん一段減る）*/
   function stick(){
     var a = document.querySelector('.ask2');
     if (!a) return;
     var s1 = 60 + a.offsetHeight;
-    var t  = document.getElementById('tabs');
-    var r  = document.documentElement.style;
+    var r = document.documentElement.style;
     r.setProperty('--stick',  s1 + 'px');
-    r.setProperty('--stick2', (s1 + (t ? t.offsetHeight : 0)) + 'px');
+    r.setProperty('--stick2', s1 + 'px');
   }
   addEventListener('resize', stick);
 
-  /* 表の上の一行。**押す場所のすぐ上で、一度だけ言う。**
-     片付けたあとは引き算に入れ替わる（下の clearOne）*/
+  /* **案内で予告しない**（2026-09-10）。書いてあるとおりに押して、片付かない——
+     そこが②の徒労感。「片付けにいけます」と書くと**先に断って**しまう */
   function sayHow(){
-    var el = document.getElementById('how');
-    if (!el || gone) return;
-    el.innerHTML = 'タブを押すと、その出どころが見られます。'
-      /* **予告しない**（本人 2026-09-10：「『片付けにいけます』はもうやることの
-         予告になってるから徒労感がない」）。**押せば片付く、と書いてある。**
-         押して初めて「引っかかっている」が出るから、空振りになる */
-      + '<b>' + (tab === 'xlsx' ? '行の左のチェック' : '行') + 'を押すと、'
-      + 'その行が片付きます。</b>';
+    document.getElementById('how').innerHTML =
+      '課題の左のチェックを押すと、<b>その課題が片付きます。</b>';
     stick();
   }
 
-  /* ─ 着いた先で、**二つを並べる**（2026-09-10）─────────────────
-     > なんで次々めぐらされてるのかがわかんないのが気になる（本人 2026-09-10）
+  function paintPile(){
+    picked = false; hinted = false; bottom = false;
+    trail = []; stray = []; stuck = null; need = 0;
+    document.getElementById('hint').textContent =
+      'メール・チャット・議事録で出た話が、ここに起票されています。ぜんぶで '
+      + N + ' 件。状態も担当も、埋まっていません。';
+    document.getElementById('go-c').classList.remove('on');
+    var t = document.getElementById('tabs'); if (t) t.innerHTML = '';
+    sayHow();
+    paintList();
+  }
 
-     **同じ一件が、別の場所に別の言葉で書いてある**——それがめぐらされる理由。
-     着いたところで、来た行と着いた行を**並べて置く。注釈は付けない。**
-     「同じ話じゃん、書き方が違うだけ」と**読んだ人に思わせる。**
-     「同じ件です」と書くと、③の仕事を②が先に喋ることになる。二行だけなら読まれる。 */
+  /* 表は一枚だけ。**印は札のほうから引く**（描き直しても残る）*/
+  function paintList(){
+    var pile = document.getElementById('pile'),
+        sheet = document.getElementById('sheet');
+    if (!pile) return;
+    sheet.classList.add('grid');
+    pile.innerHTML = shown().map(function(c){
+      var cl = (stuck === c) ? ' class="aim"'
+             : (trail.indexOf(c) >= 0 || stray.indexOf(c) >= 0 ? ' class="wait"' : '');
+      return '<li' + cl + ' data-k="' + c.k + '" data-i="' + c.n + '">'
+           + rowHTML(c) + '</li>';
+    }).join('');
+    /* **一件だけ立たせて指す。**教えるのは一度だけ（押したら止まる）*/
+    if (hinted && !picked){
+      var first = pile.querySelector('li');
+      if (first) first.classList.add('pick');
+    }
+  }
+
+  /* 起票のもと。**課題ではなく、入ってきたもの。**辿る先ではないので、面も影も無い */
+  function fromHTML(c){
+    if (!c || !c.from) return '';
+    return '<span class="src"><i>' + esc(NAME[c.from[0]] || c.from[0]) + '</i>'
+         + esc(c.from[1]) + '</span>';
+  }
+
+  /* 着いた先の対。**注釈は付けない**——読んだ人が繋げる */
   function showPair(from, to){
     var el = document.getElementById('how');
     if (!el || !from || !to) return;
@@ -1326,276 +1374,49 @@ body[data-stage="c"] .st-c{display:block}
     stick();
   }
 
-  /* タブ。**枚数が「散らばっている」、件数が「量」** */
-  function paintTabs(){
-    var box = document.getElementById('tabs');
-    if (!box) return;
-    box.innerHTML = TABS.map(function(t){
-      var k = shown().filter(function(c){ return c.src === t[0]; }).length;
-      return '<button class="tb' + (t[0] === tab ? ' on' : '') + '" data-s="' + esc(t[0]) + '">'
-           + esc(t[1]) + '<em>' + k + '</em></button>';
-    }).join('');
-  }
-
-  /* いま見ている出どころの行だけ出す。**表のときだけ格子** */
-  function paintRowsOf(src){
-    var pile = document.getElementById('pile'),
-        sheet = document.getElementById('sheet');
-    if (!pile) return;
-    sheet.classList.toggle('grid', src === 'xlsx');
-    pile.innerHTML = shown().filter(function(c){ return c.src === src; })
-      .map(function(c){
-        /* 辿った行は**止まったまま残る**、追いかけている先は**脈を打つ**。
-           タブを跨いで描き直すので、印は札のほうから引く */
-        var cl = (stuck === c || ready === c) ? ' class="aim"'
-               : (trail.indexOf(c) >= 0 || stray.indexOf(c) >= 0 ? ' class="wait"' : '');
-        return '<li' + cl + ' data-k="' + c.k + '" data-i="' + c.n + '">'
-             + (src === 'xlsx' ? rowHTML(c) : srcHTML(c)) + '</li>';
-      }).join('');
-    /* ─ 合図は**あとから**出す（2026-09-10）───────────────────
-       > **どこから手を付ける？みたいな感じに思っていきたい**ですね（本人 2026-09-10）
-
-       最初の一行を最初から指していた。**指した時点で「どこから」が消える**——
-       始める場所をこちらが決めていた。**6 秒は指さない。**
-       そのあいだが「どこから手を付けるか」を考える時間で、
-       **どの行を押しても引っかかる**ので、選んだ結果は変わらない。
-
-       6 秒たっても動かない人にだけ指す（§「押さない人を塞がない」）。
-       **右端の「片付ける」は捨てた**——チェック欄から 1100px 離れていた
-       （本人 2026-09-10：「片付ける表記が端すぎる」）。言葉は表の上に一度だけ */
-    if (hinted && !picked){
-      var first = pile.querySelector('li');
-      if (first) first.classList.add('pick');
-    }
-  }
-
-  document.addEventListener('click', function(e){
-    if (document.body.dataset.stage !== 'b' || !e.target.closest) return;
-    var b = e.target.closest('.tb');
-    if (!b) return;
-    tab = b.dataset.s;
-    seen[tab] = 1;
-    paintTabs(); paintRowsOf(tab);
-    /* **鎖の途中でタブを押しても、道を消さない**（画面で見つけた）。
-       前は案内文で上書きしていたので、**見に行くボタンごと消えて、
-       辿っている最中の鎖に戻れなくなっていた**（生で見せるときに詰む）*/
-    if (stuck)      showTrail();
-    else if (ready) saySolved();
-    else            sayHow();
-    stick(); wall();
-  });
-
-  /* ─ 引っかかる ── **押しても、そのままは通らない**（2026-09-10）──────────
-     > **でも全部ストレートに片付きはするんだ**（本人 2026-09-10）
-     >
-     > 押してみたら**これ引っかかってる**ってなって、それ押しに行ったら
-     > **また引っかかって、それでやっと通る**、みたいな体験でもさせたら（同）
-
-     どの行を押しても同じように消えていたので、**手でも普通にさばける、
-     ただ数が多いだけ**の画面になっていた。実際の課題管理表は逆で、
-     **開いても片付かない行のほうが多い**——担当が空欄、状態が「要確認」、
-     期限が「次回」。片付けるには**別紙を見に行くか、前任者に聞くしかない。**
-
-     **引っかかり先は、必ず別のタブ。**そこが要で、「散らばっている」が
-     言葉ではなく**足で分かる**——表の一行を片付けるのに議事録を開き、
-     その議事録がチャット待ちになっている。
-
-     **賽の河原（09-09 に捨てた形）とは別物。**あれは**押しても何も起きない。**
-     これは**毎回ちがう場所へ進んで、2〜3 か所で必ず通る。**
-     出るのは「終わらねえ」ではなく「**1 件にこれだけかかるのか**」。
-
-     通ると**鎖ごと片付く**——3 行が 1 件だった。
-     **③の「402 行は、12 件でした」の前振りになっている。** */
-  var NAME = {xlsx:'課題管理表', mail:'メール', chat:'チャット',
-              '議事録':'議事録', docx:'仕様書', pdf:'別紙'};
-  /* 止まっている理由は、**その場所の言い方**で言う */
-  var WHY  = {xlsx:'と同じ件です。先にそちらから',
-              mail:'の返信待ちです', chat:'で確認中です',
-              '議事録':'の決定待ちです', docx:'の記載待ちです',
-              pdf:'を見ないと分かりません'};
-  var trail = [], stuck = null, need = 0, ready = null;
-
-  function label(c){ return NAME[c.src] + ' #' + no(c); }
-  function findCard(num){
-    for (var i = 0; i < CARDS.length; i++) if (CARDS[i].n === num) return CARDS[i];
-    return null;
-  }
-  /* ─ 辿る向きは**タブの並びのまま**（2026-09-10）─────────────────
-     > **辿るの逆じゃない？**多分今根幹の原因から辿ってるよね（本人 2026-09-10）
-     > ── **どこで終わるでもいいし根幹がチャットの可能性自体は全然あると思うけど、
-     > どうせ書かれてる内容まで読まれないよ**（同）
-
-     一度**意味で深さを付けた**（台帳 → やりとり → 決定 → 決めごと → 元資料）。
-     **それは要らなかった。**終点がチャットでもおかしくないし、
-     そもそも**行の中身は読まれない。**
-
-     読まれるのは**タブの位置**。だから向きの基準もそこ——
-     **タブの並びを左から右へ。**左へ戻ると、それだけで逆に見える。
-     （前の深さは チャット < メール で、**タブの並び（メール・チャット）と逆**だった）*/
-  function depth(src){
-    for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === src) return i;
-    return 0;
-  }
-
-  /* 引っかかり先。**いまより深い出どころ**から、まだ辿っていないものを選ぶ */
-  /* ─ 行き先は**同じ件の中**（2026-09-10）───────────────────────
-     > **なんで次々めぐらされてるのかがわかんない**のが気になるんだよね（本人 2026-09-10）
-
-     行き先を番号だけで選んでいたので、**鎖が件をまたいでいた。**
-     「課題管理表 #009」と「議事録 #095」が**別々の話**なら、
-     めぐらされる理由は本当に無い。読んでも繋がらないし、
-     ③が「402 行は 12 件」と言うのとも食い違っていた。
-
-     いまは**同じ件の中だけ**を辿る。だから辿った 3〜4 行は**本当に同じ一件**で、
-     ②で歩いた道が、そのまま③の「40 行が 1 件」になる。
-
-     **飛ばさない**——いちばん近い出どころへ一段ずつ（タブの並びの順）。 */
+  /* 次に待たせている課題。**同じ件の中だけ**——外へは出ない */
   function nextBlock(c){
-    var mine = depth(c.src), pick = null;
     for (var i = 0; i < CARDS.length; i++){
       var b = CARDS[i];
-      if (b === c || b.k !== c.k) continue;      /* **同じ件の中だけ** */
-      if (depth(b.src) <= mine) continue;        /* **左へは戻らない** */
-      if (trail.some(function(x){ return x.src === b.src; })) continue;
+      if (b === c || b.k !== c.k) continue;
       if (trail.indexOf(b) >= 0) continue;
-      if (!pick || depth(b.src) < depth(pick.src)) pick = b;   /* 一段ずつ */
+      return b;
     }
-    return pick;
+    return null;
   }
 
-  /* ─ 辿っている途中 ── **数だけでいい**（2026-09-10）─────────────
-     > 4 か所辿って〜みたいなの、**数カウントあるなら別に辿った経路書かなくていい**よ
-     > （本人 2026-09-10）
-
-     道を全部書いていた（「課題管理表 #009 → 議事録 #095 → 仕様書 #326 は、…」）。
-     深さは**数で足りる**し、四つ並ぶと帯の中で折り返す。
-     残すのは**何か所目か・いまどこか・次はどこか**の三つだけ。 */
+  /* 押した課題が動かない理由。**数は言わない**——どこまで続くか分からないのが中身 */
   function showTrail(){
     var el = document.getElementById('how');
     if (!el || !stuck) return;
-    /* **数も出さない**（本人 2026-09-10：「1 か所目表記もいらない」）。
-       途中で何か所目かが分かると**進み具合**になる——どこまで続くか分からないのが
-       この場の中身。数を言うのは**終わったあとに一度だけ**（「4 か所たどって」）。
-
-       **押した行は目の前にある**（印が付いている）ので、名指ししない。
-       言うのは**チェックが入らなかった**ことと、**どこ待ちか**の二つ */
-    /* **チェックのある表と、無い出どころで言い方を分ける。**
-       議事録やチャットにチェックは無い——あそこで押したのは
-       「終わった」ではなく「**見に行った**」。同じ言葉で返すと嘘になる */
     var here = trail[trail.length - 1];
-    /* **押した行の言葉を、答えの中に置く**（2026-09-10）。
-       読ませようとするのではなく、**読む場所に置く**——
-       押した直後は「なんで片付かないの」と思っている瞬間なので、
-       そこに文字があれば読まれる */
-    el.innerHTML = '<b>' + (here.src === 'xlsx' ? 'まだ終わっていません。' : 'ここも止まっています。') + '</b>'
+    el.innerHTML =
+      '<b>まだ動きません。</b>'
       + '<span class="qt">' + esc(here.raw) + '</span>は、'
-      + '<span class="tr">' + esc(label(stuck)) + '</span>' + WHY[stuck.src] + '。'
-      + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>';
+      + '<span class="tr">' + esc(label(stuck)) + '</span> が決まらないと進みません。'
+      + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>'
+      + fromHTML(here);
     stick();
   }
 
-  /* 通った。**鎖ごと片付く**——辿った 3 行は、もともと 1 件だった */
-  /* ─ 通った ── **最初のタスクに戻る**（2026-09-10）───────────────
-     > 辿って行って押したときに**元タスクが達成した感じがない。
-     > 多分順に消えていってるから。**それを解くための前提を解消してるんだから、
-     > **最初のタスクに戻るのが自然**では（本人 2026-09-10）
-
-     前は鎖ぜんぶが**その場で**消えていた。着いた先の行が消えるだけなので、
-     **始めた一行がどうなったのかを、一度も見ていない。**
-     いまは**元の出どころへ戻って、前提が右から順に片付き、最後に元の一行が片付く。**
-     終わりの言葉も「やっと 1 件」から「**やっと 課題管理表 #009 が片付きました**」へ——
-     片付いたのは件数ではなく、**始めた一行。** */
-  /* ─ 通った ── **最後の一押しは人がやる**（2026-09-10）───────────
-     > 最後戻って来た時のは**自分で押すよ。前提タスクなんでしょ？**（本人 2026-09-10）
-
-     戻ってきて、勝手に ☑ が入って消えていた。**前提を片付けたのは自分**なのに、
-     肝心の一行は機械が片付けている。**通ったのは「押せるようになった」まで**で、
-     押すのは人。§「見抜くのは機械、決めるのは人」と同じ線。
-
-     解けた行は**脈を打って待つ**（追いかけていたときと同じ印）。 */
-  /* ─ 奥まで着いた ── **そこは本当に終わる**（2026-09-10）─────────────
-     > タスクを押す時点で、の話は**まだ完結してない**な（本人 2026-09-10）
-
-     前は、前提の無い行を押した瞬間に**元のタスクへ飛ばしていた。**
-     押したのに、その行にはチェックも入らず、消えもしない。
-     **押す＝終わった**を最後まで通していなかった。
-
-     いまは**その行がそこで片付く**（チェックが入って、抜ける）。
-     そのうえで元のタスクへ戻る——**落ちたのは前提**、と分かる順になる。 */
-  function settle(li, c){
+  /* ─ **絡まっていた**（2026-09-11）────────────────────────────
+     ②の行き止まり。**何も片付かない。**3〜4 件たどって、
+     **どれも同じ一つのことが決まっていない**に行き当たる。
+     ここで出る言葉が、そのまま③の見出しになる */
+  function tangle(){
     stuck = null;
-    li.classList.remove('wait','aim','pick');
-    var ck = li.querySelector('.c-ck'); if (ck) ck.classList.add('on');
-    li.classList.add('gone');
-    /* 奥の一行は**ここで札から抜く。**鎖の残りは、最後の一押しで抜ける */
-    for (var i = 0; i < CARDS.length; i++)
-      if (CARDS[i].n === c.n){ CARDS.splice(i, 1); break; }
-    N = CARDS.length; gone++;
-    trail = trail.filter(function(x){ return x !== c; });
-
-    /* 鎖が一行しか無ければ、それで終わり */
-    if (!trail.length){ closing(c, 1); return; }
-    var first = trail[0];
-    ready = first;
-    /* ─ **間そのものは悪くない**（2026-09-11。本人：「モーションで間繋いだりする
-       時間が発生するのは良いと思うよ」）──────────────────────
-       ②の待ちを一度ぜんぶ詰めて、**戻した。**押した瞬間のチェック（430ms）も、
-       最後の一押しのあと（320ms）も、抜ける動き（.22s）も、**動きが繋いでいる。**
-       削るのは**動きが終わったあとの無反応**だけ——ここは 520ms で、
-       行は 260ms で抜け終わるのに、**残りの 260ms は本当に何も起きていない。**
-       抜ける動きに合わせて 360ms にした（戻りの滑らかさはそのまま）。
-       しんどいのは**中身**（押しても通らない・辿らされる）で、そこは触らない */
-    setTimeout(function(){
-      tab = first.src; paintTabs(); paintRowsOf(tab);
-      var top = document.querySelector('#pile li[data-i="' + first.n + '"]');
-      if (top && !slow) top.scrollIntoView({block:'center', behavior:'smooth'});
-      saySolved(esc(label(c)));
-      stick();
-    }, slow ? 0 : 360);
-  }
-
-  /* 解けた状態の言葉。**タブを移っても呼び直せる**ようにしておく */
-  function saySolved(doneLabel){
-    if (!ready) return;
+    var u = GROUPS[trail[0].k].u, k = trail.length;
     document.getElementById('how').innerHTML =
-      (doneLabel ? '<b>' + doneLabel + ' が片付きました。</b>' : '')
-      + '<span class="tr">' + esc(label(ready)) + '</span> が、押せるようになりました。';
+      '<b>' + k + ' 件たどって、どれも動きませんでした。</b>'
+      + 'ぜんぶ <span class="tr">' + esc(u) + '</span> が決まっていないからです。';
+    [].forEach.call(document.querySelectorAll('#pile li.aim'), function(x){
+      x.classList.remove('aim'); x.classList.add('wait');
+    });
+    wall();
     stick();
   }
 
-  /* 終わりの言葉。**一行にかかった手数**と、引き算 */
-  function closing(first, k){
-    document.getElementById('how').innerHTML =
-      '<b>' + k + ' か所たどって、やっと ' + esc(label(first))
-      + ' が片付きました。</b>' + MAX + ' → ' + N + ' 行。';
-    document.getElementById('hint').textContent =
-      '課題管理表・メール・チャット・議事録・仕様書・別紙に散らばって、'
-      + 'ぜんぶで ' + N + ' 行。状態も担当も、埋まっていません。';
-    document.getElementById('go-c').classList.add('on');
-    paintTabs(); paintRowsOf(tab); stick();
-  }
-
-  /* 解けた一行を、人が押した */
-  /* 解けた一行を、人が押した。**奥の一行はもう抜けている**ので、残りをここで抜く */
-  function finish1(li){
-    var list = trail.slice(), first = ready, k = list.length + 1;
-    ready = null; trail = []; stray = []; stuck = null;
-    li.classList.remove('wait','aim','pick');
-    var ck = li.querySelector('.c-ck'); if (ck) ck.classList.add('on');
-    li.classList.add('gone');
-    setTimeout(function(){
-      list.forEach(function(c){
-        for (var i = 0; i < CARDS.length; i++)
-          if (CARDS[i].n === c.n){ CARDS.splice(i, 1); break; }
-      });
-      N = CARDS.length; gone += list.length;
-      /* **回数は言わない**（本人 2026-09-10：「終わらねえ〜はベクトルがちょっと違う」）。
-         言うのは**一行にかかった手数**と、引き算そのもの */
-      closing(first, k);
-    }, 320);
-  }
-
-  /* 鎖から外れた行を押した。**押した手ごたえは返す。鎖は捨てない** */
+  /* 鎖から外れた課題を押した。**押した手ごたえは返す。鎖は捨てない** */
   function offTrack(li, c, back){
     if (stray.indexOf(c) < 0) stray.push(c);
     li.classList.remove('aim');
@@ -1606,116 +1427,73 @@ body[data-stage="c"] .st-c{display:block}
     } else {
       li.classList.add('wait');
     }
-    /* 同じ出どころに居るなら、その場で脈が戻る */
     var t = document.querySelector('#pile li[data-i="' + back.n + '"]');
     if (t) t.classList.add('aim');
     document.getElementById('how').innerHTML =
-      '<b>この行も止まっています。</b>'
-      + '<span class="tr">' + esc(label(back)) + '</span>'
-      + (ready ? ' が、まだ押せます。' : ' を追いかけている途中です。')
+      '<b>この課題も動きません。</b>'
+      + '<span class="tr">' + esc(label(back)) + '</span> を追いかけている途中です。'
       + '<button class="jump" id="back">' + esc(label(back)) + ' へ戻る →</button>';
     stick();
   }
 
   function press(li){
-    if (!li || li.classList.contains('gone')) return;
+    if (!li) return;
     var c = findCard(+li.dataset.i);
     if (!c) return;
     picked = true;
     var pk = document.querySelector('#pile li.pick');
     if (pk) pk.classList.remove('pick');
 
-    /* **解けた一行を押した。**ここが「達成」——前提を落としたのは自分 */
-    if (ready && ready === c){ finish1(li); return; }
+    /* **押し間違えても終わらない**（2026-09-11）。鎖は捨てず、追いかけている先を指し直す */
+    if (stuck && stuck !== c && trail.length){ offTrack(li, c, stuck); return; }
 
-    /* ─ **押し間違えても終わらない**（2026-09-11。本人：「押し間違えると
-       終わりなのが気になる」）────────────────────────────
-       前は**別の行を押した瞬間に鎖を捨てて**、そこから新しい鎖を引き直していた。
-       3〜4 か所たどった先の「**押せるようになりました**」で一行ずれて押すと、
-       **たどったぶんが黙って消える。**エラーも出ないので、
-       **間違えたことにすら気づけない**（画面で数えた。合図の直後は
-       行の位置も動いていたので、狙って外した）。
-
-       いまは**鎖を保つ。**押した行には正直に返し（☑ → 待ち。§「押す＝終わった」）、
-       **追いかけている先を指し直して、戻る道を出す。**
-       弾かないので§「入れさせずに弾くと、自分のせいに見える」も守れる。
-       徒労感は**中身**（どれを押しても止まっている）で出す側であって、
-       **操作の罰**で出すものではない */
-    var back = ready || stuck;
-    if (back && back !== c && trail.length){ offTrack(li, c, back); return; }
-
-    ready = null;   /* 追いかけていないときに別の行を押したら、解けた状態は捨てる */
-
-    /* 追いかけている先を押したら鎖が伸びる。**別の行を押したら、そこから鎖を引き直す** */
     if (stuck && stuck === c) trail.push(c);
-    /* **3〜4 か所で通る。**
-       2〜3 では「引っかかった」で終わって、**辿らされている**まで行かなかった
-       （本人 2026-09-10：「2 のとこもっと辿ってほしい」）。
-       4〜5 にしたら**押す回数が最大 9 回**になって、今度は長すぎた
-       （同：「なんかめっちゃ長くなってない！？**辿るの 2 桁ないくらいがちょうどいい**かも」）。
-
-       **数えるのは「か所」ではなく、押す回数。**一か所進むのに二回押す
-       （行を押す → 「見る →」を押す）ので、**か所 × 2 − 1** が手数。
-       3〜4 か所＝**5〜7 回**——2 桁の手前に余裕がある。
-       上限は 6（出どころの数）——辿った出どころは避けるので、それ以上は伸びない */
     else {
-      /* **前の鎖の印を消してから引き直す**（画面で見つけた）。
-         残しておくと、関係の無い行に破線のチェックが溜まる */
+      /* 前の鎖の印を消してから引き直す */
       [].forEach.call(document.querySelectorAll('#pile li.wait, #pile li.aim'), function(x){
         x.classList.remove('wait','aim');
         var k = x.querySelector('.c-ck'); if (k) k.classList.remove('on');
       });
-      trail = [c]; need = 3 + (c.n % 2);
+      trail = [c]; stray = [];
+      /* **3〜4 件で行き止まる。**一件進むのに二回押す（課題を押す →「見る →」）ので、
+         手数は 5〜7 回。2 桁の手前に余裕がある（本人 2026-09-10：
+         「辿るの 2 桁ないくらいがちょうどいい」）*/
+      need = 3 + (c.n % 2);
     }
 
-    /* **前提が無い＝ここは本当に終わる。**押した人の言うとおり */
-    if (trail.length >= need){ settle(li, c); return; }
-    var b = nextBlock(c);
-    if (!b){ settle(li, c); return; }
-    stuck = b;
-    wall();                       /* **押して引っかかった＝壁** */
-    li.classList.remove('aim');   /* 追いついた印は消す。**次の先へ移る** */
-    /* ─ **押した瞬間、チェックは入る**（2026-09-10）────────────────
-       > チェックリストって、**押す時って終わった時**じゃん？（本人 2026-09-10）
-
-       そのとおりで、**押す＝終わった**。押す人は終わったつもりで押している。
-       だから**入れさせる。**そのうえで**戻る**——終わっていなかったのは
-       本人のせいではなく、**まだ落ちていない前提があるから**
-       （§理念「原因は会社の介入」）。
-
-       入れさせずに弾くと「押せない仕組み」になって、**自分のせいに見える。** */
+    li.classList.remove('aim');
+    /* **押す＝終わった**（2026-09-10）。押す人は終わったつもりで押している。
+       だから入れさせる。そのうえで**入らない**——終わっていなかったのは
+       本人のせいではなく、まだ決まっていないことがあるから */
     var ck = li.querySelector('.c-ck');
     if (ck && !slow){
       ck.classList.add('on');
-      setTimeout(function(){
-        ck.classList.remove('on');
-        li.classList.add('wait');
-      }, 430);
+      setTimeout(function(){ ck.classList.remove('on'); li.classList.add('wait'); }, 430);
     } else {
       li.classList.add('wait');
     }
-    showTrail();
+
+    var b = (trail.length >= need) ? null : nextBlock(c);
+    if (!b){ tangle(); return; }
+    stuck = b; wall(); showTrail();
   }
 
   document.addEventListener('click', function(e){
     if (document.body.dataset.stage !== 'b' || !e.target.closest) return;
-    /* 見に行く。**タブが替わって、その行が真ん中に来る**（探させない）*/
-    /* **戻る。**外れて押したあと、追いかけている先へ帰る（§押し間違えても終わらない）*/
+    /* **戻る。**外れて押したあと、追いかけている先へ帰る */
     if (e.target.closest('#back')){
-      var bk = ready || stuck;
-      if (!bk) return;
-      tab = bk.src; paintTabs(); paintRowsOf(tab);
+      if (!stuck) return;
+      paintList();
       var bt = document.querySelector('#pile li.aim');
       if (bt && !slow) bt.scrollIntoView({block:'center', behavior:'smooth'});
-      /* 戻った先はもう目の前にいるので、**「見る →」は出し直さない**——出どころの対で置く */
-      if (ready) saySolved('');
-      else showPair(trail[trail.length - 1], stuck);
+      showPair(trail[trail.length - 1], stuck);
       return;
     }
+    /* 見に行く。**その課題が真ん中に来る**（探させない）*/
     if (e.target.closest('#jump')){
       if (!stuck) return;
       var from = trail[trail.length - 1], to = stuck;
-      tab = stuck.src; paintTabs(); paintRowsOf(tab);
+      paintList();
       var t = document.querySelector('#pile li.aim');
       if (t) t.scrollIntoView({block:'center', behavior: slow ? 'auto' : 'smooth'});
       showPair(from, to);
@@ -1835,23 +1613,30 @@ body[data-stage="c"] .st-c{display:block}
      塗ってあるところに、この件の行がある。**数は出さない**——
      パッと見で要るのは「**どれも 4〜6 か所にまたがっている**」だけで、
      一件ごとの内訳の数字は、読ませると表に戻る。 */
+  /* **数えるのは起票のもと**（2026-09-11）。札はぜんぶ課題（課題管理表）なので、
+     `c.src` で数えると一色になる。見たいのは**どこから入ってきたか** */
   function places(k){
     var by = {};
-    byG[k].forEach(function(c){ by[c.src] = (by[c.src] || 0) + 1; });
+    byG[k].forEach(function(c){
+      var f = c.from && c.from[0]; if (f) by[f] = (by[f] || 0) + 1;
+    });
     return by;
   }
   function item(k){
     var by = places(k), cnt = 0;
-    var sq = TABS.map(function(t){
+    var sq = SRC5.map(function(t){
       var v = by[t[0]] || 0;
       if (v) cnt++;
       return '<i class="sq' + (v ? ' on' : '') + '" title="'
-           + esc(t[1]) + ' ' + v + ' 行"></i>';
+           + esc(t[1]) + ' ' + v + ' 件"></i>';
     }).join('');
+    /* **並ぶのは決めごと**（2026-09-11）。問題の名前（`t`）ではなく、
+       **決まっていないこと**（`u`）を出す——②の行き止まりで出た言葉と同じ。
+       ここが「課題が多い」から「**決まっていないことが少ない**」に変わる場所 */
     return '<button class="gitem" data-k="' + k + '">'
-      +   '<span class="gt">' + esc(GROUPS[k].t) + '</span>'
+      +   '<span class="gt">' + esc(GROUPS[k].u) + '</span>'
       +   '<span class="gsq" aria-hidden="true">' + sq + '</span>'
-      +   '<span class="gn">' + byG[k].length + ' 行 ／ ' + cnt + ' か所</span>'
+      +   '<span class="gn">' + byG[k].length + ' 件 ／ ' + cnt + ' か所</span>'
       + '</button>';
   }
 
@@ -1878,10 +1663,10 @@ body[data-stage="c"] .st-c{display:block}
     });
     /* **か所は出どころの数。**生の一行の数ではない——同じ出どころに二行あることがある
        （画面で見つけた。札は 4 か所、内訳は 5 か所と出ていた）*/
-    var seen = {}, cnt = 0;
-    rows.forEach(function(q){ if (!seen[q[0]]){ seen[q[0]] = 1; cnt++; } });
-    return '<h2 class="sh">' + esc(g.t) + '</h2>'
-      + '<p class="sn2">' + byG[k].length + ' 行 ／ ' + cnt + ' か所</p>'
+    var by = places(k), cnt = 0;
+    SRC5.forEach(function(t){ if (by[t[0]]) cnt++; });
+    return '<h2 class="sh">' + esc(g.u) + '</h2>'
+      + '<p class="sn2">' + esc(g.t) + '　' + byG[k].length + ' 件 ／ ' + cnt + ' か所</p>'
       + '<ul class="glist">'
       + rows.map(function(p){
           return '<li>'
@@ -1891,11 +1676,11 @@ body[data-stage="c"] .st-c{display:block}
             + '</li>';
         }).join('')
       + '</ul>'
-      + (rest > 0 ? '<p class="gmore">同じ話が、ほかに ' + rest + ' 行。</p>' : '');
+      + '<p class="gmore">この ' + rows.length + ' つのもとから、課題が ' + byG[k].length + ' 件立っています。</p>';
   }
 
   /* 何も選んでいないとき。**空の箱を置かない**——何をすればいいかだけ書く */
-  var EMPTY = '<p class="sempty">件を押すと、<b>その一件がどの一行から来たのか</b>が出ます。</p>';
+  var EMPTY = '<p class="sempty">決めごとを押すと、<b>どの一行から来たのか</b>が出ます。</p>';
 
   function select(k){
     var set = setsEl && setsEl.querySelector('.gset[data-k="' + k + '"]');
@@ -1933,7 +1718,7 @@ body[data-stage="c"] .st-c{display:block}
     setsEl.innerHTML =
       '<div class="gitem ghd" aria-hidden="true">'
       +   '<span class="gt"></span>'
-      +   '<span class="gsq">' + TABS.map(function(t){
+      +   '<span class="gsq">' + SRC5.map(function(t){
             return '<i class="sn">' + esc(t[1]) + '</i>';
           }).join('') + '</span>'
       +   '<span class="gn"></span>'
@@ -1943,14 +1728,16 @@ body[data-stage="c"] .st-c{display:block}
         }).join('');
 
     /* **②の量に対する返事。**説明ではない */
+    /* **②の答え**（2026-09-11）。「402 行が 12 件」は整理の話だったが、
+       いまは**設計の話**——課題が多いのではなく、決まっていないことが少ない */
     document.getElementById('c-h1').textContent =
-      N + ' 行は、' + order.length + ' 件でした';
+      N + ' 件の課題は、' + order.length + ' の決めごとでした';
     /* **散らばりの幅を、数字で一度だけ。**②で辿ったのは 1 件ぶん、
        ここに並んでいるのは同じことが 12 件ぶん */
     var lo = 9, hi = 0;
     order.forEach(function(k){
       var c = 0, by = places(k);
-      TABS.forEach(function(t){ if (by[t[0]]) c++; });
+      SRC5.forEach(function(t){ if (by[t[0]]) c++; });
       if (c < lo) lo = c; if (c > hi) hi = c;
     });
     /* ─ ③が出す問い ── **どこから手を付けますか**（2026-09-10）─────────
@@ -1964,7 +1751,7 @@ body[data-stage="c"] .st-c{display:block}
        ④の「一つずつなら、手が付けられます」がその返事になる。 */
     document.getElementById('c-sub').innerHTML =
       '<b class="q">どこから手を付けますか。</b>'
-      + 'どれも <b>' + (lo === hi ? lo : lo + '〜' + hi) + ' か所</b>にまたがっていました。'
+      + 'どれも <b>' + (lo === hi ? lo : lo + '〜' + hi) + ' か所</b>から入ってきていました。'
       /* **何がやって、誰が**（本人 2026-09-10：「ただ整理するだけを
          何がやって誰が、っていうのも見せたいか？」）。**③で一行だけ。**
          ②で言うと押す前の種明かしになる（09-08「同じのまとめるってもう見えてるしなあ」）。
