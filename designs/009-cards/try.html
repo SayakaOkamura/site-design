@@ -237,7 +237,7 @@ body{
 .sheet:not(.grid){padding:0 10px}
 .pile{list-style:none; margin:0; padding:0; columns:auto}
 .pile li{
-  padding:5px 0; margin:0;
+  padding:8px 0; margin:0;
   border-bottom:1px solid rgba(37,31,69,.07);
   color:rgba(37,31,69,.9); cursor:pointer;
   transition:background-color .12s ease, opacity .2s ease;
@@ -247,7 +247,13 @@ body{
   padding:0; margin:0; border-radius:0;
   border-bottom:1px solid #e4eaf3;
 }
-.sheet.grid .pile li > span{padding:3px 8px; border-right:1px solid #eaeff6}
+/* **押す的を太くする**（2026-09-11、本人：「クリック位置精度が求められるのが
+   ちょっと気になる」）。69 行の似た行の中から**一行だけ**を狙わせるので、
+   一段外すと隣を押す（実際に隣を押した）。**行の背を 29px → 38px に上げた**
+   （詰め 3px → 7px）。表は 2018px → 2600px ほどになるが、
+   ②は**長いこと自体が中身**なので、長くなるのは困らない。
+   §「押し間違えても終わらない」は残す——**当たりを太くしても、外すときは外す** */
+.sheet.grid .pile li > span{padding:7px 8px; border-right:1px solid #eaeff6}
 .sheet.grid .pile li > span:last-child{border-right:0}
 /* **一行おきに薄く敷く。**表計算の作法（意匠は借りない——色は地の色のまま）*/
 .sheet.grid .pile li:nth-child(even){background:rgba(37,31,69,.025)}
@@ -363,7 +369,7 @@ body.landing .gsq{opacity:0}
    （一手のボタンを除いて）。 */
 /* **どの行も押せる。**ただしボタンの見た目にするのは一行だけ（下の `.pick`）——
    402 行ぜんぶを押せる姿にすると、詰めた一覧が台帳＝仕事に見える */
-.pile li{padding:4px 3px; margin:0 -3px; border-radius:3px;
+.pile li{padding:7px 3px; margin:0 -3px; border-radius:3px;
          white-space:nowrap; overflow:hidden; cursor:pointer;
          transition:background-color .12s ease, opacity .2s ease}
 .pile li:hover{background:rgba(99,84,224,.1)}
