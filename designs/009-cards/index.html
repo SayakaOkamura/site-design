@@ -174,7 +174,7 @@ body.locked{overflow:hidden}
    **押す場所はデモとお問い合わせだけになった。**
    §「一覧はカード、中身はページ」「用はカード一枚で着く」を覆す——
    **あの決めは案置き場のインデックスから引き継いだ形で、会社サイトの用（読む）に合っていない。** */
-.deck{grid-template-columns:minmax(0,1fr); gap:22px}
+.deck{gap:18px}   /* 格子は元のまま（§押した行の直下に開く）*/
 
 /* ─ **一画面目の格子は残す**（2026-09-11。本人：「**あの形状、パッと見で全部
    みえるっていうのがいいところ**だから、そこは外さないようにしよう」）────
@@ -183,25 +183,32 @@ body.locked{overflow:hidden}
    **上は今までの六枚のまま。それが目次になって、中身が下に段として続く。**
    押すと**開く**のではなく**下の該当箇所へ飛ぶ**ので、
    「押さないと読めない」も「三段」も起きない。**デモの紫は一画面目に残る。** */
-/* **左右はやめた**（2026-09-11。本人：「ん〜〜〜〜〜見にくい」）——
-   400px の柱に六枚を入れたら**題が三行に折れ**、右の本文も 420px で細切れになった。
-   **両方が痩せた**うえ、視線が二本に割れてどちらを読むのか迷う。
-   **上に格子（元のまま・全幅・3×2）、下に中身**に戻す。
-   一画面目の絵は前とほぼ同じで、デモの紫もそこにある。
-   押すと**開く**のではなく**下の段へ飛ぶ**ので、「押さないと読めない」も「三段」も起きない。
-   送ると格子は消えるが、**それは普通のページと同じこと。** */
-.deck.toc{grid-template-columns:repeat(3,1fr); gap:16px; margin-top:16px}
-.deck.toc .card{min-height:128px; padding:26px 22px 24px;
-                display:flex; flex-direction:column; cursor:pointer}
-.deck.toc .card:hover{transform:translateY(-3px); box-shadow:var(--lift2)}
-#deck{margin-top:26px}
-/* 飛んだ先が頭の下に潜らないように */
+/* ─ **押した行の直下に開く**（2026-09-11、本人）──────────────────
+   > 普通のページと同じだったら**もったいなくない？印象に残らない**し。
+   > あと、下に飛んでいく方式だと**上戻るの面倒**なんだよな
+
+   数字で置くと、中身は 1,869 字＝**この字の大きさで 5 画面ぶん。**
+   だから「六枚が一画面に見える」と「押さずに全部読める」は**同時に成り立たない。**
+   今日はその二つの間を往復した（畳む → 縦一列 → 上に目次 → 左右 → ここ）。
+
+   **落としたのは「押さずに読める」ほう。読ませることは入口の仕事ではない**——
+   掴みは HP の外側、確信形成はデモ、と決めた。入口の仕事は
+   **何があるか分かること**と**デモへ行けること**で、それは格子が果たしている。
+
+   畳んでいたころに戻るように見えるが、**違いが一つ。前は開くと全部隠れた。**
+   いまは**六枚が残ったまま、押した行の直下に開く**（§「開いた中身は行の直下に」）——
+   読み終わった位置のすぐ上と下に、次の選択肢がある。**上に戻る操作が要らない。**
+   閉じるのは同じ札をもう一度。**開くのは一つだけ。** */
+.deck{--cols:3}
+#panel{grid-column:1/-1; background:var(--card); border-radius:var(--r);
+       box-shadow:var(--lift1); overflow:hidden; animation:drop .3s var(--ease) both}
+#panel[hidden]{display:none}
+/* 開いている札。**どれを開いたか、格子の中で分かる** */
+.card.two.open{box-shadow:var(--lift2); transform:translateY(-3px)}
+.card.two.open .t::after{content:'　▾'; color:var(--go)}
 .card.two{scroll-margin-top:26px}
-@media (max-width:900px){ .deck.toc{grid-template-columns:repeat(2,1fr)} }
-@media (max-width:560px){ .deck.toc{grid-template-columns:minmax(0,1fr)} }
-/* 読む順。**デモは中身を読んだあと、問い合わせの手前**（腰を上げる直前に置く）*/
-.deck > [data-k="1"]{order:1} .deck > [data-k="2"]{order:2} .deck > [data-k="3"]{order:3}
-.deck > [data-k="5"]{order:4} .deck > [data-k="6"]{order:5} .deck > [data-k="4"]{order:6}
+@media (max-width:900px){ .deck{--cols:2} }
+@media (max-width:560px){ .deck{--cols:1} }
 
 .card{
   -webkit-appearance:none; appearance:none; border:0; margin:0;
@@ -282,17 +289,20 @@ body.locked{overflow:hidden}
 /* ─ 畳まない段（§畳むのをやめた）──────────────────────────
    裏返す仕掛け（`preserve-3d`／`backface`／`absolute`）を全部ほどいて、
    **表紙を落として中身をそのまま置く。**押せないので、指の形にもしない */
-.card.two{position:static; transform:none; transform-style:flat;
-          min-height:0; cursor:default; transition:none}
-.card.two:hover{transform:none; box-shadow:var(--lift1)}
-.card.two .fr{display:none}
-.card.two .bk{position:static; inset:auto; transform:none; visibility:visible;
-               backface-visibility:visible; -webkit-backface-visibility:visible;
-               overflow:visible; background:none}
-.card.two .bk .body{flex:none; overflow:visible; min-height:0;
-                    scrollbar-gutter:auto; padding-bottom:30px}
+/* 裏返す仕掛けはほどく（§押した行の直下に開く）。表紙は表紙のまま置いて、
+   中身は `#panel` へ**移して**出す（写さない——`id` が二つになる）*/
+.card.two{position:relative; transform-style:flat; padding:0;
+          transition:transform .16s var(--ease), box-shadow .16s ease}
+.card.two .fr,.card.two .bk{position:static; inset:auto; transform:none;
+     visibility:visible; backface-visibility:visible; -webkit-backface-visibility:visible}
+.card.two .fr{display:flex; flex:1}
+.card.two > .bk{display:none}
+#panel .bk{display:flex; flex-direction:column; overflow:visible; background:none}
+#panel .bk .body{flex:none; overflow:visible; min-height:0;
+                 scrollbar-gutter:auto; padding-bottom:30px}
 /* **行の長さに蓋をする。**面は端まで広げて、字は読める幅で止める */
-.card.two .bk .body > *{max-width:820px}
+#panel .bk .body > *{max-width:820px}
+#panel .bk .body .map{max-width:560px}
 /* 地図だけは、もう少し小さく（3:2 のまま全幅にすると地図で一画面が埋まる）*/
 .card.two .bk .body .map{max-width:560px}
 
@@ -614,7 +624,7 @@ html.boot .mark{opacity:1}
          お問い合せ）のうち、これだけ丸ごと無かった**（実サイトと突き合わせて見つけた。
          2026-09-08 再確認）。会社が自分の言葉で一番長く書いているのがここ。
          並び順も公式どおり、先頭に置く。中身は**全文そのまま**（仮は混ぜない）。 -->
-    <div class="card two" data-k="1" data-hash="mind">
+    <div class="card two" role="button" tabindex="0" data-k="1" data-hash="mind">
       <!-- 表 -->
       <div class="fr">
       <span class="t">企業理念</span>
@@ -639,7 +649,7 @@ html.boot .mark{opacity:1}
          **一覧は動かない**——開くと下が押し下げられて、次の一行を見るのに毎回スクロールすることになる。
          もう一度押すと閉じる（入口のカードと同じ押し方）。
          題と、そのすぐ下の一行が公式サイトの言葉。それより下は仮。 -->
-    <div class="card two" data-k="2" data-hash="svc">
+    <div class="card two" role="button" tabindex="0" data-k="2" data-hash="svc">
       <!-- 表 -->
       <div class="fr">
       <span class="t">サービス</span>
@@ -683,7 +693,7 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <div class="card two" data-k="3">
+    <div class="card two" role="button" tabindex="0" data-k="3">
       <!-- 表 -->
       <div class="fr">
       <span class="t">会社概要</span>
@@ -709,7 +719,7 @@ html.boot .mark{opacity:1}
       </div>
     </div>
 
-    <div class="card two" data-k="4">
+    <div class="card two" role="button" tabindex="0" data-k="4">
       <!-- 表 -->
       <div class="fr">
       <span class="t">お問い合わせ</span>
@@ -779,7 +789,7 @@ html.boot .mark{opacity:1}
     <!-- 所在。**会社概要から出した一枚。**ほかの項目は読むものだが、これは行くもの。
          だから地図が主役で、住所はその見出しになっている。
          **末尾に置いてある。**間に入れると「デモを触る」が二段目へ落ちる。 -->
-    <div class="card two" data-k="5">
+    <div class="card two" role="button" tabindex="0" data-k="5">
       <!-- 表 -->
       <div class="fr">
       <span class="t">所在</span>
@@ -1335,34 +1345,55 @@ html.boot .mark{opacity:1}
   document.querySelectorAll('[data-src]').forEach(function(el){
     el.src = el.dataset.src; el.removeAttribute('data-src');
   });
-  /* ─ **目次を組む**（2026-09-11、§一画面目の格子は残す）──────────────
-     六枚の表紙（`.fr`）を、そのままの見た目で上に出す。押すと下の段へ飛ぶ。
-     デモは**上にも下にも置く**——上は「ここにある」と知らせる口、
-     下は**読み終わったところの一手**（腰を上げる直前）。同じ行き先だが役が違う */
+  /* ─ **押した行の直下に開く**（2026-09-11、§同名の節）────────────────
+     格子は六枚のまま。押すと、その札の**行の直下**に中身が開く（`#panel`）。
+     中身は**移す**（写すと `id` が二つになって、お問い合わせの仕掛けが壊れる）。
+     開くのは一つだけ。同じ札をもう一度押すと閉じる。
+     列の数は `--cols` から読む（窓で 3／2／1 に変わる）*/
   (function(){
     var deck = document.getElementById('deck');
     if (!deck) return;
-    var toc = document.createElement('div');
-    toc.className = 'deck toc';
-    [].forEach.call(deck.children, function(c){
-      var k = c.dataset.k, tile;
-      if (c.classList.contains('go')){
-        tile = document.createElement('a');
-        tile.className = 'card go';
-        tile.href = c.getAttribute('href');
-        tile.innerHTML = c.innerHTML;
-      } else {
-        var fr = c.querySelector('.fr');
-        if (!fr) return;
-        c.id = 'sec-' + k;
-        tile = document.createElement('a');
-        tile.className = 'card';
-        tile.href = '#sec-' + k;
-        tile.innerHTML = fr.innerHTML;
-      }
-      toc.appendChild(tile);
+    var panel = document.createElement('div');
+    panel.id = 'panel';
+    panel.hidden = true;
+    var openCard = null;
+
+    function cols(){
+      return getComputedStyle(deck).gridTemplateColumns.split(' ').filter(Boolean).length || 1;
+    }
+    function close(){
+      if (!openCard) return;
+      var bk = panel.firstChild;
+      if (bk) openCard.appendChild(bk);
+      openCard.classList.remove('open');
+      panel.hidden = true;
+      openCard = null;
+    }
+    function openAt(card){
+      if (openCard === card){ close(); return; }
+      close();
+      var cards = [].filter.call(deck.children, function(x){ return x !== panel; });
+      var i = cards.indexOf(card), c = cols();
+      /* その行の**最後の札のうしろ**に置く＝行の直下 */
+      var last = Math.min(Math.floor(i / c) * c + c - 1, cards.length - 1);
+      deck.insertBefore(panel, cards[last].nextSibling);
+      panel.appendChild(card.querySelector('.bk'));
+      panel.hidden = false;
+      card.classList.add('open');
+      openCard = card;
+    }
+    deck.appendChild(panel);
+    deck.addEventListener('click', function(e){
+      var card = e.target.closest('.card.two');
+      if (card && deck.contains(card)) openAt(card);
     });
-    deck.parentNode.insertBefore(toc, deck);
+    deck.addEventListener('keydown', function(e){
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var card = e.target.closest('.card.two');
+      if (!card) return;
+      e.preventDefault(); openAt(card);
+    });
+    addEventListener('resize', function(){ if (openCard){ var c = openCard; close(); openAt(c); } });
   })();
   window.addEventListener('pageshow', reopen);
   window.addEventListener('hashchange', reopen);
