@@ -1500,6 +1500,13 @@ body[data-stage="c"] .st-c{display:block}
      **徒労が主語、発見が従属節**だった。だから②の記憶が「動かなかった」で残る。
      **知らなかったのは後半のほう**——四つ別々の課題だと思っていたものが、
      実は**同じ一つのこと**だった。主従を入れ替えた。
+
+     さらに**達成の言い方に直した**（2026-09-11。本人：「**徒労にするより、
+     辿ってやっと解決した、根本原因はこれだった、って終わらせてほしい。
+     徒労ってそういうこと**」）——こちらは徒労を「押しても何も起きない」と取っていたが、
+     **徒労は辿る手間のほうで、その先には報酬がある。**
+     「同じところで止まっていました」は**状態の報告**で、まだ達成になっていなかった。
+     **辿り着いたことを言う。**
      「動かなかった」は捨てていない——③で**対比として**出る
      （「②では 4 件たどって、1 件も動きませんでした。③では 1 回決めて、7 件動きました」）。
      **徒労は道具で、着地ではない。** */
@@ -1507,7 +1514,7 @@ body[data-stage="c"] .st-c{display:block}
     stuck = null; tangledN = trail.length;
     var u = GROUPS[trail[0].k].u, k = trail.length;
     document.getElementById('how').innerHTML =
-      '<b>' + k + ' 件とも、同じところで止まっていました。</b>'
+      '<b>' + k + ' 件たどって、根本原因に行き当たりました。</b>'
       + '<span class="tr">' + esc(u) + '</span> が決まっていません。';
     [].forEach.call(document.querySelectorAll('#pile li.aim'), function(x){
       x.classList.remove('aim'); x.classList.add('wait');
