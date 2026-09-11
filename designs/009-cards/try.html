@@ -607,6 +607,37 @@ font-size:15px; font-weight:700; min-width:0; flex:1 1 auto;
 }
 .ghd:hover{transform:none; box-shadow:none}
 
+/* ─ 経緯 ── **人が辿ると、こうなる**（2026-09-11。本人：「知ろうとしたら
+   **めっちゃ長い報告書**出てくるとかそういうのも欲しいけどな」）───────────
+   ②で根本原因に行き当たった直後、**「なぜそうなったのか」を知りたくなる瞬間**に置く。
+   押すと、その件が絡まるまでの経緯が**時系列でずらっと出る**——起票、報告、転記、
+   先送り、再掲、差し戻し。**読み切れない量。**
+   効きどころは三つ。**あるあるの笑いどころ**であること。**人が調べるとこうなる**という絵で、
+   ③で AI が一行にするのとの**対比**になること。**押したい人だけ押せばいい**ので、
+   1〜2 分の通しを壊さないこと。
+   §5 の線でいうと**手触りの側**（報酬ではない。点数も達成演出も無い。ただ長い）。
+   ついでに§「AI の仕事が体験の中に出てこない」がここで解ける——
+   **同じ材料が、こちらでは 70 行、③では 1 行。** */
+.rep{margin:18px 0 0; background:var(--card); border-radius:var(--r);
+     box-shadow:var(--lift1); padding:30px 34px}
+.rep h2{margin:0; font-family:var(--mincho); font-size:17px; font-weight:700; line-height:1.6}
+.rep .repsub{margin:9px 0 0; font-family:var(--mono); font-size:11.5px; color:var(--sub)}
+.reps{list-style:none; margin:20px 0 0; padding:0;
+      font-family:var(--mincho); font-size:13.5px; line-height:1.9}
+.reps li{display:flex; gap:14px; padding:5px 0; border-top:1px solid rgba(37,31,69,.07)}
+.reps i{font-style:normal; font-family:var(--mono); font-size:11.5px; color:#8b97b8;
+        flex:none; width:84px; padding-top:3px}
+.reps b{font-weight:400; color:var(--sub); font-size:12px; flex:none; width:66px; padding-top:2px}
+.reps span{min-width:0}
+.rep .repend{margin:22px 0 0; padding-top:16px; font-size:13px; color:var(--sub);
+             border-top:1px solid rgba(37,31,69,.12)}
+.rep .repend b{color:var(--ink)}
+@media (max-width:700px){
+  .rep{padding:22px 18px}
+  .reps li{display:block}
+  .reps i,.reps b{width:auto; display:inline-block; margin-right:10px}
+}
+
 /* ─ 決める ── **③でただ一つ押せるもの**（2026-09-11）────────────
    ②で 3〜4 件たどって**一件も動かなかった。**ここで**一つ決めると 7 件動く。**
    押し方も相手も動詞も同じで、**重さだけが違う。**それが説明なしの「革新」で、
@@ -1432,6 +1463,7 @@ body[data-stage="c"] .st-c{display:block}
         sheet = document.getElementById('sheet');
     if (!pile) return;
     sheet.classList.add('grid');
+    var old = document.getElementById('rep'); if (old) old.remove();
     pile.innerHTML = shown().map(function(c){
       var cl = (stuck === c) ? ' class="aim"'
              : (trail.indexOf(c) >= 0 || stray.indexOf(c) >= 0 ? ' class="wait"' : '');
@@ -1489,6 +1521,85 @@ body[data-stage="c"] .st-c{display:block}
     stick();
   }
 
+  /* ─ **経緯**（2026-09-11）。**人が辿ると、こうなる**————————————
+     材料は増やさない——**同じ件の材料を、時系列に開き直すだけ。**
+     起票（その件の課題ぜんぶ）＋出どころの一行＋**間を埋めていた事務**
+     （再掲・持ち越し・差し戻し・担当交代）。日付は 2018/11 から少しずつ進む。
+     数はその件の課題数 × 9 ＋ 10 ——**件が大きいほど経緯も長い。** */
+  var FILL = [
+    ['議事録','・前回分を再掲。'],
+    ['議事録','・本件、次回へ持ち越し。'],
+    ['議事録','・報告のみ。結論なし。'],
+    ['議事録','・担当者の交代について。引き継ぎは別途。'],
+    ['chat','これ、前にも出てませんでしたっけ'],
+    ['chat','すみません、どこ見ればいいんでしたっけ'],
+    ['chat','担当の方、どなたでしたっけ'],
+    ['chat','その話、別のところで見た気がします'],
+    ['mail','（転送）先日の件、ご確認をお願いします。'],
+    ['mail','（再送）お返事をいただけておりません。'],
+    ['mail','（差し戻し）記載が不足しています。'],
+    ['docx','※この節は追記予定。'],
+    ['docx','※前版からの変更点は未記載。'],
+    ['pdf','詳細は別紙による。'],
+    ['pdf','本紙は写しである。原本の所在は不明。']
+  ];
+  function two(v){ return ('0' + v).slice(-2); }
+  function history(k){
+    /* **`byG` は③で作られる。**②の時点ではまだ無いので、札から直に引く */
+    var g = GROUPS[k];
+    var list = shown().filter(function(c){ return c.k === k; });
+    var sd = 7919 + k * 131;
+    function rh(){ sd = (sd * 1103515245 + 12345) & 0x7fffffff; return sd / 0x7fffffff; }
+    var pool = g.raw.filter(function(p){ return p[0] !== 'xlsx'; });
+    var items = [];
+    list.forEach(function(c){ items.push(['xlsx', c.raw + '　を起票']); });
+    var total = list.length * 9 + 10, j = 0;
+    while (items.length < total){
+      var p = (j % 3 === 0) ? pool[j % pool.length] : FILL[(j * 7 + k) % FILL.length];
+      items.push([p[0], p[1]]);
+      j++;
+    }
+    /* 起票が頭に固まらないように混ぜてから、日付を順に振る */
+    for (var a = items.length - 1; a > 0; a--){
+      var b = Math.floor(rh() * (a + 1)), t = items[a]; items[a] = items[b]; items[b] = t;
+    }
+    var ms = new Date(2018, 10, 26).getTime(), out = [], first = '', last = '';
+    items.forEach(function(it, x){
+      var d = new Date(ms), ds = d.getFullYear() + '/' + two(d.getMonth() + 1) + '/' + two(d.getDate());
+      if (!x) first = ds;
+      last = ds;
+      out.push('<li><i>' + ds + '</i><b>' + esc(NAME[it[0]] || it[0]) + '</b>'
+             + '<span>' + esc(it[1]) + '</span></li>');
+      ms += (10 + Math.floor(rh() * 38)) * 86400000;
+    });
+    return '<div class="rep" id="rep">'
+      + '<h2>経緯：' + esc(g.u) + '</h2>'
+      + '<p class="repsub">' + first + ' 〜 ' + last + '　全 ' + items.length + ' 件'
+      + '　課題管理表・メール・チャット・議事録・仕様書・別紙より</p>'
+      + '<ol class="reps">' + out.join('') + '</ol>'
+      + '<p class="repend">ここまでが、さきほどの <b>' + list.length + ' 件</b>ぶんの経緯です。'
+      + '決まっていないのは、いまも <b>' + esc(g.u) + '</b> の一つだけ。</p>'
+      + '</div>';
+  }
+
+  function showHistory(){
+    if (!trail.length || document.getElementById('rep')) return;
+    var sheet = document.getElementById('sheet');
+    if (!sheet) return;
+    sheet.insertAdjacentHTML('afterend', history(trail[0].k));
+    var rep = document.getElementById('rep');
+    /* **ここは即時**（§「ジェットコースターにしない」）。69 行の表を丸ごと
+       通り越すので、滑らかに送ると**長い乗り物**になる。着く先は別の文書で、
+       途中に繋がる絵は無い */
+    /* **貼りつく帯のぶんを引く**（画面で見つけた）。`scrollIntoView` だけだと
+       題と副題が帯の下に隠れて、いきなり 2019 年の行から始まる */
+    if (rep){
+      var a = document.querySelector('.ask2');
+      var off = 60 + (a ? a.offsetHeight : 0) + 14;
+      scrollTo(0, rep.getBoundingClientRect().top + scrollY - off);
+    }
+  }
+
   /* ─ **絡まっていた**（2026-09-11）────────────────────────────
      ②の行き止まり。**何も片付かない。**3〜4 件たどって、
      **どれも同じ一つのことが決まっていない**に行き当たる。
@@ -1515,7 +1626,9 @@ body[data-stage="c"] .st-c{display:block}
     var u = GROUPS[trail[0].k].u, k = trail.length;
     document.getElementById('how').innerHTML =
       '<b>' + k + ' 件たどって、根本原因に行き当たりました。</b>'
-      + '<span class="tr">' + esc(u) + '</span> が決まっていません。';
+      + '<span class="tr">' + esc(u) + '</span> が決まっていません。'
+      /* **知ろうとすると、長い**（§経緯）。押したい人だけ押す */
+      + '<button class="jump" id="hist">経緯を見る →</button>';
     [].forEach.call(document.querySelectorAll('#pile li.aim'), function(x){
       x.classList.remove('aim'); x.classList.add('wait');
     });
@@ -1587,6 +1700,7 @@ body[data-stage="c"] .st-c{display:block}
 
   document.addEventListener('click', function(e){
     if (document.body.dataset.stage !== 'b' || !e.target.closest) return;
+    if (e.target.closest('#hist')){ showHistory(); return; }
     /* **戻る。**外れて押したあと、追いかけている先へ帰る */
     if (e.target.closest('#back')){
       if (!stuck) return;
