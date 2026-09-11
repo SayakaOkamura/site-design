@@ -353,21 +353,32 @@ body{
    面は**うっすら**だけ残す（的は要る）。行が着いてから、**一本ずつ積み上がる。**
    名前が付くのはそのあと（§「寄せるのはコード、題を付けるのは AI」の順はそのまま）*/
 body.landing .gset{opacity:.16}
-body.landing .gt,
-body.landing .gn,
-body.landing .gsq{opacity:0}
-body.landing #c-h1,
-body.landing #c-sub,
-body.landing .side{opacity:0}
-#c-h1,#c-sub,.side{transition:opacity .34s ease}
+/* **題は、面が上がったあとで入る**（§二拍に分ける）。
+   `naming` が付いているあいだは名前だけ伏せておく。`--nd` は一枚ずつの遅れ */
+body.landing .gt,   body.naming .gt,
+body.landing .gn,   body.naming .gn,
+body.landing .gsq,  body.naming .gsq,
+body.landing #c-h1, body.naming #c-h1,
+body.landing #c-sub,body.naming #c-sub,
+body.landing .side, body.naming .side{opacity:0}
+/* **出すのは animation**（§366 の作法に揃える）。クラスを**外して** 0 → 1 に戻すのではなく、
+   **足して**流す。`both` なので終わったら残る。
+   （一度「`transition` が `currentTime` 0 で止まった」と見たが、**タブが背面だっただけ**——
+   `document.hidden` のあいだは animation も transition も進まない。**こちらの計測ミス。**
+   それでも§366 と同じ作法に揃うので、animation のほうを採る）*/
+body.named .gt,
+body.named .gn,
+body.named .gsq{animation:rise .3s var(--ease) both; animation-delay:var(--nd,0ms)}
+body.named #c-h1,
+body.named #c-sub,
+body.named .side{animation:rise .34s var(--ease) both}
 /* **出るのは transition ではなく animation。**クラスを外して 0 → 1 に流す作りは、
    遅延を付け外しすると `currentTime` 0 のまま止まった（画面で見つけた）。
    `both` の animation なら、遅延のあいだ 0 で待って、終わったら 1 で残る */
-/* **面ごと積み上がる**（§集まった結果に見せる）。波の遅れは `.gset` に入れてある */
+/* **面ごと積み上がる**（§集まった結果に見せる）。波の遅れは `.gset` に入れてある。
+   中身は `animation` ではなく `transition` で入れる（§二拍に分ける）——
+   `naming` を外した瞬間に効かせたいので、クラスの付け外しで動くほうがいい */
 .gset.up{animation:rise .36s var(--ease) both}
-.gset.up .gt,
-.gset.up .gn,
-.gset.up .gsq{animation:rise .36s var(--ease) both; animation-delay:inherit}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
 /* ─ 山。**押せない。見るだけ**（2026-09-10）────────────────────
    一度は「押させる」、次は「五行から選ばせる」にしていた。どちらも外した：
@@ -1556,6 +1567,7 @@ body[data-stage="c"] .st-c{display:block}
   }
 
   function paintPile(){
+    document.body.classList.remove('naming','named');
     picked = false; hinted = false; bottom = false; tangledN = 0;
     trail = []; stray = []; stuck = null; need = 0; repN = 0; tangledK = null;
     document.getElementById('hint').textContent =
@@ -1903,7 +1915,8 @@ body[data-stage="c"] .st-c{display:block}
      **枠は動かさない。**動くのは写した行だけ。 */
   function gather(){
     var pile = document.getElementById('pile');
-    if (slow || !pile){ stage('c'); return; }
+    /* 動きを切っている環境では、伏せたままにしない */
+    if (slow || !pile){ document.body.classList.add('named'); stage('c'); return; }
     document.getElementById('go-c').classList.remove('on');   /* 二度押させない */
 
     /* 1. 写す。**窓の中だけだと 13 行しか飛ばなかった**（画面で数えた）。
@@ -1980,13 +1993,27 @@ body[data-stage="c"] .st-c{display:block}
       c.el.style.opacity = 0;
     });
 
-    /* 4. 着いたころに③が出て、そのあと一件目が開く */
+    /* ─ 4. **二拍に分ける**（2026-09-11、本人：「AI が今まとめている、を見せれる？」）──
+       §「寄せるのはコード、題を付けるのは AI。**順番で分かる**（言葉で説明していない）」
+       と決めてあるのに、**面と題が同時に出ていた**ので順番が見えなかった。
+       **AI の仕事は題を付けること**（`c-sub` もそう言っている）なので、
+       **寄る → 面が上がる → 一拍 → 名前が付く**に割る。
+       見出し・副題・右の箱も、**名前と一緒に**出す（説明は最後）。
+         760ms　行が着く。**空の面が一枚ずつ上がる**（35ms ずつ）
+        1180ms　**名前が入る**（30ms ずつ）。ここが AI の一拍
+       報酬は足していない——出るのは**名前だけ。** */
     setTimeout(function(){
-      [].forEach.call(document.querySelectorAll('#sets .gset'), function(g){
+      [].forEach.call(document.querySelectorAll('#sets .gset'), function(g, i){
         g.classList.add('up');
+        g.style.setProperty('--nd', (i * 30) + 'ms');   /* 名前が入る順 */
       });
       document.body.classList.remove('landing');
-    }, 760);   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
+      document.body.classList.add('naming');            /* 面だけ。題はまだ */
+    }, 760);
+    setTimeout(function(){
+      document.body.classList.remove('naming');
+      document.body.classList.add('named');      /* ここで名前が入る */
+    }, 1180);   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
     /* **着いた形のまま置く**（2026-09-10。本人：「せっかく 12 件にまとめたのに
        それが下に行っちゃって見えない」「モーションで出たときと形変わるし」）。
        着地の直後に一件目を開けていたので、**12 件が並んだ絵が 0.5 秒で崩れて、
