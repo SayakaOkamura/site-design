@@ -1629,18 +1629,15 @@ body[data-stage="c"] .st-c{display:block}
     if (!trail.length || document.getElementById('rep')) return;
     var sheet = document.getElementById('sheet');
     if (!sheet) return;
-    sheet.insertAdjacentHTML('afterend', history(trail[0].k));
+    /* **表の上に出す**（2026-09-11）。下に置いていたときは 69 行の向こうにあって、
+       自動で出しても**画面に入らない。**辿り終わった人は表にもう用が無い */
+    sheet.insertAdjacentHTML('beforebegin', history(trail[0].k));
     var rep = document.getElementById('rep');
     /* **ここは即時**（§「ジェットコースターにしない」）。69 行の表を丸ごと
        通り越すので、滑らかに送ると**長い乗り物**になる。着く先は別の文書で、
        途中に繋がる絵は無い */
-    /* **貼りつく帯のぶんを引く**（画面で見つけた）。`scrollIntoView` だけだと
-       題と副題が帯の下に隠れて、いきなり 2019 年の行から始まる */
-    if (rep){
-      var a = document.querySelector('.ask2');
-      var off = 60 + (a ? a.offsetHeight : 0) + 14;
-      scrollTo(0, rep.getBoundingClientRect().top + scrollY - off);
-    }
+    /* **送らない**（2026-09-11）。表の上に出るようになったので、
+       出た時点で画面に入っている。**勝手に送るのは、頼んでいない動き** */
   }
 
   /* ─ **絡まっていた**（2026-09-11）────────────────────────────
@@ -1669,9 +1666,16 @@ body[data-stage="c"] .st-c{display:block}
     var u = GROUPS[trail[0].k].u, k = trail.length;
     document.getElementById('how').innerHTML =
       '<b>' + k + ' 件たどって、根本原因に行き当たりました。</b>'
-      + '<span class="tr">' + esc(u) + '</span> が決まっていません。'
-      /* **知ろうとすると、長い**（§経緯）。押したい人だけ押す */
-      + '<button class="jump" id="hist">調査報告を見る →</button>';
+      + '<span class="tr">' + esc(u) + '</span> が決まっていません。';
+    /* ─ **報告書は自動で出す**（2026-09-11、本人の指摘）──────────────
+       前は「調査報告を見る →」を押した人にだけ出していた。**そこが一番刺さる**のに、
+       同じ瞬間に紫の「整理する」が上に貼りついているので、**目立つほうへ抜けられる。**
+       「押したい人だけ」と決めたのは②が 5〜7 回あったころの判断で、
+       **3 件 5 回に縮めたいま、その理由はもう無い。**
+       **押した結果として出る**ので、§「頼む前は止まっている、頼んだら動く」には触れない。
+       読まない人は貼りついた「整理する」をそのまま押せる。
+       これで `repN` が必ず入る＝**最後の対比が三行で固定される。** */
+    setTimeout(showHistory, slow ? 0 : 480);   /* 見つけた一文を、先に読ませる一拍 */
     [].forEach.call(document.querySelectorAll('#pile li.aim'), function(x){
       x.classList.remove('aim'); x.classList.add('wait');
     });
@@ -1749,7 +1753,6 @@ body[data-stage="c"] .st-c{display:block}
 
   document.addEventListener('click', function(e){
     if (document.body.dataset.stage !== 'b' || !e.target.closest) return;
-    if (e.target.closest('#hist')){ showHistory(); return; }
     /* **戻る。**外れて押したあと、追いかけている先へ帰る */
     if (e.target.closest('#back')){
       if (!stuck) return;
