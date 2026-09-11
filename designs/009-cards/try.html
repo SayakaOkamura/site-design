@@ -210,7 +210,10 @@ body{
    **備考の列は戻さない**——「チャット参照」が表に書いてあるのが
    そもそもおかしい、が指摘の中身だった（タブに分けた時点で参照先は別の場所）。 */
 .sheet{
-  --cols:38px 54px 102px 72px minmax(0,1fr) 84px 92px 72px;   /* 字を 1.15 倍にしたので列も広げた（起票日が「2019/04…」で切れていた）*/
+  /* **備考を戻した**（2026-09-11、外からの指摘）。決めごとに「列は…／備考」と書いて
+     あるのに、**表に備考が無かった。**「表の外へ飛ばす」役が、行を押したあとの
+     言葉だけになっていて、**表そのものに痕跡が無い。**中身は起票のもと（`from`）*/
+  --cols:38px 54px 102px 72px minmax(0,1fr) 84px 92px 72px 104px;   /* 字を 1.15 倍にしたので列も広げた（起票日が「2019/04…」で切れていた）*/
   --rule:#ccd6e6;                    /* 升目の線。**紙の罫より少し濃い** */
   font-family:var(--mono); font-size:14.5px; line-height:1.5;
 }
@@ -258,7 +261,7 @@ body{
 .pile .c-no{color:#8b97b8}
 .pile .c-ti{color:var(--ink)}
 /* **埋まっていないところが、そのまま見える。**空欄に印は打たない */
-.pile .c-st,.pile .c-pi,.pile .c-dl,.pile .c-up,.pile .c-kd{color:var(--sub)}
+.pile .c-st,.pile .c-pi,.pile .c-dl,.pile .c-up,.pile .c-kd,.pile .c-rm{color:var(--sub)}
 /* ─ チェック欄。**押すものの顔をしていなかった**（本人 2026-09-10：
    「クリックしなきゃいけないっていうのもわかりにくい」）。
    文字の □ は**書いてあるだけ**に見える。**升目にして、指を乗せると光る。** */
@@ -775,7 +778,8 @@ body[data-stage="c"] .st-c{display:block}
 @media (max-width:860px){
   .sheet{--cols:36px 50px minmax(0,1fr) 80px 88px 66px}
   .sheet .hd > span:nth-child(3), .sheet .hd > span:nth-child(4),
-  .pile .c-up, .pile .c-kd{display:none}
+  .sheet .hd > span:nth-child(9),
+  .pile .c-up, .pile .c-kd, .pile .c-rm{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important; transition:none !important}
@@ -836,7 +840,7 @@ body[data-stage="c"] .st-c{display:block}
     <div class="sheet grid" id="sheet">
       <div class="hd">
         <span></span><span>No.</span><span>起票日</span><span>分類</span><span>件名</span>
-        <span>状態</span><span>担当</span><span>期限</span>
+        <span>状態</span><span>担当</span><span>期限</span><span>備考</span>
       </div>
       <ul class="pile" id="pile"></ul>
     </div>
@@ -1362,7 +1366,9 @@ body[data-stage="c"] .st-c{display:block}
          + '<span class="c-ti">' + esc(c.raw) + '</span>'
          + '<span class="c-st">' + (x ? x[3] : ST[i % 8]) + '</span>'
          + '<span class="c-pi">' + (x ? x[4] : PIC[i % 8]) + '</span>'
-         + '<span class="c-dl">' + (x ? x[5] : DUE[i % 8]) + '</span>';
+         + '<span class="c-dl">' + (x ? x[5] : DUE[i % 8]) + '</span>'
+         /* 備考＝**表の外を指す**。起票のもとがどこにあるか */
+         + '<span class="c-rm">' + (c.from ? esc(REF[c.from[0]] || '') : '') + '</span>';
   }
 
   /* ─ ② **山は最初からそこにある。触るのは人のほう**（2026-09-10）───────
@@ -1419,6 +1425,9 @@ body[data-stage="c"] .st-c{display:block}
      **さっき自分が辿った一件が、どれなのか分からなかった。** */
   var tangledK = null;
 
+  /* 備考の言い方。**その出どころの呼び方で** */
+  var REF = {mail:'メール参照', chat:'チャット参照', '議事録':'議事録参照',
+             docx:'仕様書参照', pdf:'別紙による'};
   var NAME = {xlsx:'課題管理表', mail:'メール', chat:'チャット', '議事録':'議事録',
               docx:'仕様書', pdf:'別紙'};
 
@@ -1462,7 +1471,12 @@ body[data-stage="c"] .st-c{display:block}
      そこが②の徒労感。「片付けにいけます」と書くと**先に断って**しまう */
   function sayHow(){
     document.getElementById('how').innerHTML =
-      '課題の左のチェックを押すと、<b>その課題が片付きます。</b>';
+      /* **嘘はつかない。予告もしない**（2026-09-11、外からの指摘）。
+         前は「押すと、その課題が片付きます」と**断定して、裏切って**いた。
+         このデモは他の全部で「**言っていることが本当**」を基準にしている
+         （402 → 69 に下げた理由も、AI の範囲を切った理由も同じ）。**ここだけ嘘をついていた。**
+         いまは**そこに何があるか**だけ言う。押した結果は言わない——§「案内で予告しない」は守れる */
+      '課題の左に、<b>片付けるためのチェック</b>があります。';
     stick();
   }
 
@@ -1470,8 +1484,13 @@ body[data-stage="c"] .st-c{display:block}
     picked = false; hinted = false; bottom = false; tangledN = 0;
     trail = []; stray = []; stuck = null; need = 0; repN = 0; tangledK = null;
     document.getElementById('hint').textContent =
+      /* **数えたら違った**（2026-09-11、外からの指摘）。69 行を数えると
+         状態 61／担当 19／期限 18／起票日 63／分類 58。**状態はほぼ埋まっている。**
+         「状態も担当も、埋まっていません」は**嘘**だった。
+         そして**埋まっていないことより、埋まっているのに進まないことのほうが強い**——
+         「調査中」のまま 2018 年から、が報告書の話とそのまま繋がる */
       'メール・チャット・議事録で出た話が、ここに起票されています。ぜんぶで '
-      + N + ' 件。状態も担当も、埋まっていません。';
+      + N + ' 件。状態は入っているのに、いちばん古いものは 2018 年のままです。';
     document.getElementById('go-c').classList.remove('on');
     var t = document.getElementById('tabs'); if (t) t.innerHTML = '';
     sayHow();
@@ -1967,8 +1986,12 @@ body[data-stage="c"] .st-c{display:block}
   var decided = null;
   function pickHTML(k){
     var g = GROUPS[k];
-    if (decided !== null)
-      return '<p class="scmp"><b>残りも、同じ一手です。</b></p>';
+    /* **「残りも、同じ一手です」を消した**（2026-09-11、外からの指摘）——
+       1 回は手触りで見せて、**11 回ぶんは言葉で言っていた。**確かめる手段は無い。
+       §「言葉が手触りの代わりをしていた」と同じ穴。
+       **画面がすでに見せている**——12 件が同じ形で並んでいて、片付いたのは 1 件だけ。
+       言わない（内訳は出す。決める二択は出さない＝一度きりは変えない）*/
+    if (decided !== null) return '';
     if (!g.d) return '';
     return '<div class="sdec"><b>' + esc(g.u) + '</b>'
       + 'どちらでも進みます。<b style="display:inline;font-size:15px">決めないと進みません。</b>'
@@ -2057,9 +2080,16 @@ body[data-stage="c"] .st-c{display:block}
       + '<p class="scmp">'
       + '<b>1 回</b> 決めて、<b>' + cnt + ' 件</b> 動きました。'
       /* **対比は、見た人にだけ**（§カード＝パッと見て判断できる単位） */
-      + (repN ? '<br>同じ結論に、報告書では <b>' + repN + ' 項目</b>かかっていました。' : '')
+      /* ─ **経路によらず出す**（2026-09-11、外からの指摘）───────────────
+         `repN` は**②を辿った人にだけ**入っていた。「整理する」は
+         **一行も押さずに底まで送るだけでも出る**（`picked || bottom`）ので、
+         **その道を通ると、いちばん効く一行が消える。**早送りするとまさにそこを通る。
+         項目数は群の大きさから決まる（`件数 × 9 + 10`）ので、**見ていなくても数は本当。**
+         **69 とぶつける**——一つの決めごとの記録が、**課題ぜんぶより多い** */
+      + '<br>同じ結論に、報告書では <b>' + (repN || (cnt * 9 + 10)) + ' 項目</b>かかっていました。'
+      + '<br>課題ぜんぶ（<b>' + N + ' 件</b>）より多い。'
       + '</p>'
-      + '<p class="gmore">残りの ' + (order.length - 1) + ' も、同じ一手です。</p>';
+      ;   /* 「残りの 11 も、同じ一手です」も消した（§同上。並びが言っている）*/
     /* ④の一行目。**片付けたのではなく、決めた** */
     var lead = document.getElementById('lead');
     if (lead) lead.textContent = '決めたのは、ひとつだけです。';
