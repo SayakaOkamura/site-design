@@ -53,6 +53,8 @@
      前はグラデーション（水色→紫）。**同じ名前の色が二つの意味になる**ので揃えた。
      紫（--go）は「飛ぶ」の印なので、ここにも使わない */
   --face: #251f45;
+  /* 朱。**このサイトで唯一、紫でも紺でもない色**（§判子）。使うのは印だけ */
+  --seal: #c4402e;
 
   --lift1: 0 1px 2px rgba(31,25,64,.07), 0 3px 8px rgba(31,25,64,.08);
   --lift2: 0 2px 4px rgba(31,25,64,.08), 0 10px 24px rgba(31,25,64,.12);
@@ -738,22 +740,55 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
 .sdec{margin:16px 0 0; padding-top:14px; border-top:1px solid rgba(37,31,69,.12);
       font-size:15px; line-height:1.8; color:var(--sub)}
 .sdec b{display:block; color:var(--ink); font-size:15.5px; margin-bottom:4px}
+/* 決めたあとの控え。**印が先、中身が後**——決裁済みの紙の読み方 */
+.sdec.done{display:flex; align-items:center; gap:13px}
+.sdec.done .tx{flex:1 1 auto; min-width:0}
+.sdec.done b{margin-bottom:2px}
 .pks{display:flex; flex-direction:column; gap:8px; margin-top:10px}
-/* **決めるはもう少し小さく**（2026-09-11、本人：「決めるやつでかいかも」）。
-   一つ 76px あって、二つで箱の半分を占めていた。詰めと添えの字を落とす */
+/* ─ **決裁欄にした**（2026-09-11、本人：「そのカードにハンコを押すところまで含めて
+   取り扱ってるやつだからなあ。**そっちがやるのはハンコだけ**、っていう」）────
+   分担を言葉で説明しない。**紙の形で出す**——左に決める中身、右に空の捺印欄。
+   ここまで（集める・見立てる・決めごとに立てる・二択と代償を揃える）は全部済んでいて、
+   **残っているのは印を捺すことだけ**、が一目で分かる。
+
+   **09-07 に捨てた三択（要る／要らない／もうやった）と同じ身ぶり**だが、相手と回数が違う——
+   あれは**札を 40〜69 回**さばく**仕分け**で、「一枚ずつ決めさせるのをやめた。
+   押して気持ちいいことではない」で捨てた。こちらは**決めごとを 1 回**の**決裁**。
+   **気持ちよさは足さない**——音も跳ねも連打も無し。捺すのは一度だけ。
+   手触りが運ぶのは快感ではなく**分担**。
+
+   紫をやめて白にした。**朱は紙の上でしか効かない**——紫の面に捺しても印に見えない */
 .pk{-webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
-    text-align:left; padding:9px 14px; border-radius:7px;
-    background:var(--go); color:#fff; box-shadow:var(--lift1);
-    transition:transform .16s var(--ease), box-shadow .16s ease}
+    display:flex; align-items:center; gap:13px; width:100%;
+    text-align:left; padding:11px 12px 11px 15px; border-radius:7px;
+    background:var(--card); color:var(--ink); box-shadow:var(--lift1);
+    transition:transform .16s var(--ease), box-shadow .16s ease, opacity .3s ease}
 .pk:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
 .pk:active{transform:translateY(1px); box-shadow:var(--lift0)}
-.pk:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
-/* **最初の一つだけ脈を打つ**（§終わった感を消す）。②で指した行と同じ手触り——
+.pk:focus-visible{outline:2px solid var(--go); outline-offset:3px}
+.pk .tx{flex:1 1 auto; min-width:0}
+.pk b{display:block; font-size:15px; font-weight:700; margin:0}
+.pk span{display:block; font-size:13px; color:var(--sub); margin-top:2px; line-height:1.5}
+/* 捺印欄。**空けてある**ので、何をする欄かは見れば分かる */
+.pk .box{flex:0 0 auto; width:42px; height:42px; border-radius:50%;
+         border:1px dashed rgba(37,31,69,.3)}
+/* **最初の一つの欄だけ脈を打つ**（§終わった感を消す）。②で指した行と同じ手触り——
    **教えるのは一度だけ**（指を乗せたら止まる）*/
-.pks .pk:first-child{animation:tap 1.8s ease-in-out infinite}
-.pks:hover .pk,.pks .pk:focus-visible{animation:none}
-.pk b{display:block; color:#fff; font-size:15px; font-weight:700; margin:0}
-.pk span{display:block; font-size:13px; color:rgba(255,255,255,.78); margin-top:2px; line-height:1.5}
+.pks .pk:first-child .box{animation:tap 1.8s ease-in-out infinite}
+.pks:hover .pk .box,.pks .pk:focus-visible .box{animation:none}
+/* 捺した印。**跳ねない。**一度だけ、少し傾いて、紙に当たって止まる */
+.seal{flex:0 0 auto; width:42px; height:42px; border-radius:50%;
+      display:grid; place-items:center; border:2px solid var(--seal);
+      color:var(--seal); font-size:18px; font-weight:700; line-height:1;
+      animation:stamp .3s cubic-bezier(.22,.9,.3,1) both}
+@keyframes stamp{
+  0%  {transform:scale(1.45) rotate(-13deg); opacity:0}
+  55% {opacity:1}
+  100%{transform:scale(1) rotate(-6deg); opacity:1}
+}
+/* 捺さなかったほう。**消さずに、引く**——選ばなかった側があったことは残す */
+.pks.done .pk:not(.on){opacity:.32; box-shadow:none}
+.pks.done .pk{cursor:default; transform:none}
 /* 埋まったところ（§決まったので、埋まりました）。**前が薄く、後ろが濃い**——
    §「行が寄って、題が付く」と同じ並べ方で、**変換の前後を対で置く** */
 .sfill{margin:18px 0 0; padding-top:14px; border-top:1px solid rgba(37,31,69,.12);
@@ -2270,12 +2305,16 @@ body[data-stage="c"] .st-c{display:block}
     /* **急に出さない**（2026-09-11、本人：「どちらでも進みます。決めないと進みません。
        のやつが急」）。前は**箱の題と同じ言葉をもう一度置いて**、そのまま二択が出ていた。
        **見出しを立てて、ここが最後の一手だと分かるようにする。** */
-    return '<div class="sdec"><b>決める</b>'
-      + 'どちらを選んでも進みます。<b style="display:inline;font-size:15px">決めないと、進みません。</b>'
+    /* **決裁欄**（§決裁欄にした）。題を「決裁」にして、
+       **ここまでが済んでいること**を一行で言う——分担はそれで出る */
+    return '<div class="sdec"><b>決裁</b>'
+      + 'ここまでは揃えてあります。<b style="display:inline;font-size:15px">残っているのは、捺すことだけです。</b>'
       + '<div class="pks">'
       + g.d.map(function(a, ai){
           return '<button class="pk" data-k="' + k + '" data-a="' + ai + '">'
-               +   '<b>' + esc(a[0]) + '</b><span>' + esc(a[1]) + '</span>'
+               +   '<span class="tx"><b>' + esc(a[0]) + '</b>'
+               +   '<span>' + esc(a[1]) + '</span></span>'
+               +   '<i class="box"></i>'
                + '</button>';
         }).join('')
       + '</div></div>';
@@ -2325,10 +2364,20 @@ body[data-stage="c"] .st-c{display:block}
     decided = k;
     /* 二度押させない */
     [].forEach.call(document.querySelectorAll('#sidein .pk'), function(b){ b.disabled = true; });
+    /* ─ **捺してから動く**（§決裁欄にした）。押した欄に印が入り、
+       **捺さなかったほうは引く**（消さない——選ばなかった側があったことは残す）。
+       印が紙に当たってから件が飛ぶ。**同時に出すと、どちらも見えない** */
+    var btn = document.querySelector('#sidein .pk[data-a="' + ai + '"]');
+    if (btn){
+      btn.classList.add('on');
+      if (btn.parentNode) btn.parentNode.classList.add('done');
+      var box = btn.querySelector('.box');
+      if (box){ box.className = 'seal'; box.textContent = '決'; }
+    }
     var set = setsEl && setsEl.querySelector('.gset[data-k="' + k + '"]');
-    flyIn(k, set);
+    setTimeout(function(){ flyIn(k, set); }, slow ? 0 : 380);
     /* **着いたころに済の印が入る。**先に印を出すと、飛んでくる意味が無くなる */
-    setTimeout(function(){ landed(k, ai, set, cnt); }, slow ? 0 : 760);
+    setTimeout(function(){ landed(k, ai, set, cnt); }, slow ? 0 : 1140);
   }
 
   /* ─ **決まったので、埋まりました**（2026-09-11）────────────────────
@@ -2373,7 +2422,9 @@ body[data-stage="c"] .st-c{display:block}
     document.getElementById('sidein').innerHTML =
       '<h2 class="sh">決めました</h2>'
       + '<p class="sn2">' + esc(g.u) + '</p>'
-      + '<div class="sdec"><b>' + esc(a[0]) + '</b>' + esc(a[1]) + '</div>'
+      /* 捺した印は**残す**（§決裁欄にした）。決めた記録なので消さない */
+      + '<div class="sdec done"><i class="seal">決</i>'
+      +   '<span class="tx"><b>' + esc(a[0]) + '</b>' + esc(a[1]) + '</span></div>'
       + filled(k, a)
       /* ─ **②を対比の相手にしない**（2026-09-11、本人）────────────────
          > 徒労はこっちに従ってやったのに徒労なんですよって**明かされる形になるのがおかしい**
