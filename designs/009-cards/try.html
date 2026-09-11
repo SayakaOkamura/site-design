@@ -324,10 +324,16 @@ body{
    402 行に transform を掛けると、二段組の再計算で固まる。
    **見えている行だけを写して**、その写しを飛ばす */
 .flylayer{position:fixed; inset:0; z-index:6; pointer-events:none}
+/* ─ **文字をやめて、行の形にした**（2026-09-11、本人：「文字の集約のモーションだけ
+   どうしても気になる」）──────────────────────────────────
+   日本語が 14 行、重なりながら動くと**どうしても読めない汚れ**になる。
+   扇に散らしても小さくしても、**字である限り読もうとしてしまう。**
+   飛んでいるあいだに読ませるものは無い（読むのは着いたあとの名前）ので、
+   **行の形＝細い棒**にする。長さは元の字数から出すので、**文書の行に見える。**
+   §5 の足すリストの側（**めくれ・厚み**と同じ、形だけの手触り）*/
 .fc{
-  white-space:nowrap; overflow:hidden;
-  font-family:var(--mono); font-size:14px; line-height:1.6;
-  color:rgba(37,31,69,.82); padding:4px 3px;
+  height:7px; border-radius:4px; background:rgba(37,31,69,.26);
+  color:transparent; overflow:hidden; padding:0;
   /* **着くまで消えない**（2026-09-11）。前は 340〜760ms で薄くなっていて、
      到着（800ms）の前に消えていた——**行は宙で消え、着地は見えない。**
      いまは着いた 600ms から 260ms で抜ける＝**題と入れ替わる。** */
@@ -1969,11 +1975,14 @@ body[data-stage="c"] .st-c{display:block}
       var d = document.createElement('div');
       d.className = 'fc';
       /* **飛ばすのは件名だけ。**表の格子ごと写すと、飛んでいる途中で列が崩れる */
-      d.textContent = (li.querySelector('.c-ti') || li.querySelector('span') || li).textContent;
-      d.style.left = r.left + 'px'; d.style.top = r.top + 'px';
-      d.style.width = r.width + 'px'; d.style.position = 'fixed';
+      /* **棒の長さは元の字数から**——長い行は長く、短い行は短く。
+         文書の行が並んでいるように見える */
+      var tx = (li.querySelector('.c-ti') || li.querySelector('span') || li).textContent || '';
+      var w  = Math.max(70, Math.min(r.width - 20, tx.trim().length * 13));
+      d.style.left = r.left + 'px'; d.style.top = (r.top + r.height / 2 - 4) + 'px';
+      d.style.width = w + 'px'; d.style.position = 'fixed';
       layer.appendChild(d);
-      clones.push({ el:d, k:p[1], x:r.left, y:r.top });
+      clones.push({ el:d, k:p[1], x:r.left, y:r.top, w:w });
     });
     document.body.appendChild(layer);
 
@@ -1999,12 +2008,19 @@ body[data-stage="c"] .st-c{display:block}
     clones.forEach(function(c, i){
       var t = target[c.k];
       if (!t){ c.el.style.opacity = 0; return; }
-      /* 行の幅で扇に散らす（同じ件へ集まるものほど散る）*/
-      var sp = Math.min(t.width - 40, 420);
-      var dx = (i / many - .5) * sp;
+      /* **一本ずつ送る。**同時に出ると塊、順に出ると流れに見える */
+      c.el.style.transitionDelay = (i * 26) + 'ms';
+      /* ─ **行の中に収める**（2026-09-11）───
+         扇の中心を `t.left + 16`（行の**左端**）に置いていたので、
+         散らした半分が **x が負**＝画面の左外へ出ていた。字だったころは
+         幅いっぱいで目立たなかったが、**棒にしたら外へ滑っていくのが見える。**
+         いまは**左の余白から、行の余りぶんだけ**ずらす——
+         どの棒も**行の中に着く**（棒の幅 `c.w` を引いてあるので右にもはみ出ない）*/
+      var sp = Math.max(0, t.width - 32 - c.w);
+      var dx = (i / many) * sp;
       var dy = ((i % 5) - 2) * 5;
       c.el.style.transform = 'translate(' + (t.left + 16 + dx - c.x) + 'px,'
-                           + (t.top + 9 + dy - c.y) + 'px) scale(.68)';
+                           + (t.top + t.height / 2 - 4 + dy - c.y) + 'px) scale(.68)';
       c.el.style.opacity = 0;
     });
 
