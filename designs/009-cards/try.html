@@ -839,20 +839,32 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
   background:var(--face); color:#fff; border-radius:var(--r); box-shadow:var(--lift2);
   padding:40px 34px; animation:rise .6s var(--ease) both;
 }
-/* **打ち消し → 着地**の順。大きいのは着地（2026-09-11）*/
+/* 決めたあとに入る一行。**やったことを指す**（決めるまでは出ない）*/
 .end .lead{margin:0 0 13px; font-size:16.5px; line-height:1.9; color:rgba(255,255,255,.82)}
+.end .lead[hidden]{display:none}
+/* 着地。**決めるまでは面の中はこれ一行**（§打ち消しをやめて、理念で終える）*/
 .end h2{margin:0; font-size:clamp(20.5px,3vw,30px); font-weight:700; line-height:1.5}
-/* 理念。**面の外・小さく一行**——ここで一番大きいものではない */
-.end .creed{margin:16px 2px 0; font-size:14.5px; line-height:1.9; color:var(--sub)}
-.end .creed i{font-style:normal; font-weight:700; font-size:13px;
-              letter-spacing:.04em; margin-right:12px}
+/* 理念。**面の外、いちばん最後。**会社が喋る場所なので面には入れない——
+   入れると訪問者のやったことの見出しになる（§6）。
+   ただし**小さい一行ではもう足りない**（本人：「最後に出すのはそれであるべき」）*/
+.end .creed{margin:26px 2px 0; padding-top:22px;
+            border-top:1px solid rgba(37,31,69,.14)}
+.end .creed p{margin:0}
+.end .cn{font-size:13px; font-weight:700; letter-spacing:.04em; color:var(--sub)}
+.end .c1{margin-top:10px; font-size:clamp(17px,2.2vw,21px); font-weight:700;
+         line-height:1.7; color:var(--ink)}
+.end .c2{margin-top:9px; font-size:15px; line-height:1.9; color:var(--sub)}
 /* 二つの手数を並べる。**同じ押すの重さが違う** */
 .end .cmp{display:block; margin-top:14px; padding-top:14px;
           border-top:1px solid rgba(255,255,255,.22); font-size:16px}
 .end .again{margin-top:22px; display:flex; gap:12px; flex-wrap:wrap}
-/* 外へ出る一手だけ、色を持つ（§「紫は進む・飛ぶの印」）*/
+/* ─ 外へ出る一手だけ、色を持つ（§「紫は進む・飛ぶの印」）。
+   **そう書いてあったのに、三つとも同じ紫だった**（2026-09-11、画面で数えた）——
+   `.one` の地がもともと紫なので、`.go1` を足しても**何も変わっていなかった。**
+   **残り二つを白に落とす。**紫が一つになる */
 .end .go1{background:var(--go); color:#fff}
 .end .go1:hover{background:var(--go)}
+.end .again > *:not(.go1){background:var(--card); color:var(--ink)}
 
 .foot{flex:none; background:var(--frame)}
 .foot .in{padding:22px 24px 26px}
@@ -997,16 +1009,38 @@ body[data-stage="c"] .st-c{display:block}
            その真上に理念を置くと**やったことの見出し**として読まれる。
            それは「会社が提供するコンテンツ」の側で、§6 が混ぜるなと言っている形 -->
       <div class="face">
-        <!-- **減ってもいないし、まとまってもいない**（2026-09-11）。
-             69 件の課題が 12 の決めごとだった、というのは**正体が違った**という話。
-             「減らしたのではなく、形を変えただけ」は 402 → 12 のころの言葉だった -->
-        <p class="lead" id="lead">減ったのではありません。課題ではなく、決めごとだったというだけです。</p>
+        <!-- ─ **打ち消しをやめて、理念で終える**（2026-09-11、本人：「これどっから
+             出てきたの」→「**企業理念で良くない？この通りだよ～っていうのを見せたい
+             わけで、最後に出すのはそれであるべきな気が**」）──────────────
+             「減ったのではありません。課題ではなく、決めごとだったというだけです。」は
+             **こちらが書いた保険**だった。元は 09-08 の「減らしたのではなく、形を変えた
+             だけです」で、理由は NOTES に「§4『量は減らない』が最後まで嘘にならない
+             ようにするため」と書いてある——**言いたいことではない。**
+             しかも**誰も「減った」と言っていないのに先回りして否定**していて、
+             ゴール（「**驚き → 打ち消さない →** できるかも」）が
+             **打ち消すなと書いてある場所で打ち消していた。**外した。
+
+             **終わりは理念にする。**②が受動（押しても動かない）、③が能動（一つ決めると動く）で、
+             **「やらされる」でなく「やりたい」は、もう体で通っている**——
+             §「理念への接続に橋がない → 未決」は、ここで**架ける**に決まった。
+             ただし §6「理念の主語は会社自身で、訪問者でも客でもない」は効いているので、
+             **訪問者の着地（「一つずつなら」）を先に置いて、理念はその下に独立して置く**——
+             理念を訪問者の真上に置くと**やったことの見出し**として読まれる。
+             出すのは**理念の一文＋デモが通した一行**の二行だけ（全文は会社のページにある）。
+
+             **一行目は空で始まる。**決めるまでは着地だけ——出すことが無いのに
+             場所を埋めていたのが、さっきの打ち消しだった。
+             決めたら**やったこと**が入る（「決めたのは、ひとつだけです。」）-->
+        <p class="lead" id="lead" hidden></p>
         <h2>一つずつなら、手が付けられます。</h2>
       </div>
-      <!-- 理念は**面の外へ、小さく一行。**入口のカードと同じ呼び方で置く——
-           会社の言葉として置いてある、と分かるだけの形
-           （§「理念は最後に出る。先に出すと標語に戻る」——出す場所は変えていない）-->
-      <p class="creed"><i>企業理念</i>経営の力で「遊ぶように働く世界」をデザインする</p>
+      <!-- 理念。**面の外だが、いちばん最後で、いちばん重い**（§打ち消しをやめて、理念で終える）。
+           二行目は**デモがいま通した一行**——注釈は付けない。**読んだ人が繋げる** -->
+      <div class="creed">
+        <p class="cn">企業理念</p>
+        <p class="c1">経営の力で「遊ぶように働く世界」をデザインする</p>
+        <p class="c2">子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと</p>
+      </div>
       <!-- **外に出る口**（2026-09-11）。前は「もう一度」と「会社のページを見る」だけで、
            デモ→index、index→デモの**円環**になっていた。
            いちばん気持ちが動いた直後に、外へ出る道が無かった -->
@@ -2360,7 +2394,7 @@ body[data-stage="c"] .st-c{display:block}
       ;   /* 「残りの 11 も、同じ一手です」も消した（§同上。並びが言っている）*/
     /* ④の一行目。**片付けたのではなく、決めた** */
     var lead = document.getElementById('lead');
-    if (lead) lead.textContent = '決めたのは、ひとつだけです。';
+    if (lead){ lead.textContent = '決めたのは、ひとつだけです。'; lead.hidden = false; }
   }
 
   var EMPTY = '<p class="sempty">決めごとを押すと、<b>どの一行から来たのか</b>が出ます。</p>';
@@ -2463,7 +2497,7 @@ body[data-stage="c"] .st-c{display:block}
       + '<b>決めごとで数えると決めたのが、うちの仕事</b>です。</span>';
     decided = null;
     var lead = document.getElementById('lead');
-      if (lead) lead.textContent = '減ったのではありません。課題ではなく、決めごとだったというだけです。';
+    if (lead){ lead.textContent = ''; lead.hidden = true; }
     var side = document.getElementById('sidein');
     if (side) side.innerHTML = EMPTY;
   }
