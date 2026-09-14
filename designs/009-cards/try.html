@@ -509,6 +509,8 @@ body.named .side{animation:rise .34s var(--ease) both}
 #tabs:empty{display:none}
 /* いまどこに居るか。**道は書かない**（2026-09-10。数で足りる）*/
 .how .tr{font-family:var(--mono); font-weight:700; color:var(--ink)}
+/* 飛んだ先で出す一言。**対の下に、静かに**（§新しい言葉は足さない）*/
+.how .tell{display:block; margin-top:7px; padding-left:12px; color:var(--sub)}
 /* 見に行く。**紫は「飛ぶ」の印**（§色の決め） */
 .how .jump{
   -webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
@@ -1300,7 +1302,11 @@ body[data-stage="c"] .st-c{display:block}
              ここを抜けた人が持つ「したいこと」は一つに絞れる——**自分の山を見てほしい。**
              決めごとに立て直したら何件になるのかを、自分の表で知りたい。
              渡し先は変えない（`?from=demo` で「サービスに関するご相談」が入った下書きが開く）-->
-        <a class="one go1" href="index.html?from=demo#contact" style="text-decoration:none">うちの表でやってみる</a>
+        <!-- **｢うち｣をやめた**（2026-09-14、外からの指摘：「初見の人には｢うち｣が誰を指すか
+             一瞬迷う」）。**隣が「会社のページを見る」**で、そちらの「会社」はアルターデザイン——
+             **隣り合った二つが、別の会社を指していた。**lede の「この会社」を消したのと同じ衝突が
+             ここに残っていた。**｢自分｣なら、一人称が誰のものか迷わない** -->
+        <a class="one go1" href="index.html?from=demo#contact" style="text-decoration:none">自分の表でやってみる</a>
         <a class="one" id="back2" href="index.html" style="text-decoration:none">会社のページを見る</a>
         <button class="one" id="again">もう一度</button>
       </div>
@@ -2085,7 +2091,15 @@ body[data-stage="c"] .st-c{display:block}
          + esc(c.from[1]) + '</span>';
   }
 
-  /* 着いた先の対。**注釈は付けない**——読んだ人が繋げる */
+  /* ─ 着いた先の対。**注釈は付けない**——読んだ人が繋げる。
+     対が答えているのは「**なぜここに居るのか**」だけ ────────────────────
+     **「次に何をするか」が無かった**（2026-09-14、外からの指摘：「｢見る｣という動詞が
+     ある以上、押す側には｢見た｣で完了する読み方がある。次に何をすれば
+     #004 に手を付けたことになるのかが、何も知らない人には出てこない」）。**そのとおり。**
+     飛んだ先にあるのは**紫の行と脈打つチェック**だけで、言葉はどこにもなかった。
+
+     **新しい言葉は足さない。**案内の一文（「…手を付けてみてください。」）を**そのまま置く**——
+     語彙が増えず、**最初に教わったことをもう一度やるだけ**だと分かる */
   function showPair(from, to){
     var el = document.getElementById('how');
     if (!el || !from || !to) return;
@@ -2093,7 +2107,8 @@ body[data-stage="c"] .st-c{display:block}
       '<span class="pair">'
       +   '<span class="pl"><i>' + esc(label(from)) + '</i>' + esc(from.raw) + '</span>'
       +   '<span class="pl now"><i>' + esc(label(to)) + '</i>' + esc(to.raw) + '</span>'
-      + '</span>';
+      + '</span>'
+      + '<span class="tell">この行に、手を付けてみてください。</span>';
     stick();
   }
 
