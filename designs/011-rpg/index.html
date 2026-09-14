@@ -22,13 +22,16 @@
      ═══════════════════════════════════════════════════════════════ -->
 <style>
 :root{
-  /* 夕日。**帯で切る**——なめらかな階調にしない（16bit は段が出る） */
-  --sky1:#221546;  --sky2:#4a2360;  --sky3:#8c3560;
-  --sky4:#c9503f;  --sky5:#e8763c;  --sky6:#f6a84e;
-  --sun:#ffd977;   --sun2:#ffb84d;
-  --far:#3a2255;   --hill:#2a1840;  --ground:#150d2c;  --ground2:#1e1238;
-  --win:#101a3a;   --line:#ffffff;  --ink:#ffffff;     --dim:#9fb0e8;
-  --go:#ffd977;    --px:4px;
+  /* 夕日。**帯で切る**——なめらかな階調にしない（16bit は段が出る）。
+     一度目は紫と赤紫を強く入れて**虹色**、二度目は紺から始めて**暗すぎた**（本人：
+     「これは暗いな、**グラデにするのは良いんだけど、別に他の色にしなくていい**」）。
+     **色相を振らない。橙だけで、濃い → 淡いの一本道。**明るさで段を作る */
+  --sky1:#7a3620;  --sky2:#9c4522;  --sky3:#bd5c26;
+  --sky4:#da7a2c;  --sky5:#ef9b3c;  --sky6:#fbc268;
+  --sun:#fff3cf;   --sun2:#ffd270;
+  --far:#40291d;   --hill:#2b1a11;  --ground:#1d120b;  --ground2:#291a10;
+  --win:#2a1207;   --line:#ffffff;  --ink:#ffffff;     --dim:#e3b98d;
+  --go:#ffd270;    --px:4px;
 }
 *{box-sizing:border-box}
 html,body{height:100%; margin:0; overflow:hidden}      /* **スクロールしない** */
@@ -44,13 +47,14 @@ body{
 
 /* ─ 空。**帯で切る** ───────────────────────────────────────── */
 #sky{position:absolute; inset:0 0 20% 0;
+  /* **上を広く、地平へ向かって細かく。**等分だと縞に見える */
   background:linear-gradient(180deg,
-    var(--sky1) 0%,  var(--sky1) 16%,
-    var(--sky2) 16%, var(--sky2) 30%,
-    var(--sky3) 30%, var(--sky3) 44%,
-    var(--sky4) 44%, var(--sky4) 58%,
-    var(--sky5) 58%, var(--sky5) 74%,
-    var(--sky6) 74%, var(--sky6) 100%);
+    var(--sky1) 0%,  var(--sky1) 26%,
+    var(--sky2) 26%, var(--sky2) 46%,
+    var(--sky3) 46%, var(--sky3) 62%,
+    var(--sky4) 62%, var(--sky4) 76%,
+    var(--sky5) 76%, var(--sky5) 89%,
+    var(--sky6) 89%, var(--sky6) 100%);
 }
 /* 帯の境目に粗い網。**段が硬すぎるのをほぐす**（ディザの代わり） */
 #sky::after{content:''; position:absolute; inset:0; opacity:.07;
@@ -60,15 +64,17 @@ body{
 /* ─ 太陽。**輪郭も帯**。沈みかけ ─────────────────────────────── */
 #sun{position:absolute; left:50%; bottom:20%; width:min(46vh,380px); aspect-ratio:1;
   transform:translate(-50%,42%); z-index:1;
-  background:radial-gradient(circle at 50% 50%,
-    var(--sun) 0 46%, var(--sun2) 46% 62%, rgba(255,184,77,.55) 62% 78%,
-    rgba(255,184,77,.22) 78% 92%, transparent 92%);
+  /* **`closest-side` を付ける**（画面で見つけた）。既定は `farthest-corner` なので、
+     92% で透明にしても**角までは届かず、四角い暈**が空に出ていた */
+  background:radial-gradient(circle closest-side at 50% 50%,
+    var(--sun) 0 52%, var(--sun2) 52% 70%, rgba(255,210,112,.55) 70% 86%,
+    rgba(255,210,112,.2) 86% 99%, transparent 100%);
 }
 /* 太陽を横に切る帯（16bit の定番）。**丸の中だけ**——
    最初は四角いままで、縞の箱が空に浮いて見えた */
 #sun::after{content:''; position:absolute; inset:0; opacity:.45;
   background:repeating-linear-gradient(180deg,
-    transparent 0 calc(var(--px)*3), rgba(120,45,88,.9) calc(var(--px)*3) calc(var(--px)*4));
+    transparent 0 calc(var(--px)*3), rgba(189,92,38,.8) calc(var(--px)*3) calc(var(--px)*4));
   -webkit-mask:radial-gradient(circle at 50% 50%, #000 0 47%, transparent 49%);
           mask:radial-gradient(circle at 50% 50%, #000 0 47%, transparent 49%);
 }
@@ -82,20 +88,20 @@ body{
 /* **同じ三角の繰り返しをやめた**（2026-09-14）。`conic-gradient` だと片側が
    垂直に切れて、**階段（歯車の刃）**に見えた。稜線を一本引いて、高さを散らす */
 #far .band{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L18 26 L34 60 L52 14 L76 60 L96 32 L112 60 L134 8 L162 60 L182 30 L200 60 Z' fill='%233a2255'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L18 26 L34 60 L52 14 L76 60 L96 32 L112 60 L134 8 L162 60 L182 30 L200 60 Z' fill='%2340291d'/%3E%3C/svg%3E");
   background-size:520px 100%;
   animation-duration:38s;
 }
 #near{position:absolute; left:0; right:0; bottom:20%; height:5vh; overflow:hidden; z-index:2}
 #near .band{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L24 22 L46 60 L70 34 L92 60 L118 18 L146 60 L170 38 L200 60 Z' fill='%232a1840'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L24 22 L46 60 L70 34 L92 60 L118 18 L146 60 L170 38 L200 60 Z' fill='%232b1a11'/%3E%3C/svg%3E");
   background-size:340px 100%;
   animation-duration:19s;
 }
 
 /* ─ 地面。**ここより下が足もと** ────────────────────────────── */
 #ground{position:absolute; left:0; right:0; bottom:0; height:20%; z-index:2;
-  background:var(--ground); border-top:var(--px) solid #4a2c6e}
+  background:var(--ground); border-top:var(--px) solid #4a2f1d}
 #ground .band{
   height:var(--px); top:calc(var(--px)*3);
   background-image:repeating-linear-gradient(90deg,
@@ -253,12 +259,14 @@ var B = [
   '..#.....#..',
   '.###...###.'
 ];
+/* 影法師の色。**べた書きしない**——空を橙に変えたとき、ここだけ紺のまま残った */
+var INK = getComputedStyle(document.documentElement).getPropertyValue('--hill').trim() || '#2b1a11';
 var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（4 だと小さすぎた） */
 function sprite(map){
   var px = HPX, sh = [];
   for (var y = 0; y < map.length; y++)
     for (var x = 0; x < map[y].length; x++)
-      if (map[y][x] === '#') sh.push((x*px) + 'px ' + (y*px) + 'px 0 0 #140c2a');
+      if (map[y][x] === '#') sh.push((x*px) + 'px ' + (y*px) + 'px 0 0 ' + INK);
   var i = document.createElement('i');
   /* **一粒の大きさを、影の間隔に合わせる**（画面で見つけた）。
      `#hero i` の `width/height` は `--px`（4px）なのに影を 7px 間隔で置いていたので、
