@@ -401,6 +401,23 @@ body.named .side{animation:rise .34s var(--ease) both}
   0%  {opacity:0; transform:translateY(8px)}
   100%{opacity:1; transform:none}
 }
+/* ─ **立て直しを、動きで見せる**（2026-09-14、本人：「結局まとめる過程で
+   **何してくれてるのかよくわかんない不透明さ**があるな」→「モーションで見せられない？」）──
+   ③に並ぶ 12 件は**全部「問い」**（「〜をどうするか」「〜を誰にするか」）で、
+   ②の 147 件は**全部「問題の記述」**。**それが、まとめる過程でやっていることの正体。**
+   ところが画面は「名前を付けた」としか言っていなかった——**名前を付けただけなら分類。**
+   しかも②の表には**分類の列**（障害／仕様／運用）があるので、
+   **既存の列で分けただけ**にも読めてしまう。
+
+   **一拍を二段にする。**空の面にまず**表の言葉（群の題＝問題名）**が入り、
+   そのあと**決めごと（問い）に差し替わる。**
+     引き継ぎの記録がない　→　引き継ぎを何で残すか
+     ＝表にある言葉　　　　　＝表のどこにも無い言葉
+   **場所は増やさない。**同じ一行の上で入れ替わる。
+   `.g1` は絶対配置で `.g2` の上に重ねる——**幅を決めるのは最終形（`.g2`）**なので、
+   差し替わるときに行の幅が動かない */
+@keyframes outup{ 0%{opacity:1; transform:none}       100%{opacity:0; transform:translateY(-8px)} }
+@keyframes inup { 0%{opacity:0; transform:translateY(8px)} 100%{opacity:1; transform:none} }
 .gset.up{animation:stack .46s var(--ease) both}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
 /* ─ 山。**押せない。見るだけ**（2026-09-10）────────────────────
@@ -671,8 +688,23 @@ body[data-stage="c"] .wrap{padding-top:20px}
    **捨てたもの：**.gdo「片付ける」、clearGroup、.gset.out／.gset.shut、
    leftG／cleared／firstCleared、.two-col.empty。 */
 .gt{
+position:relative;
 font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+/* 表の言葉。**重ねて置く**ので、行の幅には効かない */
+.gt .g1{position:absolute; left:0; right:0; top:0; color:var(--sub);
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.gt .g2{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+/* 名前が入る一拍では、**まだ表の言葉**（`.g2` は伏せておく）*/
+body.named .gt .g2{opacity:0}
+/* ─ 立て直す一拍。`--rd` は一行ずつの遅れ。
+   **最終形は宣言で固定する**（2026-09-14）——`animation` の `both` に任せると、
+   **アニメが走らなかったときに表の言葉が残り続ける。**消えるのが飾りなら構わないが、
+   ここは**残るほうが中身として間違っている**（分類に見える）。
+   `opacity` を明示して、**動きは装飾に落とす。**
+   `body.named …` と同じ詳細度なので、**この二行が後ろに来ていることが効いている** */
+body.restated .gt .g1{opacity:0; animation:outup .3s var(--ease) both; animation-delay:var(--rd,0ms)}
+body.restated .gt .g2{opacity:1; animation:inup  .3s var(--ease) both; animation-delay:var(--rd,0ms)}
 /* 行数。**点数ではない**——材料の量。この題が何行ぶんか */
 .gn{font-family:var(--mono); font-size:14.5px; color:var(--sub); white-space:nowrap;
     flex:none; width:122px; text-align:right}   /* **min-width では駄目。**中身が超えると広がって、名前の段と 2px ずれた */
@@ -2043,7 +2075,7 @@ body[data-stage="c"] .st-c{display:block}
   }
 
   function paintPile(){
-    document.body.classList.remove('naming','named','sealed');
+    document.body.classList.remove('naming','named','restated','sealed');
     picked = false; hinted = false; bottom = false; tangledN = 0;
     trail = []; stray = []; stuck = null; need = 0; repN = 0; tangledK = null;
     document.getElementById('hint').textContent =
@@ -2495,6 +2527,7 @@ body[data-stage="c"] .st-c{display:block}
     var pile = document.getElementById('pile');
     /* 動きを切っている環境では、伏せたままにしない */
     if (slow || !pile){ document.body.classList.add('named');
+                        document.body.classList.add('restated');
                         document.body.classList.add('sealed'); stage('c'); return; }
     document.getElementById('go-c').classList.remove('on');   /* 二度押させない */
 
@@ -2594,15 +2627,24 @@ body[data-stage="c"] .st-c{display:block}
     setTimeout(function(){
       [].forEach.call(document.querySelectorAll('#sets .gset'), function(g, i){
         g.classList.add('up');
-        g.style.setProperty('--nd', (i * 45) + 'ms');   /* 名前が入る順 */
+        g.style.setProperty('--nd', (i * 35) + 'ms');   /* 名前が入る順 */
       });
       document.body.classList.remove('landing');
       document.body.classList.add('naming');            /* 面だけ。題はまだ */
     }, 760);
     setTimeout(function(){
       document.body.classList.remove('naming');
-      document.body.classList.add('named');      /* ここで名前が入る */
+      document.body.classList.add('named');      /* ここで**表の言葉**が入る */
     }, 1900);
+    /* ─ **立て直す一拍**（§立て直しを、動きで見せる）。ここが AI の仕事の中身——
+       名前を付けたのではなく、**問題を、答えられる問いに書き直した。**
+       名前が入り終わる（1900 + 35×11 + 340 ≒ 2625）すぐあと */
+    setTimeout(function(){
+      [].forEach.call(document.querySelectorAll('#sets .gset'), function(g, i){
+        g.style.setProperty('--rd', (i * 25) + 'ms');
+      });
+      document.body.classList.add('restated');
+    }, 2700);
     /* ─ **三拍目。うちがやったこと**（2026-09-11、本人：「2 から 3 になる過程で
        うちの介入が入ってる、って話ならできていいと思う。で、**そうなったっていうのが
        見えない**からって話をさっきしたね」）────────────────────────
@@ -2618,7 +2660,7 @@ body[data-stage="c"] .st-c{display:block}
         g.style.setProperty('--bd', (i * 40) + 'ms');
       });
       document.body.classList.add('sealed');
-    }, 2500);   /* 名前が入り終わる（1900 + 45×11 ≒ 2400）すぐあと */   /* **積み終わってから**（760 + 60×11 + 460 ≒ 1880）。二拍を重ねない */   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
+    }, 3300);   /* 立て直しが終わる（2700 + 25×11 + 300 ≒ 3275）すぐあと */   /* **積み終わってから**（760 + 60×11 + 460 ≒ 1880）。二拍を重ねない */   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
     /* **着いた形のまま置く**（2026-09-10。本人：「せっかく 12 件にまとめたのに
        それが下に行っちゃって見えない」「モーションで出たときと形変わるし」）。
        着地の直後に一件目を開けていたので、**12 件が並んだ絵が 0.5 秒で崩れて、
@@ -2691,7 +2733,8 @@ body[data-stage="c"] .st-c{display:block}
        ここが「課題が多い」から「**決まっていないことが少ない**」に変わる場所 */
     /* 右端の**空の捺印欄**（§三拍目）。出るのは名前が入ったあと */
     return '<button class="gitem" data-k="' + k + '">'
-      +   '<span class="gt">' + esc(GROUPS[k].u) + '</span>'
+      +   '<span class="gt"><span class="g1">' + esc(GROUPS[k].t) + '</span>'
+      +     '<span class="g2">' + esc(GROUPS[k].u) + '</span></span>'
       +   '<span class="gn">' + byG[k].length + ' 件 ／ ' + cnt + ' か所</span>'
       +   '<i class="gbox"></i>'
       + '</button>';
@@ -3083,7 +3126,10 @@ body[data-stage="c"] .st-c{display:block}
          一度外している（§押している人の立ち位置）。**この行だけ残っていた。**
          画面で実際にうちがやったのは、**二択と代償を用意して、捺せば進む状態にしたこと**——
          §三拍目で**出来事として映るようになった**ので、指す先がある */
-      + '<span class="lg">寄せたのは決まった処理、<b>名前を付けたのは AI</b>。'
+      /* **「名前を付けた」は、起きたことを言い当てていなかった**（2026-09-14）——
+         名前を付けただけなら分類。実際には**問題を、答えられる問いに立て直している。**
+         §立て直しを、動きで見せる でその瞬間が画面に出たので、言葉もそこへ合わせる */
+      + '<span class="lg">寄せたのは決まった処理、<b>問いに立て直したのが AI</b>。'
       + '<b>捺せるところまで持ってきたのが、うちの仕事</b>です。</span>';
     decided = {};
     var lead = document.getElementById('lead');
