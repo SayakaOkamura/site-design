@@ -3057,8 +3057,26 @@ body[data-stage="c"] .st-c{display:block}
     [].forEach.call(setsEl.querySelectorAll('.gset.on'), function(g){ g.classList.remove('on'); });
     set.classList.add('on');
     box.innerHTML = detHTML(k);
-    /* 狭い窓では右が下へ回る。**押した先が画面の外にあると気づかれない** */
-    if (!slow && innerWidth <= 1000) box.scrollIntoView({block:'nearest', behavior:'smooth'});
+    /* ─ 狭い窓では右が下へ回る（1080px 以下で `.side` が `static`）。
+       **押した先が画面の外にあると気づかれない** ───────────────────────
+       **なめらかが効かなかったときの保険**（2026-09-14、外からの指摘）。
+       `behavior:'smooth'` は**背面タブでは何も起きない**（§④へ送る で確かめた。即時なら動く）。
+       ここは**二択が画面の外にあるかどうか**なので、効かないと**決める手が見えない。**
+       600ms 後に動いていなければ**即時で送る。**
+       送り先は `block:'nearest'` と同じ——**箱の頭が画面に入るところまで**（それ以上は動かさない）*/
+    if (!slow && innerWidth <= 1000){
+      var from = scrollY;
+      box.scrollIntoView({ block:'nearest', behavior:'smooth' });
+      setTimeout(function(){
+        if (Math.abs(scrollY - from) > 8) return;          /* 動いた */
+        var r = box.getBoundingClientRect();
+        if (r.top >= 0 && r.bottom <= innerHeight) return; /* もう見えている */
+        var to = (r.height <= innerHeight)
+          ? Math.round(r.top + scrollY - (innerHeight - r.height) / 2)  /* 収まるなら真ん中 */
+          : Math.round(r.top + scrollY - 70);                           /* 大きいなら頭を上へ */
+        scrollTo(0, Math.max(0, to));
+      }, 600);
+    }
   }
 
   function paintRows(){
