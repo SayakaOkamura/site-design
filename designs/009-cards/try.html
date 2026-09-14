@@ -523,6 +523,21 @@ body.named .side{animation:rise .34s var(--ease) both}
 /* ─ 引っかかっている行 ── **色は足さない**（§捨てた --crt-*）。
    **手は付けた、でも止まっている**を、灰で埋めたチェックと薄い地で出す。
    紫にしないのは、紫が「進む・飛ぶ」の印だから */
+/* ─ **引っかかる**（2026-09-14、本人：「押してみてって言われて押したら
+   いきなりこれ言われるのちょっときつくない？」「**何かで詰まったのを
+   モーションでもなんでもいいから見せられない**」）────────────────────
+   ③で片付くときは**行が飛んで抜ける**（`flyIn`）。**②では、同じ動きを途中で止める。**
+   出ていこうとして、**当たって、そこで止まって、戻る。**
+   速く出て・急に止まり・ゆっくり戻る——**止まった一拍**が「引っかかった」の中身。
+   枠は動かさない（§ジェットコースターにしない）。動くのは押した一行だけ */
+@keyframes stuck{
+  0%  {transform:none; opacity:1}
+  30% {transform:translateX(30px); opacity:.5}    /* 出ていこうとする */
+  37% {transform:translateX(24px); opacity:.5}    /* 当たって、わずかに戻る */
+  62% {transform:translateX(24px); opacity:.5}    /* 止まったまま。ここが一拍 */
+  100%{transform:none; opacity:1}                 /* 戻る */
+}
+.pile li.stuck{animation:stuck .72s cubic-bezier(.3,.85,.4,1) both; position:relative; z-index:1}
 .pile li.wait,
 .sheet.grid .pile li.wait{background:rgba(37,31,69,.075)}
 /* ─ **待っている行に、チェックは入らない**（2026-09-10）───────────
@@ -2122,9 +2137,15 @@ body[data-stage="c"] .st-c{display:block}
     /* 一件目か、鎖の二件目以降か。**押した数ではなく、鎖の長さで見る**
        （外れて押したぶん＝`stray` は鎖に入らない）*/
     var first = trail.length < 2;
+    /* **判定を落とした**（2026-09-14、§引っかかる）。前は一回目だけ
+       「**まだ動きません。**」を頭に置いていたが、**同じことを二度言っていた**——
+       後半の「進みません」が事実で、頭のほうはその**判定**。
+       案内を「手を付けて**みてください**」に変えた日から、**こちらが誘って、こちらが断る**
+       形になっていたので、断定はなおさら重い。
+       **動かないことは、いま画面が見せている**（出ていこうとして、引っかかって、戻る）。
+       言葉は**理由だけ**にする。一回目と二回目が同じ形になって、鎖に読める */
     el.innerHTML =
-      (first ? '<b>まだ動きません。</b>' : '')
-      + '<span class="qt">' + esc(here.raw) + '</span>' + (first ? 'は、' : 'も、')
+      '<span class="qt">' + esc(here.raw) + '</span>' + (first ? 'は、' : 'も、')
       + '<span class="tr">' + esc(label(stuck)) + '</span> が決まらないと進みません。'
       + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>'
       + fromHTML(here);
@@ -2300,7 +2321,7 @@ body[data-stage="c"] .st-c{display:block}
   }
 
   /* 鎖から外れた課題を押した。**押した手ごたえは返す。鎖は捨てない** */
-  function offTrack(li, c, back){
+  function offTrack(li, c, back, say){
     if (stray.indexOf(c) < 0) stray.push(c);
     li.classList.remove('aim');
     var ck = li.querySelector('.c-ck');
@@ -2312,6 +2333,10 @@ body[data-stage="c"] .st-c{display:block}
     }
     var t = document.querySelector('#pile li[data-i="' + back.n + '"]');
     if (t) t.classList.add('aim');
+    /* **ここは断定を残す**（2026-09-14）。鎖の中の文からは「まだ動きません。」を
+       落としたが、**押し間違いは気づかせるべき**なので、ここだけ声が大きいのは正しい。
+       出すのは動きが済んでから（`say`）*/
+    var out = function(){
     document.getElementById('how').innerHTML =
       '<b>この課題も動きません。</b>'
       + '<span class="tr">' + esc(label(back)) + '</span> を追いかけている途中です。'
@@ -2322,6 +2347,8 @@ body[data-stage="c"] .st-c{display:block}
          外から素直に引くとデモの外へ出る。帰る先は `.aim` の行なので、名前をそこへ合わせた */
       + '<button class="jump" id="re-aim">' + esc(label(back)) + ' へ戻る →</button>';
     stick();
+    };
+    if (say) say(out); else out();
   }
 
   function press(li){
@@ -2332,14 +2359,30 @@ body[data-stage="c"] .st-c{display:block}
     var pk = document.querySelector('#pile li.pick');
     if (pk) pk.classList.remove('pick');
 
+    /* ─ **見せてから、言う**（2026-09-14、本人：「押してみてって言われて押したら
+       いきなりこれ言われるのちょっときつくない？」「**何かで詰まったのをモーションでも
+       なんでもいいから見せられない**」）──────────────────────────────
+       ③で片付くときは行が飛んで抜ける。**②では同じ動きが途中で止まる**——
+       速く出て（30px）、当たって 6px 戻り、**180ms そこで止まって**、ゆっくり帰る。
+       **どの押し方でも同じ**（鎖の中でも、外れて押しても）——
+       外したほうが滑らかだと、**間違えたほうが気持ちよくなってしまう。**
+       言葉は動きが済んでから（700ms）。動きを切っている環境では待たせない */
+    if (!slow) li.classList.add('stuck');
+    var say = function(fn){ if (slow) fn(); else setTimeout(fn, 700); };
+
     /* **押し間違えても終わらない**（2026-09-11）。鎖は捨てず、追いかけている先を指し直す */
-    if (stuck && stuck !== c && trail.length){ offTrack(li, c, stuck); return; }
+    if (stuck && stuck !== c && trail.length){ offTrack(li, c, stuck, say); return; }
 
     if (stuck && stuck === c) trail.push(c);
     else {
       /* 前の鎖の印を消してから引き直す */
-      [].forEach.call(document.querySelectorAll('#pile li.wait, #pile li.aim'), function(x){
+      [].forEach.call(document.querySelectorAll('#pile li.wait, #pile li.aim, #pile li.stuck'), function(x){
         x.classList.remove('wait','aim');
+        /* **いま押した行の `.stuck` は落とさない**（2026-09-14、画面で見つけた）。
+           前の鎖の印を掃除するここが、**直前に付けた引っかかる動きごと消していた**——
+           `.stuck` は press の頭で付くので、**鎖の一件目だけアニメが 0ms で止まる。**
+           誘って押させた直後の一回がいちばん要るところで、そこだけ動いていなかった */
+        if (x !== li) x.classList.remove('stuck');
         var k = x.querySelector('.c-ck'); if (k) k.classList.remove('on');
       });
       trail = [c]; stray = [];
@@ -2370,7 +2413,7 @@ body[data-stage="c"] .st-c{display:block}
     }
 
     var b = (trail.length >= need) ? null : nextBlock(c);
-    if (!b){ tangle(); return; }
+    if (!b){ say(tangle); return; }
     stuck = b;
     /* ─ **追いかけている先を、表の上で光らせる**（2026-09-14、外からの指摘の三度目）──
          指摘：「内部では `trail` が積まれているのに、**訪問者には見えない。**
@@ -2394,7 +2437,7 @@ body[data-stage="c"] .st-c{display:block}
          消える**（§押す＝終わった）。`offTrack` と同じく**その一行に足すだけ。** */
     var t = document.querySelector('#pile li[data-i="' + b.n + '"]');
     if (t) t.classList.add('aim');
-    wall(); showTrail();
+    say(function(){ wall(); showTrail(); });
   }
 
   document.addEventListener('click', function(e){
