@@ -803,6 +803,18 @@ font-size:17.5px; font-weight:700; min-width:0; flex:1 1 auto;
 .sdec.done .tx{flex:1 1 auto; min-width:0}
 .sdec.done b{margin-bottom:2px}
 .pks{display:flex; flex-direction:column; gap:8px; margin-top:10px}
+/* ─ **選べなくなった側**（2026-09-14。試作：決めることを遊びにする）──────────
+   もう一方の決めごとを先に決めたせいで、**こちらは取れなくなった。**
+   消さずに**残して、線を引く**——§「捺さなかったほうは引く。消さない」と同じ作法で、
+   **選べたはずのものがあったこと**が残る。捺印欄は出さない（捺せないので） */
+.pk.lock{cursor:default; box-shadow:none; background:var(--tint); opacity:.6}
+.pk.lock:hover{transform:none; box-shadow:none}
+.pk.lock .tx b{text-decoration:line-through; text-decoration-color:rgba(37,31,69,.35)}
+.pk.lock .box{display:none}
+.pkwhy{margin:6px 0 0; padding-left:2px; font-size:12.5px; line-height:1.7; color:var(--sub)}
+/* **`.sdec b` を打ち消す**（画面で見つけた）。あちらは `display:block; font-size:15.5px` なので、
+   この中の `<b>` が**段落ごと別の大きさで折れていた** */
+.pkwhy b{display:inline; font-size:inherit; font-weight:700; color:var(--ink); margin:0}
 /* ─ **決裁欄にした**（2026-09-11、本人：「そのカードにハンコを押すところまで含めて
    取り扱ってるやつだからなあ。**そっちがやるのはハンコだけ**、っていう」）────
    分担を言葉で説明しない。**紙の形で出す**——左に決める中身、右に空の捺印欄。
@@ -2798,6 +2810,43 @@ body[data-stage="c"] .st-c{display:block}
      囲う。④の「一つずつなら、手が付けられます」と、④の「**この表にかぎった話では
      ありません**」が、そのまま効いている。**量が多い人を遠ざけない。** */
   var decided = {};   /* 件の番号 → 捺した二択の番号。件ごとに一度だけ */
+
+  /* ─ **決めごとは、互いに効く**（2026-09-14。試作）────────────────────
+     本人：「**決めることを遊びにする**」——会社の仕事（決められる形にして渡す）と
+     理念（やらされるでなく、やりたい）と、③の体験が**同じ軸に乗る**。
+
+     ただし**いまの③は 12 枚が互いに影響しない**ので、手札ではなく書類の束だった。
+     一枚出しても他の 11 枚が何も変わらないから、「決めた」で終わって
+     「**次はどれを出そう**」にならない。**出す順に意味が無い。**
+
+     **現実の決めごとは互いに効く。**切って独立させていたのは、こちらの単純化。
+     **一組だけ戻して、手触りを見る**（全部絡ませると、09-10 に「辿る」を
+     行き止まりで断念したのと同じ複雑さになる）。
+
+     選んだ組：**引き継ぎ（10）と手順書（11）。両方とも「捨てる側」を選ぶと、
+     よりどころが一つも残らない。**だから片方を決めると、もう片方の一方が取れなくなる。
+     **相互**にした——どちらを先に決めるかで、残る手が変わる */
+  var LOCKS = [
+    { when:[10,1], lock:[11,0], why:'引き継ぎを<b>口頭でよい</b>としたので' },
+    { when:[11,0], lock:[10,1], why:'手順書を<b>2019 年版を廃止する</b>としたので' }
+  ];
+  var LOCK_TAIL = '、これも選ぶと<b>よりどころが一つも残りません</b>。';
+  /* その二択が、いま取れないか。取れないなら理由を返す */
+  function lockOf(k, ai){
+    for (var i = 0; i < LOCKS.length; i++){
+      var L = LOCKS[i];
+      if (L.lock[0] === k && L.lock[1] === ai && decided[L.when[0]] === L.when[1]) return L;
+    }
+    return null;
+  }
+  /* その決定が、どこかの手を狭めたか（決めた直後に言うため）*/
+  function lockedBy(k, ai){
+    for (var i = 0; i < LOCKS.length; i++){
+      var L = LOCKS[i];
+      if (L.when[0] === k && L.when[1] === ai && decided[L.lock[0]] === undefined) return L;
+    }
+    return null;
+  }
   function pickHTML(k){
     var g = GROUPS[k];
     /* **「残りも、同じ一手です」を消した**（2026-09-11、外からの指摘）——
@@ -2829,11 +2878,14 @@ body[data-stage="c"] .st-c{display:block}
     return '<div class="sdec"><b>決裁</b>'
       + '<div class="pks">'
       + g.d.map(function(a, ai){
-          return '<button class="pk" data-k="' + k + '" data-a="' + ai + '">'
+          var L = lockOf(k, ai);
+          return '<button class="pk' + (L ? ' lock' : '') + '" data-k="' + k + '" data-a="' + ai + '"'
+               +   (L ? ' disabled' : '') + '>'
                +   '<span class="tx"><b>' + esc(a[0]) + '</b>'
                +   '<span>' + esc(a[1]) + '</span></span>'
                +   '<i class="box"></i>'
-               + '</button>';
+               + '</button>'
+               + (L ? '<p class="pkwhy">' + L.why + LOCK_TAIL + '</p>' : '');
         }).join('')
       + '</div></div>';
   }
@@ -2878,6 +2930,7 @@ body[data-stage="c"] .st-c{display:block}
 
   function decide(k, ai){
     if (decided[k] !== undefined) return;
+    if (lockOf(k, ai)) return;              /* 取れなくなった手（ボタンも disabled）*/
     var g = GROUPS[k], a = g.d[ai], cnt = byG[k].length;
     decided[k] = ai;
     /* 二度押させない */
@@ -2947,6 +3000,16 @@ body[data-stage="c"] .st-c{display:block}
       + '<div class="sdec done"><i class="seal">決</i>'
       +   '<span class="tx"><b>' + esc(a[0]) + '</b>' + esc(a[1]) + '</span></div>'
       + filled(k, a)
+      /* **この決定が、どこかの手を狭めたか**（§決めごとは、互いに効く）。
+         **一番見ている場所で言う**——言わないと、次に開くまで誰も気づかない */
+      + (function(){
+          var L = lockedBy(k, ai);
+          if (!L) return '';
+          return '<p class="sfill" style="margin-top:14px">この決定で、選べる幅が変わりました</p>'
+               + '<p class="pkwhy" style="margin-top:6px"><b>'
+               + esc(GROUPS[L.lock[0]].u) + '</b>で、<b>'
+               + esc(GROUPS[L.lock[0]].d[L.lock[1]][0]) + '</b>が選べなくなりました。</p>';
+        })()
       /* ─ **②を対比の相手にしない**（2026-09-11、本人）────────────────
          > 徒労はこっちに従ってやったのに徒労なんですよって**明かされる形になるのがおかしい**
          > って指摘だったでしょ。**徒労は道中で味わうものであって、結論にしたらストレスになる。**
