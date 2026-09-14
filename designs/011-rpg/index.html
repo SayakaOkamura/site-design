@@ -121,8 +121,12 @@ body{
     var(--ground2) 0 calc(var(--px)*3), transparent calc(var(--px)*3) calc(var(--px)*20));
   background-size:calc(var(--px)*20) 100%; }
 
-/* ─ 勇者。**走る位置は変わらない。**四角を並べた影法師 ─────────── */
-#hero{position:absolute; left:58%; bottom:20%; width:var(--px); height:var(--px);
+/* ─ 勇者。**走る位置は変わらない。**四角を並べた影法師 ───────────
+   **左寄りに置く**（2026-09-14、本人：「勇者もうちょっと左にできる？
+   **デモで後々敵出したい**」）。58% → **34%**。
+   右の空きが、そのまま**敵の出てくる場所**になる。
+   左の窓（メニュー）とは 100px 以上あける */
+#hero{position:absolute; left:34%; bottom:20%; width:var(--px); height:var(--px);
   transform:translate(-50%,0); z-index:4}
 /* 二コマを裏返しで切り替える。**遅れは付けない**——`step2` がすでに裏返しなので、
    さらに半拍ずらすと**二コマとも消えている時間**ができる（最初それで勇者が出なかった）*/
@@ -190,7 +194,7 @@ body{
 
 @media (max-width:640px){
   #menu{top:auto; bottom:26%; transform:none; min-width:150px}
-  #hero{left:72%}
+  #hero{left:50%}   /* 狭い窓では窓が下へ回るので、真ん中に戻す */
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important} }
 </style>
