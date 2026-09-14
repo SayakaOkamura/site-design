@@ -175,12 +175,16 @@ body{
 #name b{display:block; font-size:clamp(13px,1.7vw,18px); letter-spacing:.06em; margin-top:4px}
 #tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,1.25vw,13px); color:#ffe7ad; letter-spacing:.04em}
 
-/* ─ ポップアップ。**送りは ▼**（枠内スクロールはしない）───────── */
+/* ─ ポップアップ。**送りは ▼**（枠内スクロールはしない）─────────
+   **右上の真ん中あたりへ**（2026-09-14、本人：「下じゃなくて右に出せない？」
+   「**右上真ん中らへん**」）。下に出していたときは**画面の幅いっぱい**を占めて、
+   勇者も地面も隠れていた。右に寄せると**左の窓・勇者・地平が全部残る。**
+   勇者は 34% なので、右半分は空いている */
 #pop{position:absolute; z-index:6;
-  left:50%; bottom:clamp(18px,6vh,54px); transform:translateX(-50%);
-  width:min(92vw,560px); max-height:62vh; display:none}
+  right:clamp(16px,4vw,54px); top:24%;
+  width:min(46vw,520px); max-height:60vh; display:none; transform-origin:top}
 #pop.on{display:block; animation:popin .12s steps(2) both}
-@keyframes popin{ from{transform:translateX(-50%) scaleY(.2)} to{transform:translateX(-50%) scaleY(1)} }
+@keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
 #pop .t{font-size:clamp(12px,1.4vw,14px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--px)*2)}
 #pop .b{margin:0; font-size:clamp(14px,1.75vw,17px); line-height:2; min-height:7.2em}
 #pop .b b{color:var(--go); font-weight:700}
@@ -196,6 +200,10 @@ body{
 @media (max-width:640px){
   #menu{top:auto; bottom:26%; transform:none; min-width:150px}
   #hero{left:50%}   /* 狭い窓では窓が下へ回るので、真ん中に戻す */
+  /* 狭い窓では右に寄せる余地が無い。**下いっぱい**に戻す */
+  #pop{right:auto; left:50%; top:auto; bottom:clamp(14px,4vh,40px);
+       width:min(94vw,520px); transform:translateX(-50%); transform-origin:bottom}
+  @keyframes popin{ from{transform:translateX(-50%) scaleY(.2)} to{transform:translateX(-50%) scaleY(1)} }
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important} }
 </style>
