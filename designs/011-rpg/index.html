@@ -162,8 +162,10 @@ body{
   font-size:clamp(12px,1.4vw,14px); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   color:var(--dim); cursor:pointer; padding:calc(var(--px)) calc(var(--px)*2)}
-#foot button:hover{color:var(--go)}
-#foot button::before{content:'▸ '; color:var(--go)}
+#foot button{display:inline-flex; align-items:center; gap:calc(var(--px)*1.5)}
+#foot button .cur{color:transparent}
+#foot button:hover,#foot button[aria-current="true"]{color:var(--go)}
+#foot button:hover .cur,#foot button[aria-current="true"] .cur{color:var(--go)}
 
 /* 名乗り。**左上に出しっぱなし** */
 /* **白抜きに硬い縁**（2026-09-14）。空を明るくしたら、白字がぼやけた。
@@ -230,8 +232,8 @@ body{
   <nav id="menu" class="win"><ul id="cmds"></ul></nav>
 
   <div id="foot">
-    <button data-k="contact">お問い合わせ</button>
-    <button data-k="policy">ポリシー</button>
+    <button data-k="contact"><span class="cur">▶</span>お問い合わせ</button>
+    <button data-k="policy"><span class="cur">▶</span>ポリシー</button>
   </div>
 
   <div id="pop" class="win">
@@ -365,6 +367,27 @@ var pop = document.getElementById('pop'),
     popP = document.getElementById('popP'), popGo = document.getElementById('popGo');
 var cur = null, page = 0;
 
+/* ─ **十字キーでも動く**（2026-09-14、本人：「十字キーでもできるようにして」）──
+   **メニュー 4 つと足もとの 2 つを、一本のカーソルで回す**——
+   ↓ で「デモを触る」から「お問い合わせ」へ落ちる。RPG の作法どおり、
+   **窓が開いているあいだは ↑↓ を止める**（送りと閉じるだけ受ける）。
+   マウスでも触れるので、**どちらの手でも同じ場所に印が出る** */
+var ALL = [].concat(
+  [].slice.call(ul.children),
+  [].slice.call(document.querySelectorAll('#foot button'))
+);
+var sel = 0;
+
+function paintSel(){
+  ALL.forEach(function(el, i){
+    el.setAttribute('aria-current', (i === sel && !cur) || (cur && el.dataset.k === cur) ? 'true' : 'false');
+  });
+}
+function move(d){
+  sel = (sel + d + ALL.length) % ALL.length;
+  paintSel();
+}
+
 function draw(){
   var d = DATA[cur];
   popT.textContent = d.t;
@@ -376,27 +399,51 @@ function draw(){
 }
 function open(k){
   cur = k; page = 0; pop.classList.add('on'); draw();
-  [].forEach.call(ul.children, function(li){
-    li.setAttribute('aria-current', li.dataset.k === k ? 'true' : 'false');
-  });
+  var i = ALL.findIndex(function(el){ return el.dataset.k === k; });
+  if (i >= 0) sel = i;
+  paintSel();
 }
-function close(){
-  pop.classList.remove('on'); cur = null;
-  [].forEach.call(ul.children, function(li){ li.setAttribute('aria-current','false'); });
+function close(){ cur = null; pop.classList.remove('on'); paintSel(); }
+
+/* 決定。**窓が開いていれば送り、最後なら閉じる**（お問い合わせだけメールへ） */
+function fire(){
+  if (!cur){ open(ALL[sel].dataset.k); return; }
+  var d = DATA[cur];
+  if (page < d.p.length - 1){ page++; draw(); return; }
+  if (cur === 'contact'){ location.href = 'mailto:contact@alt-dsgn.co.jp'; return; }
+  close();
 }
 
 document.addEventListener('click', function(e){
-  var li = e.target.closest && e.target.closest('#cmds li');
-  if (li){ (cur === li.dataset.k) ? close() : open(li.dataset.k); return; }
-  var fb = e.target.closest && e.target.closest('#foot button');
-  if (fb){ (cur === fb.dataset.k) ? close() : open(fb.dataset.k); return; }
-  if (e.target.closest && e.target.closest('#popGo')){
-    var d = DATA[cur];
-    if (page < d.p.length - 1){ page++; draw(); return; }
-    if (cur === 'contact'){ location.href = 'mailto:contact@alt-dsgn.co.jp'; return; }
-    close(); return;
+  var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button'));
+  if (el){
+    var i = ALL.indexOf(el); if (i >= 0) sel = i;
+    (cur === el.dataset.k) ? close() : open(el.dataset.k);
+    return;
   }
+  if (e.target.closest && e.target.closest('#popGo')){ fire(); return; }
   /* 枠の外を押したら閉じる（RPG の作法ではないが、マウスなので素直に） */
   if (cur && !(e.target.closest && (e.target.closest('#pop') || e.target.closest('#menu') || e.target.closest('#foot')))) close();
 });
+/* マウスを乗せたら、カーソルもそこへ（手が二つあっても印は一つ） */
+ALL.forEach(function(el, i){
+  el.addEventListener('mouseenter', function(){ if (!cur){ sel = i; paintSel(); } });
+});
+
+document.addEventListener('keydown', function(e){
+  var k = e.key;
+  if (k === 'ArrowUp' || k === 'ArrowDown'){
+    if (cur) { e.preventDefault(); return; }      /* 窓が開いていたら止める */
+    move(k === 'ArrowDown' ? 1 : -1); e.preventDefault(); return;
+  }
+  if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
+    fire(); e.preventDefault(); return;
+  }
+  if (k === 'Escape' || k === 'ArrowLeft' || k === 'Backspace' || k === 'x' || k === 'X'){
+    if (cur) close();
+    e.preventDefault(); return;
+  }
+});
+
+paintSel();
 </script>
