@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A 決裁だけが届く — 010 スケッチ</title>
+<!-- ═══════════════════════════════════════════════════════════════
+     A｜決裁だけが届く（2026-09-14）
+
+     **009 の「後」の世界だけを見せる。**069 も 12 も出さない。
+     朝、画面にあるのは決裁が数件。課題は一件も出てこない。
+     捺すと次の朝へ進み、**件数が減っていく。**
+
+     穴「デモの後の世界」（NOTES：決めたあとに何ができるようになったのかが
+     まだ一行も無い）に当てるための素描。**009 に足す形でも、別の一本でも使える。**
+     ざっくり。文言も数も仮。
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+:root{
+  --bg:#e8f0f8; --card:#fff; --tint:#eff5fb; --ink:#251f45; --sub:#5c6288;
+  --go:#6354e0; --frame:#d8e5f1; --face:#251f45; --seal:#c4402e;
+  --lift1:0 1px 2px rgba(31,25,64,.07),0 3px 8px rgba(31,25,64,.08);
+  --lift2:0 2px 4px rgba(31,25,64,.08),0 10px 24px rgba(31,25,64,.12);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --r:10px; --ease:cubic-bezier(.2,.7,.3,1);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.top{position:sticky; top:0; z-index:5; background:var(--frame)}
+.in{max-width:820px; margin:0 auto; padding:0 24px}
+.top .in{display:flex; align-items:center; gap:16px; height:60px}
+.mark{font-size:14px; font-weight:700}
+.tag{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--sub)}
+.wrap{max-width:820px; margin:0 auto; padding:34px 24px 80px}
+
+.day{display:flex; align-items:baseline; gap:14px; margin:0 0 4px}
+.day h1{margin:0; font-size:23px; font-weight:700}
+.day .n{font-family:var(--mono); font-size:13px; color:var(--sub)}
+.note{margin:0 0 26px; font-size:15px; line-height:1.9; color:var(--sub)}
+
+.k{background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+   padding:20px 22px; margin:0 0 14px; transition:opacity .3s var(--ease)}
+.k .t{font-size:17px; font-weight:700; margin:0 0 3px}
+.k .s{font-size:13px; color:var(--sub); margin:0 0 16px}
+.opt{display:flex; gap:10px}
+.o{flex:1; display:flex; align-items:center; gap:12px; text-align:left;
+   -webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
+   background:var(--tint); border:0; border-radius:8px; padding:13px 14px;
+   box-shadow:var(--lift1); transition:transform .16s var(--ease),box-shadow .16s ease}
+.o:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.o .tx b{display:block; font-size:14.5px; font-weight:700}
+.o .tx span{display:block; font-size:12.5px; color:var(--sub); margin-top:2px; line-height:1.5}
+.o .box{flex:0 0 auto; width:34px; height:34px; border-radius:50%;
+        border:1px dashed rgba(37,31,69,.3)}
+.opt .o:first-child .box{animation:tap 1.8s ease-in-out infinite}
+.opt:hover .o .box{animation:none}
+@keyframes tap{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.seal{flex:0 0 auto; width:34px; height:34px; border-radius:50%;
+      display:grid; place-items:center; border:2px solid var(--seal); color:var(--seal);
+      font-size:15px; font-weight:700; animation:stamp .3s cubic-bezier(.22,.9,.3,1) both}
+@keyframes stamp{0%{transform:scale(1.45) rotate(-13deg);opacity:0}55%{opacity:1}
+                 100%{transform:scale(1) rotate(-6deg);opacity:1}}
+.opt.done .o{cursor:default; transform:none; box-shadow:none}
+.opt.done .o:not(.on){opacity:.3}
+.k.done{background:rgba(255,255,255,.55); box-shadow:none}
+.k .after{margin:14px 0 0; padding-top:13px; border-top:1px solid rgba(37,31,69,.1);
+          font-size:13.5px; line-height:1.8; color:var(--sub)}
+.k .after b{color:var(--ink)}
+
+.end{margin-top:30px}
+.face{background:var(--face); color:#fff; border-radius:var(--r); padding:30px 28px;
+      box-shadow:var(--lift2)}
+.face p{margin:0 0 9px; font-size:15.5px; color:rgba(255,255,255,.8); line-height:1.9}
+.face h2{margin:0; font-size:clamp(19px,3vw,26px); line-height:1.55}
+.one{-webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
+     margin-top:18px; padding:14px 24px; border-radius:8px; background:var(--go); color:#fff;
+     font-size:15.5px; font-weight:700; box-shadow:var(--lift1);
+     transition:transform .16s var(--ease),box-shadow .16s ease}
+.one:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.foot{margin-top:26px; font-size:13.5px; line-height:1.9; color:var(--sub)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="top"><div class="in">
+  <span class="mark">株式会社アルターデザインコンサルティング</span>
+  <span class="tag">010 / A 決裁だけが届く</span>
+</div></header>
+
+<div class="wrap">
+  <div class="day"><h1 id="d">2026年9月14日（月）</h1><span class="n" id="c"></span></div>
+  <!-- **課題を一件も出さない**のがこの案の全部。069 も 12 も出てこない -->
+  <p class="note" id="note">あなたの画面にあるのは、これだけです。</p>
+  <div id="list"></div>
+  <div class="end" id="end" hidden>
+    <div class="face">
+      <p id="lead"></p>
+      <h2 id="h2"></h2>
+      <button class="one" id="next"></button>
+    </div>
+    <p class="foot" id="foot"></p>
+  </div>
+</div>
+
+<script>
+/* ─ 仮の中身。**朝ごとに届く決裁**。日が進むと減る ───────────────────
+   減るのは「決めごとが尽きるから」——課題が減るからではない。
+   ここがこの案の主張。**課題は毎日増えていても、決裁は減る。** */
+var DAYS = [
+  { d:'2026年9月14日（月）', k:[
+    { t:'行数の上限をどちらに揃えるか', n:7,
+      o:[['新帳票の 99 行に揃える','旧帳票の様式は作り直しになります'],
+         ['旧帳票の 50 行に合わせる','新帳票で入り切らない行が出ます']],
+      after:'仕様書と議事録に反映。<b>この件で新しく起票されることは、もうありません。</b>' },
+    { t:'承認者を誰にするか', n:5,
+      o:[['部長までとする','金額の上限を決め直す必要があります'],
+         ['課長までとする','差し戻しが増える見込みです']],
+      after:'承認フローに反映。<b>不在時の代理も、同じ規則で決まります。</b>' },
+    { t:'手順書をどう維持するか', n:6,
+      o:[['更新を四半期ごとにする','間の変更は別紙で追います'],
+         ['変更のつど更新する','担当の手が毎回要ります']],
+      after:'手順書の扱いを確定。<b>「どれが最新か」の問い合わせが止まります。</b>' } ] },
+  { d:'2026年9月15日（火）', k:[
+    { t:'ログをいつまで残すか', n:6,
+      o:[['一年で消す','過去の照会に答えられなくなります'],
+         ['三年残す','保管の費用が増えます']],
+      after:'保管規定に反映。<b>「消していいか」を都度きかれなくなります。</b>' },
+    { t:'何をもって重複とするか', n:5,
+      o:[['同じ件名を重複とする','言い換えは別件のまま残ります'],
+         ['同じ出どころを重複とする','別々の相談が一つに畳まれます']],
+      after:'起票の規則に反映。<b>同じ話が二度立つことがなくなります。</b>' } ] },
+  { d:'2026年9月16日（水）', k:[
+    { t:'引き継ぎを何で残すか', n:4,
+      o:[['決めごとの一覧だけ残す','経緯は追えなくなります'],
+         ['経緯もまとめて残す','読む側の手間が増えます']],
+      after:'引き継ぎの形を確定。<b>次の担当に渡すものが、これで決まりました。</b>' } ] },
+  { d:'2026年9月17日（木）', k:[] }
+];
+
+var day = 0, left = 0;
+
+function paint(){
+  var D = DAYS[day];
+  document.getElementById('d').textContent = D.d;
+  left = D.k.length;
+  document.getElementById('c').textContent = left ? '決裁 ' + left + ' 件' : '決裁 なし';
+  document.getElementById('note').textContent = left
+    ? 'あなたの画面にあるのは、これだけです。'
+    : '今朝は、決めることがありません。';
+  var L = document.getElementById('list');
+  L.innerHTML = D.k.map(function(k, i){
+    return '<div class="k" data-i="' + i + '">'
+      + '<p class="t">' + k.t + '</p>'
+      + '<p class="s">この決めごとに、課題が ' + k.n + ' 件ぶら下がっています</p>'
+      + '<div class="opt">' + k.o.map(function(a, ai){
+          return '<button class="o" data-a="' + ai + '">'
+            + '<span class="tx"><b>' + a[0] + '</b><span>' + a[1] + '</span></span>'
+            + '<span class="box"></span></button>';
+        }).join('') + '</div></div>';
+  }).join('');
+  document.getElementById('end').hidden = !!left;
+  if (!left) closing();
+}
+
+document.addEventListener('click', function(e){
+  var o = e.target.closest && e.target.closest('.o');
+  if (!o) return;
+  var opt = o.parentNode, card = opt.parentNode;
+  if (opt.classList.contains('done')) return;
+  opt.classList.add('done'); o.classList.add('on');
+  var box = o.querySelector('.box');
+  if (box){ box.className = 'seal'; box.textContent = '決'; }
+  var k = DAYS[day].k[+card.dataset.i];
+  setTimeout(function(){
+    card.classList.add('done');
+    card.insertAdjacentHTML('beforeend', '<p class="after">' + k.after + '</p>');
+    left--;
+    document.getElementById('c').textContent = left ? '決裁 のこり ' + left + ' 件' : '決裁 ぜんぶ済み';
+    if (!left){ document.getElementById('end').hidden = false; closing(); }
+  }, 520);
+});
+
+/* 締め。**「完了しました」は出さない**（009 の守る線をそのまま借りる）*/
+function closing(){
+  var nextDay = DAYS[day + 1];
+  var lead = document.getElementById('lead'), h2 = document.getElementById('h2'),
+      btn = document.getElementById('next'), foot = document.getElementById('foot');
+  if (!nextDay){
+    lead.textContent = '';
+    h2.textContent = 'この画面は、これ以上は増えません。';
+    btn.hidden = true;
+    foot.innerHTML = '課題は、今日も増えています。<b>増えているのは、この画面の外です。</b>';
+    return;
+  }
+  btn.hidden = false;
+  lead.textContent = DAYS[day].k.length
+    ? '今日の決裁は、' + DAYS[day].k.length + ' 件でした。'
+    : '';
+  h2.textContent = '今日はここまでです。';
+  btn.textContent = '次の朝へ →';
+  foot.innerHTML = nextDay.k.length
+    ? '明日は <b>' + nextDay.k.length + ' 件</b>です。'
+    : '明日は、<b>ありません。</b>';
+}
+
+document.getElementById('next').addEventListener('click', function(){
+  day++; scrollTo(0, 0); paint();
+});
+
+paint();
+</script>

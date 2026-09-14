@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B 前の担当の引き継ぎ書 — 010 スケッチ</title>
+<!-- ═══════════════════════════════════════════════════════════════
+     B｜前の担当の引き継ぎ書（2026-09-14）
+
+     **表を捨てて、紙一枚にした 009。**材料は引き継ぎ書が一通だけ。
+     読み進むと「※別途」「※未定」だけが色を持つ。押すと「ここが決まっていない」。
+     決めると**その場で本文が書き換わる。**
+
+     009 との違いは三つ。
+     - 069 行を出さない（**読める量**に落とす）
+     - 決めごとを**探させない**。※ が全部指してある
+     - 決めた結果が**同じ紙の上**に出る（別の画面に飛ばない）
+
+     §「開いた中身は行の直下に」——二択は**押した段落の真下**に開く。
+     ざっくり。文言も数も仮。
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+:root{
+  --bg:#e8f0f8; --card:#fff; --tint:#eff5fb; --ink:#251f45; --sub:#5c6288;
+  --go:#6354e0; --frame:#d8e5f1; --face:#251f45; --seal:#c4402e;
+  --lift1:0 1px 2px rgba(31,25,64,.07),0 3px 8px rgba(31,25,64,.08);
+  --lift2:0 2px 4px rgba(31,25,64,.08),0 10px 24px rgba(31,25,64,.12);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --r:10px; --ease:cubic-bezier(.2,.7,.3,1);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.top{position:sticky; top:0; z-index:5; background:var(--frame)}
+.in{max-width:760px; margin:0 auto; padding:0 24px}
+.top .in{display:flex; align-items:center; gap:16px; height:60px}
+.mark{font-size:14px; font-weight:700}
+.tag{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--sub)}
+.wrap{max-width:760px; margin:0 auto; padding:30px 24px 80px}
+
+.ask{position:sticky; top:60px; z-index:4; background:var(--bg); padding:14px 0;
+     margin:0 0 16px; font-size:15px; line-height:1.85; color:var(--sub)}
+.ask b{color:var(--ink)}
+.ask .n{font-family:var(--mono); color:var(--go); font-weight:700}
+
+/* 紙。**罫は引かない**（009 の作法）。面と影だけ */
+.doc{background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+     padding:34px 34px 30px; font-size:15px; line-height:2.05}
+.doc h1{margin:0 0 3px; font-size:19px; font-weight:700; letter-spacing:.02em}
+.doc .sub{margin:0 0 24px; font-family:var(--mono); font-size:12.5px; color:var(--sub)}
+.doc h2{margin:26px 0 8px; font-size:14px; font-weight:700; letter-spacing:.08em}
+.doc h2:first-of-type{margin-top:0}
+.doc p{margin:0 0 11px}
+
+/* 決まっていないところ。**ここだけ押せる**（面も影も持たせない——紙の上の印） */
+.x{cursor:pointer; color:var(--go); font-weight:700; border-bottom:1.5px dashed var(--go);
+   padding:1px 2px; border-radius:3px; transition:background .16s ease}
+.x:hover{background:rgba(99,84,224,.09)}
+.x.on{background:rgba(99,84,224,.14)}
+.x.done{cursor:default; color:var(--ink); font-weight:400; border-bottom:0; background:none}
+.x.done .seal{display:inline-grid; place-items:center; width:19px; height:19px;
+  border-radius:50%; border:1.5px solid var(--seal); color:var(--seal);
+  font-size:10px; font-weight:700; margin-right:6px; vertical-align:-3px;
+  animation:stamp .3s cubic-bezier(.22,.9,.3,1) both}
+@keyframes stamp{0%{transform:scale(1.45) rotate(-13deg);opacity:0}55%{opacity:1}
+                 100%{transform:scale(1) rotate(-6deg);opacity:1}}
+.x.done .when{font-family:var(--mono); font-size:11.5px; color:var(--sub); margin-left:6px}
+
+/* 二択。**押した段落の真下**に開く（§開いた中身は行の直下に）*/
+.dec{margin:6px 0 16px; padding:16px 18px; background:var(--tint); border-radius:8px}
+.dec .h{font-size:12.5px; font-weight:700; letter-spacing:.1em; color:var(--sub); margin:0 0 4px}
+.dec .q{margin:0 0 13px; font-size:16px; font-weight:700}
+.opt{display:flex; gap:10px; flex-wrap:wrap}
+.o{flex:1 1 220px; display:flex; align-items:center; gap:11px; text-align:left;
+   -webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
+   background:var(--card); border:0; border-radius:8px; padding:12px 13px;
+   box-shadow:var(--lift1); transition:transform .16s var(--ease),box-shadow .16s ease}
+.o:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.o b{display:block; font-size:14px; line-height:1.5}
+.o span{display:block; font-size:12.5px; color:var(--sub); margin-top:2px; line-height:1.5}
+.o .box{flex:0 0 auto; width:30px; height:30px; border-radius:50%;
+        border:1px dashed rgba(37,31,69,.3)}
+
+.end{margin:26px 0 0; background:var(--face); color:#fff; border-radius:var(--r);
+     padding:28px; box-shadow:var(--lift2)}
+.end p{margin:0 0 8px; font-size:15px; color:rgba(255,255,255,.8); line-height:1.9}
+.end h2{margin:0; font-size:clamp(19px,3vw,25px); line-height:1.55}
+.own{margin:18px 2px 0; font-size:14.5px; line-height:1.95; color:var(--sub)}
+.own b{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="top"><div class="in">
+  <span class="mark">株式会社アルターデザインコンサルティング</span>
+  <span class="tag">010 / B 前の担当の引き継ぎ書</span>
+</div></header>
+
+<div class="wrap">
+  <p class="ask" id="ask"></p>
+
+  <div class="doc" id="doc">
+    <h1>引き継ぎ書（帳票まわり）</h1>
+    <p class="sub">情報システム部　／　2024/10/22 作成　／　前担当より</p>
+
+    <h2>一、現況</h2>
+    <p>月次帳票は旧様式と新様式が並行しています。どちらを正本とするかは
+      <span class="x" data-k="0">※別途</span>。当面は両方を出力しています。</p>
+    <p>桁ずれの報告が 2019 年から続いていますが、原因は特定できていません。
+      行数の上限が旧 50 行・新 99 行で異なるためと思われます。揃える先は
+      <span class="x" data-k="1">※未定</span>。</p>
+
+    <h2>二、運用</h2>
+    <p>承認は課長・部長の二段です。ただし不在時の代理について定めがなく、
+      実務では都度確認しています。代理の範囲は <span class="x" data-k="2">※別途</span>。</p>
+    <p>手順書は 2019 年版のまま更新されていません。更新の頻度と担当は
+      <span class="x" data-k="3">※未定</span>。差分は各自のメモで追っています。</p>
+
+    <h2>三、引き継ぎにあたって</h2>
+    <p>過去の経緯は議事録・メール・チャットに散らばっています。まとめたものは
+      ありません。何を残して何を捨てるかは <span class="x" data-k="4">※別途</span>。</p>
+    <p class="sub" style="margin:20px 0 0">※ の付いた箇所は、決定の時期および権限が定まっていません。</p>
+  </div>
+
+  <div class="end" id="end" hidden>
+    <p id="lead"></p>
+    <h2>読めるようになりました。</h2>
+  </div>
+  <p class="own" id="own" hidden>
+    決められる形にするのが、<b>うちの分担</b>です。<b>この一通にかぎった話ではありません。</b>
+  </p>
+</div>
+
+<script>
+/* ※ の中身。**本文のどこを書き換えるか**まで持つ */
+var K = [
+  { q:'どちらを正本とするか',
+    o:[['新様式を正本とする','旧様式の帳票は作り直しになります'],
+       ['旧様式を正本とする','新様式で入り切らない項目が出ます']] },
+  { q:'行数の上限をどちらに揃えるか',
+    o:[['新様式の 99 行に揃える','旧様式の帳票は作り直しになります'],
+       ['旧様式の 50 行に合わせる','新様式で入り切らない行が出ます']] },
+  { q:'代理の範囲をどこまで認めるか',
+    o:[['同格まで認める','権限の表を作り直す必要があります'],
+       ['一段上まで認める','部長の確認が増えます']] },
+  { q:'手順書をどう維持するか',
+    o:[['四半期ごとに更新する','間の変更は別紙で追います'],
+       ['変更のつど更新する','担当の手が毎回要ります']] },
+  { q:'経緯を何で残すか',
+    o:[['決めごとの一覧だけ残す','個別の経緯は追えなくなります'],
+       ['経緯もまとめて残す','読む側の手間が増えます']] }
+];
+var left = K.length, open = null;
+
+function ask(){
+  document.getElementById('ask').innerHTML = left
+    ? 'これは、前の担当から渡された一通です。'
+      + '<b>決まっていないところが <span class="n">' + left + ' 箇所</span>あります。</b>'
+    : '<b>※ は、ひとつも残っていません。</b>';
+}
+
+function close(){
+  var d = document.getElementById('dec');
+  if (d) d.remove();
+  var s = document.querySelector('.x.on');
+  if (s) s.classList.remove('on');
+  open = null;
+}
+
+document.addEventListener('click', function(e){
+  var x = e.target.closest && e.target.closest('.x');
+  if (x && !x.classList.contains('done')){
+    var k = +x.dataset.k;
+    if (open === k){ close(); return; }
+    close();
+    open = k; x.classList.add('on');
+    /* **押した段落の真下**に開く。紙の外へは出さない */
+    var p = x.closest('p');
+    p.insertAdjacentHTML('afterend',
+      '<div class="dec" id="dec">'
+      + '<p class="h">決まっていません</p>'
+      + '<p class="q">' + K[k].q + '</p>'
+      + '<div class="opt">' + K[k].o.map(function(a, ai){
+          return '<button class="o" data-k="' + k + '" data-a="' + ai + '">'
+            + '<span><b>' + a[0] + '</b><span>' + a[1] + '</span></span>'
+            + '<span class="box"></span></button>';
+        }).join('') + '</div></div>');
+    return;
+  }
+  var o = e.target.closest && e.target.closest('.o');
+  if (!o) return;
+  var k = +o.dataset.k, a = K[k].o[+o.dataset.a];
+  var box = o.querySelector('.box');
+  if (box){ box.className = 'seal'; box.textContent = '決'; box.style.width = '30px';
+            box.style.height = '30px'; box.style.fontSize = '13px'; }
+  setTimeout(function(){
+    close();
+    /* **同じ紙の上で書き換わる。**別の画面へ飛ばさない */
+    var span = document.querySelector('.x[data-k="' + k + '"]');
+    span.classList.remove('on'); span.classList.add('done');
+    span.innerHTML = '<span class="seal">決</span>' + a[0]
+                   + '<span class="when">2026/09/14 決定</span>';
+    left--; ask();
+    if (!left){
+      document.getElementById('end').hidden = false;
+      document.getElementById('own').hidden = false;
+      document.getElementById('lead').textContent =
+        '決めたのは ' + K.length + ' 件。書き足したのは、ひとつもありません。';
+    }
+  }, 430);
+});
+
+ask();
+</script>

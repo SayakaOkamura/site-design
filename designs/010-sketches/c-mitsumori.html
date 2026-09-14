@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C 見積もりが減る — 010 スケッチ</title>
+<!-- ═══════════════════════════════════════════════════════════════
+     C｜見積もりが減る（2026-09-14）
+
+     **落差の単位を、件数から金と期間に変える。**069→12 は社長層の単位ではない。
+     開発見積書が出ていて、**決まっていないぶんが「見込み」として積んである。**
+     一つ決めると、その行が消えて合計と期間が動く。
+
+     **嘘をつかない線**（009 の基準をそのまま借りる）——
+     決めても**本体の工数は減らない。**減るのは**未決のぶんの積み増し**だけ。
+     画面でも本体行は最後まで動かさない。「決めたら安くなる」ではなく
+     「**決まっていないから高い**」を出す。
+
+     §「開いた中身は行の直下に」——二択は押した行の真下に開く。
+     ざっくり。数字も文言も仮。
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+:root{
+  --bg:#e8f0f8; --card:#fff; --tint:#eff5fb; --ink:#251f45; --sub:#5c6288;
+  --go:#6354e0; --frame:#d8e5f1; --face:#251f45; --seal:#c4402e;
+  --lift1:0 1px 2px rgba(31,25,64,.07),0 3px 8px rgba(31,25,64,.08);
+  --lift2:0 2px 4px rgba(31,25,64,.08),0 10px 24px rgba(31,25,64,.12);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --r:10px; --ease:cubic-bezier(.2,.7,.3,1);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.top{position:sticky; top:0; z-index:6; background:var(--frame)}
+.in{max-width:860px; margin:0 auto; padding:0 24px}
+.top .in{display:flex; align-items:center; gap:16px; height:60px}
+.mark{font-size:14px; font-weight:700}
+.tag{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--sub)}
+.wrap{max-width:860px; margin:0 auto; padding:28px 24px 80px}
+
+/* 合計。**貼りつく**——行を押すたび、目の前で動く */
+.sum{position:sticky; top:60px; z-index:5; background:var(--bg); padding:14px 0 16px;
+     display:flex; gap:34px; align-items:flex-end; flex-wrap:wrap}
+.sum .b{display:flex; flex-direction:column}
+.sum .l{font-size:12px; letter-spacing:.08em; color:var(--sub)}
+.sum .v{font-family:var(--mono); font-size:27px; font-weight:700; line-height:1.3;
+        transition:color .3s ease}
+.sum .v.hit{color:var(--go)}
+.sum .note{flex:1 1 220px; font-size:13.5px; line-height:1.85; color:var(--sub); min-width:200px}
+.sum .note b{color:var(--ink)}
+
+.doc{background:var(--card); border-radius:var(--r); box-shadow:var(--lift1); overflow:hidden}
+.doc h1{margin:0; padding:22px 24px 3px; font-size:17px; font-weight:700}
+.doc .sub{margin:0; padding:0 24px 16px; font-family:var(--mono); font-size:12px; color:var(--sub)}
+.hd,.row{display:grid; grid-template-columns:1fr 128px 92px; gap:14px;
+         padding:11px 24px; align-items:center; font-size:14px}
+.hd{font-size:12px; letter-spacing:.06em; color:var(--sub); background:var(--tint)}
+.row{border-top:1px solid rgba(37,31,69,.07)}
+.row .num{font-family:var(--mono); text-align:right}
+.row .t b{display:block; font-weight:700}
+.row .t span{display:block; font-size:12.5px; color:var(--sub); margin-top:2px}
+
+/* 未決のぶん。**押せる**。面は持たないが、点線と紫で「ここだけ違う」 */
+.row.y{cursor:pointer; background:rgba(99,84,224,.05)}
+.row.y:hover{background:rgba(99,84,224,.1)}
+.row.y .t b{color:var(--go)}
+.row.y .num{color:var(--go)}
+.row.gone{overflow:hidden; animation:shrink .46s var(--ease) both}
+@keyframes shrink{
+  0%{opacity:1; max-height:80px}
+  45%{opacity:0; max-height:80px}
+  100%{opacity:0; max-height:0; padding-top:0; padding-bottom:0; border-top-width:0}
+}
+.tot{display:grid; grid-template-columns:1fr 128px 92px; gap:14px; padding:15px 24px;
+     background:var(--tint); font-weight:700; font-size:14.5px}
+.tot .num{font-family:var(--mono); text-align:right}
+
+.dec{padding:16px 24px 18px; background:var(--tint); border-top:1px solid rgba(37,31,69,.07)}
+.dec .h{margin:0 0 4px; font-size:12.5px; font-weight:700; letter-spacing:.1em; color:var(--sub)}
+.dec .q{margin:0 0 13px; font-size:16px; font-weight:700}
+.opt{display:flex; gap:10px; flex-wrap:wrap}
+.o{flex:1 1 230px; display:flex; align-items:center; gap:11px; text-align:left;
+   -webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
+   background:var(--card); border:0; border-radius:8px; padding:12px 13px;
+   box-shadow:var(--lift1); transition:transform .16s var(--ease),box-shadow .16s ease}
+.o:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.o b{display:block; font-size:14px; line-height:1.5}
+.o span{display:block; font-size:12.5px; color:var(--sub); margin-top:2px; line-height:1.5}
+.o .box{flex:0 0 auto; width:30px; height:30px; border-radius:50%;
+        border:1px dashed rgba(37,31,69,.3)}
+.seal{flex:0 0 auto; width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+      border:2px solid var(--seal); color:var(--seal); font-size:13px; font-weight:700;
+      animation:stamp .3s cubic-bezier(.22,.9,.3,1) both}
+@keyframes stamp{0%{transform:scale(1.45) rotate(-13deg);opacity:0}55%{opacity:1}
+                 100%{transform:scale(1) rotate(-6deg);opacity:1}}
+
+.end{margin:26px 0 0; background:var(--face); color:#fff; border-radius:var(--r);
+     padding:28px; box-shadow:var(--lift2)}
+.end p{margin:0 0 8px; font-size:15px; color:rgba(255,255,255,.8); line-height:1.9}
+.end h2{margin:0; font-size:clamp(19px,3vw,25px); line-height:1.55}
+.own{margin:18px 2px 0; font-size:14.5px; line-height:1.95; color:var(--sub)}
+.own b{color:var(--ink)}
+@media (max-width:640px){
+  .hd,.row,.tot{grid-template-columns:1fr 104px; }
+  .hd span:nth-child(3),.row .wk,.tot span:nth-child(3){display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="top"><div class="in">
+  <span class="mark">株式会社アルターデザインコンサルティング</span>
+  <span class="tag">010 / C 見積もりが減る</span>
+</div></header>
+
+<div class="wrap">
+  <div class="sum">
+    <div class="b"><span class="l">御見積金額</span><span class="v" id="yen"></span></div>
+    <div class="b"><span class="l">期間</span><span class="v" id="wk"></span></div>
+    <p class="note" id="note"></p>
+  </div>
+
+  <div class="doc">
+    <h1>御見積書：帳票まわりの改修</h1>
+    <p class="sub">2026/09/14 現在　／　有効期限 30 日</p>
+    <div class="hd"><span>項目</span><span class="num">金額</span><span class="num wk">期間</span></div>
+    <div id="rows"></div>
+    <div class="tot"><span>合計</span><span class="num" id="tyen"></span><span class="num wk" id="twk"></span></div>
+  </div>
+
+  <div class="end" id="end" hidden>
+    <p id="lead"></p>
+    <h2>安くなったのではありません。決まっただけです。</h2>
+  </div>
+  <p class="own" id="own" hidden>
+    決められる形にするのが、<b>うちの分担</b>です。<b>この見積にかぎった話ではありません。</b>
+  </p>
+</div>
+
+<script>
+/* 本体。**最後まで動かさない**——決めても工数は減らない（§嘘をつかない線）*/
+var BASE = [
+  ['帳票出力の改修', '様式の統合、桁ずれの是正', 4800000, 12],
+  ['承認フローの改修', '代理・差し戻しの経路', 2100000, 7],
+  ['手順書・移行', '現場への引き渡しまで', 1500000, 5]
+];
+/* 未決のぶん。**見込みで積んである**。決まると消える */
+var Y = [
+  { t:'（見込み）正本の様式が未決', s:'どちらにも作れるようにしておくぶん', yen:1200000, wk:4,
+    q:'どちらを正本とするか',
+    o:[['新様式を正本とする','旧様式の帳票は作り直しになります'],
+       ['旧様式を正本とする','新様式で入り切らない項目が出ます']] },
+  { t:'（見込み）承認の範囲が未決', s:'権限表の作り直しに備えるぶん', yen:600000, wk:2,
+    q:'代理の範囲をどこまで認めるか',
+    o:[['同格まで認める','権限の表を作り直す必要があります'],
+       ['一段上まで認める','部長の確認が増えます']] },
+  { t:'（見込み）手順書の維持が未決', s:'更新の担い手が決まるまでの保守', yen:450000, wk:2,
+    q:'手順書をどう維持するか',
+    o:[['四半期ごとに更新する','間の変更は別紙で追います'],
+       ['変更のつど更新する','担当の手が毎回要ります']] }
+];
+var done = {}, open = null;
+var yen0 = BASE.reduce(function(a,b){return a+b[2];},0);
+var wk0  = BASE.reduce(function(a,b){return a+b[3];},0);
+
+function money(n){ return '¥' + n.toLocaleString('ja-JP'); }
+function totals(){
+  var y = yen0, w = wk0;
+  Y.forEach(function(k,i){ if (!done[i]){ y += k.yen; w += k.wk; } });
+  return [y, w];
+}
+
+function paint(){
+  document.getElementById('rows').innerHTML =
+    BASE.map(function(b){
+      return '<div class="row"><span class="t"><b>' + b[0] + '</b><span>' + b[1] + '</span></span>'
+        + '<span class="num">' + money(b[2]) + '</span>'
+        + '<span class="num wk">' + b[3] + ' 週</span></div>';
+    }).join('')
+    + Y.map(function(k,i){
+        if (done[i]) return '';
+        return '<div class="row y" data-k="' + i + '">'
+          + '<span class="t"><b>' + k.t + '</b><span>' + k.s + '</span></span>'
+          + '<span class="num">+' + money(k.yen) + '</span>'
+          + '<span class="num wk">+' + k.wk + ' 週</span></div>';
+      }).join('');
+  show();
+}
+
+function show(hit){
+  var t = totals();
+  var y = document.getElementById('yen'), w = document.getElementById('wk');
+  y.textContent = money(t[0]); w.textContent = t[1] + ' 週';
+  document.getElementById('tyen').textContent = money(t[0]);
+  document.getElementById('twk').textContent = t[1] + ' 週';
+  var n = Y.length - Object.keys(done).length;
+  document.getElementById('note').innerHTML = n
+    ? '決まっていないぶんは、<b>見込みで積んであります</b>。のこり <b>' + n + ' 件</b>。'
+    : '<b>見込みは、ひとつも残っていません。</b>';
+  if (hit){ [y,w].forEach(function(e){ e.classList.add('hit');
+    setTimeout(function(){ e.classList.remove('hit'); }, 700); }); }
+}
+
+document.addEventListener('click', function(e){
+  var row = e.target.closest && e.target.closest('.row.y');
+  if (row){
+    var k = +row.dataset.k;
+    var d = document.getElementById('dec');
+    if (d) d.remove();
+    if (open === k){ open = null; return; }
+    open = k;
+    /* **押した行の真下**に開く（§開いた中身は行の直下に）*/
+    row.insertAdjacentHTML('afterend',
+      '<div class="dec" id="dec"><p class="h">決まっていません</p>'
+      + '<p class="q">' + Y[k].q + '</p><div class="opt">'
+      + Y[k].o.map(function(a,ai){
+          return '<button class="o" data-k="' + k + '" data-a="' + ai + '">'
+            + '<span><b>' + a[0] + '</b><span>' + a[1] + '</span></span>'
+            + '<span class="box"></span></button>';
+        }).join('') + '</div></div>');
+    return;
+  }
+  var o = e.target.closest && e.target.closest('.o');
+  if (!o) return;
+  var k = +o.dataset.k;
+  var box = o.querySelector('.box');
+  if (box){ box.className = 'seal'; box.textContent = '決'; }
+  setTimeout(function(){
+    var dd = document.getElementById('dec'); if (dd) dd.remove();
+    var r = document.querySelector('.row.y[data-k="' + k + '"]');
+    if (r) r.classList.add('gone');
+    done[k] = 1; open = null;
+    setTimeout(function(){
+      paint(); show(true);
+      if (Object.keys(done).length === Y.length){
+        document.getElementById('end').hidden = false;
+        document.getElementById('own').hidden = false;
+        var t = totals();
+        document.getElementById('lead').innerHTML =
+          '3 回決めて、見込みの <b>' + money(2250000) + '・8 週</b>が落ちました。'
+          + '本体の <b>' + money(yen0) + '・' + wk0 + ' 週</b>は、ひとつも動いていません。';
+      }
+    }, 460);
+  }, 430);
+});
+
+paint();
+</script>

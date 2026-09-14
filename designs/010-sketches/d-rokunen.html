@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D 前任者の六年 — 010 スケッチ</title>
+<!-- ═══════════════════════════════════════════════════════════════
+     D｜前任者の六年（2026-09-14）
+
+     **決めないコストを、件数ではなく時間で見せる。**
+     2018/11 から同じ議題が流れ続ける。訪問者は**いつでも止めて決められる。**
+     止めた時点から先の再掲が**消える**——早く止めるほど、消える量が多い。
+
+     009 の調査報告（73 項目・静止した紙）を**動く形**にしたもの。
+     あちらは「もう書いてある」ことの物量、こちらは「**決めるまで続く**」ことの時間。
+
+     **責めない**（009 の §「自分のせいにしない」を借りる）——
+     流れているのは**前任者の六年**で、訪問者のせいではない。
+     ざっくり。日付も文言も仮。
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+:root{
+  --bg:#e8f0f8; --card:#fff; --tint:#eff5fb; --ink:#251f45; --sub:#5c6288;
+  --go:#6354e0; --frame:#d8e5f1; --face:#251f45; --seal:#c4402e;
+  --lift1:0 1px 2px rgba(31,25,64,.07),0 3px 8px rgba(31,25,64,.08);
+  --lift2:0 2px 4px rgba(31,25,64,.08),0 10px 24px rgba(31,25,64,.12);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --r:10px; --ease:cubic-bezier(.2,.7,.3,1);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.top{position:sticky; top:0; z-index:6; background:var(--frame)}
+.in{max-width:800px; margin:0 auto; padding:0 24px}
+.top .in{display:flex; align-items:center; gap:16px; height:60px}
+.mark{font-size:14px; font-weight:700}
+.tag{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--sub)}
+.wrap{max-width:800px; margin:0 auto; padding:26px 24px 90px}
+
+.ask{position:sticky; top:60px; z-index:5; background:var(--bg); padding:14px 0 16px;
+     display:flex; gap:26px; align-items:center; flex-wrap:wrap}
+.ask .b{display:flex; flex-direction:column}
+.ask .l{font-size:11.5px; letter-spacing:.08em; color:var(--sub)}
+.ask .v{font-family:var(--mono); font-size:24px; font-weight:700; line-height:1.3}
+.ask .q{flex:1 1 220px; font-size:14.5px; line-height:1.85; color:var(--sub); min-width:190px}
+.ask .q b{color:var(--ink)}
+.one{-webkit-appearance:none; appearance:none; border:0; font:inherit; cursor:pointer;
+     padding:14px 22px; border-radius:8px; background:var(--go); color:#fff;
+     font-size:15.5px; font-weight:700; box-shadow:var(--lift1); flex:none;
+     transition:transform .16s var(--ease),box-shadow .16s ease}
+.one:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+
+.tl{background:var(--card); border-radius:var(--r); box-shadow:var(--lift1);
+    padding:8px 0; overflow:hidden}
+.tl li{list-style:none; display:grid; grid-template-columns:96px 72px 1fr; gap:12px;
+       padding:9px 22px; font-size:13.5px; line-height:1.7; align-items:baseline;
+       border-top:1px solid rgba(37,31,69,.06); animation:in .3s var(--ease) both}
+.tl li:first-child{border-top:0}
+@keyframes in{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+.tl ul{margin:0; padding:0}
+.tl i{font-style:normal; font-family:var(--mono); font-size:12px; color:var(--sub)}
+.tl b{font-weight:700; font-size:12px; color:var(--sub)}
+/* 同じ議題の再掲。**これが数えられているもの** */
+.tl li.re span{color:var(--ink)}
+.tl li.re b{color:var(--go)}
+/* 決めたあと、出るはずだったもの */
+.gone li{opacity:.38}
+.gone li span{text-decoration:line-through; text-decoration-color:rgba(37,31,69,.3)}
+.gonehd{margin:0; padding:14px 22px 4px; font-size:12.5px; font-weight:700;
+        letter-spacing:.08em; color:var(--sub); border-top:1px solid rgba(37,31,69,.06)}
+
+.dec{margin:16px 0 0; padding:18px 20px; background:var(--card); border-radius:var(--r);
+     box-shadow:var(--lift1)}
+.dec .h{margin:0 0 4px; font-size:12.5px; font-weight:700; letter-spacing:.1em; color:var(--sub)}
+.dec .q{margin:0 0 13px; font-size:17px; font-weight:700}
+.opt{display:flex; gap:10px; flex-wrap:wrap}
+.o{flex:1 1 230px; display:flex; align-items:center; gap:11px; text-align:left;
+   -webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
+   background:var(--tint); border:0; border-radius:8px; padding:12px 13px;
+   box-shadow:var(--lift1); transition:transform .16s var(--ease),box-shadow .16s ease}
+.o:hover{transform:translateY(-2px); box-shadow:var(--lift2)}
+.o b{display:block; font-size:14px; line-height:1.5}
+.o span{display:block; font-size:12.5px; color:var(--sub); margin-top:2px; line-height:1.5}
+.o .box{flex:0 0 auto; width:30px; height:30px; border-radius:50%;
+        border:1px dashed rgba(37,31,69,.3)}
+.opt .o:first-child .box{animation:tap 1.8s ease-in-out infinite}
+@keyframes tap{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.seal{flex:0 0 auto; width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+      border:2px solid var(--seal); color:var(--seal); font-size:13px; font-weight:700;
+      animation:stamp .3s cubic-bezier(.22,.9,.3,1) both}
+@keyframes stamp{0%{transform:scale(1.45) rotate(-13deg);opacity:0}55%{opacity:1}
+                 100%{transform:scale(1) rotate(-6deg);opacity:1}}
+
+.end{margin:22px 0 0; background:var(--face); color:#fff; border-radius:var(--r);
+     padding:28px; box-shadow:var(--lift2)}
+.end p{margin:0 0 8px; font-size:15px; color:rgba(255,255,255,.8); line-height:1.9}
+.end h2{margin:0; font-size:clamp(19px,3vw,25px); line-height:1.55}
+.end .cmp{display:block; margin-top:15px; padding-top:14px;
+          border-top:1px solid rgba(255,255,255,.22); font-size:15px}
+.end .cmp b{color:#fff}
+.own{margin:18px 2px 0; font-size:14.5px; line-height:1.95; color:var(--sub)}
+.own b{color:var(--ink)}
+@media (max-width:560px){ .tl li{grid-template-columns:82px 1fr; } .tl li b{display:none} }
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="top"><div class="in">
+  <span class="mark">株式会社アルターデザインコンサルティング</span>
+  <span class="tag">010 / D 前任者の六年</span>
+</div></header>
+
+<div class="wrap">
+  <div class="ask">
+    <div class="b"><span class="l">経過</span><span class="v" id="mo">0 か月</span></div>
+    <div class="b"><span class="l">同じ議題の記録</span><span class="v" id="cnt">0 件</span></div>
+    <p class="q" id="q">前の担当が残した記録です。<b>行数の上限をどちらに揃えるか</b>が、まだ決まっていません。</p>
+    <button class="one" id="stop">ここで決める</button>
+  </div>
+
+  <div class="tl"><ul id="tl"></ul><div id="rest"></div></div>
+
+  <div id="dec"></div>
+  <div class="end" id="end" hidden>
+    <p id="lead"></p>
+    <h2 id="h2"></h2>
+    <span class="cmp" id="cmp"></span>
+  </div>
+  <p class="own" id="own" hidden>
+    決められる形にするのが、<b>うちの分担</b>です。<b>この議題にかぎった話ではありません。</b>
+  </p>
+</div>
+
+<script>
+/* 記録の種。**同じ議題が、言い方を変えて戻ってくる**のが中身 */
+var RE = [
+  ['議事録','・本件、次回へ持ち越し。'],
+  ['議事録','・帳票の行数について、報告のみ。結論なし。'],
+  ['議事録','・前回分を再掲。'],
+  ['チャット','あの帳票、また数字が一列ずれてました'],
+  ['チャット','これ、前にも出てませんでしたっけ'],
+  ['メール','（再送）先日の行数の件、ご確認をお願いします。'],
+  ['メール','（転送）旧帳票と新帳票で上限が違う件です。'],
+  ['仕様書','※この節は追記予定。'],
+  ['別紙','詳細は別紙による。原本の所在は不明。'],
+  ['課題管理表','「桁がずれる」を起票。']
+];
+var BG = [
+  ['議事録','・担当者の交代について。引き継ぎは別途。'],
+  ['メール','（差し戻し）記載が不足しています。'],
+  ['チャット','担当の方、どなたでしたっけ']
+];
+
+/* 2018/11 から 2024/10 まで。**約 71 か月**を 62 件で埋める */
+var seed = 20260908;
+function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+function two(v){ return ('0' + v).slice(-2); }
+
+var ITEMS = [], ms = new Date(2018, 10, 26).getTime(), i = 0;
+while (ITEMS.length < 62){
+  var re = (i % 4 !== 3);
+  var p = re ? RE[Math.floor(rnd() * RE.length)] : BG[Math.floor(rnd() * BG.length)];
+  var d = new Date(ms);
+  ITEMS.push({ ds: d.getFullYear() + '/' + two(d.getMonth() + 1) + '/' + two(d.getDate()),
+               src: p[0], tx: p[1], re: re, mo: Math.round((ms - new Date(2018,10,26).getTime()) / 2629800000) });
+  ms += (20 + Math.floor(rnd() * 45)) * 86400000;
+  i++;
+}
+var TOTAL_RE = ITEMS.filter(function(x){ return x.re; }).length;
+
+var at = 0, timer = null, stopped = false;
+var tl = document.getElementById('tl');
+
+function li(x, cls){
+  return '<li class="' + (x.re ? 're ' : '') + (cls || '') + '">'
+    + '<i>' + x.ds + '</i><b>' + x.src + '</b><span>' + x.tx + '</span></li>';
+}
+
+function tick(){
+  if (at >= ITEMS.length){ stop(true); return; }
+  var x = ITEMS[at++];
+  tl.insertAdjacentHTML('beforeend', li(x));
+  document.getElementById('mo').textContent = x.mo + ' か月';
+  document.getElementById('cnt').textContent =
+    ITEMS.slice(0, at).filter(function(y){ return y.re; }).length + ' 件';
+  var last = tl.lastElementChild;
+  if (last) last.scrollIntoView({ block:'nearest', behavior:'smooth' });
+}
+timer = setInterval(tick, 230);
+
+function stop(auto){
+  if (stopped) return;
+  stopped = true; clearInterval(timer);
+  document.getElementById('stop').hidden = true;
+  var seen = ITEMS.slice(0, at), restArr = ITEMS.slice(at);
+  var seenRe = seen.filter(function(x){ return x.re; }).length;
+  var restRe = restArr.filter(function(x){ return x.re; }).length;
+  var mo = seen.length ? seen[seen.length - 1].mo : 0;
+  document.getElementById('q').innerHTML = auto
+    ? '<b>2024 年まで来ました。まだ決まっていません。</b>'
+    : '<b>ここで止めました。</b>' + mo + ' か月ぶんです。';
+  /* 二択は**止めた直後、記録のすぐ下**に出す */
+  document.getElementById('dec').innerHTML =
+    '<div class="dec"><p class="h">決まっていません</p>'
+    + '<p class="q">行数の上限をどちらに揃えるか</p><div class="opt">'
+    + '<button class="o" data-a="0"><span><b>新帳票の 99 行に揃える</b>'
+    + '<span>旧帳票の様式は作り直しになります</span></span><span class="box"></span></button>'
+    + '<button class="o" data-a="1"><span><b>旧帳票の 50 行に合わせる</b>'
+    + '<span>新帳票で入り切らない行が出ます</span></span><span class="box"></span></button>'
+    + '</div></div>';
+  document.getElementById('dec').dataset.mo = mo;
+  document.getElementById('dec').dataset.seen = seenRe;
+  document.getElementById('dec').dataset.rest = restRe;
+}
+
+document.getElementById('stop').addEventListener('click', function(){ stop(false); });
+
+document.addEventListener('click', function(e){
+  var o = e.target.closest && e.target.closest('.o');
+  if (!o) return;
+  var box = o.querySelector('.box');
+  if (box){ box.className = 'seal'; box.textContent = '決'; }
+  var D = document.getElementById('dec');
+  var mo = +D.dataset.mo, seenRe = +D.dataset.seen, restRe = +D.dataset.rest;
+  setTimeout(function(){
+    /* **決めた先は、出ない。**出るはずだったものを、消した形で置く */
+    var restArr = ITEMS.slice(at);
+    if (restArr.length){
+      document.getElementById('rest').innerHTML =
+        '<p class="gonehd">このあと 2024/10 までに出るはずだったもの（' + restArr.length + ' 件）</p>'
+        + '<ul class="gone">' + restArr.map(function(x){ return li(x); }).join('') + '</ul>';
+    }
+    document.getElementById('end').hidden = false;
+    document.getElementById('own').hidden = false;
+    document.getElementById('lead').textContent =
+      '決めるまでに ' + mo + ' か月、同じ議題の記録が ' + seenRe + ' 件。';
+    document.getElementById('h2').textContent =
+      restRe ? 'ここから先は、一件も出ません。' : '決まったのは、いまです。';
+    document.getElementById('cmp').innerHTML = restRe
+      ? '出るはずだった <b>' + restRe + ' 件</b>が、出なくなりました。'
+      : '<b>2024 年まで待った先に、出るはずだったものはもうありません。</b>'
+        + '早く止めるほど、消える量は多くなります。';
+    document.getElementById('end').scrollIntoView({ block:'start', behavior:'smooth' });
+  }, 480);
+});
+</script>
