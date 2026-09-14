@@ -416,8 +416,10 @@ body.named .side{animation:rise .34s var(--ease) both}
    **場所は増やさない。**同じ一行の上で入れ替わる。
    `.g1` は絶対配置で `.g2` の上に重ねる——**幅を決めるのは最終形（`.g2`）**なので、
    差し替わるときに行の幅が動かない */
-@keyframes outup{ 0%{opacity:1; transform:none}       100%{opacity:0; transform:translateY(-8px)} }
-@keyframes inup { 0%{opacity:0; transform:translateY(8px)} 100%{opacity:1; transform:none} }
+/* **上へ抜けて、下から来る。**8px → **13px**（2026-09-14、本人：「え、どこだ、わからん」）——
+   入れ替わったことが分かる幅が要る。速さも .3s → .38s */
+@keyframes outup{ 0%{opacity:1; transform:none}        100%{opacity:0; transform:translateY(-13px)} }
+@keyframes inup { 0%{opacity:0; transform:translateY(13px)} 100%{opacity:1; transform:none} }
 .gset.up{animation:stack .46s var(--ease) both}
 .pile i{font-style:normal; color:#98a2bd; margin-right:8px}
 /* ─ 山。**押せない。見るだけ**（2026-09-10）────────────────────
@@ -703,8 +705,8 @@ body.named .gt .g2{opacity:0}
    ここは**残るほうが中身として間違っている**（分類に見える）。
    `opacity` を明示して、**動きは装飾に落とす。**
    `body.named …` と同じ詳細度なので、**この二行が後ろに来ていることが効いている** */
-body.restated .gt .g1{opacity:0; animation:outup .3s var(--ease) both; animation-delay:var(--rd,0ms)}
-body.restated .gt .g2{opacity:1; animation:inup  .3s var(--ease) both; animation-delay:var(--rd,0ms)}
+body.restated .gt .g1{opacity:0; animation:outup .38s var(--ease) both; animation-delay:var(--rd,0ms)}
+body.restated .gt .g2{opacity:1; animation:inup  .38s var(--ease) both; animation-delay:var(--rd,0ms)}
 /* 行数。**点数ではない**——材料の量。この題が何行ぶんか */
 .gn{font-family:var(--mono); font-size:14.5px; color:var(--sub); white-space:nowrap;
     flex:none; width:122px; text-align:right}   /* **min-width では駄目。**中身が超えると広がって、名前の段と 2px ずれた */
@@ -2627,7 +2629,7 @@ body[data-stage="c"] .st-c{display:block}
     setTimeout(function(){
       [].forEach.call(document.querySelectorAll('#sets .gset'), function(g, i){
         g.classList.add('up');
-        g.style.setProperty('--nd', (i * 35) + 'ms');   /* 名前が入る順 */
+        g.style.setProperty('--nd', (i * 20) + 'ms');   /* 表の言葉が入る順。**詰めた**——読む間を後ろに回す */
       });
       document.body.classList.remove('landing');
       document.body.classList.add('naming');            /* 面だけ。題はまだ */
@@ -2638,13 +2640,19 @@ body[data-stage="c"] .st-c{display:block}
     }, 1900);
     /* ─ **立て直す一拍**（§立て直しを、動きで見せる）。ここが AI の仕事の中身——
        名前を付けたのではなく、**問題を、答えられる問いに書き直した。**
-       名前が入り終わる（1900 + 35×11 + 340 ≒ 2625）すぐあと */
+
+       **間が無かった**（2026-09-14、本人：「**え、どこだ、わからん**」）。
+       前は「入り終わる（1900 + 35×11 + 340 ≒ 2625）すぐあと」の **2700ms** に置いていたが、
+       **最後の行は 70ms しか表の言葉を出していなかった**——出た瞬間に消えている。
+       **読める時間が要る。**入る側を詰めて（35 → 20ms、2460ms に終わる）、
+       立て直しを **3250ms** へ下げた。**約 0.8 秒、表の言葉が残る。**
+       一行ずつの遅れも 25 → **45ms**（12 行で 495ms。**上から順に書き換わるのが見える**）*/
     setTimeout(function(){
       [].forEach.call(document.querySelectorAll('#sets .gset'), function(g, i){
-        g.style.setProperty('--rd', (i * 25) + 'ms');
+        g.style.setProperty('--rd', (i * 45) + 'ms');
       });
       document.body.classList.add('restated');
-    }, 2700);
+    }, 3250);
     /* ─ **三拍目。うちがやったこと**（2026-09-11、本人：「2 から 3 になる過程で
        うちの介入が入ってる、って話ならできていいと思う。で、**そうなったっていうのが
        見えない**からって話をさっきしたね」）────────────────────────
@@ -2660,7 +2668,7 @@ body[data-stage="c"] .st-c{display:block}
         g.style.setProperty('--bd', (i * 40) + 'ms');
       });
       document.body.classList.add('sealed');
-    }, 3300);   /* 立て直しが終わる（2700 + 25×11 + 300 ≒ 3275）すぐあと */   /* **積み終わってから**（760 + 60×11 + 460 ≒ 1880）。二拍を重ねない */   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
+    }, 4200);   /* 立て直しが終わる（3250 + 45×11 + 380 ≒ 4125）すぐあと */   /* **積み終わってから**（760 + 60×11 + 460 ≒ 1880）。二拍を重ねない */   /* **行の到着（800ms）に合わせる。**前は 620ms で、行がまだ宙にいた */
     /* **着いた形のまま置く**（2026-09-10。本人：「せっかく 12 件にまとめたのに
        それが下に行っちゃって見えない」「モーションで出たときと形変わるし」）。
        着地の直後に一件目を開けていたので、**12 件が並んだ絵が 0.5 秒で崩れて、
