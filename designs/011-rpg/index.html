@@ -323,6 +323,12 @@ function sprite(map){
    **「文は削らない」をやめた**——枚数の指示が先。削ったのは**サービスの説明の二文目以降**で、
    **公式の題と一文目はそのまま。**理念と会社概要は**一字も削っていない**（詰め方を変えただけ）*/
 var DATA = {
+  /* **公式トップの帯にある。**011 の最初の版では丸ごと抜けていた
+     （本人：「企業理念とか以外にもあったよね」）。日付・題・一文とも公式のまま */
+  news: { t:'お知らせ', p:[
+    '<b>2025 年 12 月 17 日　プレスリリース</b>'
+    + '<span class="s">DX 推進支援を強化し、自治体・企業に向けたサービス提供を開始しました。</span>'
+  ]},
   mind: { t:'企業理念', p:[
     '<b>経営の力で「遊ぶように働く世界」をデザインする</b>'
     + '<span class="s">「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと。</span>',
@@ -354,13 +360,23 @@ var DATA = {
   contact: { t:'お問い合わせ', p:[
     '<b>contact@alt-dsgn.co.jp</b><span class="s">押すとメールが開きます。</span>'
   ]},
-  /* **本文が無いものは、無いと書く。**こちらで作らない */
-  policy: { t:'ポリシー', p:[
-    '<b>まだ用意がありません。</b><span class="s">会社が出している文が無いので、ここには置いていません。</span>'
+  /* **「無い」は間違いだった。**公式の footer は
+     bluememe.jp/privacy-policy/ へ出している。こちらで書かず、同じ先へ送る */
+  policy: { t:'プライバシーポリシー', p:[
+    '<b>BlueMeme のページに置かれています。</b>'
+    + '<span class="s">当社サイトのプライバシーポリシーは、公式サイトと同じく親会社のページを指しています。</span>'
   ]}
 };
 
-var MENU = [['mind','企業理念'],['svc','サービス'],['about','会社概要'],['demo','デモを触る']];
+/* **窓の最後で外へ出るもの。**公式が出している先だけを、そのまま指す */
+var GO = {
+  contact:{ label:'メールをひらく', href:'mailto:contact@alt-dsgn.co.jp', blank:false },
+  news:   { label:'本文をひらく（PDF）', href:'https://alt-dsgn.co.jp/assets/pdf/20251217_PressRelease.pdf', blank:true },
+  policy: { label:'BlueMeme のページへ', href:'https://www.bluememe.jp/privacy-policy/', blank:true }
+};
+
+/* 並びは公式トップと同じ——お知らせが先、そのあと理念・サービス・会社概要 */
+var MENU = [['news','お知らせ'],['mind','企業理念'],['svc','サービス'],['about','会社概要'],['demo','デモを触る']];
 var ul = document.getElementById('cmds');
 ul.innerHTML = MENU.map(function(m){
   return '<li data-k="' + m[0] + '"><span class="cur">▶</span>' + m[1] + '</li>';
@@ -399,7 +415,7 @@ function draw(){
   popP.textContent = d.p.length > 1 ? (page + 1) + ' / ' + d.p.length : '';
   popGo.innerHTML = (page < d.p.length - 1)
     ? '<span class="ar">▼</span>'
-    : (cur === 'contact' ? 'メールをひらく' : 'とじる');
+    : (GO[cur] ? GO[cur].label : 'とじる');
 }
 function open(k){
   cur = k; page = 0; pop.classList.add('on'); draw();
@@ -414,7 +430,10 @@ function fire(){
   if (!cur){ open(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
   if (page < d.p.length - 1){ page++; draw(); return; }
-  if (cur === 'contact'){ location.href = 'mailto:contact@alt-dsgn.co.jp'; return; }
+  if (GO[cur]){
+    GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
+    return;
+  }
   close();
 }
 
