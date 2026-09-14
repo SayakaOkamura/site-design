@@ -444,8 +444,29 @@ body.named .side{animation:rise .34s var(--ease) both}
 
 
 /* 問い。**答えさせない。**見て「無理」と分かった時点で先へ行ける */
-.ask{margin:0 0 18px; font-size:17.5px; font-weight:700; line-height:1.8}
-.ask .sub{display:block; min-height:1.8em; font-size:15.5px; font-weight:500; color:var(--sub)}
+.ask{margin:0; font-size:17.5px; font-weight:700; line-height:1.8}
+/* 注記。**問いと目盛りの下に、幅いっぱいで回り込む** */
+.askbox .sub{flex:1 0 100%; margin:6px 0 0; min-height:1.8em;
+             font-size:15.5px; font-weight:500; line-height:1.8; color:var(--sub)}
+/* ─ **賭けを、文ではなく面で置く**（2026-09-14、010 のスケッチから持ち帰った）──────
+   四本（決裁だけが届く／引き継ぎ書／見積もり／六年）が 009 より「何がしたいか」が
+   分かりやすかった理由は一つだった——**触る前に、決まっていないことの大きさが
+   数字で置いてある**（`+¥1,200,000 / +4 週`、`経過 71 か月`、`決裁 3 件`、`※ 5 箇所`）。
+   **009 は同じ事実を文の中に沈めていた**（「ぜんぶで 69 件。…いちばん古いものは 2018 年のまま」）。
+
+   **持ち込んだのは組版だけ。主張は一つも増やしていない。**
+   「2018 年のまま」→「**94 か月**」は、**日付を経過に変える**だけ（D の効き方）。
+   **②を予告しない**——「決まっていない」とは一言も言っていない。
+   数は**画面の表から数える**ので、訪問者が送って確かめられる */
+/* **問いの横に並べる**（2026-09-14）。一度**下の行**に置いたら、
+   どの幅でも**帯が 61px 高くなった**（幅を固定した複製で測った）。
+   帯は浅い窓ですでに画面の 55% なので、**行を増やさずに横へ置く。**
+   広い窓では問いと同じ行に収まり、狭い窓だけ折り返す */
+.askbox{display:flex; flex-wrap:wrap; align-items:flex-end; column-gap:30px}
+.dials{display:flex; gap:30px; flex-wrap:wrap}
+.dials .l{display:block; font-size:11.5px; letter-spacing:.06em; color:var(--sub)}
+.dials .v{display:block; font-family:var(--mono); font-size:26px; font-weight:700;
+          line-height:1.3; color:var(--ink)}
 /* ─ **何をしている画面か**（本人 2026-09-10：「何してる画面かがわからない」）。
    題は「ある会社の、課題まわりです」だけで、**タブが何か・押していいのか**を
    どこにも書いていなかった。**表のすぐ上、左端**——チェック欄の真上に置く。 */
@@ -533,7 +554,8 @@ body.named .side{animation:rise .34s var(--ease) both}
    注記が一行入っただけで問いが広がり、**一手が次の行へ落ちた**——そこから下が
    まるごと 76px 下がって、②の「片付ける」が動いた（2026-09-09、560px で数えた）。
    蓋をすれば折り返しは起きない。広い窓では中身のほうが短いので見た目は変わらない */
-.ask2 .ask{margin:0; max-width:calc(100% - 230px)}
+.ask2 .askbox{max-width:calc(100% - 230px)}
+.ask2 .ask{margin:0 0 6px}
 .ask2 .one{margin-top:0; flex:none}
 /* ─ **行き先は、壁に当たってから出す。**
    本人 2026-09-08：「同じのまとめるってもう見えてるしなあ」。
@@ -938,9 +960,9 @@ body[data-stage="c"] .st-c{display:block}
    `.work`／`.tap`／`body.stuck` は 2026-09-10 に消えた——
    ②が「辿る」をやめて「一行押して止まる」になったので、器そのものが無い */
 @media (max-width:620px){
-  .ask2 .ask{max-width:none}
+  .ask2 .askbox{max-width:none}
   #go-c{flex:0 0 100%}
-  .ask .sub{min-height:3.6em}
+  .askbox .sub{min-height:3.6em}
 }
 
 @media (max-width:760px){ .pile{columns:1} }
@@ -1109,8 +1131,12 @@ body[data-stage="c"] .st-c{display:block}
            同じ一文が③でもう一度出て、そこでは**答えられる**（12 件が並ぶ）-->
       <!-- 「ある会社に、」は外した（§押している人の立ち位置）——**もう自分の表**。
            他人の話のままだと「どこから手を付けますか」に答える理由が無い -->
-      <p class="ask">引き継いだ課題です。どこから手を付けますか。<br>
-        <span class="sub" id="hint"></span></p>
+      <div class="askbox">
+        <p class="ask">引き継いだ課題です。どこから手を付けますか。</p>
+        <!-- 目盛り。**問いの横**（§行を増やさずに横へ置く）-->
+        <div class="dials" id="dials"></div>
+        <p class="sub" id="hint"></p>
+      </div>
       <!-- **「まとめてもらう」をやめた**（本人 2026-09-10：「まとめてもらう、って文言
            変えたい」→「整理する、とかにしたい」）。**デモの中でここだけ〜てもらう**で、
            ほかは全部言い切り（片付ける／〜を見る →／最後に／もう一度）。
@@ -1895,6 +1921,27 @@ body[data-stage="c"] .st-c{display:block}
     stick();
   }
 
+  /* ─ 目盛り。**数は画面の表から数える**（訪問者が送って確かめられる）───────
+     「いま」はデモの中の 2026/09（奥付・決裁の日付と揃えてある）*/
+  var NOW_Y = 2026, NOW_M = 9;
+  function dials(){
+    var el = document.getElementById('dials');
+    if (!el) return;
+    var min = null;
+    [].forEach.call(document.querySelectorAll('#pile .c-up'), function(e){
+      var t = e.textContent.trim();
+      if (t && (!min || t < min)) min = t;      /* YYYY/MM/DD は文字列比較で足りる */
+    });
+    var mo = '';
+    if (min){
+      var p = min.split('/');
+      mo = ((NOW_Y - +p[0]) * 12 + (NOW_M - +p[1])) + ' か月';
+    }
+    el.innerHTML =
+      '<div><span class="l">課題</span><span class="v">' + shown().length + ' 件</span></div>'
+      + (mo ? '<div><span class="l">いちばん古い起票から</span><span class="v">' + mo + '</span></div>' : '');
+  }
+
   function paintPile(){
     document.body.classList.remove('naming','named','sealed');
     picked = false; hinted = false; bottom = false; tangledN = 0;
@@ -1905,12 +1952,16 @@ body[data-stage="c"] .st-c{display:block}
          「状態も担当も、埋まっていません」は**嘘**だった。
          そして**埋まっていないことより、埋まっているのに進まないことのほうが強い**——
          「調査中」のまま 2018 年から、が報告書の話とそのまま繋がる */
-      'メール・チャット・議事録で出た話が、ここに起票されています。ぜんぶで '
-      + N + ' 件。状態は入っているのに、いちばん古いものは 2018 年のままです。';
+      /* **数は目盛りへ移した**（§賭けを面で置く）。文に残すのは
+         「**埋まっているのに進まない**」——数では出ないほうだけ */
+      'メール・チャット・議事録から起票されています。状態は入っているのに、動いていません。';
     document.getElementById('go-c').classList.remove('on');
     var t = document.getElementById('tabs'); if (t) t.innerHTML = '';
     sayHow();
     paintList();
+    /* **表を描いたあとに数える**——目盛りは `#pile` の起票日から引くので、
+       行が無いうちに呼ぶと「いちばん古い起票から」が空になる（一度やった）*/
+    dials();
   }
 
   /* 表は一枚だけ。**印は札のほうから引く**（描き直しても残る）*/
