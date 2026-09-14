@@ -1789,13 +1789,35 @@ body[data-stage="c"] .st-c{display:block}
   }
 
   /* 押した課題が動かない理由。**数は言わない**——どこまで続くか分からないのが中身 */
+  /* ─ **二回目からは、頭の断定を外す**（2026-09-14、画面で数えた）────────────
+     ②で押すたびに出るのはこの一文で、帯の中で**紫なのは「まだ動きません。」だけ。**
+     二回とも**同じ位置に同じ紫**が出るので、目が落ちる先が二回とも同じになる。
+     変わったもの（別の課題・別の行き先）は細字の側にあって、読まれない。
+
+     外からは「**押すたびに失敗が積まれて、何が起きてるか分からなくなる**」と見えていた。
+     **画面は何も積んでいない**——溜まるのは `.wait` の印が二三行だけで、帯は毎回
+     置き換わる。積まれて見えていたのは、**この紫の繰り返し**のほうだった。
+     **症状の報告は当たっていて、原因の特定が外れていた。**
+
+     二回目からは頭を外して「**〜も**」で継ぐ。事実は同じ、**順序だけ変える。**
+     紫は移さない——§「紫は『飛ぶ』の印」なので、**帯で紫なのは「見る →」だけ**になり、
+     目は**次の行き先**へ落ちる。二押しが「失敗が二回」ではなく「**鎖が伸びた**」に見える。
+
+     **一回目はそのまま。**そこは断定していい——押す人は終わったつもりで押していて、
+     入らないのが②の本体（§「押す＝終わった」）。
+     同じ理由で、案内の「片付けるためのチェック」も動かさない。
+     ③が同じ動詞で受けていて、**② 401 回 ↔ ③ 12 回**の重さの比較が、
+     ②で片付ける気で押していないと成立しない（§「同じ『片付ける』の重さが違う」）*/
   function showTrail(){
     var el = document.getElementById('how');
     if (!el || !stuck) return;
     var here = trail[trail.length - 1];
+    /* 一件目か、鎖の二件目以降か。**押した数ではなく、鎖の長さで見る**
+       （外れて押したぶん＝`stray` は鎖に入らない）*/
+    var first = trail.length < 2;
     el.innerHTML =
-      '<b>まだ動きません。</b>'
-      + '<span class="qt">' + esc(here.raw) + '</span>は、'
+      (first ? '<b>まだ動きません。</b>' : '')
+      + '<span class="qt">' + esc(here.raw) + '</span>' + (first ? 'は、' : 'も、')
       + '<span class="tr">' + esc(label(stuck)) + '</span> が決まらないと進みません。'
       + '<button class="jump" id="jump">' + esc(label(stuck)) + ' を見る →</button>'
       + fromHTML(here);
@@ -1977,7 +1999,12 @@ body[data-stage="c"] .st-c{display:block}
     document.getElementById('how').innerHTML =
       '<b>この課題も動きません。</b>'
       + '<span class="tr">' + esc(label(back)) + '</span> を追いかけている途中です。'
-      + '<button class="jump" id="back">' + esc(label(back)) + ' へ戻る →</button>';
+      /* **id は `re-aim`**（2026-09-14）。`back` は**頭の「会社のページへもどる」が先に
+         使っている**（`try.html:962`。`?from=` の書き換えが `getElementById('back')` で
+         引いている先）。同じ id が二つあると、**先に書いてあるほうだけが返る**——
+         ページ自身は `closest('#back')` で拾っていたので**動作には出ていなかった**が、
+         外から素直に引くとデモの外へ出る。帰る先は `.aim` の行なので、名前をそこへ合わせた */
+      + '<button class="jump" id="re-aim">' + esc(label(back)) + ' へ戻る →</button>';
     stick();
   }
 
@@ -2034,7 +2061,7 @@ body[data-stage="c"] .st-c{display:block}
   document.addEventListener('click', function(e){
     if (document.body.dataset.stage !== 'b' || !e.target.closest) return;
     /* **戻る。**外れて押したあと、追いかけている先へ帰る */
-    if (e.target.closest('#back')){
+    if (e.target.closest('#re-aim')){
       if (!stuck) return;
       paintList();
       var bt = document.querySelector('#pile li.aim');
