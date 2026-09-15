@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- ═══════════════════════════════════════════════════════════════
+     012 カード（2026-09-15。**011 とは別の案**）
+
+     本人の注文：
+     > もう一案やりたいやつあって。全然違うんだけど。……今度は**カードの方に寄せる**。
+     > **本文、そっちの推測でいいからめちゃくちゃ盛って分量増やして**ほしくて。
+     > で、**黒字に緑文字**とか、まあ**可読性がギリギリ担保できるくらい**の感じで
+     > **大量の文が連なってて**。**章ごとに左上か右上にアイコン**があって、そこが**発光**してるのね。
+     > そこを押すと、**文字がモーション付きでまとまっていって、一枚の読みやすいカードになる**
+     > っていう構成。それが章毎に。章＝サービスとか企業理念とかね。
+     > で、**縦スクロールの普通の HP** って感じの動きでいい。
+     > **カードにした後についてはまだ決めてない**んだけど、**仮で適当に**しておいて。
+
+     011 から持ち込んだのは**失敗の記録だけ**（本人：「失敗だけ」）。決めごとは一つも引き継がない。
+
+     **膨らませたのは考え方のほうだけ。**実績・数字・取引先・導入事例のような
+     **事実は一つも作っていない。**公式に出ている言葉（理念の四段落、サービスの四項目、
+     会社概要）を土台に、**その言い分を延ばした**だけ。
+     ここは他人の会社の話を書く場所なので、盛るなら**意見**を盛る。
+
+     **難解さは体験の最初に置く。**読みにくい壁を先に見せて、畳むのはそのあと——
+     という順番そのものが、この案の主張。
+═══════════════════════════════════════════════════════════════ -->
+<style>
+:root{
+  --bg:#04070a;      --bg2:#070c10;
+  /* **ギリギリ読める**ところに置く（本人：「可読性がギリギリ担保できるくらい」）。
+     ここの二つを明るくすれば、いくらでも読みやすくなる——**つまみはこの二行** */
+  --dim:#256a3e;     /* 生の本文 */
+  --dim2:#17402a;    /* さらに奥。行間に沈む文字 */
+  --on:#7df0a4;      /* まとまったあとの文字。ここで初めて楽に読める */
+  --hot:#b9ffd2;     /* 見出しと発光 */
+  --line:#12331f;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; background:var(--bg); color:var(--dim);
+  font-family:"MS Gothic","Osaka-Mono","Noto Sans Mono CJK JP",monospace;
+  -webkit-font-smoothing:antialiased}
+
+/* 走査線。**画面が古い**ことを言うだけの薄い層 */
+body::after{content:''; position:fixed; inset:0; z-index:9; pointer-events:none; opacity:.3;
+  background:repeating-linear-gradient(180deg,
+    rgba(0,0,0,.45) 0 1px, rgba(0,0,0,0) 1px 3px)}
+
+.wrap{max-width:1100px; margin:0 auto; padding:0 clamp(16px,5vw,56px)}
+
+/* ─ 名乗り ───────────────────────────────────────────────── */
+header{padding:clamp(60px,14vh,140px) 0 clamp(40px,8vh,80px)}
+header .en{font-size:clamp(11px,1.3vw,13px); letter-spacing:.34em; color:var(--dim)}
+header h1{margin:.6em 0 0; font-size:clamp(17px,2.4vw,26px); letter-spacing:.08em; color:var(--hot);
+  font-weight:400}
+header .tag{margin-top:1.2em; font-size:clamp(12px,1.5vw,15px); color:var(--on); letter-spacing:.04em}
+header .note{margin-top:2.4em; font-size:clamp(10px,1.2vw,12px); color:var(--dim2); line-height:2}
+
+/* ─ 章 ───────────────────────────────────────────────────── */
+.ch{position:relative; border-top:1px solid var(--line); padding:clamp(28px,6vh,56px) 0 clamp(40px,9vh,90px)}
+.ch h2{margin:0 0 1.6em; font-size:clamp(12px,1.4vw,14px); letter-spacing:.3em; color:var(--dim);
+  font-weight:400}
+
+/* 発光する印。**押すところ**。右上に置く */
+.ico{position:absolute; top:clamp(24px,5vh,48px); right:0; z-index:3;
+  width:clamp(44px,5vw,58px); height:clamp(44px,5vw,58px);
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--dim); background:var(--bg2); color:var(--hot);
+  font-size:clamp(17px,2vw,22px); cursor:pointer; user-select:none;
+  animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(125,240,164,.00), 0 0 10px 0 rgba(125,240,164,.18) inset;
+           border-color:var(--dim) }
+  50%    { box-shadow:0 0 22px 2px rgba(125,240,164,.38), 0 0 18px 0 rgba(125,240,164,.30) inset;
+           border-color:var(--on) }
+}
+.ico:hover{border-color:var(--hot); color:#fff}
+.ch.on .ico{animation:none; border-color:var(--line); color:var(--dim2); box-shadow:none}
+.ico b{font-weight:400; pointer-events:none}
+
+/* ─ 生の本文。**読みにくいまま置く** ─────────────────────── */
+/* 高さを畳むのは**字が消えはじめてから**（.22s 遅らせる）。
+   同時に始めると、外枠が縮むほうが速くて、字が畳まれる様子が見えない */
+.raw{overflow:hidden; transition:max-height .7s cubic-bezier(.3,.7,.2,1) .22s}
+.raw .col{columns:2; column-gap:clamp(20px,4vw,48px); padding-right:clamp(56px,7vw,80px)}
+.raw .ln{display:block; font-size:clamp(10.5px,1.05vw,12.5px); line-height:1.9;
+  letter-spacing:.01em; white-space:pre-wrap;
+  transition:opacity .34s ease, transform .34s ease, filter .34s ease}
+.raw .ln:nth-child(3n){color:var(--dim2)}   /* **むらを作る**。均一だと壁に見えない */
+.ch.on .raw .ln{opacity:0; transform:translateY(-8px) scaleY(.7); filter:blur(2px)}
+
+/* ─ まとまったカード ─────────────────────────────────────── */
+/* **出ていないあいだは場所も取らない**（`display:none`）。
+   opacity だけで隠すと、壁の下にカード一枚ぶんの空白が居座る。
+   `display` は動かせないので、出すときは JS で先に置いてから `.on` を付ける */
+.card{display:none; position:relative; opacity:0; transform:translateY(14px) scale(.985);
+  transition:opacity .5s ease .3s, transform .5s cubic-bezier(.2,.8,.2,1) .3s;
+  background:linear-gradient(180deg,#081119,#060c11);
+  border:1px solid #1d5432; border-left:3px solid var(--on);
+  padding:clamp(22px,4vw,40px) clamp(20px,4vw,44px);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",system-ui,sans-serif}
+.ch.on .card{opacity:1; transform:none}
+.card .k{font-size:clamp(10px,1.2vw,12px); letter-spacing:.28em; color:var(--dim)}
+.card .lead{margin:.9em 0 0; font-size:clamp(15px,2.1vw,24px); line-height:1.75; color:var(--hot);
+  font-weight:700; letter-spacing:.02em}
+.card ul{list-style:none; margin:1.6em 0 0; padding:0; display:grid; gap:.9em}
+.card li{position:relative; padding-left:1.5em; font-size:clamp(12px,1.45vw,15px); line-height:1.95;
+  color:var(--on)}
+.card li::before{content:'—'; position:absolute; left:0; color:var(--dim)}
+.card .foot{display:flex; gap:1.4em; align-items:center; margin-top:1.8em;
+  font-size:clamp(11px,1.3vw,13px)}
+.card .back{background:none; border:0; font:inherit; color:var(--dim); cursor:pointer; padding:0;
+  letter-spacing:.06em}
+.card .back:hover{color:var(--on)}
+/* **仮**（本人：「カードにした後についてはまだ決めてない……仮で適当に」）。
+   いまは**戻せるだけ**。次に何を置くかは決まっていない */
+.card .tmp{color:var(--dim2); letter-spacing:.06em}
+
+footer{border-top:1px solid var(--line); padding:clamp(40px,8vh,80px) 0 clamp(60px,12vh,120px);
+  font-size:clamp(10px,1.2vw,12px); color:var(--dim2); line-height:2.2}
+footer a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--line)}
+footer a:hover{color:var(--on)}
+
+@media (max-width:760px){
+  .raw .col{columns:1; padding-right:clamp(52px,14vw,64px)}
+}
+@media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="en">ALTER DESIGN CONSULTING</div>
+    <h1>株式会社アルターデザインコンサルティング</h1>
+    <div class="tag">AI × ローコードで、「上流工程中心のシステム開発」に革新を</div>
+    <div class="note">各章の右上の印を押すと、そこまでの文が一枚にまとまります。</div>
+  </header>
+
+  <main id="chs"></main>
+
+  <footer>
+    <div>株式会社アルターデザインコンサルティング　本社　東京都港区西新橋 3-23-5　ANYZ304（御成門郵船ビル）</div>
+    <div><a href="mailto:contact@alt-dsgn.co.jp">contact@alt-dsgn.co.jp</a>　／　<a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a></div>
+  </footer>
+
+</div>
+
+<script>
+/* ─ 章の中身 ────────────────────────────────────────────────
+   `raw` が**読みにくいまま置く壁**、`card` が**畳んだあとの一枚**。
+   raw は行ごとに分けて畳むので、**改行がそのまま畳む単位**になる。
+
+   **膨らませたのは考え方だけ。**公式に出ている言葉（理念の四段落、サービスの四項目、
+   会社概要）を土台に、その言い分を延ばしている。
+   **実績・数字・取引先・事例は一つも作っていない。** */
+var CHS = [
+  { key:'mind', icon:'◆', title:'企業理念',
+    raw:
+`経営の力で「遊ぶように働く世界」をデザインする。
+これが当社の企業理念であり、事業のすべてがここから出ている。
+「遊ぶように働く」とは、楽をすることではない。
+人が夢中になり、自発的に創造する状態で働くことを指している。
+子供が遊びに没頭するように、大人も「やらされる」ではなく
+「やりたい」仕事に向き合うこと。
+そのような働き方が自然に生まれる組織を、
+経営の意思と創造の力で意図的に構想し、設計していく。
+それが「経営の力で遊ぶように働く世界をデザインする」という
+当社の企業理念の本質である。
+
+ここで言う「意図的に」は、言葉の綾ではない。
+夢中は、放っておいて生まれるものではないからだ。
+働く人が自分で決められる範囲が狭いまま、
+決めごとだけが増えていく組織で、夢中は起こらない。
+何をやってよいかが曖昧なまま、責任だけが個人に降りる組織でも起こらない。
+夢中が起こる場所には、たいてい共通した条件がある。
+自分の手で動かせる範囲があること。
+動かした結果が、ほどよい早さで返ってくること。
+失敗しても、致命的ではないこと。
+そして、その仕事が何のためにあるかを、本人が言えること。
+この四つは、精神論ではなく設計の対象である。
+
+私たちが「経営の力で」と言うのは、
+これらの条件が、現場の努力では作れないからだ。
+権限の配り方、評価の向き、情報の見え方、決裁の段数。
+どれも経営が決めている。
+だから、働き方を変えるという話は、
+つきつめると経営が何を決めているかという話になる。
+道具を入れれば変わる、という考え方を私たちは取らない。
+道具は、決め方が変わったあとに効いてくる。
+
+同時に、私たちは理念を掲げるだけの会社ではない。
+考え方は、形にならなければ検証できない。
+だから私たちは、組織のあり方を語ると同時に、
+その組織が実際に使うシステムを作る。
+語ることと作ることを同じ会社の中に置いているのは、
+そのあいだで嘘がつけないようにするためだ。
+設計した働き方が現場で回らなければ、それはすぐに露見する。
+露見したものは直せる。直したものは、また設計に戻る。
+
+「遊ぶように働く」は、楽しさの話ではなく、速さの話でもある。
+夢中になっている人は速い。
+やらされている人は、同じ時間をかけても進まない。
+その差は個人の能力差ではなく、置かれ方の差であることが多い。
+置かれ方は変えられる。
+変えられるものを変えずに、変えられないものを嘆くのをやめる。
+それが、私たちの言う「デザインする」ということである。`,
+    card:{
+      k:'PHILOSOPHY',
+      lead:'夢中は、放っておいては生まれない。だから意図的に設計する。',
+      points:[
+        '「遊ぶように働く」は楽をすることではなく、自発的に創造している状態のこと。',
+        '夢中が起こる条件は四つ——自分で動かせる範囲、早く返る結果、致命的でない失敗、言える目的。',
+        'その四つを決めているのは現場ではなく経営。だから「経営の力で」と言う。',
+        '語ることと作ることを同じ会社に置いて、そのあいだで嘘がつけないようにしている。'
+      ]}
+  },
+
+  { key:'svc', icon:'▣', title:'サービス',
+    raw:
+`01　人間中心の次世代業務システム開発
+業務を効率化するだけでなく、「使う人」を中心に据えて
+再設計された業務システムを提供する。
+ノーコードやローコードなど最新の技術を活用し、
+直感的で創造性を刺激するワークフローを構築する。
+効率化という言葉は、しばしば人を数の側に置く。
+一人あたりの処理件数、一件あたりの所要時間。
+それ自体は測るべき数字だが、それだけを見て作られた仕組みは、
+使う人にとって「こなす」ための道具になる。
+私たちは、使う人が次に何をすべきか迷わない状態を先に作る。
+迷いが消えると、判断に時間を使えるようになる。
+判断に時間を使えるようになると、仕事の質が変わる。
+この順番を守ることを、人間中心と呼んでいる。
+
+02　AI による意思決定支援と事業変革支援
+経営判断や業務プロセスの高度化を目的に、
+企業の持つデータ資産を活用した AI 導入を支援する。
+未来予測や需要分析など、
+戦略的な意思決定を加速させるための環境を整備する。
+ここで重要なのは、AI に決めさせないことだ。
+決めるのは人であり、AI は決めるまでの距離を縮める道具である。
+何を根拠に、どこまでの幅で、いつまでに決めるのか。
+この三つが曖昧な組織に AI を入れても、
+出てくるのは「参考情報」という名の未処理の山になる。
+私たちはまず、決め方のほうを先に整える。
+
+03　自律型・共創型の組織設計支援
+テクノロジーによる分業・協業の再定義を通じて、
+フラットかつ柔軟な組織体制を実現する。
+個人の自律とチームの共創を両立させる、
+新しい働き方のプラットフォームを提案する。
+自律とは、放任のことではない。
+何を自分で決めてよいかが、はっきりしている状態のことである。
+共創とは、仲良くすることではない。
+違う立場の人が、同じものを見ながら別の視点を出せる状態のことである。
+どちらも、情報の見え方と権限の置き方で決まる。
+私たちが組織設計と言うとき、扱っているのはその二つである。
+
+04　地域格差の解消を目指したデジタル支援
+都市部に偏在するデジタル機会を全国へと広げるため、
+地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、
+DX 人材の育成など、地域に根差したデジタル変革を推進する。
+ここには、事業としての理由と、理念としての理由の両方がある。
+事業としては、上流に強い人材が足りていない領域だからだ。
+理念としては、夢中になれる仕事が都市にしかない状態は、
+私たちの言う「遊ぶように働く世界」と矛盾するからだ。
+道具を配って終わりにはしない。
+使いこなす人がその土地に残ることを、支援の条件として扱う。`,
+    card:{
+      k:'SERVICES',
+      lead:'四つとも、道具を入れる前に「決め方」を整えるところから始める。',
+      points:[
+        '01　人間中心の次世代業務システム開発——迷いを消し、判断に時間を回す。',
+        '02　AI による意思決定支援——AI に決めさせない。決めるまでの距離を縮める。',
+        '03　自律型・共創型の組織設計——自律は放任ではなく、共創は仲良しではない。',
+        '04　地域格差の解消——使いこなす人がその土地に残ることまでを支援の条件にする。'
+      ]}
+  },
+
+  { key:'up', icon:'◇', title:'上流工程中心とは',
+    raw:
+`私たちは「上流工程中心のシステム開発」を掲げている。
+上流工程とは、作りはじめる前に決めることの総称である。
+何のために作るのか。誰が使うのか。どこまでをやるのか。
+やらないことは何か。うまくいったと、何を見て言うのか。
+この五つが決まっていれば、作るのはむしろ易しい。
+決まっていないまま作りはじめると、
+作る速さがそのまま手戻りの速さになる。
+
+多くの現場で、上流は「急ぐべきところ」として扱われている。
+早く仕様を固めて、早く作りはじめたい。
+その気持ちは正しいが、固めると決めるは違う。
+固めるのは、文書の状態を指している。
+決めるのは、迷いが消えた状態を指している。
+文書だけが固まって迷いが残っていると、
+作っている最中に何度でも蒸し返される。
+蒸し返しのたびに、作ったものが捨てられる。
+下流で起きているように見える無駄の多くは、
+上流で決まっていなかったことの請求書である。
+
+では、なぜ決まらないのか。
+決める材料が足りないから、というのが通り相場だが、
+実際には、材料が足りないのではなく整っていないことが多い。
+過去の経緯は人の頭の中にあり、
+現状の数字は別々の表に散らばり、
+関係者の言い分は打ち合わせの記憶にしかない。
+この状態で正しく決めろというのは無理がある。
+だから私たちは、決めるための材料を整えるところを仕事にしている。
+問いを立て、選択肢を並べ、それぞれの代償を書き出す。
+決めるのは相手であって、私たちではない。
+私たちがするのは、決めやすくすることである。
+
+ここに AI とローコードが効いてくる。
+AI は、散らばった材料を集めて並べ替えるのが速い。
+ローコードは、決めたことをすぐ形にして見せるのが速い。
+この二つが揃うと、決める前に触って確かめられるようになる。
+触って確かめられると、決めるのが速くなる。
+速く決められると、作りはじめてからの蒸し返しが減る。
+上流工程中心というのは、
+上流に時間をかけろという話ではなく、
+上流を速く回せという話である。
+
+私たちが納品するのは、多くの場合まずシステムではない。
+決まったことと、決めなかったことと、その理由である。
+それが残っていれば、次に誰が来ても続けられる。
+続けられるものだけが、資産になる。`,
+    card:{
+      k:'UPSTREAM',
+      lead:'上流に時間をかけろ、ではない。上流を速く回せ、である。',
+      points:[
+        '上流とは、作る前に決めること——目的・利用者・範囲・やらないこと・成功の見え方。',
+        '「固める」と「決める」は違う。文書が固まっても迷いが残れば、作る速さは手戻りの速さになる。',
+        '決まらないのは材料が足りないからではなく、整っていないから。整えるところを仕事にしている。',
+        '納品するのはまずシステムではなく、決めたことと決めなかったことと、その理由。'
+      ]}
+  },
+
+  { key:'about', icon:'▤', title:'会社概要',
+    raw:
+`会社名　株式会社アルターデザインコンサルティング
+代表者　松岡　真功
+所在地　本社　東京都港区西新橋 3-23-5　ANYZ304（御成門郵船ビル）
+設立年月日　2025 年 6 月　／　資本金 60 百万円
+事業内容　AI 技術を活用した組織最適化に関するコンサルティング事業
+　　　　　AI とローコードを組み合わせた次世代型のシステム開発事業
+株主　株式会社ＢｌｕｅＭｅｍｅ
+　　　株式会社ハイ・アベイラビリティ・システムズ
+　　　株式会社サーバーワークス・キャピタル
+　　　リックソフト株式会社
+
+アクセス
+御成門 2 分（都営三田線）
+大門 10 分（都営浅草線・大江戸線）
+神谷町 10 分（東京メトロ日比谷線）
+汐留 12 分（都営大江戸線・ゆりかもめ）
+虎ノ門ヒルズ 12 分（日比谷線）
+虎ノ門 12 分（東京メトロ銀座線）
+新橋 12 分（JR 山手線・京浜東北線）
+浜松町 14 分（JR 山手線・京浜東北線）
+
+お問い合わせ
+サービスに関するご相談や、掲載のご依頼、
+その他ご質問などがございましたら、お気軽にお問い合わせください。
+contact@alt-dsgn.co.jp
+
+プライバシーポリシー
+当社サイトのプライバシーポリシーは、
+公式サイトと同じく親会社のページを指しています。`,
+    card:{
+      k:'COMPANY',
+      lead:'株式会社アルターデザインコンサルティング',
+      points:[
+        '代表者　松岡　真功　／　設立　2025 年 6 月　／　資本金 60 百万円',
+        '本社　東京都港区西新橋 3-23-5　ANYZ304（御成門郵船ビル）　御成門 2 分',
+        '事業内容　AI を活用した組織最適化のコンサルティング／AI とローコードによるシステム開発',
+        'お問い合わせ　contact@alt-dsgn.co.jp'
+      ]}
+  }
+];
+
+/* ─ 組み立て ────────────────────────────────────────────────
+   raw は**一行ずつ span に分ける。**畳むときに一行ずつ消したいので、
+   改行がそのまま**畳む単位**になる */
+var host = document.getElementById('chs');
+host.innerHTML = CHS.map(function(c){
+  var lines = c.raw.split('\n').map(function(t){
+    return '<span class="ln">' + (t === '' ? '&nbsp;' : esc(t)) + '</span>';
+  }).join('');
+  var pts = c.card.points.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('');
+  return ''
+    + '<section class="ch" data-k="' + c.key + '">'
+    +   '<div class="ico" role="button" tabindex="0" aria-label="' + c.title + 'をまとめる">'
+    +     '<b>' + c.icon + '</b></div>'
+    +   '<h2>' + esc(c.title) + '</h2>'
+    +   '<div class="raw"><div class="col">' + lines + '</div></div>'
+    +   '<div class="card">'
+    +     '<div class="k">' + c.card.k + '</div>'
+    +     '<p class="lead">' + esc(c.card.lead) + '</p>'
+    +     '<ul>' + pts + '</ul>'
+    +     '<div class="foot"><button class="back">← もとの文にもどす</button>'
+    +       '<span class="tmp">（このあとどうするかは、まだ決めていない）</span></div>'
+    +   '</div>'
+    + '</section>';
+}).join('');
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ─ 畳む／ひらく ────────────────────────────────────────────
+   **外から内へ順に消す。**端から順だと「上から流れた」に見えるが、
+   まとまる感じにならない。中心へ寄せると「集まった」に見える */
+function fold(ch){
+  if (ch.classList.contains('on')) return;
+  var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
+  var lns = [].slice.call(ch.querySelectorAll('.ln'));
+  var mid = Math.max(1, (lns.length - 1) / 2);
+  lns.forEach(function(el, i){
+    /* **外の行から先に消して、真ん中を最後に残す。**
+       端から順に消すと「上から流れた」に見えて、集まった感じにならない */
+    el.style.transitionDelay = Math.round((1 - Math.abs(i - mid) / mid) * 280) + 'ms';
+  });
+  /* いまの高さを**数字で押さえてから** 0 へ。`auto` のままだと動かない */
+  raw.style.maxHeight = raw.scrollHeight + 'px';
+  /* カードは先に置いてから `.on`。`display` は動かせないので、
+     置いた直後に一度レイアウトを取らないと、出る動きが走らない */
+  card.style.display = 'block';
+  void raw.offsetHeight;
+  ch.classList.add('on');
+  raw.style.maxHeight = '0px';
+}
+function unfold(ch){
+  if (!ch.classList.contains('on')) return;
+  var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
+  ch.classList.remove('on');
+  [].slice.call(ch.querySelectorAll('.ln')).forEach(function(el, i){
+    el.style.transitionDelay = (i * 3) + 'ms';   /* 戻りは上から順に。読み直す向き */
+  });
+  raw.style.maxHeight = raw.scrollHeight + 'px';
+  setTimeout(function(){
+    raw.style.maxHeight = '';
+    card.style.display = 'none';
+  }, 900);
+}
+
+document.addEventListener('click', function(e){
+  var ico = e.target.closest && e.target.closest('.ico');
+  if (ico){ fold(ico.closest('.ch')); return; }
+  var back = e.target.closest && e.target.closest('.back');
+  if (back){ unfold(back.closest('.ch')); }
+});
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  var ico = e.target.closest && e.target.closest('.ico');
+  if (ico){ e.preventDefault(); fold(ico.closest('.ch')); }
+});
+
+/* はじめは畳まれていない。**壁のまま**置いておく */
+[].slice.call(document.querySelectorAll('.raw')).forEach(function(r){ r.style.maxHeight = ''; });
+</script>
