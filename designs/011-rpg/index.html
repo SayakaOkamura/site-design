@@ -457,11 +457,22 @@ body.roll #dRoll{display:block}
 /* もらったもの。**ここだけ大きい。**目が最初にここへ行く */
 #dRes .rone{margin:calc(var(--px)*2) 0 calc(var(--px)*4);
   font-size:clamp(16px,2.2vw,24px); line-height:1.65; font-weight:700; color:var(--ink)}
-/* 添え。**一行ずつ。**行を増やさないために、中は「／」と「→」でつなぐ */
-#dRes .rl{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11.5px,1.35vw,13.5px);
-  line-height:1.85; color:var(--dim)}
-#dRes .rl b{color:var(--go); font-weight:700; letter-spacing:.1em;
-  margin-right:calc(var(--px)*2)}
+/* **前と後ろを、一枚に**（2026-09-15、本人：「次の一手がでかいとなんか、次しかわかんないな」
+   →「あくまでデモだと割り切ってわかりやすさに振るなら」→「一旦 1 と 2 で」）。
+   一手だけを大きく出しても、**何がどう変わったかは画面に無い。**
+   → 上に**言ったこと**、その下に**選んだ三つ**、矢印、そして**一手**。
+
+   **ここに並ぶのは全部すでに見たもの。**願いも三つの答えも自分で選んでいるので、
+   項目は増えても**読解は増えない**——前に「情報が多い」と言われたのは、
+   数ではなく**新しい文章**（そろえるもの・ひと区切り）が出てきたから。
+   だからその二つは落とした。三つの問いの答えは「選んだ三つ」に全部出ている */
+#dRes .rw{margin:calc(var(--px)*2.5) 0 0; font-size:clamp(13px,1.6vw,16px);
+  line-height:1.7; color:var(--dim)}
+#dRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
+  line-height:1.8; color:var(--dim); opacity:.78}
+/* 矢印。**ここで前と後ろが切れる。**枠線を引くより軽い */
+#dRes .rar{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
+  color:var(--go); letter-spacing:0}
 #dRes .rn{display:flex; gap:calc(var(--px)*3); margin-top:calc(var(--px)*4)}
 /* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
 #dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
@@ -548,9 +559,10 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <div id="dWon">スライムを　たおした！</div>
     <div id="dRes" class="win">
       <p class="rt">つぎの一手を　てにいれた！</p>
+      <p class="rw" id="rWish"></p>
+      <p class="rp" id="rPick"></p>
+      <p class="rar">▼</p>
       <p class="rone" id="rOne"></p>
-      <p class="rl"><b>そろえるもの</b><span id="rNeed"></span></p>
-      <p class="rl"><b>そのあと</b><span id="rNext"></span></p>
       <div class="rn">
         <button class="rb" data-d="contact">お問い合わせ</button>
         <button class="rb" data-d="quit">デモを終了する</button>
@@ -1375,18 +1387,17 @@ function showResult(){
       a0 = T.q[0].a[D.picks[0]], a1 = T.q[1].a[D.picks[1]], a2 = T.q[2].a[D.picks[2]];
   /* **一手目は 1 問目の答えから出る。**方針を決めたら最初に動くところなので、
      そのまま「つぎの一手」になる。ここだけ大きく出す */
+  /* **言ったこと**（最初に持ち込んだ願い）と**選んだ三つ**を、そのまま上に置く。
+     どちらも見たものなので、読み直す必要がない——**変わったことだけが目に入る** */
+  document.getElementById('rWish').textContent = '「' + T.t + '」';
+  document.getElementById('rPick').textContent = [a0.t, a1.t, a2.t].join('　／　');
   document.getElementById('rOne').textContent  = a0.step;
-  /* 添えは二行だけ。**どの問いの答えも、必ずどこかに出る**（前からの決めごと）——
-     1 問目は一手と「そろえるもの」、2 問目と 3 問目は「そのあと」に並ぶ。
-     「ひと区切り」は落とした。**多を少にするのがこの画面の役**なので、
-     ここで一行増やすと、また元に戻る */
-  document.getElementById('rNeed').textContent = a0.need.join('　／　');
-  document.getElementById('rNext').textContent = a1.step + '　→　' + a2.step;
+
   dWin.style.display = 'none';
   D.sel = 0;
   /* **一行ずつ出す。**枠が開いてから、見出しと行を順に。四角は最後。
      キーを押せば、待たずに全部出る */
-  D.parts = [].slice.call(dRes.querySelectorAll('.rt,.rone,.rl,.rn'));
+  D.parts = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rp,.rar,.rone,.rn'));
   D.parts.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
   dRes.classList.add('on');
   if (REDUCE){ openDone(); return; }
