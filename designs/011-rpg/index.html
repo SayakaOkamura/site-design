@@ -229,6 +229,9 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
    勇者は 34% なので、右半分は空いている */
 /* **もうちょい真ん中、もうちょい上**（2026-09-14、本人）。
    右端から離して中央へ寄せ（54px → 120px）、位置も上げた（24% → 17%）*/
+/* 開いているあいだは**画面のどこでも送れる**ので、指の形にしておく
+   （押せる場所が画面全部だ、と言葉なしで分かる） */
+body:has(#pop.on){cursor:pointer}
 #pop{position:absolute; z-index:6;
   right:clamp(28px,9vw,120px); top:17%;
   width:min(46vw,520px); max-height:60vh; display:none; transform-origin:top}
@@ -907,6 +910,12 @@ function open(k){
   paintSel();
 }
 function close(){ cur = null; pop.classList.remove('on'); paintSel(); }
+/* めくる。最後まで来たら閉じる（fire と違って、外へは出ない） */
+function turn(){
+  var d = DATA[cur];
+  if (page < d.p.length - 1){ page++; draw(); return; }
+  close();
+}
 
 /* 決定。**窓が開いていれば送り、最後なら閉じる**（お問い合わせだけメールへ） */
 function fire(){
@@ -929,8 +938,14 @@ document.addEventListener('click', function(e){
     return;
   }
   if (e.target.closest && e.target.closest('#popGo')){ fire(); return; }
-  /* 枠の外を押したら閉じる（RPG の作法ではないが、マウスなので素直に） */
-  if (cur && !(e.target.closest && (e.target.closest('#pop') || e.target.closest('#menu') || e.target.closest('#foot')))) close();
+  /* **開いているあいだは、どこを押してもめくれる**（2026-09-15、本人：「クリックどこ押しても
+     今展開されてるポップがめくれるようにしてほしい」）。
+     前は小さい「▼」を狙わないと送れず、枠の外を押すと**閉じて**いた。
+
+     **送るだけ。**最後まで来たら閉じる——**外のリンクへは飛ばさない。**
+     どこを押しても飛ぶと、お問い合わせの頁で**手が滑っただけでメールが開く。**
+     リンクは「▼」と決定キーに残してある */
+  if (cur){ turn(); }
 });
 /* マウスを乗せたら、カーソルもそこへ（手が二つあっても印は一つ） */
 ALL.forEach(function(el, i){
