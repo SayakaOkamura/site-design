@@ -243,13 +243,16 @@ body.demo #demo{display:block}
    勇者（34%）の頭の上に「！」を出す——RPG の作法。
    **勇者は画面の左半分にいる**ので、メニューを押した直後の目の位置に近い */
 #dBang{position:absolute; left:34%; bottom:calc(20% + 140px); z-index:8; display:none;
-  transform:translateX(-50%); font-size:clamp(22px,3vw,34px); font-weight:700;
+  transform:translateX(-50%); font-size:clamp(26px,3.6vw,40px); font-weight:700;
   letter-spacing:.04em; color:var(--go);
   text-shadow:3px 0 0 #24130a, -3px 0 0 #24130a, 0 3px 0 #24130a, 0 -3px 0 #24130a,
               3px 3px 0 #24130a, -3px 3px 0 #24130a, 3px -3px 0 #24130a, -3px -3px 0 #24130a}
-/* **大きさだけ動かす。**透明度を動かすと、動きが走らない場で出ないまま */
-#dBang.on{display:block; animation:bang .26s steps(3)}
-@keyframes bang{ from{transform:translateX(-50%) scale(.25)}
+/* **大きいところから出して、縮めて収める**（2026-09-15、本人：「びっくりの出が遅い」）。
+   前は scale(.25) から育てていたので、**最初の 90ms がほぼ見えていなかった**——
+   出てはいるのに、目に入るころには遅れて見える。**出た瞬間から大きい**ほうが速い。
+   **大きさだけ動かす。**透明度を動かすと、動きが走らない場で出ないまま */
+#dBang.on{display:block; animation:bang .14s steps(2)}
+@keyframes bang{ from{transform:translateX(-50%) scale(1.45)}
                  to{transform:translateX(-50%) scale(1)} }
 
 /* スライム。**勇者の右**（ここを敵の場所にあけてあった） */
