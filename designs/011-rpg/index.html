@@ -287,22 +287,23 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    「説明ではなく触らせて見せる」という**この画面の主張を自分で壊す。**
    流すのは会社の言葉だけ——理念 → 名乗りの一行 → 社名で止まる。
    背景は**夕日のまま、勇者も走ったまま。**暗転させない */
-#dRoll{position:absolute; inset:0; z-index:10; display:none; overflow:hidden}
+/* **背景として流す。**`z-index:3` は山（2）より手前、勇者（4）より奥——
+   勇者が文の前を走る。メニュー（5）とポップアップ（6）はさらに手前なので、
+   **流れているあいだも普通に触れる。**文のほうは触れない
+   （2026-09-15、本人：「メニューは普通に動かせる状態で、背景でやって」）*/
+#dRoll{position:absolute; inset:0; z-index:3; display:none; overflow:hidden;
+  pointer-events:none; transition:opacity .5s}
 body.roll #dRoll{display:block}
-/* 流しているあいだ、戦いの道具は全部しまう */
-/* 流しているあいだ、戦いの道具も**左上の名乗りも**しまう。
-   名乗りを出したままにすると、流れてくる文とぶつかるし、
-   最後に出てくる社名が**二度目**になって効かない */
-body.roll #dWin, body.roll #dRes, body.roll #dHp, body.roll #dTopic,
-body.roll #slime, body.roll #slash, body.roll #dWon, body.roll #dBar,
-body.roll #name{display:none}
-#dRollIn{position:absolute; left:0; right:0; top:0;
+#dRoll.out{opacity:0}
+/* **前に出ない。**背景なので、名乗りやメニューより一段うすくする——
+   同じ濃さだと、上に重なったとき文と文がけんかする */
+#dRollIn{position:absolute; left:0; right:0; top:0; opacity:.62;
   text-align:center; color:var(--ink); will-change:transform;
   padding:0 clamp(16px,6vw,80px);
   /* **白抜きに硬い縁**。名乗りと同じ作法で、にじませない */
   text-shadow:2px 0 0 #24130a, -2px 0 0 #24130a, 0 2px 0 #24130a, 0 -2px 0 #24130a,
               2px 2px 0 #24130a, -2px 2px 0 #24130a, 2px -2px 0 #24130a, -2px -2px 0 #24130a}
-#dRollIn p{margin:0 auto; max-width:min(78vw,560px); line-height:2.1;
+#dRollIn p{margin:0 auto; max-width:min(70vw,470px); line-height:2.1;
   font-size:clamp(12px,1.5vw,15px); letter-spacing:.06em}
 #dRollIn .h{color:var(--go); font-size:clamp(11px,1.3vw,13px); letter-spacing:.2em;
   margin-bottom:calc(var(--px)*6)}
@@ -395,6 +396,12 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <div class="band b2"></div>
   </div>
 
+  <!-- 終わりのエンドロール。**説明ではなく名乗り**——触ったあとに、会社が署名する。
+       デモの外に置く。**画面はもう元に戻っていて、メニューは普通に動く**（2026-09-15、
+       本人：「メニューは普通に動かせる状態で、背景でやって」）。
+       山より手前、勇者より奥。触れない（`pointer-events:none`）-->
+  <div id="dRoll"><div id="dRollIn"></div></div>
+
   <nav id="menu" class="win"><ul id="cmds"></ul></nav>
 
   <div id="foot">
@@ -427,8 +434,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <!-- 打ち込まれる場所。**地面の下**（ふだんお問い合わせが出ている帯） -->
     <div id="dBar"><div id="dLines"></div></div>
     <div id="dWon">スライムを　たおした！</div>
-    <!-- 終わりのエンドロール。**説明ではなく名乗り**——触ったあとに、会社が署名する -->
-    <div id="dRoll"><div id="dRollIn"></div></div>
     <div id="dRes" class="win">
       <p class="rt">立件</p>
       <p class="rs" id="rTopic"></p>
@@ -1067,6 +1072,7 @@ var dWin  = document.getElementById('dWin'),
 
 function startDemo(){
   close();
+  stopRoll();                     /* 流れている途中でも、入り直したら片付ける */
   D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3 };
   document.body.classList.add('demo');
   dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
@@ -1080,9 +1086,6 @@ function quitDemo(){
   D.on = false; D.phase = '';
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
-  if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
-  if (rollHold){ clearTimeout(rollHold); rollHold = null; }
-  document.body.classList.remove('roll'); dRollIn.style.transform = '';
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
   heroPose(null); slimeIdle();   /* また走り出す */
@@ -1238,7 +1241,7 @@ function fireRes(){
    文は**画面にあるものから組む**——理念は `MIND`、名乗りと一行は `#name` から読む。
    二か所に書くと、片方だけ直る */
 var dRoll = document.getElementById('dRoll'), dRollIn = document.getElementById('dRollIn');
-var rollRaf = null, rollHold = null;
+var rollRaf = null, rollHold = null, rollOut = null;
 function buildRoll(){
   if (dRollIn.firstChild) return;
   var nm = document.getElementById('name');
@@ -1258,9 +1261,10 @@ function buildRoll(){
 }
 function startRoll(){
   dRes.classList.remove('on');
+  /* **先に画面を元に戻す。**メニューも足もとも名乗りも出た状態で、後ろだけ流れる */
+  quitDemo();
   document.body.classList.add('roll');
   buildRoll();
-  D.phase = 'roll';
   var endEl = document.getElementById('rollEnd');
   /* 社名が**画面のまん中に来たところで止める。**流し切って消さない */
   var stop = (innerHeight / 2) - (endEl.offsetTop + endEl.offsetHeight / 2);
@@ -1277,19 +1281,27 @@ function startRoll(){
     rollHold = setTimeout(endRoll, 3200);   /* 止まって、少し置いてから戻る */
   })(0);
 }
+/* 止まって少し置いたら、**静かに消える。**画面はもう元どおりなので、戻す先は無い */
 function endRoll(){
   if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
   if (rollHold){ clearTimeout(rollHold); rollHold = null; }
+  dRoll.classList.add('out');
+  rollOut = setTimeout(stopRoll, 520);
+}
+/* すぐ片付ける（デモに入り直したとき） */
+function stopRoll(){
+  if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
+  if (rollHold){ clearTimeout(rollHold); rollHold = null; }
+  if (rollOut){ clearTimeout(rollOut); rollOut = null; }
   document.body.classList.remove('roll');
+  dRoll.classList.remove('out');
   dRollIn.style.transform = '';
-  quitDemo();
 }
 
 document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
   if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
-  if (D.phase === 'roll'){ endRoll(); return; }
   if (D.phase === 'open'){ openDone(); return; }
   var rb = e.target.closest('#dRes .rb');
   if (rb){ D.sel = [].slice.call(dRes.querySelectorAll('.rb')).indexOf(rb); fireRes(); }
@@ -1306,7 +1318,6 @@ document.addEventListener('mouseover', function(e){
 document.addEventListener('keydown', function(e){
   if (!D.on) return;
   var k = e.key, n;
-  if (D.phase === 'roll'){ endRoll(); e.preventDefault(); return; }
   if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
   if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
