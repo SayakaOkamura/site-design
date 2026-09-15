@@ -288,8 +288,10 @@ body.demo #dHp{display:block}
    三択の下に、線で区切って置く——RPG の作法どおり、**戦いの外へ出る手は最後の行** */
 #dA li.flee{margin-top:calc(var(--px)*3); padding-top:calc(var(--px)*3);
   border-top:2px solid rgba(255,255,255,.16)}
-/* 注釈。**選ばれても明るくならない**——読むものであって、押すものではない */
-#dA li.flee .note{display:block; margin-top:3px; font-size:11px; letter-spacing:.04em;
+/* 注釈は**カッコ書きで、同じ行に**（2026-09-15、本人：「カッコがきにして」）。
+   行を分けると**もう一つの項目**に見える——押せる行が四つあるように読めてしまう。
+   **選ばれても明るくならない**——読むものであって、押すものではない */
+#dA li.flee .note{margin-left:.4em; font-size:11px; letter-spacing:.04em;
   color:var(--dim); opacity:.62}
 #dA li.pick{color:var(--ink); cursor:default}
 #dA li.pick .cur{color:var(--go)}
@@ -1168,7 +1170,7 @@ function ask(step, q, list){
        注釈は入れておいて」）。RPG の「にげる」は**戦いから逃げる**だが、ここでは
        **デモそのものが終わる。**同じ言葉で違うことが起きるので、一行だけ添える */
     + '<li class="flee"><span class="cur">▶</span><span>にげる'
-    + '<span class="note">デモをやめて、メニューにもどる</span></span></li>';
+    + '<span class="note">（デモをやめて、メニューにもどる）</span></span></li>';
   dWin.style.display = '';
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
   paintD();
