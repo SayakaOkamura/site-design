@@ -295,10 +295,10 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
   pointer-events:none; transition:opacity .5s}
 body.roll #dRoll{display:block}
 #dRoll.out{opacity:0}
-/* 背景なので、名乗りやメニューより**すこしうすい。**
-   ただし**重ならないようにしたので**（上限を名乗りの下端に切った）、
-   逃げるための濃さ調整は要らなくなった */
-#dRollIn{position:absolute; left:0; right:0; top:0; opacity:.8;
+/* **読ませにいかない。**本人：「後ろで勝手にやってるなってくらいでいいの」——
+   読める濃さにすると、前のもの（名乗り・メニュー・勇者）と主役を取り合う。
+   上下を切って（名乗りの下端 〜 地平）、濃さも落とす */
+#dRollIn{position:absolute; left:0; right:0; top:0; opacity:.42;
   text-align:center; color:var(--ink); will-change:transform;
   padding:0 clamp(16px,6vw,80px);
   /* **白抜きに硬い縁**。名乗りと同じ作法で、にじませない */
@@ -1270,7 +1270,9 @@ function startRoll(){
   var endEl = document.getElementById('rollEnd');
   /* 社名が**画面のまん中に来たところで止める。**流し切って消さない */
   var stop = (innerHeight / 2) - (endEl.offsetTop + endEl.offsetHeight / 2);
-  var from = innerHeight;
+  /* **地平から出す。**画面の下端から始めると、地面の中を通るあいだ何も見えず、
+     ただ待たされる時間になる */
+  var from = rollBand().ground;
   if (REDUCE){ dRollIn.style.transform = 'translateY(' + stop + 'px)'; rollHold = setTimeout(endRoll, 3200); return; }
   var dur = Math.max(9000, Math.min(20000, (from - stop) / 0.105));
   var t0 = 0;
@@ -1283,14 +1285,24 @@ function startRoll(){
     rollHold = setTimeout(endRoll, 3200);   /* 止まって、少し置いてから戻る */
   })(0);
 }
-/* 上限は**左上の名乗りの下端**（2026-09-15、本人：「左上の名乗りの位置の下限を
-   エンドロールの上限として消えていけばいいのでは？」）。
-   そこへ来るまでに**消えていく**ので、名乗りと文が重なる瞬間が無い。
-   ——うすくして逃げるより、**はじめから重ならない**ほうが強い */
+/* 流れる場所は**名乗りの下端から地平まで**の帯。両端でぼかして切る。
+   上（2026-09-15、本人：「左上の名乗りの位置の下限をエンドロールの上限として
+   消えていけばいいのでは？」）——そこへ来るまでに消えるので、重なる瞬間が無い。
+   下（同日、本人：「**地面の中から出てきて**」）——地平の下からせり上がってくる。
+   画面の外から入ってくるのではなく、**地面から生えて、空で消える** */
+function rollBand(){
+  return {
+    top: Math.round(document.getElementById('name').getBoundingClientRect().bottom),
+    ground: Math.round(document.getElementById('ground').getBoundingClientRect().top)
+  };
+}
 function maskRoll(){
-  var lim = Math.round(document.getElementById('name').getBoundingClientRect().bottom);
-  var g = 'linear-gradient(180deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) ' + lim + 'px, #000 '
-        + (lim + 64) + 'px)';
+  var b = rollBand(), f = 64;
+  var g = 'linear-gradient(180deg,'
+        + ' rgba(0,0,0,0) 0, rgba(0,0,0,0) ' + b.top + 'px,'
+        + ' #000 ' + (b.top + f) + 'px,'
+        + ' #000 ' + (b.ground - f) + 'px,'
+        + ' rgba(0,0,0,0) ' + b.ground + 'px)';
   dRoll.style.webkitMaskImage = g;
   dRoll.style.maskImage = g;
 }
