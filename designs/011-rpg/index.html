@@ -295,9 +295,10 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
   pointer-events:none; transition:opacity .5s}
 body.roll #dRoll{display:block}
 #dRoll.out{opacity:0}
-/* **前に出ない。**背景なので、名乗りやメニューより一段うすくする——
-   同じ濃さだと、上に重なったとき文と文がけんかする */
-#dRollIn{position:absolute; left:0; right:0; top:0; opacity:.62;
+/* 背景なので、名乗りやメニューより**すこしうすい。**
+   ただし**重ならないようにしたので**（上限を名乗りの下端に切った）、
+   逃げるための濃さ調整は要らなくなった */
+#dRollIn{position:absolute; left:0; right:0; top:0; opacity:.8;
   text-align:center; color:var(--ink); will-change:transform;
   padding:0 clamp(16px,6vw,80px);
   /* **白抜きに硬い縁**。名乗りと同じ作法で、にじませない */
@@ -1265,6 +1266,7 @@ function startRoll(){
   quitDemo();
   document.body.classList.add('roll');
   buildRoll();
+  maskRoll();
   var endEl = document.getElementById('rollEnd');
   /* 社名が**画面のまん中に来たところで止める。**流し切って消さない */
   var stop = (innerHeight / 2) - (endEl.offsetTop + endEl.offsetHeight / 2);
@@ -1281,6 +1283,22 @@ function startRoll(){
     rollHold = setTimeout(endRoll, 3200);   /* 止まって、少し置いてから戻る */
   })(0);
 }
+/* 上限は**左上の名乗りの下端**（2026-09-15、本人：「左上の名乗りの位置の下限を
+   エンドロールの上限として消えていけばいいのでは？」）。
+   そこへ来るまでに**消えていく**ので、名乗りと文が重なる瞬間が無い。
+   ——うすくして逃げるより、**はじめから重ならない**ほうが強い */
+function maskRoll(){
+  var lim = Math.round(document.getElementById('name').getBoundingClientRect().bottom);
+  var g = 'linear-gradient(180deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) ' + lim + 'px, #000 '
+        + (lim + 64) + 'px)';
+  dRoll.style.webkitMaskImage = g;
+  dRoll.style.maskImage = g;
+}
+/* 名乗りの位置は窓の大きさで動く（`clamp`）ので、**流しているあいだに窓が変わったら引き直す** */
+window.addEventListener("resize", function(){
+  if (document.body.classList.contains("roll")) maskRoll();
+});
+
 /* 止まって少し置いたら、**静かに消える。**画面はもう元どおりなので、戻す先は無い */
 function endRoll(){
   if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
