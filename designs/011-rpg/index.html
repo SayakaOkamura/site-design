@@ -217,6 +217,21 @@ body.demo #demo{display:block}
   z-index:8; font-size:clamp(11px,1.3vw,13px); letter-spacing:.06em; color:var(--go);
   max-width:min(52vw,420px); line-height:1.7}
 
+/* 気づいた印（2026-09-15、本人：「敵来た時……画面全域に目が届いてなくても
+   わかるように、**左半分にも仕掛けがほしい**」）。
+   敵は右（66%）から来るので、**右だけで起きていると左を見ている人に届かない。**
+   勇者（34%）の頭の上に「！」を出す——RPG の作法。
+   **勇者は画面の左半分にいる**ので、メニューを押した直後の目の位置に近い */
+#dBang{position:absolute; left:34%; bottom:calc(20% + 140px); z-index:8; display:none;
+  transform:translateX(-50%); font-size:clamp(22px,3vw,34px); font-weight:700;
+  letter-spacing:.04em; color:var(--go);
+  text-shadow:3px 0 0 #24130a, -3px 0 0 #24130a, 0 3px 0 #24130a, 0 -3px 0 #24130a,
+              3px 3px 0 #24130a, -3px 3px 0 #24130a, 3px -3px 0 #24130a, -3px -3px 0 #24130a}
+/* **大きさだけ動かす。**透明度を動かすと、動きが走らない場で出ないまま */
+#dBang.on{display:block; animation:bang .26s steps(3)}
+@keyframes bang{ from{transform:translateX(-50%) scale(.25)}
+                 to{transform:translateX(-50%) scale(1)} }
+
 /* スライム。**勇者の右**（ここを敵の場所にあけてあった） */
 #slime{position:absolute; left:66%; bottom:20%; z-index:4;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
@@ -268,6 +283,11 @@ body.demo #dHp{display:block}
   padding:calc(var(--px)*1.5) 0; font-size:clamp(12px,1.4vw,14px); line-height:1.6;
   letter-spacing:.04em; cursor:pointer; color:var(--dim)}
 #dA li .cur{flex:0 0 1em; text-align:center; color:transparent}
+/* **にげるは、いつも出しておく**（2026-09-15、本人：「常に逃げるコマンドを出して
+   戻れるようにしてほしい」）。前は Esc だけで、**画面のどこにも出口が無かった。**
+   三択の下に、線で区切って置く——RPG の作法どおり、**戦いの外へ出る手は最後の行** */
+#dA li.flee{margin-top:calc(var(--px)*3); padding-top:calc(var(--px)*3);
+  border-top:2px solid rgba(255,255,255,.16)}
 #dA li.pick{color:var(--ink); cursor:default}
 #dA li.pick .cur{color:var(--go)}
 body:not(.kb) #dA li:hover,#dA li[aria-current="true"]{color:var(--ink)}
@@ -378,6 +398,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
                     to{transform:translateX(-50%) scaleY(1)} }
   #dTopic{max-width:92vw}
   #slime,#dHp,#slash{left:72%}
+  #dBang{left:50%}
   #dRes .rg{grid-template-columns:1fr}
 }
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
@@ -430,6 +451,8 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   <div id="demo">
     <div id="dTopic"></div>
     <canvas id="slime"></canvas>
+    <!-- 敵が来たことを**勇者の側でも言う**。右だけだと、左を見ている人に届かない -->
+    <div id="dBang">！</div>
     <canvas id="slash"></canvas>
     <div id="dHp"><i></i></div>
     <!-- 質問と三択。**メニューと同じ場所に出す**——左は「いつもコマンドがある側」 -->
@@ -1081,6 +1104,7 @@ var dWin  = document.getElementById('dWin'),
     dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
     dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
     dWon  = document.getElementById('dWon'), slashEl = document.getElementById('slash'),
+    dBang = document.getElementById('dBang'),
     heroEl = document.getElementById('hero');
 
 /* 入り口。**暗転はしない**（2026-09-15、本人：「あんながっつり変わらなくていいけど
@@ -1111,6 +1135,9 @@ function openDemo(){
   /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
   dHp.firstChild.style.width = '0%';
   setTimeout(paintHp, 60);
+  /* 勇者が気づく。**左半分の合図** */
+  dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
+  setTimeout(function(){ dBang.classList.remove('on'); }, 900);
   ask('デモ', 'どんなことで困っていますか', TOPICS.map(function(t){ return t.t; }));
 }
 function quitDemo(){
@@ -1119,6 +1146,7 @@ function quitDemo(){
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
+  dBang.classList.remove('on');
   heroPose(null); slimeIdle();   /* また走り出す */
   paintSel();
 }
@@ -1128,10 +1156,11 @@ function paintHp(){
 /* 三択を出す。**メニューと同じ形**——左に並べて、▶ が一つだけ動く */
 function ask(step, q, list){
   D.sel = 0;
+  D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
   dA.innerHTML = list.map(function(s){
     return '<li><span class="cur">▶</span>' + s + '</li>';
-  }).join('');
+  }).join('') + '<li class="flee"><span class="cur">▶</span>にげる</li>';
   dWin.style.display = '';
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
   paintD();
@@ -1204,6 +1233,8 @@ function winSeq(){
 }
 
 function choose(i){
+  /* 最後の行は**にげる。**どの相からでも、押せば元の画面へ戻る */
+  if (i >= D.n){ quitDemo(); return; }
   if (D.phase === 'topic'){
     D.topic = i; D.step = 0; D.phase = 'ask';
     dTopic.textContent = '相談　' + TOPICS[i].t;
@@ -1217,6 +1248,7 @@ function choose(i){
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
                + TOPICS[D.topic].q[D.step].a[i].t + '</li>';
+  D.n = 0;
   typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, swing);
 }
 
