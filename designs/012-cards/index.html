@@ -155,9 +155,11 @@ header .note{margin-top:2.4em; font-size:clamp(10px,1.2vw,12px); color:var(--dim
 .card .back{background:none; border:0; font:inherit; color:var(--cacc); cursor:pointer; padding:0;
   font-weight:700; letter-spacing:.04em}
 .card .back:hover{color:var(--cink)}
-/* **仮**（本人：「カードにした後についてはまだ決めてない……仮で適当に」）。
-   いまは**戻せるだけ**。次に何を置くかは決まっていない */
-.card .tmp{color:#8b9a90; letter-spacing:.04em}
+/* ここが**仮**（本人：「カードにした後についてはまだ決めてない……仮で適当に」）。
+   いまは戻せるだけ。次に何を置くかは決まっていない。
+   ——一度「（このあとどうするかは、まだ決めていない）」と**画面に書いた。消した。**
+   あれは**こちらから本人への申し送り**であって、サイトを見る人には意味がない。
+   仮であることは NOTES に書けば足りる */
 
 footer{border-top:1px solid var(--line); padding:clamp(40px,8vh,80px) 0 clamp(60px,12vh,120px);
   font-size:clamp(10px,1.2vw,12px); color:var(--dim2); line-height:2.2}
@@ -450,8 +452,7 @@ host.innerHTML = CHS.map(function(c){
     +     '<div class="k">' + c.card.k + '</div>'
     +     '<p class="lead">' + esc(c.card.lead) + '</p>'
     +     '<ul>' + pts + '</ul>'
-    +     '<div class="foot"><button class="back">← もとの文にもどす</button>'
-    +       '<span class="tmp">（このあとどうするかは、まだ決めていない）</span></div>'
+    +     '<div class="foot"><button class="back">← もとの文にもどす</button></div>'
     +   '</div>'
     + '</section>';
 }).join('');
