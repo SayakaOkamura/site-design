@@ -109,6 +109,21 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 }
 #hero.on .heroico{animation:none; border-color:var(--line); color:var(--dim2); box-shadow:none}
 
+/* **ここだけは言葉で言う**（2026-09-15、本人：「チュートリアルとして、
+   **ここをクリックみたいなやつをタイトルにだけ**つけちゃってもいい」）。
+   **先頭の一つだけ。**章には付けない——一度教われば、同じ形は同じことをする。
+   壁の上に置くので**地の色を敷く**（字の上に字を重ねると読めない）。
+   明滅は **1 から下げる**だけ——0 から上げると、動きが走らない場で出ないまま終わる */
+.heroclue{position:absolute; z-index:4; white-space:nowrap; pointer-events:none;
+  left:calc(clamp(44px,5vw,58px) + clamp(8px,1vw,13px));
+  top:calc(clamp(44px,5vw,58px) / 2 - .75em);
+  padding:2px 7px; background:var(--bg); color:var(--hot);
+  font-size:clamp(10.5px,1.15vw,13px); letter-spacing:.06em;
+  animation:clue 2.4s ease-in-out infinite}
+@keyframes clue{ 0%,100%{opacity:1} 50%{opacity:.55} }
+/* 一度でも押したら消す（戻しても出さない——もう教わっている） */
+#hero.taught .heroclue{animation:none; opacity:0; transition:opacity .45s}
+
 /* ─ 章 ───────────────────────────────────────────────────── */
 .ch{position:relative; border-top:1px solid var(--line);
   padding:clamp(28px,6vh,56px) 0 clamp(40px,9vh,90px)}
@@ -227,6 +242,7 @@ footer a:hover{color:var(--on)}
   <header>
     <div id="hero">
       <div class="ico heroico" role="button" tabindex="0" aria-label="まとめる"><b>◆</b></div>
+      <div class="heroclue">◀ ここを押す</div>
       <div class="noise a"><div class="col" id="noiseA"></div></div>
       <div class="nameline">
         <div class="en">ALTER DESIGN CONSULTING</div>
@@ -559,7 +575,11 @@ document.addEventListener('click', function(e){
 document.addEventListener('keydown', function(e){
   if (e.key !== 'Enter' && e.key !== ' ') return;
   var ico = e.target.closest && e.target.closest('.ico');
-  if (ico){ e.preventDefault(); fold(ico.closest('.ch')); }
+  if (!ico) return;
+  e.preventDefault();
+  /* 先頭の印は章に属していない。**同じ鍵で同じことが起きる**ようにしておく */
+  if (ico.classList.contains('heroico')){ ico.click(); return; }
+  fold(ico.closest('.ch'));
 });
 
 /* はじめは畳まれていない。**壁のまま**置いておく */
@@ -625,6 +645,7 @@ function heroUnfold(){
 }
 /* 押せば何度でも見られる。**気づいた人が確かめられる**ように */
 hero.querySelector('.heroico').addEventListener('click', function(){
+  hero.classList.add('taught');   /* 一度押されたら、案内は引っ込める */
   hero.classList.contains('on') ? heroUnfold() : heroFold();
 });
 
