@@ -59,13 +59,21 @@ header .tag{margin-top:1.2em; font-size:clamp(12px,1.5vw,15px); color:var(--on);
 header .note{margin-top:2.4em; font-size:clamp(10px,1.2vw,12px); color:var(--dim2); line-height:2}
 
 /* ─ 章 ───────────────────────────────────────────────────── */
-.ch{position:relative; border-top:1px solid var(--line); padding:clamp(28px,6vh,56px) 0 clamp(40px,9vh,90px)}
-.ch h2{margin:0 0 1.6em; font-size:clamp(12px,1.4vw,14px); letter-spacing:.3em; color:var(--dim);
+.ch{position:relative; border-top:1px solid var(--line);
+  padding:clamp(28px,6vh,56px) 0 clamp(40px,9vh,90px)}
+.ch::after{content:''; display:block; clear:both}
+
+/* **章の頭を左上に浮かせて、本文をそのまわりに回す**
+   （2026-09-15、本人：「教科書の章はじめとか、左上の章タイトルと、
+   それを囲むように文字が配置されてるでしょ。あんな感じ」）。
+   `float` なので、**文字のほうが避けて流れる**——枠を切って並べるのとは形が違う */
+.head{float:left; width:clamp(128px,17vw,200px);
+  margin:0 clamp(16px,2vw,26px) clamp(8px,1vh,14px) 0}
+.ch h2{margin:.9em 0 0; font-size:clamp(12px,1.4vw,14px); letter-spacing:.3em; color:var(--dim);
   font-weight:400}
 
-/* 発光する印。**押すところ**。右上に置く */
-.ico{position:absolute; top:clamp(24px,5vh,48px); right:0; z-index:3;
-  width:clamp(44px,5vw,58px); height:clamp(44px,5vw,58px);
+/* 発光する印。**押すところ**。章の頭に、題と並べて置く */
+.ico{width:clamp(44px,5vw,58px); height:clamp(44px,5vw,58px);
   display:flex; align-items:center; justify-content:center;
   border:1px solid var(--dim); background:var(--bg2); color:var(--hot);
   font-size:clamp(17px,2vw,22px); cursor:pointer; user-select:none;
@@ -82,20 +90,29 @@ header .note{margin-top:2.4em; font-size:clamp(10px,1.2vw,12px); color:var(--dim
 
 /* ─ 生の本文。**読みにくいまま置く** ─────────────────────── */
 /* 高さを畳むのは**字が消えはじめてから**（.22s 遅らせる）。
-   同時に始めると、外枠が縮むほうが速くて、字が畳まれる様子が見えない */
-.raw{overflow:hidden; transition:max-height .7s cubic-bezier(.3,.7,.2,1) .22s}
-.raw .col{columns:2; column-gap:clamp(20px,4vw,48px); padding-right:clamp(56px,7vw,80px)}
-.raw .ln{display:block; font-size:clamp(10.5px,1.05vw,12.5px); line-height:1.9;
-  letter-spacing:.01em; white-space:pre-wrap;
-  transition:opacity .34s ease, transform .34s ease, filter .34s ease}
+   同時に始めると、外枠が縮むほうが速くて、字が畳まれる様子が見えない。
+
+   **`overflow:hidden` は付けない。**付けると新しい整形文脈ができて、
+   **左に浮かせた章の頭に文字が回り込まなくなる**（箱ごと横に避けてしまう）。
+   はみ出すぶんは、そのころには字が透明になっているので見えない */
+.raw{transition:max-height .7s cubic-bezier(.3,.7,.2,1) .22s}
+.ch.on .raw{pointer-events:none}
+/* **段に切らない**（本人：「二段にすらしなくていい」「行数減ってもいいから」）。
+   一本の流れにして、**両端をそろえて詰める。**字間も行間も削る——
+   段に切ると隙間が一本できて、そのぶん「みちみち」でなくなる */
+.raw .col{text-align:justify; text-justify:inter-character;
+  font-size:clamp(10.5px,1.02vw,12px); line-height:1.62; letter-spacing:-.01em}
+.raw .p{margin:0 0 .8em}
+/* 畳む単位は**一文**。行ではなく文で消えていく（行は流れて決まるので掴めない） */
+.raw .ln{transition:opacity .34s ease, filter .34s ease}
 .raw .ln:nth-child(3n){color:var(--dim2)}   /* **むらを作る**。均一だと壁に見えない */
-.ch.on .raw .ln{opacity:0; transform:translateY(-8px) scaleY(.7); filter:blur(2px)}
+.ch.on .raw .ln{opacity:0; filter:blur(2px)}
 
 /* ─ まとまったカード ─────────────────────────────────────── */
 /* **出ていないあいだは場所も取らない**（`display:none`）。
    opacity だけで隠すと、壁の下にカード一枚ぶんの空白が居座る。
    `display` は動かせないので、出すときは JS で先に置いてから `.on` を付ける */
-.card{display:none; position:relative; opacity:0; transform:translateY(14px) scale(.985);
+.card{display:none; clear:both; position:relative; opacity:0; transform:translateY(14px) scale(.985);
   transition:opacity .5s ease .3s, transform .5s cubic-bezier(.2,.8,.2,1) .3s;
   background:linear-gradient(180deg,#081119,#060c11);
   border:1px solid #1d5432; border-left:3px solid var(--on);
@@ -124,7 +141,8 @@ footer a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--l
 footer a:hover{color:var(--on)}
 
 @media (max-width:760px){
-  .raw .col{columns:1; padding-right:clamp(52px,14vw,64px)}
+  .head{width:clamp(104px,30vw,150px); margin-right:clamp(12px,3vw,18px)}
+  .raw .col{font-size:11px; line-height:1.66}
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
 </style>
@@ -384,15 +402,25 @@ contact@alt-dsgn.co.jp
    改行がそのまま**畳む単位**になる */
 var host = document.getElementById('chs');
 host.innerHTML = CHS.map(function(c){
-  var lines = c.raw.split('\n').map(function(t){
-    return '<span class="ln">' + (t === '' ? '&nbsp;' : esc(t)) + '</span>';
+  /* **改行では切らない。**空行で段落に割り、段落の中は一続きにして、
+     **文（。）で span に分ける**——畳むときの単位が「文」になる。
+     行は幅で決まるので掴めないが、文なら掴める */
+  var lines = c.raw.split(/\n{2,}/).map(function(para){
+    var body = para.replace(/\n/g, '').split('。')
+      .filter(function(t){ return t !== ''; })
+      .map(function(t, i, a){
+        return '<span class="ln">' + esc(t) + (i < a.length - 1 || /。$/.test(para) ? '。' : '') + '</span>';
+      }).join('');
+    return '<p class="p">' + body + '</p>';
   }).join('');
   var pts = c.card.points.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('');
   return ''
     + '<section class="ch" data-k="' + c.key + '">'
-    +   '<div class="ico" role="button" tabindex="0" aria-label="' + c.title + 'をまとめる">'
-    +     '<b>' + c.icon + '</b></div>'
-    +   '<h2>' + esc(c.title) + '</h2>'
+    +   '<div class="head">'
+    +     '<div class="ico" role="button" tabindex="0" aria-label="' + c.title + 'をまとめる">'
+    +       '<b>' + c.icon + '</b></div>'
+    +     '<h2>' + esc(c.title) + '</h2>'
+    +   '</div>'
     +   '<div class="raw"><div class="col">' + lines + '</div></div>'
     +   '<div class="card">'
     +     '<div class="k">' + c.card.k + '</div>'
