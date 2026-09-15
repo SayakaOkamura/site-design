@@ -56,13 +56,52 @@ body::after{content:''; position:fixed; inset:0; z-index:9; pointer-events:none;
 
 .wrap{max-width:1100px; margin:0 auto; padding:0 clamp(16px,5vw,56px)}
 
-/* ─ 名乗り ───────────────────────────────────────────────── */
-header{padding:clamp(60px,14vh,140px) 0 clamp(40px,8vh,80px)}
-header .en{font-size:clamp(11px,1.3vw,13px); letter-spacing:.34em; color:var(--dim)}
-header h1{margin:.6em 0 0; font-size:clamp(17px,2.4vw,26px); letter-spacing:.08em; color:var(--hot);
-  font-weight:400}
-header .tag{margin-top:1.2em; font-size:clamp(12px,1.5vw,15px); color:var(--on); letter-spacing:.04em}
-header .note{margin-top:2.4em; font-size:clamp(10px,1.2vw,12px); color:var(--dim2); line-height:2}
+/* ─ 名乗り。**ここが手本になる** ─────────────────────────────
+   （2026-09-15、本人：「言葉にはしたくないけど気付かせたい。
+   パッと見たときに**え！？**ってなってほしい。……最初の**会社名だけギリギリわかる**ように
+   しておいて、**会社名の周りについてる文字とかを綺麗にまとめるチュートリアル**的なものが
+   必要かな」）。
+
+   **開くと、社名が字に埋もれている。**少ししてから、周りの字がひとりでに集まって消え、
+   社名だけが残って明るくなる。**印が一度光るのは、その瞬間。**
+   これを見たあとなら、章の印は「押すとあれが起きるもの」に見える——**言葉を足さずに済む。** */
+header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
+#hero{position:relative}
+/* 埋もれている字。畳むのは `.raw` と同じ作法 */
+.noise{overflow:hidden; transition:max-height .75s cubic-bezier(.3,.7,.2,1) .18s}
+.noise .col{text-align:justify; text-justify:inter-character; color:var(--dim2);
+  font-size:clamp(10.5px,1.02vw,12px); line-height:1.62; letter-spacing:-.01em}
+.noise .ln{transition:opacity .34s ease, filter .34s ease}
+#hero.on .noise .ln{opacity:0; filter:blur(2px)}
+.noise.a .col{padding-left:clamp(56px,7vw,86px)}   /* 印のぶんだけ空ける */
+
+/* 社名。**はじめはギリギリ**。埋もれている字と同じ暗さで、大きさだけが違う */
+/* **印の右へ寄せる。**畳んだあと名乗りが一番上に来るので、
+   寄せていないと印と社名が重なる（画面で分かった）。
+   章の並び（左に印、右に字）とも揃う */
+.nameline{padding:clamp(10px,1.6vh,18px) 0 clamp(10px,1.6vh,18px) clamp(56px,7vw,86px);
+  transition:padding .5s ease}
+#hero.on .nameline{padding:clamp(2px,.6vh,6px) 0 clamp(14px,2vh,22px) clamp(56px,7vw,86px)}
+.nameline .en{font-size:clamp(11px,1.3vw,13px); letter-spacing:.34em; color:var(--dim2);
+  transition:color .5s ease .25s}
+.nameline h1{margin:.6em 0 0; font-size:clamp(17px,2.4vw,26px); letter-spacing:.08em;
+  color:var(--dim); font-weight:400; transition:color .5s ease .25s, text-shadow .5s ease .25s}
+.nameline .tag{margin-top:1.1em; font-size:clamp(12px,1.5vw,15px); color:var(--dim2);
+  letter-spacing:.04em; transition:color .5s ease .35s}
+#hero.on .nameline .en{color:var(--dim)}
+#hero.on .nameline h1{color:var(--hot); text-shadow:0 0 22px rgba(125,240,164,.18)}
+#hero.on .nameline .tag{color:var(--on)}
+
+/* 手本の印。章のものと**同じ形**。ここで一度だけ強く光る */
+.heroico{position:absolute; top:0; left:0; z-index:3}
+.heroico.flash{animation:flash .5s steps(4) 1 !important}
+@keyframes flash{
+  0%  { box-shadow:0 0 0 0 rgba(125,240,164,.0);  border-color:var(--dim) }
+  40% { box-shadow:0 0 34px 6px rgba(125,240,164,.65), 0 0 22px 0 rgba(125,240,164,.5) inset;
+        border-color:#fff }
+  100%{ box-shadow:0 0 0 0 rgba(125,240,164,.0);  border-color:var(--line) }
+}
+#hero.on .heroico{animation:none; border-color:var(--line); color:var(--dim2); box-shadow:none}
 
 /* ─ 章 ───────────────────────────────────────────────────── */
 .ch{position:relative; border-top:1px solid var(--line);
@@ -176,10 +215,16 @@ footer a:hover{color:var(--on)}
 <div class="wrap">
 
   <header>
-    <div class="en">ALTER DESIGN CONSULTING</div>
-    <h1>株式会社アルターデザインコンサルティング</h1>
-    <div class="tag">AI × ローコードで、「上流工程中心のシステム開発」に革新を</div>
-    <div class="note">各章の左上の印を押すと、そこまでの文が一枚にまとまります。</div>
+    <div id="hero">
+      <div class="ico heroico" role="button" tabindex="0" aria-label="まとめる"><b>◆</b></div>
+      <div class="noise a"><div class="col" id="noiseA"></div></div>
+      <div class="nameline">
+        <div class="en">ALTER DESIGN CONSULTING</div>
+        <h1>株式会社アルターデザインコンサルティング</h1>
+        <div class="tag">AI × ローコードで、「上流工程中心のシステム開発」に革新を</div>
+      </div>
+      <div class="noise b"><div class="col" id="noiseB"></div></div>
+    </div>
   </header>
 
   <main id="chs"></main>
@@ -509,4 +554,76 @@ document.addEventListener('keydown', function(e){
 
 /* はじめは畳まれていない。**壁のまま**置いておく */
 [].slice.call(document.querySelectorAll('.raw')).forEach(function(r){ r.style.maxHeight = ''; });
+
+/* ─ 手本（2026-09-15）───────────────────────────────────────
+   **言葉で教えない。**開いた画面で一度だけ、ひとりでにやって見せる。
+   社名が字に埋もれている → 印が光る → 周りの字が集まって消える → 社名だけ残る。
+   これを見たあとなら、章の印は**押すとあれが起きるもの**に見える。
+
+   埋もれさせる字は、**この会社の言葉から取る。**意味のない記号を敷くと
+   「壊れている画面」になって、**え！？が不安のほうに倒れる。** */
+var BITS = [
+  '上流工程','決める','やらないことを決める','範囲','目的','使う人','手戻り','蒸し返し',
+  'ローコード','ノーコード','AI','意思決定','需要分析','未来予測','データ資産',
+  '組織設計','自律','共創','分業','協業','権限','評価','決裁','情報の見え方',
+  '遊ぶように働く','夢中','自発的','創造','やらされる','やりたい','没頭',
+  '業務システム','ワークフロー','再設計','効率化','判断','迷い','速さ',
+  '地域','自治体','人材育成','デジタル','東京都港区西新橋','御成門',
+  '株式会社アルターデザインコンサルティング','2025 年 6 月','経営の力で','デザインする'
+];
+(function(){
+  /* 決まった順で並べる（毎回ちがうと、直すときに同じ絵が出せない）。
+     **下の桁は使わない**——最初これで作ったら、同じ語ばかり並んで
+     「壊れた画面」に見えた。上の桁を取ると散る */
+  function fill(el, n, seed){
+    var h = '', k = seed >>> 0;
+    for (var i = 0; i < n; i++){
+      k = (k * 1664525 + 1013904223) >>> 0;
+      h += '<span class="ln">' + BITS[(k >>> 17) % BITS.length] + '　</span>';
+    }
+    el.innerHTML = h;
+  }
+  fill(document.getElementById('noiseA'), 46, 7);
+  fill(document.getElementById('noiseB'), 58, 31);
+})();
+
+var hero = document.getElementById('hero');
+function heroFold(){
+  if (hero.classList.contains('on')) return;
+  var lns = [].slice.call(hero.querySelectorAll('.noise .ln'));
+  var mid = Math.max(1, (lns.length - 1) / 2);
+  lns.forEach(function(el, i){
+    el.style.transitionDelay = Math.round((1 - Math.abs(i - mid) / mid) * 280) + 'ms';
+  });
+  [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){
+    n.style.maxHeight = n.scrollHeight + 'px';
+  });
+  void hero.offsetHeight;
+  hero.classList.add('on');
+  [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){ n.style.maxHeight = '0px'; });
+}
+function heroUnfold(){
+  if (!hero.classList.contains('on')) return;
+  hero.classList.remove('on');
+  [].slice.call(hero.querySelectorAll('.noise .ln')).forEach(function(el, i){
+    el.style.transitionDelay = (i * 3) + 'ms';
+  });
+  [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){
+    n.style.maxHeight = n.scrollHeight + 'px';
+    setTimeout(function(){ n.style.maxHeight = ''; }, 900);
+  });
+}
+/* 押せば何度でも見られる。**気づいた人が確かめられる**ように */
+hero.querySelector('.heroico').addEventListener('click', function(){
+  hero.classList.contains('on') ? heroUnfold() : heroFold();
+});
+
+/* **少し置いてから。**すぐ畳むと、埋もれている絵を見ないうちに終わる——
+   え！？が起きるのは、**読めない状態を一度見てから** */
+if (!matchMedia('(prefers-reduced-motion:reduce)').matches){
+  setTimeout(function(){ hero.querySelector('.heroico').classList.add('flash'); }, 1700);
+  setTimeout(heroFold, 1950);
+} else {
+  heroFold();
+}
 </script>
