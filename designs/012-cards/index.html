@@ -73,6 +73,12 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
   font-size:clamp(10.5px,1.02vw,12px); line-height:1.62; letter-spacing:-.01em}
 .noise .ln{transition:opacity .34s ease, filter .34s ease}
 #hero.on .noise .ln{opacity:0; filter:blur(2px)}
+/* **近づくと反応する。**印に触れているあいだ、まわりの字が薄れる——
+   畳まないので、押したら何が起きるかだけが分かる。**やるのは相手** */
+.heroico:hover ~ .noise .ln,
+.heroico:focus-visible ~ .noise .ln{opacity:.4; filter:blur(1.2px)}
+/* 一度だけの身じろぎ。**畳みきらない** */
+#hero.twitch:not(.on) .noise .ln{opacity:.35; filter:blur(1.4px); transition-delay:0s !important}
 .noise.a .col{padding-left:clamp(56px,7vw,86px)}   /* 印のぶんだけ空ける */
 
 /* 社名。**はじめはギリギリ**。埋もれている字と同じ暗さで、大きさだけが違う */
@@ -136,6 +142,10 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 }
 .ico:hover{border-color:var(--hot); color:#fff}
 .ch.on .ico{animation:none; border-color:var(--line); color:var(--dim2); box-shadow:none}
+/* 章でも**近づくと反応する**。印に触れているあいだ、壁が薄れる。
+   `:has()` を使うのは、印が `.head` の中にいて `.raw` の兄弟ではないから */
+.ch:not(.on) .head:has(.ico:hover) ~ .raw .ln,
+.ch:not(.on) .head:has(.ico:focus-visible) ~ .raw .ln{opacity:.4; filter:blur(1.2px)}
 .ico b{font-weight:400; pointer-events:none}
 
 /* ─ 生の本文。**読みにくいまま置く** ─────────────────────── */
@@ -618,12 +628,24 @@ hero.querySelector('.heroico').addEventListener('click', function(){
   hero.classList.contains('on') ? heroUnfold() : heroFold();
 });
 
-/* **少し置いてから。**すぐ畳むと、埋もれている絵を見ないうちに終わる——
-   え！？が起きるのは、**読めない状態を一度見てから** */
-if (!matchMedia('(prefers-reduced-motion:reduce)').matches){
-  setTimeout(function(){ hero.querySelector('.heroico').classList.add('flash'); }, 1700);
-  setTimeout(heroFold, 1950);
-} else {
+/* **自動では畳まない**（2026-09-15、本人：「勝手に閉じられるとわからん」）。
+   こちらがやってしまうと、**自分にできることだと分からない**。
+   代わりに二つ——
+     **一度だけ身じろぎする**（2.2 秒。字がふっと薄くなって戻る）。
+       畳みきらないので「何か起きた」だけが残り、**やるのは相手**のまま
+     **近づくと反応する**（印に触れているあいだ、まわりの字が薄れる。CSS 側）
+   動きを止める設定のときは身じろぎも起きないので、**読める形で始める** */
+if (matchMedia('(prefers-reduced-motion:reduce)').matches){
   heroFold();
+} else {
+  setTimeout(function(){
+    var ic = hero.querySelector('.heroico');
+    ic.classList.add('flash');
+    hero.classList.add('twitch');
+    setTimeout(function(){
+      hero.classList.remove('twitch');
+      ic.classList.remove('flash');
+    }, 620);
+  }, 2200);
 }
 </script>
