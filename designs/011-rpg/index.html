@@ -27,24 +27,51 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <style>
-:root{
-  /* 夕日。**帯で切る**——なめらかな階調にしない（16bit は段が出る）。
-     一度目は紫と赤紫で**虹色**、二度目は紺から始めて**暗すぎた**、
-     ③橙だけにしたら**上が茶色くなって砂漠**（「というかいま**砂漠みたいになってる**ぞ」）。
-     ④ピンク寄りにしたら**ピンクでもない**（「**オレンジ系だけで収まらない？**」）。
-     ⑤明るさで段を作ったら**夕日として明るすぎた**（本人：「**明るさで作らないで、
-     夕日としては明るすぎる**これ」）。
+:root{ --px:4px; --line:#ffffff; --ink:#ffffff }
 
-     **軸は明るさではなく彩度。**茶になるのは**彩度が落ちたとき**で、明るさを下げたときではない。
-     `#7a3620`（砂漠）は彩度 60%、`#c23c0c`（いま）は**彩度 90%**——同じくらい暗いのに茶に見えない。
-     **空は濃い橙で通し、明るいのは太陽だけ。**段は彩度と明るさの**両方**を少しずつ動かす */
+/* ── 空は二つ持っている ───────────────────────────────────────
+   **既定は夜明け**（2026-09-15、本人：「企業ロゴは水色〜青〜紫なんだよな…」
+   →「そらごとのやつ。**戻せるようにはしておいて**」）。
+   ロゴ（`alt-dsgn.co.jp/images/logo.svg`）から拾った色で組んである——
+   #5d2e77 / #71599c（紫）→ #5354a2（青紫）→ #5376ab（青）→ #399ac5（水色）→ #00919c（青緑）。
+   空の上から下へ、そのまま**ロゴの並び**を降ろした。
+
+   **夕日に戻すには `<html data-sky="sunset">`。**一語で戻る。
+   夕日の値は下にそのまま残してある（消していない）。
+
+   夕日のときの学び（**軸は明るさではなく彩度**。落とすと茶になる）は、
+   そのまま効いている——紫と青も、彩度を落とすと灰になる。
+   帯で切るのも同じ。なめらかな階調にしない（16bit は段が出る） */
+:root{
+  --sky1:#331a5c;  --sky2:#452471;  --sky3:#5d2e77;
+  --sky4:#5354a2;  --sky5:#3f9ecb;  --sky6:#46c2cf;
+  /* 夜明けの陽。芯は白、外の輪は水色で縁を立てる */
+  --sun:#f4feff;   --sun2:#a8e8f0;
+  --glow1:rgba(70,194,207,.85); --glow2:rgba(63,158,203,.45); --glow3:rgba(83,84,162,.18);
+  --ray:rgba(45,140,180,.8);
+  --far:#20264f;   --hill:#161b3a;  --hero:#0b0e22;  --ground:#0f1329;  --ground2:#181e40;
+  --rim:#2b3566;   --win:#161b3a;   --box:#141a38;   --edge:#161b3a;
+  --dim:#c3d2f2;   --warm:#bfe9f5;  --go:#6fe0ef;
+}
+
+/* 夕日（前の案。**消していない**——`<html data-sky="sunset">` で戻る）。
+   一度目は紫と赤紫で**虹色**、二度目は紺から始めて**暗すぎた**、
+   ③橙だけにしたら**上が茶色くなって砂漠**（「というかいま**砂漠みたいになってる**ぞ」）。
+   ④ピンク寄りにしたら**ピンクでもない**（「**オレンジ系だけで収まらない？**」）。
+   ⑤明るさで段を作ったら**夕日として明るすぎた**（本人：「**明るさで作らないで、
+   夕日としては明るすぎる**これ」）。
+   `#7a3620`（砂漠）は彩度 60%、`#c23c0c`は**彩度 90%**——同じくらい暗いのに茶に見えない */
+:root[data-sky="sunset"]{
   --sky1:#c23c0c;  --sky2:#d5490e;  --sky3:#e65a11;
   --sky4:#f36e15;  --sky5:#fb851b;  --sky6:#ff9e26;
   --sun:#fff4cf;   --sun2:#ffcb5e;
+  --glow1:rgba(250,158,62,.85); --glow2:rgba(244,136,52,.45); --glow3:rgba(236,120,46,.18);
+  --ray:rgba(219,110,40,.8);
   --far:#3a2016;   --hill:#24130a;  --hero:#150b04;  --ground:#190d06;  --ground2:#24140c;
-  --win:#24130a;   --line:#ffffff;  --ink:#ffffff;     --dim:#e8c39a;
-  --go:#ffd270;    --px:4px;
+  --rim:#4a2a17;   --win:#24130a;   --box:#2a1408;   --edge:#24130a;
+  --dim:#e8c39a;   --warm:#ffe7ad;  --go:#ffd270;
 }
+
 *{box-sizing:border-box}
 html,body{height:100%; margin:0; overflow:hidden}      /* **スクロールしない** */
 body{
@@ -83,14 +110,14 @@ body{
   /* エンドロールを **`z-index:1` の後ろ**へ通すため、太陽は 1 → 0 にした
      （山と地面は 2 のままなので、前後の並びは変わらない）*/
   background:radial-gradient(circle closest-side at 50% 50%,
-    var(--sun) 0 50%, var(--sun2) 50% 66%, rgba(250,158,62,.85) 66% 80%,
-    rgba(244,136,52,.45) 80% 92%, rgba(236,120,46,.18) 92% 99%, transparent 100%);
+    var(--sun) 0 50%, var(--sun2) 50% 66%, var(--glow1) 66% 80%,
+    var(--glow2) 80% 92%, var(--glow3) 92% 99%, transparent 100%);
 }
 /* 太陽を横に切る帯（16bit の定番）。**丸の中だけ**——
    最初は四角いままで、縞の箱が空に浮いて見えた */
 #sun::after{content:''; position:absolute; inset:0; opacity:.45;
   background:repeating-linear-gradient(180deg,
-    transparent 0 calc(var(--px)*3), rgba(219,110,40,.8) calc(var(--px)*3) calc(var(--px)*4));
+    transparent 0 calc(var(--px)*3), var(--ray) calc(var(--px)*3) calc(var(--px)*4));
   -webkit-mask:radial-gradient(circle at 50% 50%, #000 0 47%, transparent 49%);
           mask:radial-gradient(circle at 50% 50%, #000 0 47%, transparent 49%);
 }
@@ -103,21 +130,29 @@ body{
 #far{position:absolute; left:0; right:0; bottom:20%; height:8vh; overflow:hidden; z-index:2}
 /* **同じ三角の繰り返しをやめた**（2026-09-14）。`conic-gradient` だと片側が
    垂直に切れて、**階段（歯車の刃）**に見えた。稜線を一本引いて、高さを散らす */
+/* **稜線は型として使う**（2026-09-15）。前は SVG の中に色を書いていたので、
+   空を差し替えても**山だけ茶色のまま**残った。色は変数から、形は型から */
 #far .band{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L18 26 L34 60 L52 14 L76 60 L96 32 L112 60 L134 8 L162 60 L182 30 L200 60 Z' fill='%233a2016'/%3E%3C/svg%3E");
-  background-size:520px 100%;
+  background-color:var(--far);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L18 26 L34 60 L52 14 L76 60 L96 32 L112 60 L134 8 L162 60 L182 30 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
+          mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L18 26 L34 60 L52 14 L76 60 L96 32 L112 60 L134 8 L162 60 L182 30 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
+  -webkit-mask-size:520px 100%;  mask-size:520px 100%;
+  -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x;
   animation-duration:38s;
 }
 #near{position:absolute; left:0; right:0; bottom:20%; height:5vh; overflow:hidden; z-index:2}
 #near .band{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L24 22 L46 60 L70 34 L92 60 L118 18 L146 60 L170 38 L200 60 Z' fill='%2324130a'/%3E%3C/svg%3E");
-  background-size:340px 100%;
+  background-color:var(--hill);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L24 22 L46 60 L70 34 L92 60 L118 18 L146 60 L170 38 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
+          mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L24 22 L46 60 L70 34 L92 60 L118 18 L146 60 L170 38 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
+  -webkit-mask-size:340px 100%;  mask-size:340px 100%;
+  -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x;
   animation-duration:19s;
 }
 
 /* ─ 地面。**ここより下が足もと** ────────────────────────────── */
 #ground{position:absolute; left:0; right:0; bottom:0; height:20%; z-index:2;
-  background:var(--ground); border-top:var(--px) solid #4a2a17}
+  background:var(--ground); border-top:var(--px) solid var(--rim)}
 #ground .band{
   height:var(--px); top:calc(var(--px)*3);
   background-image:repeating-linear-gradient(90deg,
@@ -174,10 +209,10 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
    にじませず、四方に 2px の濃い縁を置く（16bit の作法）*/
 #name{position:absolute; left:clamp(16px,4vw,54px); top:clamp(14px,3.2vh,30px); z-index:4;
   font-size:clamp(11px,1.3vw,13.5px); letter-spacing:.1em; color:var(--ink);
-  text-shadow:2px 0 0 #24130a, -2px 0 0 #24130a, 0 2px 0 #24130a, 0 -2px 0 #24130a,
-              2px 2px 0 #24130a, -2px 2px 0 #24130a, 2px -2px 0 #24130a, -2px -2px 0 #24130a}
+  text-shadow:2px 0 0 var(--edge), -2px 0 0 var(--edge), 0 2px 0 var(--edge), 0 -2px 0 var(--edge),
+              2px 2px 0 var(--edge), -2px 2px 0 var(--edge), 2px -2px 0 var(--edge), -2px -2px 0 var(--edge)}
 #name b{display:block; font-size:clamp(13px,1.7vw,18px); letter-spacing:.06em; margin-top:4px}
-#tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,1.25vw,13px); color:#ffe7ad; letter-spacing:.04em}
+#tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,1.25vw,13px); color:var(--warm); letter-spacing:.04em}
 
 /* ─ ポップアップ。**送りは ▼**（枠内スクロールはしない）─────────
    **右上の真ん中あたりへ**（2026-09-14、本人：「下じゃなくて右に出せない？」
@@ -245,8 +280,8 @@ body.demo #demo{display:block}
 #dBang{position:absolute; left:34%; bottom:calc(20% + 140px); z-index:8; display:none;
   transform:translateX(-50%); font-size:clamp(26px,3.6vw,40px); font-weight:700;
   letter-spacing:.04em; color:var(--go);
-  text-shadow:3px 0 0 #24130a, -3px 0 0 #24130a, 0 3px 0 #24130a, 0 -3px 0 #24130a,
-              3px 3px 0 #24130a, -3px 3px 0 #24130a, 3px -3px 0 #24130a, -3px -3px 0 #24130a}
+  text-shadow:3px 0 0 var(--edge), -3px 0 0 var(--edge), 0 3px 0 var(--edge), 0 -3px 0 var(--edge),
+              3px 3px 0 var(--edge), -3px 3px 0 var(--edge), 3px -3px 0 var(--edge), -3px -3px 0 var(--edge)}
 /* **大きいところから出して、縮めて収める**（2026-09-15、本人：「びっくりの出が遅い」）。
    前は scale(.25) から育てていたので、**最初の 90ms がほぼ見えていなかった**——
    出てはいるのに、目に入るころには遅れて見える。**出た瞬間から大きい**ほうが速い。
@@ -277,7 +312,7 @@ body.demo #slime{display:block}
   /* `box-sizing:border-box` なので、**高さに枠と余白が食われる。**
      14px だと中身が 2px しか残らず、空の箱に見えた（画面で分かった） */
   transform:translateX(-50%); width:108px; height:22px; display:none;
-  background:#2a1408; border:var(--px) solid var(--line); padding:2px;
+  background:var(--box); border:var(--px) solid var(--line); padding:2px;
   box-shadow:0 0 0 var(--px) rgba(0,0,0,.45)}
 body.demo #dHp{display:block}
 #dHp i{display:block; height:100%; width:100%; background:var(--go);
@@ -368,7 +403,7 @@ body.roll #dRoll{display:block}
 /* 社名の前だけ**大きくあける。**止まったときに前の文が画面に残っていると、
    社名が「最後の一枚」に見えない */
 #dRollIn .gapx{height:clamp(240px,44vh,420px)}
-#dRollIn .tag{color:#ffe7ad; font-size:clamp(13px,1.7vw,17px); font-weight:700; line-height:2.2}
+#dRollIn .tag{color:var(--warm); font-size:clamp(13px,1.7vw,17px); font-weight:700; line-height:2.2}
 #dRollIn .en{font-size:clamp(14px,2.2vw,24px); letter-spacing:.22em; font-weight:700}
 #dRollIn .ja{font-size:clamp(12px,1.6vw,17px); letter-spacing:.08em; font-weight:700;
   margin-top:calc(var(--px)*2)}
@@ -378,8 +413,8 @@ body.roll #dRoll{display:block}
 #dWon{position:absolute; left:0; right:0; top:36%; z-index:9; display:none;
   text-align:center; font-size:clamp(20px,4vw,40px); font-weight:700; letter-spacing:.14em;
   color:var(--ink);
-  text-shadow:3px 0 0 #24130a, -3px 0 0 #24130a, 0 3px 0 #24130a, 0 -3px 0 #24130a,
-              3px 3px 0 #24130a, -3px 3px 0 #24130a, 3px -3px 0 #24130a, -3px -3px 0 #24130a}
+  text-shadow:3px 0 0 var(--edge), -3px 0 0 var(--edge), 0 3px 0 var(--edge), 0 -3px 0 var(--edge),
+              3px 3px 0 var(--edge), -3px 3px 0 var(--edge), 3px -3px 0 var(--edge), -3px -3px 0 var(--edge)}
 /* **`both` は付けない**——アニメが走らない場（裏の窓、動きを止める設定）で
    from（透明）のまま固まって、文字が出ない。素の状態を「見えている」にしておく */
 #dWon.on{display:block; animation:won .34s steps(3)}
@@ -420,7 +455,7 @@ body.roll #dRoll{display:block}
   font-size:clamp(12px,1.4vw,14px); font-weight:700}
 /* 選んでいるほうは**塗る。**縁の色だけだと、どちらを選んでいるか分からなかった */
 body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
-  background:var(--go); border-color:var(--go); color:#24130a}
+  background:var(--go); border-color:var(--go); color:var(--edge)}
 
 @media (max-width:640px){
   /* 狭い窓では下へ。ただし**打ち込む帯（下 20%）より上**に置く */
