@@ -230,18 +230,30 @@ body.demo #slime{display:block}
 #slash{position:absolute; left:66%; bottom:20%; z-index:8;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
 #slash.on{display:block}
-/* 体力。**数字は出さない**——印を三つ消していくだけ */
-/* **体力は敵の頭の上**——中に置くと塊に埋もれる（画面で分かった） */
+/* 体力。**バーにする**（2026-09-15、本人：「普通に HP バーの方がわかりやすいかな」）。
+   前は ◆ を三つ消していた——数えないと分からないし、三つが何の三つか読めなかった。
+   **敵の頭の上**に置く（中に置くと塊に埋もれる）。数字は出さない */
 #dHp{position:absolute; left:66%; bottom:calc(20% + 70px); z-index:8;
-  transform:translateX(-50%); display:none; gap:6px; letter-spacing:.35em;
-  font-size:14px; color:var(--go)}
-body.demo #dHp{display:flex}
+  /* `box-sizing:border-box` なので、**高さに枠と余白が食われる。**
+     14px だと中身が 2px しか残らず、空の箱に見えた（画面で分かった） */
+  transform:translateX(-50%); width:108px; height:22px; display:none;
+  background:#2a1408; border:var(--px) solid var(--line); padding:2px;
+  box-shadow:0 0 0 var(--px) rgba(0,0,0,.45)}
+body.demo #dHp{display:block}
+#dHp i{display:block; height:100%; width:100%; background:var(--go);
+  transition:width .3s steps(4)}
 
 /* 質問の窓。**メニューと同じ場所・同じ形** */
 /* 三択は**概要と同じ場所**（2026-09-15、本人：「コマンド右にして。概要とかと同じ位置」）。
    窓が回ごとに別の場所に出ると、目が左右に振られる。**読む場所は一つ**にする */
-#dWin{position:absolute; right:clamp(28px,9vw,120px); top:17%;
+/* 場所は概要と同じ右。**高さだけ下げた**（2026-09-15、本人：「文字盤もうちょっと下」）——
+   17% だと空の上のほうに浮いて、下の戦いと離れて見えた。
+   概要（`#pop`）は 17% のまま。あれは 9/14 に**上げた**もので、下げ戻さない */
+#dWin{position:absolute; right:clamp(28px,9vw,120px); top:25%;
   z-index:8; width:min(46vw,520px)}
+/* **低い窓では下げない。**511px の高さで測ると、下げたぶん窓の裾が
+   敵の体力バーに乗った。背の低い画面では元の高さのまま */
+@media (max-height:640px){ #dWin{top:16%} }
 #dWin .rt{margin:0}
 #dStep{margin:0 0 calc(var(--px)*1.5); font-size:11px; letter-spacing:.12em; color:var(--dim)}
 #dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,15px); font-weight:700;
@@ -368,7 +380,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <div id="dTopic"></div>
     <canvas id="slime"></canvas>
     <canvas id="slash"></canvas>
-    <div id="dHp"></div>
+    <div id="dHp"><i></i></div>
     <!-- 質問と三択。**メニューと同じ場所に出す**——左は「いつもコマンドがある側」 -->
     <nav id="dWin" class="win">
       <p id="dStep"></p>
@@ -1025,7 +1037,7 @@ function quitDemo(){
   paintSel();
 }
 function paintHp(){
-  dHp.textContent = '◆◆◆'.slice(0, D.hp) + '◇◇◇'.slice(0, 3 - D.hp);
+  dHp.firstChild.style.width = (D.hp / 3 * 100) + '%';
 }
 /* 三択を出す。**メニューと同じ形**——左に並べて、▶ が一つだけ動く */
 function ask(step, q, list){
