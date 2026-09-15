@@ -527,27 +527,14 @@ function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/
 /* ─ 畳む／ひらく ────────────────────────────────────────────
    **外から内へ順に消す。**端から順だと「上から流れた」に見えるが、
    まとまる感じにならない。中心へ寄せると「集まった」に見える */
-/* ─ 収束 ───────────────────────────────────────────────────
-   **文字の現れ方のほうを見せる**（2026-09-15、本人：「文字の現れ方の話やね」）。
-   ぱっと出すのではなく、**頭から一字ずつ定まっていく。**
-   定まっていない字に何を出すかは、**その章の壁から借りる**——
-   よその記号を持ってくると「壊れた画面」になるが、
-   同じ文の字なら「**まだ decode できていない**」に見える。
-   （映画の意匠そのもの＝反転した半角カナの字並びは使わない。借りるのは作法だけ）
+/* ─ 上から順に出す ────────────────────────────────────────
+   **化けるのはやめた**（2026-09-15、本人：「これモーション自体が**列で揺れてる**からそう見えるのか。
+   **単純に読みにくいかも**」）。
+   一字ずつ毎こま別の字に入れ替えていたので、**行がガタガタ震えて**いた。
+   震えの正体は「**読めない字が動いている**」ことなので、回数を落としても質は変わらない。
+   → **行が上から順に点いていくだけ。**押したことと結果の繋がりは、これで足りる。
 
-   **字数は変えない。**入れ替えるだけなので、行が伸び縮みしない */
-var POOL = {}, LATIN = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-function poolOf(ch){
-  var k = ch.dataset.k;
-  if (!POOL[k]){
-    var t = ch.querySelector('.raw').textContent.replace(/[s　]/g, '');
-    var seen = {}, out = '';
-    for (var i = 0; i < t.length; i++){ if (!seen[t[i]]){ seen[t[i]] = 1; out += t[i]; } }
-    POOL[k] = out || '0';
-  }
-  return POOL[k];
-}
-/* **一字ずつ span に分ける。**行ごとにまとめて出したいので、
+   **一字ずつ span に分ける**のは残す。行ごとにまとめて出したいので、
    どの字がどの行にいるかを測れるようにしておく（行は幅で決まるので、出す直前に測る） */
 function cells(el){
   if (el._cs) return el._cs;
@@ -575,57 +562,23 @@ function rowsOf(el){
   return rows;
 }
 function plainEl(el){
-  el._seq = (el._seq || 0) + 1;      /* 走っている化けを降ろす */
-  var t = el.getAttribute('data-t');
-  if (t === null) return;
-  if (el._cs) el._cs.forEach(function(sp, i){ sp.textContent = t.charAt(i); sp.classList.remove('h'); });
-  else el.textContent = t;
+  el._seq = (el._seq || 0) + 1;
+  if (el._cs) el._cs.forEach(function(sp){ sp.classList.remove('h'); });
   el.classList.remove('wait');
 }
-
-/* **上から下へ。行ごと**（2026-09-15、本人：「文字のモーションが左から右に入るでしょ。
-   あれ**上から下**にしてほしい」）。
-   一字ずつ左から定めていくと、**横に走る線**が見える。そうではなく、
-   **一行まるごとが同時に定まって、次の行へ落ちていく。**
-   行の中に向きは無く、向きは**下向きだけ**になる */
-function resolve(ch, el, pool, rows, rowMs, gap){
-  var t = el.getAttribute('data-t'), cs = cells(el);
-  var run = ch.dataset.run, my = el._seq = (el._seq || 0) + 1;
-  function fix(row){ row.forEach(function(i){ cs[i].textContent = t.charAt(i); }); }
+function resolve(ch, el, rows, step){
+  var cs = cells(el), run = ch.dataset.run, my = el._seq = (el._seq || 0) + 1;
   cs.forEach(function(sp){ sp.classList.add('h'); });
   el.classList.remove('wait');
   rows.forEach(function(row, r){
     setTimeout(function(){
       if (ch.dataset.run !== run || el._seq !== my) return;
-      if (r) fix(rows[r - 1]);                     /* 前の行はここで必ず決める */
       row.forEach(function(i){ cs[i].classList.remove('h'); });
-      var t0 = 0;
-      function tick(now){
-        if (ch.dataset.run !== run || el._seq !== my) return;
-        if (!t0) t0 = now;
-        var p = (now - t0) / rowMs;
-        if (p >= 1){ fix(row); return; }
-        row.forEach(function(i){
-          var c = t.charAt(i);
-          if (c === ' ' || c === '　'){ return; }
-          /* **字の幅を変えない。**半角のところに全角を差すと、行が伸び縮みする */
-          var q = /[A-Za-z0-9]/.test(c) ? LATIN : pool;
-          cs[i].textContent = q.charAt((Math.random() * q.length) | 0);
-        });
-        requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-      /* 描画が走らない場でも、**時計で必ず決める** */
-      setTimeout(function(){
-        if (ch.dataset.run !== run || el._seq !== my) return;
-        fix(row);
-      }, rowMs + 40);
-    }, r * (rowMs + gap));
+    }, r * step);
   });
 }
 /* 動きを止める設定のときは、**読める形をそのまま出す** */
 var STILL = matchMedia('(prefers-reduced-motion:reduce)').matches;
-
 function settle(ch, back){
   var els = [].slice.call(ch.querySelectorAll('.card .k, .card .lead, .card li'));
   var foot = ch.querySelector('.card .foot');
@@ -635,33 +588,32 @@ function settle(ch, back){
     return;
   }
 
-  /* **出ているのは一行だけ。**上は読める形で止まっていて、下はまだ出ていない
-     （2026-09-15、本人：「モーションがちょっと読みにくい」）。
-     まだの字は**隠すだけで場所は取る**——消すと、定まるたびに下が持ち上がる */
+  /* **上から下へ、一行ずつ**（2026-09-15、本人：「上から下の方がいいかも」）。
+     まだの字は**隠すだけで場所は取る**——消すと、点くたびに下が持ち上がる */
   ch.dataset.run = String(Date.now());
-  var run = ch.dataset.run, pool = poolOf(ch);
-  els.forEach(function(el){ plainEl(el); });
-  /* **先に全部測る。**隠してから測ると行組みが変わる心配があるので、読める形のまま測る */
+  var run = ch.dataset.run;
+  els.forEach(plainEl);
+  /* **先に全部測る。**隠してから測ると行組みが変わりかねないので、読める形のまま測る */
   var plan = els.map(function(el){ return { el: el, rows: rowsOf(el) }; });
   els.forEach(function(el){ el.classList.add('wait'); });
   /* 「もどす」も**最後まで出さない。**読み終わる前に出口が見えていると、そこに目が行く */
   if (foot) foot.classList.add('wait');
 
-  /* **時刻で組む。**「終わったら次」だと、描画が走らない場で
-     そこから先が永久に出てこない——隠してあるので、消えたのと同じになる */
   /* **全体の長さで一行あたりを決める。**窓が狭いと行数が倍になるので、
-     一行いくらで固定すると**待ち時間だけが伸びる** */
+     一行いくらで固定すると**待ち時間だけが伸びる**。
+     **時刻で組む。**「終わったら次」だと、描画が走らない場で
+     そこから先が永久に出てこない——隠してあるので、消えたのと同じになる */
   var total = plan.reduce(function(n, p){ return n + p.rows.length; }, 0) || 1;
-  var ROW = Math.max(95, Math.min(190, Math.round(1500 / total))), GAP = Math.round(ROW * .25);
-  var at = 220;
+  var step = Math.max(65, Math.min(140, Math.round(1100 / total)));
+  var at = 200;
   plan.forEach(function(p){
     setTimeout(function(){
       if (ch.dataset.run !== run) return;
-      resolve(ch, p.el, pool, p.rows, ROW, GAP);
+      resolve(ch, p.el, p.rows, step);
     }, at);
-    at += p.rows.length * (ROW + GAP);
+    at += p.rows.length * step;
   });
-  /* 最後は必ず読める形に。化け字が残ったままにならないようにする念押し */
+  /* 最後は必ず読める形に。隠れたままにならないようにする念押し */
   setTimeout(function(){
     if (ch.dataset.run !== run) return;
     els.forEach(plainEl);
