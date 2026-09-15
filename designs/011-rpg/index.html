@@ -1167,10 +1167,12 @@ function ask(step, q, list){
     return '<li><span class="cur">▶</span>' + s + '</li>';
   }).join('')
     /* **何が起きるかを書いておく**（2026-09-15、本人：「にげる、でどうなるのかの
-       注釈は入れておいて」）。RPG の「にげる」は**戦いから逃げる**だが、ここでは
-       **デモそのものが終わる。**同じ言葉で違うことが起きるので、一行だけ添える */
+       注釈は入れておいて」→「カッコがきにして」→「**デモを終了する、とかでいい**」）。
+       RPG の「にげる」は**戦いから逃げる**だが、ここでは**デモそのものが終わる。**
+       言葉は**リザルトの四角と同じ**「デモを終了する」にそろえた——
+       同じことをする手が二つあるので、**呼び方は一つ**にする */
     + '<li class="flee"><span class="cur">▶</span><span>にげる'
-    + '<span class="note">（デモをやめて、メニューにもどる）</span></span></li>';
+    + '<span class="note">（デモを終了する）</span></span></li>';
   dWin.style.display = '';
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
   paintD();
