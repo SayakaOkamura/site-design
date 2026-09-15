@@ -281,6 +281,43 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 #dLines .cb{display:inline-block; width:.6em; background:var(--go);
   animation:blink .8s steps(2) infinite}
 
+/* ─ エンドロール（2026-09-15、本人：「**会社の理念とか流すのがいい**」
+   「最後に ADC の名前が出て**止まる**映画のエンドロールみたいな」）────────
+   **デモの説明はしない。**触って分かったことを言葉で上書きすると、
+   「説明ではなく触らせて見せる」という**この画面の主張を自分で壊す。**
+   流すのは会社の言葉だけ——理念 → 名乗りの一行 → 社名で止まる。
+   背景は**夕日のまま、勇者も走ったまま。**暗転させない */
+#dRoll{position:absolute; inset:0; z-index:10; display:none; overflow:hidden}
+body.roll #dRoll{display:block}
+/* 流しているあいだ、戦いの道具は全部しまう */
+/* 流しているあいだ、戦いの道具も**左上の名乗りも**しまう。
+   名乗りを出したままにすると、流れてくる文とぶつかるし、
+   最後に出てくる社名が**二度目**になって効かない */
+body.roll #dWin, body.roll #dRes, body.roll #dHp, body.roll #dTopic,
+body.roll #slime, body.roll #slash, body.roll #dWon, body.roll #dBar,
+body.roll #name{display:none}
+#dRollIn{position:absolute; left:0; right:0; top:0;
+  text-align:center; color:var(--ink); will-change:transform;
+  padding:0 clamp(16px,6vw,80px);
+  /* **白抜きに硬い縁**。名乗りと同じ作法で、にじませない */
+  text-shadow:2px 0 0 #24130a, -2px 0 0 #24130a, 0 2px 0 #24130a, 0 -2px 0 #24130a,
+              2px 2px 0 #24130a, -2px 2px 0 #24130a, 2px -2px 0 #24130a, -2px -2px 0 #24130a}
+#dRollIn p{margin:0 auto; max-width:min(78vw,560px); line-height:2.1;
+  font-size:clamp(12px,1.5vw,15px); letter-spacing:.06em}
+#dRollIn .h{color:var(--go); font-size:clamp(11px,1.3vw,13px); letter-spacing:.2em;
+  margin-bottom:calc(var(--px)*6)}
+#dRollIn .big{font-size:clamp(15px,2.1vw,22px); font-weight:700; line-height:2;
+  margin-bottom:calc(var(--px)*10)}
+#dRollIn .gap{height:clamp(40px,9vh,90px)}
+/* 社名の前だけ**大きくあける。**止まったときに前の文が画面に残っていると、
+   社名が「最後の一枚」に見えない */
+#dRollIn .gapx{height:clamp(240px,44vh,420px)}
+#dRollIn .tag{color:#ffe7ad; font-size:clamp(13px,1.7vw,17px); font-weight:700; line-height:2.2}
+#dRollIn .en{font-size:clamp(14px,2.2vw,24px); letter-spacing:.22em; font-weight:700}
+#dRollIn .ja{font-size:clamp(12px,1.6vw,17px); letter-spacing:.08em; font-weight:700;
+  margin-top:calc(var(--px)*2)}
+#dRollIn p + p{margin-top:calc(var(--px)*5)}
+
 /* 「たおした！」。**16bit の白抜き**——名乗りと同じ、にじませない硬い縁 */
 #dWon{position:absolute; left:0; right:0; top:36%; z-index:9; display:none;
   text-align:center; font-size:clamp(20px,4vw,40px); font-weight:700; letter-spacing:.14em;
@@ -390,6 +427,8 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <!-- 打ち込まれる場所。**地面の下**（ふだんお問い合わせが出ている帯） -->
     <div id="dBar"><div id="dLines"></div></div>
     <div id="dWon">スライムを　たおした！</div>
+    <!-- 終わりのエンドロール。**説明ではなく名乗り**——触ったあとに、会社が署名する -->
+    <div id="dRoll"><div id="dRollIn"></div></div>
     <div id="dRes" class="win">
       <p class="rt">立件</p>
       <p class="rs" id="rTopic"></p>
@@ -618,6 +657,16 @@ var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背�
 /* **住所は二か所から指される**（会社概要と、足もとのアクセス）。
    文はここに一つだけ置いて、両方から引く——**片方だけ直る**のを防ぐ。
    **駅は足もとだけ**（会社概要からは 2026-09-15 に抜いた） */
+/* 理念は**二か所から指される**（メニューの「企業理念」と、終わりのエンドロール）。
+   住所と同じで、文はここに一つだけ置いて両方から引く */
+var MIND = [
+  '経営の力で「遊ぶように働く世界」をデザインする',
+  '「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと。',
+  '子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと。',
+  'このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく。',
+  'それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です。'
+];
+
 var ADDR  = '本社　東京都港区西新橋 3-23-5　ANYZ304（御成門郵船ビル）';
 var ROUTE = '御成門 2 分（都営三田線）／大門 10 分（都営浅草線・大江戸線）／神谷町 10 分（東京メトロ日比谷線）／汐留 12 分（都営大江戸線・ゆりかもめ）／虎ノ門ヒルズ 12 分（日比谷線）／虎ノ門 12 分（東京メトロ銀座線）／新橋 12 分（JR 山手線・京浜東北線）／浜松町 14 分（JR 山手線・京浜東北線）';
 
@@ -625,11 +674,11 @@ var DATA = {
   /* **四段落ぜんぶ入れる。**前は三・四段落目が落ちていて、見出しの「やらされる、ではなく」は
      こちらの作文だった。**足さない**と決めたのだから、作文の見出しも置かない */
   mind: { t:'企業理念', p:[
-    '<b>経営の力で「遊ぶように働く世界」をデザインする</b>'
-    + '<span class="s">「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと。</span>'
-    + '<span class="s">子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと。</span>',
-    '<span class="s">このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく。</span>'
-    + '<b>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です。</b>'
+    '<b>' + MIND[0] + '</b>'
+    + '<span class="s">' + MIND[1] + '</span>'
+    + '<span class="s">' + MIND[2] + '</span>',
+    '<span class="s">' + MIND[3] + '</span>'
+    + '<b>' + MIND[4] + '</b>'
   ]},
   /* **四つとも二文目まで。**前は一文目で切っていて、04 はこちらの要約になっていた */
   svc: { t:'サービス', p:[
@@ -1031,6 +1080,9 @@ function quitDemo(){
   D.on = false; D.phase = '';
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
+  if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
+  if (rollHold){ clearTimeout(rollHold); rollHold = null; }
+  document.body.classList.remove('roll'); dRollIn.style.transform = '';
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
   heroPose(null); slimeIdle();   /* また走り出す */
@@ -1177,7 +1229,59 @@ function paintRes(){
 }
 function fireRes(){
   var b = dRes.querySelectorAll('.rb')[D.sel];
+  /* お問い合わせを押した人には流さない。**もう次へ進んでいる** */
   if (b.dataset.d === 'contact'){ location.href = GO.contact.href; return; }
+  startRoll();
+}
+
+/* ─ エンドロール ────────────────────────────────────────────
+   文は**画面にあるものから組む**——理念は `MIND`、名乗りと一行は `#name` から読む。
+   二か所に書くと、片方だけ直る */
+var dRoll = document.getElementById('dRoll'), dRollIn = document.getElementById('dRollIn');
+var rollRaf = null, rollHold = null;
+function buildRoll(){
+  if (dRollIn.firstChild) return;
+  var nm = document.getElementById('name');
+  var en = nm.firstChild.textContent.trim();
+  var ja = nm.querySelector('b').textContent.trim();
+  var tag = document.getElementById('tag').textContent.trim();
+  var h = '<div class="gap"></div>'
+        + '<p class="h">企業理念</p>'
+        + '<p class="big">' + MIND[0].replace('」を', '」を<br>') + '</p>';
+  for (var i = 1; i < MIND.length; i++) h += '<p>' + MIND[i] + '</p>';
+  h += '<div class="gap"></div>'
+     + '<p class="tag">' + tag.replace('で、', 'で、<br>') + '</p>'
+     + '<div class="gapx"></div>'
+     + '<div id="rollEnd"><p class="en">' + en + '</p><p class="ja">' + ja + '</p></div>'
+     + '<div class="gap"></div>';
+  dRollIn.innerHTML = h;
+}
+function startRoll(){
+  dRes.classList.remove('on');
+  document.body.classList.add('roll');
+  buildRoll();
+  D.phase = 'roll';
+  var endEl = document.getElementById('rollEnd');
+  /* 社名が**画面のまん中に来たところで止める。**流し切って消さない */
+  var stop = (innerHeight / 2) - (endEl.offsetTop + endEl.offsetHeight / 2);
+  var from = innerHeight;
+  if (REDUCE){ dRollIn.style.transform = 'translateY(' + stop + 'px)'; rollHold = setTimeout(endRoll, 3200); return; }
+  var dur = Math.max(9000, Math.min(20000, (from - stop) / 0.105));
+  var t0 = 0;
+  (function step(ts){
+    if (!t0) t0 = ts;
+    var k = Math.min(1, (ts - t0) / dur);
+    dRollIn.style.transform = 'translateY(' + (from + (stop - from) * k) + 'px)';
+    if (k < 1){ rollRaf = requestAnimationFrame(step); return; }
+    rollRaf = null;
+    rollHold = setTimeout(endRoll, 3200);   /* 止まって、少し置いてから戻る */
+  })(0);
+}
+function endRoll(){
+  if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
+  if (rollHold){ clearTimeout(rollHold); rollHold = null; }
+  document.body.classList.remove('roll');
+  dRollIn.style.transform = '';
   quitDemo();
 }
 
@@ -1185,6 +1289,7 @@ document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
   if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
+  if (D.phase === 'roll'){ endRoll(); return; }
   if (D.phase === 'open'){ openDone(); return; }
   var rb = e.target.closest('#dRes .rb');
   if (rb){ D.sel = [].slice.call(dRes.querySelectorAll('.rb')).indexOf(rb); fireRes(); }
@@ -1201,6 +1306,7 @@ document.addEventListener('mouseover', function(e){
 document.addEventListener('keydown', function(e){
   if (!D.on) return;
   var k = e.key, n;
+  if (D.phase === 'roll'){ endRoll(); e.preventDefault(); return; }
   if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
   if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
