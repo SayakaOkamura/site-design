@@ -66,11 +66,16 @@ header .note{margin-top:2.4em; font-size:clamp(10px,1.2vw,12px); color:var(--dim
 /* **章の頭を左上に浮かせて、本文をそのまわりに回す**
    （2026-09-15、本人：「教科書の章はじめとか、左上の章タイトルと、
    それを囲むように文字が配置されてるでしょ。あんな感じ」）。
-   `float` なので、**文字のほうが避けて流れる**——枠を切って並べるのとは形が違う */
-.head{float:left; width:clamp(128px,17vw,200px);
-  margin:0 clamp(16px,2vw,26px) clamp(8px,1vh,14px) 0}
-.ch h2{margin:.9em 0 0; font-size:clamp(12px,1.4vw,14px); letter-spacing:.3em; color:var(--dim);
-  font-weight:400}
+   `float` なので、**文字のほうが避けて流れる**——枠を切って並べるのとは形が違う。
+
+   **幅は決め打ちにしない**（同日、本人：「今ある隙間詰めていい。タイトルと文章の」）。
+   浮かせた箱は中身の幅に縮むので、決め打ちにすると
+   **題より広いぶんが、そのまま隙間になる。**それが空いて見えていた。
+   題が長い章は二行に折り返してよい——**折り返すほうが、空きを抱えているより詰まって見える** */
+.head{float:left; max-width:clamp(120px,15vw,168px);
+  margin:0 clamp(8px,1vw,12px) clamp(3px,.5vh,6px) 0}
+.ch h2{margin:.5em 0 0; font-size:clamp(12px,1.4vw,14px); letter-spacing:.24em; color:var(--dim);
+  font-weight:400; line-height:1.7}
 
 /* 発光する印。**押すところ**。章の頭に、題と並べて置く */
 .ico{width:clamp(44px,5vw,58px); height:clamp(44px,5vw,58px);
@@ -141,7 +146,7 @@ footer a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--l
 footer a:hover{color:var(--on)}
 
 @media (max-width:760px){
-  .head{width:clamp(104px,30vw,150px); margin-right:clamp(12px,3vw,18px)}
+  .head{max-width:clamp(96px,28vw,132px); margin-right:clamp(8px,2vw,12px)}
   .raw .col{font-size:11px; line-height:1.66}
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
