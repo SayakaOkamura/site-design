@@ -297,14 +297,6 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    （2026-09-15、本人：「地平どころか山の後ろ通っていいよ」）。
    勇者（4）・メニュー（5）・ポップアップ（6）はさらに手前なので、
    **流れているあいだも普通に触れる。**文のほうは触れない */
-/* 始まりの一拍（2026-09-15、本人：「デモの始まりで始まった感がほしい」）。
-   **一度だけ暗くなって、明けると戦いになっている。**RPG の遭遇の作法。
-   **光らせない・揺らさない**——強い点滅も画面の揺れも、目に障る */
-#dFlash{position:absolute; inset:0; z-index:11; display:none;
-  background:#140a04; opacity:0; pointer-events:none}
-#dFlash.on{display:block; animation:dflash .56s steps(7) both}
-@keyframes dflash{ 0%{opacity:0} 28%{opacity:1} 58%{opacity:1} 100%{opacity:0} }
-
 #dRoll{position:absolute; inset:0; z-index:1; display:none; overflow:hidden;
   pointer-events:none; transition:opacity .5s}
 body.roll #dRoll{display:block}
@@ -411,9 +403,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <div class="band"></div>
     <div class="band b2"></div>
   </div>
-
-  <!-- デモの入り口。**一度だけ暗くなって、戻ると戦いが始まっている** -->
-  <div id="dFlash"></div>
 
   <!-- 終わりのエンドロール。**説明ではなく名乗り**——触ったあとに、会社が署名する。
        デモの外に置く。**画面はもう元に戻っていて、メニューは普通に動く**（2026-09-15、
@@ -1094,15 +1083,19 @@ var dWin  = document.getElementById('dWin'),
     dWon  = document.getElementById('dWon'), slashEl = document.getElementById('slash'),
     heroEl = document.getElementById('hero');
 
-var dFlash = document.getElementById('dFlash');
-/* 入り口。**暗いあいだに入れ替える。**いきなり窓が差し替わると、
-   画面が切り替わったのか自分が押し間違えたのか分からない */
+/* 入り口。**暗転はしない**（2026-09-15、本人：「あんながっつり変わらなくていいけど
+   何か始まったなって感じがわかるようにしたい。**画面転換感があると身構える**から。
+   お、なんか始まったな…くらいがいい」）。
+   いちど画面を暗くしてみたが、**場面が切り替わった**になってしまい、構えさせる。
+   代わりに**小さいものを三つ**重ねる——
+     ・**敵が右から歩いてくる**（いちばん効く。「なんか来た」）
+     ・**窓が開く**（差し替わるのではなく、開く）
+     ・**体力の帯が満ちる**（戦いの支度が整った、の合図）
+   画面はどこも暗くならないし、揺れもしない */
 function startDemo(){
   close();
   stopRoll();                     /* 流れている途中でも、入り直したら片付ける */
-  dFlash.classList.remove('on'); void dFlash.offsetWidth; dFlash.classList.add('on');
-  setTimeout(openDemo, 180);
-  setTimeout(function(){ dFlash.classList.remove('on'); }, 580);
+  openDemo();
 }
 function openDemo(){
   D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3 };
@@ -1111,7 +1104,13 @@ function openDemo(){
   dTopic.textContent = ''; slimeEl.style.display = ''; dHp.style.display = '';
   slashEl.classList.remove('on');
   heroPose(null); slimeIdle();
-  paintHp();
+  /* **入ってすぐ歩いてくる。**お題を選んだあとだと、選んでいるあいだ何も起きない */
+  slimeEl.classList.remove('come');
+  void slimeEl.offsetWidth;            /* 二度目も動かすために巻き戻す */
+  slimeEl.classList.add('come');
+  /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
+  dHp.firstChild.style.width = '0%';
+  setTimeout(paintHp, 60);
   ask('デモ', 'どんなことで困っていますか', TOPICS.map(function(t){ return t.t; }));
 }
 function quitDemo(){
@@ -1208,10 +1207,6 @@ function choose(i){
   if (D.phase === 'topic'){
     D.topic = i; D.step = 0; D.phase = 'ask';
     dTopic.textContent = '相談　' + TOPICS[i].t;
-    /* お題が決まってから**敵が右から歩いてくる。**最初から居ると、始まりが無い */
-    slimeEl.classList.remove('come');
-    void slimeEl.offsetWidth;            /* 二度目も動かすために巻き戻す */
-    slimeEl.classList.add('come');
     askStep();
     return;
   }
