@@ -445,19 +445,23 @@ body.roll #dRoll{display:block}
 #dRes .q{opacity:0}
 #dRes .q.on{opacity:1; animation:rise .16s steps(2)}
 @keyframes rise{ from{transform:translateY(5px)} to{transform:translateY(0)} }
+/* **もらったものを一つだけ大きく出す**（2026-09-15、本人の指摘）。
+   前は「段取り」という見出しの下に六項目（三手＋要るもの二＋区切り一）が並んでいた。
+   倒した直後に**読解が要る**し、見出しが**機能の名前**（インベントリと出ているようなもの）。
+   何より、デモの体験は「**複雑なものが整理される**」なのに、
+   出てくるのが「やること」だと**始まりより終わりのほうが情報量が多い**。
+   宝箱を開けて「クエストが追加されました」と出るのと同じ。
+
+   → **一手だけ。**あとは小さく添える */
 #dRes .rt{margin:0; font-size:clamp(12px,1.4vw,14px); letter-spacing:.14em; color:var(--go)}
-#dRes .rs{margin:calc(var(--px)) 0 calc(var(--px)*2.5); font-size:clamp(14px,1.7vw,17px);
-  font-weight:700; color:var(--ink)}
-#dRes .rg{display:grid; grid-template-columns:1fr 1fr; gap:0 calc(var(--px)*6)}
-#dRes .rg b{display:block; color:var(--go); font-size:clamp(11px,1.3vw,13px);
-  letter-spacing:.1em; margin:calc(var(--px)*2) 0 calc(var(--px))}
-#dRes .rg ul,#dRes .rg ol{list-style:none; margin:0; padding:0}
-#dRes .rg li{font-size:clamp(11.5px,1.35vw,13.5px); line-height:1.85; color:var(--dim);
-  padding-left:1.4em; text-indent:-1.4em}
-#dRes .rg ul li::before{content:'・　'}
-/* **手は順番に意味がある**ので、点ではなく数字。色を変えて、目が数だけ拾えるように */
-#dRes #rDo{counter-reset:te}
-#dRes #rDo li::before{counter-increment:te; content:counter(te) '　'; color:var(--go); font-weight:700}
+/* もらったもの。**ここだけ大きい。**目が最初にここへ行く */
+#dRes .rone{margin:calc(var(--px)*2) 0 calc(var(--px)*4);
+  font-size:clamp(16px,2.2vw,24px); line-height:1.65; font-weight:700; color:var(--ink)}
+/* 添え。**一行ずつ。**行を増やさないために、中は「／」と「→」でつなぐ */
+#dRes .rl{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11.5px,1.35vw,13.5px);
+  line-height:1.85; color:var(--dim)}
+#dRes .rl b{color:var(--go); font-weight:700; letter-spacing:.1em;
+  margin-right:calc(var(--px)*2)}
 #dRes .rn{display:flex; gap:calc(var(--px)*3); margin-top:calc(var(--px)*4)}
 /* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
 #dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
@@ -477,7 +481,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #dTopic{max-width:92vw}
   #slime,#dHp,#slash{left:72%}
   #dBang{left:50%}
-  #dRes .rg{grid-template-columns:1fr}
+  #dRes .rone{font-size:clamp(15px,4.4vw,20px)}
 }
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
@@ -543,14 +547,12 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <div id="dBar"><div id="dLines"></div></div>
     <div id="dWon">スライムを　たおした！</div>
     <div id="dRes" class="win">
-      <p class="rt">段取り</p>
-      <p class="rs" id="rTopic"></p>
-      <div class="rg">
-        <div><b>はじめの三手</b><ol id="rDo"></ol></div>
-        <div><b>そろえるもの</b><ul id="rNeed"></ul><b>ひと区切り</b><ul id="rHow"></ul></div>
-      </div>
+      <p class="rt">つぎの一手を　てにいれた！</p>
+      <p class="rone" id="rOne"></p>
+      <p class="rl"><b>そろえるもの</b><span id="rNeed"></span></p>
+      <p class="rl"><b>そのあと</b><span id="rNext"></span></p>
       <div class="rn">
-        <button class="rb" data-d="contact">お問い合わせ</button>
+        <button class="rb" data-d="contact">続きは一緒に</button>
         <button class="rb" data-d="quit">デモを終了する</button>
       </div>
     </div>
@@ -1371,16 +1373,20 @@ function choose(i){
 function showResult(){
   var T = TOPICS[D.topic],
       a0 = T.q[0].a[D.picks[0]], a1 = T.q[1].a[D.picks[1]], a2 = T.q[2].a[D.picks[2]];
-  var li = function(xs){ return xs.map(function(s){ return '<li>' + s + '</li>'; }).join(''); };
-  document.getElementById('rTopic').textContent = T.t;
-  document.getElementById('rDo').innerHTML   = li([a0.step, a1.step, a2.step]);
-  document.getElementById('rNeed').innerHTML = li(a0.need);
-  document.getElementById('rHow').innerHTML  = li([a1.mark]);
+  /* **一手目は 1 問目の答えから出る。**方針を決めたら最初に動くところなので、
+     そのまま「つぎの一手」になる。ここだけ大きく出す */
+  document.getElementById('rOne').textContent  = a0.step;
+  /* 添えは二行だけ。**どの問いの答えも、必ずどこかに出る**（前からの決めごと）——
+     1 問目は一手と「そろえるもの」、2 問目と 3 問目は「そのあと」に並ぶ。
+     「ひと区切り」は落とした。**多を少にするのがこの画面の役**なので、
+     ここで一行増やすと、また元に戻る */
+  document.getElementById('rNeed').textContent = a0.need.join('　／　');
+  document.getElementById('rNext').textContent = a1.step + '　→　' + a2.step;
   dWin.style.display = 'none';
   D.sel = 0;
   /* **一行ずつ出す。**枠が開いてから、見出しと行を順に。四角は最後。
      キーを押せば、待たずに全部出る */
-  D.parts = [].slice.call(dRes.querySelectorAll('.rt,.rs,.rg b,.rg li,.rn'));
+  D.parts = [].slice.call(dRes.querySelectorAll('.rt,.rone,.rl,.rn'));
   D.parts.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
   dRes.classList.add('on');
   if (REDUCE){ openDone(); return; }
