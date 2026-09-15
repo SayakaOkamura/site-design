@@ -229,8 +229,10 @@ body.demo #slime{display:block}
 body.demo #dHp{display:flex}
 
 /* 質問の窓。**メニューと同じ場所・同じ形** */
-#dWin{position:absolute; left:clamp(16px,4vw,54px); top:46%; transform:translateY(-52%);
-  z-index:8; width:min(56vw,300px)}
+/* 三択は**概要と同じ場所**（2026-09-15、本人：「コマンド右にして。概要とかと同じ位置」）。
+   窓が回ごとに別の場所に出ると、目が左右に振られる。**読む場所は一つ**にする */
+#dWin{position:absolute; right:clamp(28px,9vw,120px); top:17%;
+  z-index:8; width:min(46vw,520px)}
 #dWin .rt{margin:0}
 #dStep{margin:0 0 calc(var(--px)*1.5); font-size:11px; letter-spacing:.12em; color:var(--dim)}
 #dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,15px); font-weight:700;
@@ -258,6 +260,19 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 #dLines .cb{display:inline-block; width:.6em; background:var(--go);
   animation:blink .8s steps(2) infinite}
 
+/* 「たおした！」。**16bit の白抜き**——名乗りと同じ、にじませない硬い縁 */
+#dWon{position:absolute; left:0; right:0; top:36%; z-index:9; display:none;
+  text-align:center; font-size:clamp(20px,4vw,40px); font-weight:700; letter-spacing:.14em;
+  color:var(--ink);
+  text-shadow:3px 0 0 #24130a, -3px 0 0 #24130a, 0 3px 0 #24130a, 0 -3px 0 #24130a,
+              3px 3px 0 #24130a, -3px 3px 0 #24130a, 3px -3px 0 #24130a, -3px -3px 0 #24130a}
+/* **`both` は付けない**——アニメが走らない場（裏の窓、動きを止める設定）で
+   from（透明）のまま固まって、文字が出ない。素の状態を「見えている」にしておく */
+#dWon.on{display:block; animation:won .34s steps(3)}
+/* **透明度は動かさない。**動いている最中は from の値を取るので、
+   時計が止まる場（裏の窓）では**透明のまま出ない。**大きさだけで跳ねさせる */
+@keyframes won{ from{transform:scale(.6)} to{transform:scale(1)} }
+
 /* リザルト。**二段組にする**——縦に積むと短い窓で四角が枠の外へ落ちる */
 #dRes{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
   z-index:9; width:min(88vw,760px); max-height:84vh; display:none}
@@ -283,7 +298,9 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   background:var(--go); border-color:var(--go); color:#24130a}
 
 @media (max-width:640px){
-  #dWin{left:50%; top:auto; bottom:30%; transform:translateX(-50%); width:min(92vw,340px)}
+  /* 狭い窓では下へ。ただし**打ち込む帯（下 20%）より上**に置く */
+  #dWin{right:auto; left:50%; top:auto; bottom:26%; transform:translateX(-50%);
+        width:min(94vw,520px)}
   #dTopic{max-width:92vw}
   #slime,#dHp{left:72%}
   #dRes .rg{grid-template-columns:1fr}
@@ -342,6 +359,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     </nav>
     <!-- 打ち込まれる場所。**地面の下**（ふだんお問い合わせが出ている帯） -->
     <div id="dBar"><div id="dLines"></div></div>
+    <div id="dWon">スライムを　たおした！</div>
     <div id="dRes" class="win">
       <p class="rt">立件</p>
       <p class="rs" id="rTopic"></p>
@@ -465,6 +483,33 @@ var HERO = [
     '......................',
     '......................']
 ];
+/* 勝ちポーズ。**走りを止めて、剣を真上へ。**
+   刃は x16-17 に立てる——頭（x4-14）と一粒あけないと、頭と刃がつながって
+   「角の生えた塊」に見える（画面で分かった） */
+var HERO_WIN = [
+    '......................',
+    '.........##.....##....',
+    '......#######...##....',
+    '.....#########..##....',
+    '....###########.##....',
+    '....###########.##....',
+    '....######o#o##.##....',
+    '....######o#o##.##....',
+    '....###########.##....',
+    '.....#########.####...',
+    '......#######.##......',
+    '.....#######.##.......',
+    '....##########........',
+    '...#########..........',
+    '...#########..........',
+    '....#########.........',
+    '.....########.........',
+    '.......##..##.........',
+    '.......##..##.........',
+    '.......##..##.........',
+    '......###..###........',
+    '......###..###........'
+];
 var HW = 22, HH = 22;
 var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背景は 4px）。
                2頭身は**胴が短いぶん小さく見える**ので、5 → 6 に上げた（132px） */
@@ -484,8 +529,8 @@ var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背�
   var css = getComputedStyle(document.documentElement);
   var INK = css.getPropertyValue('--hero').trim() || '#150b04';
   var EYE = css.getPropertyValue('--sun2').trim() || '#ffcb5e';
-  function draw(n){
-    var m = HERO[n], c;
+  function draw(m){
+    var c;
     cx.clearRect(0, 0, HW*HPX, HH*HPX);
     for (var y = 0; y < HH; y++) for (var x = 0; x < HW; x++){
       c = m[y][x]; if (c === '.') continue;
@@ -493,12 +538,14 @@ var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背�
       cx.fillRect(x*HPX, y*HPX, HPX, HPX);
     }
   }
-  draw(0);
+  var i = 0, posing = false;
+  /* 勝ちのあいだは**走りを止める。**走ったまま剣を上げると、勝った顔にならない */
+  window.heroPose = function(on){ posing = on; draw(on ? HERO_WIN : HERO[i]); };
+  draw(HERO[0]);
   /* 動きを止める設定なら、**一コマ目で止める**（CSS の animation:none は
      canvas には効かないので、ここで自分で見る） */
   if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  var i = 0;
-  setInterval(function(){ i = (i+1) % HERO.length; draw(i); }, 110);
+  setInterval(function(){ i = (i+1) % HERO.length; if (!posing) draw(HERO[i]); }, 110);
 })();
 
 /* ─ 中身。**公式サイトの言葉をそのまま。**足していない ──────────
@@ -833,6 +880,19 @@ var SLIME = [
     '################',
     '################']
 ];
+/* 倒れるところ。**潰れて、平たくなって、消える。**
+   ただ消すと「画面から取り除いた」に見えて、倒した気がしない */
+var SLIME_DIE = [
+  ['................','................','................','................',
+   '................','................','...##########...','..############..',
+   '################','################'],
+  ['................','................','................','................',
+   '................','................','................','..############..',
+   '################','################'],
+  ['................','................','................','................',
+   '................','................','................','................',
+   '.....######.....','..############..']
+];
 var SW = 16, SH = 10;
 (function(){
   var cv = document.getElementById('slime'), cx = cv.getContext('2d');
@@ -842,17 +902,18 @@ var SW = 16, SH = 10;
   cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
   cx.fillStyle = getComputedStyle(document.documentElement)
                    .getPropertyValue('--hero').trim() || '#150b04';
-  var i = 0;
-  function paint(){
-    var m = SLIME[i];
+  var i = 0, idle = true;
+  function paint(m){
     cx.clearRect(0, 0, SW*HPX, SH*HPX);
     for (var y = 0; y < SH; y++) for (var x = 0; x < SW; x++)
       if (m[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
   }
-  paint();
+  window.paintSlime = function(m){ idle = false; paint(m); };
+  window.slimeIdle  = function(){ idle = true; };
+  paint(SLIME[0]);
   if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
   /* 勇者より**ゆっくり**ぷるぷるさせる。同じ拍子だと二人で行進して見える */
-  setInterval(function(){ i = (i+1) % SLIME.length; paint(); }, 340);
+  setInterval(function(){ i = (i+1) % SLIME.length; if (idle) paint(SLIME[i]); }, 340);
 })();
 
 /* ─ デモの進行 ──────────────────────────────────────────────
@@ -865,21 +926,24 @@ var dWin  = document.getElementById('dWin'),
     dA    = document.getElementById('dA'),   dTopic = document.getElementById('dTopic'),
     dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
     dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
+    dWon  = document.getElementById('dWon'),
     heroEl = document.getElementById('hero');
 
 function startDemo(){
   close();
   D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3 };
   document.body.classList.add('demo');
-  dLines.innerHTML = ''; dRes.classList.remove('on');
-  dTopic.textContent = ''; slimeEl.style.display = '';
+  dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
+  dTopic.textContent = ''; slimeEl.style.display = ''; dHp.style.display = '';
+  heroPose(false); slimeIdle();
   paintHp();
   ask('デモ', 'どんなことで困っていますか', TOPICS.map(function(t){ return t.t; }));
 }
 function quitDemo(){
   D.on = false; D.phase = '';
   document.body.classList.remove('demo');
-  dRes.classList.remove('on');
+  dRes.classList.remove('on'); dWon.classList.remove('on');
+  heroPose(false); slimeIdle();   /* また走り出す */
   paintSel();
 }
 function paintHp(){
@@ -929,8 +993,30 @@ function swing(){
     heroEl.classList.remove('swing');
     slimeEl.classList.remove('hit');
     if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
-    else { slimeEl.style.display = 'none'; showResult(); }
+    else winSeq();
   }, 780);
+}
+
+/* 勝つところ。**急がない**——潰して、剣を上げて、名乗って、まとめる。
+   四つ続けて初めて「勝った」に見える。一つでも抜くと、**窓が変わっただけ**になる */
+function winSeq(){
+  D.phase = 'win';
+  dWin.style.display = 'none';
+  var i = 0;
+  var t = setInterval(function(){
+    if (i < SLIME_DIE.length){ paintSlime(SLIME_DIE[i++]); return; }
+    clearInterval(t);
+    slimeEl.style.display = 'none';
+    dHp.style.display = 'none';   /* 倒したら体力の印も消す（残ると倒れていないように見える） */
+    heroPose(true);
+    dWon.classList.add('on');
+    setTimeout(function(){
+      dWon.classList.remove('on');
+      /* **最後にもう一手打たせる。**倒したあと AI が何をしているのかが、
+         これで見える（そのまま立件が出てくる） */
+      typeCmd('立件としてまとめる', showResult);
+    }, 1100);
+  }, 170);
 }
 
 function choose(i){
