@@ -278,11 +278,6 @@ body.demo #menu, body.demo #foot, body.demo #pop{display:none}
 #demo{position:absolute; inset:0; z-index:7; display:none}
 body.demo #demo{display:block}
 
-/* いまの相談。**名乗りの下**に小さく置く */
-#dTopic{position:absolute; left:clamp(16px,4vw,54px); top:clamp(92px,15vh,120px);
-  z-index:8; font-size:clamp(11px,1.3vw,13px); letter-spacing:.06em; color:var(--go);
-  max-width:min(52vw,420px); line-height:1.7}
-
 /* 気づいた印（2026-09-15、本人：「敵来た時……画面全域に目が届いてなくても
    わかるように、**左半分にも仕掛けがほしい**」）。
    敵は右（66%）から来るので、**右だけで起きていると左を見ている人に届かない。**
@@ -370,10 +365,35 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 /* 打ち込まれる帯。**端末の作法だけ借りる**（2026-09-15、本人が選んだ）——
    一文字ずつ出て、行が積まれていく。記号も色もこちらのもの。
    **製品の見た目には寄せない**（003 からの決めごと） */
+/* **下からせり上がる。**行が増えても**いちばん新しいものが必ず見える**
+   （上から流すと、短い窓で打ちたての行が切れる） */
 #dBar{position:absolute; left:0; right:0; top:calc(80% + var(--px)*4); bottom:0; z-index:8;
   padding:calc(var(--px)*2) clamp(16px,5vw,64px); overflow:hidden;
+  display:flex; flex-direction:column; justify-content:flex-end;
   font-family:"SFMono-Regular",Consolas,"Courier New",monospace}
-#dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.9}
+/* **最初のお願いは別枠**（2026-09-15、本人：「そうやって打たれたもの
+   （最初のお願い／別枠として 3 問）が、最終的に生成物の糧になってるってアピールが
+   必要なのでは？」）。
+   コマンド（`>`）とは印を変える——**人が持ち込んだものと、そこから出た手**は別のもの。
+   ここだけ**流れて消えない**。糧の一行目なので、最後まで残す */
+#dWish{font-size:clamp(11px,1.35vw,14px); line-height:1.65; color:var(--dim);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+#dWish .pr{color:var(--warm); margin-right:.6em; letter-spacing:.1em}
+#dWish .cb,
+/* **糧が吸い上げられる**——打ち終わったら、帯の中身が上へ抜けてリザルトが開く。
+   透明度は**1 から下げるだけ**なので、動きが走らない場でも消えるほうへ倒れる */
+#dWish,#dLines{transition:transform .42s ease-in, opacity .42s ease-in}
+#dWish.up,#dLines.up{transform:translateY(-26px); opacity:0}
+#dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.65}
+/* **短い窓では詰める。**帯には五行（願い＋四つ）が並ぶので、
+   そのままだと**いちばん上の「願い」から切れる**——糧の一行目が消えてしまう */
+@media (max-height:620px){
+  #dBar{padding-top:var(--px); padding-bottom:var(--px)}
+  #dWish,#dLines{font-size:clamp(9.5px,1.15vw,12px); line-height:1.48}
+}
+@media (max-height:470px){
+  #dWish,#dLines{font-size:clamp(9px,1.1vw,11px); line-height:1.38}
+}
 #dLines div{color:var(--dim); opacity:.45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 #dLines div:last-child{color:var(--go); opacity:1}
 #dLines .pr{color:var(--go); opacity:1}
@@ -466,6 +486,11 @@ body.roll #dRoll{display:block}
    項目は増えても**読解は増えない**——前に「情報が多い」と言われたのは、
    数ではなく**新しい文章**（そろえるもの・ひと区切り）が出てきたから。
    だからその二つは落とした。三つの問いの答えは「選んだ三つ」に全部出ている */
+/* **帯から来た二行は、着いたときに一度だけ光る。**
+   どれがどこになったかが、言葉なしで見える（本人：糧になってるってアピール）。
+   色だけを動かすので、動きが走らない場では**ふつうの色で出る** */
+#dRes .rw,#dRes .rp{animation:land .6s steps(2) 1}
+@keyframes land{ from{color:var(--go)} to{color:var(--dim)} }
 #dRes .rw{margin:calc(var(--px)*2.5) 0 0; font-size:clamp(13px,1.6vw,16px);
   line-height:1.7; color:var(--dim)}
 #dRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
@@ -489,7 +514,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
         width:min(94vw,520px)}
   @keyframes winin{ from{transform:translateX(-50%) scaleY(.25)}
                     to{transform:translateX(-50%) scaleY(1)} }
-  #dTopic{max-width:92vw}
   #slime,#dHp,#slash{left:72%}
   #dBang{left:50%}
   #dRes .rone{font-size:clamp(15px,4.4vw,20px)}
@@ -542,7 +566,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
        空・太陽・山・地面・勇者はそのまま。**隠すのはメニューと足もとだけ**——
        走っている世界の上で、そのまま戦いが始まる -->
   <div id="demo">
-    <div id="dTopic"></div>
     <canvas id="slime"></canvas>
     <!-- 敵が来たことを**勇者の側でも言う**。右だけだと、左を見ている人に届かない -->
     <div id="dBang">！</div>
@@ -555,7 +578,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
       <ul id="dA"></ul>
     </nav>
     <!-- 打ち込まれる場所。**地面の下**（ふだんお問い合わせが出ている帯） -->
-    <div id="dBar"><div id="dLines"></div></div>
+    <div id="dBar"><div id="dWish"></div><div id="dLines"></div></div>
     <div id="dWon">スライムを　たおした！</div>
     <div id="dRes" class="win">
       <p class="rt">つぎの一手を　てにいれた！</p>
@@ -1219,7 +1242,7 @@ var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:3, parts:null
 var REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
 var dWin  = document.getElementById('dWin'),
     dStep = document.getElementById('dStep'), dQ = document.getElementById('dQ'),
-    dA    = document.getElementById('dA'),   dTopic = document.getElementById('dTopic'),
+    dA    = document.getElementById('dA'),   dWish  = document.getElementById('dWish'),
     dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
     dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
     dWon  = document.getElementById('dWon'), slashEl = document.getElementById('slash'),
@@ -1244,7 +1267,8 @@ function openDemo(){
   D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3 };
   document.body.classList.add('demo');
   dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
-  dTopic.textContent = ''; slimeEl.style.display = ''; dHp.style.display = '';
+  dWish.textContent = ''; dWish.classList.remove('up'); dLines.classList.remove('up');
+  slimeEl.style.display = ''; dHp.style.display = '';
   slashEl.classList.remove('on');
   heroPose(null); slimeIdle();
   /* **入ってすぐ歩いてくる。**お題を選んだあとだと、選んでいるあいだ何も起きない */
@@ -1304,6 +1328,20 @@ function askStep(){
   ask((D.step + 1) + ' / 3', s.q, s.a.map(function(a){ return a.t; }));
 }
 
+/* お願いを打つ。**コマンドではないので印を変える。**
+   これが糧の一行目で、ここから先の三行はこれに対する答えになる */
+function typeWish(s, done){
+  dWish.innerHTML = '<span class="pr">願い</span><span class="tx"></span><span class="cb">&nbsp;</span>';
+  var tx = dWish.querySelector('.tx'), i = 0;
+  var t = setInterval(function(){
+    tx.textContent = s.slice(0, ++i);
+    if (i < s.length) return;
+    clearInterval(t);
+    var cb = dWish.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
+    setTimeout(done, 260);
+  }, 42);
+}
+
 /* 打ち込む。**一文字ずつ出して、行を積む**——端末の作法だけ借りる */
 function typeCmd(s, done){
   var line = document.createElement('div');
@@ -1353,7 +1391,13 @@ function winSeq(){
       dWon.classList.remove('on');
       /* **最後にもう一手打たせる。**倒したあと AI が何をしているのかが、
          これで見える（そのまま段取りが出てくる） */
-      typeCmd('段取りにおとす', showResult);
+      /* **糧を吸い上げてから開く。**願いが先、コマンドがあとに続いて上へ抜ける。
+         順に抜けるので、**四行が材料だった**ことが目で追える */
+      typeCmd('段取りにおとす', function(){
+        dWish.classList.add('up');
+        setTimeout(function(){ dLines.classList.add('up'); }, 140);
+        setTimeout(showResult, 520);
+      });
     }, 1300);
   }, 170);
 }
@@ -1362,9 +1406,12 @@ function choose(i){
   /* 最後の行は**にげる。**どの相からでも、押せば元の画面へ戻る */
   if (i >= D.n){ quitDemo(); return; }
   if (D.phase === 'topic'){
-    D.topic = i; D.step = 0; D.phase = 'ask';
-    dTopic.textContent = '相談　' + TOPICS[i].t;
-    askStep();
+    /* **頭の帯（「相談　◯◯」）はやめた。**打ち込みの帯に同じものが出るので、
+       二重になる。**記録は一か所**にしたほうが、糧として読める */
+    D.topic = i; D.step = 0; D.phase = 'type';
+    dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + TOPICS[i].t + '</li>';
+    D.n = 0;
+    typeWish(TOPICS[i].t, function(){ D.phase = 'ask'; askStep(); });
     return;
   }
   if (D.phase !== 'ask') return;
