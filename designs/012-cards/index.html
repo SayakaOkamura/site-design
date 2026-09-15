@@ -36,6 +36,12 @@
   --on:#7df0a4;      /* まとまったあとの文字。ここで初めて楽に読める */
   --hot:#b9ffd2;     /* 見出しと発光 */
   --line:#12331f;
+  /* まとまったカードの側。**壁とは別の世界**にする（009 のカードに寄せた）。
+     白い面に濃い字。緑は**印の色としてだけ**残して、地の色には使わない */
+  --cbg:#ffffff;
+  --cink:#16231b;    /* 題。真っ黒は使わない */
+  --csub:#4d5f53;    /* 添えの行 */
+  --cacc:#1f7a45;    /* カードの上の緑。白地で読める濃さ */
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -117,28 +123,41 @@ header .note{margin-top:2.4em; font-size:clamp(10px,1.2vw,12px); color:var(--dim
 /* **出ていないあいだは場所も取らない**（`display:none`）。
    opacity だけで隠すと、壁の下にカード一枚ぶんの空白が居座る。
    `display` は動かせないので、出すときは JS で先に置いてから `.on` を付ける */
-.card{display:none; clear:both; position:relative; opacity:0; transform:translateY(14px) scale(.985);
-  transition:opacity .5s ease .3s, transform .5s cubic-bezier(.2,.8,.2,1) .3s;
-  background:linear-gradient(180deg,#081119,#060c11);
-  border:1px solid #1d5432; border-left:3px solid var(--on);
-  padding:clamp(22px,4vw,40px) clamp(20px,4vw,44px);
+/* **009 のカードに寄せる**（2026-09-15、本人：「カードっぽくはないな、今。
+   009 でやってたみたいなカードにできる？」）。
+   009 の要は「**線は一本も引かない。面と影で立てる**」だった——
+   前の形は枠線で囲った**板**で、カードではなかった。
+   白い面・角丸 10px・重ねた影。字も 009 の組み（題が太く、下に添えの行）。
+
+   **黒地では影が効かない**（暗い上に暗い影を落としても出ない）ので、
+   立つのは**面の明るさそのもの**に任せる。影は縁をほんの少し沈ませるためだけ。
+   壁が緑の暗がりなので、**白が出た瞬間に「別のもの」になる**——
+   読みやすくなったことが、色で分かる */
+/* **走査線の上に出す**（`z-index:10` ＞ 走査線の 9）。
+   下に置くと白い面に縞がかかって、せっかく別の世界にしたものが**同じ画面の中**に戻る */
+.card{display:none; clear:both; position:relative; z-index:10;
+  opacity:0; transform:translateY(14px) scale(.985);
+  transition:opacity .5s ease .3s, transform .5s cubic-bezier(.2,.7,.3,1) .3s;
+  background:var(--cbg); border-radius:10px;
+  box-shadow:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.55);
+  padding:clamp(26px,3.4vw,40px) clamp(22px,3.2vw,38px) clamp(24px,3vw,34px);
   font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",system-ui,sans-serif}
 .ch.on .card{opacity:1; transform:none}
-.card .k{font-size:clamp(10px,1.2vw,12px); letter-spacing:.28em; color:var(--dim)}
-.card .lead{margin:.9em 0 0; font-size:clamp(15px,2.1vw,24px); line-height:1.75; color:var(--hot);
-  font-weight:700; letter-spacing:.02em}
-.card ul{list-style:none; margin:1.6em 0 0; padding:0; display:grid; gap:.9em}
-.card li{position:relative; padding-left:1.5em; font-size:clamp(12px,1.45vw,15px); line-height:1.95;
-  color:var(--on)}
-.card li::before{content:'—'; position:absolute; left:0; color:var(--dim)}
-.card .foot{display:flex; gap:1.4em; align-items:center; margin-top:1.8em;
-  font-size:clamp(11px,1.3vw,13px)}
-.card .back{background:none; border:0; font:inherit; color:var(--dim); cursor:pointer; padding:0;
-  letter-spacing:.06em}
-.card .back:hover{color:var(--on)}
+.card .k{font-size:11.5px; letter-spacing:.26em; color:var(--cacc); font-weight:700}
+.card .lead{margin:.7em 0 0; font-size:clamp(17.5px,2.1vw,22px); line-height:1.5; color:var(--cink);
+  font-weight:700; letter-spacing:.01em}
+.card ul{list-style:none; margin:1.35em 0 0; padding:0; display:grid; gap:.7em}
+.card li{position:relative; padding-left:1.4em; font-size:15px; font-weight:500; line-height:1.72;
+  color:var(--csub)}
+.card li::before{content:'—'; position:absolute; left:0; color:var(--cacc)}
+.card .foot{display:flex; gap:1.2em; align-items:center; margin-top:1.7em;
+  font-size:13px}
+.card .back{background:none; border:0; font:inherit; color:var(--cacc); cursor:pointer; padding:0;
+  font-weight:700; letter-spacing:.04em}
+.card .back:hover{color:var(--cink)}
 /* **仮**（本人：「カードにした後についてはまだ決めてない……仮で適当に」）。
    いまは**戻せるだけ**。次に何を置くかは決まっていない */
-.card .tmp{color:var(--dim2); letter-spacing:.06em}
+.card .tmp{color:#8b9a90; letter-spacing:.04em}
 
 footer{border-top:1px solid var(--line); padding:clamp(40px,8vh,80px) 0 clamp(60px,12vh,120px);
   font-size:clamp(10px,1.2vw,12px); color:var(--dim2); line-height:2.2}
