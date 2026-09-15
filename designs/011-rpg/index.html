@@ -219,8 +219,17 @@ body.demo #demo{display:block}
 #slime{position:absolute; left:66%; bottom:20%; z-index:4;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
 body.demo #slime{display:block}
-#slime.hit{animation:shock .22s steps(2) 3}
+/* 当たったら**点滅しながら後ろへ跳ぶ。**点滅だけだと、殴られた感じが出ない */
+#slime.hit{animation:shock .2s steps(2) 3, knock .34s steps(3) 1}
 @keyframes shock{ from{opacity:1} to{opacity:.15} }
+@keyframes knock{ from{transform:translateX(-50%) translateX(14px)} to{transform:translateX(-50%) translateX(0)} }
+/* 入り。**右から歩いてくる。**いきなり居ると、始まった気がしない */
+#slime.come{animation:come .85s steps(9)}
+@keyframes come{ from{transform:translateX(-50%) translateX(46vw)} to{transform:translateX(-50%) translateX(0)} }
+/* 斬撃の線。敵の上に一瞬 */
+#slash{position:absolute; left:66%; bottom:20%; z-index:8;
+  transform:translateX(-50%); image-rendering:pixelated; display:none}
+#slash.on{display:block}
 /* 体力。**数字は出さない**——印を三つ消していくだけ */
 /* **体力は敵の頭の上**——中に置くと塊に埋もれる（画面で分かった） */
 #dHp{position:absolute; left:66%; bottom:calc(20% + 70px); z-index:8;
@@ -276,7 +285,15 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 /* リザルト。**二段組にする**——縦に積むと短い窓で四角が枠の外へ落ちる */
 #dRes{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
   z-index:9; width:min(88vw,760px); max-height:84vh; display:none}
-#dRes.on{display:block}
+/* **枠が開いてから、中身が一行ずつ出る。**一度に出すと、
+   ここまで積んできたものが**一瞬で終わる**（本人：「なんかスッと終わっちゃう」）*/
+#dRes.on{display:block; animation:resin .24s steps(4)}
+@keyframes resin{ from{transform:translate(-50%,-50%) scaleY(.12)}
+                  to{transform:translate(-50%,-50%) scaleY(1)} }
+/* **透明度は素で持たせない**——動きが走らない場でも、`.on` が付けば必ず見える */
+#dRes .q{opacity:0}
+#dRes .q.on{opacity:1; animation:rise .16s steps(2)}
+@keyframes rise{ from{transform:translateY(5px)} to{transform:translateY(0)} }
 #dRes .rt{margin:0; font-size:clamp(12px,1.4vw,14px); letter-spacing:.14em; color:var(--go)}
 #dRes .rs{margin:calc(var(--px)) 0 calc(var(--px)*2.5); font-size:clamp(14px,1.7vw,17px);
   font-weight:700; color:var(--ink)}
@@ -302,7 +319,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #dWin{right:auto; left:50%; top:auto; bottom:26%; transform:translateX(-50%);
         width:min(94vw,520px)}
   #dTopic{max-width:92vw}
-  #slime,#dHp{left:72%}
+  #slime,#dHp,#slash{left:72%}
   #dRes .rg{grid-template-columns:1fr}
 }
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
@@ -350,6 +367,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   <div id="demo">
     <div id="dTopic"></div>
     <canvas id="slime"></canvas>
+    <canvas id="slash"></canvas>
     <div id="dHp"></div>
     <!-- 質問と三択。**メニューと同じ場所に出す**——左は「いつもコマンドがある側」 -->
     <nav id="dWin" class="win">
@@ -510,6 +528,32 @@ var HERO_WIN = [
     '......###..###........',
     '......###..###........'
 ];
+/* 斬りのコマ。**剣を振り下ろす。**踏み込むだけだと、当たった気がしない。
+   刃は前下がり 45°——横に寝かせると、腕と鍔と刃がひとつの板に溶けた */
+var HERO_SLASH = [
+    '......................',
+    '.........##...........',
+    '......#######.........',
+    '.....#########........',
+    '....###########.......',
+    '....###########.......',
+    '....######o#o##.......',
+    '....######o#o##.......',
+    '....###########.......',
+    '.....#########........',
+    '......#######.........',
+    '.....#######..........',
+    '....##########........',
+    '...#########.####.....',
+    '...#########..###.....',
+    '....#########...##....',
+    '.....########....##...',
+    '.......##.##......##..',
+    '......##..##.......##.',
+    '.....##....##.......##',
+    '....###....###........',
+    '...####....####.......'
+];
 var HW = 22, HH = 22;
 var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背景は 4px）。
                2頭身は**胴が短いぶん小さく見える**ので、5 → 6 に上げた（132px） */
@@ -538,14 +582,15 @@ var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背�
       cx.fillRect(x*HPX, y*HPX, HPX, HPX);
     }
   }
-  var i = 0, posing = false;
-  /* 勝ちのあいだは**走りを止める。**走ったまま剣を上げると、勝った顔にならない */
-  window.heroPose = function(on){ posing = on; draw(on ? HERO_WIN : HERO[i]); };
+  var i = 0, pose = null;
+  /* 走りを止めて、決めのコマを出す。**走ったまま剣を上げても、勝った顔にならない** */
+  var POSE = { win:HERO_WIN, slash:HERO_SLASH };
+  window.heroPose = function(n){ pose = n; draw(POSE[n] || HERO[i]); };
   draw(HERO[0]);
   /* 動きを止める設定なら、**一コマ目で止める**（CSS の animation:none は
      canvas には効かないので、ここで自分で見る） */
   if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  setInterval(function(){ i = (i+1) % HERO.length; if (!posing) draw(HERO[i]); }, 110);
+  setInterval(function(){ i = (i+1) % HERO.length; if (!pose) draw(HERO[i]); }, 110);
 })();
 
 /* ─ 中身。**公式サイトの言葉をそのまま。**足していない ──────────
@@ -893,6 +938,22 @@ var SLIME_DIE = [
    '................','................','................','................',
    '.....######.....','..############..']
 ];
+/* 斬撃の線。**敵のほうに出す。**勇者は 34%、スライムは 66% で 400px 離れている——
+   剣は届かないので、当たったことは**敵の側で言う**（コマンドで戦う RPG の作法） */
+var SLASH = [
+  '..........#.',
+  '.........##.',
+  '........###.',
+  '........##..',
+  '.......###..',
+  '......###...',
+  '.....###....',
+  '....###.....',
+  '..###.......',
+  '..##........',
+  '.##.........',
+  '.#..........'
+];
 var SW = 16, SH = 10;
 (function(){
   var cv = document.getElementById('slime'), cx = cv.getContext('2d');
@@ -916,17 +977,31 @@ var SW = 16, SH = 10;
   setInterval(function(){ i = (i+1) % SLIME.length; if (idle) paint(SLIME[i]); }, 340);
 })();
 
+(function(){
+  var cv = document.getElementById('slash'), cx = cv.getContext('2d');
+  var w = SLASH[0].length, h = SLASH.length;
+  var dpr = Math.min(3, window.devicePixelRatio || 1);
+  cv.style.width = (w*HPX)+'px'; cv.style.height = (h*HPX)+'px';
+  cv.width = w*HPX*dpr; cv.height = h*HPX*dpr;
+  cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
+  cx.fillStyle = getComputedStyle(document.documentElement)
+                   .getPropertyValue('--line').trim() || '#ffffff';
+  for (var y = 0; y < h; y++) for (var x = 0; x < w; x++)
+    if (SLASH[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
+})();
+
 /* ─ デモの進行 ──────────────────────────────────────────────
    入口（お題を選ぶ）→ 問診 3 回 → リザルト。
    問診で選ぶたびに、**下の帯にコマンドが一文字ずつ打たれ**、打ち終わると勇者が斬る。
    三回斬ると倒れて、選んだ三つから組み立てた「立件」が出る */
-var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:3 };
+var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:3, parts:null };
+var REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
 var dWin  = document.getElementById('dWin'),
     dStep = document.getElementById('dStep'), dQ = document.getElementById('dQ'),
     dA    = document.getElementById('dA'),   dTopic = document.getElementById('dTopic'),
     dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
     dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
-    dWon  = document.getElementById('dWon'),
+    dWon  = document.getElementById('dWon'), slashEl = document.getElementById('slash'),
     heroEl = document.getElementById('hero');
 
 function startDemo(){
@@ -935,15 +1010,18 @@ function startDemo(){
   document.body.classList.add('demo');
   dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
   dTopic.textContent = ''; slimeEl.style.display = ''; dHp.style.display = '';
-  heroPose(false); slimeIdle();
+  slashEl.classList.remove('on');
+  heroPose(null); slimeIdle();
   paintHp();
   ask('デモ', 'どんなことで困っていますか', TOPICS.map(function(t){ return t.t; }));
 }
 function quitDemo(){
   D.on = false; D.phase = '';
   document.body.classList.remove('demo');
+  clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
   dRes.classList.remove('on'); dWon.classList.remove('on');
-  heroPose(false); slimeIdle();   /* また走り出す */
+  slashEl.classList.remove('on'); slimeEl.classList.remove('come');
+  heroPose(null); slimeIdle();   /* また走り出す */
   paintSel();
 }
 function paintHp(){
@@ -987,14 +1065,18 @@ function typeCmd(s, done){
 /* 斬る。**画面は揺らさない**（画面酔いになる）。勇者が一歩踏み込んで、敵が点滅する */
 function swing(){
   heroEl.classList.add('swing');
+  heroPose('slash');                    /* 剣を振り下ろす */
   slimeEl.classList.add('hit');
+  slashEl.classList.add('on');          /* 敵の上に斬撃の線 */
   D.hp--; paintHp();
+  setTimeout(function(){ slashEl.classList.remove('on'); }, 230);
   setTimeout(function(){
     heroEl.classList.remove('swing');
+    heroPose(null);
     slimeEl.classList.remove('hit');
     if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
     else winSeq();
-  }, 780);
+  }, 820);
 }
 
 /* 勝つところ。**急がない**——潰して、剣を上げて、名乗って、まとめる。
@@ -1015,7 +1097,7 @@ function winSeq(){
       /* **最後にもう一手打たせる。**倒したあと AI が何をしているのかが、
          これで見える（そのまま立件が出てくる） */
       typeCmd('立件としてまとめる', showResult);
-    }, 1100);
+    }, 1300);
   }, 170);
 }
 
@@ -1023,6 +1105,10 @@ function choose(i){
   if (D.phase === 'topic'){
     D.topic = i; D.step = 0; D.phase = 'ask';
     dTopic.textContent = '相談　' + TOPICS[i].t;
+    /* お題が決まってから**敵が右から歩いてくる。**最初から居ると、始まりが無い */
+    slimeEl.classList.remove('come');
+    void slimeEl.offsetWidth;            /* 二度目も動かすために巻き戻す */
+    slimeEl.classList.add('come');
     askStep();
     return;
   }
@@ -1049,9 +1135,28 @@ function showResult(){
   document.getElementById('rHow').innerHTML  = li(a2.how);
   document.getElementById('rWeek').innerHTML = li(a2.week);
   dWin.style.display = 'none';
-  D.phase = 'result'; D.sel = 0;
+  D.sel = 0;
+  /* **一行ずつ出す。**枠が開いてから、見出しと行を順に。四角は最後。
+     キーを押せば、待たずに全部出る */
+  D.parts = [].slice.call(dRes.querySelectorAll('.rt,.rs,.rg b,.rg li,.rn'));
+  D.parts.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
   dRes.classList.add('on');
-  paintRes();
+  if (REDUCE){ openDone(); return; }
+  D.phase = 'open';
+  /* **待ちの id は二つとも持っておく。**枠が開くまでの待ちを止め忘れると、
+     キーで飛ばしたあとから行出しが動き出す */
+  D.tOpen = setTimeout(function(){
+    var i = 0;
+    D.tLine = setInterval(function(){
+      if (i >= D.parts.length){ openDone(); return; }
+      D.parts[i++].classList.add('on');
+    }, 105);
+  }, 260);
+}
+function openDone(){
+  clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
+  D.parts.forEach(function(el){ el.classList.add('on'); });
+  D.phase = 'result'; paintRes();
 }
 function paintRes(){
   [].slice.call(dRes.querySelectorAll('.rb')).forEach(function(el, i){
@@ -1068,6 +1173,7 @@ document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
   if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
+  if (D.phase === 'open'){ openDone(); return; }
   var rb = e.target.closest('#dRes .rb');
   if (rb){ D.sel = [].slice.call(dRes.querySelectorAll('.rb')).indexOf(rb); fireRes(); }
 }, true);
@@ -1084,7 +1190,9 @@ document.addEventListener('keydown', function(e){
   if (!D.on) return;
   var k = e.key, n;
   if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
-  if (D.phase === 'type'){ e.preventDefault(); return; }
+  /* 出ている最中にキーを押したら、**待たずに全部出す** */
+  if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
+  if (D.phase === 'type' || D.phase === 'win'){ e.preventDefault(); return; }
   if (D.phase === 'result'){
     n = dRes.querySelectorAll('.rb').length;
     if (k === 'ArrowRight' || k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintRes(); e.preventDefault(); return; }
