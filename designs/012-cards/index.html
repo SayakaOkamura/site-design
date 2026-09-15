@@ -207,8 +207,18 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 .card li{padding-left:1.6em; text-indent:-1.6em; margin-bottom:.55em;
   font-size:clamp(12px,1.25vw,14px); line-height:1.8; color:var(--on)}
 .card li::before{content:'—\3000'; color:var(--dim)}
-/* まだ定まっていない行・字。**消さずに隠す**——消すと下が持ち上がって、行が踊る */
-.card .wait,.card .h{visibility:hidden}
+/* まだ出ていない行・字。**消さずに隠す**——消すと出るたびに下が持ち上がって、行が踊る */
+.card .wait{visibility:hidden}
+/* **点けるのではなく、暗がりから浮かせる**（2026-09-15、本人：「あーでも硬いな」）。
+   出る／出ないの二値だと、行がカチカチと入れ替わる。
+   色だけを動かす——**位置も字も変えないので、震えは戻らない。**
+   隠すのも透明な字にしておく（場所は取ったまま）。
+   動きが走らない場でも、**行き先は普通の色**なので、そのまま読める形で出る */
+.card span{transition:color .55s ease, text-shadow .55s ease}
+/* 影も消す。**透明な字でも影は出る**ので、光の染みだけが先に見えてしまう */
+.card .h{color:transparent; text-shadow:none}
+.card li::before{transition:color .55s ease}
+.card li.pre::before{color:transparent}
 .card .foot{margin-top:1.9em; font-size:clamp(11px,1.15vw,12.5px)}
 .card .back{background:none; border:0; font:inherit; color:var(--dim); cursor:pointer; padding:0;
   letter-spacing:.06em}
@@ -565,14 +575,18 @@ function plainEl(el){
   el._seq = (el._seq || 0) + 1;
   if (el._cs) el._cs.forEach(function(sp){ sp.classList.remove('h'); });
   el.classList.remove('wait');
+  el.classList.remove('pre');
 }
 function resolve(ch, el, rows, step){
   var cs = cells(el), run = ch.dataset.run, my = el._seq = (el._seq || 0) + 1;
   cs.forEach(function(sp){ sp.classList.add('h'); });
+  /* 箇条の「—」も一緒に浮かせる。ここだけ先に点くと、そこが硬く見える */
+  el.classList.add('pre');
   el.classList.remove('wait');
   rows.forEach(function(row, r){
     setTimeout(function(){
       if (ch.dataset.run !== run || el._seq !== my) return;
+      if (!r) el.classList.remove('pre');
       row.forEach(function(i){ cs[i].classList.remove('h'); });
     }, r * step);
   });
@@ -604,7 +618,9 @@ function settle(ch, back){
      **時刻で組む。**「終わったら次」だと、描画が走らない場で
      そこから先が永久に出てこない——隠してあるので、消えたのと同じになる */
   var total = plan.reduce(function(n, p){ return n + p.rows.length; }, 0) || 1;
-  var step = Math.max(65, Math.min(140, Math.round(1100 / total)));
+  /* 浮かび上がりは 0.55 秒かかるので、間隔はそれより短くてよい——
+     **重なったほうが、一続きの流れ**に見える（間が空くと、また硬くなる） */
+  var step = Math.max(70, Math.min(150, Math.round(1200 / total)));
   var at = 200;
   plan.forEach(function(p){
     setTimeout(function(){
