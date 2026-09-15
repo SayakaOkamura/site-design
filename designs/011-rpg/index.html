@@ -204,6 +204,93 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
   @keyframes popin{ from{transform:translateX(-50%) scaleY(.2)} to{transform:translateX(-50%) scaleY(1)} }
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important} }
+/* ─ デモ。**画面をそのまま使う** ─────────────────────────────
+   メニューと足もとは隠す（`body.demo`）。空・山・地面・勇者は出したまま */
+body.demo #menu, body.demo #foot, body.demo #pop{display:none}
+#demo{position:absolute; inset:0; z-index:7; display:none}
+body.demo #demo{display:block}
+
+/* いまの相談。**名乗りの下**に小さく置く */
+#dTopic{position:absolute; left:clamp(16px,4vw,54px); top:clamp(92px,15vh,120px);
+  z-index:8; font-size:clamp(11px,1.3vw,13px); letter-spacing:.06em; color:var(--go);
+  max-width:min(52vw,420px); line-height:1.7}
+
+/* スライム。**勇者の右**（ここを敵の場所にあけてあった） */
+#slime{position:absolute; left:66%; bottom:20%; z-index:4;
+  transform:translateX(-50%); image-rendering:pixelated; display:none}
+body.demo #slime{display:block}
+#slime.hit{animation:shock .22s steps(2) 3}
+@keyframes shock{ from{opacity:1} to{opacity:.15} }
+/* 体力。**数字は出さない**——印を三つ消していくだけ */
+/* **体力は敵の頭の上**——中に置くと塊に埋もれる（画面で分かった） */
+#dHp{position:absolute; left:66%; bottom:calc(20% + 70px); z-index:8;
+  transform:translateX(-50%); display:none; gap:6px; letter-spacing:.35em;
+  font-size:14px; color:var(--go)}
+body.demo #dHp{display:flex}
+
+/* 質問の窓。**メニューと同じ場所・同じ形** */
+#dWin{position:absolute; left:clamp(16px,4vw,54px); top:46%; transform:translateY(-52%);
+  z-index:8; width:min(56vw,300px)}
+#dWin .rt{margin:0}
+#dStep{margin:0 0 calc(var(--px)*1.5); font-size:11px; letter-spacing:.12em; color:var(--dim)}
+#dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,15px); font-weight:700;
+  line-height:1.7; color:var(--ink)}
+#dA{list-style:none; margin:0; padding:0}
+#dA li{display:flex; align-items:flex-start; gap:calc(var(--px)*2);
+  padding:calc(var(--px)*1.5) 0; font-size:clamp(12px,1.4vw,14px); line-height:1.6;
+  letter-spacing:.04em; cursor:pointer; color:var(--dim)}
+#dA li .cur{flex:0 0 1em; text-align:center; color:transparent}
+#dA li.pick{color:var(--ink); cursor:default}
+#dA li.pick .cur{color:var(--go)}
+body:not(.kb) #dA li:hover,#dA li[aria-current="true"]{color:var(--ink)}
+body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)}
+
+/* 打ち込まれる帯。**端末の作法だけ借りる**（2026-09-15、本人が選んだ）——
+   一文字ずつ出て、行が積まれていく。記号も色もこちらのもの。
+   **製品の見た目には寄せない**（003 からの決めごと） */
+#dBar{position:absolute; left:0; right:0; top:calc(80% + var(--px)*4); bottom:0; z-index:8;
+  padding:calc(var(--px)*2) clamp(16px,5vw,64px); overflow:hidden;
+  font-family:"SFMono-Regular",Consolas,"Courier New",monospace}
+#dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.9}
+#dLines div{color:var(--dim); opacity:.45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+#dLines div:last-child{color:var(--go); opacity:1}
+#dLines .pr{color:var(--go); opacity:1}
+#dLines .cb{display:inline-block; width:.6em; background:var(--go);
+  animation:blink .8s steps(2) infinite}
+
+/* リザルト。**二段組にする**——縦に積むと短い窓で四角が枠の外へ落ちる */
+#dRes{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  z-index:9; width:min(88vw,760px); max-height:84vh; display:none}
+#dRes.on{display:block}
+#dRes .rt{margin:0; font-size:clamp(12px,1.4vw,14px); letter-spacing:.14em; color:var(--go)}
+#dRes .rs{margin:calc(var(--px)) 0 calc(var(--px)*2.5); font-size:clamp(14px,1.7vw,17px);
+  font-weight:700; color:var(--ink)}
+#dRes .rg{display:grid; grid-template-columns:1fr 1fr; gap:0 calc(var(--px)*6)}
+#dRes .rg b{display:block; color:var(--go); font-size:clamp(11px,1.3vw,13px);
+  letter-spacing:.1em; margin:calc(var(--px)*2) 0 calc(var(--px))}
+#dRes .rg ul{list-style:none; margin:0; padding:0}
+#dRes .rg li{font-size:clamp(11.5px,1.35vw,13.5px); line-height:1.85; color:var(--dim);
+  padding-left:1em; text-indent:-1em}
+#dRes .rg li::before{content:'・'}
+#dRes .rn{display:flex; gap:calc(var(--px)*3); margin-top:calc(var(--px)*4)}
+/* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
+#dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
+  background:none; color:var(--dim); border:calc(var(--px)/2) solid var(--dim);
+  padding:calc(var(--px)*1.5) calc(var(--px)*4); letter-spacing:.08em;
+  font-size:clamp(12px,1.4vw,14px); font-weight:700}
+/* 選んでいるほうは**塗る。**縁の色だけだと、どちらを選んでいるか分からなかった */
+body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
+  background:var(--go); border-color:var(--go); color:#24130a}
+
+@media (max-width:640px){
+  #dWin{left:50%; top:auto; bottom:30%; transform:translateX(-50%); width:min(92vw,340px)}
+  #dTopic{max-width:92vw}
+  #slime,#dHp{left:72%}
+  #dRes .rg{grid-template-columns:1fr}
+}
+/* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
+#hero{transition:margin-left .1s steps(2)}
+#hero.swing{margin-left:18px}
 </style>
 
 <div id="screen">
@@ -238,6 +325,35 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
     <p class="b" id="popB"></p>
     <div class="n"><span class="p" id="popP"></span>
       <button class="go" id="popGo"></button></div>
+  </div>
+
+  <!-- ─ デモ。**画面をそのまま使う**（ポップアップの中ではない）───────
+       空・太陽・山・地面・勇者はそのまま。**隠すのはメニューと足もとだけ**——
+       走っている世界の上で、そのまま戦いが始まる -->
+  <div id="demo">
+    <div id="dTopic"></div>
+    <canvas id="slime"></canvas>
+    <div id="dHp"></div>
+    <!-- 質問と三択。**メニューと同じ場所に出す**——左は「いつもコマンドがある側」 -->
+    <nav id="dWin" class="win">
+      <p id="dStep"></p>
+      <p id="dQ"></p>
+      <ul id="dA"></ul>
+    </nav>
+    <!-- 打ち込まれる場所。**地面の下**（ふだんお問い合わせが出ている帯） -->
+    <div id="dBar"><div id="dLines"></div></div>
+    <div id="dRes" class="win">
+      <p class="rt">立件</p>
+      <p class="rs" id="rTopic"></p>
+      <div class="rg">
+        <div><b>やること</b><ul id="rDo"></ul><b>要るもの</b><ul id="rNeed"></ul></div>
+        <div><b>進め方</b><ul id="rHow"></ul><b>最初の一週間</b><ul id="rWeek"></ul></div>
+      </div>
+      <div class="rn">
+        <button class="rb" data-d="contact">お問い合わせ</button>
+        <button class="rb" data-d="quit">デモを終了する</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -438,10 +554,6 @@ var DATA = {
     + '<b>設立年月日</b><span class="s">2025 年 6 月　／　資本金 60 百万円</span>'
     + '<b>株主</b><span class="s">株式会社ＢｌｕｅＭｅｍｅ／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</span>'
   ]},
-  /* **デモは後で詰める**（本人）。枠だけ置く */
-  demo: { t:'デモ', p:[
-    '<b>準備中です。</b><span class="s">ここは、まだ作っていません。</span>'
-  ]},
   /* **足もとから開く**（2026-09-15、本人：「ありだね。**マップとかないし**」→「**アクセス、で**」）。
      前は会社概要の中にあって、**開かないと辿り着けなかった。**地図が無いぶん、
      駅からの分数が道案内そのものなので、**常に見えている場所から一手で開く**。
@@ -515,6 +627,8 @@ function draw(){
     : (GO[cur] ? GO[cur].label : 'とじる');
 }
 function open(k){
+  /* **デモだけは窓を出さない**——画面そのものを使う（2026-09-15）*/
+  if (k === 'demo'){ startDemo(); return; }
   cur = k; page = 0; pop.classList.add('on'); draw();
   var i = ALL.findIndex(function(el){ return el.dataset.k === k; });
   if (i >= 0) sel = i;
@@ -535,6 +649,7 @@ function fire(){
 }
 
 document.addEventListener('click', function(e){
+  if (D.on) return;   /* デモ中は、前からある手を止める */
   var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button'));
   if (el){
     var i = ALL.indexOf(el); if (i >= 0) sel = i;
@@ -555,6 +670,7 @@ document.addEventListener('keydown', function(){ document.body.classList.add('kb
 document.addEventListener('mousemove', function(){ document.body.classList.remove('kb'); });
 
 document.addEventListener('keydown', function(e){
+  if (D.on) return;   /* デモ中は、前からある手を止める */
   var k = e.key;
   if (k === 'ArrowUp' || k === 'ArrowDown'){
     if (cur) { e.preventDefault(); return; }      /* 窓が開いていたら止める */
@@ -568,6 +684,335 @@ document.addEventListener('keydown', function(e){
     e.preventDefault(); return;
   }
 });
+
+/* ─ デモの中身 ──────────────────────────────────────────────
+   **ふんわりした案を、問診して立件する。**それが会社の商品そのものなので、
+   デモの中身＝商品説明になっている（説明ではなく、触らせて見せる）。
+
+   問診は三問。**上流の絞り方の順番**そのまま——
+     1 痛み   いまどこが詰まっているか
+     2 ゴール 何ができていれば、うまくいったと言えるか
+     3 範囲   最初はどこから手を付けるか
+   選んだ三つから、リザルトの「立件」を**組み立てる**。
+   1 が「要るもの」、2 と 3 が「やること」、3 が「進め方」と「最初の一週間」になる。
+
+   **本物の AI は呼んでいない。**Pages に置く静的な画面なので、鍵を埋めない限り呼べない。
+   出るのは**書いておいた文を選択に応じて組み立てたもの**。
+   触らせる場で訊かれたら、そう答えられるようにしてある（27 通りの分岐） */
+var TOPICS = [
+  { t:'社内の申請が、紙とメールで回っている',
+    q:[
+      { q:'いま、どこがいちばん詰まりますか', a:[
+        { t:'承認がどこで止まっているか分からない', cmd:'承認の滞留を洗い出す',
+          need:['現行の申請書（紙とメールの両方）','承認者と、代理承認の一覧'] },
+        { t:'同じ内容を何度も書き写している', cmd:'転記の重複を洗い出す',
+          need:['いま使っている申請の様式','書き写し先の台帳・表計算'] },
+        { t:'過去の申請を探すのに時間がかかる', cmd:'保管と探し方の実態を調べる',
+          need:['保管場所の一覧（紙・共有・メール）','過去一年ぶんの申請'] }
+      ]},
+      { q:'何ができていれば、うまくいったと言えますか', a:[
+        { t:'申請した人が、いまどこにあるか自分で見られる', cmd:'申請者から見える状態を決める',
+          act:['申請の状態を四段まで減らして、申請者に見せる'] },
+        { t:'一度書いた内容が、二度目から埋まっている', cmd:'使い回せる項目を切り出す',
+          act:['氏名・所属・費目を台帳から引いて、初めから入れておく'] },
+        { t:'過去の申請が、条件で引ける', cmd:'探すための条件を決める',
+          act:['申請日・申請者・費目の三条件で引けるようにする'] }
+      ]},
+      { q:'最初はどこから手を付けますか', a:[
+        { t:'いちばん数が多い申請、ひとつだけ', cmd:'対象を一申請に絞る',
+          act:['対象を「経費精算」一本に絞る'],
+          how:['一本で作り切る → 使ってもらう → 二本目を足す'],
+          week:['いまの経費精算を一件、出してから承認まで一緒にたどる'] },
+        { t:'部署をひとつ決めて、そこの申請は全部', cmd:'対象を一部署に絞る',
+          act:['対象を一部署に絞り、その部署の申請をひととおりそろえる'],
+          how:['一部署でそろえる → 他部署へ写す'],
+          week:['その部署が一か月に出した申請を数え、多い順に並べる'] },
+        { t:'承認の経路だけ、先に整える', cmd:'承認経路を先に決める',
+          act:['申請の中身より先に、承認の経路と権限を一つに決める'],
+          how:['経路を決める → 申請を一本乗せる → 残りを乗せる'],
+          week:['いまの承認経路を全部書き出して、重なっているところを消す'] }
+      ]}
+    ]},
+
+  { t:'見積もりに、時間がかかりすぎる',
+    q:[
+      { q:'いま、どこがいちばん詰まりますか', a:[
+        { t:'過去の見積もりが、作った人の手元にある', cmd:'過去案件の在りかを洗い出す',
+          need:['過去二年ぶんの見積書','作った人と、その保管場所の一覧'] },
+        { t:'前提の置き方が、人によって違う', cmd:'前提のばらつきを洗い出す',
+          need:['直近十件の見積書','それぞれが置いた前提条件'] },
+        { t:'出すまでに、承認が何段もある', cmd:'承認の段数を数える',
+          need:['承認の経路図','金額ごとの決裁権限'] }
+      ]},
+      { q:'何ができていれば、うまくいったと言えますか', a:[
+        { t:'似た案件の見積もりが、すぐ出てくる', cmd:'似た案件の引き方を決める',
+          act:['過去の見積もりに条件を付けて、引けるようにそろえる'] },
+        { t:'前提が、最初から同じ形で書かれている', cmd:'前提の型を切り出す',
+          act:['前提条件を決まった項目に落として、全員が同じ形で書く'] },
+        { t:'金額によって、承認が飛ばせる', cmd:'金額の線引きを決める',
+          act:['金額の線を引いて、線より下は承認を一段で済ませる'] }
+      ]},
+      { q:'最初はどこから手を付けますか', a:[
+        { t:'いちばん多い案件の型、ひとつだけ', cmd:'対象を一つの案件型に絞る',
+          act:['対象を「保守の見積もり」一型に絞る'],
+          how:['一型で作り切る → 使ってもらう → 型を増やす'],
+          week:['直近の見積もりを一件、作った人と一緒に最初からたどる'] },
+        { t:'過去の見積もりを集めるところから', cmd:'散らばった見積書を集める',
+          act:['散らばっている見積書を一か所に集めて、条件を付ける'],
+          how:['集める → 条件を付ける → 引けるようにする'],
+          week:['どこに何件あるかを数えて、一覧にする'] },
+        { t:'承認の線引きから', cmd:'承認の線引きを先に決める',
+          act:['金額と承認段数の対応を、一枚に決める'],
+          how:['線を決める → 一か月試す → 見積もりの中身に手を付ける'],
+          week:['直近三か月の見積もりを金額順に並べて、線を引く位置を見る'] }
+      ]}
+    ]},
+
+  { t:'問い合わせ対応が、人に依っている',
+    q:[
+      { q:'いま、どこがいちばん詰まりますか', a:[
+        { t:'答えが、特定の人の頭の中にある', cmd:'答えの在りかを洗い出す',
+          need:['直近三か月の問い合わせ記録','いま答えている人の一覧'] },
+        { t:'同じ質問が、何度も来る', cmd:'重なっている質問を数える',
+          need:['問い合わせの一覧（件名だけでも可）','すでにある FAQ'] },
+        { t:'誰が答えるか、決まっていない', cmd:'担当の決まり方を調べる',
+          need:['いまの振り分けの手順','担当できる人の一覧'] }
+      ]},
+      { q:'何ができていれば、うまくいったと言えますか', a:[
+        { t:'よくある質問は、来る前に解決している', cmd:'先回りする範囲を決める',
+          act:['多い順に二十件の質問を、問い合わせる前に読める場所へ出す'] },
+        { t:'誰が受けても、同じ答えが返る', cmd:'答えの型を切り出す',
+          act:['答えの型を用意して、誰が受けても同じ形で返す'] },
+        { t:'答えたことが記録に残って、次に使える', cmd:'記録の残し方を決める',
+          act:['答えを型で記録して、次の問い合わせから引けるようにする'] }
+      ]},
+      { q:'最初はどこから手を付けますか', a:[
+        { t:'質問の多い順に、二十件だけ', cmd:'対象を上位二十件に絞る',
+          act:['対象を、多い順に二十件の質問に絞る'],
+          how:['二十件で作り切る → 反応を見る → 増やす'],
+          week:['直近三か月の問い合わせを数え、多い順に二十件を出す'] },
+        { t:'受け口をひとつにまとめるところから', cmd:'受け口を一つにまとめる',
+          act:['メール・電話・フォームの受け口を、一つに寄せる'],
+          how:['受け口を寄せる → 記録を型にする → 答えを整える'],
+          week:['いまある受け口を全部書き出して、それぞれの件数を数える'] },
+        { t:'誰が受けるかの決め方から', cmd:'振り分けの決まりを作る',
+          act:['誰が受けるかの決まりを一つにして、迷いを消す'],
+          how:['振り分けを決める → 一か月回す → 答えの型に手を付ける'],
+          week:['直近一か月の問い合わせが、誰のところへ行ったかを数える'] }
+      ]}
+    ]}
+];
+
+/* ─ スライム。**丸い塊・顔なし**（2026-09-15、本人：「良くあるスライムとかで
+   いいけど。商標に引っかからない範囲で」）──────────────────────
+   「スライム」という語も、ぬるっとした塊という類型も、特定の会社のものではない。
+   引っかかるのは**意匠**のほう——**しずく型の輪郭＋大きな丸い目と口**の
+   組み合わせが、あの特定のキャラ。だから**丸い山形にして、顔は付けない。**
+   **目が光るのは勇者だけ**にしておくと、主役もはっきりする */
+var SLIME = [
+  /* 1 ふつう */ [
+    '.......##.......',
+    '.....######.....',
+    '....########....',
+    '...##########...',
+    '..############..',
+    '.##############.',
+    '.##############.',
+    '################',
+    '################',
+    '################'],
+  /* 2 つぶれ */ [
+    '................',
+    '................',
+    '......####......',
+    '....########....',
+    '..############..',
+    '.##############.',
+    '################',
+    '################',
+    '################',
+    '################']
+];
+var SW = 16, SH = 10;
+(function(){
+  var cv = document.getElementById('slime'), cx = cv.getContext('2d');
+  var dpr = Math.min(3, window.devicePixelRatio || 1);
+  cv.style.width = (SW*HPX)+'px'; cv.style.height = (SH*HPX)+'px';
+  cv.width = SW*HPX*dpr; cv.height = SH*HPX*dpr;
+  cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
+  cx.fillStyle = getComputedStyle(document.documentElement)
+                   .getPropertyValue('--hero').trim() || '#150b04';
+  var i = 0;
+  function paint(){
+    var m = SLIME[i];
+    cx.clearRect(0, 0, SW*HPX, SH*HPX);
+    for (var y = 0; y < SH; y++) for (var x = 0; x < SW; x++)
+      if (m[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
+  }
+  paint();
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  /* 勇者より**ゆっくり**ぷるぷるさせる。同じ拍子だと二人で行進して見える */
+  setInterval(function(){ i = (i+1) % SLIME.length; paint(); }, 340);
+})();
+
+/* ─ デモの進行 ──────────────────────────────────────────────
+   入口（お題を選ぶ）→ 問診 3 回 → リザルト。
+   問診で選ぶたびに、**下の帯にコマンドが一文字ずつ打たれ**、打ち終わると勇者が斬る。
+   三回斬ると倒れて、選んだ三つから組み立てた「立件」が出る */
+var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:3 };
+var dWin  = document.getElementById('dWin'),
+    dStep = document.getElementById('dStep'), dQ = document.getElementById('dQ'),
+    dA    = document.getElementById('dA'),   dTopic = document.getElementById('dTopic'),
+    dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
+    dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
+    heroEl = document.getElementById('hero');
+
+function startDemo(){
+  close();
+  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3 };
+  document.body.classList.add('demo');
+  dLines.innerHTML = ''; dRes.classList.remove('on');
+  dTopic.textContent = ''; slimeEl.style.display = '';
+  paintHp();
+  ask('デモ', 'どんなことで困っていますか', TOPICS.map(function(t){ return t.t; }));
+}
+function quitDemo(){
+  D.on = false; D.phase = '';
+  document.body.classList.remove('demo');
+  dRes.classList.remove('on');
+  paintSel();
+}
+function paintHp(){
+  dHp.textContent = '◆◆◆'.slice(0, D.hp) + '◇◇◇'.slice(0, 3 - D.hp);
+}
+/* 三択を出す。**メニューと同じ形**——左に並べて、▶ が一つだけ動く */
+function ask(step, q, list){
+  D.sel = 0;
+  dStep.textContent = step; dQ.textContent = q;
+  dA.innerHTML = list.map(function(s){
+    return '<li><span class="cur">▶</span>' + s + '</li>';
+  }).join('');
+  dWin.style.display = '';
+  paintD();
+}
+function paintD(){
+  [].slice.call(dA.children).forEach(function(el, i){
+    el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
+  });
+}
+function askStep(){
+  var T = TOPICS[D.topic], s = T.q[D.step];
+  ask('問診  ' + (D.step + 1) + ' / 3', s.q, s.a.map(function(a){ return a.t; }));
+}
+
+/* 打ち込む。**一文字ずつ出して、行を積む**——端末の作法だけ借りる */
+function typeCmd(s, done){
+  var line = document.createElement('div');
+  line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
+  dLines.appendChild(line);
+  while (dLines.children.length > 4) dLines.removeChild(dLines.firstChild);
+  var tx = line.querySelector('.tx'), i = 0;
+  var t = setInterval(function(){
+    tx.textContent = s.slice(0, ++i);
+    if (i < s.length) return;
+    clearInterval(t);
+    var cb = line.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
+    setTimeout(done, 240);
+  }, 42);
+}
+/* 斬る。**画面は揺らさない**（画面酔いになる）。勇者が一歩踏み込んで、敵が点滅する */
+function swing(){
+  heroEl.classList.add('swing');
+  slimeEl.classList.add('hit');
+  D.hp--; paintHp();
+  setTimeout(function(){
+    heroEl.classList.remove('swing');
+    slimeEl.classList.remove('hit');
+    if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
+    else { slimeEl.style.display = 'none'; showResult(); }
+  }, 780);
+}
+
+function choose(i){
+  if (D.phase === 'topic'){
+    D.topic = i; D.step = 0; D.phase = 'ask';
+    dTopic.textContent = '相談　' + TOPICS[i].t;
+    askStep();
+    return;
+  }
+  if (D.phase !== 'ask') return;
+  D.picks[D.step] = i;
+  D.phase = 'type';
+  /* **窓は消さない**——消すと画面の真ん中が空になって、
+     何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
+  dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
+               + TOPICS[D.topic].q[D.step].a[i].t + '</li>';
+  typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, swing);
+}
+
+/* 立件。**選んだ三つから組み立てる**——
+   痛み（1問目）が「要るもの」、ゴール（2問目）と範囲（3問目）が「やること」、
+   範囲が「進め方」と「最初の一週間」になる */
+function showResult(){
+  var T = TOPICS[D.topic],
+      a0 = T.q[0].a[D.picks[0]], a1 = T.q[1].a[D.picks[1]], a2 = T.q[2].a[D.picks[2]];
+  var li = function(xs){ return xs.map(function(s){ return '<li>' + s + '</li>'; }).join(''); };
+  document.getElementById('rTopic').textContent = T.t;
+  document.getElementById('rDo').innerHTML   = li(a1.act.concat(a2.act));
+  document.getElementById('rNeed').innerHTML = li(a0.need);
+  document.getElementById('rHow').innerHTML  = li(a2.how);
+  document.getElementById('rWeek').innerHTML = li(a2.week);
+  dWin.style.display = 'none';
+  D.phase = 'result'; D.sel = 0;
+  dRes.classList.add('on');
+  paintRes();
+}
+function paintRes(){
+  [].slice.call(dRes.querySelectorAll('.rb')).forEach(function(el, i){
+    el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
+  });
+}
+function fireRes(){
+  var b = dRes.querySelectorAll('.rb')[D.sel];
+  if (b.dataset.d === 'contact'){ location.href = GO.contact.href; return; }
+  quitDemo();
+}
+
+document.addEventListener('click', function(e){
+  if (!D.on || !e.target.closest) return;
+  var li = e.target.closest('#dA li');
+  if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
+  var rb = e.target.closest('#dRes .rb');
+  if (rb){ D.sel = [].slice.call(dRes.querySelectorAll('.rb')).indexOf(rb); fireRes(); }
+}, true);
+/* マウスを乗せたら印もそこへ（メニューと同じ作法） */
+document.addEventListener('mouseover', function(e){
+  if (!D.on || !e.target.closest) return;
+  var li = e.target.closest('#dA li');
+  if (li && (D.phase === 'topic' || D.phase === 'ask')){
+    D.sel = [].slice.call(dA.children).indexOf(li); paintD();
+  }
+});
+
+document.addEventListener('keydown', function(e){
+  if (!D.on) return;
+  var k = e.key, n;
+  if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
+  if (D.phase === 'type'){ e.preventDefault(); return; }
+  if (D.phase === 'result'){
+    n = dRes.querySelectorAll('.rb').length;
+    if (k === 'ArrowRight' || k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintRes(); e.preventDefault(); return; }
+    if (k === 'ArrowLeft'  || k === 'ArrowUp'){ D.sel = (D.sel+n-1)%n; paintRes(); e.preventDefault(); return; }
+    if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z'){ fireRes(); e.preventDefault(); return; }
+    e.preventDefault(); return;
+  }
+  n = dA.children.length;
+  if (k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintD(); e.preventDefault(); return; }
+  if (k === 'ArrowUp'){ D.sel = (D.sel+n-1)%n; paintD(); e.preventDefault(); return; }
+  if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
+    choose(D.sel); e.preventDefault(); return;
+  }
+}, true);
 
 paintSel();
 </script>
