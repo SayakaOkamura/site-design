@@ -36,12 +36,6 @@
   --on:#7df0a4;      /* まとまったあとの文字。ここで初めて楽に読める */
   --hot:#b9ffd2;     /* 見出しと発光 */
   --line:#12331f;
-  /* まとまったカードの側。**壁とは別の世界**にする（009 のカードに寄せた）。
-     白い面に濃い字。緑は**印の色としてだけ**残して、地の色には使わない */
-  --cbg:#ffffff;
-  --cink:#16231b;    /* 題。真っ黒は使わない */
-  --csub:#4d5f53;    /* 添えの行 */
-  --cacc:#1f7a45;    /* カードの上の緑。白地で読める濃さ */
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -183,49 +177,40 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 .raw .ln:nth-child(3n){color:var(--dim2)}   /* **むらを作る**。均一だと壁に見えない */
 .ch.on .raw .ln{opacity:0; filter:blur(2px)}
 
-/* ─ まとまったカード ─────────────────────────────────────── */
-/* **出ていないあいだは場所も取らない**（`display:none`）。
-   opacity だけで隠すと、壁の下にカード一枚ぶんの空白が居座る。
-   `display` は動かせないので、出すときは JS で先に置いてから `.on` を付ける */
-/* **009 のカードに寄せる**（2026-09-15、本人：「カードっぽくはないな、今。
-   009 でやってたみたいなカードにできる？」）。
-   009 の要は「**線は一本も引かない。面と影で立てる**」だった——
-   前の形は枠線で囲った**板**で、カードではなかった。
-   白い面・角丸 10px・重ねた影。字も 009 の組み（題が太く、下に添えの行）。
+/* ─ 収束した文 ─────────────────────────────────────────── */
+/* **カードを捨てた**（2026-09-15、本人：「いっそカードを捨てるか」）。
+   白い面・角丸・影・角ゴシック——**別の世界に移す作りを全部やめた。**
+   同じ黒地の上で、**字がその場で収束する**だけにする。
+   これで、先頭の手本（字が消えて社名が明るくなる）と章が**同じ動き**になる。
+   前の形（白いカード）は 009 に寄せたもので、悪くはなかったが
+   **押した先が初見になる**（2026-09-15、本人：「違いすぎてびっくりしそう」）。
 
-   **黒地では影が効かない**（暗い上に暗い影を落としても出ない）ので、
-   立つのは**面の明るさそのもの**に任せる。影は縁をほんの少し沈ませるためだけ。
-   壁が緑の暗がりなので、**白が出た瞬間に「別のもの」になる**——
-   読みやすくなったことが、色で分かる */
-/* **走査線の上に出す**（`z-index:10` ＞ 走査線の 9）。
-   下に置くと白い面に縞がかかって、せっかく別の世界にしたものが**同じ画面の中**に戻る */
-/* **そっと置く**（2026-09-15、本人：「タイトルの変形の形と他のが違いすぎて
-   びっくりしそう」）。手本（先頭）は字が消えるだけなので、
-   章で**白い板が飛び込んでくる**と、そこだけ初見になる。
-   → **跳ね上がりも縮みもやめて、その場で浮かび上がるだけ**にした。
-   縮めていたぶん左端が壁と 7px ずれていたのも、これで揃う */
-.card{display:none; clear:both; position:relative; z-index:10;
-  opacity:0; transform:translateY(5px);
-  transition:opacity .78s ease .34s, transform .78s ease .34s;
-  background:var(--cbg); border-radius:10px;
-  /* 影も**落とすためでなく縁を沈ませるため**だけに戻す。
-     浮いて見えるほど強いと、それ自体が「飛んできた」になる */
-  box-shadow:0 1px 3px rgba(0,0,0,.45), 0 7px 18px rgba(0,0,0,.38);
-  padding:clamp(26px,3.4vw,40px) clamp(22px,3.2vw,38px) clamp(24px,3vw,34px);
-  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",system-ui,sans-serif}
-.ch.on .card{opacity:1; transform:none}
-.card .k{font-size:11.5px; letter-spacing:.26em; color:var(--cacc); font-weight:700}
-.card .lead{margin:.7em 0 0; font-size:clamp(17.5px,2.1vw,22px); line-height:1.5; color:var(--cink);
-  font-weight:700; letter-spacing:.01em}
-.card ul{list-style:none; margin:1.35em 0 0; padding:0; display:grid; gap:.7em}
-.card li{position:relative; padding-left:1.4em; font-size:15px; font-weight:500; line-height:1.72;
-  color:var(--csub)}
-.card li::before{content:'—'; position:absolute; left:0; color:var(--cacc)}
-.card .foot{display:flex; gap:1.2em; align-items:center; margin-top:1.7em;
-  font-size:13px}
-.card .back{background:none; border:0; font:inherit; color:var(--cacc); cursor:pointer; padding:0;
-  font-weight:700; letter-spacing:.04em}
-.card .back:hover{color:var(--cink)}
+   **出ていないあいだは場所も取らない**（`display:none`）。
+   opacity だけで隠すと、壁の下に一枚ぶんの空白が居座る。
+   `display` は動かせないので、出すときは JS で先に置いてから `.on` を付ける。
+
+   **`clear` を外した。**面が無くなったので、白い板のときと違って
+   **章の頭に回り込める**——壁と同じところに、同じ形で現れる。
+   同じ理由で `z-index` も外した。**走査線の下に戻す**——
+   別世界ではないので、同じ縞がかかっているほうが正しい */
+.card{display:none; opacity:0; transition:opacity .55s ease .28s;
+  padding:0 0 clamp(10px,1.4vh,18px)}
+.ch.on .card{opacity:1}
+.card .k{font-size:clamp(9.5px,1vw,11px); letter-spacing:.3em; color:var(--dim);
+  padding-bottom:1em}
+.card .lead{margin:0; font-size:clamp(15px,1.9vw,21px); line-height:1.66;
+  color:var(--hot); letter-spacing:.02em; text-shadow:0 0 18px rgba(125,240,164,.16)}
+/* **grid も flex も使わない。**新しい整形文脈ができて、章の頭に回り込まなくなる */
+.card ul{list-style:none; margin:1.5em 0 0; padding:0}
+/* 印は**絶対位置で置かない。**章の頭に回り込むと行だけが右へ逃げて、
+   印が左端に取り残される。字下げで置けば、印も行と一緒に動く */
+.card li{padding-left:1.6em; text-indent:-1.6em; margin-bottom:.55em;
+  font-size:clamp(12px,1.25vw,14px); line-height:1.8; color:var(--on)}
+.card li::before{content:'—\3000'; color:var(--dim)}
+.card .foot{margin-top:1.9em; font-size:clamp(11px,1.15vw,12.5px)}
+.card .back{background:none; border:0; font:inherit; color:var(--dim); cursor:pointer; padding:0;
+  letter-spacing:.06em}
+.card .back:hover{color:var(--on)}
 /* ここが**仮**（本人：「カードにした後についてはまだ決めてない……仮で適当に」）。
    いまは戻せるだけ。次に何を置くかは決まっていない。
    ——一度「（このあとどうするかは、まだ決めていない）」と**画面に書いた。消した。**
@@ -540,6 +525,68 @@ function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/
 /* ─ 畳む／ひらく ────────────────────────────────────────────
    **外から内へ順に消す。**端から順だと「上から流れた」に見えるが、
    まとまる感じにならない。中心へ寄せると「集まった」に見える */
+/* ─ 収束 ───────────────────────────────────────────────────
+   **文字の現れ方のほうを見せる**（2026-09-15、本人：「文字の現れ方の話やね」）。
+   ぱっと出すのではなく、**頭から一字ずつ定まっていく。**
+   定まっていない字に何を出すかは、**その章の壁から借りる**——
+   よその記号を持ってくると「壊れた画面」になるが、
+   同じ文の字なら「**まだ decode できていない**」に見える。
+   （映画の意匠そのもの＝反転した半角カナの字並びは使わない。借りるのは作法だけ）
+
+   **字数は変えない。**入れ替えるだけなので、行が伸び縮みしない */
+var POOL = {}, LATIN = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+function poolOf(ch){
+  var k = ch.dataset.k;
+  if (!POOL[k]){
+    var t = ch.querySelector('.raw').textContent.replace(/[s　]/g, '');
+    var seen = {}, out = '';
+    for (var i = 0; i < t.length; i++){ if (!seen[t[i]]){ seen[t[i]] = 1; out += t[i]; } }
+    POOL[k] = out || '0';
+  }
+  return POOL[k];
+}
+function resolve(ch, el, pool, ms, wait){
+  var t = el.getAttribute('data-t');
+  if (t === null){ t = el.textContent; el.setAttribute('data-t', t); }
+  var n = t.length, run = ch.dataset.run, t0 = 0;
+  if (!n) return;
+  function tick(now){
+    if (ch.dataset.run !== run) return;            /* 途中で戻されたら降りる */
+    if (!t0) t0 = now;
+    var p = Math.min(1, (now - t0 - wait) / ms);
+    if (p < 0) { requestAnimationFrame(tick); return; }
+    var k = Math.floor(p * n), out = t.slice(0, k);
+    for (var i = k; i < n; i++){
+      var c = t.charAt(i);
+      if (c === ' ' || c === '　'){ out += c; continue; }
+      /* **字の幅を変えない。**半角のところに全角を差すと、定まるたびに行が伸び縮みする */
+      var q = /[A-Za-z0-9]/.test(c) ? LATIN : pool;
+      out += q.charAt((Math.random() * q.length) | 0);
+    }
+    el.textContent = out;
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+/* 動きを止める設定のときは、**読める形をそのまま出す** */
+var STILL = matchMedia('(prefers-reduced-motion:reduce)').matches;
+function settle(ch, back){
+  var els = [].slice.call(ch.querySelectorAll('.card .k, .card .lead, .card li'));
+  if (back || STILL){
+    els.forEach(function(el){
+      var t = el.getAttribute('data-t');
+      if (t !== null) el.textContent = t;
+    });
+    return;
+  }
+  ch.dataset.run = String(Date.now());
+  var pool = poolOf(ch);
+  els.forEach(function(el, i){
+    /* 上から順に。**題が先に定まって、下ほど遅れる** */
+    resolve(ch, el, pool, 420 + i * 40, 320 + i * 130);
+  });
+}
+
 function fold(ch){
   if (ch.classList.contains('on')) return;
   var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
@@ -558,6 +605,7 @@ function fold(ch){
   void raw.offsetHeight;
   ch.classList.add('on');
   raw.style.maxHeight = '0px';
+  settle(ch, false);
 }
 function unfold(ch){
   if (!ch.classList.contains('on')) return;
@@ -566,6 +614,8 @@ function unfold(ch){
   [].slice.call(ch.querySelectorAll('.ln')).forEach(function(el, i){
     el.style.transitionDelay = (i * 3) + 'ms';   /* 戻りは上から順に。読み直す向き */
   });
+  ch.dataset.run = '';          /* 走っている収束を降ろす */
+  settle(ch, true);             /* 次に開いたとき、読める形から始める */
   raw.style.maxHeight = raw.scrollHeight + 'px';
   setTimeout(function(){
     raw.style.maxHeight = '';
