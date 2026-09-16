@@ -398,6 +398,8 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
   #dWish,#dLines{font-size:clamp(9px,1.1vw,11px); line-height:1.25}
 }
 #dLines div{color:var(--dim); opacity:.45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* 機械の手元。**印は付けず、字下げだけ**——入ったものではないので `>` は付かない */
+#dLines div.lg{padding-left:1.5em}
 #dLines div:last-child{color:var(--go); opacity:1}
 /* 機械の印（`<`）。**行が古くなっても印は沈めない**——誰が言ったかは消えないほうがいい */
 #dLines .pr{color:var(--go); opacity:1}
@@ -1415,6 +1417,38 @@ function typeWish(s, done){
   }, 42);
 }
 
+/* 機械が動いているところを出す（2026-09-16、本人：「**左下でコマンド出たあと
+   何か演算してる感出したらいいのでは？地面、空いてるし**」
+   →「普通に、**ClaudeCode 出ちゃっとしてるみたいに**出すって感じ。別に嘘にはならん」
+   →「**実際やってるはずのことでしょ**」）。
+
+   一度「やっていないことの主張になる」と出したが、**取り下げた。**
+   ここで出すのは**そこで実際にやること**で、進捗や速さの主張ではない。
+   帯はもう端末（`>`・等幅）なので、**作法としては地続き**——
+   借りるのは作法までで、特定の製品の意匠（回るもの・色・文言）は持ってこない。
+
+   **印は付けない。**`>` は「入ったもの」の印で、これは入ったものではなく**機械の手元**。
+   端末の作法どおり、コマンドの下に**字下げして流す。**
+
+   これで**合意済みだった「間がほしい」も取れる**——
+   倒してからリザルトが開くまでが、いままで詰まっていた */
+var LOG = ['打ち込まれた行を読む…', '食い違いを探す…', '提案にまとめる…'];
+/* **一行を書き換える。**積むと、そのぶん**打たれた行が上から落ちる**——
+   帯は五行しか入らないので、三行積むと**糧が三行とも消える。**
+   端末でも進み具合は**同じ行を書き換えて**出すので、作法としてもこちらが素直 */
+function runLog(done){
+  var line = document.createElement('div');
+  line.className = 'lg';
+  dLines.appendChild(line);
+  trimLines();
+  var i = 0;
+  (function next(){
+    if (i >= LOG.length){ setTimeout(done, 300); return; }
+    line.textContent = LOG[i++];
+    setTimeout(next, 420);
+  })();
+}
+
 /* 帯に積む行。**一文字ずつ出して、行を積む**——端末の作法だけ借りる。
    印は五行とも「>」（2026-09-16、本人：「**2〜5 も同じでいいんじゃない？
    選択した結果 AI の推測の材料として入るわけだし**」）。
@@ -1473,9 +1507,11 @@ function winSeq(){
       /* **糧を吸い上げてから開く。**願いが先、返ってきた四行があとに続いて上へ抜ける。
          順に抜けるので、**五行が材料だった**ことが目で追える */
       typeCmd('整合性を確かめる', function(){
-        dWish.classList.add('up');
-        setTimeout(function(){ dLines.classList.add('up'); }, 140);
-        setTimeout(showResult, 520);
+        runLog(function(){
+          dWish.classList.add('up');
+          setTimeout(function(){ dLines.classList.add('up'); }, 140);
+          setTimeout(showResult, 520);
+        });
       });
     }, 1300);
   }, 170);
