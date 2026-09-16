@@ -364,21 +364,34 @@ body.demo #dHp{display:block}
 /* 場所は概要と同じ右。**高さだけ下げた**（2026-09-15、本人：「文字盤もうちょっと下」）——
    17% だと空の上のほうに浮いて、下の戦いと離れて見えた。
    概要（`#pop`）は 17% のまま。あれは 9/14 に**上げた**もので、下げ戻さない */
+/* **頭打ちはポップと同じに上げた**（2026-09-16）。1920 幅で 520px＝27% しかなく、
+   **概要の窓（680px）より細い**ので、同じ場所に出るのに大きさが揃っていなかった */
 #dWin{position:absolute; right:clamp(28px,9vw,120px); top:25%;
-  z-index:8; width:min(46vw,520px); transform-origin:top}
+  z-index:8; width:min(46vw,680px); transform-origin:top}
 /* 出るたびに開く。**間があると、次の問いが来たことが分かる** */
 #dWin.pop{animation:winin .12s steps(2)}
 @keyframes winin{ from{transform:scaleY(.25)} to{transform:scaleY(1)} }
 /* **低い窓では下げない。**511px の高さで測ると、下げたぶん窓の裾が
-   敵の体力バーに乗った。背の低い画面では元の高さのまま */
-@media (max-height:640px){ #dWin{top:16%} }
+   敵の体力バーに乗った。背の低い画面では元の高さのまま。
+
+   それでも 700×500 は**上も下も詰まっていた**——
+   名乗りの下（83px）から体力バーの上（308px）まで **225px** しか無いのに、窓は **232px**。
+   上げれば名乗りに乗り、下げれば体力バーに乗る。**どちらでもなく、窓のほうを縮める。**
+   三択の行間を詰めると 232 → 208px になって、両方から離れる */
+/* **`#dWin` を頭に付ける。**この節は `#dA li` の定義より**前**にあるので、
+   同じ細かさだと**あとから来る素の規則に負ける**（詰めたつもりで 232px のままだった） */
+@media (max-height:640px){
+  #dWin{top:max(16%, 92px)}
+  #dWin #dA li{padding:calc(var(--px)*.75) 0}
+  #dWin #dQ{margin-bottom:calc(var(--px)*1.5)}
+}
 #dWin .rt{margin:0}
-#dStep{margin:0 0 calc(var(--px)*1.5); font-size:11px; letter-spacing:.12em; color:var(--dim)}
-#dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,15px); font-weight:700;
+#dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,1.1vw,13px); letter-spacing:.12em; color:var(--dim)}
+#dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,18px); font-weight:700;
   line-height:1.7; color:var(--ink)}
 #dA{list-style:none; margin:0; padding:0}
 #dA li{display:flex; align-items:flex-start; gap:calc(var(--px)*2);
-  padding:calc(var(--px)*1.5) 0; font-size:clamp(12px,1.4vw,14px); line-height:1.6;
+  padding:calc(var(--px)*1.5) 0; font-size:clamp(12px,1.4vw,17px); line-height:1.6;
   letter-spacing:.04em; cursor:pointer; color:var(--dim)}
 #dA li .cur{flex:0 0 1em; text-align:center; color:transparent}
 /* **にげるは、いつも出しておく**（2026-09-15、本人：「常に逃げるコマンドを出して
@@ -625,9 +638,17 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   background:var(--go); border-color:var(--go); color:var(--edge)}
 
 @media (max-width:640px){
-  /* 狭い窓では下へ。ただし**打ち込む帯（下 20%）より上**に置く */
-  #dWin{right:auto; left:50%; top:auto; bottom:26%; transform:translateX(-50%);
-        width:min(94vw,520px)}
+  /* **狭い窓では上へ**（2026-09-16）。前は下（`bottom:26%`）に置いていたが、
+     幅いっぱい（94vw）に広がるので、**敵にも体力バーにも必ず乗っていた**
+     （430×932・390×844・390×620・360×640・320×568 すべてで確認）。
+     敵は 72%、体力はその 70px 上にいるので、下に置くかぎり逃げられない。
+
+     → 名乗りの下へ。**上が問い、まん中が戦い、下が帯**と、役が縦に並ぶ */
+  #dWin{right:auto; left:50%; top:clamp(100px,15vh,150px); bottom:auto;
+        transform:translateX(-50%); width:min(94vw,520px)}
+  /* 320px 幅だと**一行紹介が三行以上に折り返す**ので、そのぶん下げる
+     （メニューのときと同じところ） */
+  @media (max-width:340px){ #dWin{top:120px} }
   @keyframes winin{ from{transform:translateX(-50%) scaleY(.25)}
                     to{transform:translateX(-50%) scaleY(1)} }
   #slime,#dHp,#slash{left:72%}
