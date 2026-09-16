@@ -991,8 +991,15 @@ function paintSel(){
     el.setAttribute('aria-current', (i === sel && !cur) || (cur && el.dataset.k === cur) ? 'true' : 'false');
   });
 }
+/* **デモから戻ってきたまま、まだ動かしていない**（2026-09-16、本人：
+   「でも終了画面でクリックするとデモがもう一回始まる」→「エンターを」）。
+   デモは「デモを触る」を選んで始めるので、**戻ってもカーソルがそこに残る。**
+   そのまま Enter を押すと、**流れている文字が止まってデモが始まり直す。**
+   カーソルを勝手に動かすと居場所が嘘になるので、**動かさずに、そこだけ効かなくする** */
+var selStale = false;
 function move(d){
   sel = (sel + d + ALL.length) % ALL.length;
+  selStale = false;
   paintSel();
 }
 
@@ -1053,7 +1060,7 @@ document.addEventListener('click', function(e){
 });
 /* マウスを乗せたら、カーソルもそこへ（手が二つあっても印は一つ） */
 ALL.forEach(function(el, i){
-  el.addEventListener('mouseenter', function(){ if (!cur){ sel = i; paintSel(); } });
+  el.addEventListener('mouseenter', function(){ if (!cur){ sel = i; selStale = false; paintSel(); } });
 });
 
 /* 十字キーに触れたらマウスの印を消す。マウスがまた動いたら戻す */
@@ -1068,6 +1075,11 @@ document.addEventListener('keydown', function(e){
     move(k === 'ArrowDown' ? 1 : -1); e.preventDefault(); return;
   }
   if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
+    /* **流れているあいだだけ、乗ったままのカーソルは効かない。**
+       ↑↓ で動かしてから押せば普通に開くし、**四角を押すのは前どおり効く**
+       （クリックには押した相手がいるので、乗ったままとは違う） */
+    if (!cur && selStale && document.body.classList.contains('roll')
+        && ALL[sel].dataset.k === 'demo'){ e.preventDefault(); return; }
     fire(); e.preventDefault(); return;
   }
   if (k === 'Escape' || k === 'ArrowLeft' || k === 'Backspace' || k === 'x' || k === 'X'){
@@ -1356,6 +1368,7 @@ function openDemo(){
 function quitDemo(){
   D.on = false; D.phase = '';
   D.typing = false;
+  selStale = true;   /* カーソルは「デモを触る」に乗ったまま。動かすまで効かせない */
   clearLog();
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
@@ -1641,7 +1654,14 @@ function showResult(){
   });
 
   dWin.style.display = 'none';
-  D.sel = 0;
+  /* **どちらも選ばれていない状態で開く**（2026-09-16、本人：
+   「それをリザルトで同じようにはできない、と。」）。
+   前は `0`＝**お問い合わせが選ばれた状態**で開いていたので、
+   倒した直後に叩いた Enter が、そのまま**メールを開いていた。**
+   書き置きに同じ心配が残っている——「手が滑っただけでメールが開く」。
+   ポップアップでは避けたが、**リザルトの四角は素通しだった。**
+   ここだけ厳しくする理由は、**押し間違いの行き先がサイトの外**だから */
+  D.sel = -1;
   /* **見たものは、枠と一緒に出す**（2026-09-16）。
      前はここも一行ずつ出していたので、**読まなくていいものを順に読ませてから**
      タスクが出てきた。書いてある狙い（「どちらも見たものなので、読み直す必要がない」）と、
@@ -1679,7 +1699,14 @@ function paintRes(){
     el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
   });
 }
+/* まだどちらも選んでいないなら、**最初の ←→ で先頭が選ばれる**（動きはそこから普通） */
+function selRes(d){
+  var n = dRes.querySelectorAll('.rb').length;
+  D.sel = (D.sel < 0) ? 0 : (D.sel + d + n) % n;
+  paintRes();
+}
 function fireRes(){
+  if (D.sel < 0) return;   /* どちらも選んでいない。**何も起きない**——空を押したときと同じ */
   var b = dRes.querySelectorAll('.rb')[D.sel];
   /* お問い合わせを押した人には流さない。**もう次へ進んでいる** */
   if (b.dataset.d === 'contact'){ location.href = GO.contact.href; return; }
@@ -1826,9 +1853,8 @@ document.addEventListener('keydown', function(e){
   if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
   if (D.phase === 'type' || D.phase === 'win'){ e.preventDefault(); return; }
   if (D.phase === 'result'){
-    n = dRes.querySelectorAll('.rb').length;
-    if (k === 'ArrowRight' || k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintRes(); e.preventDefault(); return; }
-    if (k === 'ArrowLeft'  || k === 'ArrowUp'){ D.sel = (D.sel+n-1)%n; paintRes(); e.preventDefault(); return; }
+    if (k === 'ArrowRight' || k === 'ArrowDown'){ selRes(1); e.preventDefault(); return; }
+    if (k === 'ArrowLeft'  || k === 'ArrowUp'){ selRes(-1); e.preventDefault(); return; }
     if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z'){ fireRes(); e.preventDefault(); return; }
     e.preventDefault(); return;
   }
