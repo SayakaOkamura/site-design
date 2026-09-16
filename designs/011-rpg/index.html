@@ -485,6 +485,20 @@ body.roll #dRoll{display:block}
 #dRollIn p + p{margin-top:calc(var(--px)*5)}
 
 /* 「たおした！」。**16bit の白抜き**——名乗りと同じ、にじませない硬い縁 */
+/* 戦闘に入る合図（2026-09-16）。**寄って来させない**——「！」のあと一度だけ光って、
+   明けたら**もうそこに居る。**RPG の遭遇そのもので、歩いてくる 0.85 秒も要らなくなる。
+
+   決めごとに触るところ：「**画面を揺らさない・強く光らせない**（目に障る）」。
+   本人の条件どおり**軽度**にしてある——**一度だけ・二コマ・薄く**（.34 → .17 → 無し）。
+   揺らさないし、暗くもしない。
+
+   **素の状態は透明。**光るのは飾りなので、動きが走らない場（裏の窓・動きを止める設定）では
+   **光らないだけで、何も壊れない** */
+#flash{position:absolute; inset:0; z-index:10; display:none;
+  pointer-events:none; background:var(--go); opacity:0}
+#flash.on{display:block; animation:flash .16s steps(2)}
+@keyframes flash{ from{opacity:.34} to{opacity:0} }
+
 /* 幕（2026-09-16）。指摘：「**なぜ急に文字が流れ始めたのか**が分からないまま見ることになる」。
    押した瞬間に窓が出て、**その後ろで**エンドロールが流れ出し、一拍で窓が引く。
    窓が繋ぎ目になるので、押したことと文字が流れ出したことが繋がる。
@@ -629,6 +643,10 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
        本人：「メニューは普通に動かせる状態で、背景でやって」）。
        山より手前、勇者より奥。触れない（`pointer-events:none`）-->
   <div id="dRoll"><div id="dRollIn"></div></div>
+
+  <!-- 戦闘に入る合図。**一度だけ、軽く**（2026-09-16、本人：「戦闘開始なら寄って来るんじゃなくて、
+       もう！→画面点滅(軽度)から移動なしで戦闘にするのは？」）-->
+  <div id="flash"></div>
 
   <!-- 幕。**押したことと、後ろで文字が流れ出したことを繋ぐ**（2026-09-16）。
        `#demo` の中には置けない——このあと `quitDemo()` でデモごと畳むので、一緒に消える -->
@@ -1334,7 +1352,7 @@ var dWin  = document.getElementById('dWin'),
     dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
     dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
     dWon  = document.getElementById('dWon'), slashEl = document.getElementById('slash'),
-    dBang = document.getElementById('dBang'),
+    dBang = document.getElementById('dBang'), flashEl = document.getElementById('flash'),
     heroEl = document.getElementById('hero');
 
 /* 入り口。**暗転はしない**（2026-09-15、本人：「あんながっつり変わらなくていいけど
@@ -1388,6 +1406,7 @@ function openDemo(){
      そのうえ**押した先のメニューが消える**ので、
      目がそこから離れるあいだに「！」の 0.14 秒が終わっていた。
      → 敵と体力を **0.15 秒**遅らせて、**「！」が一つだけの瞬間**をつくる */
+  flashEl.classList.remove('on');
   slimeEl.classList.remove('come');
   slimeEl.style.visibility = 'hidden';
   dHp.style.visibility = 'hidden';
@@ -1400,19 +1419,21 @@ function openDemo(){
     dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
     setTimeout(function(){ dBang.classList.remove('on'); }, 450);
   }, 120);
+  /* **光って、明けたらもう居る。**歩いてこない（`come` は付けない）。
+     光っているあいだに出すので、**湧いて出たようには見えない** */
   D.tSlime = setTimeout(function(){
+    flashEl.classList.remove('on'); void flashEl.offsetWidth; flashEl.classList.add('on');
+    setTimeout(function(){ flashEl.classList.remove('on'); }, 200);
     slimeEl.style.visibility = ''; dHp.style.visibility = '';
-    void slimeEl.offsetWidth;          /* 二度目も動かすために巻き戻す */
-    slimeEl.classList.add('come');
     /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
     setTimeout(paintHp, 60);
-  }, 230);
+  }, 260);
   /* 0.7 秒は待たせすぎだった（2026-09-16、本人：「ちょっと窓遅い」→「0.3」）。
      敵は 0.85 秒かけて歩いてくるので、**まだ歩きはじめたところ**で窓が開く。
      **これ以上詰めると「！」と同時になって、押し流し合う**（そこが元の問題だった） */
   D.tCome = setTimeout(function(){
     ask('デモ', 'どんなことを、したい？', TOPICS.map(function(t){ return t.t; }));
-  }, 340);
+  }, 420);
 }
 function quitDemo(){
   D.on = false; D.phase = '';
@@ -1424,6 +1445,7 @@ function quitDemo(){
   /* **待ちは全部止める。**止め忘れると、デモを出たあとに「！」が出たり歩いてきたりする */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
   D.tCome = D.tBang = D.tSlime = null;
+  flashEl.classList.remove('on');
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
