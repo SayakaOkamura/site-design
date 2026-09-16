@@ -300,12 +300,25 @@ body.demo #demo{display:block}
 #slime{position:absolute; left:66%; bottom:20%; z-index:4;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
 body.demo #slime{display:block}
-/* 当たったら**点滅しながら後ろへ跳ぶ。**点滅だけだと、殴られた感じが出ない */
-#slime.hit{animation:shock .2s steps(2) 3, knock .34s steps(3) 1}
+/* 当たったら**点滅しながら後ろへ跳ぶ。**点滅だけだと、殴られた感じが出ない。
+   **`body.demo` を頭に付ける**——跳ね（`body.demo #slime`）のほうが細かいので、
+   `#slime.hit` だけだと**負けて、当たっても跳ねつづける**（画面で分かった） */
+body.demo #slime.hit{animation:shock .2s steps(2) 3, knock .34s steps(3) 1}
 @keyframes shock{ from{opacity:1} to{opacity:.15} }
 @keyframes knock{ from{transform:translateX(-50%) translateX(14px)} to{transform:translateX(-50%) translateX(0)} }
-/* 入り。**右から歩いてくる。**いきなり居ると、始まった気がしない */
-#slime.come{animation:come .85s steps(9)}
+/* **その場で跳ねる**（2026-09-16、本人：「寄ってくる方が動きあってよかったかもなあ」→
+   「してみて」）。歩いてこない代わりに、**待っているあいだ動いている。**
+   9/15 の決めごと「**選んでいるあいだ何も起きない**画面にしない」は、こちらで満たす。
+
+   **一段だけ、硬く。**`translateY` を 0 と -6px（絵の一粒ぶん）で切り替える。
+   中間を作らないので、ドットの画面の文法から外れない。
+   `.hit` と `.come` は `transform` を丸ごと持っていくので、当たっているあいだは止まる */
+body.demo #slime{animation:bob 1.1s infinite}
+@keyframes bob{ 0%,49%{transform:translateX(-50%) translateY(0)}
+                50%,100%{transform:translateX(-50%) translateY(-6px)} }
+/* 入り。**右から歩いてくる**（いまは呼んでいない。戻すなら `come` を付ける）。
+   ここも跳ねに負けないように `body.demo` を頭に付ける */
+body.demo #slime.come{animation:come .85s steps(9)}
 @keyframes come{ from{transform:translateX(-50%) translateX(46vw)} to{transform:translateX(-50%) translateX(0)} }
 /* 斬撃の線。敵の上に一瞬 */
 #slash{position:absolute; left:66%; bottom:20%; z-index:8;
@@ -1445,19 +1458,18 @@ function openDemo(){
     dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
     setTimeout(function(){ dBang.classList.remove('on'); }, 450);
   }, 120);
-  /* **歩いてくる**（2026-09-16、本人：「寄ってくる方が**動きあって**よかったかもなあ」）。
-     一度**光ってその場に出す**形にしたが、**明けたあとが静かになる。**
-     歩いてくる 0.85 秒は、**選んでいるあいだの動き**をしていた——
-     9/15 に「入ってすぐ歩いてくる。お題を選んだあとだと、選んでいるあいだ何も起きない」と
-     決めたときの理由が、そのまま効いていた。
+  /* **光って、明けたらもう居る**（2026-09-16）。
+     一度は歩いてくるほうに戻した（本人：「寄ってくる方が動きあってよかったかもなあ」）が、
+     **締まりと動きは別のもの**だと分かったので、**分けた**——
+     **転換は光、動きは敵そのもの**（その場で跳ねる。下の `bob`）。
 
-     光は残してある（`flashGo`）が、**呼んでいない。**戻したくなったらここで呼ぶ */
+     **いちばん明るいところで置く**ので、湧いて出たようには見えない */
   D.tSlime = setTimeout(function(){
-    slimeEl.style.visibility = ''; dHp.style.visibility = '';
-    void slimeEl.offsetWidth;          /* 二度目も動かすために巻き戻す */
-    slimeEl.classList.add('come');
-    /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
-    setTimeout(paintHp, 60);
+    flashGo(function(){
+      slimeEl.style.visibility = ''; dHp.style.visibility = '';
+      /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
+      setTimeout(paintHp, 60);
+    });
   }, 260);
   /* 0.7 秒は待たせすぎだった（2026-09-16、本人：「ちょっと窓遅い」→「0.3」）。
      敵は 0.85 秒かけて歩いてくるので、**まだ歩きはじめたところ**で窓が開く。
