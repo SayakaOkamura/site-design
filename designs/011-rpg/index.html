@@ -398,8 +398,17 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
   #dWish,#dLines{font-size:clamp(9px,1.1vw,11px); line-height:1.25}
 }
 #dLines div{color:var(--dim); opacity:.45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-/* 機械の手元。**印は付けず、字下げだけ**——入ったものではないので `>` は付かない */
+/* 機械の手元。**印は付けず、字下げだけ**——入ったものではないので `>` は付かない。
+   **ずっと動いている**（2026-09-16、本人：「なんかずっと演算してるな、動いてるなって見せたい」）。
+   打つたびに言葉が変わり、そのあいだも点が動きつづける。
+
+   **動かすのは濃さだけで、出す／消すはしない。**素の状態を「三つとも見えている」に
+   しておくと、動きが走らない場でも**読める形で残る**（この案で二度踏んだところ） */
 #dLines div.lg{padding-left:1.5em}
+#dLines div.lg i{font-style:normal; opacity:1; animation:dot 1.2s steps(2) infinite}
+#dLines div.lg i:nth-child(3){animation-delay:.2s}
+#dLines div.lg i:nth-child(4){animation-delay:.4s}
+@keyframes dot{ 0%,100%{opacity:1} 50%{opacity:.2} }
 #dLines div:last-child{color:var(--go); opacity:1}
 /* 機械の印（`<`）。**行が古くなっても印は沈めない**——誰が言ったかは消えないほうがいい */
 #dLines .pr{color:var(--go); opacity:1}
@@ -1442,23 +1451,26 @@ function typeWish(s, done){
    打つたびに一段進む。**斬るのと同時**に書き換わるので、待ち時間は増えない。
 
    ```
-   願いを打つ        書かれたことを読む…
-   1 問目を選ぶ      足りないところを探す…
-   2 問目を選ぶ      候補を照らす…
-   3 問目を選ぶ      食い違いを探す…
-   整合性を確かめる   提案にまとめる…      → リザルト
+   願いを打つ      書かれたことを読んでいる
+   1 問目を選ぶ    足りないところを探している
+   2 問目を選ぶ    候補を照らしている
+   3 問目を選ぶ    整合性を確かめている      ← 倒すところまで、ここが動きつづける
+   倒したあと      提案にまとめている        → リザルト
    ```
 
    **一行しか使わない。**積むと、そのぶん**打たれた行が上から落ちる**——
    帯は五行しか入らないので、三行積むと**糧が三行とも消える**（一度やって踏んだ）。
    端末でも進み具合は**同じ行を書き換えて**出すので、作法としてもこちらが素直 */
-var STEPLOG = ['足りないところを探す…', '候補を照らす…', '食い違いを探す…'];
+var STEPLOG = ['足りないところを探している', '候補を照らしている', '整合性を確かめている'];
 var logEl = null;
 /* **書き換えるたびに、いちばん下へ入れ直す。**
    コマンドはこの下に積まれるので、置きっぱなしだと**手元の行が上へ流れていく** */
 function setLog(t){
   if (!logEl){ logEl = document.createElement('div'); logEl.className = 'lg'; }
-  logEl.textContent = t;
+  /* **点は三つとも、いつも出ている。**動くのは濃さだけ——
+     動きが走らない場（裏の窓・動きを止める設定）でも、消えずに読める形で残る */
+  logEl.innerHTML = '<span class="lt"></span><i>.</i><i>.</i><i>.</i>';
+  logEl.querySelector('.lt').textContent = t;
   dLines.appendChild(logEl);
   trimLines();
 }
@@ -1520,22 +1532,19 @@ function winSeq(){
     dWon.classList.add('on');
     setTimeout(function(){
       dWon.classList.remove('on');
-      /* **最後の一行は機械の仕事。**倒したあと AI が何をしているのかが、これで見える。
-         本人の言う段取りの最後（**整合性確認（完全に AI）**）がここ。
-         前は「段取りにおとす」だったが、**段取りという言葉は画面から消えた** */
-      /* **糧を吸い上げてから開く。**願いが先、返ってきた四行があとに続いて上へ抜ける。
-         順に抜けるので、**五行が材料だった**ことが目で追える */
-      typeCmd('整合性を確かめる', function(){
-        /* **最後の一段だけは、打ち終わってから。**
-           「整合性を確かめる」と打っている最中に「提案にまとめる」と出ていると、
-           手元のほうが先に行ってしまう */
-        setLog('提案にまとめる…');
-        setTimeout(function(){
-          dWish.classList.add('up');
-          setTimeout(function(){ dLines.classList.add('up'); }, 140);
-          setTimeout(showResult, 520);
-        }, 520);
-      });
+      /* **`> 整合性を確かめる` は外した**（2026-09-16、本人：
+         「**入力したものを下に置いたまま、なんかずっと演算してるな、動いてるなって見せたい**」）。
+         理由は二つ。**帯は五行しか入らない**ので、手元の行を居させるには一行いる。
+         もう一つは、**あれは入力ではない**——本人が選んでいないのに `>`（入ったものの印）が
+         付いていた。外すと、帯に残るのは**打たれた四行だけ**になって印と中身が合う。
+
+         **糧を吸い上げてから開く。**願いが先、選んだ三行があとに続いて上へ抜ける */
+      setLog('提案にまとめている');
+      setTimeout(function(){
+        dWish.classList.add('up');
+        setTimeout(function(){ dLines.classList.add('up'); }, 140);
+        setTimeout(showResult, 520);
+      }, 900);
     }, 1300);
   }, 170);
 }
@@ -1550,7 +1559,7 @@ function choose(i){
     dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + TOPICS[i].t + '</li>';
     D.n = 0;
     typeWish(TOPICS[i].t, function(){
-      setLog('書かれたことを読む…');       /* ここから下で動きつづける */
+      setLog('書かれたことを読んでいる');   /* ここから下で動きつづける */
       D.phase = 'ask'; askStep();
     });
     return;
