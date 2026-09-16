@@ -190,10 +190,10 @@ body{
   padding:calc(var(--px)*3) calc(var(--px)*4);
 }
 #menu{position:absolute; left:clamp(16px,4vw,54px); top:46%; transform:translateY(-62%);
-  z-index:5; min-width:min(46vw,210px)}
+  z-index:5; min-width:min(46vw,260px)}
 #menu ul{list-style:none; margin:0; padding:0}
 #menu li{display:flex; align-items:center; gap:calc(var(--px)*2);
-  padding:calc(var(--px)*1.5) 0; font-size:clamp(14px,1.6vw,17px); font-weight:700;
+  padding:calc(var(--px)*1.5) 0; font-size:clamp(14px,1.6vw,20px); font-weight:700;
   letter-spacing:.06em; cursor:pointer; color:var(--dim)}
 #menu li .cur{width:1em; text-align:center; color:transparent}
 /* **十字キーを使い出したら、乗せっぱなしのマウスは黙る**（`body.kb`）。
@@ -204,7 +204,7 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
 /* 足もとの二つ。**地面の下** */
 #foot{position:absolute; left:0; right:0; top:calc(80% + var(--px)*7); z-index:5;
   display:flex; gap:calc(var(--px)*6); justify-content:center;
-  font-size:clamp(12px,1.4vw,14px); letter-spacing:.06em}
+  font-size:clamp(12px,1.4vw,16px); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   color:var(--dim); cursor:pointer; padding:calc(var(--px)) calc(var(--px)*2)}
 #foot button{display:inline-flex; align-items:center; gap:calc(var(--px)*1.5)}
@@ -234,23 +234,44 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
 body:has(#pop.on){cursor:pointer}
 #pop{position:absolute; z-index:6;
   right:clamp(28px,9vw,120px); top:17%;
-  width:min(46vw,520px); max-height:60vh; display:none; transform-origin:top}
+  width:min(46vw,680px); max-height:60vh; display:none; transform-origin:top}
 #pop.on{display:block; animation:popin .12s steps(2) both}
 @keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
-#pop .t{font-size:clamp(12px,1.4vw,14px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--px)*2)}
-#pop .b{margin:0; font-size:clamp(14px,1.75vw,17px); line-height:2; min-height:7.2em}
+/* **頭打ちを上げた**（2026-09-16、本人：「でかい画面でも小さい画面でもポップの見え方とか
+   メニューの見え方がいい感じになるように」）。1920 幅で窓が 520px＝**画面の 27%** しかなく、
+   字も 17px で止まっていた。**上限だけ上げる**——`vw` の側は触らないので、
+   中くらいの画面の見え方は変わらない */
+#pop .t{font-size:clamp(12px,1.4vw,15px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--px)*2)}
+#pop .b{margin:0; font-size:clamp(14px,1.75vw,20px); line-height:2; min-height:7.2em}
 #pop .b b{color:var(--go); font-weight:700}
-#pop .b .s{display:block; font-size:clamp(12px,1.45vw,14px); color:var(--dim); line-height:1.9; margin-top:calc(var(--px)*2)}
+#pop .b .s{display:block; font-size:clamp(12px,1.45vw,16px); color:var(--dim); line-height:1.9; margin-top:calc(var(--px)*2)}
 #pop .n{display:flex; align-items:center; justify-content:space-between; margin-top:calc(var(--px)*2)}
 #pop .p{font-size:12px; color:var(--dim); letter-spacing:.1em}
 #pop .go{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit; cursor:pointer;
-  color:var(--go); font-size:clamp(14px,1.7vw,17px); font-weight:700; letter-spacing:.08em;
+  color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
 @keyframes blink{ 0%,49%{opacity:1} 50%,100%{opacity:.15} }
 
 @media (max-width:640px){
-  #menu{top:auto; bottom:26%; transform:none; min-width:150px}
+  /* **メニューは上、ポップは下**（2026-09-16）。
+     前はメニューが `bottom:26%` で、下いっぱいに出るポップと**必ず重なっていた**
+     （640×480・430×932・390×844・360×640 で確認）。
+     ポップは背が高くて上へは逃がせない（狭い窓では 74vh まで使う）ので、
+     **逃げるのはメニューのほう。**名乗りの下に置く */
+  /* 下限は **100px**——84 だと名乗りの三行目（一行紹介）に乗った（画面で分かった） */
+  #menu{top:clamp(100px,15vh,150px); bottom:auto; transform:none; min-width:150px}
+  /* **行の間を詰める。**620px の高さだと、詰めないと**下のポップに 4px 触る** */
+  #menu li{padding:calc(var(--px)) 0}
+  /* **狭くて低い窓だけは、開いているあいだメニューを退かせる**（2026-09-16）。
+     640×480 では、名乗り（〜82px）＋メニュー（202px）＋ポップ（274px）が
+     **画面の高さ 480 に入らない。**上へ逃がしても足りない。
+     窓を閉じれば戻るので、失うものは無い */
+  /* **幅も見る。**320px 幅だと名乗りが三行以上に折り返して、そのぶん下が詰まる
+     （320×568 でメニューが名乗りにもポップにも触った） */
+  @media (max-height:600px), (max-width:340px){
+    body.popped #menu{display:none}
+  }
   #hero{left:50%}   /* 狭い窓では窓が下へ回るので、真ん中に戻す */
   /* 狭い窓では右に寄せる余地が無い。**下いっぱい**に戻す */
   /* 狭い窓は**下いっぱい**なので、上へ伸ばす余地がある。60vh では
@@ -1053,12 +1074,18 @@ function draw(){
 function open(k){
   /* **デモだけは窓を出さない**——画面そのものを使う（2026-09-15）*/
   if (k === 'demo'){ startDemo(); return; }
-  cur = k; page = 0; pop.classList.add('on'); draw();
+  cur = k; page = 0; pop.classList.add('on');
+  document.body.classList.add('popped');   /* 狭くて低い窓で、メニューを退かせるため */
+  draw();
   var i = ALL.findIndex(function(el){ return el.dataset.k === k; });
   if (i >= 0) sel = i;
   paintSel();
 }
-function close(){ cur = null; pop.classList.remove('on'); paintSel(); }
+function close(){
+  cur = null; pop.classList.remove('on');
+  document.body.classList.remove('popped');
+  paintSel();
+}
 /* めくる。最後まで来たら閉じる（fire と違って、外へは出ない） */
 function turn(){
   var d = DATA[cur];
