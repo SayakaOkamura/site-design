@@ -1539,7 +1539,7 @@ var FILL = [
   'detect(conflicts)', 'detect(gaps)', 'merge(duplicates)',
   'align(granularity)', 'assign(priority)', 'diff(previous answer)', 'bind(constraints)'
 ];
-var streamT = null, fillI = 0;
+var streamT = null, fillI = 0, pauseUntil = 0;
 var dStat = document.getElementById('dStat');
 var stage = 0, running = false, opNow = '';
 /* 済んだ処理を一行、上へ流す */
@@ -1572,18 +1572,22 @@ function startStream(){
   opNow = FILL[fillI++ % FILL.length];
   paintStat();
   streamT = setInterval(function(){
-    if (D.typing) return;
+    /* **打っているあいだと、打った直後の一拍は流さない**（2026-09-16、本人：
+       「左下の AI 風コードの進みをもうちょい遅く。**選択肢が撃ち込まれるところは特に、
+       打ち込み終わった瞬間にじゃなくてワンテンポおいてから流して**」）。
+       打ち終わりに次が重なると、**打ったことが流れに飲まれる** */
+    if (D.typing || Date.now() < pauseUntil) return;
     pushLog(opNow);                       /* 終わったものが上へ */
     opNow = FILL[fillI++ % FILL.length];  /* 次が括弧の中へ */
     paintStat();
-  }, 620);
+  }, 850);
 }
 function stopStream(){
   if (streamT){ clearInterval(streamT); streamT = null; }
 }
 function clearLog(){
   stopStream();
-  fillI = 0; stage = 0; running = false; opNow = '';
+  fillI = 0; stage = 0; running = false; opNow = ''; pauseUntil = 0;
   dStat.textContent = '';
 }
 
@@ -1619,16 +1623,21 @@ function typeCmd(s, done){
     tx.textContent = s.slice(0, ++i);
     if (i < s.length) return;
     clearInterval(t);
-    D.typing = false;
     var cb = dStat.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
-    /* **打ち終わったら、一段上へ送る。**空いた下に次の英語が出る */
-    var line = document.createElement('div');
-    line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span>';
-    line.querySelector('.tx').textContent = s;
-    dLines.appendChild(line);
-    trimLines();
-    dStat.className = '';
-    setTimeout(done, 240);
+    /* **打ち終わってすぐには動かさない。**打った行をそのまま一拍見せる。
+       `D.typing` は下げない——下げると、この一拍のあいだに流れが上を動かす */
+    setTimeout(function(){
+      D.typing = false;
+      /* **一段上へ送る。**空いた下に次の英語が出る（`done` の中の `setLog`）*/
+      var line = document.createElement('div');
+      line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span>';
+      line.querySelector('.tx').textContent = s;
+      dLines.appendChild(line);
+      trimLines();
+      dStat.className = '';
+      pauseUntil = Date.now() + 700;   /* 次が流れてくるのは、そのあと */
+      done();
+    }, 450);
   }, 42);
 }
 /* 斬る。**画面は揺らさない**（画面酔いになる）。勇者が一歩踏み込んで、敵が点滅する */
@@ -1838,7 +1847,7 @@ function showClear(){
   clearHold = setTimeout(function(){
     clearEl.classList.add('out');
     clearOut = setTimeout(function(){ clearEl.classList.remove('on', 'out'); }, 180);
-  }, 700);
+  }, 1000);
 }
 function hideClear(){
   if (clearHold){ clearTimeout(clearHold); clearHold = null; }
