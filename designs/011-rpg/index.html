@@ -485,30 +485,29 @@ body.roll #dRoll{display:block}
 #dRollIn p + p{margin-top:calc(var(--px)*5)}
 
 /* 「たおした！」。**16bit の白抜き**——名乗りと同じ、にじませない硬い縁 */
-/* 戦闘に入る転換（2026-09-16）。**寄って来させない**——「！」のあと画面が一度閉じて、
+/* 戦闘に入る合図（2026-09-16）。**寄って来させない**——「！」のあと一度だけ明るくなって、
    明けたら**もうそこに居る。**歩いてくる 0.85 秒も要らなくなる。
 
-   はじめ**一度光らせた**が、本人：「フラッシュじゃなくて、**昔のポケモンの遭遇モーション**
-   みたいな方がいいかもな」。**渦巻きは避けた**——あれ自体が固有の意匠で、
-   この案では同じ線で三度外している（スライムの意匠／「そして時は流れた」／`Herding…`）。
-   借りるのは**横線のワイプ**のほうで、8bit の転換として広く使われている作法。
+   一度**横線のワイプ**にした（本人：「昔のポケモンの遭遇モーションみたいな」）。
+   **やめた**——本人：「あー、**やっぱりちかちかするかも**。
+   最初にやってたやつの**延長線上**くらいで、**優しめに**」。
+   帯が一本ずつ入れ替わるので、**細かい明滅が並ぶ**。目に障るのはそこだった。
 
-   決めごとに触るところ：「**画面はどこも暗くならないし、揺れもしない**」。
-   **揺らさない**のはそのまま。暗くなるのは**閉じているあいだの 0.1 秒だけ**で、
-   居座らせない。光らないので、点滅よりむしろ目に優しい。
+   → 面が一枚、**ゆっくり明るくなって、ゆっくり引く。**
+   ```
+   前（点滅）    .34 → 0    0.16 秒  steps(2)   ぱっと光って、ぱっと消える
+   いま         .18 を頂点   0.42 秒  steps(5)   立ち上がりも引きも階段。**明滅しない**
+   ```
+   段は増やすが**一度きり**なので、ちかちかにはならない。
+   薄さ（.18）は前の半分。**揺らさないし、暗くもしない。**
 
-   **素の状態は「開いている」**（`scaleY(0)`）。閉じるのは飾りなので、
-   動きが走らない場（裏の窓・動きを止める設定）では**閉じないだけ。**
+   **素の状態は透明。**明るくなるのは飾りなので、
+   動きが走らない場（裏の窓・動きを止める設定）では**光らないだけ。**
    敵はどのみち JS の時計で置かれるので、何も壊れない */
-#wipe{position:absolute; inset:0; z-index:10; display:none; pointer-events:none;
-  flex-direction:column}
-#wipe.on{display:flex}
-#wipe i{flex:1 1 0; background:var(--edge); transform:scaleY(0)}
-/* 上から順に閉じる。**一本ずつずらす**と、走査線が降りてくるように見える */
-#wipe.on i{transform-origin:top; animation:wipein .16s steps(2) forwards}
-#wipe.out i{transform-origin:bottom; animation:wipeout .16s steps(2) forwards}
-@keyframes wipein{ from{transform:scaleY(0)} to{transform:scaleY(1)} }
-@keyframes wipeout{ from{transform:scaleY(1)} to{transform:scaleY(0)} }
+#flash{position:absolute; inset:0; z-index:10; display:none;
+  pointer-events:none; background:var(--go); opacity:0}
+#flash.on{display:block; animation:flash .42s steps(5)}
+@keyframes flash{ 0%{opacity:0} 30%{opacity:.18} 100%{opacity:0} }
 
 /* 幕（2026-09-16）。指摘：「**なぜ急に文字が流れ始めたのか**が分からないまま見ることになる」。
    押した瞬間に窓が出て、**その後ろで**エンドロールが流れ出し、一拍で窓が引く。
@@ -655,10 +654,8 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
        山より手前、勇者より奥。触れない（`pointer-events:none`）-->
   <div id="dRoll"><div id="dRollIn"></div></div>
 
-  <!-- 戦闘に入る転換。**横線が閉じて、明けたらもう居る**（2026-09-16、本人：
-       「フラッシュじゃなくて、昔のポケモンの遭遇モーションみたいな方がいいかも」）。
-       帯は JS で敷く（数を変えたくなったら一か所） -->
-  <div id="wipe"></div>
+  <!-- 戦闘に入る合図。**一度だけ、やわらかく** -->
+  <div id="flash"></div>
 
   <!-- 幕。**押したことと、後ろで文字が流れ出したことを繋ぐ**（2026-09-16）。
        `#demo` の中には置けない——このあと `quitDemo()` でデモごと畳むので、一緒に消える -->
@@ -1364,7 +1361,7 @@ var dWin  = document.getElementById('dWin'),
     dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
     dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
     dWon  = document.getElementById('dWon'), slashEl = document.getElementById('slash'),
-    dBang = document.getElementById('dBang'), wipeEl = document.getElementById('wipe'),
+    dBang = document.getElementById('dBang'), flashEl = document.getElementById('flash'),
     heroEl = document.getElementById('hero');
 
 /* 入り口。**暗転はしない**（2026-09-15、本人：「あんながっつり変わらなくていいけど
@@ -1381,31 +1378,21 @@ function startDemo(){
   stopRoll();                     /* 流れている途中でも、入り直したら片付ける */
   openDemo();
 }
-/* 横線のワイプ。**帯は 14 本。**上から一本ずつずらして閉じ、同じ順で開く
-   （閉じるときは上端から伸び、開くときは下端へ縮むので、向きが返って見える）。
-   閉じ切ったところで `mid` を呼ぶ——**そこで敵を置く**ので、出てくる瞬間は見えない */
-var WIPE_N = 14, wipeT1 = null, wipeT2 = null;
-(function(){
-  var h = '';
-  for (var i = 0; i < WIPE_N; i++) h += '<i style="animation-delay:' + (i * 11) + 'ms"></i>';
-  wipeEl.innerHTML = h;
-})();
-function wipeOff(){
-  if (wipeT1){ clearTimeout(wipeT1); wipeT1 = null; }
-  if (wipeT2){ clearTimeout(wipeT2); wipeT2 = null; }
-  wipeEl.classList.remove('on', 'out');
+/* 明るくなる面。**立ち上がりのところで敵を置く**ので、出てくる瞬間は見えない */
+var flashT = null;
+function flashOff(){
+  if (flashT){ clearTimeout(flashT); flashT = null; }
+  flashEl.classList.remove('on');
 }
-function wipeGo(mid){
-  wipeOff();
-  void wipeEl.offsetWidth;
-  wipeEl.classList.add('on');
-  /* 閉じ切るまで＝一本の長さ（160ms）＋ずらしの合計 */
-  var shut = 160 + (WIPE_N - 1) * 11;
-  wipeT1 = setTimeout(function(){
+function flashGo(mid){
+  flashOff();
+  void flashEl.offsetWidth;
+  flashEl.classList.add('on');
+  /* 頂点（30% ＝ 126ms）で置く。そこがいちばん隠れる */
+  flashT = setTimeout(function(){
     if (mid) mid();
-    wipeEl.classList.add('out');
-    wipeT2 = setTimeout(wipeOff, shut + 40);
-  }, shut);
+    flashT = setTimeout(flashOff, 320);
+  }, 126);
 }
 
 function openDemo(){
@@ -1445,7 +1432,7 @@ function openDemo(){
      そのうえ**押した先のメニューが消える**ので、
      目がそこから離れるあいだに「！」の 0.14 秒が終わっていた。
      → 敵と体力を **0.15 秒**遅らせて、**「！」が一つだけの瞬間**をつくる */
-  wipeOff();
+  flashOff();
   slimeEl.classList.remove('come');
   slimeEl.style.visibility = 'hidden';
   dHp.style.visibility = 'hidden';
@@ -1458,10 +1445,10 @@ function openDemo(){
     dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
     setTimeout(function(){ dBang.classList.remove('on'); }, 450);
   }, 120);
-  /* **閉じて、明けたらもう居る。**歩いてこない（`come` は付けない）。
-     **閉じ切ったところで置く**ので、湧いて出たようには見えない */
+  /* **明るくなって、明けたらもう居る。**歩いてこない（`come` は付けない）。
+     **いちばん明るいところで置く**ので、湧いて出たようには見えない */
   D.tSlime = setTimeout(function(){
-    wipeGo(function(){
+    flashGo(function(){
       slimeEl.style.visibility = ''; dHp.style.visibility = '';
       /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
       setTimeout(paintHp, 60);
@@ -1484,7 +1471,7 @@ function quitDemo(){
   /* **待ちは全部止める。**止め忘れると、デモを出たあとに「！」が出たり歩いてきたりする */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
   D.tCome = D.tBang = D.tSlime = null;
-  wipeOff();
+  flashOff();
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
