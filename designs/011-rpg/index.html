@@ -1353,8 +1353,9 @@ function startDemo(){
 }
 function openDemo(){
   /* **`D` を置き換える前に止める。**置き換えたあとでは、前の待ちの id が取れない */
-  clearTimeout(D.tCome);
-  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3, n:0, tCome:null };
+  clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
+  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3, n:0,
+        tCome:null, tBang:null, tSlime:null };
   document.body.classList.add('demo');
   clearLog();
   dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
@@ -1391,26 +1392,27 @@ function openDemo(){
   slimeEl.style.visibility = 'hidden';
   dHp.style.visibility = 'hidden';
   dHp.firstChild.style.width = '0%';
-  /* 勇者が気づく。**左半分の合図** */
-  dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
-  setTimeout(function(){
+  /* 勇者が気づく。**左半分の合図。**
+     押した瞬間ではなく**一拍おいてから**（2026-09-16、本人：「！が出るのあとちょっと遅く」）。
+     押した先のメニューが消えるので、**目がそこから離れる時間**がいる。
+     0 だと、目が来る前に出てしまう */
+  D.tBang = setTimeout(function(){
+    dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
+    setTimeout(function(){ dBang.classList.remove('on'); }, 450);
+  }, 120);
+  D.tSlime = setTimeout(function(){
     slimeEl.style.visibility = ''; dHp.style.visibility = '';
     void slimeEl.offsetWidth;          /* 二度目も動かすために巻き戻す */
     slimeEl.classList.add('come');
     /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
     setTimeout(paintHp, 60);
-  }, 150);
-  /* 居る時間は 0.9 → **0.45 秒**（2026-09-16、本人：「ビックリが遅いのかも」）。
-     出るのは押した瞬間（0ms）なので、遅かったのは**消えるまで**のほう——
-     窓が 0.3 秒で開くのに、そのあと 0.6 秒「！」が窓の横に残っていた */
-  setTimeout(function(){ dBang.classList.remove('on'); }, 450);
-
+  }, 230);
   /* 0.7 秒は待たせすぎだった（2026-09-16、本人：「ちょっと窓遅い」→「0.3」）。
      敵は 0.85 秒かけて歩いてくるので、**まだ歩きはじめたところ**で窓が開く。
      **これ以上詰めると「！」と同時になって、押し流し合う**（そこが元の問題だった） */
   D.tCome = setTimeout(function(){
     ask('デモ', 'どんなことを、したい？', TOPICS.map(function(t){ return t.t; }));
-  }, 300);
+  }, 340);
 }
 function quitDemo(){
   D.on = false; D.phase = '';
@@ -1419,8 +1421,9 @@ function quitDemo(){
   clearLog();
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
-  /* **敵の待ちも止める。**止め忘れると、デモを出たあとに歩いてくる */
-  clearTimeout(D.tCome); D.tCome = null;
+  /* **待ちは全部止める。**止め忘れると、デモを出たあとに「！」が出たり歩いてきたりする */
+  clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
+  D.tCome = D.tBang = D.tSlime = null;
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
