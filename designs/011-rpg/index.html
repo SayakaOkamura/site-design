@@ -387,8 +387,14 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    言いたいこと（材料になった）と**記号が逆**だった。
    向きを付けるほど、余計なことを言う。**向きを消す。**
 
+   そのうえで、**溶暗もやめた**（同日、本人：「スッと消えるのも違うな」）。
+   この画面で滑らかに動いているのは**そこだけ**だった——
+   `resin steps(4)` `won steps(3)` `winin steps(2)` `rise steps(2)` `blink steps(2)`。
+   **ドットの画面に、滑らかな溶暗が一つだけ混ざっていた。**
+   → `steps(2)` で二コマ。全部 → 半分 → 無し。
+
    透明度は**1 から下げるだけ**なので、動きが走らない場でも消えるほうへ倒れる */
-#dWish,#dLines,#dStat{transition:opacity .42s ease-in}
+#dWish,#dLines,#dStat{transition:opacity .2s steps(2)}
 #dWish.up,#dLines.up,#dStat.up{opacity:0}
 #dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.65}
 /* **短い窓では詰める。**帯には五行（人の一行＋機械の四行）が並ぶので、
@@ -1636,7 +1642,7 @@ function winSeq(){
         dLines.classList.add('up');
         dStat.classList.add('up');
         dWish.classList.add('up');
-        setTimeout(showResult, 480);
+        setTimeout(showResult, 260);
       }, 900);
     }, 1300);
   }, 170);
