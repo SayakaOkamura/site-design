@@ -1641,7 +1641,17 @@ function typeCmd(s, done){
   }, 42);
 }
 /* 斬る。**画面は揺らさない**（画面酔いになる）。勇者が一歩踏み込んで、敵が点滅する */
-function swing(){
+/* **押したらすぐ斬る**（2026-09-16、本人：「押してから**先にポップ出てる**から、
+   **キャラの動きを先にしたい**かも」）。
+   前は打ち終わってから斬っていたので、押してから勇者が動くまで一秒半あった。
+   押した手ごたえは**画面の中の人が動くこと**なので、そこは待たせない。
+
+   順は入れ替わった——**斬ってから、打たれた記録が残る。**
+   （前は「打ってから斬る」。どちらでも通るが、**押した瞬間に何も起きない**ほうが重い）
+
+   次の問いへ行くのは**斬り終わりと打ち終わりの両方**が済んでから。
+   片方で進めると、もう片方が次の問いに食い込む */
+function swing(done){
   heroEl.classList.add('swing');
   heroPose('slash');                    /* 剣を振り下ろす */
   slimeEl.classList.add('hit');
@@ -1652,8 +1662,7 @@ function swing(){
     heroEl.classList.remove('swing');
     heroPose(null);
     slimeEl.classList.remove('hit');
-    if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
-    else winSeq();
+    if (done) done();
   }, 820);
 }
 
@@ -1718,8 +1727,16 @@ function choose(i){
   D.n = 0;
   /* **段が進むのは、打ち終わって一段上がったあと。**
      打っているあいだは、下の一行は選んだ行のもの */
-  var st = D.step;
-  typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, function(){ setLog(st + 1); swing(); });
+  var st = D.step, struck = false, typed = false;
+  function next(){
+    if (!struck || !typed) return;      /* **両方そろってから**次の問いへ */
+    if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
+    else winSeq();
+  }
+  swing(function(){ struck = true; next(); });                       /* すぐ斬る */
+  typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, function(){
+    setLog(st + 1); typed = true; next();
+  });
 }
 
 /* 提案内容（2026-09-16）。**選んだ三つが、そのまま三つのタスクになる。**
