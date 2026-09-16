@@ -1445,14 +1445,19 @@ function openDemo(){
     dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
     setTimeout(function(){ dBang.classList.remove('on'); }, 450);
   }, 120);
-  /* **明るくなって、明けたらもう居る。**歩いてこない（`come` は付けない）。
-     **いちばん明るいところで置く**ので、湧いて出たようには見えない */
+  /* **歩いてくる**（2026-09-16、本人：「寄ってくる方が**動きあって**よかったかもなあ」）。
+     一度**光ってその場に出す**形にしたが、**明けたあとが静かになる。**
+     歩いてくる 0.85 秒は、**選んでいるあいだの動き**をしていた——
+     9/15 に「入ってすぐ歩いてくる。お題を選んだあとだと、選んでいるあいだ何も起きない」と
+     決めたときの理由が、そのまま効いていた。
+
+     光は残してある（`flashGo`）が、**呼んでいない。**戻したくなったらここで呼ぶ */
   D.tSlime = setTimeout(function(){
-    flashGo(function(){
-      slimeEl.style.visibility = ''; dHp.style.visibility = '';
-      /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
-      setTimeout(paintHp, 60);
-    });
+    slimeEl.style.visibility = ''; dHp.style.visibility = '';
+    void slimeEl.offsetWidth;          /* 二度目も動かすために巻き戻す */
+    slimeEl.classList.add('come');
+    /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
+    setTimeout(paintHp, 60);
   }, 260);
   /* 0.7 秒は待たせすぎだった（2026-09-16、本人：「ちょっと窓遅い」→「0.3」）。
      敵は 0.85 秒かけて歩いてくるので、**まだ歩きはじめたところ**で窓が開く。
