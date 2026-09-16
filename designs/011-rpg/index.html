@@ -387,12 +387,15 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 #dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.65}
 /* **短い窓では詰める。**帯には五行（人の一行＋機械の四行）が並ぶので、
    そのままだと**いちばん上の人の一行から切れる**——糧の一行目が消えてしまう */
-@media (max-height:620px){
+/* **段の切り替えは 800px。**前は 620px だったが、そこから 800px までのあいだは
+   いちばん大きい字のまま五行が入らず、**一行ぶん落ちていた**（帯は 20% しかない） */
+@media (max-height:800px){
   #dBar{padding-top:var(--px); padding-bottom:var(--px)}
   #dWish,#dLines{font-size:clamp(9.5px,1.15vw,12px); line-height:1.48}
 }
-@media (max-height:470px){
-  #dWish,#dLines{font-size:clamp(9px,1.1vw,11px); line-height:1.38}
+@media (max-height:560px){
+  /* **行間もここで詰める。**字だけ小さくしても、`line-height` が同じだと行数が増えない */
+  #dWish,#dLines{font-size:clamp(9px,1.1vw,11px); line-height:1.25}
 }
 #dLines div{color:var(--dim); opacity:.45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 #dLines div:last-child{color:var(--go); opacity:1}
@@ -1326,6 +1329,26 @@ function askStep(){
   ask((D.step + 1) + ' / 3', s.q, s.a.map(function(a){ return a.t; }));
 }
 
+/* **帯に入る行数は、帯の高さで決まる**（2026-09-16）。
+   前は `> 4` の決め打ちだった。**五行目が積まれた瞬間に、いちばん上の一行が潰れる**——
+   `#dWish` は縮む側（`flex-shrink` の既定は 1）なので、高さが足りないと**そこから削られる。**
+   潰れるのが**人の打った一行**で、**糧の一行目**なので、消えていいものではない。
+   `flex:none` だけでは直らない（潰れる代わりに、上へはみ出して切れる）。
+   → **行数のほうを減らす。**古い行から落ちるのは、もともとこの帯の作法 */
+function trimLines(){
+  var bar = document.getElementById('dBar'), cs = getComputedStyle(bar);
+  var room = bar.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  /* **一行の高さは `line-height` から取る。**実測だと、**すでに潰れている行を測って**
+     しまって、狭いほど「たくさん入る」と出る */
+  var row  = parseFloat(getComputedStyle(dLines).lineHeight);
+  /* 測れないうちは前の決め打ちで通す */
+  var max  = row > 0 ? Math.floor(room / row) - 1 : 4;
+  max = Math.max(1, Math.min(4, max));
+  while (dLines.children.length > max) dLines.removeChild(dLines.firstChild);
+}
+/* **窓が変わったら引き直す。**入る行数が変わる */
+window.addEventListener('resize', function(){ if (D.on) trimLines(); });
+
 /* お願いを打つ。**ここだけが人の書いた文。**印は「>」（2026-09-16、本人：
    「逆じゃね？思想的には。**願いの部分が撃ち込まれたコマンドで、それ以外は AI 生成部分**じゃん。
    選ばせてるだけで」）。
@@ -1345,14 +1368,17 @@ function typeWish(s, done){
   }, 42);
 }
 
-/* 機械の行。**一文字ずつ出して、行を積む**——端末の作法だけ借りる。
-   印は「<」。**打ったものが「>」で、返ってきたものが「<」**——
-   向きだけで主語が出るので、言葉を足さずに済む */
+/* 帯に積む行。**一文字ずつ出して、行を積む**——端末の作法だけ借りる。
+   印は五行とも「>」（2026-09-16、本人：「**2〜5 も同じでいいんじゃない？
+   選択した結果 AI の推測の材料として入るわけだし**」）。
+   一度「<」に分けた（文を書いたのは機械だから）が、
+   **帯は「入ったもの」を並べる場所**で、選んだ結果もそこへ入る。
+   **書いた人ではなく、入ったかどうか**で印を決める */
 function typeCmd(s, done){
   var line = document.createElement('div');
-  line.innerHTML = '<span class="pr">&lt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
+  line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   dLines.appendChild(line);
-  while (dLines.children.length > 4) dLines.removeChild(dLines.firstChild);
+  trimLines();
   var tx = line.querySelector('.tx'), i = 0;
   var t = setInterval(function(){
     tx.textContent = s.slice(0, ++i);
