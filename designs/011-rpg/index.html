@@ -387,15 +387,21 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    言いたいこと（材料になった）と**記号が逆**だった。
    向きを付けるほど、余計なことを言う。**向きを消す。**
 
-   そのうえで、**溶暗もやめた**（同日、本人：「スッと消えるのも違うな」）。
+   そのうえで、**溶暗もやめた**（同日、本人：「スッと消えるのも違うな」
+   →「テキストが消える感じのモーションで**もっとゲームっぽいのあるはず**」）。
    この画面で滑らかに動いているのは**そこだけ**だった——
    `resin steps(4)` `won steps(3)` `winin steps(2)` `rise steps(2)` `blink steps(2)`。
-   **ドットの画面に、滑らかな溶暗が一つだけ混ざっていた。**
-   → `steps(2)` で二コマ。全部 → 半分 → 無し。
 
-   透明度は**1 から下げるだけ**なので、動きが走らない場でも消えるほうへ倒れる */
-#dWish,#dLines,#dStat{transition:opacity .2s steps(2)}
-#dWish.up,#dLines.up,#dStat.up{opacity:0}
+   → **二回またたいて消える。**8bit で「取った」「倒した」を出すときの消し方で、
+   `blink` と同じ語彙。溶けないし、**消えたことがはっきり分かる。**
+
+   **素の状態を「消えている」側にしておく**（`opacity:0` を `.up` に置いて、
+   またたきは飾りにする）——動きが走らない場でも、**残らずに消える。**
+   この案では逆をやって二度踏んでいる（出現を動きに預けると、出ないまま固まる） */
+#dWish.up,#dLines.up,#dStat.up{opacity:0; animation:blinkout .3s steps(1)}
+@keyframes blinkout{
+  0%,24%{opacity:1} 25%,49%{opacity:0} 50%,74%{opacity:1} 75%,100%{opacity:0}
+}
 #dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.65}
 /* **短い窓では詰める。**帯には五行（人の一行＋機械の四行）が並ぶので、
    そのままだと**いちばん上の人の一行から切れる**——糧の一行目が消えてしまう */
@@ -498,10 +504,12 @@ body.roll #dRoll{display:block}
   letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
 /* **点滅する塊は外した**（2026-09-16）。押し待ちをやめたので、
    消える条件を出す必要そのものが無くなった */
-/* **消えるほうは透明度でいい。**1 から下げるだけなので、
-   動きが走らない場でも「消える」ほうへ倒れる */
-#clear{transition:opacity .42s ease-in}
-#clear.out{opacity:0}
+/* **閉じる。**開けたときが `resin`（縦に伸びる）なので、**その逆**で畳む。
+   ここも `steps`。素の状態は「消えている」側に置く（`opacity:0`）ので、
+   動きが走らない場でも残らない */
+#clear.on.out{opacity:0; animation:resout .16s steps(3)}
+@keyframes resout{ from{transform:translate(-50%,-50%) scaleY(1); opacity:1}
+                   to{transform:translate(-50%,-50%) scaleY(.1); opacity:0} }
 
 #dWon{position:absolute; left:0; right:0; top:36%; z-index:9; display:none;
   text-align:center; font-size:clamp(20px,4vw,40px); font-weight:700; letter-spacing:.14em;
@@ -1669,7 +1677,7 @@ function winSeq(){
         dLines.classList.add('up');
         dStat.classList.add('up');
         dWish.classList.add('up');
-        setTimeout(showResult, 260);
+        setTimeout(showResult, 340);
       }, 900);
     }, 1300);
   }, 170);
@@ -1825,10 +1833,12 @@ var clearEl = document.getElementById('clear'), clearHold = null, clearOut = nul
 function showClear(){
   hideClear();
   clearEl.classList.add('on');
+  /* **短い**（2026-09-16、本人：「クリアが消えるのが遅い」）。
+     幕の仕事は合図だけなので、読めたら用は済んでいる */
   clearHold = setTimeout(function(){
     clearEl.classList.add('out');
-    clearOut = setTimeout(function(){ clearEl.classList.remove('on', 'out'); }, 440);
-  }, 1500);
+    clearOut = setTimeout(function(){ clearEl.classList.remove('on', 'out'); }, 180);
+  }, 700);
 }
 function hideClear(){
   if (clearHold){ clearTimeout(clearHold); clearHold = null; }
