@@ -1391,11 +1391,12 @@ function openDemo(){
   dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
   setTimeout(function(){ dBang.classList.remove('on'); }, 900);
 
-  /* 0.7 秒は待たせすぎだった（2026-09-16、本人：「ちょっと窓遅い」）。
-     敵は 0.85 秒かけて歩いてくるので、**まだ歩いている途中**で窓が開く */
+  /* 0.7 秒は待たせすぎだった（2026-09-16、本人：「ちょっと窓遅い」→「0.3」）。
+     敵は 0.85 秒かけて歩いてくるので、**まだ歩きはじめたところ**で窓が開く。
+     **これ以上詰めると「！」と同時になって、押し流し合う**（そこが元の問題だった） */
   D.tCome = setTimeout(function(){
     ask('デモ', 'どんなことを、したい？', TOPICS.map(function(t){ return t.t; }));
-  }, 420);
+  }, 300);
 }
 function quitDemo(){
   D.on = false; D.phase = '';
