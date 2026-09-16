@@ -1354,41 +1354,45 @@ function startDemo(){
 function openDemo(){
   /* **`D` を置き換える前に止める。**置き換えたあとでは、前の待ちの id が取れない */
   clearTimeout(D.tCome);
-  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3, tCome:null };
+  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3, n:0, tCome:null };
   document.body.classList.add('demo');
   clearLog();
   dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
   dWish.textContent = ''; dWish.classList.remove('up'); dLines.classList.remove('up');
   dStat.classList.remove('up');
   slimeEl.style.display = ''; dHp.style.display = '';
+  slimeEl.style.visibility = ''; dHp.style.visibility = '';
   slashEl.classList.remove('on');
   heroPose(null); slimeIdle();
 
-  /* **問いが先、敵はあとから**（2026-09-16）。
-     前は敵と窓が同時に出ていた。同時だと、「！」と敵と体力の帯のほうが先に目に入って、
-     **「ゲームが始まった」を読んでから「何か訊かれている」を読む**ことになる。
-     指摘：「これは相談のデモですよ、という文脈がないまま戦闘が始まる」。
+  /* **「！」が先、窓はあとから**（2026-09-16、本人：「**ビックリ→窓にしてほしいのね**」）。
 
-     **言葉は足さない**（決めごと：「デモの説明はしない。触って分かったことを
-     言葉で上書きすると…」）。**順を入れ替えるだけ**で、先に読むものが変わる。
+     一度は逆にした——同時に出していたら「文脈がないまま戦闘が始まる」と言われたので、
+     **窓を先、敵をあとから**にした。それも直ったが、**押した手ごたえが遅れる。**
+     ここは「押したら、まず勇者が動く」と同じ話で、**画面の中の人が先に反応する。**
 
-     敵を選んだあとに回すのは**やらない**——前に決めたとおり、
-     **選んでいるあいだ何も起きない**画面になる。歩いてくるのは、選んでいるあいだでいい */
+     ずらしてあること自体は効いている——同時だと、「！」と敵と体力の帯が
+     **窓を押し流す。**順に出れば、どちらも読める。
+     窓が**最後に出る**ので、いちばんあとに目が行くのは問いのほう。
+
+     **言葉は足していない**（決めごと：「デモの説明はしない」）。順だけ */
+  /* **窓は開くまで出さない。**中身を入れるのは 0.7 秒あとなので、
+     そのままだと**空の枠が先に置かれている**（453×42 の箱が見えていた） */
+  dWin.style.display = 'none';
+  dStep.textContent = ''; dQ.textContent = ''; dA.innerHTML = '';
+
   slimeEl.classList.remove('come');
-  slimeEl.style.visibility = 'hidden';
-  dHp.style.visibility = 'hidden';
   dHp.firstChild.style.width = '0%';
-  ask('デモ', 'どんなことを、したい？', TOPICS.map(function(t){ return t.t; }));
+  void slimeEl.offsetWidth;            /* 二度目も動かすために巻き戻す */
+  slimeEl.classList.add('come');
+  /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
+  setTimeout(paintHp, 60);
+  /* 勇者が気づく。**左半分の合図** */
+  dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
+  setTimeout(function(){ dBang.classList.remove('on'); }, 900);
 
   D.tCome = setTimeout(function(){
-    slimeEl.style.visibility = ''; dHp.style.visibility = '';
-    void slimeEl.offsetWidth;          /* 二度目も動かすために巻き戻す */
-    slimeEl.classList.add('come');
-    /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
-    setTimeout(paintHp, 60);
-    /* 勇者が気づく。**左半分の合図** */
-    dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
-    setTimeout(function(){ dBang.classList.remove('on'); }, 900);
+    ask('デモ', 'どんなことを、したい？', TOPICS.map(function(t){ return t.t; }));
   }, 700);
 }
 function quitDemo(){
@@ -1702,6 +1706,9 @@ function winSeq(){
 }
 
 function choose(i){
+  /* **窓が出るまでは効かない。**「！」のあいだにキーを叩くと、
+     まだ並んでいない選択肢を選んだことになる */
+  if (!D.n) return;
   /* 最後の行は**にげる。**どの相からでも、押せば元の画面へ戻る */
   if (i >= D.n){ quitDemo(); return; }
   if (D.phase === 'topic'){
