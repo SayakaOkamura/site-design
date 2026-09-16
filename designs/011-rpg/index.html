@@ -1297,6 +1297,7 @@ function openDemo(){
   clearTimeout(D.tCome);
   D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3, tCome:null };
   document.body.classList.add('demo');
+  clearLog();
   dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
   dWish.textContent = ''; dWish.classList.remove('up'); dLines.classList.remove('up');
   slimeEl.style.display = ''; dHp.style.display = '';
@@ -1332,6 +1333,7 @@ function openDemo(){
 }
 function quitDemo(){
   D.on = false; D.phase = '';
+  clearLog();
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
   /* **敵の待ちも止める。**止め忘れると、デモを出たあとに歩いてくる */
@@ -1432,21 +1434,37 @@ function typeWish(s, done){
 
    これで**合意済みだった「間がほしい」も取れる**——
    倒してからリザルトが開くまでが、いままで詰まっていた */
-var LOG = ['打ち込まれた行を読む…', '食い違いを探す…', '提案にまとめる…'];
-/* **一行を書き換える。**積むと、そのぶん**打たれた行が上から落ちる**——
-   帯は五行しか入らないので、三行積むと**糧が三行とも消える。**
+/* **戦っているあいだ、ずっと下で動いている**（2026-09-16、本人：
+   「**動いてるところに並行で動いてたらいいんじゃん。本来もそうなはずだし**」）。
+   はじめは**倒したあとに三段まとめて**出していたが、それだと
+   **戦いが終わってから考えはじめる**形になる。実際は、打たれるそばから動いているはず。
+
+   打つたびに一段進む。**斬るのと同時**に書き換わるので、待ち時間は増えない。
+
+   ```
+   願いを打つ        書かれたことを読む…
+   1 問目を選ぶ      足りないところを探す…
+   2 問目を選ぶ      候補を照らす…
+   3 問目を選ぶ      食い違いを探す…
+   整合性を確かめる   提案にまとめる…      → リザルト
+   ```
+
+   **一行しか使わない。**積むと、そのぶん**打たれた行が上から落ちる**——
+   帯は五行しか入らないので、三行積むと**糧が三行とも消える**（一度やって踏んだ）。
    端末でも進み具合は**同じ行を書き換えて**出すので、作法としてもこちらが素直 */
-function runLog(done){
-  var line = document.createElement('div');
-  line.className = 'lg';
-  dLines.appendChild(line);
+var STEPLOG = ['足りないところを探す…', '候補を照らす…', '食い違いを探す…'];
+var logEl = null;
+/* **書き換えるたびに、いちばん下へ入れ直す。**
+   コマンドはこの下に積まれるので、置きっぱなしだと**手元の行が上へ流れていく** */
+function setLog(t){
+  if (!logEl){ logEl = document.createElement('div'); logEl.className = 'lg'; }
+  logEl.textContent = t;
+  dLines.appendChild(logEl);
   trimLines();
-  var i = 0;
-  (function next(){
-    if (i >= LOG.length){ setTimeout(done, 300); return; }
-    line.textContent = LOG[i++];
-    setTimeout(next, 420);
-  })();
+}
+function clearLog(){
+  if (logEl && logEl.parentNode) logEl.parentNode.removeChild(logEl);
+  logEl = null;
 }
 
 /* 帯に積む行。**一文字ずつ出して、行を積む**——端末の作法だけ借りる。
@@ -1459,6 +1477,7 @@ function typeCmd(s, done){
   var line = document.createElement('div');
   line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   dLines.appendChild(line);
+  if (logEl) dLines.appendChild(logEl);   /* 手元の行は、いつもいちばん下 */
   trimLines();
   var tx = line.querySelector('.tx'), i = 0;
   var t = setInterval(function(){
@@ -1507,11 +1526,15 @@ function winSeq(){
       /* **糧を吸い上げてから開く。**願いが先、返ってきた四行があとに続いて上へ抜ける。
          順に抜けるので、**五行が材料だった**ことが目で追える */
       typeCmd('整合性を確かめる', function(){
-        runLog(function(){
+        /* **最後の一段だけは、打ち終わってから。**
+           「整合性を確かめる」と打っている最中に「提案にまとめる」と出ていると、
+           手元のほうが先に行ってしまう */
+        setLog('提案にまとめる…');
+        setTimeout(function(){
           dWish.classList.add('up');
           setTimeout(function(){ dLines.classList.add('up'); }, 140);
           setTimeout(showResult, 520);
-        });
+        }, 520);
       });
     }, 1300);
   }, 170);
@@ -1526,12 +1549,16 @@ function choose(i){
     D.topic = i; D.step = 0; D.phase = 'type';
     dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + TOPICS[i].t + '</li>';
     D.n = 0;
-    typeWish(TOPICS[i].t, function(){ D.phase = 'ask'; askStep(); });
+    typeWish(TOPICS[i].t, function(){
+      setLog('書かれたことを読む…');       /* ここから下で動きつづける */
+      D.phase = 'ask'; askStep();
+    });
     return;
   }
   if (D.phase !== 'ask') return;
   D.picks[D.step] = i;
   D.phase = 'type';
+  setLog(STEPLOG[D.step]);        /* **打つのと同時に進む。**待たせない */
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
