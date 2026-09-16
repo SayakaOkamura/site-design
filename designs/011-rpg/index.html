@@ -409,7 +409,12 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 #dLines div.lg i:nth-child(3){animation-delay:.2s}
 #dLines div.lg i:nth-child(4){animation-delay:.4s}
 @keyframes dot{ 0%,100%{opacity:1} 50%{opacity:.2} }
-#dLines div:last-child{color:var(--go); opacity:1}
+/* **いちばん明るいのは最下列（打った一行）。**
+   前は「いちばん新しい行」がそこだったので、新しい行を `--go` で立てていた。
+   打った一行が下に居座るようになったので、**ログが同じ明るさだと二つ光って喧嘩する。**
+   新しい行は「少し明るい」まで、段の変わり目（`.st`）だけ色で立てる */
+#dLines div:last-child{color:var(--dim); opacity:.85}
+#dLines div.lg.st{color:var(--go)}
 /* 機械の印（`<`）。**行が古くなっても印は沈めない**——誰が言ったかは消えないほうがいい */
 #dLines .pr{color:var(--go); opacity:1}
 #dLines .cb{display:inline-block; width:.6em; background:var(--go);
@@ -631,7 +636,10 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
       <ul id="dA"></ul>
     </nav>
     <!-- 打ち込まれる場所。**地面の下**（ふだんお問い合わせが出ている帯） -->
-    <div id="dBar"><div id="dWish"></div><div id="dLines"></div></div>
+    <!-- **打った一行が最下列**（2026-09-16、本人：「最下列を入力として、そこを起点に
+         下から出てくる感じで、内容適当でもいいからどんどん流れていってほしい」→「A」）。
+         ログはその上を流れて、上から消えていく -->
+    <div id="dBar"><div id="dLines"></div><div id="dWish"></div></div>
     <div id="dWon">スライムを　たおした！</div>
     <div id="dRes" class="win">
       <p class="rt">ていあんが　まとまった！</p>
@@ -1342,6 +1350,7 @@ function openDemo(){
 }
 function quitDemo(){
   D.on = false; D.phase = '';
+  D.typing = false;
   clearLog();
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
@@ -1462,22 +1471,46 @@ function typeWish(s, done){
    帯は五行しか入らないので、三行積むと**糧が三行とも消える**（一度やって踏んだ）。
    端末でも進み具合は**同じ行を書き換えて**出すので、作法としてもこちらが素直 */
 var STEPLOG = ['足りないところを探している', '候補を照らしている', '整合性を確かめている'];
-var logEl = null;
-/* **書き換えるたびに、いちばん下へ入れ直す。**
-   コマンドはこの下に積まれるので、置きっぱなしだと**手元の行が上へ流れていく** */
-function setLog(t){
-  if (!logEl){ logEl = document.createElement('div'); logEl.className = 'lg'; }
-  /* **点は三つとも、いつも出ている。**動くのは濃さだけ——
-     動きが走らない場（裏の窓・動きを止める設定）でも、消えずに読める形で残る */
-  logEl.innerHTML = '<span class="lt"></span><i>.</i><i>.</i><i>.</i>';
-  logEl.querySelector('.lt').textContent = t;
-  dLines.appendChild(logEl);
+/* 流れつづける中身。**読ませるためのものではない**（本人：「内容適当でもいいから」）。
+   それでも**数や件数は入れない**——数を出すと、やっていないことの主張になる。
+   出しているのは**言葉に対してやる作業の名前**だけ */
+var FILL = [
+  '語をならべる', '近いものをさがす', '言い方をそろえる',
+  '前の答えと突き合わせる', '抜けているところに印をつける',
+  '順番を入れかえてみる', '短い言い方に直す',
+  '同じことを言っている行をまとめる', 'つながらない組み合わせを落とす',
+  'あとから効くものを先に出す', '言い換えをためす', '固い言い方をほどく'
+];
+var streamT = null, fillI = 0;
+/* 一行流す。`step` なら点が付く（段が変わったところだけ目に入る） */
+function pushLog(t, step){
+  var d = document.createElement('div');
+  d.className = 'lg' + (step ? ' st' : '');
+  if (step){
+    /* **点は三つとも、いつも出ている。**動くのは濃さだけ——
+       動きが走らない場（裏の窓・動きを止める設定）でも、消えずに読める形で残る */
+    d.innerHTML = '<span class="lt"></span><i>.</i><i>.</i><i>.</i>';
+    d.querySelector('.lt').textContent = t;
+  } else {
+    d.textContent = t;
+  }
+  dLines.appendChild(d);
   trimLines();
 }
-function clearLog(){
-  if (logEl && logEl.parentNode) logEl.parentNode.removeChild(logEl);
-  logEl = null;
+function setLog(t){ pushLog(t, true); }
+/* **打っているあいだは流さない。**打ち込み中の行の下に流すと、
+   打っている行が上へ逃げていって読めない */
+function startStream(){
+  if (streamT) return;
+  streamT = setInterval(function(){
+    if (D.typing) return;
+    pushLog(FILL[fillI++ % FILL.length], false);
+  }, 420);
 }
+function stopStream(){
+  if (streamT){ clearInterval(streamT); streamT = null; }
+}
+function clearLog(){ stopStream(); fillI = 0; }
 
 /* 帯に積む行。**一文字ずつ出して、行を積む**——端末の作法だけ借りる。
    印は五行とも「>」（2026-09-16、本人：「**2〜5 も同じでいいんじゃない？
@@ -1489,13 +1522,14 @@ function typeCmd(s, done){
   var line = document.createElement('div');
   line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   dLines.appendChild(line);
-  if (logEl) dLines.appendChild(logEl);   /* 手元の行は、いつもいちばん下 */
   trimLines();
+  D.typing = true;
   var tx = line.querySelector('.tx'), i = 0;
   var t = setInterval(function(){
     tx.textContent = s.slice(0, ++i);
     if (i < s.length) return;
     clearInterval(t);
+    D.typing = false;
     var cb = line.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
     setTimeout(done, 240);
   }, 42);
@@ -1540,9 +1574,11 @@ function winSeq(){
 
          **糧を吸い上げてから開く。**願いが先、選んだ三行があとに続いて上へ抜ける */
       setLog('提案にまとめている');
+      stopStream();                       /* まとめに入ったら、流しは止める */
       setTimeout(function(){
-        dWish.classList.add('up');
-        setTimeout(function(){ dLines.classList.add('up'); }, 140);
+        /* **上から順に抜ける。**最下列の一行（打ったもの）が最後に上がる */
+        dLines.classList.add('up');
+        setTimeout(function(){ dWish.classList.add('up'); }, 140);
         setTimeout(showResult, 520);
       }, 900);
     }, 1300);
@@ -1559,7 +1595,8 @@ function choose(i){
     dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + TOPICS[i].t + '</li>';
     D.n = 0;
     typeWish(TOPICS[i].t, function(){
-      setLog('書かれたことを読んでいる');   /* ここから下で動きつづける */
+      setLog('書かれたことを読んでいる');
+      startStream();                      /* ここから上を、ずっと流れつづける */
       D.phase = 'ask'; askStep();
     });
     return;
