@@ -481,6 +481,19 @@ body.roll #dRoll{display:block}
 #clear.on{display:block; animation:resin .24s steps(4)}
 #clear p{margin:0; font-size:clamp(18px,3vw,34px); font-weight:700;
   letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
+/* **消える条件を、文字を使わずに出す**（2026-09-16、本人：
+   「クリアが消える条件がわかりにくいかも」→「文字は使いたくない」）。
+
+   置いたのは**点滅する塊**——帯で打っているあいだ出ているものと同じ。
+   端末の作法で**点滅する塊＝入力待ち**で、記号ではなく**形**なので、
+   ▼ の一役（「だから」）を崩さない。
+
+   場所は右下。**RPG で ▼ が出る隅**に、▼ ではなく塊が点滅する。
+   `blink` は素の状態が「見えている」側（`0%` が `opacity:1`）なので、
+   動きが走らない場でも消えない */
+#clear .cb{position:absolute; right:calc(var(--px)*3); bottom:calc(var(--px)*2);
+  display:block; width:.6em; height:1em; background:var(--go);
+  animation:blink .8s steps(2) infinite}
 /* **消えるほうは透明度でいい。**1 から下げるだけなので、
    動きが走らない場でも「消える」ほうへ倒れる */
 #clear{transition:opacity .42s ease-in}
@@ -607,7 +620,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 
   <!-- 幕。**押したことと、後ろで文字が流れ出したことを繋ぐ**（2026-09-16）。
        `#demo` の中には置けない——このあと `quitDemo()` でデモごと畳むので、一緒に消える -->
-  <div id="clear" class="win"><p>クリア！</p></div>
+  <div id="clear" class="win"><p>クリア！</p><span class="cb"></span></div>
 
   <nav id="menu" class="win"><ul id="cmds"></ul></nav>
 
