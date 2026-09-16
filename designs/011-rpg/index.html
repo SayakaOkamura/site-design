@@ -380,10 +380,16 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 #dWish .pr{color:var(--warm)}
 #dWish .cb,
-/* **糧が吸い上げられる**——打ち終わったら、帯の中身が上へ抜けてリザルトが開く。
+/* **ただ消える**（2026-09-16、本人：「これ、最後リザルトに行く前に**上に消えていくのが
+   なんか変な感じ**。他のモーション案ある？」→「普通に消える？」）。
+
+   前は上へ抜けさせていた（吸い上げ）。**端末では「上へ流れる＝古くなった」**なので、
+   言いたいこと（材料になった）と**記号が逆**だった。
+   向きを付けるほど、余計なことを言う。**向きを消す。**
+
    透明度は**1 から下げるだけ**なので、動きが走らない場でも消えるほうへ倒れる */
-#dWish,#dLines,#dStat{transition:transform .42s ease-in, opacity .42s ease-in}
-#dWish.up,#dLines.up,#dStat.up{transform:translateY(-26px); opacity:0}
+#dWish,#dLines,#dStat{transition:opacity .42s ease-in}
+#dWish.up,#dLines.up,#dStat.up{opacity:0}
 #dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.65}
 /* **短い窓では詰める。**帯には五行（人の一行＋機械の四行）が並ぶので、
    そのままだと**いちばん上の人の一行から切れる**——糧の一行目が消えてしまう */
@@ -1622,15 +1628,15 @@ function winSeq(){
          もう一つは、**あれは入力ではない**——本人が選んでいないのに `>`（入ったものの印）が
          付いていた。外すと、帯に残るのは**打たれた四行だけ**になって印と中身が合う。
 
-         **糧を吸い上げてから開く。**願いが先、選んだ三行があとに続いて上へ抜ける */
+         **帯が消えてから開く。**向きは付けない（下の CSS の節） */
       setLog(4);
       stopStream();                       /* まとめに入ったら、流しは止める（秒は進む） */
       setTimeout(function(){
-        /* **上から順に抜ける。**最下列の一行（打ったもの）が最後に上がる */
+        /* **三つ同時に消す。**順に抜けさせると、そこに向きが出てしまう */
         dLines.classList.add('up');
-        setTimeout(function(){ dStat.classList.add('up'); }, 90);
-        setTimeout(function(){ dWish.classList.add('up'); }, 180);
-        setTimeout(showResult, 560);
+        dStat.classList.add('up');
+        dWish.classList.add('up');
+        setTimeout(showResult, 480);
       }, 900);
     }, 1300);
   }, 170);
