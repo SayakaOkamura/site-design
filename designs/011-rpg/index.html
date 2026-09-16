@@ -1663,31 +1663,39 @@ function buildRoll(){
      + '<div class="gap"></div>';
   dRollIn.innerHTML = h;
 }
-/* 幕を出して、一拍で引く。**押し待ちにはしない**——
-   後ろで文字がもう動いているので、待たせると止まって見えるし、
-   ▼ で踏んだところ（記号が出ている画面で入力が効く）と同じになる */
-var clearEl = document.getElementById('clear'), clearHold = null, clearOut = null;
+/* 幕。**押されるまで出したまま**（2026-09-16、本人：
+   「リザルトが消えてクリアって出る、**同時にエンドロール流れ出す**、
+   **クリックでホーム戻る（エンドロール流しっぱ）**」）。
+
+   はじめは一拍で自分から引いていた（待たせると止まって見えると考えた）。
+   本人の形だと**後ろでもう流れている**ので止まって見えないし、
+   **押す先がある**——押すと家へ戻る。だから待ってよい。
+
+   ```
+   リザルトが消える → クリア＋エンドロールが同時に始まる → 押す → 家へ戻る
+                                                        （文字は流れつづける）
+   ``` */
+var clearEl = document.getElementById('clear'), clearOut = null;
 function showClear(){
   hideClear();
-  clearEl.classList.remove('out');
   clearEl.classList.add('on');
-  clearHold = setTimeout(function(){
-    clearEl.classList.add('out');
-    clearOut = setTimeout(function(){
-      clearEl.classList.remove('on', 'out');
-    }, 440);
-  }, 1500);
 }
 function hideClear(){
-  if (clearHold){ clearTimeout(clearHold); clearHold = null; }
   if (clearOut){ clearTimeout(clearOut); clearOut = null; }
   clearEl.classList.remove('on', 'out');
+}
+/* 押したら家へ戻る。**エンドロールは流しっぱなし**（`body.roll` は外さない） */
+function clearGo(){
+  clearEl.classList.add('out');
+  clearOut = setTimeout(function(){ clearEl.classList.remove('on', 'out'); }, 440);
+  quitDemo();
 }
 
 function startRoll(){
   dRes.classList.remove('on');
-  /* **先に画面を元に戻す。**メニューも足もとも名乗りも出た状態で、後ろだけ流れる */
-  quitDemo();
+  /* **ここではまだ畳まない。**画面が元に戻るのは**押したとき**——
+     メニューも足もとも、そこから普通に動く（前は先に戻していた） */
+  D.phase = 'clear';
   document.body.classList.add('roll');
   buildRoll();
   maskRoll();
@@ -1731,6 +1739,9 @@ window.addEventListener("resize", function(){
 
 /* 止まって少し置いたら、**静かに消える。**画面はもう元どおりなので、戻す先は無い */
 function endRoll(){
+  /* **押されないまま流れ切ったら、こちらで戻す。**
+     幕を出したままにすると、メニューも出ていない行き止まりになる */
+  if (D.on && D.phase === 'clear') clearGo();
   if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
   if (rollHold){ clearTimeout(rollHold); rollHold = null; }
   dRoll.classList.add('out');
@@ -1749,6 +1760,8 @@ function stopRoll(){
 
 document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
+  /* 幕が出ているあいだは、**どこを押しても家へ戻る** */
+  if (D.phase === 'clear'){ clearGo(); return; }
   var li = e.target.closest('#dA li');
   if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
   if (D.phase === 'open'){ openDone(); return; }
@@ -1767,6 +1780,8 @@ document.addEventListener('mouseover', function(e){
 document.addEventListener('keydown', function(e){
   if (!D.on) return;
   var k = e.key, n;
+  /* 幕が出ているあいだは、**どのキーでも家へ戻る** */
+  if (D.phase === 'clear'){ clearGo(); e.preventDefault(); return; }
   if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
   if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
