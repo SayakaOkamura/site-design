@@ -427,6 +427,11 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    目は「打った一行 → 動いている行 → 流れ」の順に落ちる */
 #dStat{padding-left:1.5em; color:var(--go); opacity:.72;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* 選んだ行を打っているあいだ。**入ったものなので字下げしない**（`>` が頭に来る） */
+#dStat.cmd{padding-left:0; color:var(--dim); opacity:1}
+#dStat.cmd .pr{color:var(--go)}
+#dStat .cb{display:inline-block; width:.6em; background:var(--go);
+  animation:blink .8s steps(2) infinite}
 /* 流れの中の印。**行と一緒に沈める**——前は `opacity:1` で立てていたが、
    流れを薄くすると**明るい `>` だけが並んで浮く。**印は行の濃さに従う */
 #dLines .pr{color:var(--go)}
@@ -1580,19 +1585,41 @@ function clearLog(){
    一度「<」に分けた（文を書いたのは機械だから）が、
    **帯は「入ったもの」を並べる場所**で、選んだ結果もそこへ入る。
    **書いた人ではなく、入ったかどうか**で印を決める */
+/* **選んだ行は、いちばん下の一行に打つ**（2026-09-16、本人：
+   「Expand とかの上に選択肢が流れていくの気になる。**消えるタイミングで選択肢乗る**んだから、
+   **選択肢がズレたら次の英語出てくる**感じにして、ちゃんと下から流れてきてほしい」）。
+
+   前は選んだ行を**流れのほう**（英語の上）に積んでいたので、
+   **いちばん新しいものが、古いものの上に出ていた。**
+
+   いちばん下の一行は「**いま来たもの**」の場所。そこは一つしかないので、
+   English と選んだ行が**入れ替わりで座る。**
+
+   ```
+   Expanding… · rank(candidates)     ← 動いている
+   > よく聞かれることを集める           ← 選ぶと、ここに打たれる（英語は退く）
+   （打ち終わる）
+   > よく聞かれることを集める           ← 一段上へズレて
+   Resolving… · detect(conflicts)    ← 次の英語が下に出てくる
+   ``` */
 function typeCmd(s, done){
-  var line = document.createElement('div');
-  line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
-  dLines.appendChild(line);
-  trimLines();
+  dStat.className = 'cmd';
+  dStat.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   D.typing = true;
-  var tx = line.querySelector('.tx'), i = 0;
+  var tx = dStat.querySelector('.tx'), i = 0;
   var t = setInterval(function(){
     tx.textContent = s.slice(0, ++i);
     if (i < s.length) return;
     clearInterval(t);
     D.typing = false;
-    var cb = line.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
+    var cb = dStat.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
+    /* **打ち終わったら、一段上へ送る。**空いた下に次の英語が出る */
+    var line = document.createElement('div');
+    line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span>';
+    line.querySelector('.tx').textContent = s;
+    dLines.appendChild(line);
+    trimLines();
+    dStat.className = '';
     setTimeout(done, 240);
   }, 42);
 }
@@ -1667,13 +1694,15 @@ function choose(i){
   if (D.phase !== 'ask') return;
   D.picks[D.step] = i;
   D.phase = 'type';
-  setLog(D.step + 1);             /* **打つのと同時に進む。**待たせない */
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
                + TOPICS[D.topic].q[D.step].a[i].t + '</li>';
   D.n = 0;
-  typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, swing);
+  /* **段が進むのは、打ち終わって一段上がったあと。**
+     打っているあいだは、下の一行は選んだ行のもの */
+  var st = D.step;
+  typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, function(){ setLog(st + 1); swing(); });
 }
 
 /* 提案内容（2026-09-16）。**選んだ三つが、そのまま三つのタスクになる。**
