@@ -481,19 +481,8 @@ body.roll #dRoll{display:block}
 #clear.on{display:block; animation:resin .24s steps(4)}
 #clear p{margin:0; font-size:clamp(18px,3vw,34px); font-weight:700;
   letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
-/* **消える条件を、文字を使わずに出す**（2026-09-16、本人：
-   「クリアが消える条件がわかりにくいかも」→「文字は使いたくない」）。
-
-   置いたのは**点滅する塊**——帯で打っているあいだ出ているものと同じ。
-   端末の作法で**点滅する塊＝入力待ち**で、記号ではなく**形**なので、
-   ▼ の一役（「だから」）を崩さない。
-
-   場所は右下。**RPG で ▼ が出る隅**に、▼ ではなく塊が点滅する。
-   `blink` は素の状態が「見えている」側（`0%` が `opacity:1`）なので、
-   動きが走らない場でも消えない */
-#clear .cb{position:absolute; right:calc(var(--px)*3); bottom:calc(var(--px)*2);
-  display:block; width:.6em; height:1em; background:var(--go);
-  animation:blink .8s steps(2) infinite}
+/* **点滅する塊は外した**（2026-09-16）。押し待ちをやめたので、
+   消える条件を出す必要そのものが無くなった */
 /* **消えるほうは透明度でいい。**1 から下げるだけなので、
    動きが走らない場でも「消える」ほうへ倒れる */
 #clear{transition:opacity .42s ease-in}
@@ -620,7 +609,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 
   <!-- 幕。**押したことと、後ろで文字が流れ出したことを繋ぐ**（2026-09-16）。
        `#demo` の中には置けない——このあと `quitDemo()` でデモごと畳むので、一緒に消える -->
-  <div id="clear" class="win"><p>クリア！</p><span class="cb"></span></div>
+  <div id="clear" class="win"><p>クリア！</p></div>
 
   <nav id="menu" class="win"><ul id="cmds"></ul></nav>
 
@@ -1719,39 +1708,40 @@ function buildRoll(){
      + '<div class="gap"></div>';
   dRollIn.innerHTML = h;
 }
-/* 幕。**押されるまで出したまま**（2026-09-16、本人：
-   「リザルトが消えてクリアって出る、**同時にエンドロール流れ出す**、
-   **クリックでホーム戻る（エンドロール流しっぱ）**」）。
+/* 幕。**一拍で自分から引く**（2026-09-16、本人：「やっぱりなんかクリアが邪魔な感じするなあ」
+   →「一回 B やってみて」）。
 
-   はじめは一拍で自分から引いていた（待たせると止まって見えると考えた）。
-   本人の形だと**後ろでもう流れている**ので止まって見えないし、
-   **押す先がある**——押すと家へ戻る。だから待ってよい。
+   一度**押されるまで出したまま**にした（本人の案）。**邪魔になった。**
+   理由は二つ——幕は `top:46%`、エンドロールは**中央ぞろえで昇って、社名が画面の中央で止まる**。
+   **幕は、文字が最後に止まる場所に座っている。**そのうえ押すまで消えないので、
+   いちばん見せたいものの前に蓋をしていた。
+
+   幕の仕事は「**これがあるから文字が流れ出した**」と言うことだけで、
+   言い終わったら仕事がない。そこで止めると、役が**合図から関門に変わる。**
 
    ```
-   リザルトが消える → クリア＋エンドロールが同時に始まる → 押す → 家へ戻る
-                                                        （文字は流れつづける）
+   リザルトが消える → 画面が家へ戻る＋クリア＋エンドロールが同時に始まる
+                   → 一拍で幕が引く（文字は流れつづける）
    ``` */
-var clearEl = document.getElementById('clear'), clearOut = null;
+var clearEl = document.getElementById('clear'), clearHold = null, clearOut = null;
 function showClear(){
   hideClear();
   clearEl.classList.add('on');
+  clearHold = setTimeout(function(){
+    clearEl.classList.add('out');
+    clearOut = setTimeout(function(){ clearEl.classList.remove('on', 'out'); }, 440);
+  }, 1500);
 }
 function hideClear(){
+  if (clearHold){ clearTimeout(clearHold); clearHold = null; }
   if (clearOut){ clearTimeout(clearOut); clearOut = null; }
   clearEl.classList.remove('on', 'out');
-}
-/* 押したら家へ戻る。**エンドロールは流しっぱなし**（`body.roll` は外さない） */
-function clearGo(){
-  clearEl.classList.add('out');
-  clearOut = setTimeout(function(){ clearEl.classList.remove('on', 'out'); }, 440);
-  quitDemo();
 }
 
 function startRoll(){
   dRes.classList.remove('on');
-  /* **ここではまだ畳まない。**画面が元に戻るのは**押したとき**——
-     メニューも足もとも、そこから普通に動く（前は先に戻していた） */
-  D.phase = 'clear';
+  /* **先に画面を元に戻す。**メニューも足もとも名乗りも出た状態で、後ろだけ流れる */
+  quitDemo();
   document.body.classList.add('roll');
   buildRoll();
   maskRoll();
@@ -1795,9 +1785,6 @@ window.addEventListener("resize", function(){
 
 /* 止まって少し置いたら、**静かに消える。**画面はもう元どおりなので、戻す先は無い */
 function endRoll(){
-  /* **押されないまま流れ切ったら、こちらで戻す。**
-     幕を出したままにすると、メニューも出ていない行き止まりになる */
-  if (D.on && D.phase === 'clear') clearGo();
   if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
   if (rollHold){ clearTimeout(rollHold); rollHold = null; }
   dRoll.classList.add('out');
@@ -1816,8 +1803,6 @@ function stopRoll(){
 
 document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
-  /* 幕が出ているあいだは、**どこを押しても家へ戻る** */
-  if (D.phase === 'clear'){ clearGo(); return; }
   var li = e.target.closest('#dA li');
   if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
   if (D.phase === 'open'){ openDone(); return; }
@@ -1836,8 +1821,6 @@ document.addEventListener('mouseover', function(e){
 document.addEventListener('keydown', function(e){
   if (!D.on) return;
   var k = e.key, n;
-  /* 幕が出ているあいだは、**どのキーでも家へ戻る** */
-  if (D.phase === 'clear'){ clearGo(); e.preventDefault(); return; }
   if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
   if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
