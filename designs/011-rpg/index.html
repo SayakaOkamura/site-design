@@ -445,6 +445,28 @@ body.roll #dRoll{display:block}
 #dRollIn p + p{margin-top:calc(var(--px)*5)}
 
 /* 「たおした！」。**16bit の白抜き**——名乗りと同じ、にじませない硬い縁 */
+/* 幕（2026-09-16）。指摘：「**なぜ急に文字が流れ始めたのか**が分からないまま見ることになる」。
+   押した瞬間に窓が出て、**その後ろで**エンドロールが流れ出し、一拍で窓が引く。
+   窓が繋ぎ目になるので、押したことと文字が流れ出したことが繋がる。
+
+   **中身は「クリア！」だけ。**ここで気持ちを持たせようとすると、押した人はもう出るつもりなので
+   全部「言ってみた」になる（本人：「**全体的にわざとらしいんだよな**」）。
+   クリアしたら文字が流れるのは**説明の要らない作法**なので、幕としてはこれがいちばん強い。
+
+   **手前の層に置くしかない。**エンドロールは `z-index:1`（山より奥）で、
+   リザルトの窓は `9`。**七層はなれている**ので、
+   「窓が上へ抜けて入れ替わる」では別々の深さの別々のことにしか見えない */
+/* **触れない。**押すものではないし、出ているあいだメニューを塞ぎたくない */
+#clear{position:absolute; left:50%; top:46%; transform:translate(-50%,-50%);
+  z-index:9; display:none; pointer-events:none; padding:calc(var(--px)*4) calc(var(--px)*9)}
+#clear.on{display:block; animation:resin .24s steps(4)}
+#clear p{margin:0; font-size:clamp(18px,3vw,34px); font-weight:700;
+  letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
+/* **消えるほうは透明度でいい。**1 から下げるだけなので、
+   動きが走らない場でも「消える」ほうへ倒れる */
+#clear{transition:opacity .42s ease-in}
+#clear.out{opacity:0}
+
 #dWon{position:absolute; left:0; right:0; top:36%; z-index:9; display:none;
   text-align:center; font-size:clamp(20px,4vw,40px); font-weight:700; letter-spacing:.14em;
   color:var(--ink);
@@ -563,6 +585,10 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
        本人：「メニューは普通に動かせる状態で、背景でやって」）。
        山より手前、勇者より奥。触れない（`pointer-events:none`）-->
   <div id="dRoll"><div id="dRollIn"></div></div>
+
+  <!-- 幕。**押したことと、後ろで文字が流れ出したことを繋ぐ**（2026-09-16）。
+       `#demo` の中には置けない——このあと `quitDemo()` でデモごと畳むので、一緒に消える -->
+  <div id="clear" class="win"><p>クリア！</p></div>
 
   <nav id="menu" class="win"><ul id="cmds"></ul></nav>
 
@@ -1565,6 +1591,27 @@ function buildRoll(){
      + '<div class="gap"></div>';
   dRollIn.innerHTML = h;
 }
+/* 幕を出して、一拍で引く。**押し待ちにはしない**——
+   後ろで文字がもう動いているので、待たせると止まって見えるし、
+   ▼ で踏んだところ（記号が出ている画面で入力が効く）と同じになる */
+var clearEl = document.getElementById('clear'), clearHold = null, clearOut = null;
+function showClear(){
+  hideClear();
+  clearEl.classList.remove('out');
+  clearEl.classList.add('on');
+  clearHold = setTimeout(function(){
+    clearEl.classList.add('out');
+    clearOut = setTimeout(function(){
+      clearEl.classList.remove('on', 'out');
+    }, 440);
+  }, 1500);
+}
+function hideClear(){
+  if (clearHold){ clearTimeout(clearHold); clearHold = null; }
+  if (clearOut){ clearTimeout(clearOut); clearOut = null; }
+  clearEl.classList.remove('on', 'out');
+}
+
 function startRoll(){
   dRes.classList.remove('on');
   /* **先に画面を元に戻す。**メニューも足もとも名乗りも出た状態で、後ろだけ流れる */
@@ -1572,6 +1619,7 @@ function startRoll(){
   document.body.classList.add('roll');
   buildRoll();
   maskRoll();
+  showClear();
   var endEl = document.getElementById('rollEnd');
   /* 社名が**画面のまん中に来たところで止める。**流し切って消さない */
   var stop = (innerHeight / 2) - (endEl.offsetTop + endEl.offsetHeight / 2);
@@ -1618,6 +1666,7 @@ function endRoll(){
 }
 /* すぐ片付ける（デモに入り直したとき） */
 function stopRoll(){
+  hideClear();
   if (rollRaf){ cancelAnimationFrame(rollRaf); rollRaf = null; }
   if (rollHold){ clearTimeout(rollHold); rollHold = null; }
   if (rollOut){ clearTimeout(rollOut); rollOut = null; }
