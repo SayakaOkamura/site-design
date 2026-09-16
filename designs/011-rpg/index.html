@@ -316,7 +316,7 @@ body.demo #slime.hit{animation:shock .2s steps(2) 3, knock .34s steps(3) 1}
 body.demo #slime{animation:bob 1.1s infinite}
 @keyframes bob{ 0%,49%{transform:translateX(-50%) translateY(0)}
                 50%,100%{transform:translateX(-50%) translateY(-6px)} }
-/* 入り。**右から歩いてくる**（いまは呼んでいない。戻すなら `come` を付ける）。
+/* 入り。**右から歩いてくる。**いきなり居ると、始まった気がしない。
    ここも跳ねに負けないように `body.demo` を頭に付ける */
 body.demo #slime.come{animation:come .85s steps(9)}
 @keyframes come{ from{transform:translateX(-50%) translateX(46vw)} to{transform:translateX(-50%) translateX(0)} }
@@ -498,30 +498,6 @@ body.roll #dRoll{display:block}
 #dRollIn p + p{margin-top:calc(var(--px)*5)}
 
 /* 「たおした！」。**16bit の白抜き**——名乗りと同じ、にじませない硬い縁 */
-/* 戦闘に入る合図（2026-09-16）。**寄って来させない**——「！」のあと一度だけ明るくなって、
-   明けたら**もうそこに居る。**歩いてくる 0.85 秒も要らなくなる。
-
-   一度**横線のワイプ**にした（本人：「昔のポケモンの遭遇モーションみたいな」）。
-   **やめた**——本人：「あー、**やっぱりちかちかするかも**。
-   最初にやってたやつの**延長線上**くらいで、**優しめに**」。
-   帯が一本ずつ入れ替わるので、**細かい明滅が並ぶ**。目に障るのはそこだった。
-
-   → 面が一枚、**ゆっくり明るくなって、ゆっくり引く。**
-   ```
-   前（点滅）    .34 → 0    0.16 秒  steps(2)   ぱっと光って、ぱっと消える
-   いま         .18 を頂点   0.42 秒  steps(5)   立ち上がりも引きも階段。**明滅しない**
-   ```
-   段は増やすが**一度きり**なので、ちかちかにはならない。
-   薄さ（.18）は前の半分。**揺らさないし、暗くもしない。**
-
-   **素の状態は透明。**明るくなるのは飾りなので、
-   動きが走らない場（裏の窓・動きを止める設定）では**光らないだけ。**
-   敵はどのみち JS の時計で置かれるので、何も壊れない */
-#flash{position:absolute; inset:0; z-index:10; display:none;
-  pointer-events:none; background:var(--go); opacity:0}
-#flash.on{display:block; animation:flash .42s steps(5)}
-@keyframes flash{ 0%{opacity:0} 30%{opacity:.18} 100%{opacity:0} }
-
 /* 幕（2026-09-16）。指摘：「**なぜ急に文字が流れ始めたのか**が分からないまま見ることになる」。
    押した瞬間に窓が出て、**その後ろで**エンドロールが流れ出し、一拍で窓が引く。
    窓が繋ぎ目になるので、押したことと文字が流れ出したことが繋がる。
@@ -666,9 +642,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
        本人：「メニューは普通に動かせる状態で、背景でやって」）。
        山より手前、勇者より奥。触れない（`pointer-events:none`）-->
   <div id="dRoll"><div id="dRollIn"></div></div>
-
-  <!-- 戦闘に入る合図。**一度だけ、やわらかく** -->
-  <div id="flash"></div>
 
   <!-- 幕。**押したことと、後ろで文字が流れ出したことを繋ぐ**（2026-09-16）。
        `#demo` の中には置けない——このあと `quitDemo()` でデモごと畳むので、一緒に消える -->
@@ -1374,7 +1347,7 @@ var dWin  = document.getElementById('dWin'),
     dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
     dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
     dWon  = document.getElementById('dWon'), slashEl = document.getElementById('slash'),
-    dBang = document.getElementById('dBang'), flashEl = document.getElementById('flash'),
+    dBang = document.getElementById('dBang'),
     heroEl = document.getElementById('hero');
 
 /* 入り口。**暗転はしない**（2026-09-15、本人：「あんながっつり変わらなくていいけど
@@ -1391,23 +1364,6 @@ function startDemo(){
   stopRoll();                     /* 流れている途中でも、入り直したら片付ける */
   openDemo();
 }
-/* 明るくなる面。**立ち上がりのところで敵を置く**ので、出てくる瞬間は見えない */
-var flashT = null;
-function flashOff(){
-  if (flashT){ clearTimeout(flashT); flashT = null; }
-  flashEl.classList.remove('on');
-}
-function flashGo(mid){
-  flashOff();
-  void flashEl.offsetWidth;
-  flashEl.classList.add('on');
-  /* 頂点（30% ＝ 126ms）で置く。そこがいちばん隠れる */
-  flashT = setTimeout(function(){
-    if (mid) mid();
-    flashT = setTimeout(flashOff, 320);
-  }, 126);
-}
-
 function openDemo(){
   /* **`D` を置き換える前に止める。**置き換えたあとでは、前の待ちの id が取れない */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
@@ -1445,7 +1401,6 @@ function openDemo(){
      そのうえ**押した先のメニューが消える**ので、
      目がそこから離れるあいだに「！」の 0.14 秒が終わっていた。
      → 敵と体力を **0.15 秒**遅らせて、**「！」が一つだけの瞬間**をつくる */
-  flashOff();
   slimeEl.classList.remove('come');
   slimeEl.style.visibility = 'hidden';
   dHp.style.visibility = 'hidden';
@@ -1458,18 +1413,21 @@ function openDemo(){
     dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
     setTimeout(function(){ dBang.classList.remove('on'); }, 450);
   }, 120);
-  /* **光って、明けたらもう居る**（2026-09-16）。
-     一度は歩いてくるほうに戻した（本人：「寄ってくる方が動きあってよかったかもなあ」）が、
-     **締まりと動きは別のもの**だと分かったので、**分けた**——
-     **転換は光、動きは敵そのもの**（その場で跳ねる。下の `bob`）。
+  /* **歩いてくる。そのあと跳ねつづける**（2026-09-16、本人：「光いらん」）。
+     転換（光・ワイプ）は三度出して三度とも外した。**外した理由は毎回ちがう**——
+     点滅は明けたあとが静か、ワイプはちかちか、やわらかい光は要らない。
+     残ったのは**いちばん最初の形**（右から歩いてくる）＋**跳ね**。
 
-     **いちばん明るいところで置く**ので、湧いて出たようには見えない */
+     光なしで**いきなり居る**のはやらない——9/15 に書いたとおり「**始まった気がしない**」 */
   D.tSlime = setTimeout(function(){
-    flashGo(function(){
-      slimeEl.style.visibility = ''; dHp.style.visibility = '';
-      /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
-      setTimeout(paintHp, 60);
-    });
+    slimeEl.style.visibility = ''; dHp.style.visibility = '';
+    void slimeEl.offsetWidth;          /* 二度目も動かすために巻き戻す */
+    slimeEl.classList.add('come');
+    /* **歩き終わったら `come` を外す。**付けっぱなしだと `.come` のほうが細かいので、
+       跳ね（`body.demo #slime`）が**いつまでも始まらない**（歩いたあと立ち尽くす）*/
+    setTimeout(function(){ slimeEl.classList.remove('come'); }, 860);
+    /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
+    setTimeout(paintHp, 60);
   }, 260);
   /* 0.7 秒は待たせすぎだった（2026-09-16、本人：「ちょっと窓遅い」→「0.3」）。
      敵は 0.85 秒かけて歩いてくるので、**まだ歩きはじめたところ**で窓が開く。
@@ -1488,7 +1446,6 @@ function quitDemo(){
   /* **待ちは全部止める。**止め忘れると、デモを出たあとに「！」が出たり歩いてきたりする */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
   D.tCome = D.tBang = D.tSlime = null;
-  flashOff();
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
