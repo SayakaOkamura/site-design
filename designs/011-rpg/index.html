@@ -382,8 +382,8 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 #dWish .cb,
 /* **糧が吸い上げられる**——打ち終わったら、帯の中身が上へ抜けてリザルトが開く。
    透明度は**1 から下げるだけ**なので、動きが走らない場でも消えるほうへ倒れる */
-#dWish,#dLines{transition:transform .42s ease-in, opacity .42s ease-in}
-#dWish.up,#dLines.up{transform:translateY(-26px); opacity:0}
+#dWish,#dLines,#dStat{transition:transform .42s ease-in, opacity .42s ease-in}
+#dWish.up,#dLines.up,#dStat.up{transform:translateY(-26px); opacity:0}
 #dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.65}
 /* **短い窓では詰める。**帯には五行（人の一行＋機械の四行）が並ぶので、
    そのままだと**いちばん上の人の一行から切れる**——糧の一行目が消えてしまう */
@@ -391,32 +391,30 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    いちばん大きい字のまま五行が入らず、**一行ぶん落ちていた**（帯は 20% しかない） */
 @media (max-height:800px){
   #dBar{padding-top:var(--px); padding-bottom:var(--px)}
-  #dWish,#dLines{font-size:clamp(9.5px,1.15vw,12px); line-height:1.48}
+  #dWish,#dLines,#dStat{font-size:clamp(9.5px,1.15vw,12px); line-height:1.48}
 }
 @media (max-height:560px){
   /* **行間もここで詰める。**字だけ小さくしても、`line-height` が同じだと行数が増えない */
-  #dWish,#dLines{font-size:clamp(9px,1.1vw,11px); line-height:1.25}
+  #dWish,#dLines,#dStat{font-size:clamp(9px,1.1vw,11px); line-height:1.25}
 }
 /* **流れは地。**読ませるものではないので、濃さはもう一段落とす（2026-09-16）。
    帯が「**一本の明るい行（打ったもの）＋うっすらした地**」になる */
 #dLines div{color:var(--dim); opacity:.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-/* 機械の手元。**印は付けず、字下げだけ**——入ったものではないので `>` は付かない。
-   **ずっと動いている**（2026-09-16、本人：「なんかずっと演算してるな、動いてるなって見せたい」）。
-   打つたびに言葉が変わり、そのあいだも点が動きつづける。
-
-   **動かすのは濃さだけで、出す／消すはしない。**素の状態を「三つとも見えている」に
-   しておくと、動きが走らない場でも**読める形で残る**（この案で二度踏んだところ） */
+/* 機械の手元。**印は付けず、字下げだけ**——入ったものではないので `>` は付かない */
 #dLines div.lg{padding-left:1.5em}
-#dLines div.lg i{font-style:normal; opacity:1; animation:dot 1.2s steps(2) infinite}
-#dLines div.lg i:nth-child(3){animation-delay:.2s}
-#dLines div.lg i:nth-child(4){animation-delay:.4s}
-@keyframes dot{ 0%,100%{opacity:1} 50%{opacity:.2} }
 /* **いちばん明るいのは最下列（打った一行）。**
    前は「いちばん新しい行」がそこだったので、新しい行を `--go` で立てていた。
-   打った一行が下に居座るようになったので、**ログが同じ明るさだと二つ光って喧嘩する。**
-   新しい行は「少し明るい」まで、段の変わり目（`.st`）だけ色で立てる */
+   打った一行が下に居座るようになったので、**ログが同じ明るさだと二つ光って喧嘩する。** */
 #dLines div:last-child{color:var(--dim); opacity:.62}
-#dLines div.lg.st{color:var(--go)}
+
+/* 生きている行（2026-09-16、本人が出した形：`動詞… (経過秒 · いま何をしているか)`）。
+   **流れ（済んだもの）と打った一行のあいだ**に一本。
+   Claude Code と同じ積み方——記録が上、状態が真ん中、入力がいちばん下。
+
+   濃さは**流れより明るく、打った一行より暗い。**三段になるので、
+   目は「打った一行 → 動いている行 → 流れ」の順に落ちる */
+#dStat{padding-left:1.5em; color:var(--go); opacity:.72;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 /* 流れの中の印。**行と一緒に沈める**——前は `opacity:1` で立てていたが、
    流れを薄くすると**明るい `>` だけが並んで浮く。**印は行の濃さに従う */
 #dLines .pr{color:var(--go)}
@@ -644,7 +642,9 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <!-- **打った一行が最下列**（2026-09-16、本人：「最下列を入力として、そこを起点に
          下から出てくる感じで、内容適当でもいいからどんどん流れていってほしい」→「A」）。
          ログはその上を流れて、上から消えていく -->
-    <div id="dBar"><div id="dLines"></div><div id="dWish"></div></div>
+    <!-- 上から：流れ（済んだ処理）／**生きている行**（いま動いているもの）／打った一行。
+         Claude Code と同じ積み方——**記録が上、状態が真ん中、入力がいちばん下** -->
+    <div id="dBar"><div id="dLines"></div><div id="dStat"></div><div id="dWish"></div></div>
     <div id="dWon">スライムを　たおした！</div>
     <div id="dRes" class="win">
       <p class="rt">ていあんが　まとまった！</p>
@@ -1334,6 +1334,7 @@ function openDemo(){
   clearLog();
   dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
   dWish.textContent = ''; dWish.classList.remove('up'); dLines.classList.remove('up');
+  dStat.classList.remove('up');
   slimeEl.style.display = ''; dHp.style.display = '';
   slashEl.classList.remove('on');
   heroPose(null); slimeIdle();
@@ -1429,11 +1430,12 @@ function trimLines(){
      しまって、狭いほど「たくさん入る」と出る */
   var row  = parseFloat(getComputedStyle(dLines).lineHeight);
   /* 測れないうちは前の決め打ちで通す */
-  var max  = row > 0 ? Math.floor(room / row) - 1 : 3;
+  /* **生きている行と打った一行のぶん、二行あける** */
+  var max  = row > 0 ? Math.floor(room / row) - 2 : 2;
   /* **帯を埋めない**（2026-09-16、本人：「コードっぽくすると左下がごちゃつくな」）。
-     入るだけ入れると五行びっしりになる。**上は三行まで**にして、
+     入るだけ入れると帯がびっしりになる。**流れは二行まで**にして、
      残りは暗いまま空ける——空けたぶんが、流れているものを流れて見せる */
-  max = Math.max(1, Math.min(3, max));
+  max = Math.max(1, Math.min(2, max));
   while (dLines.children.length > max) dLines.removeChild(dLines.firstChild);
 }
 /* **窓が変わったら引き直す。**入る行数が変わる */
@@ -1481,67 +1483,85 @@ function typeWish(s, done){
    打つたびに一段進む。**斬るのと同時**に書き換わるので、待ち時間は増えない。
 
    ```
-   願いを打つ      入力を分解している
-   1 問目を選ぶ    業務機能と照合している
-   2 問目を選ぶ    候補を展開している
-   3 問目を選ぶ    矛盾を検出している        ← 倒すところまで、ここが動きつづける
-   倒したあと      提案を組み立てている      → リザルト
+   願いを打つ      Parsing…
+   1 問目を選ぶ    Matching…
+   2 問目を選ぶ    Expanding…
+   3 問目を選ぶ    Resolving…        ← 倒すところまで、ここが動きつづける
+   倒したあと      Composing…        → リザルト
    ```
 
    **一行しか使わない。**積むと、そのぶん**打たれた行が上から落ちる**——
    帯は五行しか入らないので、三行積むと**糧が三行とも消える**（一度やって踏んだ）。
    端末でも進み具合は**同じ行を書き換えて**出すので、作法としてもこちらが素直 */
-/* **段の名前は、処理の名前にする**（2026-09-16、本人：
-   「『書かれたことを読んでいる』という文言が弱い。AI っぽさを出すなら、
-   **処理してる内容が見える**ほうが効く。『読んでいる』より
-   **『分解してる』『照合してる』『候補を出してる』**のほうが機械的な処理感が出る」）。
-   「読む」は人がやること。**機械がやるのは、分けて・照らして・当てはめること** */
-var STEPLOG = ['業務機能と照合している', '候補を展開している', '矛盾を検出している'];
-/* 流れつづける中身。**読ませるためのものではない**（本人：「内容適当でもいいから」）
-   が、**処理の名前**にはする（同日、本人：「もっと普段出してるみたいな、
-   **途中処理の文言を流用できない？**」）。
+/* **読めなくていい**（2026-09-16、本人：「なんで日本語？別に**わかるものにしなくていい**
+   んだよ AI の処理だし」）。機械の中身なので、英語のまま出す。
 
-   形は `はたらき(なにに)`。**関数の呼び出しの形**で、どの道具のものでもない——
-   借りるのは作法までで、特定の製品の見た目は持ってこない（この案の線）。
+   形は本人の出した `動詞… (経過秒 · いま何をしているか)`——
+   **秒は嘘にならない**（本当に経っている）し、括弧の中には流している処理がそのまま入る。
 
-   **数や件数は入れない。**「照合 12 件」のような数を出すと、やっていないことの主張になる。
-   出しているのは**はたらきと、その相手**だけ */
+   **ふざけた動詞は使わない**（`Herding…` `Bunning…` の類）。
+   **あれが「Claude Code だ」と分かる部分**で、そこまで持ってくると
+   他社のサイトにうちの製品の意匠が乗る。この案では同じ線で二度外している
+   （スライムの意匠／「そして時は流れた」）。`Parsing…` のような素の技術語は、
+   どの端末にもある言い方なので作法のほう */
+var STAGE = ['Parsing', 'Matching', 'Expanding', 'Resolving', 'Composing'];
+/* 流している処理。形は `op(target)`——**関数の呼び出しの形**で、どの道具のものでもない。
+   **数や件数は入れない。**`match(12 items)` のような数を出すと、
+   やっていないことの主張になる。出しているのは**はたらきと、その相手**だけ */
 var FILL = [
-  '分解(入力文)', '抽出(業務名詞)', '正規化(用語ゆれ)', '補完(省略された主語)',
-  '照合(既存の業務機能)', '列挙(近い候補)', '展開(依存関係)',
-  '検出(矛盾する条件)', '検出(前提の抜け)', '統合(重複)',
-  '整列(粒度)', '付与(優先度)', '分解(選ばれた条件)', '照合(前の答え)'
+  'tokenize(input)', 'extract(entities)', 'normalize(synonyms)', 'resolve(ellipsis)',
+  'match(existing functions)', 'rank(candidates)', 'expand(dependencies)',
+  'detect(conflicts)', 'detect(gaps)', 'merge(duplicates)',
+  'align(granularity)', 'assign(priority)', 'diff(previous answer)', 'bind(constraints)'
 ];
-var streamT = null, fillI = 0;
-/* 一行流す。`step` なら点が付く（段が変わったところだけ目に入る） */
-function pushLog(t, step){
+var streamT = null, tickT = null, fillI = 0;
+var dStat = document.getElementById('dStat');
+var stage = 0, t0 = 0, opNow = '', opNext = '';
+/* 済んだ処理を一行、上へ流す */
+function pushLog(t){
   var d = document.createElement('div');
-  d.className = 'lg' + (step ? ' st' : '');
-  if (step){
-    /* **点は三つとも、いつも出ている。**動くのは濃さだけ——
-       動きが走らない場（裏の窓・動きを止める設定）でも、消えずに読める形で残る */
-    d.innerHTML = '<span class="lt"></span><i>.</i><i>.</i><i>.</i>';
-    d.querySelector('.lt').textContent = t;
-  } else {
-    d.textContent = t;
-  }
+  d.className = 'lg';
+  d.textContent = t;
   dLines.appendChild(d);
   trimLines();
 }
-function setLog(t){ pushLog(t, true); }
+/* 生きている行を書く。**秒は打ち終わってからの実時間** */
+function paintStat(){
+  if (!t0){ dStat.textContent = ''; return; }
+  var sec = Math.floor((Date.now() - t0) / 1000);
+  dStat.textContent = STAGE[stage] + '… (' + sec + 's · ' + opNow + ')';
+}
+/* 段が変わる。**流しは止めない**（打つのと同時に進むところ） */
+function setLog(i){ stage = i; paintStat(); }
 /* **打っているあいだは流さない。**打ち込み中の行の下に流すと、
-   打っている行が上へ逃げていって読めない */
+   打っている行が上へ逃げていって読めない。
+
+   **生きている行と、上の流れは同じものを出さない**——
+   いま動いているものが括弧の中にいて、**終わったら上へ流れる。**
+   そうしないと、真下と真上に同じ字が並ぶ */
 function startStream(){
   if (streamT) return;
+  t0 = Date.now();
+  opNow = FILL[fillI++ % FILL.length];
+  paintStat();
   streamT = setInterval(function(){
     if (D.typing) return;
-    pushLog(FILL[fillI++ % FILL.length], false);
-  }, 420);
+    pushLog(opNow);                       /* 終わったものが上へ */
+    opNow = FILL[fillI++ % FILL.length];  /* 次が括弧の中へ */
+    paintStat();
+  }, 620);
+  /* 秒だけは、打っているあいだも進む */
+  tickT = setInterval(paintStat, 500);
 }
 function stopStream(){
   if (streamT){ clearInterval(streamT); streamT = null; }
 }
-function clearLog(){ stopStream(); fillI = 0; }
+function clearLog(){
+  stopStream();
+  if (tickT){ clearInterval(tickT); tickT = null; }
+  fillI = 0; stage = 0; t0 = 0; opNow = '';
+  dStat.textContent = '';
+}
 
 /* 帯に積む行。**一文字ずつ出して、行を積む**——端末の作法だけ借りる。
    印は五行とも「>」（2026-09-16、本人：「**2〜5 も同じでいいんじゃない？
@@ -1604,13 +1624,14 @@ function winSeq(){
          付いていた。外すと、帯に残るのは**打たれた四行だけ**になって印と中身が合う。
 
          **糧を吸い上げてから開く。**願いが先、選んだ三行があとに続いて上へ抜ける */
-      setLog('提案を組み立てている');
-      stopStream();                       /* まとめに入ったら、流しは止める */
+      setLog(4);
+      stopStream();                       /* まとめに入ったら、流しは止める（秒は進む） */
       setTimeout(function(){
         /* **上から順に抜ける。**最下列の一行（打ったもの）が最後に上がる */
         dLines.classList.add('up');
-        setTimeout(function(){ dWish.classList.add('up'); }, 140);
-        setTimeout(showResult, 520);
+        setTimeout(function(){ dStat.classList.add('up'); }, 90);
+        setTimeout(function(){ dWish.classList.add('up'); }, 180);
+        setTimeout(showResult, 560);
       }, 900);
     }, 1300);
   }, 170);
@@ -1626,8 +1647,8 @@ function choose(i){
     dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + TOPICS[i].t + '</li>';
     D.n = 0;
     typeWish(TOPICS[i].t, function(){
-      setLog('入力を分解している');
-      startStream();                      /* ここから上を、ずっと流れつづける */
+      startStream();                      /* ここから下で、ずっと動きつづける */
+      setLog(0);
       D.phase = 'ask'; askStep();
     });
     return;
@@ -1635,7 +1656,7 @@ function choose(i){
   if (D.phase !== 'ask') return;
   D.picks[D.step] = i;
   D.phase = 'type';
-  setLog(STEPLOG[D.step]);        /* **打つのと同時に進む。**待たせない */
+  setLog(D.step + 1);             /* **打つのと同時に進む。**待たせない */
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
