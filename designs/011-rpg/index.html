@@ -374,19 +374,19 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 /* **最初のお願いは別枠**（2026-09-15、本人：「そうやって打たれたもの
    （最初のお願い／別枠として 3 問）が、最終的に生成物の糧になってるってアピールが
    必要なのでは？」）。
-   コマンド（`>`）とは印を変える——**人が持ち込んだものと、そこから出た手**は別のもの。
+   **ここだけが人の書いた文**なので、印は「>」、色も機械の行と変える（2026-09-16）。
    ここだけ**流れて消えない**。糧の一行目なので、最後まで残す */
 #dWish{font-size:clamp(11px,1.35vw,14px); line-height:1.65; color:var(--dim);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-#dWish .pr{color:var(--warm); margin-right:.6em; letter-spacing:.1em}
+#dWish .pr{color:var(--warm)}
 #dWish .cb,
 /* **糧が吸い上げられる**——打ち終わったら、帯の中身が上へ抜けてリザルトが開く。
    透明度は**1 から下げるだけ**なので、動きが走らない場でも消えるほうへ倒れる */
 #dWish,#dLines{transition:transform .42s ease-in, opacity .42s ease-in}
 #dWish.up,#dLines.up{transform:translateY(-26px); opacity:0}
 #dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.65}
-/* **短い窓では詰める。**帯には五行（願い＋四つ）が並ぶので、
-   そのままだと**いちばん上の「願い」から切れる**——糧の一行目が消えてしまう */
+/* **短い窓では詰める。**帯には五行（人の一行＋機械の四行）が並ぶので、
+   そのままだと**いちばん上の人の一行から切れる**——糧の一行目が消えてしまう */
 @media (max-height:620px){
   #dBar{padding-top:var(--px); padding-bottom:var(--px)}
   #dWish,#dLines{font-size:clamp(9.5px,1.15vw,12px); line-height:1.48}
@@ -396,6 +396,7 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 }
 #dLines div{color:var(--dim); opacity:.45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 #dLines div:last-child{color:var(--go); opacity:1}
+/* 機械の印（`<`）。**行が古くなっても印は沈めない**——誰が言ったかは消えないほうがいい */
 #dLines .pr{color:var(--go); opacity:1}
 #dLines .cb{display:inline-block; width:.6em; background:var(--go);
   animation:blink .8s steps(2) infinite}
@@ -1325,10 +1326,15 @@ function askStep(){
   ask((D.step + 1) + ' / 3', s.q, s.a.map(function(a){ return a.t; }));
 }
 
-/* お願いを打つ。**コマンドではないので印を変える。**
-   これが糧の一行目で、ここから先の三行はこれに対する答えになる */
+/* お願いを打つ。**ここだけが人の書いた文。**印は「>」（2026-09-16、本人：
+   「逆じゃね？思想的には。**願いの部分が撃ち込まれたコマンドで、それ以外は AI 生成部分**じゃん。
+   選ばせてるだけで」）。
+   前は「願い」という言葉を印にして、下の四行に「>」を付けていた。
+   あれは「**誰が決めたか**」の印で、**誰が書いたか**とは逆だった——
+   四行の文を書いたのは機械で、人がしたのは選ぶことだけ。
+   決めごと（**記号は文の主語。入力の名前は言葉に戻さない**）にも、こちらのほうが合う */
 function typeWish(s, done){
-  dWish.innerHTML = '<span class="pr">願い</span><span class="tx"></span><span class="cb">&nbsp;</span>';
+  dWish.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   var tx = dWish.querySelector('.tx'), i = 0;
   var t = setInterval(function(){
     tx.textContent = s.slice(0, ++i);
@@ -1339,10 +1345,12 @@ function typeWish(s, done){
   }, 42);
 }
 
-/* 打ち込む。**一文字ずつ出して、行を積む**——端末の作法だけ借りる */
+/* 機械の行。**一文字ずつ出して、行を積む**——端末の作法だけ借りる。
+   印は「<」。**打ったものが「>」で、返ってきたものが「<」**——
+   向きだけで主語が出るので、言葉を足さずに済む */
 function typeCmd(s, done){
   var line = document.createElement('div');
-  line.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
+  line.innerHTML = '<span class="pr">&lt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   dLines.appendChild(line);
   while (dLines.children.length > 4) dLines.removeChild(dLines.firstChild);
   var tx = line.querySelector('.tx'), i = 0;
@@ -1386,11 +1394,12 @@ function winSeq(){
     dWon.classList.add('on');
     setTimeout(function(){
       dWon.classList.remove('on');
-      /* **最後にもう一手打たせる。**倒したあと AI が何をしているのかが、
-         これで見える（そのまま段取りが出てくる） */
-      /* **糧を吸い上げてから開く。**願いが先、コマンドがあとに続いて上へ抜ける。
-         順に抜けるので、**四行が材料だった**ことが目で追える */
-      typeCmd('段取りにおとす', function(){
+      /* **最後の一行は機械の仕事。**倒したあと AI が何をしているのかが、これで見える。
+         本人の言う段取りの最後（**整合性確認（完全に AI）**）がここ。
+         前は「段取りにおとす」だったが、**段取りという言葉は画面から消えた** */
+      /* **糧を吸い上げてから開く。**願いが先、返ってきた四行があとに続いて上へ抜ける。
+         順に抜けるので、**五行が材料だった**ことが目で追える */
+      typeCmd('整合性を確かめる', function(){
         dWish.classList.add('up');
         setTimeout(function(){ dLines.classList.add('up'); }, 140);
         setTimeout(showResult, 520);
