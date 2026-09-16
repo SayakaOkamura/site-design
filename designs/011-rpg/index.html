@@ -1381,14 +1381,25 @@ function openDemo(){
   dWin.style.display = 'none';
   dStep.textContent = ''; dQ.textContent = ''; dA.innerHTML = '';
 
+  /* **「！」だけを先に出す**（2026-09-16、本人：「ビックリが遅いのかも」→「出るのが」）。
+     コードの上では押したのと同じ瞬間に出ていたので、遅かったのは**出るまで**ではなく、
+     **同時に三つ起きていた**こと——「！」・敵の歩きだし・体力が満ちる。
+     そのうえ**押した先のメニューが消える**ので、
+     目がそこから離れるあいだに「！」の 0.14 秒が終わっていた。
+     → 敵と体力を **0.15 秒**遅らせて、**「！」が一つだけの瞬間**をつくる */
   slimeEl.classList.remove('come');
+  slimeEl.style.visibility = 'hidden';
+  dHp.style.visibility = 'hidden';
   dHp.firstChild.style.width = '0%';
-  void slimeEl.offsetWidth;            /* 二度目も動かすために巻き戻す */
-  slimeEl.classList.add('come');
-  /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
-  setTimeout(paintHp, 60);
   /* 勇者が気づく。**左半分の合図** */
   dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
+  setTimeout(function(){
+    slimeEl.style.visibility = ''; dHp.style.visibility = '';
+    void slimeEl.offsetWidth;          /* 二度目も動かすために巻き戻す */
+    slimeEl.classList.add('come');
+    /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
+    setTimeout(paintHp, 60);
+  }, 150);
   /* 居る時間は 0.9 → **0.45 秒**（2026-09-16、本人：「ビックリが遅いのかも」）。
      出るのは押した瞬間（0ms）なので、遅かったのは**消えるまで**のほう——
      窓が 0.3 秒で開くのに、そのあと 0.6 秒「！」が窓の横に残っていた */
