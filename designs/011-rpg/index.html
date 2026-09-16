@@ -397,7 +397,9 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
   /* **行間もここで詰める。**字だけ小さくしても、`line-height` が同じだと行数が増えない */
   #dWish,#dLines{font-size:clamp(9px,1.1vw,11px); line-height:1.25}
 }
-#dLines div{color:var(--dim); opacity:.45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* **流れは地。**読ませるものではないので、濃さはもう一段落とす（2026-09-16）。
+   帯が「**一本の明るい行（打ったもの）＋うっすらした地**」になる */
+#dLines div{color:var(--dim); opacity:.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 /* 機械の手元。**印は付けず、字下げだけ**——入ったものではないので `>` は付かない。
    **ずっと動いている**（2026-09-16、本人：「なんかずっと演算してるな、動いてるなって見せたい」）。
    打つたびに言葉が変わり、そのあいだも点が動きつづける。
@@ -413,10 +415,11 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    前は「いちばん新しい行」がそこだったので、新しい行を `--go` で立てていた。
    打った一行が下に居座るようになったので、**ログが同じ明るさだと二つ光って喧嘩する。**
    新しい行は「少し明るい」まで、段の変わり目（`.st`）だけ色で立てる */
-#dLines div:last-child{color:var(--dim); opacity:.85}
+#dLines div:last-child{color:var(--dim); opacity:.62}
 #dLines div.lg.st{color:var(--go)}
-/* 機械の印（`<`）。**行が古くなっても印は沈めない**——誰が言ったかは消えないほうがいい */
-#dLines .pr{color:var(--go); opacity:1}
+/* 流れの中の印。**行と一緒に沈める**——前は `opacity:1` で立てていたが、
+   流れを薄くすると**明るい `>` だけが並んで浮く。**印は行の濃さに従う */
+#dLines .pr{color:var(--go)}
 #dLines .cb{display:inline-block; width:.6em; background:var(--go);
   animation:blink .8s steps(2) infinite}
 
@@ -1411,8 +1414,11 @@ function trimLines(){
      しまって、狭いほど「たくさん入る」と出る */
   var row  = parseFloat(getComputedStyle(dLines).lineHeight);
   /* 測れないうちは前の決め打ちで通す */
-  var max  = row > 0 ? Math.floor(room / row) - 1 : 4;
-  max = Math.max(1, Math.min(4, max));
+  var max  = row > 0 ? Math.floor(room / row) - 1 : 3;
+  /* **帯を埋めない**（2026-09-16、本人：「コードっぽくすると左下がごちゃつくな」）。
+     入るだけ入れると五行びっしりになる。**上は三行まで**にして、
+     残りは暗いまま空ける——空けたぶんが、流れているものを流れて見せる */
+  max = Math.max(1, Math.min(3, max));
   while (dLines.children.length > max) dLines.removeChild(dLines.firstChild);
 }
 /* **窓が変わったら引き直す。**入る行数が変わる */
