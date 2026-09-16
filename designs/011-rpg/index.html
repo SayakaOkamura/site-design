@@ -1478,10 +1478,20 @@ function showResult(){
 
   dWin.style.display = 'none';
   D.sel = 0;
-  /* **一行ずつ出す。**枠が開いてから、見出しと行を順に。四角は最後。
+  /* **見たものは、枠と一緒に出す**（2026-09-16）。
+     前はここも一行ずつ出していたので、**読まなくていいものを順に読ませてから**
+     タスクが出てきた。書いてある狙い（「どちらも見たものなので、読み直す必要がない」）と、
+     出し方が逆だった——**一行ずつ出すのは「読め」という合図**になる。
+     → 見出し・言ったこと・選んだ三つ・矢印は**枠と同時。**
+     **見出しも同時**にする——枠が開いて中身が見えているのに、
+     いちばん上の「まとまった！」だけ遅れて出るのは、順が後ろへ回って見える。
+     順に出すのは、**この場で変わったもの（タスク）だけ** */
+  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rp,.rar'));
+  /* **一行ずつ出す。**枠が開いてから、タスクを順に。四角は最後。
      キーを押せば、待たずに全部出る */
-  D.parts = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rp,.rar,.rtask li,.rn'));
-  D.parts.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
+  D.parts = [].slice.call(dRes.querySelectorAll('.rtask li,.rn'));
+  D.parts.concat(seen).forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
+  seen.forEach(function(el){ el.classList.add('on'); });
   dRes.classList.add('on');
   if (REDUCE){ openDone(); return; }
   D.phase = 'open';
