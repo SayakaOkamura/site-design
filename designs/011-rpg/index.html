@@ -235,17 +235,6 @@ body:has(#pop.on){cursor:pointer}
 #pop{position:absolute; z-index:6;
   right:clamp(28px,9vw,120px); top:17%;
   width:min(46vw,520px); max-height:60vh; display:none; transform-origin:top}
-/* **板。**窓の見た目はこちらが持つ（`#pop` は位置と大きさだけ）。
-   サービスだけ二枚出るので、**二枚目は隙間をあけて下に置く** */
-#pop .pane + .pane{margin-top:calc(var(--px)*3)}
-#pop2{display:none}
-#pop.two #pop2{display:block}
-/* 二枚のときは**高さを取り置きしない。**一枚のときの `min-height` は
-   めくっても枠が動かないための取り置きだが、二枚ぶん取ると入らない。
-   サービスの四項目は長さがそろっているので、取り置き無しでも跳ねない */
-#pop.two .b{min-height:0}
-/* 送りは**いちばん下の板の中**。板の外に出すと、
-   一枚のときに「▼」と枚数が**枠から出て空に浮く**（やって見つけた） */
 #pop.on{display:block; animation:popin .12s steps(2) both}
 @keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
 #pop .t{font-size:clamp(12px,1.4vw,14px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--px)*2)}
@@ -652,15 +641,10 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <button data-k="policy"><span class="cur">▶</span>ポリシー</button>
   </div>
 
-  <!-- **窓は板の入れ物**（2026-09-16）。ふだんは板一枚。
-       サービスだけ**二枚**になる（本人：「サービス押したときに両方出てきてほしいの、ポップを二つに」）-->
-  <div id="pop">
-    <div class="pane win" id="pop1">
-      <p class="t" id="popT"></p>
-      <p class="b" id="popB"></p>
-    </div>
-    <div class="pane win" id="pop2"><p class="b" id="popB2"></p></div>
-    <div class="n" id="popN"><span class="p" id="popP"></span>
+  <div id="pop" class="win">
+    <p class="t" id="popT"></p>
+    <p class="b" id="popB"></p>
+    <div class="n"><span class="p" id="popP"></span>
       <button class="go" id="popGo"></button></div>
   </div>
 
@@ -942,23 +926,16 @@ var DATA = {
   /* **一項目ずつ一枚に。**低い窓で二項目ぶん入れると、
      『▼』が枠の外へ落ちた（幅を広げても足りなかった）。
      **文は一字も削らない**——枚数のほうを譲る（9/14 に決めたとおり） */
-  /* **サービスだけ板が二枚**（2026-09-16、本人：「サービス押したときに**両方出てきてほしい**の、
-     ポップを二つに」「**2 ページあるやつが二つある**って感じ」）。
-     上の板が 01 → 02、下の板が 03 → 04。**▼ 一回で両方めくれる。**
-     四枚を一枚ずつ送っていたのが、**二枚で済む** */
-  svc: { t:'サービス',
-    p:[
-      '<b>01　人間中心の次世代業務システム開発</b>'
-      + '<span class="s">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します。</span>',
-      '<b>02　AI による意思決定支援と事業変革支援</b>'
-      + '<span class="s">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します。</span>'
-    ],
-    p2:[
-      '<b>03　自律型・共創型の組織設計支援</b>'
-      + '<span class="s">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します。</span>',
-      '<b>04　地域格差の解消を目指したデジタル支援</b>'
-      + '<span class="s">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します。</span>'
-    ]},
+  svc: { t:'サービス', p:[
+    '<b>01　人間中心の次世代業務システム開発</b>'
+    + '<span class="s">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します。</span>',
+    '<b>02　AI による意思決定支援と事業変革支援</b>'
+    + '<span class="s">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します。</span>',
+    '<b>03　自律型・共創型の組織設計支援</b>'
+    + '<span class="s">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します。</span>',
+    '<b>04　地域格差の解消を目指したデジタル支援</b>'
+    + '<span class="s">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します。</span>'
+  ]},
   /* **場所を落としていた**（本人：「まだあるよね、**会社の場所とか**」）。
      前は「所在 港区西新橋」の一言で、**番地も建物もアクセスの八駅も無かった。**
      会社概要で**いちばん引かれるのが住所**なので、一枚目に置く */
@@ -1051,47 +1028,12 @@ function move(d){
   paintSel();
 }
 
-var popB2 = document.getElementById('popB2');
-/* **二枚が入らない窓では、前の四枚に戻す**（2026-09-16）。
-   測ったら 1000×511 と 600×420 で **▼ が枠の外へ落ちた**（631px 以上なら入る）。
-   9/14 に決めたとおり——**入らないときに譲るのは枚数のほう。文は削らない。**
-
-   高さの決め打ちはしない。**その場で測って決める**——
-   字の大きさも行間も窓の大きさで変わるので、数字を置くと必ずずれる */
-var twoFits = true;
-function fitTwo(){
-  var d = DATA.svc, keep = pop.className, kp = page;
-  if (!pop.classList.contains('on')) pop.classList.add('on');
-  pop.classList.add('two');
-  document.getElementById('pop2').appendChild(document.getElementById('popN'));
-  popT.textContent = d.t; popB.innerHTML = d.p[0]; popB2.innerHTML = d.p2[0];
-  var cap = parseFloat(getComputedStyle(pop).maxHeight) || 1e9;
-  twoFits = pop.scrollHeight <= cap;
-  pop.className = keep; page = kp;
-}
-/* **窓が変わったら測り直す。**開いている最中なら描き直す */
-window.addEventListener('resize', function(){
-  var was = twoFits; fitTwo();
-  if (cur && was !== twoFits){ page = 0; draw(); }
-});
-
-/* いま出す枚。二枚のときは 2 ページ、一枚に戻したときは 4 ページ */
-function pages(d){
-  if (!d.p2) return d.p;
-  return twoFits ? d.p : d.p.concat(d.p2);
-}
-var pop1 = document.getElementById('pop1'), pop2 = document.getElementById('pop2');
-var popN = document.getElementById('popN');
 function draw(){
-  var d = DATA[cur], ps = pages(d), two = !!d.p2 && twoFits;
+  var d = DATA[cur];
   popT.textContent = d.t;
-  popB.innerHTML = ps[page];
-  pop.classList.toggle('two', two);
-  if (two) popB2.innerHTML = d.p2[page];
-  /* **送りは、いちばん下の板の中へ。**二枚のときは二枚目 */
-  (two ? pop2 : pop1).appendChild(popN);
-  popP.textContent = ps.length > 1 ? (page + 1) + ' / ' + ps.length : '';
-  popGo.innerHTML = (page < ps.length - 1)
+  popB.innerHTML = d.p[page];
+  popP.textContent = d.p.length > 1 ? (page + 1) + ' / ' + d.p.length : '';
+  popGo.innerHTML = (page < d.p.length - 1)
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
 }
@@ -1106,7 +1048,8 @@ function open(k){
 function close(){ cur = null; pop.classList.remove('on'); paintSel(); }
 /* めくる。最後まで来たら閉じる（fire と違って、外へは出ない） */
 function turn(){
-  if (page < pages(DATA[cur]).length - 1){ page++; draw(); return; }
+  var d = DATA[cur];
+  if (page < d.p.length - 1){ page++; draw(); return; }
   close();
 }
 
@@ -1114,7 +1057,7 @@ function turn(){
 function fire(){
   if (!cur){ open(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
-  if (page < pages(d).length - 1){ page++; draw(); return; }
+  if (page < d.p.length - 1){ page++; draw(); return; }
   if (GO[cur]){
     GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
     return;
@@ -2044,5 +1987,4 @@ document.addEventListener('keydown', function(e){
 }, true);
 
 paintSel();
-fitTwo();       /* 二枚が入る窓かどうか、はじめに一度測る */
 </script>
