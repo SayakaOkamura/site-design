@@ -1239,7 +1239,7 @@ var SW = 16, SH = 10;
    入口（お題を選ぶ）→ 問診 3 回 → リザルト。
    問診で選ぶたびに、**下の帯にコマンドが一文字ずつ打たれ**、打ち終わると勇者が斬る。
    三回斬ると倒れて、選んだ三つが「段取り」の三手になって出る */
-var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:3, parts:null };
+var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:3, parts:null, tCome:null };
 var REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
 var dWin  = document.getElementById('dWin'),
     dStep = document.getElementById('dStep'), dQ = document.getElementById('dQ'),
@@ -1265,29 +1265,50 @@ function startDemo(){
   openDemo();
 }
 function openDemo(){
-  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3 };
+  /* **`D` を置き換える前に止める。**置き換えたあとでは、前の待ちの id が取れない */
+  clearTimeout(D.tCome);
+  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3, tCome:null };
   document.body.classList.add('demo');
   dLines.innerHTML = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
   dWish.textContent = ''; dWish.classList.remove('up'); dLines.classList.remove('up');
   slimeEl.style.display = ''; dHp.style.display = '';
   slashEl.classList.remove('on');
   heroPose(null); slimeIdle();
-  /* **入ってすぐ歩いてくる。**お題を選んだあとだと、選んでいるあいだ何も起きない */
+
+  /* **問いが先、敵はあとから**（2026-09-16）。
+     前は敵と窓が同時に出ていた。同時だと、「！」と敵と体力の帯のほうが先に目に入って、
+     **「ゲームが始まった」を読んでから「何か訊かれている」を読む**ことになる。
+     指摘：「これは相談のデモですよ、という文脈がないまま戦闘が始まる」。
+
+     **言葉は足さない**（決めごと：「デモの説明はしない。触って分かったことを
+     言葉で上書きすると…」）。**順を入れ替えるだけ**で、先に読むものが変わる。
+
+     敵を選んだあとに回すのは**やらない**——前に決めたとおり、
+     **選んでいるあいだ何も起きない**画面になる。歩いてくるのは、選んでいるあいだでいい */
   slimeEl.classList.remove('come');
-  void slimeEl.offsetWidth;            /* 二度目も動かすために巻き戻す */
-  slimeEl.classList.add('come');
-  /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
+  slimeEl.style.visibility = 'hidden';
+  dHp.style.visibility = 'hidden';
   dHp.firstChild.style.width = '0%';
-  setTimeout(paintHp, 60);
-  /* 勇者が気づく。**左半分の合図** */
-  dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
-  setTimeout(function(){ dBang.classList.remove('on'); }, 900);
   ask('デモ', 'どんなことを、したい？', TOPICS.map(function(t){ return t.t; }));
+
+  D.tCome = setTimeout(function(){
+    slimeEl.style.visibility = ''; dHp.style.visibility = '';
+    void slimeEl.offsetWidth;          /* 二度目も動かすために巻き戻す */
+    slimeEl.classList.add('come');
+    /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
+    setTimeout(paintHp, 60);
+    /* 勇者が気づく。**左半分の合図** */
+    dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
+    setTimeout(function(){ dBang.classList.remove('on'); }, 900);
+  }, 700);
 }
 function quitDemo(){
   D.on = false; D.phase = '';
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
+  /* **敵の待ちも止める。**止め忘れると、デモを出たあとに歩いてくる */
+  clearTimeout(D.tCome); D.tCome = null;
+  slimeEl.style.visibility = ''; dHp.style.visibility = '';
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
   dBang.classList.remove('on');
