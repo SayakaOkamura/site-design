@@ -397,10 +397,6 @@ body.demo #dHp{display:block}
    お題の三つは**作られたものではない**ので、ここは通さない（同時に出る） */
 #dWin .q{opacity:0}
 #dWin .q.on{opacity:1; animation:rise .16s steps(2)}
-/* **理由は添え物。**選択肢より小さく、暗く、一段下げる——
-   **読まなくても選べる**ようにしておく（読めば、選んだ先の違いが分かる） */
-#dA li .why{display:block; margin-top:calc(var(--px)*.5);
-  font-size:clamp(10px,1.15vw,13px); color:var(--dim); opacity:.72; font-weight:400}
 #dWin .rt{margin:0}
 #dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,1.1vw,13px); letter-spacing:.12em; color:var(--dim)}
 #dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,18px); font-weight:700;
@@ -640,9 +636,6 @@ body.roll #dRoll{display:block}
   line-height:1.7; color:var(--dim)}
 #dRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
   line-height:1.8; color:var(--dim); opacity:.78}
-/* **確かめた一行**（2026-09-17）。最後に本人が押したものなので、**ここだけ明るい** */
-#dRes .rs{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(13px,1.6vw,16px);
-  line-height:1.7; color:var(--go); font-weight:700}
 /* 矢印。**ここで前と後ろが切れる。**枠線を引くより軽い */
 #dRes .rar{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
   color:var(--go); letter-spacing:0}
@@ -748,7 +741,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <div id="dRes" class="win">
       <p class="rt">ていあんが　まとまった！</p>
       <p class="rw" id="rWish"></p>
-      <p class="rs" id="rSure"></p>
       <p class="rp" id="rPick"></p>
       <p class="rar">▼</p>
       <!-- 提案内容。**選んだ三つが、そのまま三つのタスクになる** -->
@@ -1328,96 +1320,6 @@ var TOPICS = [
     ]}
 ];
 
-/* **最後の確認の二択は、三問の答えから組む**（2026-09-17、本人：「**A と B もそもそも
-   選んだ択によって変わってくるはずだけど。それを前提とした理由でしょ？
-   後付けじゃなくて生成判断理由**」→「**入力が 3x3 で決まってるんだから先にやっておくだけ**」）。
-
-   **三つとも効かせる。**方針が**素材の語**を、期間と先々が**型**を決める——
-   期間×先々の**九つのマス**に、A・B とその理由を置いて、`{}` に素材を差す。
-   一つのお題で **9 マス × 4 行 ＝ 36 行＋素材 3 語**。展開すると二十七通り。
-
-   **似たものは、文言をそろえた**（本人：「**似てるなら逆にそろえた方がわかりやすい**」）。
-   前は二十七通りを一本ずつ書いていて、**同じ型が素材違いで六組並んでいた。**
-   そろえると、**同じマスは同じ文で、違うのは素材だけ**になる。
-   そのぶん**理由から方針が消えた**——理由に出るのは期間と先々で、方針は候補の文に出る。
-
-   **正誤の二択にしない。**当てにいくと、両方外れた人に**逃げ場が無い**。
-   どちらも本人の答えから組める形にして、**違うのは重心だけ** */
-var SURE = [
-  { mat:['よく聞かれる分', '資料にある分', 'その部署の分'],
-    cell:[
-      [ ['{}には、その場で答える', '二週間で置ける数は限られるので、先に{}だけ答えを持つ',
-         '{}は、在り処だけ返す', '二週間では書き起こせないので、まず在り処を返す'],
-        ['{}は、手で直して持つ', '二週間なら数が少ないので、手で直すほうが早い',
-         '{}は、もとを見に行かせる', '二週間では直す当番を置けないので、もとに任せる'],
-        ['{}で答えられなかった分に、答えを足す', '二週間でも、足す先が決まっていれば増やせる',
-         '{}で答えられなかった質問が、たまっていく', '二週間では足すところまで行かないので、まず集める'] ],
-      [ ['{}には、ひととおり答える', '三か月あれば、{}は答えきれる',
-         '{}は、見る場所が決まっている', '三か月あるなら、見る場所を決めるほうが広く効く'],
-        ['{}の答えが、毎週入れ替わる', '三か月あれば、入れ替える流れまで作れる',
-         '{}は、もとを直せば済む', '三か月保たせるなら、直す場所は一か所のほうが楽'],
-        ['{}の穴が、埋まっていく', '三か月あれば、拾った分を埋める回が回る',
-         '{}に無いものが、一覧になる', '三か月なら、抜けを見える形にするほうが先に効く'] ],
-      [ ['{}は、任せて答えさせる', '半年かけて任せるなら、答えを持つ側になる',
-         '{}は、自分で辿れる', '半年で広げるなら、辿り方を決めるほうが増やせる'],
-        ['{}に、答えを直す係がつく', '半年あれば、直す係まで決められる',
-         'もとが直れば、{}も直っている', '半年保たせるなら、もとに繋ぐほうが続く'],
-        ['拾って答えるほど、{}は任せられる', '半年あれば、拾って埋める回が何度も回る',
-         '{}の抜けが、地図になる', '半年で広げるなら、抜けの地図が要る'] ]
-    ]},
-
-  { mat:['その打ち合わせ', '決まったこと', 'いまの様式'],
-    cell:[
-      [ ['{}を、読む人向けに短くまとめる', '二週間で一つの会議なら、まとめを手で作れる',
-         '{}を、話したまま全部置く', '二週間では要約の形まで決められないので、まず全部残す'],
-        ['{}から、決まったことを抜き出す', '二週間で一つの会議なら、抜き出しは手で回る',
-         '{}に、担当と期限を埋める', '二週間では抜き出す型まで決められないので、その場で埋める'],
-        ['{}を、あとから探せるようにする', '二週間で一つの会議なら、探せる形までが精一杯',
-         '{}を、次の回の頭に出す', '二週間なら、出す先を一つに決めれば回る'] ],
-      [ ['{}のまとめが、毎回そろう', '三か月で主な場に広げるなら、形をそろえるほうが読める',
-         '{}は、全文から必要なところを拾う', '三か月で場が増えるなら、まとめる手が足りない'],
-        ['{}の決定が、一覧で配られる', '三か月あれば、配る流れまで作れる',
-         '{}は、担当と期限が必ず入る形になる', '三か月で場が増えるなら、入力の型を決めるほうが効く'],
-        ['{}が、議題の名前で引ける', '三か月あれば、名前で繋ぐところまで作れる',
-         '{}が、関わる人のところへ届く', '三か月で場が増えるなら、届ける側にするほうが早い'] ],
-      [ ['{}のまとめが、書かなくても出てくる', '半年かけるなら、まとめる手を外すところまで行ける',
-         '{}は、全文がそのまま残る', '半年続けるなら、残す量を絞らないほうが後で効く'],
-        ['{}の決定が、次の回に持ち越される', '半年あれば、前の回と繋ぐところまで行ける',
-         '{}は、埋まっていない欄が残らない', '半年続けるなら、抜けを出さない形が先に要る'],
-        ['{}が、聞かなくても見つかる', '半年あれば、探さずに済む形まで行ける',
-         '{}が、必要なときに向こうから出てくる', '半年続けるなら、出す仕掛けを育てられる'] ]
-    ]},
-
-  { mat:['夜に回せる分', '手放せる分', '朝までに要る分'],
-    cell:[
-      [ ['{}の結果を、朝に一枚で出す', '二週間でひと晩ぶんなら、出す形を一つ作れば足りる',
-         '{}を、夜のうちに終わらせきる', '二週間なら、一本に絞って終わらせきれる'],
-        ['{}が止まったら、知らせが来る', '二週間なら、知らせる宛先を一つ決めれば回る',
-         '{}が止まっても、朝までに戻っている', '二週間でひと晩なら、戻す手順を手で書ける'],
-        ['{}の夜の手数が、減る', '二週間でひと晩なら、減らせるのは一本ぶん',
-         '{}は、自分の手元から離れる', '二週間でも、渡す先が決まっていれば手放せる'] ],
-      [ ['{}の結果が、毎朝そろっている', '三か月で毎晩なら、朝に出す形をそろえられる',
-         '{}が、毎晩片づいている', '三か月あれば、本数を増やして回せる'],
-        ['止まった夜だけ、記録が残る', '三か月で毎晩なら、止まった回を数えられる',
-         '{}は、止まっても次の晩に回る', '三か月あれば、取り直す流れまで作れる'],
-        ['夜に回すものが、三本まで減る', '三か月で毎晩なら、本数の上限を決められる',
-         '{}は、人に渡しきる', '三か月あれば、渡す順番まで決められる'] ],
-      [ ['朝に見るものが、一つにまとまっている', '半年あれば、見る場所をまとめるところまで行ける',
-         '{}は、朝には残っていない', '半年かけるなら、残らない形まで持っていける'],
-        ['起こされる条件が、決まっている', '半年あれば、起こす条件を絞りきれる',
-         '{}は、止まること自体が減る', '半年かけるなら、止まる元から減らせる'],
-        ['夜にやることが、無くなっている', '半年かけるなら、夜の仕事ごと作り替えられる',
-         '{}は、自分に回ってこない', '半年あれば、渡しきるところまで行ける'] ]
-    ]}
-];
-/* 選んだ三つから、その場で組む。**素材は方針、型は期間×先々** */
-function sureOf(){
-  var S = SURE[D.topic], m = S.mat[D.picks[0]];
-  var c = S.cell[D.picks[1]][D.picks[2]];
-  function f(s){ return s.split('{}').join(m); }
-  return [[f(c[0]), f(c[1])], [f(c[2]), f(c[3])]];
-}
-
 /* ─ スライム。**丸い塊・顔なし**（2026-09-15、本人：「良くあるスライムとかで
    いいけど。商標に引っかからない範囲で」）──────────────────────
    「スライム」という語も、ぬるっとした塊という類型も、特定の会社のものではない。
@@ -1517,8 +1419,7 @@ var SW = 16, SH = 10;
    入口（お題を選ぶ）→ 問診 3 回 → リザルト。
    問診で選ぶたびに、**下の帯にコマンドが一文字ずつ打たれ**、打ち終わると勇者が斬る。
    三回斬ると倒れて、選んだ三つが「段取り」の三手になって出る */
-/* **体力は四つ**（2026-09-17）。三問で三つ削って、**最後の確認がとどめ**になる */
-var HPMAX = 4;
+var HPMAX = 3;
 var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:HPMAX, parts:null, tCome:null };
 var REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
 var dWin  = document.getElementById('dWin'),
@@ -1547,7 +1448,7 @@ function startDemo(){
 function openDemo(){
   /* **`D` を置き換える前に止める。**置き換えたあとでは、前の待ちの id が取れない */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
-  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:HPMAX, sure:null, sureList:null, n:0,
+  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:HPMAX, n:0,
         tCome:null, tBang:null, tSlime:null };
   document.body.classList.add('demo');
   clearLog();
@@ -1643,11 +1544,6 @@ function ask(step, q, list, gen){
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
   dA.innerHTML = list.map(function(s){
-    /* **理由つきの行**——中身が [文, 理由] で来たら、下に一行そえる */
-    if (typeof s !== 'string'){
-      return '<li><span class="cur">▶</span><span>' + s[0]
-           + '<span class="why">' + s[1] + '</span></span></li>';
-    }
     return '<li><span class="cur">▶</span>' + s + '</li>';
   }).join('')
     /* **何が起きるかを書いておく**（2026-09-15、本人：「にげる、でどうなるのかの
@@ -1668,9 +1564,6 @@ function ask(step, q, list, gen){
 function draft(){
   D.qs = [dQ].concat([].slice.call(dA.children));
   D.qs.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
-  /* **出し終わったら、元の相へ戻す。**問いなら `ask`、確認なら `sure`——
-     どちらも同じ出し方をするので、戻り先を覚えておく */
-  D.back = D.phase;
   if (REDUCE){ draftDone(); return; }
   D.phase = 'draft';
   D.tQ = setTimeout(function(){
@@ -1684,7 +1577,7 @@ function draft(){
 function draftDone(){
   clearTimeout(D.tQ); clearInterval(D.tQL); D.tQ = D.tQL = null;
   (D.qs || []).forEach(function(el){ el.classList.add('on'); });
-  D.phase = D.back || 'ask';
+  D.phase = 'ask';
 }
 /* お題の三つは作られたものではないので、**同時に出す** */
 function draftSkip(){
@@ -1697,12 +1590,6 @@ function paintD(){
   [].slice.call(dA.children).forEach(function(el, i){
     el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
   });
-}
-/* **最後の確認。番号は付けない**——「1 / 3」と並べると四問目に見える。これは問いではない */
-function sureStep(){
-  D.phase = 'sure';
-  D.sureList = sureOf();
-  ask('', 'つまり、こういうこと？', D.sureList, true);
 }
 function askStep(){
   var T = TOPICS[D.topic], s = T.q[D.step];
@@ -1990,17 +1877,6 @@ function choose(i){
     });
     return;
   }
-  /* **確認を押したら、そのままとどめ。**帯には打たない——
-     帯は「入ったもの」の場所で、**合意は入ったものではない。**
-     打ち込みを付けると三問と同じ重さになって、一手増えたことが体に出る */
-  if (D.phase === 'sure'){
-    D.sure = i;
-    D.phase = 'type';
-    dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + D.sureList[i][0] + '</li>';
-    D.n = 0;
-    swing(function(){ winSeq(); });
-    return;
-  }
   if (D.phase !== 'ask') return;
   D.picks[D.step] = i;
   D.phase = 'type';
@@ -2014,9 +1890,8 @@ function choose(i){
   var st = D.step, struck = false, typed = false;
   function next(){
     if (!struck || !typed) return;      /* **両方そろってから**次の問いへ */
-    /* **問いが尽きたら、確認へ。**体力はまだ一つ残っている */
-    if (D.step < TOPICS[D.topic].q.length - 1){ D.step++; D.phase = 'ask'; askStep(); }
-    else sureStep();
+    if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
+    else winSeq();
   }
   swing(function(){ struck = true; next(); });                       /* すぐ斬る */
   typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, function(){
@@ -2033,10 +1908,6 @@ function showResult(){
      どちらも見たものなので、読み直す必要がない——**変わったことだけが目に入る** */
   document.getElementById('rWish').textContent = '「' + T.t + '」';
   document.getElementById('rPick').textContent = [a0.t, a1.t, a2.t].join('　／　');
-  /* **最後に本人が押したもの。**言ったことのすぐ下に置く——
-     曖昧な一文が、こう読み替わった、という並びになる */
-  document.getElementById('rSure').textContent =
-    (D.sure == null || !D.sureList) ? '' : D.sureList[D.sure][0];
   /* **タスクは組み立てる。**書いてある文をそのまま入れるので、`textContent` で足す——
      文中に「」が入るので、文字列で組むと囲みが壊れる */
   var ul = document.getElementById('rTask');
@@ -2064,7 +1935,7 @@ function showResult(){
      **見出しも同時**にする——枠が開いて中身が見えているのに、
      いちばん上の「まとまった！」だけ遅れて出るのは、順が後ろへ回って見える。
      順に出すのは、**この場で変わったもの（タスク）だけ** */
-  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rs,.rp,.rar'));
+  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rp,.rar'));
   /* **一行ずつ出す。**枠が開いてから、タスクを順に。四角は最後。
      キーを押せば、待たずに全部出る */
   D.parts = [].slice.call(dRes.querySelectorAll('.rtask li,.rn'));
@@ -2238,7 +2109,7 @@ document.addEventListener('click', function(e){
 document.addEventListener('mouseover', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
-  if (li && (D.phase === 'topic' || D.phase === 'ask' || D.phase === 'sure')){
+  if (li && (D.phase === 'topic' || D.phase === 'ask')){
     D.sel = [].slice.call(dA.children).indexOf(li); paintD();
   }
 });
