@@ -565,10 +565,12 @@ body.roll #dRoll{display:block}
    リザルトの窓は `9`。**七層はなれている**ので、
    「窓が上へ抜けて入れ替わる」では別々の深さの別々のことにしか見えない */
 /* **触れない。**押すものではないし、出ているあいだメニューを塞ぎたくない */
+/* **小さくした**（2026-09-17、本人：「クリアの表示位置と大きさ。一旦もう少しちいさくしてみて」）。
+   字は 34 → 26px、枠の内側は 4/9 → 2.5/6。**位置は動かしていない** */
 #clear{position:absolute; left:50%; top:46%; transform:translate(-50%,-50%);
-  z-index:9; display:none; pointer-events:none; padding:calc(var(--px)*4) calc(var(--px)*9)}
+  z-index:9; display:none; pointer-events:none; padding:calc(var(--px)*2.5) calc(var(--px)*6)}
 #clear.on{display:block; animation:resin .24s steps(4)}
-#clear p{margin:0; font-size:clamp(18px,3vw,34px); font-weight:700;
+#clear p{margin:0; font-size:clamp(14px,2.2vw,26px); font-weight:700;
   letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
 /* **点滅する塊は外した**（2026-09-16）。押し待ちをやめたので、
    消える条件を出す必要そのものが無くなった */
