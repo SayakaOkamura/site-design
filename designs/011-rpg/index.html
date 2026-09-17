@@ -568,20 +568,30 @@ body.roll #dRoll{display:block}
    「窓が上へ抜けて入れ替わる」では別々の深さの別々のことにしか見えない */
 /* **触れない。**押すものではないし、出ているあいだメニューを塞ぎたくない */
 /* **小さくした**（2026-09-17、本人：「クリアの表示位置と大きさ。一旦もう少しちいさくしてみて」）。
-   字は 34 → 26px、枠の内側は 4/9 → 2.5/6。**位置は動かしていない** */
-#clear{position:absolute; left:50%; top:46%; transform:translate(-50%,-50%);
+   字は 34 → 26px、枠の内側は 4/9 → 2.5/6。
+
+   **横は太陽と同じ真ん中**（同日、本人：「中心を夕日に合わせて」→「横軸だけね」）。
+   どちらも `left:50%` なので、もともと同じ線に乗っている。
+   **縦は下げたところで止める**——芯に合わせると地面と足もとまで下りてしまう */
+#clear{position:absolute; left:50.4%; top:53%; transform:translate(-50%,-50%);
   z-index:9; display:none; pointer-events:none; padding:calc(var(--px)*2.5) calc(var(--px)*6)}
-#clear.on{display:block; animation:resin .24s steps(4)}
+/* **開き方はポップとそろえる**（2026-09-17、本人：「展開よりパッと出てきて畳んで消えるのが
+   いいかも」→「出るとき展開でスピード上げて」→「**展開の仕方ポップと揃えて**」）。
+   概要の窓（`popin`）は **.12s steps(2)・scaleY(.2)→1・上から開く**。
+   幕は真ん中で `translate(-50%,-50%)` しているので、**同じ形の別の段取り**を立てる。
+
+   **入れ方もポップと同じ**（本人：「**pop と揃えて、出し方も入れ方も**」）。
+   ポップは**引く動きを持っていない**——`.on` を外すと、そのまま消える。
+   幕も畳むのをやめて、**同じ消え方**にした */
+#clear.on{display:block; animation:clearin .12s steps(2) both}
+@keyframes clearin{ from{transform:translate(-50%,-50%) scaleY(.2); transform-origin:top}
+                    to{transform:translate(-50%,-50%) scaleY(1); transform-origin:top} }
 #clear p{margin:0; font-size:clamp(14px,2.2vw,26px); font-weight:700;
   letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
 /* **点滅する塊は外した**（2026-09-16）。押し待ちをやめたので、
    消える条件を出す必要そのものが無くなった */
-/* **閉じる。**開けたときが `resin`（縦に伸びる）なので、**その逆**で畳む。
-   ここも `steps`。素の状態は「消えている」側に置く（`opacity:0`）ので、
-   動きが走らない場でも残らない */
-#clear.on.out{opacity:0; animation:resout .16s steps(3)}
-@keyframes resout{ from{transform:translate(-50%,-50%) scaleY(1); opacity:1}
-                   to{transform:translate(-50%,-50%) scaleY(.1); opacity:0} }
+/* **畳んで消えるのはやめた**（2026-09-17）。ポップと同じで、そのまま消える。
+   いちど `resout`（縦に畳む）を入れていた。形は git にある */
 
 #dWon{position:absolute; left:0; right:0; top:36%; z-index:9; display:none;
   text-align:center; font-size:clamp(20px,4vw,40px); font-weight:700; letter-spacing:.14em;
@@ -2049,21 +2059,19 @@ function buildRoll(){
    リザルトが消える → 画面が家へ戻る＋クリア＋エンドロールが同時に始まる
                    → 一拍で幕が引く（文字は流れつづける）
    ``` */
-var clearEl = document.getElementById('clear'), clearHold = null, clearOut = null;
+var clearEl = document.getElementById('clear'), clearHold = null;
 function showClear(){
   hideClear();
   clearEl.classList.add('on');
   /* **短い**（2026-09-16、本人：「クリアが消えるのが遅い」）。
-     幕の仕事は合図だけなので、読めたら用は済んでいる */
-  clearHold = setTimeout(function(){
-    clearEl.classList.add('out');
-    clearOut = setTimeout(function(){ clearEl.classList.remove('on', 'out'); }, 180);
-  }, 1000);
+     幕の仕事は合図だけなので、読めたら用は済んでいる。
+     **さらに短くした**（2026-09-17）——1.0 → **0.8 秒**。
+     0.7 → 0.8 → 0.9 → 0.8 → 0.7 と往復して、**0.8 で止めた** */
+  clearHold = setTimeout(function(){ clearEl.classList.remove('on'); }, 800);
 }
 function hideClear(){
   if (clearHold){ clearTimeout(clearHold); clearHold = null; }
-  if (clearOut){ clearTimeout(clearOut); clearOut = null; }
-  clearEl.classList.remove('on', 'out');
+  clearEl.classList.remove('on');
 }
 
 function startRoll(){
