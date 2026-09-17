@@ -251,6 +251,8 @@ body:has(#pop.on){cursor:pointer}
   color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
+/* **選ばれた「外へ出る一手」。**リザルトの四角と同じ反転にそろえる */
+#pop .go[aria-current="true"]{background:var(--go); color:var(--edge)}
 /* **外へ出るのは、ボタンを押したときだけ**（2026-09-17、本人：「エンター連打してたら
    勝手に飛ぶって感覚になる」→「中に書いてあるものには明確なクリックだけにするか…
    実際外部ページに勝手に飛ばされると困るしな」）。
@@ -1125,6 +1127,7 @@ function move(d){
   paintSel();
 }
 
+var goSel = false;   /* 右下の一手が選ばれているか */
 function draw(){
   var d = DATA[cur];
   popT.textContent = d.t;
@@ -1133,6 +1136,17 @@ function draw(){
   popGo.innerHTML = (page < d.p.length - 1)
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
+  popGo.setAttribute('aria-current', goSel ? 'true' : 'false');
+}
+/* **窓の中の ↓ は、右下の一手を選ぶ。**窓には他に動かすものが無いので、
+   ここだけ ↑↓ が生きる。**まだ頁が残っていれば右下は「▼」**なので、指すものが無い。
+   選ぶキーと出すキーを分けてある——**Enter や → の連打では選ばれない。** */
+function goPick(on){
+  if (!cur) return;
+  var d = DATA[cur];
+  if (page < d.p.length - 1 || !GO[cur]) return;
+  if (goSel === on) return;
+  goSel = on; draw();
 }
 /* **`open` という名前は使えない。**素の script の中で `function open(){}` と書くと、
    それが **`window.open` を上書きする**——外へ出る一手（ポリシー・地図）が、
@@ -1140,7 +1154,7 @@ function draw(){
 function openPop(k){
   /* **デモだけは窓を出さない**——画面そのものを使う（2026-09-15）*/
   if (k === 'demo'){ startDemo(); return; }
-  cur = k; page = 0; pop.classList.add('on');
+  cur = k; page = 0; goSel = false; pop.classList.add('on');
   document.body.classList.add('popped');   /* 狭くて低い窓で、メニューを退かせるため */
   draw();
   var i = ALL.findIndex(function(el){ return el.dataset.k === k; });
@@ -1148,14 +1162,14 @@ function openPop(k){
   paintSel();
 }
 function close(){
-  cur = null; pop.classList.remove('on');
+  cur = null; goSel = false; pop.classList.remove('on');
   document.body.classList.remove('popped');
   paintSel();
 }
 /* めくる。最後まで来たら閉じる（fire と違って、外へは出ない） */
 function turn(){
   var d = DATA[cur];
-  if (page < d.p.length - 1){ page++; draw(); return; }
+  if (page < d.p.length - 1){ page++; goSel = false; draw(); return; }
   close();
 }
 
@@ -1163,8 +1177,12 @@ function turn(){
 function fire(){
   if (!cur){ openPop(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
-  if (page < d.p.length - 1){ page++; draw(); return; }
-  /* **決定キーでは外へ出さない。**外のページやメールは、ボタンを押したときだけ */
+  if (page < d.p.length - 1){ page++; goSel = false; draw(); return; }
+  /* **選んでいなければ、閉じるだけ。**Enter や → の連打では飛ばない */
+  if (GO[cur] && goSel){
+    GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
+    return;
+  }
   close();
 }
 
@@ -1178,10 +1196,7 @@ document.addEventListener('click', function(e){
   }
   /* **ボタンを直に押したときだけ、外へ。**狙って押しているので、ここは飛ばす */
   if (e.target.closest && e.target.closest('#popGo')){
-    if (cur && GO[cur] && page === DATA[cur].p.length - 1){
-      GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
-      return;
-    }
+    if (cur && GO[cur] && page === DATA[cur].p.length - 1) goSel = true;   /* 狙って押している */
     fire(); return;
   }
   /* **開いているあいだは、どこを押してもめくれる**（2026-09-15、本人：「クリックどこ押しても
@@ -1207,7 +1222,8 @@ document.addEventListener('keydown', function(e){
   if (e.ctrlKey || e.metaKey || e.altKey) return;   /* ブラウザの手は通す（上の節と同じ） */
   var k = e.key;
   if (k === 'ArrowUp' || k === 'ArrowDown'){
-    if (cur) { e.preventDefault(); return; }      /* 窓が開いていたら止める */
+    /* 窓が開いているあいだは、**右下の一手を選ぶ／外す** */
+    if (cur) { goPick(k === 'ArrowDown'); e.preventDefault(); return; }
     move(k === 'ArrowDown' ? 1 : -1); e.preventDefault(); return;
   }
   if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
