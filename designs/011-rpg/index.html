@@ -251,6 +251,11 @@ body:has(#pop.on){cursor:pointer}
   color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
+/* **外へ出る一手は、選んでから**（2026-09-17、本人：「エンター連打してたら勝手に飛ぶって
+   感覚になる」）。窓は一枚しかないので、開いた瞬間から「メールをひらく」が生きていた。
+   → で選んでから決定する形にした——**連打では選ばれないので、飛ばない。**
+   リザルトの四角と同じ作法（開いたときはどれも選ばれていない）。見た目もそこへそろえる */
+#pop .go[aria-current="true"]{background:var(--go); color:var(--edge)}
 @keyframes blink{ 0%,49%{opacity:1} 50%,100%{opacity:.15} }
 
 @media (max-width:640px){
@@ -1144,6 +1149,7 @@ function moveSide(d){
   return true;
 }
 
+var goSel = false;   /* 右下の一手が選ばれているか */
 function draw(){
   var d = DATA[cur];
   popT.textContent = d.t;
@@ -1152,6 +1158,15 @@ function draw(){
   popGo.innerHTML = (page < d.p.length - 1)
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
+  popGo.setAttribute('aria-current', goSel ? 'true' : 'false');
+}
+/* **→ は「右へ動かす」。**窓の中では、右下の一手を指す。
+   まだ頁が残っていれば右下は「▼」なので、指すものが無い */
+function goRight(){
+  if (!cur) return false;
+  var d = DATA[cur];
+  if (page < d.p.length - 1 || !GO[cur] || goSel) return true;
+  goSel = true; draw(); return true;
 }
 /* **`open` という名前は使えない。**素の script の中で `function open(){}` と書くと、
    それが **`window.open` を上書きする**——外へ出る一手（ポリシー・地図）が、
@@ -1159,7 +1174,7 @@ function draw(){
 function openPop(k){
   /* **デモだけは窓を出さない**——画面そのものを使う（2026-09-15）*/
   if (k === 'demo'){ startDemo(); return; }
-  cur = k; page = 0; pop.classList.add('on');
+  cur = k; page = 0; goSel = false; pop.classList.add('on');
   document.body.classList.add('popped');   /* 狭くて低い窓で、メニューを退かせるため */
   draw();
   var i = ALL.findIndex(function(el){ return el.dataset.k === k; });
@@ -1167,14 +1182,14 @@ function openPop(k){
   paintSel();
 }
 function close(){
-  cur = null; pop.classList.remove('on');
+  cur = null; goSel = false; pop.classList.remove('on');
   document.body.classList.remove('popped');
   paintSel();
 }
 /* めくる。最後まで来たら閉じる（fire と違って、外へは出ない） */
 function turn(){
   var d = DATA[cur];
-  if (page < d.p.length - 1){ page++; draw(); return; }
+  if (page < d.p.length - 1){ page++; goSel = false; draw(); return; }
   close();
 }
 
@@ -1182,8 +1197,9 @@ function turn(){
 function fire(){
   if (!cur){ openPop(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
-  if (page < d.p.length - 1){ page++; draw(); return; }
-  if (GO[cur]){
+  if (page < d.p.length - 1){ page++; goSel = false; draw(); return; }
+  /* **選ばれていなければ、閉じるだけ。**外へは出ない（連打で飛ばないように） */
+  if (GO[cur] && goSel){
     GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
     return;
   }
@@ -1198,7 +1214,11 @@ document.addEventListener('click', function(e){
     (cur === el.dataset.k) ? close() : openPop(el.dataset.k);
     return;
   }
-  if (e.target.closest && e.target.closest('#popGo')){ fire(); return; }
+  /* **ボタンを直に押したときは、そのまま外へ。**狙って押しているので、選ぶ手は要らない */
+  if (e.target.closest && e.target.closest('#popGo')){
+    if (cur && GO[cur] && page === DATA[cur].p.length - 1) goSel = true;
+    fire(); return;
+  }
   /* **開いているあいだは、どこを押してもめくれる**（2026-09-15、本人：「クリックどこ押しても
      今展開されてるポップがめくれるようにしてほしい」）。
      前は小さい「▼」を狙わないと送れず、枠の外を押すと**閉じて**いた。
@@ -1232,9 +1252,8 @@ document.addEventListener('keydown', function(e){
   }
   /* **←→ は足もとの列だけ。**メニューは縦一列なので、横に隣がいない */
   if (k === 'ArrowRight'){
-    if (cur) { e.preventDefault(); return; }
-    if (moveSide(1)) { e.preventDefault(); return; }
-    e.preventDefault(); return;
+    if (cur) { goRight(); e.preventDefault(); return; }
+    moveSide(1); e.preventDefault(); return;
   }
   if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z'){
     /* **流れているあいだだけ、乗ったままのカーソルは効かない。**
@@ -1247,6 +1266,8 @@ document.addEventListener('keydown', function(e){
   /* **← は二つの顔を持つ。**窓が開いていれば閉じる、開いていなければ左へ移る——
      **同時には起きない**ので混ざらない */
   if (k === 'ArrowLeft'){
+    /* 窓の中で右下を選んでいたら、**まず選びを外す**。もう一度押すと閉じる */
+    if (cur && goSel){ goSel = false; draw(); e.preventDefault(); return; }
     if (cur) { close(); e.preventDefault(); return; }
     moveSide(-1); e.preventDefault(); return;
   }
