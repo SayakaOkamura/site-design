@@ -397,6 +397,10 @@ body.demo #dHp{display:block}
    お題の三つは**作られたものではない**ので、ここは通さない（同時に出る） */
 #dWin .q{opacity:0}
 #dWin .q.on{opacity:1; animation:rise .16s steps(2)}
+/* **理由は添え物。**選択肢より小さく、暗く、一段下げる——
+   **読まなくても選べる**ようにしておく（読めば、選んだ先の違いが分かる） */
+#dA li .why{display:block; margin-top:calc(var(--px)*.5);
+  font-size:clamp(10px,1.15vw,13px); color:var(--dim); opacity:.72; font-weight:400}
 #dWin .rt{margin:0}
 #dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,1.1vw,13px); letter-spacing:.12em; color:var(--dim)}
 #dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,18px); font-weight:700;
@@ -1349,10 +1353,22 @@ var TOPICS = [
    **読点で一拍おいて、主語と述語がある。**そこだけ短いと、**標語に見える。**
 
    **理由はまだ付けていない**（本人：「理由は後でいい」）*/
+/* **理由は「選ぶと何が変わるか」**（2026-09-17）。
+   **引用では組まなかった。**「『〇〇』と言ったため」の形にすると、
+   三問の組み合わせが二十七通りあるので、**どの答えから引いても合う**ようには書けない
+   （「ひとつの部署だけで、試す」を選んだ人に「よく聞かれることから」とは引けない）。
+   引く先を固定すると、**半分は理由になっていない文**が出る。
+
+   → 出すのは**推測の根拠ではなく、選んだ先の違い。**
+   決めるところに要るのは「なぜそう読んだか」より「**どっちを取るとどうなるか**」で、
+   こちらは**二十七通りのどこから来ても嘘にならない。** */
 var SURE = [
-  ['困った人が、その場で用を済ませられる', 'どこを見ればいいかが、すぐ分かる'],
-  ['話の流れごと、あとで確かめられる', '読んだ人が、そのまま次に動ける'],
-  ['自分が見ていなくても、勝手に進んでいる', '自分の手元まで、仕事が回ってこない']
+  [['困った人が、その場で用を済ませられる', '答えそのものを持つ形になる'],
+   ['どこを見ればいいかが、すぐ分かる',     '置き場所を指す形になる']],
+  [['話の流れごと、あとで確かめられる', '話した順に、全部を残す形になる'],
+   ['読んだ人が、そのまま次に動ける',   '要点だけを、短く残す形になる']],
+  [['自分が見ていなくても、勝手に進んでいる', '夜のうちに動かす形になる'],
+   ['自分の手元まで、仕事が回ってこない',     '手元から外す形になる']]
 ];
 
 /* ─ スライム。**丸い塊・顔なし**（2026-09-15、本人：「良くあるスライムとかで
@@ -1580,6 +1596,11 @@ function ask(step, q, list, gen){
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
   dA.innerHTML = list.map(function(s){
+    /* **理由つきの行**——中身が [文, 理由] で来たら、下に一行そえる */
+    if (typeof s !== 'string'){
+      return '<li><span class="cur">▶</span><span>' + s[0]
+           + '<span class="why">' + s[1] + '</span></span></li>';
+    }
     return '<li><span class="cur">▶</span>' + s + '</li>';
   }).join('')
     /* **何が起きるかを書いておく**（2026-09-15、本人：「にげる、でどうなるのかの
@@ -1927,7 +1948,7 @@ function choose(i){
   if (D.phase === 'sure'){
     D.sure = i;
     D.phase = 'type';
-    dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + SURE[D.topic][i] + '</li>';
+    dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + SURE[D.topic][i][0] + '</li>';
     D.n = 0;
     swing(function(){ winSeq(); });
     return;
@@ -1966,7 +1987,7 @@ function showResult(){
   document.getElementById('rPick').textContent = [a0.t, a1.t, a2.t].join('　／　');
   /* **最後に本人が押したもの。**言ったことのすぐ下に置く——
      曖昧な一文が、こう読み替わった、という並びになる */
-  document.getElementById('rSure').textContent = (D.sure == null) ? '' : SURE[D.topic][D.sure];
+  document.getElementById('rSure').textContent = (D.sure == null) ? '' : SURE[D.topic][D.sure][0];
   /* **タスクは組み立てる。**書いてある文をそのまま入れるので、`textContent` で足す——
      文中に「」が入るので、文字列で組むと囲みが壊れる */
   var ul = document.getElementById('rTask');
