@@ -1511,7 +1511,6 @@ function quitDemo(){
   clearLog();
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
-  clearTimeout(D.tQ); D.tQ = null; D.after = null;
   /* **待ちは全部止める。**止め忘れると、デモを出たあとに「！」が出たり歩いてきたりする */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
   D.tCome = D.tBang = D.tSlime = null;
@@ -1544,28 +1543,22 @@ function ask(step, q, list){
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
   paintD();
 }
-/* **（試し B・2026-09-17）窓が開く前に、帯で一拍おく。**
+/* **（試し C・2026-09-17）機械が書き戻した一行を、帯に `<` で足す。**
    本人：「最初の選択肢を打って、それを元に質問内容と選択肢を AI が出すっていう
    処理が存在するわけだから。**それを出力する処理が入ったことを何かしらの方法で示してもいい**」
 
-   打ち終わってから窓が出るまでのあいだ、**生きている行を `draft(questions)` に据える。**
-   流しは止める（`pauseUntil`）——ここだけは**入れ替わらない一行**にして、
-   「いま作っている」が読めるようにする。終われば、その一行は上へ流れていく。
-
-   **待ちは 0.42 秒。**窓が開くまでの間（0.42 秒）と同じ長さにそろえた */
-var DRAFT = 420;
-function drafting(cb){
-  D.phase = 'draft'; D.after = cb;
-  opNow = 'draft(questions)'; paintStat();
-  pauseUntil = Date.now() + DRAFT;
-  if (REDUCE){ draftDone(); return; }
-  D.tQ = setTimeout(draftDone, DRAFT);
-}
-/* 押したら待たずに進む（リザルトの行出しと同じ作法） */
-function draftDone(){
-  clearTimeout(D.tQ); D.tQ = null;
-  var cb = D.after; D.after = null;
-  if (cb) cb();
+   `>` は**入ったもの**、`<` は**出したもの。**
+   決めごと（**記号は文の主語**）にはこちらのほうが素直だが、
+   9/16 に一度 `<` を入れて**五行とも `>` に戻している**——**そこを拿す形になる。**
+   戻した理由は「帯は『入ったもの』を並べる場所で、選んだ結果もそこへ入る」。
+   これはその理屈と真っ向からぶつかる。**そこを見てもらうための試し** */
+function writeBack(s){
+  var line = document.createElement('div');
+  line.className = 'bk';
+  line.innerHTML = '<span class="pr">&lt;</span> <span class="tx"></span>';
+  line.querySelector('.tx').textContent = s;
+  dLines.appendChild(line);
+  trimLines();
 }
 function paintD(){
   [].slice.call(dA.children).forEach(function(el, i){
@@ -1854,8 +1847,9 @@ function choose(i){
     typeWish(TOPICS[i].t, function(){
       startStream();                      /* ここから下で、ずっと動きつづける */
       setLog(0);
-      /* **打ったものを元に、問いを立てているところ**（試し B） */
-      drafting(function(){ D.phase = 'ask'; askStep(); });
+      /* **打ったものを元に、問いを立てた**（試し C） */
+      writeBack('問いと選択肢を立てた');
+      D.phase = 'ask'; askStep();
     });
     return;
   }
@@ -1872,7 +1866,7 @@ function choose(i){
   var st = D.step, struck = false, typed = false;
   function next(){
     if (!struck || !typed) return;      /* **両方そろってから**次の問いへ */
-    if (D.hp > 0){ D.step++; drafting(function(){ D.phase = 'ask'; askStep(); }); }
+    if (D.hp > 0){ D.step++; writeBack('問いと選択肢を立てた'); D.phase = 'ask'; askStep(); }
     else winSeq();
   }
   swing(function(){ struck = true; next(); });                       /* すぐ斬る */
@@ -2079,8 +2073,6 @@ function stopRoll(){
 
 document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
-  /* **出ている最中は選べない。**押したら、待たずに全部出るだけ（試し A） */
-  if (D.phase === 'draft'){ draftDone(); return; }
   var li = e.target.closest('#dA li');
   if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
   if (D.phase === 'open'){ openDone(); return; }
@@ -2101,7 +2093,6 @@ document.addEventListener('keydown', function(e){
   var k = e.key, n;
   if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
-  if (D.phase === 'draft'){ draftDone(); e.preventDefault(); return; }
   if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
   if (D.phase === 'type' || D.phase === 'win'){ e.preventDefault(); return; }
   if (D.phase === 'result'){
