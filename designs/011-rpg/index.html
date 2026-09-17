@@ -1187,6 +1187,7 @@ document.addEventListener('mousemove', function(){ document.body.classList.remov
 
 document.addEventListener('keydown', function(e){
   if (D.on) return;   /* デモ中は、前からある手を止める */
+  if (e.ctrlKey || e.metaKey || e.altKey) return;   /* ブラウザの手は通す（上の節と同じ） */
   var k = e.key;
   if (k === 'ArrowUp' || k === 'ArrowDown'){
     if (cur) { e.preventDefault(); return; }      /* 窓が開いていたら止める */
@@ -2116,6 +2117,13 @@ document.addEventListener('mouseover', function(e){
 
 document.addEventListener('keydown', function(e){
   if (!D.on) return;
+  /* **修飾キーが付いていたら、こちらは触らない**（2026-09-17、本人：
+     「デモ終了直前の場面に限って ctrl+shift+R が効かない」）。
+     リザルトの相は**どのキーでも `preventDefault`** していて、しかも `capture` なので
+     いちばん先に走る。**Chrome は再読み込みを止められる**（Ctrl+T や Ctrl+W と違って
+     予約されていない）ので、**ブラウザの手ごと潰していた。**
+     止めたかったのは**素のキー**だけ——修飾キー付きは、この画面の手ではない */
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
   var k = e.key, n;
   if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
