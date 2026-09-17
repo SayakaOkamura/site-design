@@ -251,11 +251,15 @@ body:has(#pop.on){cursor:pointer}
   color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
-/* **外へ出る一手は、選んでから**（2026-09-17、本人：「エンター連打してたら勝手に飛ぶって
-   感覚になる」）。窓は一枚しかないので、開いた瞬間から「メールをひらく」が生きていた。
-   → で選んでから決定する形にした——**連打では選ばれないので、飛ばない。**
-   リザルトの四角と同じ作法（開いたときはどれも選ばれていない）。見た目もそこへそろえる */
-#pop .go[aria-current="true"]{background:var(--go); color:var(--edge)}
+/* **外へ出るのは、ボタンを押したときだけ**（2026-09-17、本人：「エンター連打してたら
+   勝手に飛ぶって感覚になる」→「中に書いてあるものには明確なクリックだけにするか…
+   実際外部ページに勝手に飛ばされると困るしな」）。
+   窓は一枚しかないので、**開いた瞬間から「メールをひらく」が生きていた**
+   （↓↓↓↓ → Enter → Enter で開く）。
+
+   いちど「→ で選んでから決定」にしたが、**矢印は元に戻した**（本人：「矢印だけ元に戻すわ」）。
+   残ったのは**決定キーでは外へ出さない**という一点で、**押し間違いでは飛ばない。**
+   メールも外のページも、**狙って押したときだけ**開く */
 @keyframes blink{ 0%,49%{opacity:1} 50%,100%{opacity:.15} }
 
 @media (max-width:640px){
@@ -1111,45 +1115,14 @@ function paintSel(){
    そのまま Enter を押すと、**流れている文字が止まってデモが始まり直す。**
    カーソルを勝手に動かすと居場所が嘘になるので、**動かさずに、そこだけ効かなくする** */
 var selStale = false;
-/* **足もとの二つは、横に並んでいる**（2026-09-17、本人：「お問い合わせとポリシーも
-   下↓で動くと思うんだけど、四角的には右じゃん。操作方向どっちがいいと思う？」）。
-   前は七つを一本の輪にして ↑↓ だけで回していたので、
-   **横に並んだものを ↓ で移っていた**——画面と手が食い違う。
-
-   **十字キーの定石は「方向キーは移動、決定は Enter・Space・Z」。**
-   → を決定に使っていたのはこの案で足した癖（窓が右へ開く RPG の名残）で、
-   作法としてはむしろ例外だった。**→ は移動に返す。**
-
-   縦は**メニュー五つ＋足もとの列＝六段の輪**として回す。
-   足もとに下りたときは、**前に居たほうの四角**に戻る */
-var MENU_N = 5;                 /* 縦に並ぶメニューの数 */
-var footSel = MENU_N;           /* 足もとで最後に居た四角 */
+/* **矢印は七つを一本の輪で回す**（2026-09-17 にいちど足もとを ←→ にしたが、**戻した**。
+   下の「外へ出る一手」の節に、そのときの判断を残してある） */
 function move(d){
-  if (sel >= MENU_N){           /* いま足もと。↓ で先頭へ、↑ でメニューの末尾へ */
-    footSel = sel;
-    sel = (d > 0) ? 0 : MENU_N - 1;
-  } else if (sel === MENU_N - 1 && d > 0){
-    sel = footSel;              /* メニューの末尾から足もとへ */
-  } else if (sel === 0 && d < 0){
-    sel = footSel;              /* 先頭から上へ回ると足もとへ */
-  } else {
-    sel += d;
-  }
+  sel = (sel + d + ALL.length) % ALL.length;
   selStale = false;
   paintSel();
-}
-/* 足もとの列を横へ。**端で止める**（二つしかないので、回すと往復に見える） */
-function moveSide(d){
-  if (sel < MENU_N) return false;
-  var n = ALL.length - MENU_N, i = sel - MENU_N + d;
-  if (i < 0 || i >= n) return true;      /* 端。押した手は受けたことにする */
-  sel = MENU_N + i; footSel = sel;
-  selStale = false;
-  paintSel();
-  return true;
 }
 
-var goSel = false;   /* 右下の一手が選ばれているか */
 function draw(){
   var d = DATA[cur];
   popT.textContent = d.t;
@@ -1158,15 +1131,6 @@ function draw(){
   popGo.innerHTML = (page < d.p.length - 1)
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
-  popGo.setAttribute('aria-current', goSel ? 'true' : 'false');
-}
-/* **→ は「右へ動かす」。**窓の中では、右下の一手を指す。
-   まだ頁が残っていれば右下は「▼」なので、指すものが無い */
-function goRight(){
-  if (!cur) return false;
-  var d = DATA[cur];
-  if (page < d.p.length - 1 || !GO[cur] || goSel) return true;
-  goSel = true; draw(); return true;
 }
 /* **`open` という名前は使えない。**素の script の中で `function open(){}` と書くと、
    それが **`window.open` を上書きする**——外へ出る一手（ポリシー・地図）が、
@@ -1174,7 +1138,7 @@ function goRight(){
 function openPop(k){
   /* **デモだけは窓を出さない**——画面そのものを使う（2026-09-15）*/
   if (k === 'demo'){ startDemo(); return; }
-  cur = k; page = 0; goSel = false; pop.classList.add('on');
+  cur = k; page = 0; pop.classList.add('on');
   document.body.classList.add('popped');   /* 狭くて低い窓で、メニューを退かせるため */
   draw();
   var i = ALL.findIndex(function(el){ return el.dataset.k === k; });
@@ -1182,14 +1146,14 @@ function openPop(k){
   paintSel();
 }
 function close(){
-  cur = null; goSel = false; pop.classList.remove('on');
+  cur = null; pop.classList.remove('on');
   document.body.classList.remove('popped');
   paintSel();
 }
 /* めくる。最後まで来たら閉じる（fire と違って、外へは出ない） */
 function turn(){
   var d = DATA[cur];
-  if (page < d.p.length - 1){ page++; goSel = false; draw(); return; }
+  if (page < d.p.length - 1){ page++; draw(); return; }
   close();
 }
 
@@ -1197,12 +1161,8 @@ function turn(){
 function fire(){
   if (!cur){ openPop(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
-  if (page < d.p.length - 1){ page++; goSel = false; draw(); return; }
-  /* **選ばれていなければ、閉じるだけ。**外へは出ない（連打で飛ばないように） */
-  if (GO[cur] && goSel){
-    GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
-    return;
-  }
+  if (page < d.p.length - 1){ page++; draw(); return; }
+  /* **決定キーでは外へ出さない。**外のページやメールは、ボタンを押したときだけ */
   close();
 }
 
@@ -1210,13 +1170,16 @@ document.addEventListener('click', function(e){
   if (D.on) return;   /* デモ中は、前からある手を止める */
   var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button'));
   if (el){
-    var i = ALL.indexOf(el); if (i >= 0){ sel = i; if (i >= MENU_N) footSel = i; }
+    var i = ALL.indexOf(el); if (i >= 0) sel = i;
     (cur === el.dataset.k) ? close() : openPop(el.dataset.k);
     return;
   }
-  /* **ボタンを直に押したときは、そのまま外へ。**狙って押しているので、選ぶ手は要らない */
+  /* **ボタンを直に押したときだけ、外へ。**狙って押しているので、ここは飛ばす */
   if (e.target.closest && e.target.closest('#popGo')){
-    if (cur && GO[cur] && page === DATA[cur].p.length - 1) goSel = true;
+    if (cur && GO[cur] && page === DATA[cur].p.length - 1){
+      GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
+      return;
+    }
     fire(); return;
   }
   /* **開いているあいだは、どこを押してもめくれる**（2026-09-15、本人：「クリックどこ押しても
@@ -1230,12 +1193,7 @@ document.addEventListener('click', function(e){
 });
 /* マウスを乗せたら、カーソルもそこへ（手が二つあっても印は一つ） */
 ALL.forEach(function(el, i){
-  el.addEventListener('mouseenter', function(){
-    if (cur) return;
-    sel = i; selStale = false;
-    if (i >= MENU_N) footSel = i;   /* 次に ↓ で下りたとき、ここに戻る */
-    paintSel();
-  });
+  el.addEventListener('mouseenter', function(){ if (!cur){ sel = i; selStale = false; paintSel(); } });
 });
 
 /* 十字キーに触れたらマウスの印を消す。マウスがまた動いたら戻す */
@@ -1250,12 +1208,7 @@ document.addEventListener('keydown', function(e){
     if (cur) { e.preventDefault(); return; }      /* 窓が開いていたら止める */
     move(k === 'ArrowDown' ? 1 : -1); e.preventDefault(); return;
   }
-  /* **←→ は足もとの列だけ。**メニューは縦一列なので、横に隣がいない */
-  if (k === 'ArrowRight'){
-    if (cur) { goRight(); e.preventDefault(); return; }
-    moveSide(1); e.preventDefault(); return;
-  }
-  if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z'){
+  if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
     /* **流れているあいだだけ、乗ったままのカーソルは効かない。**
        ↑↓ で動かしてから押せば普通に開くし、**四角を押すのは前どおり効く**
        （クリックには押した相手がいるので、乗ったままとは違う） */
@@ -1263,15 +1216,7 @@ document.addEventListener('keydown', function(e){
         && ALL[sel].dataset.k === 'demo'){ e.preventDefault(); return; }
     fire(); e.preventDefault(); return;
   }
-  /* **← は二つの顔を持つ。**窓が開いていれば閉じる、開いていなければ左へ移る——
-     **同時には起きない**ので混ざらない */
-  if (k === 'ArrowLeft'){
-    /* 窓の中で右下を選んでいたら、**まず選びを外す**。もう一度押すと閉じる */
-    if (cur && goSel){ goSel = false; draw(); e.preventDefault(); return; }
-    if (cur) { close(); e.preventDefault(); return; }
-    moveSide(-1); e.preventDefault(); return;
-  }
-  if (k === 'Escape' || k === 'Backspace' || k === 'x' || k === 'X'){
+  if (k === 'Escape' || k === 'ArrowLeft' || k === 'Backspace' || k === 'x' || k === 'X'){
     if (cur) close();
     e.preventDefault(); return;
   }
