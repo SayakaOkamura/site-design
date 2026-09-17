@@ -244,7 +244,17 @@ body:has(#pop.on){cursor:pointer}
 #pop .t{font-size:clamp(12px,1.4vw,15px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--px)*2)}
 #pop .b{margin:0; font-size:clamp(14px,1.75vw,20px); line-height:2; min-height:7.2em}
 #pop .b b{color:var(--go); font-weight:700}
-#pop .b .s{display:block; font-size:clamp(12px,1.45vw,16px); color:var(--dim); line-height:1.9; margin-top:calc(var(--px)*2)}
+/* **見出しと中身を、対にして寄せる**（2026-09-17、本人：「会社概要 1 ページ目の
+   字の感覚変じゃない？」）。前は**間が逆**だった——見出しと中身のあいだが 15px、
+   中身と次の見出しのあいだが 7px。**対の中のほうが空いていて、対の外が詰まっていた。**
+   （7px は狙って空けたものではなく、見出しの行送りの余りだった）
+
+   → **中身は見出しにくっつける**（余白 0）。**次の見出しの前だけ空ける。**
+   段落が続くところ（理念）は、段落どうしの余白を別に持たせる */
+#pop .b .s{display:block; font-size:clamp(12px,1.45vw,16px); color:var(--dim); line-height:1.9; margin-top:0}
+#pop .b b{display:block}
+#pop .b .s + .s{margin-top:calc(var(--px)*2)}
+#pop .b .s + b{margin-top:calc(var(--px)*3)}
 #pop .n{display:flex; align-items:center; justify-content:space-between; margin-top:calc(var(--px)*2)}
 #pop .p{font-size:12px; color:var(--dim); letter-spacing:.1em}
 #pop .go{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit; cursor:pointer;
