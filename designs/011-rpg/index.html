@@ -1106,10 +1106,42 @@ function paintSel(){
    そのまま Enter を押すと、**流れている文字が止まってデモが始まり直す。**
    カーソルを勝手に動かすと居場所が嘘になるので、**動かさずに、そこだけ効かなくする** */
 var selStale = false;
+/* **足もとの二つは、横に並んでいる**（2026-09-17、本人：「お問い合わせとポリシーも
+   下↓で動くと思うんだけど、四角的には右じゃん。操作方向どっちがいいと思う？」）。
+   前は七つを一本の輪にして ↑↓ だけで回していたので、
+   **横に並んだものを ↓ で移っていた**——画面と手が食い違う。
+
+   **十字キーの定石は「方向キーは移動、決定は Enter・Space・Z」。**
+   → を決定に使っていたのはこの案で足した癖（窓が右へ開く RPG の名残）で、
+   作法としてはむしろ例外だった。**→ は移動に返す。**
+
+   縦は**メニュー五つ＋足もとの列＝六段の輪**として回す。
+   足もとに下りたときは、**前に居たほうの四角**に戻る */
+var MENU_N = 5;                 /* 縦に並ぶメニューの数 */
+var footSel = MENU_N;           /* 足もとで最後に居た四角 */
 function move(d){
-  sel = (sel + d + ALL.length) % ALL.length;
+  if (sel >= MENU_N){           /* いま足もと。↓ で先頭へ、↑ でメニューの末尾へ */
+    footSel = sel;
+    sel = (d > 0) ? 0 : MENU_N - 1;
+  } else if (sel === MENU_N - 1 && d > 0){
+    sel = footSel;              /* メニューの末尾から足もとへ */
+  } else if (sel === 0 && d < 0){
+    sel = footSel;              /* 先頭から上へ回ると足もとへ */
+  } else {
+    sel += d;
+  }
   selStale = false;
   paintSel();
+}
+/* 足もとの列を横へ。**端で止める**（二つしかないので、回すと往復に見える） */
+function moveSide(d){
+  if (sel < MENU_N) return false;
+  var n = ALL.length - MENU_N, i = sel - MENU_N + d;
+  if (i < 0 || i >= n) return true;      /* 端。押した手は受けたことにする */
+  sel = MENU_N + i; footSel = sel;
+  selStale = false;
+  paintSel();
+  return true;
 }
 
 function draw(){
@@ -1162,7 +1194,7 @@ document.addEventListener('click', function(e){
   if (D.on) return;   /* デモ中は、前からある手を止める */
   var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button'));
   if (el){
-    var i = ALL.indexOf(el); if (i >= 0) sel = i;
+    var i = ALL.indexOf(el); if (i >= 0){ sel = i; if (i >= MENU_N) footSel = i; }
     (cur === el.dataset.k) ? close() : openPop(el.dataset.k);
     return;
   }
@@ -1178,7 +1210,12 @@ document.addEventListener('click', function(e){
 });
 /* マウスを乗せたら、カーソルもそこへ（手が二つあっても印は一つ） */
 ALL.forEach(function(el, i){
-  el.addEventListener('mouseenter', function(){ if (!cur){ sel = i; selStale = false; paintSel(); } });
+  el.addEventListener('mouseenter', function(){
+    if (cur) return;
+    sel = i; selStale = false;
+    if (i >= MENU_N) footSel = i;   /* 次に ↓ で下りたとき、ここに戻る */
+    paintSel();
+  });
 });
 
 /* 十字キーに触れたらマウスの印を消す。マウスがまた動いたら戻す */
@@ -1193,7 +1230,13 @@ document.addEventListener('keydown', function(e){
     if (cur) { e.preventDefault(); return; }      /* 窓が開いていたら止める */
     move(k === 'ArrowDown' ? 1 : -1); e.preventDefault(); return;
   }
-  if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
+  /* **←→ は足もとの列だけ。**メニューは縦一列なので、横に隣がいない */
+  if (k === 'ArrowRight'){
+    if (cur) { e.preventDefault(); return; }
+    if (moveSide(1)) { e.preventDefault(); return; }
+    e.preventDefault(); return;
+  }
+  if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z'){
     /* **流れているあいだだけ、乗ったままのカーソルは効かない。**
        ↑↓ で動かしてから押せば普通に開くし、**四角を押すのは前どおり効く**
        （クリックには押した相手がいるので、乗ったままとは違う） */
@@ -1201,7 +1244,13 @@ document.addEventListener('keydown', function(e){
         && ALL[sel].dataset.k === 'demo'){ e.preventDefault(); return; }
     fire(); e.preventDefault(); return;
   }
-  if (k === 'Escape' || k === 'ArrowLeft' || k === 'Backspace' || k === 'x' || k === 'X'){
+  /* **← は二つの顔を持つ。**窓が開いていれば閉じる、開いていなければ左へ移る——
+     **同時には起きない**ので混ざらない */
+  if (k === 'ArrowLeft'){
+    if (cur) { close(); e.preventDefault(); return; }
+    moveSide(-1); e.preventDefault(); return;
+  }
+  if (k === 'Escape' || k === 'Backspace' || k === 'x' || k === 'X'){
     if (cur) close();
     e.preventDefault(); return;
   }
