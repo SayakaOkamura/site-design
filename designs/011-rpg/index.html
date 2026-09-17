@@ -76,7 +76,7 @@
      → **無彩色**（本人：「**グレーにするのは？**」）。この画面は
      **暖色の影（地形）＋暖色の空**でできているので、**色味を持たない塊はどの層にも混ざらない。**
      有彩色のように主役も取らない。**山と重なる下半分でも沈まない**のが決め手だった */
-  --slime:#4a4a4a;
+  --slime:#4a2e2a;
   --rim:#4a2a17;   --win:#24130a;   --box:#2a1408;   --edge:#24130a;
   --dim:#e8c39a;   --warm:#ffe7ad;  --go:#ffd270;
 }
@@ -94,7 +94,7 @@
   --glow1:rgba(240,130,160,.85); --glow2:rgba(200,80,150,.45); --glow3:rgba(150,55,140,.2);
   --ray:rgba(210,90,150,.75);
   --far:#2a1f45;   --hill:#1c1430;  --hero:#120b1f;  --ground:#150e24;  --ground2:#221735;
-  --slime:#4a4a4a;
+  --slime:#4a2e2a;
   --rim:#3a2a52;   --win:#1c1430;   --box:#180f28;   --edge:#1c1430;
   --dim:#ded0ea;   --warm:#ffd9e4;  --go:#e3b9ff;
 }
@@ -1461,7 +1461,7 @@ var SW = 16, SH = 10;
   cv.width = SW*HPX*dpr; cv.height = SH*HPX*dpr;
   cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
   cx.fillStyle = getComputedStyle(document.documentElement)
-                   .getPropertyValue('--slime').trim() || '#4a4a4a';
+                   .getPropertyValue('--slime').trim() || '#4a2e2a';
   var i = 0, idle = true;
   function paint(m){
     cx.clearRect(0, 0, SW*HPX, SH*HPX);
