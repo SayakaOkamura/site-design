@@ -58,6 +58,19 @@
   --glow1:rgba(250,158,62,.85); --glow2:rgba(244,136,52,.45); --glow3:rgba(236,120,46,.18);
   --ray:rgba(219,110,40,.8);
   --far:#3a2016;   --hill:#24130a;  --hero:#150b04;  --ground:#190d06;  --ground2:#24140c;
+  /* **敵は自分の色を持つ**（2026-09-17、本人：「スライムが暗くて見えにくい。
+     存在感が出ると戦ってる感がもっと上がる」）。前は `--hero` と同じ色だった。
+     **勇者は空を背にしているので影として立つが、敵は山と地面を背にしている**——
+     山（#24130a）より暗いので沈む。
+
+     **明るさでは離さない。**この画面は**前にあるものは全部影**で、
+     **明るさが距離**になっている。明るくすると「遠くの山」に混ざる（実際そう見えた）。
+     **色を持たせるのもやめた**（緑も出してみた）——画面で唯一の有彩色になって、
+     **倒される側が主役に見える。**勇者は影のままなので、敵のほうが手前に出てしまう。
+
+     → **空と逆の色味の影。**夕焼け（暖色）なら**寒色の影**、朝焼け（寒色）なら**暖色の影**。
+     明るさは変えずに、色味だけで離す */
+  --slime:#1e2436;
   --rim:#4a2a17;   --win:#24130a;   --box:#2a1408;   --edge:#24130a;
   --dim:#e8c39a;   --warm:#ffe7ad;  --go:#ffd270;
 }
@@ -75,6 +88,7 @@
   --glow1:rgba(240,130,160,.85); --glow2:rgba(200,80,150,.45); --glow3:rgba(150,55,140,.2);
   --ray:rgba(210,90,150,.75);
   --far:#2a1f45;   --hill:#1c1430;  --hero:#120b1f;  --ground:#150e24;  --ground2:#221735;
+  --slime:#2e1c14;
   --rim:#3a2a52;   --win:#1c1430;   --box:#180f28;   --edge:#1c1430;
   --dim:#ded0ea;   --warm:#ffd9e4;  --go:#e3b9ff;
 }
@@ -1441,7 +1455,7 @@ var SW = 16, SH = 10;
   cv.width = SW*HPX*dpr; cv.height = SH*HPX*dpr;
   cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
   cx.fillStyle = getComputedStyle(document.documentElement)
-                   .getPropertyValue('--hero').trim() || '#150b04';
+                   .getPropertyValue('--slime').trim() || '#1e2436';
   var i = 0, idle = true;
   function paint(m){
     cx.clearRect(0, 0, SW*HPX, SH*HPX);
