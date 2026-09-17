@@ -1009,8 +1009,10 @@ var DATA = {
   ]},
   /* **メニューの中**（2026-09-15）。はじめ会社概要の中にあって**開かないと辿り着けず**、
      いちど足もとへ出し（本人：「ありだね。マップとかないし」→「アクセス、で」）、
-     そのあと**メニューへ入れ直した**（本人：「普通にメニューの中でいい気がしてきた」）。地図が無いぶん、
+     そのあと**メニューへ入れ直した**（本人：「普通にメニューの中でいい気がしてきた」）。
      駅からの分数が道案内そのものなので、**常に見えている場所から一手で開く**。
+     （2026-09-17、二枚目の右下に**地図への一手**を足した。**分数はそのまま**——
+      道案内は分数のほうで、地図は**外へ出る出口**）
      **駅を持っているのはここだけ。**住所は会社概要と同じ文を引いている（`ADDR`） */
   access: { t:'アクセス', p:[
     '<b>所在地</b><span class="s">' + ADDR + '</span>',
@@ -1023,15 +1025,30 @@ var DATA = {
     + '<span class="s">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたら、お気軽にお問い合わせください。</span>'
   ]},
   /* **「無い」は間違いだった。**公式の footer は
-     bluememe.jp/privacy-policy/ へ出している。こちらで書かず、同じ先へ送る */
+     bluememe.jp/privacy-policy/ へ出している。こちらで書かず、同じ先へ送る。
+     **ここだけ開いた人に、関係が分かるようにした**（2026-09-17）——
+     `BlueMeme` がいきなり出てきて、なぜ外へ飛ぶのかが分からなかった。
+     **「親会社」はやめた。**公式にその語は無い（あるのは**株主**の四社と、
+     プレスリリースの「**BlueMeme グループ**」）。出ている言葉だけで書く。
+     **株主は書かない**（本人：「グループ会社だってわかればつながりがわかるから」）。
+     ここで要るのは**つながり**であって、資本の話ではない。株主の四社は会社概要にある */
   policy: { t:'プライバシーポリシー', p:[
     '<b>BlueMeme のページに置かれています。</b>'
-    + '<span class="s">当社サイトのプライバシーポリシーは、公式サイトと同じく親会社のページを指しています。</span>'
+    + '<span class="s">当社は BlueMeme グループの一社です。プライバシーポリシーは、公式サイトと同じく BlueMeme のページを指しています。</span>'
   ]}
 };
 
-/* **窓の最後で外へ出るもの。**公式が出している先だけを、そのまま指す */
+/* **地図は公式に無い**（公式トップの href は 11 本。地図へ出ているものは一つも無い）。
+   だから**こちらが座標を持たない。**公式に出ている住所をそのまま渡して、
+   **印を置くのは向こう**にさせる。番地まで（`ADDR` の真ん中）を渡す——
+   部屋番号と建物名は入れない（検索が部屋を探しに行く） */
+var MAP = 'https://www.google.com/maps/search/?api=1&query='
+        + encodeURIComponent(ADDR.split('　')[1]);
+
+/* **窓の最後で外へ出るもの。**公式が出している先と、
+   **公式に出ている住所をそのまま渡した先**だけを指す */
 var GO = {
+  access: { label:'地図をひらく', href:MAP, blank:true },
   contact:{ label:'メールをひらく', href:'mailto:contact@alt-dsgn.co.jp', blank:false },
   policy: { label:'BlueMeme のページへ', href:'https://www.bluememe.jp/privacy-policy/', blank:true }
 };
@@ -1092,7 +1109,10 @@ function draw(){
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
 }
-function open(k){
+/* **`open` という名前は使えない。**素の script の中で `function open(){}` と書くと、
+   それが **`window.open` を上書きする**——外へ出る一手（ポリシー・地図）が、
+   自分自身を URL 付きで呼び直して落ちていた（2026-09-14 から 9/17 まで気づかず） */
+function openPop(k){
   /* **デモだけは窓を出さない**——画面そのものを使う（2026-09-15）*/
   if (k === 'demo'){ startDemo(); return; }
   cur = k; page = 0; pop.classList.add('on');
@@ -1116,7 +1136,7 @@ function turn(){
 
 /* 決定。**窓が開いていれば送り、最後なら閉じる**（お問い合わせだけメールへ） */
 function fire(){
-  if (!cur){ open(ALL[sel].dataset.k); return; }
+  if (!cur){ openPop(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
   if (page < d.p.length - 1){ page++; draw(); return; }
   if (GO[cur]){
@@ -1131,7 +1151,7 @@ document.addEventListener('click', function(e){
   var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button'));
   if (el){
     var i = ALL.indexOf(el); if (i >= 0) sel = i;
-    (cur === el.dataset.k) ? close() : open(el.dataset.k);
+    (cur === el.dataset.k) ? close() : openPop(el.dataset.k);
     return;
   }
   if (e.target.closest && e.target.closest('#popGo')){ fire(); return; }
