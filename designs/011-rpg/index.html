@@ -636,6 +636,9 @@ body.roll #dRoll{display:block}
   line-height:1.7; color:var(--dim)}
 #dRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
   line-height:1.8; color:var(--dim); opacity:.78}
+/* **確かめた一行**（2026-09-17）。最後に本人が押したものなので、**ここだけ明るい** */
+#dRes .rs{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(13px,1.6vw,16px);
+  line-height:1.7; color:var(--go); font-weight:700}
 /* 矢印。**ここで前と後ろが切れる。**枠線を引くより軽い */
 #dRes .rar{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
   color:var(--go); letter-spacing:0}
@@ -741,6 +744,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <div id="dRes" class="win">
       <p class="rt">ていあんが　まとまった！</p>
       <p class="rw" id="rWish"></p>
+      <p class="rs" id="rSure"></p>
       <p class="rp" id="rPick"></p>
       <p class="rar">▼</p>
       <!-- 提案内容。**選んだ三つが、そのまま三つのタスクになる** -->
@@ -1320,6 +1324,21 @@ var TOPICS = [
     ]}
 ];
 
+/* **最後の確認**（2026-09-17、本人：「三問を経た上で、**もしかしてこういうこと？
+   それともこっち？**って最終確認的な選択肢にしたい」）。
+   **訊いていない。**読んだものを出して、合っているかを確かめている。
+
+   **正誤の二択にしない**——当てにいくと、**両方外れた人に逃げ場が無い。**
+   どちらも本人の答えから組める形にして、**違うのは重心だけ**にする。
+   「どっちが正しいか」ではなく「**どっちが大事か**」を訊く形。
+
+   **理由はまだ付けていない**（本人：「理由は後でいい」）*/
+var SURE = [
+  ['聞かれたことに、その場で答えが返る', '答えのある場所に、すぐ行ける'],
+  ['話した中身が、そのまま残る', '決まったことだけが、はっきり残る'],
+  ['夜のうちに、作業が片づいている', 'そもそも自分がやらなくていい形になっている']
+];
+
 /* ─ スライム。**丸い塊・顔なし**（2026-09-15、本人：「良くあるスライムとかで
    いいけど。商標に引っかからない範囲で」）──────────────────────
    「スライム」という語も、ぬるっとした塊という類型も、特定の会社のものではない。
@@ -1419,7 +1438,9 @@ var SW = 16, SH = 10;
    入口（お題を選ぶ）→ 問診 3 回 → リザルト。
    問診で選ぶたびに、**下の帯にコマンドが一文字ずつ打たれ**、打ち終わると勇者が斬る。
    三回斬ると倒れて、選んだ三つが「段取り」の三手になって出る */
-var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:3, parts:null, tCome:null };
+/* **体力は四つ**（2026-09-17）。三問で三つ削って、**最後の確認がとどめ**になる */
+var HPMAX = 4;
+var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:HPMAX, parts:null, tCome:null };
 var REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
 var dWin  = document.getElementById('dWin'),
     dStep = document.getElementById('dStep'), dQ = document.getElementById('dQ'),
@@ -1447,7 +1468,7 @@ function startDemo(){
 function openDemo(){
   /* **`D` を置き換える前に止める。**置き換えたあとでは、前の待ちの id が取れない */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
-  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:3, n:0,
+  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:HPMAX, sure:null, n:0,
         tCome:null, tBang:null, tSlime:null };
   document.body.classList.add('demo');
   clearLog();
@@ -1535,7 +1556,7 @@ function quitDemo(){
   paintSel();
 }
 function paintHp(){
-  dHp.firstChild.style.width = (D.hp / 3 * 100) + '%';
+  dHp.firstChild.style.width = (D.hp / HPMAX * 100) + '%';
 }
 /* 三択を出す。**メニューと同じ形**——左に並べて、▶ が一つだけ動く */
 function ask(step, q, list, gen){
@@ -1563,6 +1584,9 @@ function ask(step, q, list, gen){
 function draft(){
   D.qs = [dQ].concat([].slice.call(dA.children));
   D.qs.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
+  /* **出し終わったら、元の相へ戻す。**問いなら `ask`、確認なら `sure`——
+     どちらも同じ出し方をするので、戻り先を覚えておく */
+  D.back = D.phase;
   if (REDUCE){ draftDone(); return; }
   D.phase = 'draft';
   D.tQ = setTimeout(function(){
@@ -1576,7 +1600,7 @@ function draft(){
 function draftDone(){
   clearTimeout(D.tQ); clearInterval(D.tQL); D.tQ = D.tQL = null;
   (D.qs || []).forEach(function(el){ el.classList.add('on'); });
-  D.phase = 'ask';
+  D.phase = D.back || 'ask';
 }
 /* お題の三つは作られたものではないので、**同時に出す** */
 function draftSkip(){
@@ -1589,6 +1613,11 @@ function paintD(){
   [].slice.call(dA.children).forEach(function(el, i){
     el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
   });
+}
+/* **最後の確認。番号は付けない**——「1 / 3」と並べると四問目に見える。これは問いではない */
+function sureStep(){
+  D.phase = 'sure';
+  ask('', 'つまり、こういうこと？', SURE[D.topic], true);
 }
 function askStep(){
   var T = TOPICS[D.topic], s = T.q[D.step];
@@ -1876,6 +1905,17 @@ function choose(i){
     });
     return;
   }
+  /* **確認を押したら、そのままとどめ。**帯には打たない——
+     帯は「入ったもの」の場所で、**合意は入ったものではない。**
+     打ち込みを付けると三問と同じ重さになって、一手増えたことが体に出る */
+  if (D.phase === 'sure'){
+    D.sure = i;
+    D.phase = 'type';
+    dA.innerHTML = '<li class="pick"><span class="cur">▶</span>' + SURE[D.topic][i] + '</li>';
+    D.n = 0;
+    swing(function(){ winSeq(); });
+    return;
+  }
   if (D.phase !== 'ask') return;
   D.picks[D.step] = i;
   D.phase = 'type';
@@ -1889,8 +1929,9 @@ function choose(i){
   var st = D.step, struck = false, typed = false;
   function next(){
     if (!struck || !typed) return;      /* **両方そろってから**次の問いへ */
-    if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
-    else winSeq();
+    /* **問いが尽きたら、確認へ。**体力はまだ一つ残っている */
+    if (D.step < TOPICS[D.topic].q.length - 1){ D.step++; D.phase = 'ask'; askStep(); }
+    else sureStep();
   }
   swing(function(){ struck = true; next(); });                       /* すぐ斬る */
   typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, function(){
@@ -1907,6 +1948,9 @@ function showResult(){
      どちらも見たものなので、読み直す必要がない——**変わったことだけが目に入る** */
   document.getElementById('rWish').textContent = '「' + T.t + '」';
   document.getElementById('rPick').textContent = [a0.t, a1.t, a2.t].join('　／　');
+  /* **最後に本人が押したもの。**言ったことのすぐ下に置く——
+     曖昧な一文が、こう読み替わった、という並びになる */
+  document.getElementById('rSure').textContent = (D.sure == null) ? '' : SURE[D.topic][D.sure];
   /* **タスクは組み立てる。**書いてある文をそのまま入れるので、`textContent` で足す——
      文中に「」が入るので、文字列で組むと囲みが壊れる */
   var ul = document.getElementById('rTask');
@@ -1934,7 +1978,7 @@ function showResult(){
      **見出しも同時**にする——枠が開いて中身が見えているのに、
      いちばん上の「まとまった！」だけ遅れて出るのは、順が後ろへ回って見える。
      順に出すのは、**この場で変わったもの（タスク）だけ** */
-  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rp,.rar'));
+  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rs,.rp,.rar'));
   /* **一行ずつ出す。**枠が開いてから、タスクを順に。四角は最後。
      キーを押せば、待たずに全部出る */
   D.parts = [].slice.call(dRes.querySelectorAll('.rtask li,.rn'));
@@ -2108,7 +2152,7 @@ document.addEventListener('click', function(e){
 document.addEventListener('mouseover', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
-  if (li && (D.phase === 'topic' || D.phase === 'ask')){
+  if (li && (D.phase === 'topic' || D.phase === 'ask' || D.phase === 'sure')){
     D.sel = [].slice.call(dA.children).indexOf(li); paintD();
   }
 });
