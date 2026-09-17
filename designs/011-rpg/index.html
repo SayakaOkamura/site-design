@@ -385,6 +385,12 @@ body.demo #dHp{display:block}
   #dWin #dA li{padding:calc(var(--px)*.75) 0}
   #dWin #dQ{margin-bottom:calc(var(--px)*1.5)}
 }
+/* **（試し A・2026-09-17）問いと選択肢は、枠が開いてから一行ずつ出る。**
+   本人：「最初の選択肢を打って、それを元に質問内容と選択肢を AI が出す」——
+   **実際に走っている処理**なので、出来合いが出てきたようには見せない。
+   お題の三つは**作られたものではない**ので、ここは通さない（同時に出る） */
+#dWin .q{opacity:0}
+#dWin .q.on{opacity:1; animation:rise .16s steps(2)}
 #dWin .rt{margin:0}
 #dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,1.1vw,13px); letter-spacing:.12em; color:var(--dim)}
 #dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,18px); font-weight:700;
@@ -1511,6 +1517,7 @@ function quitDemo(){
   clearLog();
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
+  clearTimeout(D.tQ); clearInterval(D.tQL); D.tQ = D.tQL = null;
   /* **待ちは全部止める。**止め忘れると、デモを出たあとに「！」が出たり歩いてきたりする */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
   D.tCome = D.tBang = D.tSlime = null;
@@ -1525,7 +1532,7 @@ function paintHp(){
   dHp.firstChild.style.width = (D.hp / 3 * 100) + '%';
 }
 /* 三択を出す。**メニューと同じ形**——左に並べて、▶ が一つだけ動く */
-function ask(step, q, list){
+function ask(step, q, list, gen){
   D.sel = 0;
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
@@ -1542,6 +1549,35 @@ function ask(step, q, list){
   dWin.style.display = '';
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
   paintD();
+  gen ? draft() : draftSkip();
+}
+/* **（試し A）枠が開いてから、問い → 選択肢の順に出す。**
+   出す間は `draft`——**押しても選べない。**押したら待たずに全部出る
+   （リザルトの行出しと同じ作法。止め忘れ対策に待ちの id を二つ持つ） */
+function draft(){
+  D.qs = [dQ].concat([].slice.call(dA.children));
+  D.qs.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
+  if (REDUCE){ draftDone(); return; }
+  D.phase = 'draft';
+  D.tQ = setTimeout(function(){
+    var i = 0;
+    D.tQL = setInterval(function(){
+      if (i >= D.qs.length){ draftDone(); return; }
+      D.qs[i++].classList.add('on');
+    }, 105);
+  }, 140);
+}
+function draftDone(){
+  clearTimeout(D.tQ); clearInterval(D.tQL); D.tQ = D.tQL = null;
+  (D.qs || []).forEach(function(el){ el.classList.add('on'); });
+  D.phase = 'ask';
+}
+/* お題の三つは作られたものではないので、**同時に出す** */
+function draftSkip(){
+  clearTimeout(D.tQ); clearInterval(D.tQL); D.tQ = D.tQL = null;
+  D.qs = [];
+  dQ.classList.remove('q');
+  [].slice.call(dA.children).forEach(function(el){ el.classList.remove('q'); });
 }
 function paintD(){
   [].slice.call(dA.children).forEach(function(el, i){
@@ -1553,7 +1589,7 @@ function askStep(){
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
      枚数だけ出す——ポップアップの「2 / 3」と同じ形 */
-  ask((D.step + 1) + ' / 3', s.q, s.a.map(function(a){ return a.t; }));
+  ask((D.step + 1) + ' / 3', s.q, s.a.map(function(a){ return a.t; }), true);
 }
 
 /* **帯に入る行数は、帯の高さで決まる**（2026-09-16）。
@@ -2054,6 +2090,8 @@ function stopRoll(){
 
 document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
+  /* **出ている最中は選べない。**押したら、待たずに全部出るだけ（試し A） */
+  if (D.phase === 'draft'){ draftDone(); return; }
   var li = e.target.closest('#dA li');
   if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
   if (D.phase === 'open'){ openDone(); return; }
@@ -2074,6 +2112,7 @@ document.addEventListener('keydown', function(e){
   var k = e.key, n;
   if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
+  if (D.phase === 'draft'){ draftDone(); e.preventDefault(); return; }
   if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
   if (D.phase === 'type' || D.phase === 'win'){ e.preventDefault(); return; }
   if (D.phase === 'result'){
