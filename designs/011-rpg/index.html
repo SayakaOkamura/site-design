@@ -2114,10 +2114,10 @@ function stopRoll(){
 document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
   /* **出ている最中は選べない。**押したら、待たずに全部出るだけ */
-  if (D.phase === 'draft'){ draftDone(); return; }
+  if (D.phase === 'draft'){ e.stopPropagation(); draftDone(); return; }
   var li = e.target.closest('#dA li');
-  if (li){ D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
-  if (D.phase === 'open'){ openDone(); return; }
+  if (li){ e.stopPropagation(); D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
+  if (D.phase === 'open'){ e.stopPropagation(); openDone(); return; }
   var rb = e.target.closest('#dRes .rb');
   if (rb){ D.sel = [].slice.call(dRes.querySelectorAll('.rb')).indexOf(rb); fireRes(); }
 }, true);
@@ -2130,6 +2130,17 @@ document.addEventListener('mouseover', function(e){
   }
 });
 
+/* **受けた手は、下へ流さない**（2026-09-17、本人：「デモのにげるが死んでる」→
+   「エンターキーにしたときに**多分下が反応してる**」→「マウスだと大丈夫だった」）。
+   この handler は `capture` で**先に**走るが、`preventDefault()` は**伝播を止めない。**
+   にげるで `quitDemo()` した瞬間に `D.on` が false になり、
+   **同じ Enter が下のメニューの handler に届いて `fire()` していた**——
+   カーソルが「デモを触る」に乗っているので、**抜けた瞬間に始まり直す。**
+   だから「にげるが効かない」に見えた。マウスは、下の handler が
+   デモの行を自分のものとして拾わないので無事だった。
+
+   → **こちらが受けた手は `stopPropagation()` で止める。** */
+function eat(e){ e.preventDefault(); e.stopPropagation(); }
 document.addEventListener('keydown', function(e){
   if (!D.on) return;
   /* **修飾キーが付いていたら、こちらは触らない**（2026-09-17、本人：
@@ -2140,22 +2151,22 @@ document.addEventListener('keydown', function(e){
      止めたかったのは**素のキー**だけ——修飾キー付きは、この画面の手ではない */
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   var k = e.key, n;
-  if (k === 'Escape'){ quitDemo(); e.preventDefault(); return; }
+  if (k === 'Escape'){ quitDemo(); eat(e); return; }
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
-  if (D.phase === 'draft'){ draftDone(); e.preventDefault(); return; }
-  if (D.phase === 'open'){ openDone(); e.preventDefault(); return; }
-  if (D.phase === 'type' || D.phase === 'win'){ e.preventDefault(); return; }
+  if (D.phase === 'draft'){ draftDone(); eat(e); return; }
+  if (D.phase === 'open'){ openDone(); eat(e); return; }
+  if (D.phase === 'type' || D.phase === 'win'){ eat(e); return; }
   if (D.phase === 'result'){
-    if (k === 'ArrowRight' || k === 'ArrowDown'){ selRes(1); e.preventDefault(); return; }
-    if (k === 'ArrowLeft'  || k === 'ArrowUp'){ selRes(-1); e.preventDefault(); return; }
-    if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z'){ fireRes(); e.preventDefault(); return; }
-    e.preventDefault(); return;
+    if (k === 'ArrowRight' || k === 'ArrowDown'){ selRes(1); eat(e); return; }
+    if (k === 'ArrowLeft'  || k === 'ArrowUp'){ selRes(-1); eat(e); return; }
+    if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z'){ fireRes(); eat(e); return; }
+    eat(e); return;
   }
   n = dA.children.length;
-  if (k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintD(); e.preventDefault(); return; }
-  if (k === 'ArrowUp'){ D.sel = (D.sel+n-1)%n; paintD(); e.preventDefault(); return; }
+  if (k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintD(); eat(e); return; }
+  if (k === 'ArrowUp'){ D.sel = (D.sel+n-1)%n; paintD(); eat(e); return; }
   if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
-    choose(D.sel); e.preventDefault(); return;
+    choose(D.sel); eat(e); return;
   }
 }, true);
 
