@@ -263,7 +263,11 @@ body:has(#pop.on){cursor:pointer}
    **枠が育てば余白も育つ**ので、9/16 のような取り残しが起きない。
    （`--tx` は本文の `font-size` と同じもの。二か所に同じ `clamp` を書かない） */
 #pop{position:absolute; z-index:6;
-  --tx:clamp(12px,1.45vw,16px);
+  /* **高さも見る**（2026-09-18）。**天井は `60vh` で高さだけ、字は `vw` で幅だけ**を
+     見ていた——**見ているものが食い違っていた**のが、はみ出しのそもそもの原因。
+     `min()` で揃える。**低い窓では字も縮む。**
+     ふだんの窓（高さ 600 以上）では `1.45vw` のほうが小さいので**一切変わらない** */
+  --tx:clamp(12px,min(1.45vw,3vh),16px);
   right:clamp(28px,9vw,120px); top:17%;
   width:min(46vw,680px); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
@@ -284,7 +288,7 @@ body:has(#pop.on){cursor:pointer}
 
    **枠がいちばん広く、対の外がその次、対の中は 0**——9/17 に決めた並べ方がそのまま出る */
 #pop .t{font-size:clamp(12px,1.4vw,15px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--tx)*.7)}
-#pop .b{margin:0; font-size:clamp(14px,1.75vw,20px); line-height:2; min-height:7.2em}
+#pop .b{margin:0; font-size:clamp(14px,min(1.75vw,3.6vh),20px); line-height:2; min-height:7.2em}
 #pop .b b{color:var(--go); font-weight:700}
 /* **見出しと中身を、対にして寄せる**（2026-09-17、本人：「会社概要 1 ページ目の
    字の感覚変じゃない？」）。前は**間が逆**だった——見出しと中身のあいだが 15px、
