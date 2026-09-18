@@ -726,7 +726,10 @@ body.roll #dRoll{display:block}
 
    **ここが一番大きい。**目が最初にここへ行く。
    印は「□」——**まだ済んでいない**ことが、言葉なしで出る */
-#dRes .rtask{margin:calc(var(--px)*2) 0 calc(var(--px)*4); padding:0; list-style:none}
+/* **ここがこの窓でいちばん大きい余白**（2026-09-18）。矢印を外したぶんを間で持つ——
+   上の三行（見出し・言ったこと・選んだ三つ）は 10px と 6px で寄せてあるので、
+   **20px 空けば「別のもの」になる**（9/17 の「対の外を空ける」と同じ考え） */
+#dRes .rtask{margin:calc(var(--px)*5) 0 calc(var(--px)*4); padding:0; list-style:none}
 #dRes .rtask li{margin:calc(var(--px)*1.5) 0; padding-left:1.7em; text-indent:-1.7em;
   font-size:clamp(14px,1.7vw,19px); line-height:1.6; font-weight:700; color:var(--ink)}
 /* **字下げで置く。**絶対位置にすると、折り返した行だけが右へ逃げて印が取り残される */
@@ -734,7 +737,8 @@ body.roll #dRoll{display:block}
 /* **前と後ろを、一枚に**（2026-09-15、本人：「次の一手がでかいとなんか、次しかわかんないな」
    →「あくまでデモだと割り切ってわかりやすさに振るなら」→「一旦 1 と 2 で」）。
    一手だけを大きく出しても、**何がどう変わったかは画面に無い。**
-   → 上に**言ったこと**、その下に**選んだ三つ**、矢印、そして**一手**。
+   → 上に**言ったこと**、その下に**選んだ三つ**、間をあけて**一手**
+     （矢印を一行使っていたが、2026-09-18 に外した。上の `.rtask` の節）。
 
    **ここに並ぶのは全部すでに見たもの。**願いも三つの答えも自分で選んでいるので、
    項目は増えても**読解は増えない**——前に「情報が多い」と言われたのは、
@@ -749,9 +753,12 @@ body.roll #dRoll{display:block}
   line-height:1.7; color:var(--dim)}
 #dRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
   line-height:1.8; color:var(--dim); opacity:.78}
-/* 矢印。**ここで前と後ろが切れる。**枠線を引くより軽い */
-#dRes .rar{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
-  color:var(--go); letter-spacing:0}
+/* **矢印はやめた**（2026-09-18）。前と後ろを切る印として `▼` を一行使っていたが、
+   **この画面の `▼` は「送り」の記号**（ポップの次の頁、デモの窓）。
+   同じ記号に二役持たせていたので、**「まだ先がある」に読める。**
+
+   切るのは**間**に任せる。タスクは**順に一行ずつ出る**ので、
+   出方そのものが「ここから別のもの」と言っている（下の `.rtask` の余白） */
 #dRes .rn{display:flex; gap:calc(var(--px)*3); margin-top:calc(var(--px)*4)}
 /* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
 #dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
@@ -855,7 +862,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
       <p class="rt">ていあんが　まとまった！</p>
       <p class="rw" id="rWish"></p>
       <p class="rp" id="rPick"></p>
-      <p class="rar">▼</p>
       <!-- 提案内容。**選んだ三つが、そのまま三つのタスクになる** -->
       <ul class="rtask" id="rTask"></ul>
       <div class="rn">
@@ -2137,11 +2143,11 @@ function showResult(){
      前はここも一行ずつ出していたので、**読まなくていいものを順に読ませてから**
      タスクが出てきた。書いてある狙い（「どちらも見たものなので、読み直す必要がない」）と、
      出し方が逆だった——**一行ずつ出すのは「読め」という合図**になる。
-     → 見出し・言ったこと・選んだ三つ・矢印は**枠と同時。**
+     → 見出し・言ったこと・選んだ三つは**枠と同時。**
      **見出しも同時**にする——枠が開いて中身が見えているのに、
      いちばん上の「まとまった！」だけ遅れて出るのは、順が後ろへ回って見える。
      順に出すのは、**この場で変わったもの（タスク）だけ** */
-  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rp,.rar'));
+  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rp'));
   /* **一行ずつ出す。**枠が開いてから、タスクを順に。四角は最後。
      キーを押せば、待たずに全部出る */
   D.parts = [].slice.call(dRes.querySelectorAll('.rtask li,.rn'));
