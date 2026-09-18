@@ -330,10 +330,11 @@ body:has(#pop.on){cursor:pointer}
    外へ出る一手がポリシーのリンクと同じ重さになる。**太字と `--go` は残す。**
 
    いちど `clamp(12px,1.45vw,16px)`（本文と同じ 14.3px）まで落として、**落としすぎた**
-   （本人：「あとちょっとだけ大きく」→「もうちょっと」）。二度上げて **15.7px**——
-   本文（14.3）と見出し（17.2）のあいだで、**見出し寄り** */
+   （本人：「あとちょっとだけ大きく」→「もうちょっと」→「16」）。三度上げて **16.0px**——
+   本文（14.3）と見出し（17.2）のあいだ。**元（16.7）とはほぼ同じ大きさに戻った**が、
+   **`とじる` が静かになったぶん、右下に残るのは外へ出る一手だけ**になっている */
 #pop .go{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit; cursor:pointer;
-  color:var(--go); font-size:clamp(13px,1.6vw,18px); font-weight:700; letter-spacing:.08em;
+  color:var(--go); font-size:clamp(13px,1.63vw,18px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
 /* **「とじる」は静かに**（2026-09-18、本人：「とじるできゅうにでかくなるな」）。
