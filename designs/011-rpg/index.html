@@ -630,8 +630,24 @@ body.roll #dRoll{display:block}
   letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
 /* **点滅する塊は外した**（2026-09-16）。押し待ちをやめたので、
    消える条件を出す必要そのものが無くなった */
-/* **畳んで消えるのはやめた**（2026-09-17）。ポップと同じで、そのまま消える。
-   いちど `resout`（縦に畳む）を入れていた。形は git にある */
+/* **消えるときは、二回またたく**（2026-09-18、本人：「クリアの消え方気になるな。
+   **急にいなくなってる感がある**」）。
+
+   9/17 に「pop と揃えて、出し方も入れ方も」でそのまま消えるようにした。
+   **出方はそのまま。消え方だけ分けた**——ポップと幕では**消える理由が違う。**
+
+   ```
+   ポップ   押して消す      消えたのは自分が押したから。パッと消えて筋が通る
+   幕      勝手に消える     押していないのに消える。同じ消し方だと「いなくなってる」
+   ```
+
+   またたきは**倒したときに帯がやっているのと同じ `blinkout`**——
+   この画面の中にもう有る言い方で、**自分から引くもの**の消え方。
+
+   `opacity:0` を素の状態にして、またたきは飾り（帯と同じ構え）——
+   動きが走らない場でも**残らずに消える。**
+   いちど `resout`（縦に畳む）も入れていた。形は git にある */
+#clear.out{display:block; opacity:0; animation:blinkout .3s steps(1)}
 
 #dWon{position:absolute; left:0; right:0; top:36%; z-index:9; display:none;
   text-align:center; font-size:clamp(20px,4vw,40px); font-weight:700; letter-spacing:.14em;
@@ -2114,11 +2130,20 @@ function showClear(){
      幕の仕事は合図だけなので、読めたら用は済んでいる。
      **さらに短くした**（2026-09-17）——1.0 → **0.8 秒**。
      0.7 → 0.8 → 0.9 → 0.8 → 0.7 と往復して、**0.8 で止めた** */
-  clearHold = setTimeout(function(){ clearEl.classList.remove('on'); }, 800);
+  clearHold = setTimeout(function(){
+    /* **引くときは二回またたく**（2026-09-18）。0.8 秒はそのまま——
+       またたきは**居る時間ではなく、去る動き**。最後に見えるのは 0.95 秒あたり */
+    clearEl.classList.remove('on');
+    clearEl.classList.add('out');
+    clearHold = setTimeout(function(){
+      clearEl.classList.remove('out'); clearHold = null;
+    }, 300);
+  }, 800);
 }
 function hideClear(){
   if (clearHold){ clearTimeout(clearHold); clearHold = null; }
   clearEl.classList.remove('on');
+  clearEl.classList.remove('out');
 }
 
 function startRoll(){
