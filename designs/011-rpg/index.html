@@ -292,6 +292,21 @@ body:has(#pop.on){cursor:pointer}
    `--go` は見出しと「▼／外へ出る一手」の色なので、はじめから当てる気が無い */
 #pop .b .s + b{margin-top:calc(var(--px)*3)}
 #pop .n{display:flex; align-items:center; justify-content:space-between; margin-top:calc(var(--px)*2)}
+/* **「つづく」**（2026-09-18）。外からの指摘：「`▼` の意味が分からない。初見だと
+   **下矢印？スクロール？それとも選択肢？** になる。しかも最初に出会う場所が一枚目」。
+
+   **行為は書かない。**送る手は複数ある（画面のどこでも／`▼`／決定キー／→）ので、
+   **どれを名指しても嘘になる。**そして本人：「**押すって言われたらそのまま
+   そこを押さなきゃいけないように見えるでしょ**」——**文言ではなく置き場所で決まる。**
+   `▼` の隣に字を置けば、それは `▼` のラベルになる。
+
+   → **続きがあることだけ言う。**これで「下矢印／スクロール／選択肢」の三つとも消える。
+   **どうやるかは、画面のどこでもカーソルが指になることと、`▼` の点滅が言う**（言葉より強い）。
+
+   **注意書きではないので、退かせなくていい。**「おすと つづく」なら教えたら退くべきだが、
+   これは `▼` が何かを言っているだけなので、居ても画面の一部として筋が通る */
+#pop .nx{font-size:clamp(11px,1.2vw,13px); color:var(--dim); opacity:.7;
+  letter-spacing:.08em; margin-left:auto; margin-right:calc(var(--px)*2)}
 /* **どこまで来たかは、数ではなく帯で出す**（2026-09-18、本人：「帯の方やってみて」）。
    前は `1 / 4`——**窓の中でここだけアラビア数字とスラッシュ**で、作法から浮いていた。
    帯なら**読まずに「あと三つ」が見える**（押す回数は変わらない）。
@@ -844,6 +859,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <p class="t" id="popT"></p>
     <p class="b" id="popB"></p>
     <div class="n"><span class="p" id="popP"></span>
+      <span class="nx" id="popNx"></span>
       <button class="go" id="popGo"></button></div>
   </div>
 
@@ -1228,7 +1244,8 @@ ul.innerHTML = MENU.map(function(m){
 
 var pop = document.getElementById('pop'),
     popT = document.getElementById('popT'), popB = document.getElementById('popB'),
-    popP = document.getElementById('popP'), popGo = document.getElementById('popGo');
+    popP = document.getElementById('popP'), popGo = document.getElementById('popGo'),
+    popNx = document.getElementById('popNx');
 var cur = null, page = 0;
 
 /* ─ **十字キーでも動く**（2026-09-14、本人：「十字キーでもできるようにして」）──
@@ -1323,6 +1340,10 @@ function draw(){
     popP.setAttribute('aria-label', (page + 1) + ' / ' + ps.length);
   } else popP.removeAttribute('aria-label');
   popP.innerHTML = seg;
+  /* **どの窓から入るか分からない**（本人：「やるなら全部の一枚目に書く。
+     どこからでも見れるように」）ので、**頁が二つ以上ある窓の一枚目**に出す。
+     **一枚しかない窓には出さない**——あそこで押すと**めくらずに閉じる**ので、嘘になる */
+  popNx.textContent = (ps.length > 1 && page === 0) ? 'つづく' : '';
   popGo.innerHTML = (page < ps.length - 1)
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
