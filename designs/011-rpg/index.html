@@ -1093,10 +1093,12 @@ var ROUTE = '御成門 2 分（都営三田線）／大門 10 分（都営浅草
 
 /* 路線は**一本ずつ行に割る。**`ROUTE` の `／` で切るだけで、**文は触らない。**
    駅名（分より前）を `<em>` に包んで、**行頭だけ色を変える** */
-var ROUTEHTML = '<span class="s rt">' + ROUTE.split('／').map(function(x){
+var RT = ROUTE.split('／').map(function(x){
   var m = x.match(/^(.+?) (d+ 分（.+）)$/);
   return '<i>' + (m ? '<em>' + m[1] + '</em> ' + m[2] : x) + '</i>';
-}).join('') + '</span>';
+});
+function rtGrid(a){ return '<span class="s rt">' + a.join('') + '</span>'; }
+var ROUTEHTML = rtGrid(RT);
 
 var DATA = {
   /* **四段落ぜんぶ入れる。**前は三・四段落目が落ちていて、見出しの「やらされる、ではなく」は
@@ -1153,7 +1155,13 @@ var DATA = {
      **見出しを付けない。**窓の題がもう「アクセス」なので、同じ語が縦に二つ並ぶ */
   access: { t:'アクセス',
     one:[ '<b>所在地</b><span class="s">' + ADDR + '</span>' + ROUTEHTML ],
-    p:[ '<b>所在地</b><span class="s">' + ADDR + '</span>', ROUTEHTML ]
+    /* **二枚に戻すときも、一枚目に中身を持たせる**（2026-09-18、本人：
+       「1ページ目が情報量少ないって争点だったはずだけど」）。
+       「住所 ／ 路線」で切ると**一枚目が住所一行のまま**で、直したかったものが残る。
+       → **住所＋近い三駅 ／ 残り五駅。**700×500 で 248 / 212（天井 300）。
+       4+4 にすると 271 / 199 で、こんどは二枚目が薄い */
+    p:[ '<b>所在地</b><span class="s">' + ADDR + '</span>' + rtGrid(RT.slice(0, 3)),
+        rtGrid(RT.slice(3)) ]
   },
   contact: { t:'お問い合わせ', p:[
     '<b>contact@alt-dsgn.co.jp</b>'
@@ -1261,8 +1269,11 @@ function fitAcc(){
      問うのは「当たるか」ではなく「**一枚にしたせいで当たるか**」——
      二枚でも当たっている窓で枚数を譲っても、直らないものを払っているだけになる */
   if (accFits && hitsMenu()){
-    popB.innerHTML = d.p[1];   /* 二枚のときの、いちばん背の高い頁 */
-    if (!hitsMenu()) accFits = false;
+    /* **二枚のどちらも当たらないなら、譲る。**片方でも当たるなら、
+       一枚にしたせいではないので**枚数を払っても直らない** */
+    popB.innerHTML = d.p[0]; var h0 = hitsMenu();
+    popB.innerHTML = d.p[1]; var h1 = hitsMenu();
+    if (!h0 && !h1) accFits = false;
   }
   pop.style.animation = '';
   pop.className = keep; page = kp; popB.innerHTML = kb; popGo.innerHTML = kg;
