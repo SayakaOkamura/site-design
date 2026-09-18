@@ -276,7 +276,17 @@ body:has(#pop.on){cursor:pointer}
 #pop .b .s + .s{margin-top:calc(var(--px)*2)}
 #pop .b .s + b{margin-top:calc(var(--px)*3)}
 #pop .n{display:flex; align-items:center; justify-content:space-between; margin-top:calc(var(--px)*2)}
-#pop .p{font-size:12px; color:var(--dim); letter-spacing:.1em}
+/* **どこまで来たかは、数ではなく帯で出す**（2026-09-18、本人：「帯の方やってみて」）。
+   前は `1 / 4`——**窓の中でここだけアラビア数字とスラッシュ**で、作法から浮いていた。
+   帯なら**読まずに「あと三つ」が見える**（押す回数は変わらない）。
+
+   **四角を並べるのはやめた。**`□` はリザルトのタスクで
+   「まだ済んでいない／持ち帰って自分で消す印」に使っている（9/17）。
+   **同じ形に二つの意味を持たせない** */
+#pop .p{display:flex; gap:var(--px); align-items:center}
+#pop .p i{display:block; width:calc(var(--px)*6); height:calc(var(--px)*2);
+  background:var(--dim); opacity:.28}
+#pop .p i.on{background:var(--go); opacity:1}
 #pop .go{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit; cursor:pointer;
   color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
@@ -1172,7 +1182,14 @@ function draw(){
   var d = DATA[cur];
   popT.textContent = d.t;
   popB.innerHTML = d.p[page];
-  popP.textContent = d.p.length > 1 ? (page + 1) + ' / ' + d.p.length : '';
+  /* 帯は**頁の数だけ割って、今いるところまで左から塗る。**
+     一枚しかない窓（お問い合わせ・ポリシー）では出さない——前の `1 / 1` と同じ */
+  var seg = '';
+  if (d.p.length > 1){
+    for (var i = 0; i < d.p.length; i++) seg += '<i class="' + (i <= page ? 'on' : '') + '"></i>';
+    popP.setAttribute('aria-label', (page + 1) + ' / ' + d.p.length);
+  } else popP.removeAttribute('aria-label');
+  popP.innerHTML = seg;
   popGo.innerHTML = (page < d.p.length - 1)
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
