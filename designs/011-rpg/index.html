@@ -286,9 +286,13 @@ body:has(#pop.on){cursor:pointer}
 #pop .b .rt{display:grid; grid-template-columns:repeat(auto-fit,minmax(19em,1fr));
   column-gap:calc(var(--px)*2)}
 #pop .b .rt i{display:block; font-style:normal}
-/* **駅名は `--warm`。**`--go` は見出しと「▼／外へ出る一手」が使っているので、
-   **三つ目の役を足さない**（記号も色も、役ごとに一つ） */
-#pop .b em{font-style:normal; color:var(--warm)}
+/* **駅名は `--ink`（白）。**`--warm` にしていたが、本文の `--dim` と 1 段しか違わず
+   **画面では見分けがつかなかった。**`--go` は見出しと「▼／外へ出る一手」の色なので、
+   押せない駅名に当てると役が混ざる。
+
+   白にすると、この窓の中の対がそのまま効く——**駅名が主、分と路線が添え。**
+   新しい役は足していない（`b`＝`--go` の見出し、`.s`＝`--dim` の添え、と同じ組） */
+#pop .b em{font-style:normal; color:var(--ink)}
 #pop .b .s + b{margin-top:calc(var(--px)*3)}
 #pop .n{display:flex; align-items:center; justify-content:space-between; margin-top:calc(var(--px)*2)}
 /* **どこまで来たかは、数ではなく帯で出す**（2026-09-18、本人：「帯の方やってみて」）。
@@ -1094,7 +1098,7 @@ var ROUTE = '御成門 2 分（都営三田線）／大門 10 分（都営浅草
 /* 路線は**一本ずつ行に割る。**`ROUTE` の `／` で切るだけで、**文は触らない。**
    駅名（分より前）を `<em>` に包んで、**行頭だけ色を変える** */
 var RT = ROUTE.split('／').map(function(x){
-  var m = x.match(/^(.+?) (d+ 分（.+）)$/);
+  var m = x.match(/^(.+?) (\d+ 分（.+）)$/);
   return '<i>' + (m ? '<em>' + m[1] + '</em> ' + m[2] : x) + '</i>';
 });
 function rtGrid(a){ return '<span class="s rt">' + a.join('') + '</span>'; }
