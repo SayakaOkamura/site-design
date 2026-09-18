@@ -1340,10 +1340,14 @@ function draw(){
     popP.setAttribute('aria-label', (page + 1) + ' / ' + ps.length);
   } else popP.removeAttribute('aria-label');
   popP.innerHTML = seg;
-  /* **どの窓から入るか分からない**（本人：「やるなら全部の一枚目に書く。
-     どこからでも見れるように」）ので、**頁が二つ以上ある窓の一枚目**に出す。
-     **一枚しかない窓には出さない**——あそこで押すと**めくらずに閉じる**ので、嘘になる */
-  popNx.textContent = (ps.length > 1 && page === 0) ? 'つづく' : '';
+  /* **続きがあるあいだは、ずっと出す**（本人：「続いてる限り全部の方がいいかも」）。
+     いちど一枚目だけにしたが、**`▼` と同じ条件**にした——
+     つまり **`つづく` は `▼` と必ず一緒に出て、一緒に消える。**
+     言葉のほうが記号の言い換えになるので、**どの頁で見ても読みが同じ。**
+
+     最後の頁では出ない（そこは「とじる」か外へ出る一手）。
+     **一枚しかない窓にも出ない**——押すと**めくらずに閉じる**ので、嘘になる */
+  popNx.textContent = (page < ps.length - 1) ? 'つづく' : '';
   popGo.innerHTML = (page < ps.length - 1)
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
