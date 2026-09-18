@@ -286,13 +286,10 @@ body:has(#pop.on){cursor:pointer}
 #pop .b .rt{display:grid; grid-template-columns:repeat(auto-fit,minmax(19em,1fr));
   column-gap:calc(var(--px)*2)}
 #pop .b .rt i{display:block; font-style:normal}
-/* **駅名は `--ink`（白）。**`--warm` にしていたが、本文の `--dim` と 1 段しか違わず
-   **画面では見分けがつかなかった。**`--go` は見出しと「▼／外へ出る一手」の色なので、
-   押せない駅名に当てると役が混ざる。
-
-   白にすると、この窓の中の対がそのまま効く——**駅名が主、分と路線が添え。**
-   新しい役は足していない（`b`＝`--go` の見出し、`.s`＝`--dim` の添え、と同じ組） */
-#pop .b em{font-style:normal; color:var(--ink)}
+/* **駅名に色は付けない**（2026-09-18、本人：「違和感あるな」「目立ちすぎかも」）。
+   白（`--ink`）にしたら立ちすぎた。その前の `--warm` は本文と 1 段違いで見分けがつかない。
+   **どちらでもない**——**行頭に置いたことで、もう探せている。**色は仕事をしていない。
+   `--go` は見出しと「▼／外へ出る一手」の色なので、はじめから当てる気が無い */
 #pop .b .s + b{margin-top:calc(var(--px)*3)}
 #pop .n{display:flex; align-items:center; justify-content:space-between; margin-top:calc(var(--px)*2)}
 /* **どこまで来たかは、数ではなく帯で出す**（2026-09-18、本人：「帯の方やってみて」）。
@@ -1096,11 +1093,8 @@ var ADDR  = '本社　東京都港区西新橋 3-23-5　ANYZ304（御成門郵�
 var ROUTE = '御成門 2 分（都営三田線）／大門 10 分（都営浅草線・大江戸線）／神谷町 10 分（東京メトロ日比谷線）／汐留 12 分（都営大江戸線・ゆりかもめ）／虎ノ門ヒルズ 12 分（日比谷線）／虎ノ門 12 分（東京メトロ銀座線）／新橋 12 分（JR 山手線・京浜東北線）／浜松町 14 分（JR 山手線・京浜東北線）';
 
 /* 路線は**一本ずつ行に割る。**`ROUTE` の `／` で切るだけで、**文は触らない。**
-   駅名（分より前）を `<em>` に包んで、**行頭だけ色を変える** */
-var RT = ROUTE.split('／').map(function(x){
-  var m = x.match(/^(.+?) (\d+ 分（.+）)$/);
-  return '<i>' + (m ? '<em>' + m[1] + '</em> ' + m[2] : x) + '</i>';
-});
+   **駅名が行頭に来る**ので、探すのはこれで足りる（色は付けない。上の節） */
+var RT = ROUTE.split('／').map(function(x){ return '<i>' + x + '</i>'; });
 function rtGrid(a){ return '<span class="s rt">' + a.join('') + '</span>'; }
 var ROUTEHTML = rtGrid(RT);
 
