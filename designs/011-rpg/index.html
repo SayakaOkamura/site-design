@@ -1374,8 +1374,15 @@ function fitAcc(){
   popT.textContent = d.t; popB.innerHTML = d.one[0];
   /* **送りも本番と同じ形で測る。**空のままだとボタンの背が 0 になる */
   popGo.innerHTML = GO.access.label;
+  /* **天井は枠線まで込みの高さにかかる**（この画面は `box-sizing:border-box`）。
+     `scrollHeight` は**枠線を含まない**ので、そのまま比べると**枠線 8px ぶん低く見える**
+     ——入らない窓を「入る」と答えていた（2026-09-18 に見つけた）。
+     → **天井を外して、自然な背（枠線込み）を測る。** */
   var cap = parseFloat(getComputedStyle(pop).maxHeight) || 1e9;
-  accFits = pop.scrollHeight <= cap;
+  var keepMax = pop.style.maxHeight;
+  pop.style.maxHeight = 'none';
+  accFits = pop.getBoundingClientRect().height <= cap;
+  pop.style.maxHeight = keepMax;
   /* **天井だけでは足りない。**狭い窓ではポップが**下から生える**ので、
      背が伸びたぶん**上のメニューに乗る**（390×620 で 49px、360×640 で 30px）。
 
