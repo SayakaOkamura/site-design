@@ -318,8 +318,18 @@ body:has(#pop.on){cursor:pointer}
 #pop .p i{display:block; width:calc(var(--px)*6); height:calc(var(--px)*2);
   background:var(--dim); opacity:.28}
 #pop .p i.on{background:var(--go); opacity:1}
+/* **外へ出る一手を一段落とした**（2026-09-18、本人：「他と相対的に見るでしょ。
+   そう見たときに、**右下の圧が強すぎるように見える**」）。
+
+   窓の中に **`--go` × 太字 700 が二つ**あった——見出し（17.2px）とボタン（16.7px）で、
+   **ほぼ同じ強さ。**ポリシーのボタンは 206px で、窓幅の半分近かった。
+
+   **落としたのは大きさだけ。圧は面積の話**なので、太さを落としても塊は残る。
+   それに **700 はこの画面で「主役の行」の印**（見出し・メニュー・ボタン・
+   リザルトのタスクと四角）。太さを落とすと**足もと（13.8px / 400）と同じ層**に降りて、
+   外へ出る一手がポリシーのリンクと同じ重さになる。**太字と `--go` は残す** */
 #pop .go{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit; cursor:pointer;
-  color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
+  color:var(--go); font-size:clamp(12px,1.45vw,16px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
 /* **「とじる」は静かに**（2026-09-18、本人：「とじるできゅうにでかくなるな」）。
