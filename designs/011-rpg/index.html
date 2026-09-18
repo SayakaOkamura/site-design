@@ -273,7 +273,17 @@ body:has(#pop.on){cursor:pointer}
    メニューの見え方がいい感じになるように」）。1920 幅で窓が 520px＝**画面の 27%** しかなく、
    字も 17px で止まっていた。**上限だけ上げる**——`vw` の側は触らないので、
    中くらいの画面の見え方は変わらない */
-#pop .t{font-size:clamp(12px,1.4vw,15px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--px)*2)}
+/* **中の間も字で測る**（2026-09-18、本人：「こうなるとタイトルに対する余白に違和感あるな」）。
+   枠の余白を字に紐づけたのに、**中の 8px だけ固定のまま据え置かれていた**
+   ——枠を広げたときと**同じ取り残し**。
+
+   ```
+   前   枠 18 ／ 題 -8- 見出し -0- 本文 -8- 送り ／ 枠 18
+   いま  枠 18 ／ 題 -12.6- 見出し -0- 本文 -12.6- 送り ／ 枠 18
+   ```
+
+   **枠がいちばん広く、対の外がその次、対の中は 0**——9/17 に決めた並べ方がそのまま出る */
+#pop .t{font-size:clamp(12px,1.4vw,15px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--tx)*.7)}
 #pop .b{margin:0; font-size:clamp(14px,1.75vw,20px); line-height:2; min-height:7.2em}
 #pop .b b{color:var(--go); font-weight:700}
 /* **見出しと中身を、対にして寄せる**（2026-09-17、本人：「会社概要 1 ページ目の
@@ -311,7 +321,7 @@ body:has(#pop.on){cursor:pointer}
    **どちらでもない**——**行頭に置いたことで、もう探せている。**色は仕事をしていない。
    `--go` は見出しと「▼／外へ出る一手」の色なので、はじめから当てる気が無い */
 #pop .b .s + b{margin-top:calc(var(--px)*3)}
-#pop .n{display:flex; align-items:center; justify-content:space-between; margin-top:calc(var(--px)*2)}
+#pop .n{display:flex; align-items:center; justify-content:space-between; margin-top:calc(var(--tx)*.7)}
 /* **「つづく」**（2026-09-18）。外からの指摘：「`▼` の意味が分からない。初見だと
    **下矢印？スクロール？それとも選択肢？** になる。しかも最初に出会う場所が一枚目」。
 
