@@ -2155,13 +2155,13 @@ function showClear(){
 
      **またたきを足したぶん、居る時間から引いた**（2026-09-18、本人：
      「クリアが出る時間、**点滅する分伸びて見えるからその分だけ出る時間削って**」）。
-     0.8 → **0.5 秒。**またたきが 0.3 秒なので、**端から端まではまた 0.8 秒。**
+     0.8 → 0.5 → **0.6 秒で固定**（本人：「0.6で固定」）。
 
      ```
      0.00  出る
-     0.50  またたきに入る（見える → 消える → 見える → 消える）
-     0.72  最後に見えるのはこのあたり
-     0.80  消える。**足す前と同じ**
+     0.60  またたきに入る（見える → 消える → 見える → 消える）
+     0.82  最後に見えるのはこのあたり
+     0.90  消える
      ``` */
   clearHold = setTimeout(function(){
     /* **引くときは二回またたく**（2026-09-18） */
@@ -2170,7 +2170,7 @@ function showClear(){
     clearHold = setTimeout(function(){
       clearEl.classList.remove('out'); clearHold = null;
     }, 300);
-  }, 500);
+  }, 600);
 }
 function hideClear(){
   if (clearHold){ clearTimeout(clearHold); clearHold = null; }
