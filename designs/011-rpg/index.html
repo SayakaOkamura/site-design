@@ -2140,22 +2140,14 @@ function buildRoll(){
    リザルトが消える → 画面が家へ戻る＋クリア＋エンドロールが同時に始まる
                    → 一拍で幕が引く（文字は流れつづける）
    ``` */
-/* **終わりの状態を、直接立てる入口**（2026-09-18、本人：「調整しにくいなあ…
-   **エンドロール流しながらクリア出てる状態を常に開ける？**」）。
-
-   `?hold` を付けて開くと、**エンドロールが流れ、幕が出たまま止まる。**
-   幕も流れも自分から引かないので、位置や大きさを見ながら触れる。
-   倒す → クリア → エンドロールを通しで待たなくていい——
-   **この窓は裏に回ると時計が止まる**ので、通しでは確かめられない。
-
-   付けなければ何も変わらない。`data-sky` と同じで、**一語で入る確かめ用の入口** */
-var HOLD = /(^|[?&])hold(=|&|$)/.test(location.search);
-
+/* **`?hold` は外した**（2026-09-18、本人：「エンドロールのやつ戻していいよ」）。
+   幕の位置を詰めるために、**エンドロールと幕を出したまま止める入口**を立てていた。
+   位置が決まったので**用は済んだ。**形は git（`a10e6be`）にある——
+   また詰めるときはそこから取り出せる */
 var clearEl = document.getElementById('clear'), clearHold = null;
 function showClear(){
   hideClear();
   clearEl.classList.add('on');
-  if (HOLD) return;          /* `?hold` のときは自分から引かない */
   /* **短い**（2026-09-16、本人：「クリアが消えるのが遅い」）。
      幕の仕事は合図だけなので、読めたら用は済んでいる。
      **さらに短くした**（2026-09-17）——1.0 → **0.8 秒**。
@@ -2191,9 +2183,7 @@ function startRoll(){
      画面の下端から始めると、地面の中を通るあいだ何も見えず、**ただ待つ時間**になる。
      山と地面が前にあるので、ここから出しても**背後から生えてくる**ように見える */
   var from = Math.round(document.getElementById('ground').getBoundingClientRect().top);
-  if (REDUCE){ dRollIn.style.transform = 'translateY(' + stop + 'px)';
-    if (!HOLD) rollHold = setTimeout(endRoll, 3200);
-    return; }
+  if (REDUCE){ dRollIn.style.transform = 'translateY(' + stop + 'px)'; rollHold = setTimeout(endRoll, 3200); return; }
   var dur = Math.max(8000, Math.min(18000, (from - stop) / 0.12));
   var t0 = 0;
   (function step(ts){
@@ -2202,7 +2192,6 @@ function startRoll(){
     dRollIn.style.transform = 'translateY(' + (from + (stop - from) * k) + 'px)';
     if (k < 1){ rollRaf = requestAnimationFrame(step); return; }
     rollRaf = null;
-    if (HOLD) return;                       /* `?hold` のときは止まったまま置く */
     rollHold = setTimeout(endRoll, 3200);   /* 止まって、少し置いてから戻る */
   })(0);
 }
@@ -2302,6 +2291,4 @@ document.addEventListener('keydown', function(e){
 }, true);
 
 paintSel();
-/* `?hold` で開かれたら、**終わりの状態をその場で立てる**（上の節） */
-if (HOLD) startRoll();
 </script>
