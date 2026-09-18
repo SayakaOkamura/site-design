@@ -255,29 +255,6 @@ body:has(#pop.on){cursor:pointer}
 #pop{position:absolute; z-index:6;
   right:clamp(28px,9vw,120px); top:17%;
   width:min(46vw,680px); max-height:60vh; display:none; transform-origin:top}
-/* **板。**窓の見た目はこちらが持つ（`#pop` は位置と大きさだけ）。
-   サービスだけ二枚出るので、**二枚目は隙間をあけて下に置く** */
-/* **角々で重ねる**（2026-09-18、本人：「**角々で重ねて。内容隠してるように見えるから**」
-   「**動線的に1が左**」）。**01 が左上、02 が右下。**触れ合うのは角だけ。
-
-   前は同じ幅のまま上下に重ねていたので、**二枚目が一枚目の下端を幅いっぱいに覆って**、
-   隠しているように見えていた。→ **重なりは 20px 角**。
-   板の内側の余白（12px）＋枠（4px）＋影（4px）より小さいので、**字には一度もかからない。**
-
-   本人：「**ちょっとだけならメニューに被ってもいいよ**」——横に二つ並べるぶん窓を広げた */
-#pop.two{width:min(86vw,960px,calc(100vw - 420px))}
-#pop.two .pane{width:calc(50% + var(--px)*2.5)}
-#pop.two #pop2{
-  margin-left:calc(50% - var(--px)*2.5); margin-top:calc(var(--px)*-5);
-  position:relative; z-index:1}
-#pop2{display:none}
-#pop.two #pop2{display:block}
-/* 二枚のときは**高さを取り置きしない。**一枚のときの `min-height` は
-   めくっても枠が動かないための取り置きだが、二枚ぶん取ると入らない。
-   サービスの四項目は長さがそろっているので、取り置き無しでも跳ねない */
-#pop.two .b{min-height:0}
-/* 送りは**いちばん下の板の中**。板の外に出すと、
-   一枚のときに「▼」と枚数が**枠から出て空に浮く**（やって見つけた） */
 #pop.on{display:block; animation:popin .12s steps(2) both}
 @keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
 /* **頭打ちを上げた**（2026-09-16、本人：「でかい画面でも小さい画面でもポップの見え方とか
@@ -784,15 +761,10 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <button data-k="policy"><span class="cur">▶</span>ポリシー</button>
   </div>
 
-  <!-- **窓は板の入れ物**（2026-09-16）。ふだんは板一枚。
-       サービスだけ**二枚**になる（本人：「サービス押したときに両方出てきてほしいの、ポップを二つに」）-->
-  <div id="pop">
-    <div class="pane win" id="pop1">
-      <p class="t" id="popT"></p>
-      <p class="b" id="popB"></p>
-    </div>
-    <div class="pane win" id="pop2"><p class="b" id="popB2"></p></div>
-    <div class="n" id="popN"><span class="p" id="popP"></span>
+  <div id="pop" class="win">
+    <p class="t" id="popT"></p>
+    <p class="b" id="popB"></p>
+    <div class="n"><span class="p" id="popP"></span>
       <button class="go" id="popGo"></button></div>
   </div>
 
@@ -1074,21 +1046,16 @@ var DATA = {
   /* **一項目ずつ一枚に。**低い窓で二項目ぶん入れると、
      『▼』が枠の外へ落ちた（幅を広げても足りなかった）。
      **文は一字も削らない**——枚数のほうを譲る（9/14 に決めたとおり） */
-  /* **サービスだけ板が二枚**（2026-09-16、本人：「サービス押したときに**両方出てきてほしい**の、
-     ポップを二つに」「**2 ページあるやつが二つある**って感じ」）。
-     上の板が 01 → 02、下の板が 03 → 04。**▼ 一回で両方めくれる。**
-     四枚を一枚ずつ送っていたのが、**二枚で済む** */
-  svc: { t:'サービス', two:true,
-    p:[
-      '<b>01　人間中心の次世代業務システム開発</b>'
-      + '<span class="s">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します。</span>',
-      '<b>02　AI による意思決定支援と事業変革支援</b>'
-      + '<span class="s">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します。</span>',
-      '<b>03　自律型・共創型の組織設計支援</b>'
-      + '<span class="s">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します。</span>',
-      '<b>04　地域格差の解消を目指したデジタル支援</b>'
-      + '<span class="s">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します。</span>'
-    ]},
+  svc: { t:'サービス', p:[
+    '<b>01　人間中心の次世代業務システム開発</b>'
+    + '<span class="s">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します。</span>',
+    '<b>02　AI による意思決定支援と事業変革支援</b>'
+    + '<span class="s">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します。</span>',
+    '<b>03　自律型・共創型の組織設計支援</b>'
+    + '<span class="s">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します。</span>',
+    '<b>04　地域格差の解消を目指したデジタル支援</b>'
+    + '<span class="s">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します。</span>'
+  ]},
   /* **場所を落としていた**（本人：「まだあるよね、**会社の場所とか**」）。
      前は「所在 港区西新橋」の一言で、**番地も建物もアクセスの八駅も無かった。**
      会社概要で**いちばん引かれるのが住所**なので、一枚目に置く */
@@ -1201,93 +1168,12 @@ function move(d){
 }
 
 var goSel = false;   /* 右下の一手が選ばれているか */
-var popB2 = document.getElementById('popB2');
-/* **二枚が入らない窓では、前の四枚に戻す**（2026-09-16）。
-   測ったら 1000×511 と 600×420 で **▼ が枠の外へ落ちた**（631px 以上なら入る）。
-   9/14 に決めたとおり——**入らないときに譲るのは枚数のほう。文は削らない。**
-
-   高さの決め打ちはしない。**その場で測って決める**——
-   字の大きさも行間も窓の大きさで変わるので、数字を置くと必ずずれる */
-var twoFits = true;
-/* ポップがメニューに何 px 被っているか。**縦だけで見てはいけない**——
-   広い窓はメニューが左、ポップが右で、**縦は必ず重なっている** */
-function menuBite(){
-  var mn = document.getElementById('menu');
-  if (getComputedStyle(mn).display === 'none') return 0;
-  var a = pop.getBoundingClientRect(), b = mn.getBoundingClientRect();
-  if (a.top >= b.bottom || b.top >= a.bottom) return 0;
-  return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
-}
-function fitTwo(){
-  var d = DATA.svc;
-  if (!d.two) return;
-  var keep = pop.className, kp = page,
-      wasPopped = document.body.classList.contains('popped');
-  /* **開くときの動きを止めて測る。**`scaleY` が効いている最中は高さが嘘になる */
-  pop.style.animation = 'none';
-  pop.classList.add('on'); pop.classList.add('two');
-  /* 本番と同じ条件で測る——**狭くて低い窓ではメニューが退く** */
-  document.body.classList.add('popped');
-  document.getElementById('pop2').appendChild(document.getElementById('popN'));
-  popT.textContent = d.t; popB.innerHTML = d.p[0]; popB2.innerHTML = d.p[1];
-  /* **送りも本番と同じ形で測る。**空のままだとボタンの背が 0 で、
-     **入らない窓を入ると読み違える**（984×631 で 13px ぶん見落としていた） */
-  popGo.innerHTML = '<span class="ar">▼</span>';
-  var cap = parseFloat(getComputedStyle(pop).maxHeight) || 1e9;
-  var fits = pop.scrollHeight <= cap;
-  /* **狭い窓では横に並べない。**あちらは窓が**下から生える**形（`top:auto`）で、
-     幅は 94vw しか無い。二つ並べると一枚 180px ほどになって、**行が折れて読めない。**
-     数字で切らず、**いまどちらの形で出ているか**を見て決める */
-  if (fits && getComputedStyle(pop).top === 'auto') fits = false;
-  /* **天井だけでは足りない。**狭い窓ではポップが**下から生える**ので、
-     背が伸びたぶん**上のメニューに乗る**（390×620 で 79px、360×640 で 60px）。
-
-     **問うのは「当たるか」ではなく「二枚にしたせいで当たるか」。**
-     一枚でも当たっている窓（低くて幅が中くらいの窓に、前からある重なり）で
-     二枚をやめても、**直らないものを枚数で払っているだけ**になる */
-  if (fits){
-    var bite2 = menuBite();
-    pop.classList.remove('two');
-    pop1.appendChild(popN); popB.innerHTML = d.p[0];
-    var bite1 = menuBite();
-    /* **少しなら被ってよい**（本人：「ちょっとだけならメニューに被ってもいいよ」）。
-       限度は板の内側の余白（`--px*3`）＋枠（`--px`）＋影（`--px`）＝ `--px*5` ぶん。
-       そこまでは**メニューの縁にかかるだけ**で、字には届かない */
-    var px = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
-    if (bite2 > bite1 && bite2 > px * 5) fits = false;
-    pop.classList.add('two');
-  }
-  twoFits = fits;
-  pop.style.animation = '';
-  pop.className = keep; page = kp;
-  if (!wasPopped) document.body.classList.remove('popped');
-}
-/* **窓が変わったら測り直す。**開いている最中なら描き直す */
-window.addEventListener('resize', function(){
-  var was = twoFits; fitTwo();
-  if (cur && was !== twoFits){ page = 0; draw(); }
-});
-
-/* **頁ごとの「板の中身」を返す。**一枚なら [[01],[02],[03],[04]]、
-   二枚なら **[[01,02],[03,04]]**——上下が 01-02、次の頁が 03-04（2026-09-18、本人）*/
-function pages(d){
-  if (!d.two || !twoFits) return d.p.map(function(x){ return [x]; });
-  var out = [];
-  for (var i = 0; i < d.p.length; i += 2) out.push(d.p.slice(i, i + 2));
-  return out;
-}
-var pop1 = document.getElementById('pop1'), pop2 = document.getElementById('pop2');
-var popN = document.getElementById('popN');
 function draw(){
-  var d = DATA[cur], ps = pages(d), cell = ps[page], two = cell.length > 1;
+  var d = DATA[cur];
   popT.textContent = d.t;
-  popB.innerHTML = cell[0];
-  pop.classList.toggle('two', two);
-  if (two) popB2.innerHTML = cell[1];
-  /* **送りは、いちばん下の板の中へ。**二枚のときは二枚目 */
-  (two ? pop2 : pop1).appendChild(popN);
-  popP.textContent = ps.length > 1 ? (page + 1) + ' / ' + ps.length : '';
-  popGo.innerHTML = (page < ps.length - 1)
+  popB.innerHTML = d.p[page];
+  popP.textContent = d.p.length > 1 ? (page + 1) + ' / ' + d.p.length : '';
+  popGo.innerHTML = (page < d.p.length - 1)
     ? '<span class="ar">▼</span>'
     : (GO[cur] ? GO[cur].label : 'とじる');
   popGo.setAttribute('aria-current', goSel ? 'true' : 'false');
@@ -1298,7 +1184,7 @@ function draw(){
 function goPick(on){
   if (!cur) return;
   var d = DATA[cur];
-  if (page < pages(d).length - 1 || !GO[cur]) return;
+  if (page < d.p.length - 1 || !GO[cur]) return;
   if (goSel === on) return;
   goSel = on; draw();
 }
@@ -1322,7 +1208,8 @@ function close(){
 }
 /* めくる。最後まで来たら閉じる（fire と違って、外へは出ない） */
 function turn(){
-  if (page < pages(DATA[cur]).length - 1){ page++; goSel = false; draw(); return; }
+  var d = DATA[cur];
+  if (page < d.p.length - 1){ page++; goSel = false; draw(); return; }
   close();
 }
 
@@ -1330,7 +1217,7 @@ function turn(){
 function fire(){
   if (!cur){ openPop(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
-  if (page < pages(d).length - 1){ page++; goSel = false; draw(); return; }
+  if (page < d.p.length - 1){ page++; goSel = false; draw(); return; }
   /* **選んでいなければ、閉じるだけ。**Enter や → の連打では飛ばない */
   if (GO[cur] && goSel){
     GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
@@ -1349,7 +1236,7 @@ document.addEventListener('click', function(e){
   }
   /* **ボタンを直に押したときだけ、外へ。**狙って押しているので、ここは飛ばす */
   if (e.target.closest && e.target.closest('#popGo')){
-    if (cur && GO[cur] && page === pages(DATA[cur]).length - 1) goSel = true;   /* 狙って押している */
+    if (cur && GO[cur] && page === DATA[cur].p.length - 1) goSel = true;   /* 狙って押している */
     fire(); return;
   }
   /* **開いているあいだは、どこを押してもめくれる**（2026-09-15、本人：「クリックどこ押しても
@@ -2340,5 +2227,4 @@ document.addEventListener('keydown', function(e){
 }, true);
 
 paintSel();
-fitTwo();       /* 二枚が入る窓かどうか、はじめに一度測る */
 </script>
