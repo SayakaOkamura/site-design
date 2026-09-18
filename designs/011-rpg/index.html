@@ -322,6 +322,23 @@ body:has(#pop.on){cursor:pointer}
   color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
+/* **「とじる」は静かに**（2026-09-18、本人：「とじるできゅうにでかくなるな」）。
+   大きさは変わっていなかった——**字数が 1（`▼`）から 3 になって、太字のままだった**
+   （34px 幅 → 70px 幅）。
+
+   原因は**「とじる」が外へ出る一手と同じ服を着ていた**こと。役が違う——
+   外へ出る一手（メールをひらく／地図をひらく／BlueMeme のページへ）は**画面の外へ出る**ので
+   太くて大きいのが狙いで、選ぶと反転する。**「とじる」は読み終わって閉じるだけ**で、
+   選ばれる仕組みにも入っていない（`goPick` は外へ出る一手が無い窓では何もしない）。
+
+   → **`つづく` と同じ静けさに。**最後の頁は「`つづく` が `とじる` に変わっただけ」に見える。
+   小さくしても押しにくくならない——**その頁はどこを押しても閉じる。**
+
+   **行の背は変えない。**はじめボタンそのものを小さくして余白で埋めようとしたが、
+   **字の大きさが `clamp` で窓ごとに変わる**ので、余白の数字では合わない（40px になった）。
+   → **ボタンの字の大きさはそのままにして、中の字だけ小さくする。**
+   行の箱はボタンの字で決まるので、**どの窓でも `▼` のときと同じ背**になる */
+#pop .go .qt{font-size:.68em; font-weight:400; color:var(--dim); letter-spacing:.08em}
 /* **選ばれた「外へ出る一手」。**リザルトの四角と同じ反転にそろえる */
 #pop .go[aria-current="true"]{background:var(--go); color:var(--edge)}
 /* **外へ出るのは、ボタンを押したときだけ**（2026-09-17、本人：「エンター連打してたら
@@ -1348,9 +1365,11 @@ function draw(){
      最後の頁では出ない（そこは「とじる」か外へ出る一手）。
      **一枚しかない窓にも出ない**——押すと**めくらずに閉じる**ので、嘘になる */
   popNx.textContent = (page < ps.length - 1) ? 'つづく' : '';
-  popGo.innerHTML = (page < ps.length - 1)
-    ? '<span class="ar">▼</span>'
-    : (GO[cur] ? GO[cur].label : 'とじる');
+  var last = page === ps.length - 1;
+  /* **静かにするのは「とじる」だけ。**外へ出る一手は太いまま */
+  popGo.innerHTML = last
+    ? (GO[cur] ? GO[cur].label : '<span class="qt">とじる</span>')
+    : '<span class="ar">▼</span>';
   popGo.setAttribute('aria-current', goSel ? 'true' : 'false');
 }
 /* **窓の中の ↓ は、右下の一手を選ぶ。**窓には他に動かすものが無いので、
