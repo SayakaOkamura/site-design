@@ -614,26 +614,36 @@ body.roll #dRoll{display:block}
    どちらも `left:50%` なので、もともと同じ線に乗っている。
    **縦は下げたところで止める**——芯に合わせると地面と足もとまで下りてしまう。
 
-   **53% → 56.5%**（2026-09-18、本人：「もうちょい下だな」→「60」→「56」→「57」
-   →「**上0.5上げて**」）。`?hold` で出したまま見て決めた数字。60 まで下げてから戻した。
+   **縦は数字で置くのをやめた**（2026-09-18、本人：「**後ろのグラデのラインと合わせて**」）。
+   53 → 60 → 56 → 57 → 56.5 と往復して止めたところで、
+   **幕の裾が空の五本目の段（76%）から 1.3px 外れていた。**そこに合わせた。
+
+   ```
+   空      `#sky` は上から 80% を占め、段は **26 / 46 / 62 / 76 / 89%**
+   五本目   0.8 × 0.76 = **画面の 60.8%**
+   幕      `top` をやめて `bottom:39.2%`——**裾がその線に乗る**
+   ```
+
+   **上から置くと合わない。**字の大きさが `clamp` で窓ごとに変わるので、
+   `top` を決め打ちすると**裾は窓ごとに動く。**裾から置けば、どの窓でも線に乗る。
 
    **横は 49.9%**（同日、本人：「左にー１」→「あー、左50」→「49.8」→「**.9**」）。
    50.4 → 49.4 → 50 → 49.8 → **49.9**。
    （もとの 0.4 は字間 `.2em` の**最後の一字のうしろに付く空き**を打ち消すためのもの。
    49.9 は**そこから 0.5 左**で、太陽の線を 1px ぶん越える。**見て止めた位置**）*/
-#clear{position:absolute; left:49.9%; top:56.5%; transform:translate(-50%,-50%);
+#clear{position:absolute; left:49.9%; bottom:39.2%; transform:translateX(-50%);
   z-index:9; display:none; pointer-events:none; padding:calc(var(--px)*2.5) calc(var(--px)*6)}
 /* **開き方はポップとそろえる**（2026-09-17、本人：「展開よりパッと出てきて畳んで消えるのが
    いいかも」→「出るとき展開でスピード上げて」→「**展開の仕方ポップと揃えて**」）。
    概要の窓（`popin`）は **.12s steps(2)・scaleY(.2)→1・上から開く**。
-   幕は真ん中で `translate(-50%,-50%)` しているので、**同じ形の別の段取り**を立てる。
+   幕は横だけ `translateX(-50%)` しているので、**同じ形の別の段取り**を立てる。
 
    **入れ方もポップと同じ**（本人：「**pop と揃えて、出し方も入れ方も**」）。
    ポップは**引く動きを持っていない**——`.on` を外すと、そのまま消える。
    幕も畳むのをやめて、**同じ消え方**にした */
 #clear.on{display:block; animation:clearin .12s steps(2) both}
-@keyframes clearin{ from{transform:translate(-50%,-50%) scaleY(.2); transform-origin:top}
-                    to{transform:translate(-50%,-50%) scaleY(1); transform-origin:top} }
+@keyframes clearin{ from{transform:translateX(-50%) scaleY(.2); transform-origin:top}
+                    to{transform:translateX(-50%) scaleY(1); transform-origin:top} }
 #clear p{margin:0; font-size:clamp(14px,2.2vw,26px); font-weight:700;
   letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
 /* **点滅する塊は外した**（2026-09-16）。押し待ちをやめたので、
