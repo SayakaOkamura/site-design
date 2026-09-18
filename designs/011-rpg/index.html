@@ -257,14 +257,18 @@ body:has(#pop.on){cursor:pointer}
   width:min(46vw,680px); max-height:60vh; display:none; transform-origin:top}
 /* **板。**窓の見た目はこちらが持つ（`#pop` は位置と大きさだけ）。
    サービスだけ二枚出るので、**二枚目は隙間をあけて下に置く** */
-/* **ずらして重ねる**（2026-09-18、本人：「隙間開けるか、ずらして重ねるか」→「重ねの方」）。
-   二枚目を**左へ 20px・上へ 12px**。同じ幅のまま、二枚目が手前に重なる——
-   離すのではなく、**一組だと見せる**ほう。
+/* **角々で重ねる**（2026-09-18、本人：「**角々で重ねて。内容隠してるように見えるから**」
+   「**動線的に1が左**」）。**01 が左上、02 が右下。**触れ合うのは角だけ。
 
-   隙間を広げる案（12 → 24px）も並べて出したが、取らなかった。
-   重ねるほうは**背が 36px 低い**ので、984×631 と 1000×600 が二枚のまま持つ */
-#pop .pane + .pane{
-  margin-top:calc(var(--px)*-3); margin-left:calc(var(--px)*-5); margin-right:calc(var(--px)*5);
+   前は同じ幅のまま上下に重ねていたので、**二枚目が一枚目の下端を幅いっぱいに覆って**、
+   隠しているように見えていた。→ **重なりは 20px 角**。
+   板の内側の余白（12px）＋枠（4px）＋影（4px）より小さいので、**字には一度もかからない。**
+
+   本人：「**ちょっとだけならメニューに被ってもいいよ**」——横に二つ並べるぶん窓を広げた */
+#pop.two{width:min(86vw,960px,calc(100vw - 420px))}
+#pop.two .pane{width:calc(50% + var(--px)*2.5)}
+#pop.two #pop2{
+  margin-left:calc(50% - var(--px)*2.5); margin-top:calc(var(--px)*-5);
   position:relative; z-index:1}
 #pop2{display:none}
 #pop.two #pop2{display:block}
@@ -1205,13 +1209,14 @@ var popB2 = document.getElementById('popB2');
    高さの決め打ちはしない。**その場で測って決める**——
    字の大きさも行間も窓の大きさで変わるので、数字を置くと必ずずれる */
 var twoFits = true;
-/* ポップとメニューが当たっているか。**縦だけで見てはいけない**——
+/* ポップがメニューに何 px 被っているか。**縦だけで見てはいけない**——
    広い窓はメニューが左、ポップが右で、**縦は必ず重なっている** */
-function hitsMenu(){
+function menuBite(){
   var mn = document.getElementById('menu');
-  if (getComputedStyle(mn).display === 'none') return false;
+  if (getComputedStyle(mn).display === 'none') return 0;
   var a = pop.getBoundingClientRect(), b = mn.getBoundingClientRect();
-  return a.top < b.bottom && b.top < a.bottom && a.left < b.right && b.left < a.right;
+  if (a.top >= b.bottom || b.top >= a.bottom) return 0;
+  return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
 }
 function fitTwo(){
   var d = DATA.svc;
@@ -1230,6 +1235,10 @@ function fitTwo(){
   popGo.innerHTML = '<span class="ar">▼</span>';
   var cap = parseFloat(getComputedStyle(pop).maxHeight) || 1e9;
   var fits = pop.scrollHeight <= cap;
+  /* **狭い窓では横に並べない。**あちらは窓が**下から生える**形（`top:auto`）で、
+     幅は 94vw しか無い。二つ並べると一枚 180px ほどになって、**行が折れて読めない。**
+     数字で切らず、**いまどちらの形で出ているか**を見て決める */
+  if (fits && getComputedStyle(pop).top === 'auto') fits = false;
   /* **天井だけでは足りない。**狭い窓ではポップが**下から生える**ので、
      背が伸びたぶん**上のメニューに乗る**（390×620 で 79px、360×640 で 60px）。
 
@@ -1237,10 +1246,15 @@ function fitTwo(){
      一枚でも当たっている窓（低くて幅が中くらいの窓に、前からある重なり）で
      二枚をやめても、**直らないものを枚数で払っているだけ**になる */
   if (fits){
-    var hit2 = hitsMenu();
+    var bite2 = menuBite();
     pop.classList.remove('two');
     pop1.appendChild(popN); popB.innerHTML = d.p[0];
-    if (hit2 && !hitsMenu()) fits = false;
+    var bite1 = menuBite();
+    /* **少しなら被ってよい**（本人：「ちょっとだけならメニューに被ってもいいよ」）。
+       限度は板の内側の余白（`--px*3`）＋枠（`--px`）＋影（`--px`）＝ `--px*5` ぶん。
+       そこまでは**メニューの縁にかかるだけ**で、字には届かない */
+    var px = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
+    if (bite2 > bite1 && bite2 > px * 5) fits = false;
     pop.classList.add('two');
   }
   twoFits = fits;
