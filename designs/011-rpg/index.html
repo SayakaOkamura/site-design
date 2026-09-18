@@ -306,7 +306,7 @@ body:has(#pop.on){cursor:pointer}
    **注意書きではないので、退かせなくていい。**「おすと つづく」なら教えたら退くべきだが、
    これは `▼` が何かを言っているだけなので、居ても画面の一部として筋が通る */
 #pop .nx{font-size:clamp(11px,1.2vw,13px); color:var(--dim); opacity:.7;
-  letter-spacing:.08em; margin-left:auto; margin-right:calc(var(--px)*2)}
+  letter-spacing:.08em; margin-left:auto; margin-right:calc(var(--px) + 1px)}
 /* **どこまで来たかは、数ではなく帯で出す**（2026-09-18、本人：「帯の方やってみて」）。
    前は `1 / 4`——**窓の中でここだけアラビア数字とスラッシュ**で、作法から浮いていた。
    帯なら**読まずに「あと三つ」が見える**（押す回数は変わらない）。
@@ -334,7 +334,7 @@ body:has(#pop.on){cursor:pointer}
    本文（14.3）と見出し（17.2）のあいだ。**元（16.7）とはほぼ同じ大きさに戻った**が、
    **`とじる` が静かになったぶん、右下に残るのは外へ出る一手だけ**になっている */
 #pop .go{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit; cursor:pointer;
-  color:var(--go); font-size:clamp(13px,1.63vw,18px); font-weight:700; letter-spacing:.08em;
+  color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
 /* **「とじる」は静かに**（2026-09-18、本人：「とじるできゅうにでかくなるな」）。
@@ -353,7 +353,7 @@ body:has(#pop.on){cursor:pointer}
    **字の大きさが `clamp` で窓ごとに変わる**ので、余白の数字では合わない（40px になった）。
    → **ボタンの字の大きさはそのままにして、中の字だけ小さくする。**
    行の箱はボタンの字で決まるので、**どの窓でも `▼` のときと同じ背**になる */
-#pop .go .qt{font-size:.68em; font-weight:400; color:var(--dim); letter-spacing:.08em}
+#pop .go .qt{font-size:.85em; font-weight:400; color:var(--dim); letter-spacing:.08em}
 /* **選ばれた「外へ出る一手」。**リザルトの四角と同じ反転にそろえる */
 #pop .go[aria-current="true"]{background:var(--go); color:var(--edge)}
 /* **外へ出るのは、ボタンを押したときだけ**（2026-09-17、本人：「エンター連打してたら
