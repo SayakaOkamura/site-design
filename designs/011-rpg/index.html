@@ -1212,6 +1212,16 @@ var RT = ROUTE.split('／').map(function(x){ return '<i>' + x + '</i>'; });
 function rtGrid(a){ return '<span class="s rt">' + a.join('') + '</span>'; }
 var ROUTEHTML = rtGrid(RT);
 
+/* 会社概要の中身。**一枚目は入らない窓で二つに割る**ので、対ごとに持っておく */
+var AB = {
+  name:'<b>会社名</b><span class="s">株式会社アルターデザインコンサルティング</span>',
+  rep :'<b>代表者</b><span class="s">松岡　真功</span>',
+  addr:'<b>所在地</b><span class="s">' + ADDR + '</span>',
+  biz :'<b>事業内容</b><span class="s">AI 技術を活用した組織最適化に関するコンサルティング事業／AI とローコードを組み合わせた次世代型のシステム開発事業</span>'
+      + '<b>設立年月日</b><span class="s">2025 年 6 月　／　資本金 60 百万円</span>',
+  own :'<b>株主</b><span class="s">株式会社ＢｌｕｅＭｅｍｅ／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</span>'
+};
+
 var DATA = {
   /* **四段落ぜんぶ入れる。**前は三・四段落目が落ちていて、見出しの「やらされる、ではなく」は
      こちらの作文だった。**足さない**と決めたのだから、作文の見出しも置かない */
@@ -1244,14 +1254,19 @@ var DATA = {
      駅は足もとの「アクセス」へ**引っ越しただけ**で、文は一字も削っていない。
      **短い窓のはみ出しは、これでは直らない**——落ちていたのは駅の枚ではなく
      事業内容・設立・株主の枚のほうで、それは二枚目としてそのまま残っている */
-  about: { t:'会社概要', p:[
-    '<b>会社名</b><span class="s">株式会社アルターデザインコンサルティング</span>'
-    + '<b>代表者</b><span class="s">松岡　真功</span>'
-    + '<b>所在地</b><span class="s">' + ADDR + '</span>',
-    '<b>事業内容</b><span class="s">AI 技術を活用した組織最適化に関するコンサルティング事業／AI とローコードを組み合わせた次世代型のシステム開発事業</span>'
-    + '<b>設立年月日</b><span class="s">2025 年 6 月　／　資本金 60 百万円</span>',
-    '<b>株主</b><span class="s">株式会社ＢｌｕｅＭｅｍｅ／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</span>'
-  ]},
+  /* **一枚目が入らない窓では、二つに割る**（2026-09-18）。
+     見つかったのは**低くて幅の広い窓**——`1200×520` で 43px、`1366×580` で 7px、
+     **送りの行（帯・つづく・▼）が枠の下へ落ちていた。**
+     ふちは **高さ 592px**（幅 1100 以上のとき）。1280×592 でちょうど。
+
+     **幅が広いほど落ちる。**字が `1.45vw` で大きくなるのに、天井は `60vh` で
+     **高さだけ**で決まるから。1024 幅なら 580px でも入る。
+
+     割り方は **会社名・代表者 ／ 所在地**。三対を二対と一対に分ける。
+     **文は一字も変えない**——9/14 に決めたとおり、譲るのは枚数のほう */
+  about: { t:'会社概要',
+    p:[ AB.name + AB.rep + AB.addr, AB.biz, AB.own ],
+    split:[ AB.name + AB.rep, AB.addr, AB.biz, AB.own ] },
   /* **メニューの中**（2026-09-15）。はじめ会社概要の中にあって**開かないと辿り着けず**、
      いちど足もとへ出し（本人：「ありだね。マップとかないし」→「アクセス、で」）、
      そのあと**メニューへ入れ直した**（本人：「普通にメニューの中でいい気がしてきた」）。
@@ -1407,13 +1422,44 @@ function hitsMenu(){
   var a = pop.getBoundingClientRect(), b = mn.getBoundingClientRect();
   return a.top < b.bottom && b.top < a.bottom && a.left < b.right && b.left < a.right;
 }
+/* **会社概要の一枚目も、入らない窓では割る**（2026-09-18）。
+   `fitAcc()` と同じ形。**低くて幅の広い窓**で、送りの行が枠の下へ落ちていた
+   （1200×520 で 43px、1366×580 で 7px。ふちは**高さ 592px**、幅 1100 以上のとき）。
+   **幅が広いほど落ちる**——字は `1.45vw` で大きくなるのに、天井は `60vh` で高さだけで決まる */
+var aboutFits = true;
+function fitAbout(){
+  var d = DATA.about;
+  if (!d.split) return;
+  var keep = pop.className, kp = page, kb = popB.innerHTML, kg = popGo.innerHTML,
+      wasPopped = document.body.classList.contains('popped');
+  pop.style.animation = 'none';
+  pop.classList.add('on');
+  document.body.classList.add('popped');
+  popT.textContent = d.t; popB.innerHTML = d.p[0];
+  popGo.innerHTML = '<span class="ar">▼</span>';   /* 送りも本番と同じ形で測る */
+  var cap = parseFloat(getComputedStyle(pop).maxHeight) || 1e9;
+  var keepMax = pop.style.maxHeight;
+  pop.style.maxHeight = 'none';                     /* 天井を外して自然な背（枠線込み） */
+  aboutFits = pop.getBoundingClientRect().height <= cap;
+  pop.style.maxHeight = keepMax;
+  pop.style.animation = '';
+  pop.className = keep; page = kp; popB.innerHTML = kb; popGo.innerHTML = kg;
+  if (!wasPopped) document.body.classList.remove('popped');
+}
 /* **窓が変わったら測り直す。**開いている最中なら描き直す */
 window.addEventListener('resize', function(){
-  var was = accFits; fitAcc();
-  if (cur === 'access' && was !== accFits){ page = 0; goSel = false; draw(); }
+  var wasA = accFits, wasB = aboutFits;
+  fitAcc(); fitAbout();
+  if ((cur === 'access' && wasA !== accFits) || (cur === 'about' && wasB !== aboutFits)){
+    page = 0; goSel = false; draw();
+  }
 });
-/* いま出す頁。アクセスだけ**一枚と二枚**を持っている */
-function pages(d){ return (d.one && accFits) ? d.one : d.p; }
+/* いま出す頁。**アクセスは一枚と二枚、会社概要は三枚と四枚**を持っている */
+function pages(d){
+  if (d.one) return accFits ? d.one : d.p;
+  if (d.split && !aboutFits) return d.split;
+  return d.p;
+}
 
 function draw(){
   var d = DATA[cur], ps = pages(d);
@@ -2514,5 +2560,6 @@ document.addEventListener('keydown', function(e){
 }, true);
 
 paintSel();
-fitAcc();   /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
+fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
+fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
 </script>
