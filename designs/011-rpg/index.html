@@ -1500,10 +1500,71 @@ function fitAbout(){
   pop.className = keep; page = kp; popB.innerHTML = kb; popGo.innerHTML = kg;
   if (!wasPopped) document.body.classList.remove('popped');
 }
+/* **縦長の窓で、メニューが上に貼りついて見える**（2026-09-24、本人：「**上すぎるのが気になる**」）。
+
+   9/16 に上へ逃がしたのは、下から生えるポップと**必ず重なっていた**から。逃がす向きは正しい。
+   ただ `top:clamp(100px,15vh,150px)` は**窓の高さだけ**で決めていて、
+   **下に何が来るかを見ていなかった。**390×844 では名乗りの下に 143px 余っていた。
+
+   **その場で測って、名乗りの下と勇者の頭のまんなかに置く。**
+   まんなかを決めるのは**閉じている絵**（勇者）で、ポップは**触れないための天井**。
+   逆にすると、閉じているのに開いたときの都合で高い位置に留まる。
+
+   **上へは動かさない。**いまの位置が下限——名乗りの三行目に乗らない線として
+   9/16 に画面で決めたもの（84 では乗った） */
+var MQ_NARROW = window.matchMedia('(max-width:640px)');
+var MQ_HIDE   = window.matchMedia('(max-height:600px), (max-width:340px)');
+/* いちばん背の高い頁の上端。**開く動きの最中は高さが嘘になる**ので止めて測る。
+
+   **中身は `draw()` に作らせる。**手で `popT` と `popB` だけ入れて測ったら、
+   **帯（`popP`）が空のぶん 22px 低く出て**、390×620 でメニューが窓に 8px 乗った。
+   送りの行の背は帯と「つづく」と右下の一手で決まるので、**本番と同じ形でないと嘘になる** */
+function topOfTallestPop(){
+  var keepCur = cur, keepPage = page, keepSel = goSel, keepCls = pop.className,
+      wasPopped = document.body.classList.contains('popped');
+  pop.style.animation = 'none';
+  pop.classList.add('on');
+  document.body.classList.add('popped');
+  var top = Infinity, k, ps, i, t;
+  for (k in DATA){
+    cur = k; ps = pages(DATA[k]);
+    for (i = 0; i < ps.length; i++){
+      page = i; goSel = false; draw();
+      t = pop.getBoundingClientRect().top;
+      if (t < top) top = t;
+    }
+  }
+  pop.style.animation = '';
+  cur = keepCur; page = keepPage; goSel = keepSel; pop.className = keepCls;
+  if (!wasPopped) document.body.classList.remove('popped');
+  if (cur) draw();                         /* 開いていたなら、元の頁に描き戻す */
+  return top;
+}
+function placeMenu(){
+  var mn = document.getElementById('menu');
+  if (!MQ_NARROW.matches){ mn.style.top = ''; return; }
+  /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
+     ここで空にすると、戻ってきたときに上へ跳ねる */
+  if (getComputedStyle(mn).display === 'none') return;
+  mn.style.top = '';                       /* いちど CSS に戻して、下限を実物から読む */
+  var m  = mn.getBoundingClientRect(), base = m.top, h = m.height;
+  var nb = document.getElementById('name').getBoundingClientRect().bottom;
+  var hd = document.getElementById('hero').getBoundingClientRect().top;
+  var t  = nb + (hd - nb - h) / 2;         /* 名乗りの下と勇者の頭のまんなか */
+  /* 開いてもメニューが残る窓では、**いちばん背の高い頁に触れない**ところまで戻す */
+  var lo = MQ_HIDE.matches ? hd : Math.min(hd, topOfTallestPop());
+  if (t + h > lo - 8) t = lo - 8 - h;
+  if (t < base) t = base;                  /* **上へは動かさない** */
+  mn.style.top = Math.round(t) + 'px';
+}
 /* **窓が変わったら測り直す。**開いている最中なら描き直す */
 window.addEventListener('resize', function(){
   var wasA = accFits, wasB = aboutFits;
+  /* **測る前に、置いた位置を外す。**前の窓で下げたままだと、
+     `hitsMenu()` が古い位置で答えて枚数を誤る */
+  document.getElementById('menu').style.top = '';
   fitAcc(); fitAbout();
+  placeMenu();   /* 枚数が決まってから置く——頁の背が変わると下限も変わる */
   if ((cur === 'access' && wasA !== accFits) || (cur === 'about' && wasB !== aboutFits)){
     page = 0; goSel = false; draw();
   }
@@ -2618,4 +2679,5 @@ document.addEventListener('keydown', function(e){
 paintSel();
 fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
+placeMenu();  /* 縦長の窓では、メニューを名乗りと下から来るもののまんなかへ */
 </script>
