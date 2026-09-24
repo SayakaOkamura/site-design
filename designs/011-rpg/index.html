@@ -144,7 +144,6 @@
   --dim:#ded0ea;   --warm:#ffd9e4;  --go:#e3b9ff;
 }
 
-
 *{box-sizing:border-box}
 html,body{height:100%; margin:0; overflow:hidden}      /* **スクロールしない** */
 body{
@@ -526,7 +525,7 @@ body:has(#pop.on){cursor:pointer}
        もう一つ、**いちばん背の高い頁（アクセス一枚 359px）が勇者の足に届く**縛り。
        800→391 ／ 844→393 ／ 915→403 ／ 932→405 が下限で、余白を 3px 見た。
        これ以上下げるには、帯の字か問いの余白かアクセスの枚数を譲ることになる */
-    :root{ --gh:clamp(396px,45vh,410px); --bar:clamp(92px,12vh,120px);
+    :root{ --gh:clamp(346px,42vh,358px); --bar:clamp(80px,10vh,94px);
            --deckB:clamp(14px,4vh,calc(40px*var(--k))) }
     /* コマンドとメッセージは**同じ足もと・同じ幅**。入れ替わって見える */
     #menu{top:auto; bottom:var(--deckB);
@@ -1053,7 +1052,20 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
                     to{transform:translateX(-50%) scaleY(1)} }
   /* 帯は**地面の下**（地平のすぐ下）。窓の上に来るので、
      **行のぶんだけ**の背にして、あいだは地面のまま空ける */
-  #dBar{top:calc(100% - var(--gh) + var(--px)*4); height:var(--bar); bottom:auto}
+  #dBar{top:calc(100% - var(--gh) + var(--px)*4); height:var(--bar); bottom:auto;
+        padding-top:var(--px); padding-bottom:var(--px)}
+  /* ─ 床を薄くするために三つ譲った（2026-09-24、本人：「**下げて**」）──────
+     地面を下げるには床の中身を削るしかない。**譲ったのは：**
+
+       帯の字     11px／1.65 → 9.5px／1.48（低い窓で前からやっている形）  −23px
+       帯の余白    上下 8px → 4px
+       問いの余白  三択の上下 6px → 2px。**押すところが 31 → 23px**        −32px
+       アクセス    三層の縦では**いつも二枚**（下の `fitAcc`）
+
+     四つ目のアクセスは、いちばん背の高い頁を 359 → 287px にして
+     **勇者の足の側の縛りを 72px ゆるめる**ためのもの */
+  #dWish,#dLines,#dStat{font-size:clamp(9.5px,1.15vw,calc(12px*var(--k))); line-height:1.48}
+  #dA li{padding:calc(var(--px)*0.5) 0}
 }
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
@@ -1567,6 +1579,11 @@ var accFits = true;
 function fitAcc(){
   var d = DATA.access;
   if (!d.one) return;
+  /* **三層の縦では、いつも二枚**（2026-09-24）。一枚（359px）は
+     いちばん背の高い頁で、**地面を下げると勇者の足に乗る。**
+     二枚にすると、いちばん背の高い頁が会社概要の一枚目（287px）になって
+     地面を 72px 下げられる。**譲るのは枚数**（9/14 の決めごと）*/
+  if (MQ_DECK.matches){ accFits = false; return; }
   var keep = pop.className, kp = page, kb = popB.innerHTML, kg = popGo.innerHTML,
       wasPopped = document.body.classList.contains('popped');
   pop.style.animation = 'none';          /* 開く動きの最中は高さが嘘になる */
@@ -1676,28 +1693,9 @@ function topOfTallestPop(){
   if (cur) draw();                         /* 開いていたなら、元の頁に描き戻す */
   return top;
 }
-/* **足もとを、地平とメニューのまんなかに置く**（2026-09-24、本人：「**お問い合わせの
-   ところから地面とメニューにかけての大きさ同じでいいと思うんだよな**」）。
-
-   足もとは `top:calc(100% - var(--gh) + var(--px)*7)` で**地平から測っていた**ので、
-   三層に組んだあとは**地平にべったり、メニューとは遠い**という置き方になっていた
-   （390×844 で 上 28px ／ 下 124px）。
-
-   メニューの背は中身で決まるので **CSS では引けない。**その場で測る */
-function placeFoot(){
-  var ft = document.getElementById('foot'), mn = document.getElementById('menu');
-  if (!MQ_DECK.matches){ ft.style.top = ''; return; }
-  /* メニューが隠れているあいだ（デモ・窓を開いている狭い窓）は触らない
-     ——測る相手がいないし、戻ってきたときに跳ねる */
-  if (getComputedStyle(mn).display === 'none') return;
-  ft.style.top = '';
-  var g = document.getElementById('ground').getBoundingClientRect();   /* 上端＝地平 */
-  var m = mn.getBoundingClientRect();
-  var h = ft.getBoundingClientRect().height;
-  var t = g.top + (m.top - g.top - h) / 2;
-  if (t < g.top) t = g.top;                 /* 地面より上へは出さない */
-  ft.style.top = Math.round(t) + 'px';
-}
+/* **足もとは地平から測る**（`top:calc(100% - var(--gh) + var(--px)*7)`）。
+   いちど JS で地平とメニューのまんなかへ置いたが、**戻した**（2026-09-24、本人：
+   「**文字をずらすんじゃなくて地面をずらすんだよ**」）。揃えるのは地面の仕事 */
 function placeMenu(){
   var mn = document.getElementById('menu');
   if (!MQ_NARROW.matches || MQ_DECK.matches){ mn.style.top = ''; return; }
@@ -1724,7 +1722,7 @@ window.addEventListener('resize', function(){
   document.getElementById('menu').style.top = '';
   fitAcc(); fitAbout();
   placeMenu();   /* 枚数が決まってから置く——頁の背が変わると下限も変わる */
-  placeFoot();   /* メニューが決まってから、そのまんなかへ */
+
   if ((cur === 'access' && wasA !== accFits) || (cur === 'about' && wasB !== aboutFits)){
     page = 0; goSel = false; draw();
   }
@@ -2843,5 +2841,5 @@ paintSel();
 fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
 placeMenu();  /* 三層に割れない縦長では、メニューを名乗りと勇者のまんなかへ */
-placeFoot();  /* 三層の縦長では、足もとを地平とメニューのまんなかへ */
+
 </script>
