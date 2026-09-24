@@ -298,9 +298,7 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
   text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge),
               var(--o2) var(--o2) 0 var(--edge), calc(-1*var(--o2)) var(--o2) 0 var(--edge), var(--o2) calc(-1*var(--o2)) 0 var(--edge), calc(-1*var(--o2)) calc(-1*var(--o2)) 0 var(--edge)}
 #name b{display:block; font-size:clamp(13px,1.7vw,calc(18px*var(--k))); letter-spacing:.06em; margin-top:calc(4px*var(--k))}
-/* **一行紹介は、社名から少し離す**（2026-09-24、本人：「AI ぶぶんちょっとだけ下げて」）。
-   `--px*2`（8px）だと社名にくっついて、三行が一塊に見えていた。`--px*4`（16px）*/
-#tag{margin-top:calc(var(--px)*4); font-size:clamp(11px,1.25vw,calc(13px*var(--k))); color:var(--warm); letter-spacing:.04em}
+#tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,1.25vw,calc(13px*var(--k))); color:var(--warm); letter-spacing:.04em}
 
 /* ─ ポップアップ。**送りは ▼**（枠内スクロールはしない）─────────
    **右上の真ん中あたりへ**（2026-09-14、本人：「下じゃなくて右に出せない？」
@@ -1085,9 +1083,14 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
         transform:translateX(-50%); transform-origin:bottom}
   @keyframes resin{ from{transform:translateX(-50%) scaleY(.12)}
                     to{transform:translateX(-50%) scaleY(1)} }
-  /* 帯は**地面の下**（地平のすぐ下）。窓の上に来るので、
-     **行のぶんだけ**の背にして、あいだは地面のまま空ける */
-  #dBar{top:calc(100% - var(--gh) + var(--px)*4); height:var(--bar); bottom:auto;
+  /* 帯は**地面の下**（地平の少し下）。窓の上に来るので、
+     **行のぶんだけ**の背にして、あいだは地面のまま空ける。
+
+     **地平からの距離は `--px*4`（16px）→ `--px*5.5`（22px）**
+     （2026-09-24、本人：「AI ぶぶんちょっとだけ下げて」＝デモの帯）。
+     下げられるのは **6px まで**——いちばん詰まる 390×844 で、
+     帯と問いのあいだが 14px しか無く、8px は残す */
+  #dBar{top:calc(100% - var(--gh) + var(--px)*5.5); height:var(--bar); bottom:auto;
         padding-top:var(--px); padding-bottom:var(--px)}
   /* ─ 床を薄くするために三つ譲った（2026-09-24、本人：「**下げて**」）──────
      地面を下げるには床の中身を削るしかない。**譲ったのは：**
