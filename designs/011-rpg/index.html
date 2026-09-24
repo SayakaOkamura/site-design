@@ -533,8 +533,10 @@ body:has(#pop.on){cursor:pointer}
        その分箱は小さくしていい**」→「**横の話してるんだよ**」）。
        `width:min(94vw,520px)` で画面いっぱいにしていたが、中身は左寄せなので
        **右側が大きく空いていた。**横長と同じ `min-width` だけにする */
+    /* **寄せるのは左**（2026-09-24、本人）。横長と同じ左端からの距離にする
+       ——真ん中に置くと、中身が左寄せのぶん箱だけ右へずれて見えた */
     #menu{top:auto; bottom:var(--deckB);
-          left:50%; right:auto; transform:translateX(-50%);
+          left:clamp(16px,4vw,calc(54px*var(--k))); right:auto; transform:none;
           width:auto; min-width:min(46vw,calc(260px*var(--k)))}
     /* **開いているあいだは出さない。**同じ場所を使うので */
     body.popped #menu{display:none}
