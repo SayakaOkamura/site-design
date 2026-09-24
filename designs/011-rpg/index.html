@@ -538,7 +538,12 @@ body:has(#pop.on){cursor:pointer}
        もう一つ、**いちばん背の高い頁（アクセス一枚 359px）が勇者の足に届く**縛り。
        800→391 ／ 844→393 ／ 915→403 ／ 932→405 が下限で、余白を 3px 見た。
        これ以上下げるには、帯の字か問いの余白かアクセスの枚数を譲ることになる */
-    :root{ --gh:clamp(346px,42vh,358px); --bar:clamp(80px,10vh,94px);
+    /* **足もととメニューの上下を入れ替えた**（2026-09-24、本人：「**メニューと
+       お問い合わせ云々の上下を入れ替えるか？**」）。足もとはいちばん下、
+       コマンドと窓はその上の線に乗る。`--deckB` は JS が実物から入れる
+       （足もとの背は字で変わるので、CSS では引けない）*/
+    :root{ --gh:clamp(364px,44vh,376px); --bar:clamp(48px,6vh,58px);
+           --footB:clamp(10px,1.4vh,16px);
            --deckB:clamp(14px,4vh,calc(40px*var(--k))) }
     /* **幅は窓と同じ**（2026-09-24）。いちど中身まで縮めて左へ寄せたが、**戻した**
        ——本人：「**見え方的には元の方が良いか？**」→「**戻してみて**」。
@@ -1064,6 +1069,8 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
    **この節は 9/16 のデモ用ブロックより後ろに置く**——メディアクエリは
    強さを足さないので、前に書くと素の `#dBar{top:...}` に負ける（いちど負けた）*/
 @media (max-width:640px) and (orientation:portrait) and (min-height:800px){
+  /* 足もとはいちばん下。地平から測るのをやめる */
+  #foot{top:auto; bottom:var(--footB)}
   /* 窓も同じ線に乗せる（上の節で書くと、この後ろの `#pop{bottom:...}` に負ける。
      メディアクエリは強さを足さないので、**後ろにまとめる**）*/
   #pop{bottom:var(--deckB)}
@@ -1736,20 +1743,28 @@ function topOfTallestPop(){
    分けて、**二つが同じ `top` を書いて消し合った**（320×568 で名乗りに戻って乗った）*/
 function placeMenu(){
   var mn = document.getElementById('menu');
-  if (!MQ_NARROW.matches){ mn.style.top = ''; mn.style.bottom = ''; mn.style.removeProperty('--mpad'); return; }
+  if (!MQ_NARROW.matches){ mn.style.top = ''; mn.style.bottom = '';
+    mn.style.removeProperty('--mpad');
+    document.documentElement.style.removeProperty('--deckB'); return; }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
      ここで空にすると、戻ってきたときに上へ跳ねる */
   if (getComputedStyle(mn).display === 'none') return;
-  if (MQ_DECK.matches){                    /* 三層の縦：足もとの下にくっつくまで広げる */
+  if (MQ_DECK.matches){                    /* 三層の縦：足もとは下、コマンドはその上 */
     mn.style.top = ''; mn.style.bottom = '';
     mn.style.removeProperty('--mpad');
     var li = mn.querySelectorAll('li');
     if (!li.length) return;
+    var root = document.documentElement;
     var g  = document.getElementById('ground').getBoundingClientRect();
     var ft = document.getElementById('foot').getBoundingClientRect();
-    var r  = mn.getBoundingClientRect();
-    /* 足もとの上のあきと同じだけ下にも空けたところが、メニューの頭 */
-    var need = r.bottom - (ft.bottom + (ft.top - g.top));
+    /* **足もとの上のあきを、地平と同じ 28px に揃える。**
+       コマンド・窓はその上に乗るので、`--deckB` ＝ 足もとの下 ＋ 背 ＋ あき */
+    var gap = parseFloat(getComputedStyle(root).getPropertyValue('--px')) * 7;
+    root.style.setProperty('--deckB',
+      Math.round(innerHeight - ft.top + gap) + 'px');
+    /* 地平からコマンドの頭までも、同じあきにする（行の上下で埋める）*/
+    var r = mn.getBoundingClientRect();
+    var need = r.bottom - (g.top + gap);
     var base = parseFloat(getComputedStyle(li[0]).paddingTop) || 0;
     var add  = (need - r.height) / (2 * li.length);
     if (add > 0) mn.style.setProperty('--mpad', (base + add).toFixed(2) + 'px');
