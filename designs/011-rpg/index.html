@@ -1348,6 +1348,8 @@ window.addEventListener('resize', function(){
   var i = 0, pose = null;
   /* 走りを止めて、決めのコマを出す。**走ったまま剣を上げても、勝った顔にならない** */
   var POSE = { win:HERO_WIN, slash:HERO_SLASH };
+  /* **名前で呼ぶ**（`'win'` / `'slash'`）。真偽値を渡すと `POSE[n]` が undefined になって、
+     **走りが止まるだけ**になる（それで 9/15 から勝ちのコマが出ていなかった）*/
   window.heroPose = function(n){ pose = n; draw(POSE[n] || HERO[i]); };
   draw(HERO[0]);
   /* 動きを止める設定なら、**一コマ目で止める**（CSS の animation:none は
@@ -2462,7 +2464,10 @@ function winSeq(){
     clearInterval(t);
     slimeEl.style.display = 'none';
     dHp.style.display = 'none';   /* 倒したら体力の印も消す（残ると倒れていないように見える） */
-    heroPose(true);
+    /* **② 剣を上げる。**`heroPose(true)` と書いていて、`POSE[true]` が undefined
+       なので**走りのコマのまま止まっていた**（2026-09-24 に気づいた）。
+       走りは止まるので気づきにくい——`HERO_WIN` は一度も画面に出ていなかった */
+    heroPose('win');
     dWon.classList.add('on');
     setTimeout(function(){
       dWon.classList.remove('on');
