@@ -538,7 +538,15 @@ body:has(#pop.on){cursor:pointer}
        もう一つ、**いちばん背の高い頁（アクセス一枚 359px）が勇者の足に届く**縛り。
        800→391 ／ 844→393 ／ 915→403 ／ 932→405 が下限で、余白を 3px 見た。
        これ以上下げるには、帯の字か問いの余白かアクセスの枚数を譲ることになる */
-    :root{ --gh:clamp(346px,42vh,358px); --bar:clamp(80px,10vh,94px);
+    /* **床を薄くした**（2026-09-24、本人：「下の部分がみちっとしてるのが問題な
+       気がする」→「ちいさくするやつやってみて」）。譲ったのは二つ：
+
+         帯   五行 → **三行**（流れ一本＋状態＋入力。三段の積み方は残る）
+         会社概要  三枚 → **四枚**（三層の縦では、入る入らないに関わらず割る）
+
+       会社概要を割ると**いちばん背の高い頁が 287 → 253px** になり、
+       いちばん背の高い頁が勇者の足に届く線が 34px 下がる */
+    :root{ --gh:clamp(318px,37vh,340px); --bar:clamp(48px,6vh,58px);
            --deckB:clamp(14px,4vh,calc(40px*var(--k))) }
     /* **幅は窓と同じ**（2026-09-24）。いちど中身まで縮めて左へ寄せたが、**戻した**
        ——本人：「**見え方的には元の方が良いか？**」→「**戻してみて**」。
@@ -1658,6 +1666,10 @@ var aboutFits = true;
 function fitAbout(){
   var d = DATA.about;
   if (!d.split) return;
+  /* **三層の縦では、いつも四枚**（2026-09-24）。三枚だと一枚目が 287px で
+     いちばん背が高く、**床を薄くすると勇者の足に乗る。**四枚にすると 253px。
+     **譲るのは枚数**（9/14 の決めごと）*/
+  if (MQ_DECK.matches){ aboutFits = false; return; }
   var keep = pop.className, kp = page, kb = popB.innerHTML, kg = popGo.innerHTML,
       wasPopped = document.body.classList.contains('popped');
   pop.style.animation = 'none';
