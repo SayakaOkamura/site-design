@@ -169,9 +169,26 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 /* **段に切らない**（本人：「二段にすらしなくていい」「行数減ってもいいから」）。
    一本の流れにして、**両端をそろえて詰める。**字間も行間も削る——
    段に切ると隙間が一本できて、そのぶん「みちみち」でなくなる */
+/* **もっと重く**（2026-09-24、本人：「発想は結構好きなんだけど**活かしきれてない**
+   感じがする」→「じゃあ**もっと落差つくろう**」）。
+
+   9/15 に落差を三度削っていた（化けるのをやめた／色だけ動かす／カードを捨てた）。
+   **一つずつは正しかった**——どれも実際に読みにくかったり、びっくりする形だった。
+   ただ三つ重なって、**両端が真ん中に寄った。**壁は普通に読めて、
+   畳んだあとも同じ黒地なので、「読めない文 → 読める一枚」ではなく
+   **「長い文 → 短い文」**になっていた。
+
+   **削った落差は、可読性を払わない場所に置き直す。**ここは読ませる気がない側なので、
+   詰めてよい。注文は「**可読性がギリギリ担保できるくらい**」で、
+   いまはその線より**上**にいた。
+
+   色は触らない——`--dim2` は既に 1.8 くらいの比で、これ以上落とすと**消える。**
+   消えた字は壁にならない（壁は「読めるのに読む気が失せる」もの）。
+   動かすのは**密度**だけ */
 .raw .col{text-align:justify; text-justify:inter-character;
-  font-size:clamp(10.5px,1.02vw,12px); line-height:1.62; letter-spacing:-.01em}
-.raw .p{margin:0 0 .8em}
+  font-size:clamp(10px,.95vw,11.5px); line-height:1.5; letter-spacing:-.02em}
+/* **段落のあきがいちばん効く。**.8em あると、そこで目が休めてしまう */
+.raw .p{margin:0 0 .3em}
 /* 畳む単位は**一文**。行ではなく文で消えていく（行は流れて決まるので掴めない） */
 .raw .ln{transition:opacity .34s ease, filter .34s ease}
 .raw .ln:nth-child(3n){color:var(--dim2)}   /* **むらを作る**。均一だと壁に見えない */
@@ -193,19 +210,30 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
    **章の頭に回り込める**——壁と同じところに、同じ形で現れる。
    同じ理由で `z-index` も外した。**走査線の下に戻す**——
    別世界ではないので、同じ縞がかかっているほうが正しい */
+/* **一枚に見せるのは、面ではなく組み**（2026-09-24）。
+   カードを戻すのではない（白い面は 9/15 に捨てたまま）。
+   **幅・行間・字間を壁の逆にする**——面も色も増やさずに落差が出て、
+   しかも**読みやすくなる方向**に動く。
+
+     壁    端から端（1280 で 990px）・11.5px・行間 1.5・字間 -.02em
+     一枚  **680px まで**・大きく・行間 1.85・字間 **0**（等幅なので、正の字間は
+           もともと広いあいだをさらに広げるだけ。**詰めをやめる**で足りる）
+
+   上下にもあきを取る。**まわりが空くと、そこだけ一枚に見える** */
 .card{display:none; opacity:0; transition:opacity .55s ease .28s;
-  padding:0 0 clamp(10px,1.4vh,18px)}
+  max-width:clamp(320px,52vw,680px); letter-spacing:0;
+  padding:clamp(12px,2vh,24px) 0 clamp(18px,2.6vh,30px)}
 .ch.on .card{opacity:1}
 .card .k{font-size:clamp(9.5px,1vw,11px); letter-spacing:.3em; color:var(--dim);
   padding-bottom:1em}
-.card .lead{margin:0; font-size:clamp(15px,1.9vw,21px); line-height:1.66;
+.card .lead{margin:0; font-size:clamp(16px,2.1vw,24px); line-height:1.6;
   color:var(--hot); letter-spacing:.02em; text-shadow:0 0 18px rgba(125,240,164,.16)}
 /* **grid も flex も使わない。**新しい整形文脈ができて、章の頭に回り込まなくなる */
 .card ul{list-style:none; margin:1.5em 0 0; padding:0}
 /* 印は**絶対位置で置かない。**章の頭に回り込むと行だけが右へ逃げて、
    印が左端に取り残される。字下げで置けば、印も行と一緒に動く */
-.card li{padding-left:1.6em; text-indent:-1.6em; margin-bottom:.55em;
-  font-size:clamp(12px,1.25vw,14px); line-height:1.8; color:var(--on)}
+.card li{padding-left:1.6em; text-indent:-1.6em; margin-bottom:.8em;
+  font-size:clamp(12.5px,1.35vw,15px); line-height:1.85; color:var(--on)}
 .card li::before{content:'—\3000'; color:var(--dim)}
 /* まだ出ていない行・字。**消さずに隠す**——消すと出るたびに下が持ち上がって、行が踊る */
 .card .wait{visibility:hidden}
@@ -236,7 +264,13 @@ footer a:hover{color:var(--on)}
 
 @media (max-width:760px){
   .head{max-width:clamp(96px,28vw,132px); margin-right:clamp(8px,2vw,12px)}
-  .raw .col{font-size:11px; line-height:1.66}
+  /* 細い窓でも壁は重く（2026-09-24）。1.66 のままだと**ここだけ普通に読めて**、
+     いちばん落差が要る画面でいちばん落差が小さかった */
+  .raw .col{font-size:11px; line-height:1.52}
+  /* **幅では差が出せない**（横に余りが無い）。→ **左に寄せて、内側へ入れる。**
+     壁は端から端、一枚は**左右とも一段内側。**片側だけだと、
+     右端が壁と揃ったままで「寄った」に見えない（幅比 0.95 のまま）*/
+  .card{max-width:none; margin-left:clamp(14px,5vw,26px); margin-right:clamp(14px,5vw,26px)}
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
 </style>
