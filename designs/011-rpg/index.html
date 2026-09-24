@@ -285,6 +285,10 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
      印を流れから外したとき、二語のあいだが **58 → 40px** に縮んでいた。
      縮んだぶん（印の幅 1em ＋ 印と字のあいだ `--px*1.5`）を、ここで足し戻す */
   display:flex; gap:calc(var(--px)*7.5 + 1em); justify-content:center;
+  /* **もう少し左へ**（2026-09-24、本人）。塊の中心は画面の中心に乗っているが、
+     画面ぜんたいが左寄り（名乗りは左端、勇者は 30%）なので、
+     幾何の中心に置くと**右に見える。**右に余白を足して、塊を 1em ぶん左へ寄せる */
+  padding-right:2em;
   font-size:clamp(12px,1.4vw,calc(16px*var(--k))); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   color:var(--dim); cursor:pointer; padding:calc(var(--px)) calc(var(--px)*2)}
