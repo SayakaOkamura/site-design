@@ -29,6 +29,24 @@
 <style>
 :root{ --px:4px; --hpx:6; --k:1; --o2:2px; --o3:3px; --gh:20%; --line:#ffffff; --ink:#ffffff }
 
+/* ── 窓の置き場（2026-09-24）─────────────────────────────────
+   本人：「**全体的に右に寄ってる気が**」→（デモを測って出した）
+   →「**勇者を左にしたら？**」→「**一旦さいごのやつでやってみて**」
+   ＝ **勇者 30% ＋ 窓の中心 62%。**
+
+   前は `right` が `clamp(28px,9vw,120px)` で頭打ちだったので、
+   **幅が広いほど窓が右へ流れていた**（1707 で中心 68%、2560 で 77.5%）。
+   → **中心から引く。**`right = 38% − 幅の半分` で、どの幅でも中心が 62% に止まる。
+
+   ただし左にはメニューがいる。**寄せすぎると乗る**（700 幅で 15px 乗った）ので、
+   メニューの右端に触れないところで止める——`(max-height:640px)` の節と同じ引き算 */
+#pop,#dWin{
+  --winw:min(46vw, calc(680px*var(--k)));
+  --winr:min( calc(38% - var(--winw)/2),
+              calc(100% - var(--winw) - clamp(16px,4vw,calc(54px*var(--k)))
+                   - min(46vw,calc(260px*var(--k))) - var(--px)*6) );
+}
+
 /* ── 大きい窓では、画面ごと大きくする（2026-09-24）────────────
    本人：「**大きい画面で見たときに、ちゃんと視野角内に全部収まるようにしたい。
    狭い画面で見るなら今のままで十分綺麗**」。
@@ -227,6 +245,9 @@ body{
    大きさ（24×22 粒）は **JS が付ける**——粒の大きさが一つのところで決まるように */
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
+/* **30% は背のある窓だけ**（2026-09-24）。低い窓ではメニューが下まで伸びていて、
+   34% では触れていなかったのが **30% で乗る**（984×631・1000×600・641×600 で確かめた）*/
+@media (min-height:660px){ #hero{left:30%} }
 /* **上下の揺れは絵の中にある**（2026-09-15）。四コマそれぞれで胴の高さが違うので、
    CSS の `bob` は外した。外に足すと、沈みのコマでさらに沈んで二重に跳ねる */
 
@@ -295,8 +316,8 @@ body:has(#pop.on){cursor:pointer}
      `min()` で揃える。**低い窓では字も縮む。**
      ふだんの窓（高さ 600 以上）では `1.45vw` のほうが小さいので**一切変わらない** */
   --tx:clamp(12px,min(1.45vw,3vh),calc(16px*var(--k)));
-  right:clamp(28px,9vw,calc(120px*var(--k))); top:17%;
-  width:min(46vw,calc(680px*var(--k))); max-height:60vh; display:none; transform-origin:top;
+  right:var(--winr); top:17%;
+  width:var(--winw); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
 @keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
@@ -513,7 +534,7 @@ body:has(#pop.on){cursor:pointer}
      → **広い窓と同じ 34%。**横長の狭い窓（640×480 など）は右が空いているので 50% のまま
      ——34% にすると今度は**左のメニューに当たる。**
      ついでに勇者が太陽の真ん前から外れて、影が読めるようになった */
-  @media (orientation:portrait){ #hero{left:34%} }
+  @media (orientation:portrait){ #hero{left:30%} }
   /* 狭い窓では右に寄せる余地が無い。**下いっぱい**に戻す */
   /* 狭い窓は**下いっぱい**なので、上へ伸ばす余地がある。60vh では
      低い端末で会社概要の一枚目が入りきらなかった（**上は名乗りまで空いている**）*/
@@ -540,8 +561,12 @@ body:has(#pop.on){cursor:pointer}
      → **同じ `clamp` をそのまま引く。**数字を当てずに、実物から引く。
 
      引くもの：右の余白 ＋ メニューの左の余白 ＋ メニューの幅 ＋ 両方の影（8+8）＋ あいだ（8）*/
+  /* **低い窓では、窓は右のまま**（2026-09-24）。中心 62% へ寄せると
+     名乗りの下へ潜る（1366×580 で角が 3px、1280×592 で 1px）。
+     縦に逃げ場が無いので、横で逃げる */
+  #pop,#dWin{ --winr:clamp(28px,9vw,calc(120px*var(--k))) }
   #pop{width:min(74vw, 760px,
-    calc(100vw - clamp(28px,9vw,calc(120px*var(--k))) - clamp(16px,4vw,calc(54px*var(--k))) - min(46vw,calc(260px*var(--k)))
+    calc(100vw - var(--winr) - clamp(16px,4vw,calc(54px*var(--k))) - min(46vw,calc(260px*var(--k)))
          - var(--px)*6))}
 }
 
@@ -567,6 +592,7 @@ body.demo #demo{display:block}
    出てはいるのに、目に入るころには遅れて見える。**出た瞬間から大きい**ほうが速い。
    **大きさだけ動かす。**透明度を動かすと、動きが走らない場で出ないまま */
 #dBang.on{display:block; animation:bang .14s steps(2)}
+@media (min-height:660px){ #dBang{left:30%} }   /* 「！」は勇者の頭の上 */
 @keyframes bang{ from{transform:translateX(-50%) scale(1.45)}
                  to{transform:translateX(-50%) scale(1)} }
 
@@ -619,8 +645,8 @@ body.demo #dHp{display:block}
    概要（`#pop`）は 17% のまま。あれは 9/14 に**上げた**もので、下げ戻さない */
 /* **頭打ちはポップと同じに上げた**（2026-09-16）。1920 幅で 520px＝27% しかなく、
    **概要の窓（680px）より細い**ので、同じ場所に出るのに大きさが揃っていなかった */
-#dWin{position:absolute; right:clamp(28px,9vw,calc(120px*var(--k))); top:25%;
-  z-index:8; width:min(46vw,calc(680px*var(--k))); transform-origin:top}
+#dWin{position:absolute; right:var(--winr); top:25%;
+  z-index:8; width:var(--winw); transform-origin:top}
 /* 出るたびに開く。**間があると、次の問いが来たことが分かる** */
 #dWin.pop{animation:winin .12s steps(2)}
 @keyframes winin{ from{transform:scaleY(.25)} to{transform:scaleY(1)} }
@@ -984,7 +1010,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   /* 縦長は勇者が 34% に戻っているので、敵もそのぶん右へ。「！」は勇者の頭の上 */
   @media (orientation:portrait){
     #slime,#dHp,#slash{left:76%}
-    #dBang{left:34%}
+    #dBang{left:30%}
   }
   #dRes .rtask li{font-size:clamp(13px,3.6vw,calc(17px*var(--k)))}
 }
