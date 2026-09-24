@@ -324,18 +324,6 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
               var(--o2) var(--o2) 0 var(--edge), calc(-1*var(--o2)) var(--o2) 0 var(--edge), var(--o2) calc(-1*var(--o2)) 0 var(--edge), calc(-1*var(--o2)) calc(-1*var(--o2)) 0 var(--edge)}
 #name b{display:block; font-size:clamp(13px,1.7vw,calc(18px*var(--k))); letter-spacing:.06em; margin-top:calc(4px*var(--k))}
 #tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,1.25vw,calc(13px*var(--k))); color:var(--warm); letter-spacing:.04em}
-/* ─ 一行だけ、開いた直後に組み上がる（2026-09-24）────────────────
-   本人：「**もうちょい直接的に欲しいけど、言う場所を間違えると露骨、になるんだよな…**」
-   → **言葉は増やさずに、出かたで言う。**増えるのは出かただけで、字は一字も足していない。
-
-   **素の状態が「組み上がったあと」。**動きが走らない場（裏の窓、動きを止める設定）でも
-   一行はそのまま読める——`from` に散らばりを置いて、`to` は無変形。
-   **透明度は動かさない**（011 の決めごと）。動くのは位置だけ。
-   **画面も揺れない**——`transform` なので、行の箱は最初から最後まで同じ大きさ。
-
-   きざみは `steps(4)`。この画面で滑らかに動いているものは一つも無い */
-#tag .g{display:inline-block; animation:gather .28s steps(4) both}
-@keyframes gather{ from{transform:translate(var(--dx),var(--dy))} to{transform:translate(0,0)} }
 
 /* ─ ポップアップ。**送りは ▼**（枠内スクロールはしない）─────────
    **右上の真ん中あたりへ**（2026-09-14、本人：「下じゃなくて右に出せない？」
@@ -2951,36 +2939,6 @@ document.addEventListener('keydown', function(e){
 }, true);
 
 paintSel();
-/* ─ 名乗りの一行を、開いた直後に一度だけ組み上げる ─────────────
-   字を一つずつ `span` に割って、散らばった位置から定位置へ戻す。
-   **空白は割らない**（折り返しの当たり方を変えないため）。
-   `display:inline-block` にしても行の幅は変わらない（測って確かめた） */
-(function(){
-  var tag = document.getElementById('tag');
-  if (!tag) return;
-  /* 動きを止める設定では**割らない**——素のテキストのまま出す */
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  var txt = tag.textContent, frag = document.createDocumentFragment(), i, ch, sp, a, r;
-  for (i = 0; i < txt.length; i++){
-    ch = txt.charAt(i);
-    if (ch === ' ' || ch === '　'){ frag.appendChild(document.createTextNode(ch)); continue; }
-    sp = document.createElement('span');
-    sp.className = 'g';
-    sp.textContent = ch;
-    /* **散らばりは小さく、縦は半分。**はじめ半径 18〜44px でやったら、
-       字が**社名の行まで飛んで**ぶつかった（画面で分かった）。
-       いまは 10〜26px、縦はその半分——**行のまわりで散る**くらい */
-    a = Math.random() * Math.PI * 2;
-    r = 10 + Math.random() * 16;
-    sp.style.setProperty('--dx', Math.round(Math.cos(a) * r) + 'px');
-    sp.style.setProperty('--dy', Math.round(Math.sin(a) * r * 0.5) + 'px');
-    sp.style.animationDelay = (i * 11) + 'ms';
-    frag.appendChild(sp);
-  }
-  tag.textContent = '';
-  tag.appendChild(frag);
-})();
-
 fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
 placeMenu();  /* 縦長では、メニューを置き直す（三層は足もとの下、それ以外はまんなか）*/
