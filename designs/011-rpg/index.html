@@ -281,7 +281,10 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
 
 /* 足もとの二つ。**地面の下** */
 #foot{position:absolute; left:0; right:0; top:calc(100% - var(--gh) + var(--px)*7); z-index:5;
-  display:flex; gap:calc(var(--px)*6); justify-content:center;
+  /* **あいだは元のまま**（2026-09-24、本人：「文字間の距離はそのままだよ」）。
+     印を流れから外したとき、二語のあいだが **58 → 40px** に縮んでいた。
+     縮んだぶん（印の幅 1em ＋ 印と字のあいだ `--px*1.5`）を、ここで足し戻す */
+  display:flex; gap:calc(var(--px)*7.5 + 1em); justify-content:center;
   font-size:clamp(12px,1.4vw,calc(16px*var(--k))); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   color:var(--dim); cursor:pointer; padding:calc(var(--px)) calc(var(--px)*2)}
