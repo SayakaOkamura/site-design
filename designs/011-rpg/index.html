@@ -351,8 +351,11 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
 /* 印は字の左外。足もとと同じ作法——行の中に入れると字が右へずれる */
 #made .lb{position:relative}
 #made .cur{position:absolute; right:100%; margin-right:calc(var(--px)*1.5); color:transparent}
-body:not(.kb) #made:hover,#made[aria-current="true"]{color:var(--go); opacity:1}
-body:not(.kb) #made:hover .cur,#made[aria-current="true"] .cur{color:var(--go)}
+/* **印は乗せたときと、Tab の焦点。**輪から外したので `aria-current` は付かない。
+   焦点のほうは `body.kb` で黙らせない——十字キーを使っていても、
+   **Tab で来た人にはここしか目印が無い** */
+body:not(.kb) #made:hover,#made:focus-visible{color:var(--go); opacity:1}
+body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 
 /* 名乗り。**左上に出しっぱなし** */
 /* **白抜きに硬い縁**（2026-09-14）。空を明るくしたら、白字がぼやけた。
@@ -1679,16 +1682,23 @@ var pop = document.getElementById('pop'),
 var cur = null, page = 0;
 
 /* ─ **十字キーでも動く**（2026-09-14、本人：「十字キーでもできるようにして」）──
-   **メニュー 5 つと足もとの 2 つ、それに右下の一行を、一本のカーソルで回す**——
+   **メニュー 5 つと足もとの 2 つを、一本のカーソルで回す**——
    ↓ で「デモを触る」から「お問い合わせ」へ落ちる。RPG の作法どおり、
    **窓が開いているあいだは ↑↓ を止める**（送りと閉じるだけ受ける）。
    マウスでも触れるので、**どちらの手でも同じ場所に印が出る** */
 var ALL = [].concat(
   [].slice.call(ul.children),
-  /* **「この画面について」は輪の最後**（2026-09-24）。並びの外に置いた一行だが、
-     十字キーだけで触れないものを画面に置くと、**そこだけ手が届かない** */
-  [].slice.call(document.querySelectorAll('#foot button')),
-  [document.getElementById('made')]
+  /* **右下の一行は輪に入れない**（2026-09-24、本人：「ここ矢印で行かないように
+     してもいいかなと思うんだけどどう思う？」→「いいよ」）。
+
+     いちど輪の八つ目に入れていた。**薄くしたのは目に対してだけ**で、
+     ↓ で回る人には**素通りできない一つ**として残っていた。
+     輪の七つは差し出しているもので、これはおまけ。輪に入れると
+     **おまけが差し出しになる。**
+
+     触れなくなるのは**十字キーでだけ。**`<button>` なので Tab では届く
+     （下の Enter の素通しと、`:focus-visible` の ▶ が要る） */
+  [].slice.call(document.querySelectorAll('#foot button'))
 );
 var sel = 0;
 
@@ -1706,6 +1716,10 @@ var selStale = false;
 /* **矢印は七つを一本の輪で回す**（2026-09-17 にいちど足もとを ←→ にしたが、**戻した**。
    下の「外へ出る一手」の節に、そのときの判断を残してある） */
 function move(d){
+  /* **↑↓ を押したら、右下の焦点は外す。**残っていると、
+     カーソルは輪の中にいるのに Enter が右下を開く（上の '素通し' に当たる）*/
+  var a = document.activeElement;
+  if (a && a.id === 'made') a.blur();
   sel = (sel + d + ALL.length) % ALL.length;
   selStale = false;
   paintSel();
@@ -2039,6 +2053,13 @@ document.addEventListener('keydown', function(e){
     if (cur) { goPick(k === 'ArrowDown'); e.preventDefault(); return; }
     move(k === 'ArrowDown' ? 1 : -1); e.preventDefault(); return;
   }
+  /* **Tab で右下の一行に焦点があるときは、ブラウザに渡す**（2026-09-24）。
+     `Enter` は**カーソルの居場所**（`ALL[sel]`）を開く作りで、ここで
+     `preventDefault()` まで打っている。輪から外したので、素通ししないと
+     **Tab で届くのに開けない**——押した瞬間にカーソルのほうが開く。
+     渡すのは `Enter` と空白だけ（`z` や → はボタンを押す鍵ではない）*/
+  if ((k === 'Enter' || k === ' ' || k === 'Spacebar') && !cur
+      && document.activeElement && document.activeElement.id === 'made') return;
   if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
     /* **流れているあいだだけ、乗ったままのカーソルは効かない。**
        ↑↓ で動かしてから押せば普通に開くし、**四角を押すのは前どおり効く**
