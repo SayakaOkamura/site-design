@@ -285,8 +285,14 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
   font-size:clamp(12px,1.4vw,calc(16px*var(--k))); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   color:var(--dim); cursor:pointer; padding:calc(var(--px)) calc(var(--px)*2)}
-#foot button{display:inline-flex; align-items:center; gap:calc(var(--px)*1.5)}
-#foot button .cur{color:transparent}
+/* **▶ は場所を取らない**（2026-09-24、本人：「お問い合わせとポリシーが
+   中央からずれてる気が」）。透明な ▶ が二つぶん行の中に入っていたので、
+   **行は中央でも、字は右へ 7px ずれていた。**
+   枠の外へ出す——メニューの ▶ は列の頭を揃える役だが、
+   ここは**二つを中央に並べる**ので、印は場所を取らないほうが正しい */
+#foot button{display:inline-flex; align-items:center; position:relative}
+#foot button .cur{position:absolute; right:100%;
+  margin-right:calc(var(--px)*1.5); color:transparent}
 body:not(.kb) #foot button:hover,#foot button[aria-current="true"]{color:var(--go)}
 body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{color:var(--go)}
 
