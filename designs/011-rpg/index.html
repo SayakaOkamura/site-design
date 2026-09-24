@@ -259,32 +259,6 @@ body{
    34% では触れていなかったのが **30% で乗る**（984×631・1000×600・641×600 で確かめた）*/
 @media (min-height:660px){ #hero{left:30%} }
 
-/* 立て札。**場に立てて、近づくと読む**（2026-09-24、本人：「立札にこれ全部AIで
-   作ったんですよ～って書いてたらちょっといいかもしれん」）。
-   メニューに六つ目を足すのではなく、**場に置く**——読むかどうかを相手に委ねる。
-   大きさ（12×14 粒）は勇者の半分ちょっと。**JS が付ける**——他の絵と同じ。
-
-   **太陽を外す。**はじめ 48%→52% と真ん中に置いたが、1280×800 で
-   **太陽のど真ん中**に立った——板の抜けから空ではなく**太陽が透けて**、
-   書いてある行が光る。印の ▶ も金なので、太陽の上では**消える。**
-   横長では右端から数える（`right`）——右の三分の一は空いていて、
-   右を向いて走る勇者の**行く先**になる */
-#sign{position:absolute; right:clamp(24px,9vw,calc(120px*var(--k)));
-  bottom:var(--gh); z-index:4;
-  -webkit-appearance:none; appearance:none; border:0; background:none; padding:0;
-  line-height:0; cursor:pointer}
-#sign canvas{display:block; image-rendering:pixelated}
-/* 印は**札の上**。左に置くと勇者とぶつかる。
-   **縁を付ける**（名乗りと同じ作法）——ここだけ印が**空の上**に出るので、
-   金（`--go`）を素で置くと**夕焼けに溶ける。**窓の中の印には要らない */
-#sign .cur{position:absolute; left:50%; bottom:100%; transform:translateX(-50%);
-  margin-bottom:calc(var(--px)*1.5); line-height:1; color:transparent;
-  font-size:clamp(12px,1.4vw,calc(16px*var(--k)))}
-/* 素のときは縁も出さない——透明な字に縁だけ残ると、**四角い影**が浮く */
-body:not(.kb) #sign:hover .cur,#sign[aria-current="true"] .cur{
-  text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge),
-              var(--o2) var(--o2) 0 var(--edge), calc(-1*var(--o2)) var(--o2) 0 var(--edge), var(--o2) calc(-1*var(--o2)) 0 var(--edge), calc(-1*var(--o2)) calc(-1*var(--o2)) 0 var(--edge)}
-body:not(.kb) #sign:hover .cur,#sign[aria-current="true"] .cur{color:var(--go)}
 /* **上下の揺れは絵の中にある**（2026-09-15）。四コマそれぞれで胴の高さが違うので、
    CSS の `bob` は外した。外に足すと、沈みのコマでさらに沈んで二重に跳ねる */
 
@@ -350,6 +324,31 @@ body:not(.kb) #menu li[data-k="demo"]:hover,
   margin-right:calc(var(--px)*1.5); color:transparent}
 body:not(.kb) #foot button:hover,#foot button[aria-current="true"]{color:var(--go)}
 body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{color:var(--go)}
+
+/* この画面について。**看板をやめた**（2026-09-24、本人：
+   「動かさずにどこか端っこに置いておくか」→「**看板としてじゃなくて**」）。
+
+   立て札は場に置いた——だから止まっているのが目立ち、流すと今度は
+   **勇者の後ろを通る三秒で黒い塊になった**（地面まわりが全部シルエットなので、
+   濃さを変えても離れない）。**場に物を一つ増やしたのがそもそもの元**だった。
+
+   → 場から出して、**画面の端っこに一行。**足もとの二つには入れない
+   ——あそこは二語を真ん中に合わせるのに何度も往復した場所で、
+   三つ目を足すとその寄せが崩れる。右下の隅なら、左上の名乗りと対角になる。
+
+   **薄く出す**（`opacity:.62`）。おまけなので、足もとの二つより一段引く。
+   動きには使わない——止まった濃さなので、動きを止める設定でも同じに見える */
+#made{position:absolute; right:clamp(16px,4vw,calc(54px*var(--k)));
+  bottom:clamp(12px,2.6vh,calc(26px*var(--k))); z-index:5;
+  -webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
+  display:inline-flex; align-items:center; cursor:pointer; padding:var(--px) 0;
+  color:var(--dim); opacity:.62;
+  font-size:clamp(10px,1.1vw,calc(12px*var(--k))); letter-spacing:.06em}
+/* 印は字の左外。足もとと同じ作法——行の中に入れると字が右へずれる */
+#made .lb{position:relative}
+#made .cur{position:absolute; right:100%; margin-right:calc(var(--px)*1.5); color:transparent}
+body:not(.kb) #made:hover,#made[aria-current="true"]{color:var(--go); opacity:1}
+body:not(.kb) #made:hover .cur,#made[aria-current="true"] .cur{color:var(--go)}
 
 /* 名乗り。**左上に出しっぱなし** */
 /* **白抜きに硬い縁**（2026-09-14）。空を明るくしたら、白字がぼやけた。
@@ -627,14 +626,19 @@ body:has(#pop.on){cursor:pointer}
           width:min(94vw,calc(520px*var(--k))); min-width:0}
     /* **開いているあいだは出さない。**同じ場所を使うので */
     body.popped #menu{display:none}
+    /* 右下の一行は**地平線のすぐ上へ上げる**（2026-09-24）。
+       三層の縦では下はメニューが使っていて、右下に置くと**メニューに乗る**
+       （390×844 で 12px 食い込んでいた）。足もととメニューのあいだの 28px にも
+       入れない——あそこは足もとの上下のあきを揃えてある帯で、**そこを埋めると
+       揃えた意味が消える。**
+
+       上げたぶん空と太陽の裾に乗るので、**名乗りと同じ縁**を付けて、
+       濃さも一段戻す（.62 → .78）*/
+    #made{bottom:calc(var(--gh) + var(--px)*2); opacity:.78;
+      text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge),
+                        var(--o2) var(--o2) 0 var(--edge), calc(-1*var(--o2)) var(--o2) 0 var(--edge), var(--o2) calc(-1*var(--o2)) 0 var(--edge), calc(-1*var(--o2)) calc(-1*var(--o2)) 0 var(--edge)}
   }
   #hero{left:50%}   /* 狭い窓では窓が下へ回るので、真ん中に戻す */
-  /* 狭い窓では**位置で数える。**右端から引くと、縦画面では画面の外に近すぎる。
-     勇者は真ん中（縦画面では 30%）なので 70%。ここは敵の出てくる場所だが、
-     **敵が出ているあいだ立て札は消えている。**
-     太陽が画面の幅いっぱいに近いので、縦画面では**太陽は外しきれない**——
-     いちばん明るい芯を外して、右の裾に立てる */
-  #sign{left:70%; right:auto; transform:translateX(-50%)}
   /* ただし**縦長だけは左へ戻す**（2026-09-24、本人：「**スライムと勇者の位置関係も**」）。
      50% のままだと**デモで当たっていた**——390 幅で勇者 129〜261、敵 233〜329、
      体力バー 227〜335。**28px 重なる。**縦長は幅が狭いので、敵を右へ逃がすと画面から出る。
@@ -684,7 +688,7 @@ body:has(#pop.on){cursor:pointer}
 @media (prefers-reduced-motion:reduce){ *{animation:none !important} }
 /* ─ デモ。**画面をそのまま使う** ─────────────────────────────
    メニューと足もとは隠す（`body.demo`）。空・山・地面・勇者は出したまま */
-body.demo #menu, body.demo #foot, body.demo #pop, body.demo #sign{display:none}
+body.demo #menu, body.demo #foot, body.demo #pop, body.demo #made{display:none}
 #demo{position:absolute; inset:0; z-index:7; display:none}
 body.demo #demo{display:block}
 
@@ -1195,9 +1199,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 
   <canvas id="hero"></canvas>
 
-  <!-- 立て札。押すと窓が開く。メニューの六つ目にはしない -->
-  <button id="sign" data-k="made" aria-label="立て札を読む"><span class="cur">▶</span><canvas id="signC"></canvas></button>
-
   <div id="ground">
     <div class="band"></div>
     <div class="band b2"></div>
@@ -1219,6 +1220,9 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     <button data-k="contact"><span class="lb"><span class="cur">▶</span>お問い合わせ</span></button>
     <button data-k="policy"><span class="lb"><span class="cur">▶</span>ポリシー</span></button>
   </div>
+
+  <!-- 画面の成り立ち。**場には置かない**——端っこに一行 -->
+  <button id="made" data-k="made"><span class="lb"><span class="cur">▶</span>この画面について</span></button>
 
   <div id="pop" class="win">
     <p class="t" id="popT"></p>
@@ -1490,41 +1494,6 @@ window.addEventListener('resize', function(){
   setInterval(function(){ i = (i+1) % HERO.length; if (!pose) draw(HERO[i]); }, 110);
 })();
 
-/* 立て札。**動かない。**場に置いてあるものなので、跳ねも点滅もしない。
-   板の中の抜けは空の色が透けて、そこが**書いてある行**に見える。
-   色は勇者と同じ `--hero`——いちばん手前にあるものはいちばん濃い */
-var SIGN = [
-  '............',
-  '.##########.',
-  '.#........#.',
-  '.#.######.#.',
-  '.#........#.',
-  '.#.#####..#.',
-  '.#........#.',
-  '.#.####...#.',
-  '.#........#.',
-  '.##########.',
-  '.....##.....',
-  '.....##.....',
-  '.....##.....',
-  '....####....'];
-var GW = SIGN[0].length, GH2 = SIGN.length;
-(function(){
-  var cv = document.getElementById('signC'), cx = cv.getContext('2d');
-  var INK = getComputedStyle(document.documentElement)
-              .getPropertyValue('--hero').trim() || '#150b04';
-  function draw(){
-    cx.clearRect(0, 0, GW*HPX, GH2*HPX);
-    cx.fillStyle = INK;
-    for (var y = 0; y < GH2; y++) for (var x = 0; x < GW; x++){
-      if (SIGN[y][x] === '.') continue;
-      cx.fillRect(x*HPX, y*HPX, HPX, HPX);
-    }
-  }
-  sizeCanvas(cv, cx, GW, GH2); draw();
-  REDRAW.push(function(){ sizeCanvas(cv, cx, GW, GH2); draw(); });
-})();
-
 /* ─ 中身。**公式サイトの言葉をそのまま。**足していない ──────────
    長いものは ▼ で送る（削らない）*/
 /* ─ 中身。**題は漢字のまま**（2026-09-14、本人：「**ひらがなで書かなくていい。
@@ -1647,7 +1616,7 @@ var DATA = {
      プレスリリースの「**BlueMeme グループ**」）。出ている言葉だけで書く。
      **株主は書かない**（本人：「グループ会社だってわかればつながりがわかるから」）。
      ここで要るのは**つながり**であって、資本の話ではない。株主の四社は会社概要にある */
-  /* 立て札。**ここだけ公式サイトに無い言葉**（2026-09-24、本人：「立札にこれ全部AIで
+  /* **ここだけ公式サイトに無い言葉**（2026-09-24、本人：「立札にこれ全部AIで
      作ったんですよ～って書いてたらちょっといいかもしれん」）。
      画面そのものの成り立ちの話なので、公式に元の文は無い。
      **実績・数字・取引先は書かない**——書いてあるのは「どう作ったか」だけ。
@@ -1655,7 +1624,7 @@ var DATA = {
      そこを黙ると、引いてきた文まで AI が書いたことになる */
   made: { t:'この画面について', p:[
     '<b>この画面は、ぜんぶ AI と作りました。</b>'
-    + '<span class="s">絵も、動きも、この立て札も。</span>'
+    + '<span class="s">絵も、動きも、この窓も。</span>'
     + '<span class="s">文だけは、公式サイトのものです。</span>'
   ]},
   policy: { t:'プライバシーポリシー', p:[
@@ -1700,16 +1669,16 @@ var pop = document.getElementById('pop'),
 var cur = null, page = 0;
 
 /* ─ **十字キーでも動く**（2026-09-14、本人：「十字キーでもできるようにして」）──
-   **メニュー 5 つと足もとの 2 つ、それに立て札を、一本のカーソルで回す**——
+   **メニュー 5 つと足もとの 2 つ、それに右下の一行を、一本のカーソルで回す**——
    ↓ で「デモを触る」から「お問い合わせ」へ落ちる。RPG の作法どおり、
    **窓が開いているあいだは ↑↓ を止める**（送りと閉じるだけ受ける）。
    マウスでも触れるので、**どちらの手でも同じ場所に印が出る** */
 var ALL = [].concat(
   [].slice.call(ul.children),
-  /* **立て札は輪の最後**（2026-09-24）。場にあるものなので並びの外だが、
+  /* **「この画面について」は輪の最後**（2026-09-24）。並びの外に置いた一行だが、
      十字キーだけで触れないものを画面に置くと、**そこだけ手が届かない** */
   [].slice.call(document.querySelectorAll('#foot button')),
-  [document.getElementById('sign')]
+  [document.getElementById('made')]
 );
 var sel = 0;
 
@@ -2006,7 +1975,7 @@ function fire(){
 
 document.addEventListener('click', function(e){
   if (D.on) return;   /* デモ中は、前からある手を止める */
-  var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button') || e.target.closest('#sign'));
+  var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button') || e.target.closest('#made'));
   if (el){
     var i = ALL.indexOf(el); if (i >= 0) sel = i;
     (cur === el.dataset.k) ? close() : openPop(el.dataset.k);
