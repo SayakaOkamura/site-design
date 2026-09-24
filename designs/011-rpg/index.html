@@ -487,7 +487,7 @@ body:has(#pop.on){cursor:pointer}
   @media (orientation:portrait) and (min-height:800px){
     /* 地平をここまで上げる。**上げたぶんがそのまま暗い床**になり、コマンドが乗る。
        上は**デモの問いが勇者の頭に届く線**、下は**メニューと足もとが重なる線**で挟んだ */
-    :root{ --gh:clamp(280px,34vh,330px) }
+    :root{ --gh:clamp(348px,39vh,378px); --bar:clamp(92px,12vh,120px) }
     /* コマンドとメッセージは**同じ足もと・同じ幅**。入れ替わって見える */
     #menu{top:auto; bottom:clamp(14px,4vh,calc(40px*var(--k)));
           left:50%; right:auto; transform:translateX(-50%);
@@ -955,20 +955,37 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #dBang{left:50%}
   #dRes .rtask li{font-size:clamp(13px,3.6vw,calc(17px*var(--k)))}
 }
-/* ─ デモの問いは**上のまま**（2026-09-24 に下へ試して、戻した）─────
-   三層に組んだので、問いも足もと（コマンドと同じ場所）へ移したかった。
-   **入らなかった。**
+/* ─ デモも同じ三層にする（2026-09-24）──────────────────────
+   本人：「**デモも直して**」。問いだけ上に残っていて、
+   **コマンドは下・問いは上**と、同じ画面で押す場所が二つに割れていた。
+   しかも床（`--gh` を上げたぶん）が**デモのあいだだけ空っぽ**だった。
 
-     390×844   地平 489（勇者の足）／ 問いの背 232 ＋ 帯の行 110 ＋ 間
-               下に置くと問いの上端が 492。**勇者の足に 3px**
-     320×568   地平 304 ／ 下に置くと問いの上端が 212。**勇者に 92px 乗る**
+     上   名乗り
+     中   戦い（勇者・敵・体力・！）
+     下   問い ／ その下に帯（機械の手元）
 
-   デモは**メニューと足もとを隠して戦いを置く**ので、
-   コマンドの居た場所は帯（機械の手元）が使う。役は縦に並んだまま：
-   **上が問い、まん中が戦い、下が帯**（9/16 の決めごとのまま）。
+   **9/16 に上へ逃がした理由は消えている。**あのときは地平が 80% にあって、
+   敵も体力も下にいたので下に置けなかった。地平を上げて**戦いが上へ退いた。**
 
-   帯は床いっぱいに伸びる。中身は `justify-content:flex-end` で下端に寄るので、
-   **広いぶんは行が増える余地**になる（9/17 に「帯は 20% しかない」と書いた場所）*/
+   床の割り振りは、**帯を先に取る**（打った一行が消えると嘘になる）。
+   残りに問いを置いて、`--gh` はその合計から決めた。
+
+   **この節は 9/16 のデモ用ブロックより後ろに置く**——メディアクエリは
+   強さを足さないので、前に書くと素の `#dBar{top:...}` に負ける（いちど負けた）*/
+@media (max-width:640px) and (orientation:portrait) and (min-height:800px){
+  /* 帯は**下いっぱいではなく、行のぶんだけ。**中身は `flex-end` で下端に寄る */
+  #dBar{top:auto; height:var(--bar); bottom:0}
+  /* 問いは帯のすぐ上。**メニュー・窓と同じ幅**なので、押す場所が一つに見える */
+  #dWin{top:auto; bottom:calc(var(--bar) + clamp(8px,1.2vh,14px));
+        left:50%; right:auto; transform:translateX(-50%);
+        width:min(94vw,calc(520px*var(--k)))}
+  /* リザルトも同じ。**押す四角が二つある**ので、真ん中では親指が届かない。
+     帯はこのとき既にまたたいて消えているので、いちばん下まで使える */
+  #dRes{top:auto; bottom:clamp(10px,1.4vh,16px);
+        transform:translateX(-50%); transform-origin:bottom}
+  @keyframes resin{ from{transform:translateX(-50%) scaleY(.12)}
+                    to{transform:translateX(-50%) scaleY(1)} }
+}
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
 #hero.swing{margin-left:18px}
