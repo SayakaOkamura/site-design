@@ -27,7 +27,31 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <style>
-:root{ --px:4px; --line:#ffffff; --ink:#ffffff }
+:root{ --px:4px; --hpx:6; --k:1; --o2:2px; --o3:3px; --line:#ffffff; --ink:#ffffff }
+
+/* ── 大きい窓では、画面ごと大きくする（2026-09-24）────────────
+   本人：「**大きい画面で見たときに、ちゃんと視野角内に全部収まるようにしたい。
+   狭い画面で見るなら今のままで十分綺麗**」。
+
+   `clamp` の天井が 16〜20px で止まるので、**画面が広がるほど小さい字が遠くへ散る。**
+   三つを一緒に上げる：
+
+   --k    `clamp` / `min` の天井（字・窓の幅・端からの余白）
+   --px   背景の粒（枠線・余白・空の網・地面の縞）
+   --hpx  勇者と敵の粒。**整数でないとにじむ**ので 6 → 8 → 9
+
+   **幅と高さの両方**を見る（9/18 に踏んだところ——天井は高さ・字は幅で
+   食い違っていた）。低くて幅の広い窓では上げない。
+
+   **高さの下限は測って決めた。**840 にしたら 1600×900 でアクセスが二枚に割れた
+   ——天井は 60vh なので、900 の窓は 540px しか無く、1.25 倍の字が入らない。
+   980 まで上げると 1600×900 は**今までのまま**になる（本人：狭い画面は今ので十分） */
+@media (min-width:1700px) and (min-height:980px){
+  :root{ --px:5px; --hpx:8; --k:1.25; --o2:3px; --o3:4px }
+}
+@media (min-width:2100px) and (min-height:1180px){
+  :root{ --px:6px; --hpx:9; --k:1.5; --o2:3px; --o3:5px }
+}
 
 /* ── 空は二つ持っている ───────────────────────────────────────
    **既定は夕焼け**（2026-09-15、本人：「一旦夕焼けで進める…？」）。
@@ -129,7 +153,7 @@ body{
     rgba(0,0,0,.6) 0 var(--px), rgba(0,0,0,0) var(--px) calc(var(--px)*2));
 }
 /* ─ 太陽。**輪郭も帯**。沈みかけ ─────────────────────────────── */
-#sun{position:absolute; left:50%; bottom:20%; width:min(46vh,380px); aspect-ratio:1;
+#sun{position:absolute; left:50%; bottom:20%; width:min(46vh,calc(380px*var(--k))); aspect-ratio:1;
   transform:translate(-50%,var(--sunY)); z-index:0;
   /* **`closest-side` を付ける**（画面で見つけた）。既定は `farthest-corner` なので、
      92% で透明にしても**角までは届かず、四角い暈**が空に出ていた */
@@ -209,11 +233,11 @@ body{
   box-shadow:0 0 0 var(--px) var(--win), 0 0 0 calc(var(--px)*2) rgba(0,0,0,.45);
   padding:calc(var(--px)*3) calc(var(--px)*4);
 }
-#menu{position:absolute; left:clamp(16px,4vw,54px); top:46%; transform:translateY(-62%);
-  z-index:5; min-width:min(46vw,260px)}
+#menu{position:absolute; left:clamp(16px,4vw,calc(54px*var(--k))); top:46%; transform:translateY(-62%);
+  z-index:5; min-width:min(46vw,calc(260px*var(--k)))}
 #menu ul{list-style:none; margin:0; padding:0}
 #menu li{display:flex; align-items:center; gap:calc(var(--px)*2);
-  padding:calc(var(--px)*1.5) 0; font-size:clamp(14px,1.6vw,20px); font-weight:700;
+  padding:calc(var(--px)*1.5) 0; font-size:clamp(14px,1.6vw,calc(20px*var(--k))); font-weight:700;
   letter-spacing:.06em; cursor:pointer; color:var(--dim)}
 #menu li .cur{width:1em; text-align:center; color:transparent}
 /* **十字キーを使い出したら、乗せっぱなしのマウスは黙る**（`body.kb`）。
@@ -224,7 +248,7 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
 /* 足もとの二つ。**地面の下** */
 #foot{position:absolute; left:0; right:0; top:calc(80% + var(--px)*7); z-index:5;
   display:flex; gap:calc(var(--px)*6); justify-content:center;
-  font-size:clamp(12px,1.4vw,16px); letter-spacing:.06em}
+  font-size:clamp(12px,1.4vw,calc(16px*var(--k))); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   color:var(--dim); cursor:pointer; padding:calc(var(--px)) calc(var(--px)*2)}
 #foot button{display:inline-flex; align-items:center; gap:calc(var(--px)*1.5)}
@@ -235,12 +259,12 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
 /* 名乗り。**左上に出しっぱなし** */
 /* **白抜きに硬い縁**（2026-09-14）。空を明るくしたら、白字がぼやけた。
    にじませず、四方に 2px の濃い縁を置く（16bit の作法）*/
-#name{position:absolute; left:clamp(16px,4vw,54px); top:clamp(14px,3.2vh,30px); z-index:4;
-  font-size:clamp(11px,1.3vw,13.5px); letter-spacing:.1em; color:var(--ink);
-  text-shadow:2px 0 0 var(--edge), -2px 0 0 var(--edge), 0 2px 0 var(--edge), 0 -2px 0 var(--edge),
-              2px 2px 0 var(--edge), -2px 2px 0 var(--edge), 2px -2px 0 var(--edge), -2px -2px 0 var(--edge)}
-#name b{display:block; font-size:clamp(13px,1.7vw,18px); letter-spacing:.06em; margin-top:4px}
-#tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,1.25vw,13px); color:var(--warm); letter-spacing:.04em}
+#name{position:absolute; left:clamp(16px,4vw,calc(54px*var(--k))); top:clamp(14px,3.2vh,calc(30px*var(--k))); z-index:4;
+  font-size:clamp(11px,1.3vw,calc(13.5px*var(--k))); letter-spacing:.1em; color:var(--ink);
+  text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge),
+              var(--o2) var(--o2) 0 var(--edge), calc(-1*var(--o2)) var(--o2) 0 var(--edge), var(--o2) calc(-1*var(--o2)) 0 var(--edge), calc(-1*var(--o2)) calc(-1*var(--o2)) 0 var(--edge)}
+#name b{display:block; font-size:clamp(13px,1.7vw,calc(18px*var(--k))); letter-spacing:.06em; margin-top:calc(4px*var(--k))}
+#tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,1.25vw,calc(13px*var(--k))); color:var(--warm); letter-spacing:.04em}
 
 /* ─ ポップアップ。**送りは ▼**（枠内スクロールはしない）─────────
    **右上の真ん中あたりへ**（2026-09-14、本人：「下じゃなくて右に出せない？」
@@ -267,9 +291,9 @@ body:has(#pop.on){cursor:pointer}
      見ていた——**見ているものが食い違っていた**のが、はみ出しのそもそもの原因。
      `min()` で揃える。**低い窓では字も縮む。**
      ふだんの窓（高さ 600 以上）では `1.45vw` のほうが小さいので**一切変わらない** */
-  --tx:clamp(12px,min(1.45vw,3vh),16px);
-  right:clamp(28px,9vw,120px); top:17%;
-  width:min(46vw,680px); max-height:60vh; display:none; transform-origin:top;
+  --tx:clamp(12px,min(1.45vw,3vh),calc(16px*var(--k)));
+  right:clamp(28px,9vw,calc(120px*var(--k))); top:17%;
+  width:min(46vw,calc(680px*var(--k))); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
 @keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
@@ -287,8 +311,8 @@ body:has(#pop.on){cursor:pointer}
    ```
 
    **枠がいちばん広く、対の外がその次、対の中は 0**——9/17 に決めた並べ方がそのまま出る */
-#pop .t{font-size:clamp(12px,1.4vw,15px); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--tx)*.7)}
-#pop .b{margin:0; font-size:clamp(14px,min(1.75vw,3.6vh),20px); line-height:2; min-height:7.2em}
+#pop .t{font-size:clamp(12px,1.4vw,calc(15px*var(--k))); letter-spacing:.12em; color:var(--go); margin:0 0 calc(var(--tx)*.7)}
+#pop .b{margin:0; font-size:clamp(14px,min(1.75vw,3.6vh),calc(20px*var(--k))); line-height:2; min-height:7.2em}
 #pop .b b{color:var(--go); font-weight:700}
 /* **見出しと中身を、対にして寄せる**（2026-09-17、本人：「会社概要 1 ページ目の
    字の感覚変じゃない？」）。前は**間が逆**だった——見出しと中身のあいだが 15px、
@@ -357,7 +381,7 @@ body:has(#pop.on){cursor:pointer}
 
    **注意書きではないので、退かせなくていい。**「おすと つづく」なら教えたら退くべきだが、
    これは `▼` が何かを言っているだけなので、居ても画面の一部として筋が通る */
-#pop .nx{font-size:clamp(11px,1.2vw,13px); color:var(--dim); opacity:.7;
+#pop .nx{font-size:clamp(11px,1.2vw,calc(13px*var(--k))); color:var(--dim); opacity:.7;
   letter-spacing:.08em; margin-left:auto; margin-right:calc(var(--px) + 1px)}
 /* **どこまで来たかは、数ではなく帯で出す**（2026-09-18、本人：「帯の方やってみて」）。
    前は `1 / 4`——**窓の中でここだけアラビア数字とスラッシュ**で、作法から浮いていた。
@@ -386,7 +410,7 @@ body:has(#pop.on){cursor:pointer}
    本文（14.3）と見出し（17.2）のあいだ。**元（16.7）とはほぼ同じ大きさに戻った**が、
    **`とじる` が静かになったぶん、右下に残るのは外へ出る一手だけ**になっている */
 #pop .go{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit; cursor:pointer;
-  color:var(--go); font-size:clamp(14px,1.7vw,20px); font-weight:700; letter-spacing:.08em;
+  color:var(--go); font-size:clamp(14px,1.7vw,calc(20px*var(--k))); font-weight:700; letter-spacing:.08em;
   padding:calc(var(--px)) calc(var(--px)*2)}
 #pop .go .ar{display:inline-block; animation:blink .9s steps(2) infinite}
 /* **「とじる」は静かに**（2026-09-18、本人：「とじるできゅうにでかくなるな」）。
@@ -426,7 +450,7 @@ body:has(#pop.on){cursor:pointer}
      ポップは背が高くて上へは逃がせない（狭い窓では 74vh まで使う）ので、
      **逃げるのはメニューのほう。**名乗りの下に置く */
   /* 下限は **100px**——84 だと名乗りの三行目（一行紹介）に乗った（画面で分かった） */
-  #menu{top:clamp(100px,15vh,150px); bottom:auto; transform:none; min-width:150px}
+  #menu{top:clamp(100px,15vh,calc(150px*var(--k))); bottom:auto; transform:none; min-width:150px}
   /* **行の間を詰める。**620px の高さだと、詰めないと**下のポップに 4px 触る** */
   #menu li{padding:calc(var(--px)) 0}
   /* **狭くて低い窓だけは、開いているあいだメニューを退かせる**（2026-09-16）。
@@ -442,8 +466,8 @@ body:has(#pop.on){cursor:pointer}
   /* 狭い窓では右に寄せる余地が無い。**下いっぱい**に戻す */
   /* 狭い窓は**下いっぱい**なので、上へ伸ばす余地がある。60vh では
      低い端末で会社概要の一枚目が入りきらなかった（**上は名乗りまで空いている**）*/
-  #pop{right:auto; left:50%; top:auto; bottom:clamp(14px,4vh,40px);
-       width:min(94vw,520px); max-height:74vh;
+  #pop{right:auto; left:50%; top:auto; bottom:clamp(14px,4vh,calc(40px*var(--k)));
+       width:min(94vw,calc(520px*var(--k))); max-height:74vh;
        transform:translateX(-50%); transform-origin:bottom}
   @keyframes popin{ from{transform:translateX(-50%) scaleY(.2)} to{transform:translateX(-50%) scaleY(1)} }
 }
@@ -466,7 +490,7 @@ body:has(#pop.on){cursor:pointer}
 
      引くもの：右の余白 ＋ メニューの左の余白 ＋ メニューの幅 ＋ 両方の影（8+8）＋ あいだ（8）*/
   #pop{width:min(74vw, 760px,
-    calc(100vw - clamp(28px,9vw,120px) - clamp(16px,4vw,54px) - min(46vw,260px)
+    calc(100vw - clamp(28px,9vw,calc(120px*var(--k))) - clamp(16px,4vw,calc(54px*var(--k))) - min(46vw,calc(260px*var(--k)))
          - var(--px)*6))}
 }
 
@@ -482,11 +506,11 @@ body.demo #demo{display:block}
    敵は右（66%）から来るので、**右だけで起きていると左を見ている人に届かない。**
    勇者（34%）の頭の上に「！」を出す——RPG の作法。
    **勇者は画面の左半分にいる**ので、メニューを押した直後の目の位置に近い */
-#dBang{position:absolute; left:34%; bottom:calc(20% + 140px); z-index:8; display:none;
-  transform:translateX(-50%); font-size:clamp(26px,3.6vw,40px); font-weight:700;
+#dBang{position:absolute; left:34%; bottom:calc(20% + var(--hpx)*22px + 8px); z-index:8; display:none;
+  transform:translateX(-50%); font-size:clamp(26px,3.6vw,calc(40px*var(--k))); font-weight:700;
   letter-spacing:.04em; color:var(--go);
-  text-shadow:3px 0 0 var(--edge), -3px 0 0 var(--edge), 0 3px 0 var(--edge), 0 -3px 0 var(--edge),
-              3px 3px 0 var(--edge), -3px 3px 0 var(--edge), 3px -3px 0 var(--edge), -3px -3px 0 var(--edge)}
+  text-shadow:var(--o3) 0 0 var(--edge), calc(-1*var(--o3)) 0 0 var(--edge), 0 var(--o3) 0 var(--edge), 0 calc(-1*var(--o3)) 0 var(--edge),
+              var(--o3) var(--o3) 0 var(--edge), calc(-1*var(--o3)) var(--o3) 0 var(--edge), var(--o3) calc(-1*var(--o3)) 0 var(--edge), calc(-1*var(--o3)) calc(-1*var(--o3)) 0 var(--edge)}
 /* **大きいところから出して、縮めて収める**（2026-09-15、本人：「びっくりの出が遅い」）。
    前は scale(.25) から育てていたので、**最初の 90ms がほぼ見えていなかった**——
    出てはいるのに、目に入るころには遅れて見える。**出た瞬間から大きい**ほうが速い。
@@ -526,10 +550,10 @@ body.demo #slime.come{animation:come .85s steps(9)}
 /* 体力。**バーにする**（2026-09-15、本人：「普通に HP バーの方がわかりやすいかな」）。
    前は ◆ を三つ消していた——数えないと分からないし、三つが何の三つか読めなかった。
    **敵の頭の上**に置く（中に置くと塊に埋もれる）。数字は出さない */
-#dHp{position:absolute; left:66%; bottom:calc(20% + 70px); z-index:8;
+#dHp{position:absolute; left:66%; bottom:calc(20% + var(--hpx)*10px + 10px); z-index:8;
   /* `box-sizing:border-box` なので、**高さに枠と余白が食われる。**
      14px だと中身が 2px しか残らず、空の箱に見えた（画面で分かった） */
-  transform:translateX(-50%); width:108px; height:22px; display:none;
+  transform:translateX(-50%); width:calc(108px*var(--k)); height:calc(22px*var(--k)); display:none;
   background:var(--box); border:var(--px) solid var(--line); padding:2px;
   box-shadow:0 0 0 var(--px) rgba(0,0,0,.45)}
 body.demo #dHp{display:block}
@@ -544,8 +568,8 @@ body.demo #dHp{display:block}
    概要（`#pop`）は 17% のまま。あれは 9/14 に**上げた**もので、下げ戻さない */
 /* **頭打ちはポップと同じに上げた**（2026-09-16）。1920 幅で 520px＝27% しかなく、
    **概要の窓（680px）より細い**ので、同じ場所に出るのに大きさが揃っていなかった */
-#dWin{position:absolute; right:clamp(28px,9vw,120px); top:25%;
-  z-index:8; width:min(46vw,680px); transform-origin:top}
+#dWin{position:absolute; right:clamp(28px,9vw,calc(120px*var(--k))); top:25%;
+  z-index:8; width:min(46vw,calc(680px*var(--k))); transform-origin:top}
 /* 出るたびに開く。**間があると、次の問いが来たことが分かる** */
 #dWin.pop{animation:winin .12s steps(2)}
 @keyframes winin{ from{transform:scaleY(.25)} to{transform:scaleY(1)} }
@@ -576,12 +600,12 @@ body.demo #dHp{display:block}
 #dWin .q{opacity:0}
 #dWin .q.on{opacity:1; animation:rise .16s steps(2)}
 #dWin .rt{margin:0}
-#dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,1.1vw,13px); letter-spacing:.12em; color:var(--dim)}
-#dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,18px); font-weight:700;
+#dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,1.1vw,calc(13px*var(--k))); letter-spacing:.12em; color:var(--dim)}
+#dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,1.5vw,calc(18px*var(--k))); font-weight:700;
   line-height:1.7; color:var(--ink)}
 #dA{list-style:none; margin:0; padding:0}
 #dA li{display:flex; align-items:flex-start; gap:calc(var(--px)*2);
-  padding:calc(var(--px)*1.5) 0; font-size:clamp(12px,1.4vw,17px); line-height:1.6;
+  padding:calc(var(--px)*1.5) 0; font-size:clamp(12px,1.4vw,calc(17px*var(--k))); line-height:1.6;
   letter-spacing:.04em; cursor:pointer; color:var(--dim)}
 #dA li .cur{flex:0 0 1em; text-align:center; color:transparent}
 /* **にげるは、いつも出しておく**（2026-09-15、本人：「常に逃げるコマンドを出して
@@ -592,7 +616,7 @@ body.demo #dHp{display:block}
 /* 注釈は**カッコ書きで、同じ行に**（2026-09-15、本人：「カッコがきにして」）。
    行を分けると**もう一つの項目**に見える——押せる行が四つあるように読めてしまう。
    **選ばれても明るくならない**——読むものであって、押すものではない */
-#dA li.flee .note{margin-left:.4em; font-size:11px; letter-spacing:.04em;
+#dA li.flee .note{margin-left:.4em; font-size:calc(11px*var(--k)); letter-spacing:.04em;
   color:var(--dim); opacity:.62}
 #dA li.pick{color:var(--ink); cursor:default}
 #dA li.pick .cur{color:var(--go)}
@@ -605,7 +629,7 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 /* **下からせり上がる。**行が増えても**いちばん新しいものが必ず見える**
    （上から流すと、短い窓で打ちたての行が切れる） */
 #dBar{position:absolute; left:0; right:0; top:calc(80% + var(--px)*4); bottom:0; z-index:8;
-  padding:calc(var(--px)*2) clamp(16px,5vw,64px); overflow:hidden;
+  padding:calc(var(--px)*2) clamp(16px,5vw,calc(64px*var(--k))); overflow:hidden;
   display:flex; flex-direction:column; justify-content:flex-end;
   font-family:"SFMono-Regular",Consolas,"Courier New",monospace}
 /* **最初のお願いは別枠**（2026-09-15、本人：「そうやって打たれたもの
@@ -613,7 +637,7 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    必要なのでは？」）。
    **ここだけが人の書いた文**なので、印は「>」、色も機械の行と変える（2026-09-16）。
    ここだけ**流れて消えない**。糧の一行目なので、最後まで残す */
-#dWish{font-size:clamp(11px,1.35vw,14px); line-height:1.65; color:var(--dim);
+#dWish{font-size:clamp(11px,1.35vw,calc(14px*var(--k))); line-height:1.65; color:var(--dim);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 #dWish .pr{color:var(--warm)}
 #dWish .cb,
@@ -639,18 +663,18 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
 @keyframes blinkout{
   0%,24%{opacity:1} 25%,49%{opacity:0} 50%,74%{opacity:1} 75%,100%{opacity:0}
 }
-#dLines{font-size:clamp(11px,1.35vw,14px); line-height:1.65}
+#dLines{font-size:clamp(11px,1.35vw,calc(14px*var(--k))); line-height:1.65}
 /* **短い窓では詰める。**帯には五行（人の一行＋機械の四行）が並ぶので、
    そのままだと**いちばん上の人の一行から切れる**——糧の一行目が消えてしまう */
 /* **段の切り替えは 800px。**前は 620px だったが、そこから 800px までのあいだは
    いちばん大きい字のまま五行が入らず、**一行ぶん落ちていた**（帯は 20% しかない） */
 @media (max-height:800px){
   #dBar{padding-top:var(--px); padding-bottom:var(--px)}
-  #dWish,#dLines,#dStat{font-size:clamp(9.5px,1.15vw,12px); line-height:1.48}
+  #dWish,#dLines,#dStat{font-size:clamp(9.5px,1.15vw,calc(12px*var(--k))); line-height:1.48}
 }
 @media (max-height:560px){
   /* **行間もここで詰める。**字だけ小さくしても、`line-height` が同じだと行数が増えない */
-  #dWish,#dLines,#dStat{font-size:clamp(9px,1.1vw,11px); line-height:1.25}
+  #dWish,#dLines,#dStat{font-size:clamp(9px,1.1vw,calc(11px*var(--k))); line-height:1.25}
 }
 /* **流れは地。**読ませるものではないので、濃さはもう一段落とす（2026-09-16）。
    帯が「**一本の明るい行（打ったもの）＋うっすらした地**」になる */
@@ -704,20 +728,20 @@ body.roll #dRoll{display:block}
 #dRollIn{position:absolute; left:0; right:0; top:0;
   font-family:"DotGothic16","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
   text-align:center; color:var(--far); will-change:transform;
-  padding:0 clamp(16px,6vw,80px)}
-#dRollIn p{margin:0 auto; max-width:min(70vw,470px); line-height:2.1;
-  font-size:clamp(12px,1.5vw,15px); letter-spacing:.06em}
-#dRollIn .h{color:var(--go); font-size:clamp(11px,1.3vw,13px); letter-spacing:.2em;
+  padding:0 clamp(16px,6vw,calc(80px*var(--k)))}
+#dRollIn p{margin:0 auto; max-width:min(70vw,calc(470px*var(--k))); line-height:2.1;
+  font-size:clamp(12px,1.5vw,calc(15px*var(--k))); letter-spacing:.06em}
+#dRollIn .h{color:var(--go); font-size:clamp(11px,1.3vw,calc(13px*var(--k))); letter-spacing:.2em;
   margin-bottom:calc(var(--px)*6)}
-#dRollIn .big{font-size:clamp(15px,2.1vw,22px); font-weight:700; line-height:2;
+#dRollIn .big{font-size:clamp(15px,2.1vw,calc(22px*var(--k))); font-weight:700; line-height:2;
   margin-bottom:calc(var(--px)*10)}
-#dRollIn .gap{height:clamp(40px,9vh,90px)}
+#dRollIn .gap{height:clamp(40px,9vh,calc(90px*var(--k)))}
 /* 社名の前だけ**大きくあける。**止まったときに前の文が画面に残っていると、
    社名が「最後の一枚」に見えない */
-#dRollIn .gapx{height:clamp(240px,44vh,420px)}
-#dRollIn .tag{color:var(--warm); font-size:clamp(13px,1.7vw,17px); font-weight:700; line-height:2.2}
-#dRollIn .en{font-size:clamp(14px,2.2vw,24px); letter-spacing:.22em; font-weight:700}
-#dRollIn .ja{font-size:clamp(12px,1.6vw,17px); letter-spacing:.08em; font-weight:700;
+#dRollIn .gapx{height:clamp(240px,44vh,calc(420px*var(--k)))}
+#dRollIn .tag{color:var(--warm); font-size:clamp(13px,1.7vw,calc(17px*var(--k))); font-weight:700; line-height:2.2}
+#dRollIn .en{font-size:clamp(14px,2.2vw,calc(24px*var(--k))); letter-spacing:.22em; font-weight:700}
+#dRollIn .ja{font-size:clamp(12px,1.6vw,calc(17px*var(--k))); letter-spacing:.08em; font-weight:700;
   margin-top:calc(var(--px)*2)}
 #dRollIn p + p{margin-top:calc(var(--px)*5)}
 
@@ -771,7 +795,7 @@ body.roll #dRoll{display:block}
 #clear.on{display:block; animation:clearin .12s steps(2) both}
 @keyframes clearin{ from{transform:translateX(-50%) scaleY(.2); transform-origin:top}
                     to{transform:translateX(-50%) scaleY(1); transform-origin:top} }
-#clear p{margin:0; font-size:clamp(14px,2.2vw,26px); font-weight:700;
+#clear p{margin:0; font-size:clamp(14px,2.2vw,calc(26px*var(--k))); font-weight:700;
   letter-spacing:.2em; color:var(--go); text-align:center; white-space:nowrap}
 /* **点滅する塊は外した**（2026-09-16）。押し待ちをやめたので、
    消える条件を出す必要そのものが無くなった */
@@ -795,10 +819,10 @@ body.roll #dRoll{display:block}
 #clear.out{display:block; opacity:0; animation:blinkout .3s steps(1)}
 
 #dWon{position:absolute; left:0; right:0; top:36%; z-index:9; display:none;
-  text-align:center; font-size:clamp(20px,4vw,40px); font-weight:700; letter-spacing:.14em;
+  text-align:center; font-size:clamp(20px,4vw,calc(40px*var(--k))); font-weight:700; letter-spacing:.14em;
   color:var(--ink);
-  text-shadow:3px 0 0 var(--edge), -3px 0 0 var(--edge), 0 3px 0 var(--edge), 0 -3px 0 var(--edge),
-              3px 3px 0 var(--edge), -3px 3px 0 var(--edge), 3px -3px 0 var(--edge), -3px -3px 0 var(--edge)}
+  text-shadow:var(--o3) 0 0 var(--edge), calc(-1*var(--o3)) 0 0 var(--edge), 0 var(--o3) 0 var(--edge), 0 calc(-1*var(--o3)) 0 var(--edge),
+              var(--o3) var(--o3) 0 var(--edge), calc(-1*var(--o3)) var(--o3) 0 var(--edge), var(--o3) calc(-1*var(--o3)) 0 var(--edge), calc(-1*var(--o3)) calc(-1*var(--o3)) 0 var(--edge)}
 /* **`both` は付けない**——アニメが走らない場（裏の窓、動きを止める設定）で
    from（透明）のまま固まって、文字が出ない。素の状態を「見えている」にしておく */
 #dWon.on{display:block; animation:won .34s steps(3)}
@@ -808,7 +832,7 @@ body.roll #dRoll{display:block}
 
 /* リザルト。**二段組にする**——縦に積むと短い窓で四角が枠の外へ落ちる */
 #dRes{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-  z-index:9; width:min(88vw,760px); max-height:84vh; display:none}
+  z-index:9; width:min(88vw,calc(760px*var(--k))); max-height:84vh; display:none}
 /* **枠が開いてから、中身が一行ずつ出る。**一度に出すと、
    ここまで積んできたものが**一瞬で終わる**（本人：「なんかスッと終わっちゃう」）*/
 #dRes.on{display:block; animation:resin .24s steps(4)}
@@ -826,7 +850,7 @@ body.roll #dRoll{display:block}
    宝箱を開けて「クエストが追加されました」と出るのと同じ。
 
    → **一手だけ。**あとは小さく添える */
-#dRes .rt{margin:0; font-size:clamp(12px,1.4vw,14px); letter-spacing:.14em; color:var(--go)}
+#dRes .rt{margin:0; font-size:clamp(12px,1.4vw,calc(14px*var(--k))); letter-spacing:.14em; color:var(--go)}
 /* 提案内容（2026-09-16）。**出てくるのはタスク。**
    前は「つぎの一手」を一行だけ大きく出していた。**一人で終わる手**なので、
    本人：「お問い合わせへの動線が薄い」——**足りないものが無い**から呼ぶ理由が立たない。
@@ -842,7 +866,7 @@ body.roll #dRoll{display:block}
    **20px 空けば「別のもの」になる**（9/17 の「対の外を空ける」と同じ考え） */
 #dRes .rtask{margin:calc(var(--px)*5) 0 calc(var(--px)*4); padding:0; list-style:none}
 #dRes .rtask li{margin:calc(var(--px)*1.5) 0; padding-left:1.7em; text-indent:-1.7em;
-  font-size:clamp(14px,1.7vw,19px); line-height:1.6; font-weight:700; color:var(--ink)}
+  font-size:clamp(14px,1.7vw,calc(19px*var(--k))); line-height:1.6; font-weight:700; color:var(--ink)}
 /* **字下げで置く。**絶対位置にすると、折り返した行だけが右へ逃げて印が取り残される */
 #dRes .rtask li::before{content:'□'; color:var(--go); font-weight:400; margin-right:.7em}
 /* **前と後ろを、一枚に**（2026-09-15、本人：「次の一手がでかいとなんか、次しかわかんないな」
@@ -860,9 +884,9 @@ body.roll #dRoll{display:block}
    色だけを動かすので、動きが走らない場では**ふつうの色で出る** */
 #dRes .rw,#dRes .rp{animation:land .6s steps(2) 1}
 @keyframes land{ from{color:var(--go)} to{color:var(--dim)} }
-#dRes .rw{margin:calc(var(--px)*2.5) 0 0; font-size:clamp(13px,1.6vw,16px);
+#dRes .rw{margin:calc(var(--px)*2.5) 0 0; font-size:clamp(13px,1.6vw,calc(16px*var(--k)));
   line-height:1.7; color:var(--dim)}
-#dRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,13px);
+#dRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,1.3vw,calc(13px*var(--k)));
   line-height:1.8; color:var(--dim); opacity:.78}
 /* **矢印はやめた**（2026-09-18）。前と後ろを切る印として `▼` を一行使っていたが、
    **この画面の `▼` は「送り」の記号**（ポップの次の頁、デモの窓）。
@@ -875,7 +899,7 @@ body.roll #dRoll{display:block}
 #dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
   background:none; color:var(--dim); border:calc(var(--px)/2) solid var(--dim);
   padding:calc(var(--px)*1.5) calc(var(--px)*4); letter-spacing:.08em;
-  font-size:clamp(12px,1.4vw,14px); font-weight:700}
+  font-size:clamp(12px,1.4vw,calc(14px*var(--k))); font-weight:700}
 /* 選んでいるほうは**塗る。**縁の色だけだと、どちらを選んでいるか分からなかった */
 body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   background:var(--go); border-color:var(--go); color:var(--edge)}
@@ -887,8 +911,8 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
      敵は 72%、体力はその 70px 上にいるので、下に置くかぎり逃げられない。
 
      → 名乗りの下へ。**上が問い、まん中が戦い、下が帯**と、役が縦に並ぶ */
-  #dWin{right:auto; left:50%; top:clamp(100px,15vh,150px); bottom:auto;
-        transform:translateX(-50%); width:min(94vw,520px)}
+  #dWin{right:auto; left:50%; top:clamp(100px,15vh,calc(150px*var(--k))); bottom:auto;
+        transform:translateX(-50%); width:min(94vw,calc(520px*var(--k)))}
   /* 320px 幅だと**一行紹介が三行以上に折り返す**ので、そのぶん下げる
      （メニューのときと同じところ） */
   @media (max-width:340px){ #dWin{top:120px} }
@@ -896,7 +920,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
                     to{transform:translateX(-50%) scaleY(1)} }
   #slime,#dHp,#slash{left:72%}
   #dBang{left:50%}
-  #dRes .rtask li{font-size:clamp(13px,3.6vw,17px)}
+  #dRes .rtask li{font-size:clamp(13px,3.6vw,calc(17px*var(--k)))}
 }
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
@@ -1146,15 +1170,35 @@ var HERO_SLASH = [
     '...####....####.......'
 ];
 var HW = 22, HH = 22;
-var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背景は 4px）。
-               2頭身は**胴が短いぶん小さく見える**ので、5 → 6 に上げた（132px） */
+/* 粒の大きさは **CSS が持っている**（`--hpx`）。勇者だけ粗い目——**画の主なので大きく**
+   （背景は `--px`）。2頭身は**胴が短いぶん小さく見える**ので、5 → 6 に上げた（132px）。
+   大きい窓では 8・9 に上がる（2026-09-24）。**整数でないとにじむ**ので、段で持つ。
+
+   canvas は style を変えただけでは**粒が伸びるだけ**なので、段をまたいだら**打ち直す。**
+   `cv.width` を入れ直すと**色も平滑も消える**ので、描く側で毎回入れ直す */
+function readHpx(){
+  var v = parseFloat(getComputedStyle(document.documentElement)
+                       .getPropertyValue('--hpx'));
+  return v > 0 ? v : 6;
+}
+var HPX = readHpx();
+var REDRAW = [];
+function sizeCanvas(cv, cx, w, h){
+  var dpr = Math.min(3, window.devicePixelRatio || 1);
+  cv.style.width = (w*HPX)+'px'; cv.style.height = (h*HPX)+'px';
+  cv.width = w*HPX*dpr; cv.height = h*HPX*dpr;
+  cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
+}
+window.addEventListener('resize', function(){
+  var n = readHpx();
+  if (n === HPX) return;
+  HPX = n;
+  for (var i = 0; i < REDRAW.length; i++) REDRAW[i]();
+});
 (function(){
   var cv = document.getElementById('hero'), cx = cv.getContext('2d');
   /* 粗い目のまま出す。**ぼかさない**——粒がにじむと 16bit に見えない */
-  var dpr = Math.min(3, window.devicePixelRatio || 1);
-  cv.style.width = (HW*HPX)+'px'; cv.style.height = (HH*HPX)+'px';
-  cv.width = HW*HPX*dpr; cv.height = HH*HPX*dpr;
-  cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
+  sizeCanvas(cv, cx, HW, HH);
   /* 色は**べた書きしない**——空を橙に変えたとき、ここだけ紺のまま残った。
      **山とは別の色**（2026-09-15）。前は --hill をそのまま引いていたので、
      近くの山に重なると**脚が山に溶けた。**勇者がいちばん手前なので、いちばん濃い。
@@ -1164,8 +1208,10 @@ var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背�
   var css = getComputedStyle(document.documentElement);
   var INK = css.getPropertyValue('--hero').trim() || '#150b04';
   var EYE = css.getPropertyValue('--sun2').trim() || '#ffcb5e';
+  var last = HERO[0];
   function draw(m){
     var c;
+    last = m;
     cx.clearRect(0, 0, HW*HPX, HH*HPX);
     for (var y = 0; y < HH; y++) for (var x = 0; x < HW; x++){
       c = m[y][x]; if (c === '.') continue;
@@ -1173,6 +1219,7 @@ var HPX = 6;   /* 勇者だけ粗い目。**画の主なので大きく**（背�
       cx.fillRect(x*HPX, y*HPX, HPX, HPX);
     }
   }
+  REDRAW.push(function(){ sizeCanvas(cv, cx, HW, HH); draw(last); });
   var i = 0, pose = null;
   /* 走りを止めて、決めのコマを出す。**走ったまま剣を上げても、勝った顔にならない** */
   var POSE = { win:HERO_WIN, slash:HERO_SLASH };
@@ -1770,18 +1817,18 @@ var SLASH = [
 var SW = 16, SH = 10;
 (function(){
   var cv = document.getElementById('slime'), cx = cv.getContext('2d');
-  var dpr = Math.min(3, window.devicePixelRatio || 1);
-  cv.style.width = (SW*HPX)+'px'; cv.style.height = (SH*HPX)+'px';
-  cv.width = SW*HPX*dpr; cv.height = SH*HPX*dpr;
-  cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
-  cx.fillStyle = getComputedStyle(document.documentElement)
-                   .getPropertyValue('--slime').trim() || '#4a2e2a';
-  var i = 0, idle = true;
+  sizeCanvas(cv, cx, SW, SH);
+  var COL = getComputedStyle(document.documentElement)
+              .getPropertyValue('--slime').trim() || '#4a2e2a';
+  var i = 0, idle = true, last = SLIME[0];
   function paint(m){
+    last = m;
+    cx.fillStyle = COL;
     cx.clearRect(0, 0, SW*HPX, SH*HPX);
     for (var y = 0; y < SH; y++) for (var x = 0; x < SW; x++)
       if (m[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
   }
+  REDRAW.push(function(){ sizeCanvas(cv, cx, SW, SH); paint(last); });
   window.paintSlime = function(m){ idle = false; paint(m); };
   window.slimeIdle  = function(){ idle = true; };
   paint(SLIME[0]);
@@ -1793,14 +1840,16 @@ var SW = 16, SH = 10;
 (function(){
   var cv = document.getElementById('slash'), cx = cv.getContext('2d');
   var w = SLASH[0].length, h = SLASH.length;
-  var dpr = Math.min(3, window.devicePixelRatio || 1);
-  cv.style.width = (w*HPX)+'px'; cv.style.height = (h*HPX)+'px';
-  cv.width = w*HPX*dpr; cv.height = h*HPX*dpr;
-  cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
-  cx.fillStyle = getComputedStyle(document.documentElement)
-                   .getPropertyValue('--line').trim() || '#ffffff';
-  for (var y = 0; y < h; y++) for (var x = 0; x < w; x++)
-    if (SLASH[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
+  var COL = getComputedStyle(document.documentElement)
+              .getPropertyValue('--line').trim() || '#ffffff';
+  function paint(){
+    sizeCanvas(cv, cx, w, h);
+    cx.fillStyle = COL;
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++)
+      if (SLASH[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
+  }
+  paint();
+  REDRAW.push(paint);
 })();
 
 /* ─ デモの進行 ──────────────────────────────────────────────
