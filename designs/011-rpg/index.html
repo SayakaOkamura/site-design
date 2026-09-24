@@ -487,21 +487,22 @@ body:has(#pop.on){cursor:pointer}
   @media (orientation:portrait) and (min-height:800px){
     /* 地平をここまで上げる。**上げたぶんがそのまま暗い床**になり、そこに窓が乗る。
 
-       床の割り振り（下から）：**帯 → 間 → 窓 → 足もととの間 → 足もと → 地平。**
-       いちばん背の高い窓（デモの問い 232px）と、
-       足もとに当たらない線の両方から挟んで決めた */
-    :root{ --gh:clamp(376px,45vh,420px); --bar:clamp(92px,12vh,120px);
-           --deckB:calc(var(--bar) + clamp(8px,1.2vh,14px)) }
-    /* **三つとも同じ線に乗せる**（2026-09-24、本人：「**デモの時に上にスライドして
-       くるんじゃなくてメニューと位置合わせて**」）。
-       デモの問いだけ帯のぶん高い位置に出ていたので、押す場所が**入れ替わりではなく
-       移動**に見えていた。→ **帯の取り置きは、出ていないときも空けておく。**
-       空けたぶんは地面なので、見た目には何も無い */
+       床の割り振り（下から）：**窓 → 間 → 帯 → 足もと → 地平。**
+       **窓がいちばん下**（2026-09-24、本人：「**さっきのメニューの位置に合わせて。
+       今の状態だとポップアップが勇者と被ってずれ込む**」）。
+
+       いちど逆をやった——帯を下に敷いて、窓を帯のぶん持ち上げた。**揃いはしたが、
+       三つとも 77px 高くなって、ポップアップが勇者に乗った。**
+       揃える先は**低いほう**（メニューが元から居た線）。
+
+       帯は**地面の下へ**（`地平 + --px*4`）。ふだん足もとが出ているところで、
+       9/16 に「打ち込まれる場所＝地面の下」と決めたところに戻った */
+    :root{ --gh:clamp(400px,47vh,430px); --bar:clamp(92px,12vh,120px);
+           --deckB:clamp(14px,4vh,calc(40px*var(--k))) }
+    /* コマンドとメッセージは**同じ足もと・同じ幅**。入れ替わって見える */
     #menu{top:auto; bottom:var(--deckB);
           left:50%; right:auto; transform:translateX(-50%);
           width:min(94vw,calc(520px*var(--k))); min-width:0}
-    /* `#pop` はこの下でもういちど `bottom` を書いているので、**後ろで揃える**
-       （メディアクエリは強さを足さない。同じことで二度踏んだ） */
     /* **開いているあいだは出さない。**同じ場所を使うので */
     body.popped #menu{display:none}
   }
@@ -995,20 +996,20 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
    **この節は 9/16 のデモ用ブロックより後ろに置く**——メディアクエリは
    強さを足さないので、前に書くと素の `#dBar{top:...}` に負ける（いちど負けた）*/
 @media (max-width:640px) and (orientation:portrait) and (min-height:800px){
-  /* 窓も同じ線に乗せる（上の節で書くと、この後ろの `#pop{bottom:...}` に負ける） */
+  /* 窓も同じ線に乗せる（上の節で書くと、この後ろの `#pop{bottom:...}` に負ける。
+     メディアクエリは強さを足さないので、**後ろにまとめる**）*/
   #pop{bottom:var(--deckB)}
-  /* 帯は**下いっぱいではなく、行のぶんだけ。**中身は `flex-end` で下端に寄る */
-  #dBar{top:auto; height:var(--bar); bottom:0}
-  /* 問いは帯のすぐ上。**メニュー・窓と同じ幅**なので、押す場所が一つに見える */
-  #dWin{top:auto; bottom:calc(var(--bar) + clamp(8px,1.2vh,14px));
+  /* 問い・リザルトも同じ線。**押す場所が一つ**になる */
+  #dWin{top:auto; bottom:var(--deckB);
         left:50%; right:auto; transform:translateX(-50%);
         width:min(94vw,calc(520px*var(--k)))}
-  /* リザルトも同じ。**押す四角が二つある**ので、真ん中では親指が届かない。
-     帯はこのとき既にまたたいて消えているので、いちばん下まで使える */
-  #dRes{top:auto; bottom:clamp(10px,1.4vh,16px);
+  #dRes{top:auto; bottom:var(--deckB);
         transform:translateX(-50%); transform-origin:bottom}
   @keyframes resin{ from{transform:translateX(-50%) scaleY(.12)}
                     to{transform:translateX(-50%) scaleY(1)} }
+  /* 帯は**地面の下**（地平のすぐ下）。窓の上に来るので、
+     **行のぶんだけ**の背にして、あいだは地面のまま空ける */
+  #dBar{top:calc(100% - var(--gh) + var(--px)*4); height:var(--bar); bottom:auto}
 }
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
