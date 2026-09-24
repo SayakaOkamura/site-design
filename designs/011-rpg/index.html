@@ -630,6 +630,10 @@ body:has(#pop.on){cursor:pointer}
      名乗りの下へ潜る（1366×580 で角が 3px、1280×592 で 1px）。
      縦に逃げ場が無いので、横で逃げる */
   #pop,#dWin{ --winr:clamp(28px,9vw,calc(120px*var(--k))) }
+  /* **名乗りの下に落とす**（2026-09-24）。`top:17%` は低い窓だと名乗りの下端より
+     上に来て、**一行紹介の終わりが窓に隠れていた**（1200×520 で 12px、1000×511 で 9px）。
+     名乗りの背は 96〜102px（三行）なので、**112px を床**にする */
+  #pop{ top:max(17%, 112px) }
   #pop{width:min(74vw, 760px,
     calc(100vw - var(--winr) - clamp(16px,4vw,calc(54px*var(--k))) - min(46vw,calc(260px*var(--k)))
          - var(--px)*6))}
