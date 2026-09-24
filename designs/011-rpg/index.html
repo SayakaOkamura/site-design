@@ -475,9 +475,7 @@ body:has(#pop.on){cursor:pointer}
   /* 下限は **100px**——84 だと名乗りの三行目（一行紹介）に乗った（画面で分かった） */
   #menu{top:clamp(100px,15vh,calc(150px*var(--k))); bottom:auto; transform:none; min-width:150px}
   /* **行の間を詰める。**620px の高さだと、詰めないと**下のポップに 4px 触る** */
-  /* 三層の縦では、**行の上下を JS が決める**（`--mpad`）——足もとの下 28px に
-     メニューの頭が来るように背を伸ばす。押すところも 30 → 41px になる */
-  #menu li{padding:var(--mpad,calc(var(--px))) 0}
+  #menu li{padding:calc(var(--px)) 0}
   /* **狭くて低い窓だけは、開いているあいだメニューを退かせる**（2026-09-16）。
      640×480 では、名乗り（〜82px）＋メニュー（202px）＋ポップ（274px）が
      **画面の高さ 480 に入らない。**上へ逃がしても足りない。
@@ -1698,43 +1696,33 @@ function topOfTallestPop(){
 /* **足もとは地平から測る**（`top:calc(100% - var(--gh) + var(--px)*7)`）。
    いちど JS で地平とメニューのまんなかへ置いたが、**戻した**（2026-09-24、本人：
    「**文字をずらすんじゃなくて地面をずらすんだよ**」）。揃えるのは地面の仕事 */
-/* **メニューを、足もとの下にくっつくまで広げる**（2026-09-24、本人：
-   「**メニューの上にくっつけるイメージで下げられない？**」→（床が足りないと出した）
-   →「**あー。じゃあメニュー広げるか**」）。
+/* **メニューを、足もとの下にぶら下げる**（2026-09-24）。
 
-   床（地平〜画面の下）は**ふだんとデモで中身が違う**：
+   本人：「**メニューの上にくっつけるイメージで下げられない？**」
+   →（床が足りないと出した）→「**あー。じゃあメニュー広げるか**」
+   →（行を伸ばして埋めた）→「**横長の時と同じで、空きがあればその分箱は小さくしていい**」。
 
-     ふだん   28 ＋ 足もと 28 ＋ あき ＋ メニュー ＋ 下の余白
-     デモ     16 ＋ 帯 ＋ あき ＋ 問い ＋ 下の余白
+   **箱は中身の背のまま。**足もとの下に、上と同じあき（28px）でぶら下げる。
+   余ったぶんは**下に空けておく**——そこは地面なので、見た目には何も無い。
 
-   **床はデモ側で決まっている。**地面を下げると床が縮んでデモが入らなくなるので、
-   **床はそのままで、メニューを伸ばして余りを埋める。**
-   足もとの上のあき（28px）と同じだけ下にも空けたところが、メニューの頭。
-
-   伸ばすのは**行の上下**（枠ではなく）——押すところが広がるぶんは、
-   スマホでは得になる（30 → 41px） */
-function fitMenu(){
-  var mn = document.getElementById('menu');
-  if (!MQ_DECK.matches){ mn.style.removeProperty('--mpad'); return; }
-  if (getComputedStyle(mn).display === 'none') return;   /* 隠れているあいだは触らない */
-  mn.style.removeProperty('--mpad');
-  var li = mn.querySelectorAll('li');
-  if (!li.length) return;
-  var g  = document.getElementById('ground').getBoundingClientRect();
-  var ft = document.getElementById('foot').getBoundingClientRect();
-  var m  = mn.getBoundingClientRect();
-  var gap = ft.top - g.top;                 /* 足もとの上のあき。下も同じにする */
-  var need = innerHeight - (innerHeight - m.bottom) - (ft.bottom + gap);
-  var base = parseFloat(getComputedStyle(li[0]).paddingTop) || 0;
-  var add  = (need - m.height) / (2 * li.length);
-  if (add > 0) mn.style.setProperty('--mpad', (base + add).toFixed(2) + 'px');
-}
+   床（地平〜画面の下）は**デモが要る量**で決まっていて、ふだんはそこまで要らない。
+   その差を箱で埋めるのをやめた、という話 */
+/* **メニューの置き場は一つの関数にまとめる。**いちど `hangMenu` と `placeMenu` に
+   分けて、**二つが同じ `top` を書いて消し合った**（320×568 で名乗りに戻って乗った）*/
 function placeMenu(){
   var mn = document.getElementById('menu');
-  if (!MQ_NARROW.matches || MQ_DECK.matches){ mn.style.top = ''; return; }
+  if (!MQ_NARROW.matches){ mn.style.top = ''; mn.style.bottom = ''; return; }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
      ここで空にすると、戻ってきたときに上へ跳ねる */
   if (getComputedStyle(mn).display === 'none') return;
+  if (MQ_DECK.matches){                    /* 三層の縦：足もとの下にぶら下げる */
+    var g  = document.getElementById('ground').getBoundingClientRect();
+    var ft = document.getElementById('foot').getBoundingClientRect();
+    mn.style.bottom = 'auto';
+    mn.style.top = Math.round(ft.bottom + (ft.top - g.top)) + 'px';
+    return;
+  }
+  mn.style.bottom = '';
   mn.style.top = '';                       /* いちど CSS に戻して、下限を実物から読む */
   var m  = mn.getBoundingClientRect(), base = m.top, h = m.height;
   var nb = document.getElementById('name').getBoundingClientRect().bottom;
@@ -1755,7 +1743,6 @@ window.addEventListener('resize', function(){
   document.getElementById('menu').style.top = '';
   fitAcc(); fitAbout();
   placeMenu();   /* 枚数が決まってから置く——頁の背が変わると下限も変わる */
-  fitMenu();     /* 三層の縦では、足もとの下にくっつくまで広げる */
 
   if ((cur === 'access' && wasA !== accFits) || (cur === 'about' && wasB !== aboutFits)){
     page = 0; goSel = false; draw();
@@ -2874,7 +2861,6 @@ document.addEventListener('keydown', function(e){
 paintSel();
 fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
-placeMenu();  /* 三層に割れない縦長では、メニューを名乗りと勇者のまんなかへ */
-fitMenu();    /* 三層の縦では、足もとの下にくっつくまで広げる */
+placeMenu();  /* 縦長では、メニューを置き直す（三層は足もとの下、それ以外はまんなか）*/
 
 </script>
