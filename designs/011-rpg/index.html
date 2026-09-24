@@ -285,10 +285,11 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
      印を流れから外したとき、二語のあいだが **58 → 40px** に縮んでいた。
      縮んだぶん（印の幅 1em ＋ 印と字のあいだ `--px*1.5`）を、ここで足し戻す */
   display:flex; gap:calc(var(--px)*7.5 + 1em); justify-content:center;
-  /* **もう少し左へ**（2026-09-24、本人）。塊の中心は画面の中心に乗っているが、
-     画面ぜんたいが左寄り（名乗りは左端、勇者は 30%）なので、
-     幾何の中心に置くと**右に見える。**右に余白を足して、塊を 1em ぶん左へ寄せる */
-  padding-right:2em;
+  /* **寄せない**（2026-09-24）。いちど 1em 左へ寄せたが、**戻した**——本人：
+     「お、と ー、がちゃんと太陽の左と右に当たるようにするのが真ん中って感じ」。
+     太陽は `left:50%` で画面の中心にいるので、**塊も画面の中心**でその形になる。
+     493×824 で 太陽 57〜436、塊 158〜336 → 太陽の左から「お」101px、
+     「ー」から太陽の右 100px */
   font-size:clamp(12px,1.4vw,calc(16px*var(--k))); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   color:var(--dim); cursor:pointer; padding:calc(var(--px)) calc(var(--px)*2)}
