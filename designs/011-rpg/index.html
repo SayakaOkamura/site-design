@@ -338,12 +338,16 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
 
    **薄く出す**（`opacity:.62`）。おまけなので、足もとの二つより一段引く。
    動きには使わない——止まった濃さなので、動きを止める設定でも同じに見える */
+/* **普通は気付かないくらい**（2026-09-24、本人：「普通気付かないくらいがいいな」）。
+   .62 → **.34**、字も一段小さく。地面の暗がりの上なので、
+   探していない目には**床の模様と同じくらい**に沈む。
+   乗せたとき・選ばれたときだけ `--go` で濃さも戻すので、**見つけたあとは迷わない** */
 #made{position:absolute; right:clamp(16px,4vw,calc(54px*var(--k)));
   bottom:clamp(12px,2.6vh,calc(26px*var(--k))); z-index:5;
   -webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
-  display:inline-flex; align-items:center; cursor:pointer; padding:var(--px) 0;
-  color:var(--dim); opacity:.62;
-  font-size:clamp(10px,1.1vw,calc(12px*var(--k))); letter-spacing:.06em}
+  display:inline-flex; align-items:center; cursor:pointer; padding:0;
+  color:var(--dim); opacity:.34;
+  font-size:clamp(9px,1vw,calc(11px*var(--k))); letter-spacing:.06em}
 /* 印は字の左外。足もとと同じ作法——行の中に入れると字が右へずれる */
 #made .lb{position:relative}
 #made .cur{position:absolute; right:100%; margin-right:calc(var(--px)*1.5); color:transparent}
@@ -626,17 +630,17 @@ body:has(#pop.on){cursor:pointer}
           width:min(94vw,calc(520px*var(--k))); min-width:0}
     /* **開いているあいだは出さない。**同じ場所を使うので */
     body.popped #menu{display:none}
-    /* 右下の一行は**地平線のすぐ上へ上げる**（2026-09-24）。
-       三層の縦では下はメニューが使っていて、右下に置くと**メニューに乗る**
-       （390×844 で 12px 食い込んでいた）。足もととメニューのあいだの 28px にも
-       入れない——あそこは足もとの上下のあきを揃えてある帯で、**そこを埋めると
-       揃えた意味が消える。**
+    /* 右下の一行は、**足もととメニューのあいだの暗がり**（2026-09-24）。
+       右下のままだと**メニューに乗る**（390×844 で 12px 食い込む）。
 
-       上げたぶん空と太陽の裾に乗るので、**名乗りと同じ縁**を付けて、
-       濃さも一段戻す（.62 → .78）*/
-    #made{bottom:calc(var(--gh) + var(--px)*2); opacity:.78;
-      text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge),
-                        var(--o2) var(--o2) 0 var(--edge), calc(-1*var(--o2)) var(--o2) 0 var(--edge), var(--o2) calc(-1*var(--o2)) 0 var(--edge), calc(-1*var(--o2)) calc(-1*var(--o2)) 0 var(--edge)}
+       いちど**地平線のすぐ上**へ上げたが、戻した——空と太陽の裾に乗るので
+       名乗りと同じ縁が要り、**縁を付けたぶん逆に目立った。**
+       本人：「普通気付かないくらいがいいな」。
+
+       あいだの帯（足もとの下からメニューの上まで）は**暗い**ので、縁が要らない。
+       右端に寄せて置くので、足もとの二語の寄せにも触らない。
+       **上は JS が置く**——帯の場所はメニューがどこまで伸びたかで決まる */
+    #made{bottom:auto}
   }
   #hero{left:50%}   /* 狭い窓では窓が下へ回るので、真ん中に戻す */
   /* ただし**縦長だけは左へ戻す**（2026-09-24、本人：「**スライムと勇者の位置関係も**」）。
@@ -1843,8 +1847,24 @@ function topOfTallestPop(){
    その差を箱で埋めるのをやめた、という話 */
 /* **メニューの置き場は一つの関数にまとめる。**いちど `hangMenu` と `placeMenu` に
    分けて、**二つが同じ `top` を書いて消し合った**（320×568 で名乗りに戻って乗った）*/
+function placeMade(){
+  var md = document.getElementById('made');
+  md.style.top = '';
+  if (!MQ_DECK.matches) return;
+  var g = document.getElementById('ground').getBoundingClientRect();
+  var f = document.getElementById('foot').getBoundingClientRect();
+  if (!f.height) return;                   /* デモ中は足もとが無い */
+  var h = md.getBoundingClientRect().height;
+  md.style.top = Math.round(f.bottom + (f.top - g.top - h) / 2) + 'px';
+}
+
 function placeMenu(){
   var mn = document.getElementById('menu');
+  /* 右下の一行を、**足もとだけを見て**置く（三層の縦のとき）。
+     帯の高さ＝足もとの上のあき（下でメニューをそこまで伸ばしている）なので、
+     **メニューを見なくても決まる。**見て決めると、窓を開けたまま
+     窓の大きさを変えたときに——メニューは消えているので——古い値で残る */
+  placeMade();
   if (!MQ_NARROW.matches){ mn.style.top = ''; mn.style.bottom = ''; mn.style.removeProperty('--mpad'); return; }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
      ここで空にすると、戻ってきたときに上へ跳ねる */
