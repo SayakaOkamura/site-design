@@ -475,7 +475,9 @@ body:has(#pop.on){cursor:pointer}
   /* 下限は **100px**——84 だと名乗りの三行目（一行紹介）に乗った（画面で分かった） */
   #menu{top:clamp(100px,15vh,calc(150px*var(--k))); bottom:auto; transform:none; min-width:150px}
   /* **行の間を詰める。**620px の高さだと、詰めないと**下のポップに 4px 触る** */
-  #menu li{padding:calc(var(--px)) 0}
+  /* 三層の縦では、**行の上下を JS が決める**（`--mpad`）——足もとの下 28px に
+     メニューの頭が来るまで広げる。押すところも 30 → 41px になる */
+  #menu li{padding:var(--mpad,calc(var(--px))) 0}
   /* **狭くて低い窓だけは、開いているあいだメニューを退かせる**（2026-09-16）。
      640×480 では、名乗り（〜82px）＋メニュー（202px）＋ポップ（274px）が
      **画面の高さ 480 に入らない。**上へ逃がしても足りない。
@@ -527,10 +529,13 @@ body:has(#pop.on){cursor:pointer}
        これ以上下げるには、帯の字か問いの余白かアクセスの枚数を譲ることになる */
     :root{ --gh:clamp(346px,42vh,358px); --bar:clamp(80px,10vh,94px);
            --deckB:clamp(14px,4vh,calc(40px*var(--k))) }
-    /* コマンドとメッセージは**同じ足もと・同じ幅**。入れ替わって見える */
+    /* **幅は中身まで**（2026-09-24、本人：「**横長の時と同じで、空きがあれば
+       その分箱は小さくしていい**」→「**横の話してるんだよ**」）。
+       `width:min(94vw,520px)` で画面いっぱいにしていたが、中身は左寄せなので
+       **右側が大きく空いていた。**横長と同じ `min-width` だけにする */
     #menu{top:auto; bottom:var(--deckB);
           left:50%; right:auto; transform:translateX(-50%);
-          width:min(94vw,calc(520px*var(--k))); min-width:0}
+          width:auto; min-width:min(46vw,calc(260px*var(--k)))}
     /* **開いているあいだは出さない。**同じ場所を使うので */
     body.popped #menu{display:none}
   }
@@ -1711,17 +1716,26 @@ function topOfTallestPop(){
    分けて、**二つが同じ `top` を書いて消し合った**（320×568 で名乗りに戻って乗った）*/
 function placeMenu(){
   var mn = document.getElementById('menu');
-  if (!MQ_NARROW.matches){ mn.style.top = ''; mn.style.bottom = ''; return; }
+  if (!MQ_NARROW.matches){ mn.style.top = ''; mn.style.bottom = ''; mn.style.removeProperty('--mpad'); return; }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
      ここで空にすると、戻ってきたときに上へ跳ねる */
   if (getComputedStyle(mn).display === 'none') return;
-  if (MQ_DECK.matches){                    /* 三層の縦：足もとの下にぶら下げる */
+  if (MQ_DECK.matches){                    /* 三層の縦：足もとの下にくっつくまで広げる */
+    mn.style.top = ''; mn.style.bottom = '';
+    mn.style.removeProperty('--mpad');
+    var li = mn.querySelectorAll('li');
+    if (!li.length) return;
     var g  = document.getElementById('ground').getBoundingClientRect();
     var ft = document.getElementById('foot').getBoundingClientRect();
-    mn.style.bottom = 'auto';
-    mn.style.top = Math.round(ft.bottom + (ft.top - g.top)) + 'px';
+    var r  = mn.getBoundingClientRect();
+    /* 足もとの上のあきと同じだけ下にも空けたところが、メニューの頭 */
+    var need = r.bottom - (ft.bottom + (ft.top - g.top));
+    var base = parseFloat(getComputedStyle(li[0]).paddingTop) || 0;
+    var add  = (need - r.height) / (2 * li.length);
+    if (add > 0) mn.style.setProperty('--mpad', (base + add).toFixed(2) + 'px');
     return;
   }
+  mn.style.removeProperty('--mpad');
   mn.style.bottom = '';
   mn.style.top = '';                       /* いちど CSS に戻して、下限を実物から読む */
   var m  = mn.getBoundingClientRect(), base = m.top, h = m.height;
