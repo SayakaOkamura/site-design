@@ -1676,6 +1676,28 @@ function topOfTallestPop(){
   if (cur) draw();                         /* 開いていたなら、元の頁に描き戻す */
   return top;
 }
+/* **足もとを、地平とメニューのまんなかに置く**（2026-09-24、本人：「**お問い合わせの
+   ところから地面とメニューにかけての大きさ同じでいいと思うんだよな**」）。
+
+   足もとは `top:calc(100% - var(--gh) + var(--px)*7)` で**地平から測っていた**ので、
+   三層に組んだあとは**地平にべったり、メニューとは遠い**という置き方になっていた
+   （390×844 で 上 28px ／ 下 124px）。
+
+   メニューの背は中身で決まるので **CSS では引けない。**その場で測る */
+function placeFoot(){
+  var ft = document.getElementById('foot'), mn = document.getElementById('menu');
+  if (!MQ_DECK.matches){ ft.style.top = ''; return; }
+  /* メニューが隠れているあいだ（デモ・窓を開いている狭い窓）は触らない
+     ——測る相手がいないし、戻ってきたときに跳ねる */
+  if (getComputedStyle(mn).display === 'none') return;
+  ft.style.top = '';
+  var g = document.getElementById('ground').getBoundingClientRect();   /* 上端＝地平 */
+  var m = mn.getBoundingClientRect();
+  var h = ft.getBoundingClientRect().height;
+  var t = g.top + (m.top - g.top - h) / 2;
+  if (t < g.top) t = g.top;                 /* 地面より上へは出さない */
+  ft.style.top = Math.round(t) + 'px';
+}
 function placeMenu(){
   var mn = document.getElementById('menu');
   if (!MQ_NARROW.matches || MQ_DECK.matches){ mn.style.top = ''; return; }
@@ -1702,6 +1724,7 @@ window.addEventListener('resize', function(){
   document.getElementById('menu').style.top = '';
   fitAcc(); fitAbout();
   placeMenu();   /* 枚数が決まってから置く——頁の背が変わると下限も変わる */
+  placeFoot();   /* メニューが決まってから、そのまんなかへ */
   if ((cur === 'access' && wasA !== accFits) || (cur === 'about' && wasB !== aboutFits)){
     page = 0; goSel = false; draw();
   }
@@ -2820,4 +2843,5 @@ paintSel();
 fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
 placeMenu();  /* 三層に割れない縦長では、メニューを名乗りと勇者のまんなかへ */
+placeFoot();  /* 三層の縦長では、足もとを地平とメニューのまんなかへ */
 </script>
