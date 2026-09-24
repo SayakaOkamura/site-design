@@ -285,12 +285,18 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
   font-size:clamp(12px,1.4vw,calc(16px*var(--k))); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
   color:var(--dim); cursor:pointer; padding:calc(var(--px)) calc(var(--px)*2)}
-/* **▶ は場所を取らない**（2026-09-24、本人：「お問い合わせとポリシーが
-   中央からずれてる気が」）。透明な ▶ が二つぶん行の中に入っていたので、
-   **行は中央でも、字は右へ 7px ずれていた。**
-   枠の外へ出す——メニューの ▶ は列の頭を揃える役だが、
-   ここは**二つを中央に並べる**ので、印は場所を取らないほうが正しい */
-#foot button{display:inline-flex; align-items:center; position:relative}
+/* **二つを同じ幅の枠に入れる**（2026-09-24、本人：「お問い合わせとポリシーが
+   中央からずれてる気が」→「群自体が右ズレしてない？」）。
+
+     はじめ 透明な ▶ が行の中に居て、字が右へ 7px ずれていた → 印を外へ出した
+     それでも**言葉の長さが違う**（72px と 48px）ので、箱を中央に置くと
+     **二つのあいだが 12px 右**に来る。あいだを真ん中と読むと、群が右に見える
+
+   → **枠を同じ幅にする。**あいだが中心に乗る。
+   印は札の左外に出して、場所を取らない */
+#foot button{display:inline-flex; align-items:center; justify-content:center;
+  min-width:7.6em}
+#foot .lb{position:relative}
 #foot button .cur{position:absolute; right:100%;
   margin-right:calc(var(--px)*1.5); color:transparent}
 body:not(.kb) #foot button:hover,#foot button[aria-current="true"]{color:var(--go)}
@@ -1148,8 +1154,8 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   <nav id="menu" class="win"><ul id="cmds"></ul></nav>
 
   <div id="foot">
-    <button data-k="contact"><span class="cur">▶</span>お問い合わせ</button>
-    <button data-k="policy"><span class="cur">▶</span>ポリシー</button>
+    <button data-k="contact"><span class="lb"><span class="cur">▶</span>お問い合わせ</span></button>
+    <button data-k="policy"><span class="lb"><span class="cur">▶</span>ポリシー</span></button>
   </div>
 
   <div id="pop" class="win">
