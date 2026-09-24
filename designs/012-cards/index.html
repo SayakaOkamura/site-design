@@ -232,9 +232,14 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 .card ul{list-style:none; margin:1.5em 0 0; padding:0}
 /* 印は**絶対位置で置かない。**章の頭に回り込むと行だけが右へ逃げて、
    印が左端に取り残される。字下げで置けば、印も行と一緒に動く */
-.card li{padding-left:1.6em; text-indent:-1.6em; margin-bottom:.8em;
+/* 枝。**ぶら下げの幅は幹の長さで決まる**（`--ri` は組むときに入れる）*/
+.card li{padding-left:var(--ri,1.6em); text-indent:calc(-1 * var(--ri,1.6em));
+  margin-bottom:.55em;
   font-size:clamp(12.5px,1.35vw,15px); line-height:1.85; color:var(--on)}
-.card li::before{content:'—\3000'; color:var(--dim)}
+/* 幹の語。枝より明るく、太く */
+.card li .rt{color:var(--hot); font-weight:700}
+/* 枝と枝をつなぐ一本。**行としては空**なので、詰めて細く置く */
+.card li.sp{margin:0; line-height:1.15; color:var(--dim)}
 /* まだ出ていない行・字。**消さずに隠す**——消すと出るたびに下が持ち上がって、行が踊る */
 .card .wait{visibility:hidden}
 /* **点けるのではなく、暗がりから浮かせる**（2026-09-15、本人：「あーでも硬いな」）。
@@ -245,8 +250,8 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 .card span{transition:color .55s ease, text-shadow .55s ease}
 /* 影も消す。**透明な字でも影は出る**ので、光の染みだけが先に見えてしまう */
 .card .h{color:transparent; text-shadow:none}
-.card li::before{transition:color .55s ease}
-.card li.pre::before{color:transparent}
+/* 幹も、まだのあいだは消えている（`.rt` のほうが詳しいので明示する）*/
+.card li .rt.h{color:transparent; text-shadow:none}
 .card .foot{margin-top:1.9em; font-size:clamp(11px,1.15vw,12.5px)}
 .card .back{background:none; border:0; font:inherit; color:var(--dim); cursor:pointer; padding:0;
   letter-spacing:.06em}
@@ -271,6 +276,11 @@ footer a:hover{color:var(--on)}
      壁は端から端、一枚は**左右とも一段内側。**片側だけだと、
      右端が壁と揃ったままで「寄った」に見えない（幅比 0.95 のまま）*/
   .card{max-width:none; margin-left:clamp(14px,5vw,26px); margin-right:clamp(14px,5vw,26px)}
+  /* **ぶら下げは幹の長さで数えない**（2026-09-24）。細い窓では一行 20 字ほどしか無く、
+     幹（2〜3 字）＋腕（3 字）を毎行あけると**一行の三分の一が空白**になって、
+     一項目が四行に伸びていた（320×568 で実測）。
+     → **腕の三桁だけぶら下げる。**一行目は幹から始まるので、負の text-indent で引き戻す */
+  .card li{padding-left:6ch; text-indent:-6ch}
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
 </style>
@@ -361,6 +371,7 @@ var CHS = [
 それが、私たちの言う「デザインする」ということである。`,
     card:{
       k:'PHILOSOPHY',
+      root:'夢中',
       lead:'夢中は、放っておいては生まれない。だから意図的に設計する。',
       points:[
         '「遊ぶように働く」は楽をすることではなく、自発的に創造している状態のこと。',
@@ -422,6 +433,7 @@ DX 人材の育成など、地域に根差したデジタル変革を推進す�
 使いこなす人がその土地に残ることを、支援の条件として扱う。`,
     card:{
       k:'SERVICES',
+      root:'決め方',
       lead:'四つとも、道具を入れる前に「決め方」を整えるところから始める。',
       points:[
         '01　人間中心の次世代業務システム開発——迷いを消し、判断に時間を回す。',
@@ -480,6 +492,7 @@ AI は、散らばった材料を集めて並べ替えるのが速い。
 続けられるものだけが、資産になる。`,
     card:{
       k:'UPSTREAM',
+      root:'上流',
       lead:'上流に時間をかけろ、ではない。上流を速く回せ、である。',
       points:[
         '上流とは、作る前に決めること——目的・利用者・範囲・やらないこと・成功の見え方。',
@@ -522,6 +535,7 @@ contact@alt-dsgn.co.jp
 公式サイトと同じく親会社のページを指しています。`,
     card:{
       k:'COMPANY',
+      root:'会社',
       lead:'株式会社アルターデザインコンサルティング',
       points:[
         '代表者　松岡　真功　／　設立　2025 年 6 月　／　資本金 60 百万円',
@@ -548,7 +562,37 @@ host.innerHTML = CHS.map(function(c){
       }).join('');
     return '<p class="p">' + body + '</p>';
   }).join('');
-  var pts = c.card.points.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('');
+  /* **枝で組む**（2026-09-24、本人：「縦型じゃなくて**ワードツリー**みたいに」）。
+     幹の語を左に置いて、そこから枝が右へ伸びる。**縦一列をやめる。**
+
+     線は**字で引く**——`├ └ ─` は等幅なので桁に乗るし、
+     枠線で引くと**章の頭に回り込めない**（`border` は箱に付くので、
+     浮かせた頭の下に潜る。行だけが避けるのと同じ理屈で、9/15 に一度踏んでいる）。
+
+     折り返した二行目以降は、幹のぶんだけ**ぶら下げる**（`--ri`）。
+     全角空白で詰めるので、桁がずれない */
+  var R = c.card.root, n = c.card.points.length;
+  var pad = new Array(R.length + 1).join('\u3000');
+  var out = [];
+  c.card.points.forEach(function(p, i){
+    var arm = (i === 0) ? (n > 1 ? '\u2500\u252c\u2500' : '\u2500\u2500\u2500')
+            : (i === n - 1 ? '\u3000\u2514\u2500' : '\u3000\u251c\u2500');
+    /* 幹は **`<span>` でも包んでおく。**動きが走る場では `cells()` が中身を作り直して
+       桁ごとに付け直すが、**動きを止める設定では `cells()` が走らない**
+       ——包んでいないと、そこだけ幹が立たないまま出る */
+    var head = (i === 0 ? '<span class="rt">' + esc(R) + '</span>' : esc(pad))
+             + esc(arm + '\u3000');
+    out.push('<li' + (i === 0 ? ' data-rt="' + R.length + '"' : '')
+            + '>' + head + esc(p) + '</li>');
+    /* **枝と枝のあいだに幹を一本立てる。**印だけだと箇条書きに見える——
+       `\u2502` が通って初めて『一本から分かれた』に見える */
+    if (i < n - 1) out.push('<li class="sp">' + esc(pad + '\u3000\u2502') + '</li>');
+  });
+  var pts = out.join('');
+  /* **桁は `ch` で数える。**全角の字は 16px、`1em` は 15px なので、
+     `em` で組むと**一行ごとに 6px ずつずれる。**半角 `0` 一つが `1ch` なので、
+     全角一つ＝`2ch`。ここは全部全角（`\u3000 \u2500 \u251c \u2502` とも同じ幅）*/
+  var ri = ((R.length + 4) * 2) + 'ch';
   return ''
     + '<section class="ch" data-k="' + c.key + '">'
     +   '<div class="head">'
@@ -560,7 +604,7 @@ host.innerHTML = CHS.map(function(c){
     +   '<div class="card">'
     +     '<div class="k">' + c.card.k + '</div>'
     +     '<p class="lead">' + esc(c.card.lead) + '</p>'
-    +     '<ul>' + pts + '</ul>'
+    +     '<ul style="--ri:' + ri + '">' + pts + '</ul>'
     +     '<div class="foot"><button class="back">← もとの文にもどす</button></div>'
     +   '</div>'
     + '</section>';
@@ -593,6 +637,11 @@ function cells(el){
     cs.push(sp);
   }
   el._cs = cs;
+  /* **幹の語だけ明るく。**`cells()` が中身を作り直すので、
+     入れ子の `<span>` は残らない。**何桁目までが幹か**を要素に持たせて、
+     出来上がった桁に印を付ける */
+  var rt = parseInt(el.getAttribute('data-rt'), 10);
+  if (rt > 0) for (var j = 0; j < rt && j < cs.length; j++) cs[j].className = 'rt';
   return cs;
 }
 /* いまの行組みで、**同じ高さの字をひとまとめ**にする */
