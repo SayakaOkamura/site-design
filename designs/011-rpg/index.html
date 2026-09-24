@@ -284,10 +284,22 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
    他の四つと同じ色で並んでいると**ただの五番目**に見えていた。
    `--go` は「選ばれている」「外へ出る一手」の色なので、**兼用する**——
    色を一つ増やすと、画面の中で意味を持つ色が一つ増えてしまう。
-   乗せたときの白（`--ink`）に負けるので、hover と現在も上書きする */
-#menu li[data-k="demo"]{color:var(--go)}
+   乗せたときの白（`--ink`）に負けるので、hover と現在も上書きする。
+
+   **差を広げた**（同日、本人：「デモを触る、のところ色付けるなら**もっと欲しいかも**」）。
+   `--dim` #e8c39a と `--go` #ffd270 は**どちらも淡い暖色**で、
+   並べても一段しか違わなかった（狭い窓では出たが、1280 では出ない）。
+
+   色を増やさずに広げる手は二つあって、両方やった——
+   **一、濃いほうへ一段**（`--go` → `--sun2` #ffcb5e。夕日の芯の色で、
+   この暖色の並びでいちばん濃い）。
+   **二、他の四つを引く**（`opacity:.72`）。乗せたときと選ばれたときは 1 に戻すので、
+   **触っているあいだは五つとも同じ濃さ**——引いてあるのは「まだ触っていない四つ」だけ */
+#menu li{opacity:.72}
+body:not(.kb) #menu li:hover,#menu li[aria-current="true"]{opacity:1}
+#menu li[data-k="demo"]{color:var(--sun2); opacity:1}
 body:not(.kb) #menu li[data-k="demo"]:hover,
-#menu li[data-k="demo"][aria-current="true"]{color:var(--go)}
+#menu li[data-k="demo"][aria-current="true"]{color:var(--sun2)}
 
 /* 足もとの二つ。**地面の下** */
 #foot{position:absolute; left:0; right:0; top:calc(100% - var(--gh) + var(--px)*7); z-index:5;
