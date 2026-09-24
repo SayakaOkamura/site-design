@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <style>
-:root{ --px:4px; --hpx:6; --k:1; --o2:2px; --o3:3px; --line:#ffffff; --ink:#ffffff }
+:root{ --px:4px; --hpx:6; --k:1; --o2:2px; --o3:3px; --gh:20%; --line:#ffffff; --ink:#ffffff }
 
 /* ── 大きい窓では、画面ごと大きくする（2026-09-24）────────────
    本人：「**大きい画面で見たときに、ちゃんと視野角内に全部収まるようにしたい。
@@ -140,7 +140,7 @@ body{
 #screen{position:fixed; inset:0; overflow:hidden}
 
 /* ─ 空。**帯で切る** ───────────────────────────────────────── */
-#sky{position:absolute; inset:0 0 20% 0;
+#sky{position:absolute; inset:0 0 var(--gh) 0;
   /* **上を広く、地平へ向かって細かく。**等分だと縞に見える */
   background:linear-gradient(180deg,
     var(--sky1) 0%,  var(--sky1) 26%,
@@ -156,7 +156,7 @@ body{
     rgba(0,0,0,.6) 0 var(--px), rgba(0,0,0,0) var(--px) calc(var(--px)*2));
 }
 /* ─ 太陽。**輪郭も帯**。沈みかけ ─────────────────────────────── */
-#sun{position:absolute; left:50%; bottom:20%; width:min(46vh,calc(380px*var(--k))); aspect-ratio:1;
+#sun{position:absolute; left:50%; bottom:var(--gh); width:min(46vh,calc(380px*var(--k))); aspect-ratio:1;
   transform:translate(-50%,var(--sunY)); z-index:0;
   /* **`closest-side` を付ける**（画面で見つけた）。既定は `farthest-corner` なので、
      92% で透明にしても**角までは届かず、四角い暈**が空に出ていた */
@@ -182,7 +182,7 @@ body{
   background-repeat:repeat-x; animation:flow linear infinite}
 @keyframes flow{ from{transform:translateX(0)} to{transform:translateX(-33.3333%)} }
 /* **広く・低く**（2026-09-14）。最初は 118px で、**歯車の刃**に見えた */
-#far{position:absolute; left:0; right:0; bottom:20%; height:8vh; overflow:hidden; z-index:2}
+#far{position:absolute; left:0; right:0; bottom:var(--gh); height:8vh; overflow:hidden; z-index:2}
 /* **同じ三角の繰り返しをやめた**（2026-09-14）。`conic-gradient` だと片側が
    垂直に切れて、**階段（歯車の刃）**に見えた。稜線を一本引いて、高さを散らす */
 /* **稜線は型として使う**（2026-09-15）。前は SVG の中に色を書いていたので、
@@ -195,7 +195,7 @@ body{
   -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x;
   animation-duration:38s;
 }
-#near{position:absolute; left:0; right:0; bottom:20%; height:5vh; overflow:hidden; z-index:2}
+#near{position:absolute; left:0; right:0; bottom:var(--gh); height:5vh; overflow:hidden; z-index:2}
 #near .band{
   background-color:var(--hill);
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L24 22 L46 60 L70 34 L92 60 L118 18 L146 60 L170 38 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
@@ -206,7 +206,7 @@ body{
 }
 
 /* ─ 地面。**ここより下が足もと** ────────────────────────────── */
-#ground{position:absolute; left:0; right:0; bottom:0; height:20%; z-index:2;
+#ground{position:absolute; left:0; right:0; bottom:0; height:var(--gh); z-index:2;
   background:var(--ground); border-top:var(--px) solid var(--rim)}
 #ground .band{
   height:var(--px); top:calc(var(--px)*3);
@@ -225,7 +225,7 @@ body{
    **デモで後々敵出したい**」）。58% → **34%**。
    右の空きが、そのまま**敵の出てくる場所**になる。
    大きさ（24×22 粒）は **JS が付ける**——粒の大きさが一つのところで決まるように */
-#hero{position:absolute; left:34%; bottom:20%; z-index:4;
+#hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
 /* **上下の揺れは絵の中にある**（2026-09-15）。四コマそれぞれで胴の高さが違うので、
    CSS の `bob` は外した。外に足すと、沈みのコマでさらに沈んで二重に跳ねる */
@@ -249,7 +249,7 @@ body:not(.kb) #menu li:hover,#menu li[aria-current="true"]{color:var(--ink)}
 body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(--go)}
 
 /* 足もとの二つ。**地面の下** */
-#foot{position:absolute; left:0; right:0; top:calc(80% + var(--px)*7); z-index:5;
+#foot{position:absolute; left:0; right:0; top:calc(100% - var(--gh) + var(--px)*7); z-index:5;
   display:flex; gap:calc(var(--px)*6); justify-content:center;
   font-size:clamp(12px,1.4vw,calc(16px*var(--k))); letter-spacing:.06em}
 #foot button{-webkit-appearance:none; appearance:none; border:0; background:none; font:inherit;
@@ -465,6 +465,36 @@ body:has(#pop.on){cursor:pointer}
   @media (max-height:600px), (max-width:340px){
     body.popped #menu{display:none}
   }
+
+  /* ─ 縦長のスマホは、ゲームの三層に組む（2026-09-24）─────────────
+     本人：「**単に下に下げるだけっていうのもあわないな。スマホの縦画面ゲームでの
+     構成としてよくある感じに合わせたい**」。
+
+       上   名乗り（情報）    触らせない
+       中   絵（主役）       いちばん広く取る
+       下   コマンド／窓      **親指の届く範囲**
+
+     **コマンドとメッセージは同じ場所を使い回す**——RPG の作法そのままで、
+     コマンド窓が消えてメッセージ窓が出る。**並べないから場所を食わない。**
+     9/16 の「逃げるのはメニューのほう」は、**取り合いが消えたので要らなくなった。**
+
+     地面は下端まで伸びたままなので、**地平を `--deck` ぶん持ち上げるだけで
+     そのぶんが暗い床になる。**その上にコマンドが乗る */
+  /* **高さ 800 から。**それより低い縦長は三層に割れない——
+     デモの問いが上、戦いが真ん中で、地平を上げると**問いが勇者の頭に乗る**
+     （390×620 では、メニューに要る 264px と、問いに残せる 180px が両立しない）。
+     いまどきの端末は 800 以上（390×844・412×915・430×932）*/
+  @media (orientation:portrait) and (min-height:800px){
+    /* 地平をここまで上げる。**上げたぶんがそのまま暗い床**になり、コマンドが乗る。
+       上は**デモの問いが勇者の頭に届く線**、下は**メニューと足もとが重なる線**で挟んだ */
+    :root{ --gh:clamp(280px,34vh,330px) }
+    /* コマンドとメッセージは**同じ足もと・同じ幅**。入れ替わって見える */
+    #menu{top:auto; bottom:clamp(14px,4vh,calc(40px*var(--k)));
+          left:50%; right:auto; transform:translateX(-50%);
+          width:min(94vw,calc(520px*var(--k))); min-width:0}
+    /* **開いているあいだは出さない。**同じ場所を使うので */
+    body.popped #menu{display:none}
+  }
   #hero{left:50%}   /* 狭い窓では窓が下へ回るので、真ん中に戻す */
   /* 狭い窓では右に寄せる余地が無い。**下いっぱい**に戻す */
   /* 狭い窓は**下いっぱい**なので、上へ伸ばす余地がある。60vh では
@@ -509,7 +539,7 @@ body.demo #demo{display:block}
    敵は右（66%）から来るので、**右だけで起きていると左を見ている人に届かない。**
    勇者（34%）の頭の上に「！」を出す——RPG の作法。
    **勇者は画面の左半分にいる**ので、メニューを押した直後の目の位置に近い */
-#dBang{position:absolute; left:34%; bottom:calc(20% + var(--hpx)*22px + 8px); z-index:8; display:none;
+#dBang{position:absolute; left:34%; bottom:calc(var(--gh) + var(--hpx)*22px + 8px); z-index:8; display:none;
   transform:translateX(-50%); font-size:clamp(26px,3.6vw,calc(40px*var(--k))); font-weight:700;
   letter-spacing:.04em; color:var(--go);
   text-shadow:var(--o3) 0 0 var(--edge), calc(-1*var(--o3)) 0 0 var(--edge), 0 var(--o3) 0 var(--edge), 0 calc(-1*var(--o3)) 0 var(--edge),
@@ -523,7 +553,7 @@ body.demo #demo{display:block}
                  to{transform:translateX(-50%) scale(1)} }
 
 /* スライム。**勇者の右**（ここを敵の場所にあけてあった） */
-#slime{position:absolute; left:66%; bottom:20%; z-index:4;
+#slime{position:absolute; left:66%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
 body.demo #slime{display:block}
 /* 当たったら**点滅しながら後ろへ跳ぶ。**点滅だけだと、殴られた感じが出ない。
@@ -547,13 +577,13 @@ body.demo #slime{animation:bob 1.1s infinite}
 body.demo #slime.come{animation:come .85s steps(9)}
 @keyframes come{ from{transform:translateX(-50%) translateX(46vw)} to{transform:translateX(-50%) translateX(0)} }
 /* 斬撃の線。敵の上に一瞬 */
-#slash{position:absolute; left:66%; bottom:20%; z-index:8;
+#slash{position:absolute; left:66%; bottom:var(--gh); z-index:8;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
 #slash.on{display:block}
 /* 体力。**バーにする**（2026-09-15、本人：「普通に HP バーの方がわかりやすいかな」）。
    前は ◆ を三つ消していた——数えないと分からないし、三つが何の三つか読めなかった。
    **敵の頭の上**に置く（中に置くと塊に埋もれる）。数字は出さない */
-#dHp{position:absolute; left:66%; bottom:calc(20% + var(--hpx)*10px + 10px); z-index:8;
+#dHp{position:absolute; left:66%; bottom:calc(var(--gh) + var(--hpx)*10px + 10px); z-index:8;
   /* `box-sizing:border-box` なので、**高さに枠と余白が食われる。**
      14px だと中身が 2px しか残らず、空の箱に見えた（画面で分かった） */
   transform:translateX(-50%); width:calc(108px*var(--k)); height:calc(22px*var(--k)); display:none;
@@ -631,7 +661,7 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    **製品の見た目には寄せない**（003 からの決めごと） */
 /* **下からせり上がる。**行が増えても**いちばん新しいものが必ず見える**
    （上から流すと、短い窓で打ちたての行が切れる） */
-#dBar{position:absolute; left:0; right:0; top:calc(80% + var(--px)*4); bottom:0; z-index:8;
+#dBar{position:absolute; left:0; right:0; top:calc(100% - var(--gh) + var(--px)*4); bottom:0; z-index:8;
   padding:calc(var(--px)*2) clamp(16px,5vw,calc(64px*var(--k))); overflow:hidden;
   display:flex; flex-direction:column; justify-content:flex-end;
   font-family:"SFMono-Regular",Consolas,"Courier New",monospace}
@@ -785,7 +815,7 @@ body.roll #dRoll{display:block}
    50.4 → 49.4 → 50 → 49.8 → 49.9 → **50.1**。
    （もとの 0.4 は字間 `.2em` の**最後の一字のうしろに付く空き**を打ち消すためのもの。
    50.1 は**そこから 0.3 左**で、太陽の線より 1px 右。**見て止めた位置**）*/
-#clear{position:absolute; left:50.1%; bottom:39.2%; transform:translateX(-50%);
+#clear{position:absolute; left:50.1%; bottom:calc(24% + var(--gh)*0.76); transform:translateX(-50%);
   z-index:9; display:none; pointer-events:none; padding:calc(var(--px)*2.5) calc(var(--px)*6)}
 /* **開き方はポップとそろえる**（2026-09-17、本人：「展開よりパッと出てきて畳んで消えるのが
    いいかも」→「出るとき展開でスピード上げて」→「**展開の仕方ポップと揃えて**」）。
@@ -925,6 +955,20 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #dBang{left:50%}
   #dRes .rtask li{font-size:clamp(13px,3.6vw,calc(17px*var(--k)))}
 }
+/* ─ デモの問いは**上のまま**（2026-09-24 に下へ試して、戻した）─────
+   三層に組んだので、問いも足もと（コマンドと同じ場所）へ移したかった。
+   **入らなかった。**
+
+     390×844   地平 489（勇者の足）／ 問いの背 232 ＋ 帯の行 110 ＋ 間
+               下に置くと問いの上端が 492。**勇者の足に 3px**
+     320×568   地平 304 ／ 下に置くと問いの上端が 212。**勇者に 92px 乗る**
+
+   デモは**メニューと足もとを隠して戦いを置く**ので、
+   コマンドの居た場所は帯（機械の手元）が使う。役は縦に並んだまま：
+   **上が問い、まん中が戦い、下が帯**（9/16 の決めごとのまま）。
+
+   帯は床いっぱいに伸びる。中身は `justify-content:flex-end` で下端に寄るので、
+   **広いぶんは行が増える余地**になる（9/17 に「帯は 20% しかない」と書いた場所）*/
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
 #hero.swing{margin-left:18px}
@@ -1500,7 +1544,9 @@ function fitAbout(){
   pop.className = keep; page = kp; popB.innerHTML = kb; popGo.innerHTML = kg;
   if (!wasPopped) document.body.classList.remove('popped');
 }
-/* **縦長の窓で、メニューが上に貼りついて見える**（2026-09-24、本人：「**上すぎるのが気になる**」）。
+/* **三層に割れない縦長の窓**では、メニューが上に貼りついて見える（2026-09-24、
+   本人：「**上すぎるのが気になる**」）。高さ 800 以上の縦長は CSS で下に置いてあるので、
+   ここが効くのは**それより低い窓**（390×620・360×640・320×568 など）。
 
    9/16 に上へ逃がしたのは、下から生えるポップと**必ず重なっていた**から。逃がす向きは正しい。
    ただ `top:clamp(100px,15vh,150px)` は**窓の高さだけ**で決めていて、
@@ -1513,6 +1559,8 @@ function fitAbout(){
    **上へは動かさない。**いまの位置が下限——名乗りの三行目に乗らない線として
    9/16 に画面で決めたもの（84 では乗った） */
 var MQ_NARROW = window.matchMedia('(max-width:640px)');
+/* **三層に割れる窓ではやらない**——あちらはメニューを下に置いてある（CSS 側） */
+var MQ_DECK   = window.matchMedia('(max-width:640px) and (orientation:portrait) and (min-height:800px)');
 var MQ_HIDE   = window.matchMedia('(max-height:600px), (max-width:340px)');
 /* いちばん背の高い頁の上端。**開く動きの最中は高さが嘘になる**ので止めて測る。
 
@@ -1542,7 +1590,7 @@ function topOfTallestPop(){
 }
 function placeMenu(){
   var mn = document.getElementById('menu');
-  if (!MQ_NARROW.matches){ mn.style.top = ''; return; }
+  if (!MQ_NARROW.matches || MQ_DECK.matches){ mn.style.top = ''; return; }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
      ここで空にすると、戻ってきたときに上へ跳ねる */
   if (getComputedStyle(mn).display === 'none') return;
@@ -1557,6 +1605,7 @@ function placeMenu(){
   if (t < base) t = base;                  /* **上へは動かさない** */
   mn.style.top = Math.round(t) + 'px';
 }
+
 /* **窓が変わったら測り直す。**開いている最中なら描き直す */
 window.addEventListener('resize', function(){
   var wasA = accFits, wasB = aboutFits;
@@ -2679,5 +2728,5 @@ document.addEventListener('keydown', function(e){
 paintSel();
 fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
-placeMenu();  /* 縦長の窓では、メニューを名乗りと下から来るもののまんなかへ */
+placeMenu();  /* 三層に割れない縦長では、メニューを名乗りと勇者のまんなかへ */
 </script>
