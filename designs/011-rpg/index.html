@@ -241,8 +241,11 @@ body{
    夕焼けの中では光って見え、昼の雲になる、と出して）→「やってみて」）。
    白ではなく**空のいちばん明るい段**（`--sky6`）を薄く敷く＝空より一段明るい筋。
    前は遠い山の色（一段暗い筋）だった。朝焼けでも同じ変数で段の色に付いてくる */
+/* **もう少し無彩に**（同日、本人：「もう少し無彩に寄せて」）。段の色を**明るい灰に六割混ぜる**。
+   色味は空から借りたまま（朝焼けでも付いてくる）、彩度だけ落とす。混ぜられない古い端末は薄い灰 */
 #cloud .band{top:0; width:100%;
-  background-color:var(--sky6);
+  background-color:#e6d6c8;
+  background-color:color-mix(in srgb, var(--sky6) 40%, #e4e0dc);
   -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x}
 #cloud .c1{top:calc(100% * .12); height:calc(var(--px)*12); opacity:.28;
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 12' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='30' y='2' width='28' height='1'/%3E%3Crect x='40' y='3' width='46' height='1'/%3E%3Crect x='210' y='6' width='20' height='1'/%3E%3Crect x='200' y='7' width='38' height='1'/%3E%3Crect x='390' y='1' width='34' height='1'/%3E%3Crect x='378' y='2' width='58' height='1'/%3E%3Crect x='396' y='3' width='22' height='1'/%3E%3C/g%3E%3C/svg%3E");
