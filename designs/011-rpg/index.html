@@ -567,8 +567,7 @@ body:has(#pop.on){cursor:pointer}
   /* 下限は **100px**——84 だと名乗りの三行目（一行紹介）に乗った（画面で分かった） */
   #menu{top:clamp(100px,15vh,calc(150px*var(--k))); bottom:auto; transform:none; min-width:150px}
   /* **行の間を詰める。**620px の高さだと、詰めないと**下のポップに 4px 触る** */
-  /* 三層の縦では、**行の上下を JS が決める**（`--mpad`）——足もとの下 28px に
-     メニューの頭が来るまで広げる。押すところも 30 → 41px になる */
+  /* `--mpad` は、三層の縦で行を伸ばしていた頃の名残（2026-09-25 からは伸ばさない。`placeMenu()`）*/
   #menu li{padding:var(--mpad,calc(var(--px))) 0}
   /* **狭くて低い窓だけは、開いているあいだメニューを退かせる**（2026-09-16）。
      640×480 では、名乗り（〜82px）＋メニュー（202px）＋ポップ（274px）が
@@ -634,7 +633,11 @@ body:has(#pop.on){cursor:pointer}
 
        会社概要を割ると**いちばん背の高い頁が 287 → 253px** になり、
        いちばん背の高い頁が勇者の足に届く線が 34px 下がる */
-    :root{ --gh:clamp(318px,37vh,340px); --bar:clamp(48px,6vh,58px);
+    /* **空に上限を付ける**（2026-09-25、本人：「スマホで見たときの上の余白が大きい、
+       もう少し地面上げていいかも」）。床を 318〜340px で止めていたので、**背の高い端末ほど空だけが伸び**、
+       名乗りと勇者のあいだが 390×844 で 300px、430×932 で 363px 空いていた。
+       → **空は 440px まで。**超えたぶんは床へ回す。664〜750px の端末は前のまま（318 のまま） */
+    :root{ --gh:clamp(318px, calc(100vh - 440px), 520px); --bar:clamp(48px,6vh,58px);
            --deckB:clamp(14px,4vh,calc(40px*var(--k))) }
     /* **幅は窓と同じ**（2026-09-24）。いちど中身まで縮めて左へ寄せたが、**戻した**
        ——本人：「**見え方的には元の方が良いか？**」→「**戻してみて**」。
@@ -652,6 +655,8 @@ body:has(#pop.on){cursor:pointer}
     #menu{top:auto; bottom:var(--deckB);
           left:50%; right:auto; transform:translateX(-50%);
           width:min(94vw,calc(520px*var(--k))); min-width:0}
+    /* 行の高さは**伸ばさずに固定**（2026-09-25）。伸ばしていた頃のスマホ（390×664）の一行 35px に合わせる */
+    #menu li{padding:calc(var(--px)*1.6) 0}
     /* **開いているあいだは出さない。**同じ場所を使うので */
     body.popped #menu{display:none}
     /* 右下の一行は、**メニューの下**（2026-09-25、本人：「縦の時のこの画面について、は下にして」）。
@@ -1910,23 +1915,38 @@ function placeMenu(){
      **メニューを見なくても決まる。**見て決めると、窓を開けたまま
      窓の大きさを変えたときに——メニューは消えているので——古い値で残る */
   placeMade();
+  if (!MQ_DECK.matches){                   /* 三層でないときは、三層で置いた値を残さない */
+    document.documentElement.style.removeProperty('--deckB');
+    document.getElementById('foot').style.top = '';
+  }
   if (!MQ_NARROW.matches){ mn.style.top = ''; mn.style.bottom = ''; mn.style.removeProperty('--mpad'); return; }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
      ここで空にすると、戻ってきたときに上へ跳ねる */
   if (getComputedStyle(mn).display === 'none') return;
-  if (MQ_DECK.matches){                    /* 三層の縦：足もとの下にくっつくまで広げる */
+  /* 三層の縦：**メニューは中身の背のまま、床の中に等間隔に置く**（2026-09-25、本人：
+     「スマホで見たときの上の余白が大きい、もう少し地面上げていいかも」→（床が広がると
+     メニューの行も伸びると出して）「**メニューの大きさは変えずに上下の位置を均等にする**」）。
+
+     前は**行を伸ばして**、メニューの頭を足もとの下に付けていた（`--mpad`）。
+     床を広げると、430×932 で一行 37 → 68px まで間延びした。
+
+       地平 ─ あき ─ 足もと ─ あき ─ メニュー ─ あき ─ 画面の下
+
+     **三つのあきを同じにする。**下のあきは `--deckB`（ポップ・問い・リザルトも同じ線に乗る）、
+     右下の一行はそのあきのまんなか。足もとの上は `top` を直に置く */
+  if (MQ_DECK.matches){
     mn.style.top = ''; mn.style.bottom = '';
     mn.style.removeProperty('--mpad');
-    var li = mn.querySelectorAll('li');
-    if (!li.length) return;
-    var g  = document.getElementById('ground').getBoundingClientRect();
-    var ft = document.getElementById('foot').getBoundingClientRect();
-    var r  = mn.getBoundingClientRect();
-    /* 足もとの上のあきと同じだけ下にも空けたところが、メニューの頭 */
-    var need = r.bottom - (ft.bottom + (ft.top - g.top));
-    var base = parseFloat(getComputedStyle(li[0]).paddingTop) || 0;
-    var add  = (need - r.height) / (2 * li.length);
-    if (add > 0) mn.style.setProperty('--mpad', (base + add).toFixed(2) + 'px');
+    var root = document.documentElement, ftEl = document.getElementById('foot');
+    root.style.removeProperty('--deckB'); ftEl.style.top = '';
+    var G  = document.getElementById('ground').getBoundingClientRect().top;
+    var H  = root.clientHeight;
+    var fh = ftEl.getBoundingClientRect().height, mh = mn.getBoundingClientRect().height;
+    var gap = (H - G - fh - mh) / 3;
+    if (!fh || gap < 8) return;              /* 入らないときは CSS の置き方のまま */
+    var pt = ftEl.offsetParent ? ftEl.offsetParent.getBoundingClientRect().top : 0;
+    ftEl.style.top = Math.round(G + gap - pt) + 'px';
+    root.style.setProperty('--deckB', Math.round(gap) + 'px');
     return;
   }
   mn.style.removeProperty('--mpad');
