@@ -941,8 +941,6 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    またたきは飾りにする）——動きが走らない場でも、**残らずに消える。**
    この案では逆をやって二度踏んでいる（出現を動きに預けると、出ないまま固まる） */
 #dWish.up,#dLines.up,#dStat.up{opacity:0; animation:blinkout .3s steps(1)}
-/* にげたとき、敵と体力の帯は**二回またたいて消える**（`flee()`）。跳ね（`body.demo #slime`）に負けないよう頭を揃える */
-body.demo #slime.gone, body.demo #dHp.gone{opacity:0; animation:blinkout .3s steps(1)}
 @keyframes blinkout{
   0%,24%{opacity:1} 25%,49%{opacity:0} 50%,74%{opacity:1} 75%,100%{opacity:0}
 }
@@ -2619,23 +2617,20 @@ function openDemo(){
    勇者が去るのはもっと変なんだよな」→「やってみて」）。
    位置関係で「逃げた」を言おうとすると、どちらが去っても無理が出た——
    A（スライムだけ下がる `1ecd24c`）は動くのが敵、B（勇者が背を向けて走る `d3cb136`）は前へ走る芯とぶつかる。
-   RPG のお約束どおり、**一言 → 一拍 → 敵と体力が消える → 窓が閉じる。**
-   消え方は**二回またたく**（`blinkout`）——クリアの幕・倒したときの帯と同じ、この画面の「自分から引く」言い方 */
+   RPG のお約束どおり、**一言 → 一拍 → 場面ごと切り替わる。**
+
+   **またたかせない**（同日、本人：「倒した感あるな、二回点滅だと」→「まずやってみて」）。
+   二回またたくのは、この画面では**倒したときの言い方**（クリアの幕・倒したときの帯）だった。
+   → 窓・スライム・体力の帯を**同じ一瞬でまとめて消す。**敵だけが消えるのではなく、戦いの場面が閉じる */
 function flee(){
   D.phase = 'flee'; D.n = 0;
   dStep.textContent = ''; dQ.textContent = 'うまく にげきれた！'; dA.innerHTML = '';
   placeDWin();
-  if (REDUCE){ D.tFlee = setTimeout(quitDemo, 700); return; }
-  D.tFlee = setTimeout(function(){
-    slimeEl.classList.remove('come');
-    slimeEl.classList.add('gone'); dHp.classList.add('gone');
-    D.tFlee = setTimeout(quitDemo, 300 + 350);
-  }, 450);
+  D.tFlee = setTimeout(quitDemo, 800);
 }
 function quitDemo(){
   clearTimeout(D.tFlee); D.tFlee = null;
   if (D.aFlee){ D.aFlee.cancel(); D.aFlee = null; }
-  slimeEl.classList.remove('gone'); dHp.classList.remove('gone');
   heroEl.classList.remove('flip');
   D.on = false; D.phase = '';
   D.typing = false;
