@@ -274,7 +274,13 @@ body{
 /* ─ 遠景の山。ゆっくり流れる ────────────────────────────────── */
 .band{position:absolute; left:0; width:300%; height:100%;
   background-repeat:repeat-x; animation:flow linear infinite}
-@keyframes flow{ from{transform:translateX(0)} to{transform:translateX(-33.3333%)} }
+/* **つなぎ目で跳ばない**（2026-09-25、本人：「現状リピートになってるなら無限循環できるようにしておいて」）。
+   前は「画面一つぶん（-33.3333%）動いて戻る」で、**画面の幅が柄の周期で割り切れないと一周ごとに跳んでいた**
+   （遠い山 520px・近い山 340px・地面の縞 粒 14／20）。
+   → **動く距離を「画面の幅以上でいちばん近い、周期のちょうど倍数」にする**（`round(up, 100vw, 周期)`）。
+   周期は各帯の `--P`。`round()` が読めない古い端末は前の動きのまま */
+@keyframes flow{ from{transform:translateX(0)}
+  to{transform:translateX(-33.3333%); transform:translateX(calc(-1 * round(up, 100vw, var(--P, 100vw))))} }
 /* **広く・低く**（2026-09-14）。最初は 118px で、**歯車の刃**に見えた */
 #far{position:absolute; left:0; right:0; bottom:var(--gh); height:8vh; overflow:hidden; z-index:2}
 /* **同じ三角の繰り返しをやめた**（2026-09-14）。`conic-gradient` だと片側が
@@ -285,7 +291,7 @@ body{
   background-color:var(--far);
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L18 26 L34 60 L52 14 L76 60 L96 32 L112 60 L134 8 L162 60 L182 30 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
           mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L18 26 L34 60 L52 14 L76 60 L96 32 L112 60 L134 8 L162 60 L182 30 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
-  -webkit-mask-size:520px 100%;  mask-size:520px 100%;
+  -webkit-mask-size:520px 100%;  mask-size:520px 100%;  --P:520px;
   -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x;
   animation-duration:38s;
 }
@@ -294,7 +300,7 @@ body{
   background-color:var(--hill);
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L24 22 L46 60 L70 34 L92 60 L118 18 L146 60 L170 38 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
           mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L24 22 L46 60 L70 34 L92 60 L118 18 L146 60 L170 38 L200 60 Z' fill='%23000'/%3E%3C/svg%3E");
-  -webkit-mask-size:340px 100%;  mask-size:340px 100%;
+  -webkit-mask-size:340px 100%;  mask-size:340px 100%;  --P:340px;
   -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x;
   animation-duration:19s;
 }
@@ -306,13 +312,13 @@ body{
   height:var(--px); top:calc(var(--px)*3);
   background-image:repeating-linear-gradient(90deg,
     var(--ground2) 0 calc(var(--px)*6), transparent calc(var(--px)*6) calc(var(--px)*14));
-  background-size:calc(var(--px)*14) 100%;
+  background-size:calc(var(--px)*14) 100%;  --P:calc(var(--px)*14);
   animation-duration:2.2s;
 }
 #ground .band.b2{ top:calc(var(--px)*8); opacity:.6; animation-duration:3.4s;
   background-image:repeating-linear-gradient(90deg,
     var(--ground2) 0 calc(var(--px)*3), transparent calc(var(--px)*3) calc(var(--px)*20));
-  background-size:calc(var(--px)*20) 100%; }
+  background-size:calc(var(--px)*20) 100%;  --P:calc(var(--px)*20); }
 
 /* ─ 勇者。**走る位置は変わらない。**canvas に点で打つ ────────────
    **左寄りに置く**（2026-09-14、本人：「勇者もうちょっと左にできる？
