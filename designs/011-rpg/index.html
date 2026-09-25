@@ -652,6 +652,10 @@ body:has(#pop.on){cursor:pointer}
 
      地面は下端まで伸びたままなので、**地平を `--deck` ぶん持ち上げるだけで
      そのぶんが暗い床になる。**その上にコマンドが乗る */
+  /* **高さ 600 から。幅 360 以上なら 540 から**（2026-09-25。800 → 600 → 540）。
+     iPhone SE（375×667）はブラウザの中が 375×548 ほどで、600 では三層に入らなかった。
+     幅 320 は字の折り返しが増えて入りきらない（540・568 で問いが勇者に乗った）ので、600 のまま。
+     以下は 800 から 600 に下げたときの書き置き */
   /* **高さ 600 から**（2026-09-25 に 800 から下げた）。
      前は「いまどきの端末は 800 以上（390×844・412×915・430×932）」として 800 にしていたが、
      **それは端末の大きさで、ブラウザの中の高さではない。**アドレスバーのぶん低くなり、
@@ -663,7 +667,7 @@ body:has(#pop.on){cursor:pointer}
      9/24 にデモも三層に入れて問いを下へ移したので、もう当たらない
      （360〜430 × 600〜860 の 56 通りで、メニュー・七つの窓の全頁・デモの問いが
      勇者・名乗り・敵に乗らないことを測った）*/
-  @media (orientation:portrait) and (min-height:600px){
+  @media (orientation:portrait) and (min-height:600px), (orientation:portrait) and (min-height:540px) and (min-width:360px){
     /* 地平をここまで上げる。**上げたぶんがそのまま暗い床**になり、そこに窓が乗る。
 
        床の割り振り（下から）：**窓 → 間 → 帯 → 足もと → 地平。**
@@ -1241,7 +1245,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 
    **この節は 9/16 のデモ用ブロックより後ろに置く**——メディアクエリは
    強さを足さないので、前に書くと素の `#dBar{top:...}` に負ける（いちど負けた）*/
-@media (max-width:640px) and (orientation:portrait) and (min-height:600px), (orientation:portrait) and (min-width:641px) and (max-width:1100px) and (min-height:900px){
+@media (max-width:640px) and (orientation:portrait) and (min-height:600px), (max-width:640px) and (orientation:portrait) and (min-height:540px) and (min-width:360px), (orientation:portrait) and (min-width:641px) and (max-width:1100px) and (min-height:900px){
   /* 窓も同じ線に乗せる（上の節で書くと、この後ろの `#pop{bottom:...}` に負ける。
      メディアクエリは強さを足さないので、**後ろにまとめる**）*/
   #pop{bottom:var(--deckB)}
@@ -1313,11 +1317,19 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 @media (orientation:landscape) and (max-height:480px) and (min-width:641px){
   :root{ --px:3px; --hpx:4; --gh:clamp(60px,20vh,86px) }
   #menu{top:auto; bottom:calc(var(--gh) + 10px); transform:none; min-width:0; width:clamp(170px,28vw,230px)}
-  #menu li{padding:calc(var(--px)*.9) 0; font-size:13px}
+  /* 行は **30px**（指で押す高さ）。詰めすぎると 26px で、縦持ち（35px）より押しにくかった */
+  #menu li{padding:calc(var(--px)*1.6) 0; font-size:13px}
   #hero, #dBang{left:44%}
   #pop, #dWin{right:12px; left:auto; top:10px; transform:none; width:min(44vw,420px); --winr:12px}
   #pop{max-height:calc(100% - var(--gh) - 20px); bottom:auto}
   #slime, #dHp, #slash{left:78%}
+  /* リザルトは**名乗りの下（約 80px）から画面の下までのまんなか**に——真ん中のままだと
+     844×390 で上端が名乗りに 3px、750×340 で 25px 乗った。まんなか ＝ 50% ＋ 名乗りの半分 */
+  #dRes{top:calc(50% + 40px)}
+  /* **エンドロールはメニューの右で流す**（同日、本人：「エンドロールにメニューが被るな。横持」）。
+     文字の列は画面の真ん中・幅 470px で、左にいるメニューの裏へ入っていた。
+     → 流れる範囲の左端を**メニューの右端＋あいだ**にする。列はその中で真ん中 */
+  #dRollIn{left:calc(clamp(16px,4vw,calc(54px*var(--k))) + clamp(170px,28vw,230px) + 12px)}
 }
 </style>
 
@@ -2006,7 +2018,7 @@ function fitAbout(){
 var TABLET = '(orientation:portrait) and (min-width:641px) and (max-width:1100px) and (min-height:900px)';
 var MQ_NARROW = window.matchMedia('(max-width:640px), ' + TABLET);
 /* **三層に割れる窓ではやらない**——あちらはメニューを下に置いてある（CSS 側） */
-var MQ_DECK   = window.matchMedia('(max-width:640px) and (orientation:portrait) and (min-height:600px), ' + TABLET);
+var MQ_DECK   = window.matchMedia('(max-width:640px) and (orientation:portrait) and (min-height:600px), (max-width:640px) and (orientation:portrait) and (min-height:540px) and (min-width:360px), ' + TABLET);
 var MQ_HIDE   = window.matchMedia('(max-height:600px), (max-width:340px)');
 /* スマホの横持ち（CSS の同じ条件の節と対）*/
 var MQ_LAND   = window.matchMedia('(orientation:landscape) and (max-height:480px) and (min-width:641px)');
