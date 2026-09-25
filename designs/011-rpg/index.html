@@ -1273,6 +1273,9 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
    → 山二つと地面の縞を止める。**雲は止めない**——風で動くものなので、ゆっくり流れつづける（JS で遅くする）。
    止めるのは「！」の瞬間、戻すのはデモを出たとき（エンドロールもここから）。
 
+   **→ 同日、止まるのは斬る瞬間だけにした**（`swing()` の注）。下の三つは「出会ったら止まる」形のときのもの。
+   滑るコマ（`HERO_SKID`）は今は使っていない——止まる形に戻すときのために残してある。
+
    **急に止めない**（同日、本人：「画面の動きが急に止まるな…動き自体は何かしらほしい」→「やってみて」）。
    ・**0.5 秒かけて減速**（山と地面は 1 → 0、雲は 1 → .35）。戻すときは 0.4 秒で加速
    ・減速のあいだ勇者は**滑るコマ**（踏ん張る）、止まったら構え
@@ -2469,7 +2472,7 @@ var dWin  = document.getElementById('dWin'),
 /* 世界を止める／流す。**速さを段々に変える**（`playbackRate` は途中で変えても跳ばない）。
    山と地面は 0 まで、雲は .35 まで。止まりきったら `done` */
 var haltT = null;
-function halt(on, done){
+function halt(on, done, ms){
   document.body.classList.toggle('halt', on);
   if (haltT){ clearInterval(haltT); haltT = null; }
   var pick = function(sel){ var out = [];
@@ -2479,14 +2482,14 @@ function halt(on, done){
   var land = pick('#far .band, #near .band, #ground .band'), sky = pick('#cloud .band');
   var from = land.length ? land[0].playbackRate : (on ? 1 : 0);
   var skyFrom = sky.length ? sky[0].playbackRate : (on ? 1 : .35);
-  var dur = on ? 500 : 400, t0 = Date.now();
+  var dur = (ms == null) ? (on ? 500 : 400) : ms, t0 = Date.now();
   function set(k){
     var e = on ? 1 - Math.pow(1 - k, 2) : k * k;         /* 止めるときは早めに落ち、流すときはゆっくり立ち上がる */
     var r = from + ((on ? 0 : 1) - from) * e, rs = skyFrom + ((on ? .35 : 1) - skyFrom) * e;
     land.forEach(function(a){ a.playbackRate = r; });
     sky.forEach(function(a){ a.playbackRate = rs; });
   }
-  if (REDUCE || !land.length){ set(1); if (done) done(); return; }
+  if (REDUCE || !land.length || !dur){ set(1); if (done) done(); return; }
   haltT = setInterval(function(){
     var k = Math.min(1, (Date.now() - t0) / dur);
     set(k);
@@ -2545,8 +2548,6 @@ function openDemo(){
      0 だと、目が来る前に出てしまう */
   D.tBang = setTimeout(function(){
     /* **気づいた瞬間に止まる。**「！」と同時に世界が止まり、勇者は構える */
-    heroPose('skid');
-    halt(true, function(){ if (D.on && D.phase !== 'win') heroPose('stand'); });
     dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
     setTimeout(function(){ dBang.classList.remove('on'); }, 450);
   }, 120);
@@ -2891,8 +2892,14 @@ function typeCmd(s, done){
 
    次の問いへ行くのは**斬り終わりと打ち終わりの両方**が済んでから。
    片方で進めると、もう片方が次の問いに食い込む */
+/* **斬る瞬間だけ世界を止める**（2026-09-25、本人：「やっぱり疾走感減るなあ…」→（三つ出して）→「一旦C見せて」）。
+   出会ったところで止めると、この画面の売りの**走り**が消える。
+   → ふだんは**走ったまま戦い**、斬った瞬間に**ぐっと止める**（一瞬で 0）。振り終わったら 0.25 秒で走り出す。
+   止まるのが短いので疾走感は残り、緩急で**斬ったところが立つ。**
+   **最後の一太刀のあとは戻さない**——そのまま勝ちのポーズへ（剣を上げたまま走ると、地面の上を滑る）*/
 function swing(done){
   heroEl.classList.add('swing');
+  halt(true, null, 0);
   heroPose('slash');                    /* 剣を振り下ろす */
   slimeEl.classList.add('hit');
   slashEl.classList.add('on');          /* 敵の上に斬撃の線 */
@@ -2900,7 +2907,8 @@ function swing(done){
   setTimeout(function(){ slashEl.classList.remove('on'); }, 230);
   setTimeout(function(){
     heroEl.classList.remove('swing');
-    heroPose('stand');                  /* 斬ったら構えに戻る（走りには戻らない）*/
+    if (D.hp > 0){ heroPose(null); halt(false, null, 250); }   /* また走り出す */
+    else heroPose('stand');             /* 倒した——止まったまま構えて、勝ちのポーズへ */
     slimeEl.classList.remove('hit');
     if (done) done();
   }, 820);
