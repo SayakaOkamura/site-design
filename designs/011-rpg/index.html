@@ -1271,8 +1271,13 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
    →「やってみて、雲はゆっくり動かして」）。
    背景が流れることが「勇者が走っている」なので、**勇者だけ止めると地面の上を滑る。**
    → 山二つと地面の縞を止める。**雲は止めない**——風で動くものなので、ゆっくり流れつづける（JS で遅くする）。
-   止めるのは「！」の瞬間、戻すのはデモを出たとき（エンドロールもここから）*/
-body.halt #far .band, body.halt #near .band, body.halt #ground .band{animation-play-state:paused}
+   止めるのは「！」の瞬間、戻すのはデモを出たとき（エンドロールもここから）。
+
+   **急に止めない**（同日、本人：「画面の動きが急に止まるな…動き自体は何かしらほしい」→「やってみて」）。
+   ・**0.5 秒かけて減速**（山と地面は 1 → 0、雲は 1 → .35）。戻すときは 0.4 秒で加速
+   ・減速のあいだ勇者は**滑るコマ**（踏ん張る）、止まったら構え
+   ・構えているあいだは**息をする**（上半身が一粒上下）。敵は元から跳ねている */
+/* 止めるのは CSS ではなく JS（`halt()`）。**一瞬で止めずに 0.5 秒かけて落とす**ため */
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
 #hero.swing{margin-left:18px}
@@ -1551,6 +1556,17 @@ var HERO_STAND = [
     '......###..###........',
     '......###..###........'
 ];
+/* 息のコマ。立ちの**上半身だけ一粒沈める**（脚はそのまま）。立ちと交互に出して、構えたまま息をさせる */
+var HERO_STAND_B = ['......................'].concat(HERO_STAND.slice(0, 16), HERO_STAND.slice(17));
+/* 滑るコマ（2026-09-25）。**止まる前に踏ん張る。**上半身を一粒うしろへ引き、
+   前の脚を前へ突っ張って、後ろの脚を曲げる——RPG で敵に出会ったときの「ズザッ」 */
+var HERO_SKID = HERO_STAND.slice(0, 17).map(function(r){ return r.slice(1) + '.'; }).concat([
+    '......##...##.........',
+    '.....##.....##........',
+    '....##.......##.......',
+    '...###........###.....',
+    '..####.........####...'
+]);
 var HW = 22, HH = 22;
 /* 粒の大きさは **CSS が持っている**（`--hpx`）。勇者だけ粗い目——**画の主なので大きく**
    （背景は `--px`）。2頭身は**胴が短いぶん小さく見える**ので、5 → 6 に上げた（132px）。
@@ -1604,7 +1620,7 @@ window.addEventListener('resize', function(){
   REDRAW.push(function(){ sizeCanvas(cv, cx, HW, HH); draw(last); });
   var i = 0, pose = null;
   /* 走りを止めて、決めのコマを出す。**走ったまま剣を上げても、勝った顔にならない** */
-  var POSE = { win:HERO_WIN, slash:HERO_SLASH, stand:HERO_STAND };
+  var POSE = { win:HERO_WIN, slash:HERO_SLASH, stand:HERO_STAND, skid:HERO_SKID };
   /* **名前で呼ぶ**（`'win'` / `'slash'`）。真偽値を渡すと `POSE[n]` が undefined になって、
      **走りが止まるだけ**になる（それで 9/15 から勝ちのコマが出ていなかった）*/
   window.heroPose = function(n){ pose = n; draw(POSE[n] || HERO[i]); };
@@ -1612,7 +1628,13 @@ window.addEventListener('resize', function(){
   /* 動きを止める設定なら、**一コマ目で止める**（CSS の animation:none は
      canvas には効かないので、ここで自分で見る） */
   if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  setInterval(function(){ i = (i+1) % HERO.length; if (!pose) draw(HERO[i]); }, 110);
+  /* 構えているあいだは**息をする**——0.55 秒ずつ、立ちと息のコマを交互に */
+  var b = 0;
+  setInterval(function(){
+    i = (i+1) % HERO.length;
+    if (!pose){ draw(HERO[i]); return; }
+    if (pose === 'stand'){ b = (b+1) % 10; if (b === 0) draw(HERO_STAND); else if (b === 5) draw(HERO_STAND_B); }
+  }, 110);
 })();
 
 /* ─ 中身。**公式サイトの言葉をそのまま。**足していない ──────────
@@ -2444,12 +2466,32 @@ var dWin  = document.getElementById('dWin'),
      ・**体力の帯が満ちる**（戦いの支度が整った、の合図）
    画面はどこも暗くならないし、揺れもしない */
 /* 世界を止める／流す。雲は**止めずに遅くする**（`playbackRate` なら途中で跳ばない）*/
-function halt(on){
+/* 世界を止める／流す。**速さを段々に変える**（`playbackRate` は途中で変えても跳ばない）。
+   山と地面は 0 まで、雲は .35 まで。止まりきったら `done` */
+var haltT = null;
+function halt(on, done){
   document.body.classList.toggle('halt', on);
-  var cl = document.getElementById('cloud');
-  if (cl && cl.getAnimations) cl.getAnimations({ subtree:true }).forEach(function(a){
-    if (a.updatePlaybackRate) a.updatePlaybackRate(on ? .35 : 1); else a.playbackRate = on ? .35 : 1;
-  });
+  if (haltT){ clearInterval(haltT); haltT = null; }
+  var pick = function(sel){ var out = [];
+    [].forEach.call(document.querySelectorAll(sel), function(el){
+      if (el.getAnimations) out = out.concat(el.getAnimations()); });
+    return out; };
+  var land = pick('#far .band, #near .band, #ground .band'), sky = pick('#cloud .band');
+  var from = land.length ? land[0].playbackRate : (on ? 1 : 0);
+  var skyFrom = sky.length ? sky[0].playbackRate : (on ? 1 : .35);
+  var dur = on ? 500 : 400, t0 = Date.now();
+  function set(k){
+    var e = on ? 1 - Math.pow(1 - k, 2) : k * k;         /* 止めるときは早めに落ち、流すときはゆっくり立ち上がる */
+    var r = from + ((on ? 0 : 1) - from) * e, rs = skyFrom + ((on ? .35 : 1) - skyFrom) * e;
+    land.forEach(function(a){ a.playbackRate = r; });
+    sky.forEach(function(a){ a.playbackRate = rs; });
+  }
+  if (REDUCE || !land.length){ set(1); if (done) done(); return; }
+  haltT = setInterval(function(){
+    var k = Math.min(1, (Date.now() - t0) / dur);
+    set(k);
+    if (k >= 1){ clearInterval(haltT); haltT = null; if (done) done(); }
+  }, 30);
 }
 function startDemo(){
   close();
@@ -2503,7 +2545,8 @@ function openDemo(){
      0 だと、目が来る前に出てしまう */
   D.tBang = setTimeout(function(){
     /* **気づいた瞬間に止まる。**「！」と同時に世界が止まり、勇者は構える */
-    halt(true); heroPose('stand');
+    heroPose('skid');
+    halt(true, function(){ if (D.on && D.phase !== 'win') heroPose('stand'); });
     dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
     setTimeout(function(){ dBang.classList.remove('on'); }, 450);
   }, 120);
