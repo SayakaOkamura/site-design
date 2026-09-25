@@ -1322,7 +1322,19 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #hero, #dBang{left:44%}
   #pop, #dWin{right:12px; left:auto; top:10px; transform:none; width:min(44vw,420px); --winr:12px}
   #pop{max-height:calc(100% - var(--gh) - 20px); bottom:auto}
-  #slime, #dHp, #slash{left:78%}
+  /* **デモの問いは PC と同じ考え方**（同日、本人：「横持にしたときのデモのポップの位置気になるんだよな～
+     PC画面だと妥当な位置だと思うんだけど」→「やってみて」）。前は右上の角に 12px で貼りつき、
+     敵（78%）がたまたまその下にいた。デモのあいだはメニューが消えて左が空くので、なおさら寄って見えた。
+     → **敵を 66% へ、問いの真ん中をその真上に。**ただし問いが名乗り（右端 350〜375px）にかからないところまで——
+     狭い横持ちでは、問いと敵がそろって右へ寄る（667 幅で 77%）。上下は placeDWin() が画面の上と体力の帯のまんなかへ */
+  :root{ --lw:min(40vw, 420px); --lc:max(66%, calc(380px + var(--lw) / 2)) }
+  #slime, #dHp, #slash{left:var(--lc)}
+  #dWin{width:var(--lw); right:calc(100% - var(--lc) - var(--lw) / 2)}
+  /* 問いは幅が狭いぶん字が折れて背が伸び、667・750 幅で体力の帯に 5〜24px 乗った——**問いの中を詰める** */
+  #dWin{padding-top:10px; padding-bottom:10px}
+  #dWin #dStep{margin-bottom:4px}
+  #dWin #dQ{font-size:13px; margin-bottom:6px}
+  #dWin #dA li{font-size:11.5px; padding:2px 0}
   /* リザルトは**名乗りの下（約 80px）から画面の下までのまんなか**に——真ん中のままだと
      844×390 で上端が名乗りに 3px、750×340 で 25px 乗った。まんなか ＝ 50% ＋ 名乗りの半分 */
   #dRes{top:calc(50% + 40px)}
