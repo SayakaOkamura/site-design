@@ -2433,6 +2433,7 @@ function ask(step, q, list, gen){
     + '<li class="flee"><span class="cur">▶</span><span>にげる'
     + '<span class="note">（デモを終了する）</span></span></li>';
   dWin.style.display = '';
+  placeDWin();
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
   paintD();
   gen ? draft() : draftSkip();
@@ -2440,6 +2441,31 @@ function ask(step, q, list, gen){
 /* 枠が開いてから、問い → 選択肢の順に出す。
    出す間は `draft`——**押しても選べない。**押したら待たずに全部出る
    （リザルトの行出しと同じ作法。止め忘れ対策に待ちの id を二つ持つ） */
+/* 問いの窓の上下。**名乗りの下と、敵の体力の帯の上の、まんなか**（2026-09-25、本人：
+   「その時の窓の幅に合わせてちゃんと中央に置かれるようにしてほしい。
+   画面に対する中央じゃなくて上下位置の話」→（名乗りと体力の帯のあいだで訊いて）「いいよ」）。
+
+   前は `top:25%` で**上端だけ**決めていたので、問いによって窓の高さが変わると
+   **下のあきだけが伸び縮みしていた。**
+   → **問いが出るたび**（`ask()`）と**画面の大きさが変わったとき**に測って置く。
+   まだ出ていない行も場所は取っている（`opacity`）ので、出た時点で高さは決まっている。
+
+   **選んだあと一行に縮むときは動かさない。**縮むたびに置き直すと、
+   選んだ瞬間に窓が下へ跳ねる。縮むのは下から——上端は問いのあいだ動かない。
+
+   狭い窓（640 以下）は CSS の置き方のまま（三層・中央の作りが別にある） */
+function placeDWin(){
+  if (MQ_NARROW.matches){ dWin.style.top = ''; return; }
+  if (dWin.style.display === 'none') return;
+  var nb = document.getElementById('name').getBoundingClientRect().bottom;
+  var hb = dHp.getBoundingClientRect().top;
+  var h  = dWin.offsetHeight;
+  var t  = nb + (hb - nb - h) / 2;
+  if (t < nb + 8) t = nb + 8;              /* 入りきらないときは名乗りから離す側に寄せる */
+  dWin.style.top = Math.round(t) + 'px';
+}
+window.addEventListener('resize', function(){ if (D.on) placeDWin(); });
+
 function draft(){
   D.qs = [dQ].concat([].slice.call(dA.children));
   D.qs.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
