@@ -446,8 +446,8 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
               var(--o2) var(--o2) 0 var(--edge), calc(-1*var(--o2)) var(--o2) 0 var(--edge), var(--o2) calc(-1*var(--o2)) 0 var(--edge), calc(-1*var(--o2)) calc(-1*var(--o2)) 0 var(--edge)}
 /* **社名はメニューより一段大きく**（2026-09-25、本人：「タイトルもうちょっと目立たせるべき？」）。
    前は 1280 幅で 18px——メニュー（20px）と窓の本文（20px）より**小さく**、名前が画面の隅の注記の重さだった。
-   → メニューの 1.3 倍（1280 幅で 26px、大きい窓で 32.5px）。狭い窓は 16px から */
-#name b{display:block; font-size:clamp(16px,calc(2.2 * var(--fw)),calc(26px*var(--k))); letter-spacing:.06em; margin-top:calc(4px*var(--k))}
+   → いちどメニューの 1.3 倍（1280 幅で 26px）にした。本人：「でけえ」→ **1.1 倍**（1280 幅で 22px、大きい窓で 27.5px）*/
+#name b{display:block; font-size:clamp(15px,calc(1.9 * var(--fw)),calc(22px*var(--k))); letter-spacing:.06em; margin-top:calc(4px*var(--k))}
 #tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,calc(1.25 * var(--fw)),calc(13px*var(--k))); color:var(--warm); letter-spacing:.04em}
 
 /* ─ ポップアップ。**送りは ▼**（枠内スクロールはしない）─────────
