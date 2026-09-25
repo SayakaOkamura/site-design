@@ -1266,6 +1266,13 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 @media (orientation:portrait) and (min-width:641px) and (max-width:1100px) and (min-height:900px){
   :root{ --gh:max(46vh, 470px); --bar:clamp(58px,7vh,96px) }   /* 470 は 768×950 でデモの帯が問いに乗らない下限 */
 }
+/* **戦いのあいだは世界が止まる**（2026-09-25、本人：「戦闘中走ってるの変じゃない？」
+   →（9/15 にこちらが「画面をそのまま使う」と決めたときに、走りも残っただけだった）→「止まれる？背景も加味して」
+   →「やってみて、雲はゆっくり動かして」）。
+   背景が流れることが「勇者が走っている」なので、**勇者だけ止めると地面の上を滑る。**
+   → 山二つと地面の縞を止める。**雲は止めない**——風で動くものなので、ゆっくり流れつづける（JS で遅くする）。
+   止めるのは「！」の瞬間、戻すのはデモを出たとき（エンドロールもここから）*/
+body.halt #far .band, body.halt #near .band, body.halt #ground .band{animation-play-state:paused}
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
 #hero.swing{margin-left:18px}
@@ -1517,6 +1524,33 @@ var HERO_SLASH = [
     '....###....###........',
     '...####....####.......'
 ];
+/* 立ちのコマ（2026-09-25）。**戦いのあいだは止まって構える。**
+   上半身は走りの一コマ目のまま（剣を前へ構える）。外套は**なびかせず後ろへ垂らす**、
+   脚は勝ちのコマと同じく**そろえて立つ**——走りのコマで代用すると、踏み出したまま止まって見える */
+var HERO_STAND = [
+    '......................',
+    '.........##...........',
+    '......#######.........',
+    '.....#########........',
+    '....###########.......',
+    '....###########.......',
+    '....######o#o##....##.',
+    '....######o#o##...###.',
+    '....###########..###..',
+    '.....#########..###...',
+    '......#######..###....',
+    '.....#######..###.....',
+    '....############......',
+    '...###########........',
+    '...##########.........',
+    '...##########.........',
+    '....#########.........',
+    '.......##..##.........',
+    '.......##..##.........',
+    '.......##..##.........',
+    '......###..###........',
+    '......###..###........'
+];
 var HW = 22, HH = 22;
 /* 粒の大きさは **CSS が持っている**（`--hpx`）。勇者だけ粗い目——**画の主なので大きく**
    （背景は `--px`）。2頭身は**胴が短いぶん小さく見える**ので、5 → 6 に上げた（132px）。
@@ -1570,7 +1604,7 @@ window.addEventListener('resize', function(){
   REDRAW.push(function(){ sizeCanvas(cv, cx, HW, HH); draw(last); });
   var i = 0, pose = null;
   /* 走りを止めて、決めのコマを出す。**走ったまま剣を上げても、勝った顔にならない** */
-  var POSE = { win:HERO_WIN, slash:HERO_SLASH };
+  var POSE = { win:HERO_WIN, slash:HERO_SLASH, stand:HERO_STAND };
   /* **名前で呼ぶ**（`'win'` / `'slash'`）。真偽値を渡すと `POSE[n]` が undefined になって、
      **走りが止まるだけ**になる（それで 9/15 から勝ちのコマが出ていなかった）*/
   window.heroPose = function(n){ pose = n; draw(POSE[n] || HERO[i]); };
@@ -2409,6 +2443,14 @@ var dWin  = document.getElementById('dWin'),
      ・**窓が開く**（差し替わるのではなく、開く）
      ・**体力の帯が満ちる**（戦いの支度が整った、の合図）
    画面はどこも暗くならないし、揺れもしない */
+/* 世界を止める／流す。雲は**止めずに遅くする**（`playbackRate` なら途中で跳ばない）*/
+function halt(on){
+  document.body.classList.toggle('halt', on);
+  var cl = document.getElementById('cloud');
+  if (cl && cl.getAnimations) cl.getAnimations({ subtree:true }).forEach(function(a){
+    if (a.updatePlaybackRate) a.updatePlaybackRate(on ? .35 : 1); else a.playbackRate = on ? .35 : 1;
+  });
+}
 function startDemo(){
   close();
   stopRoll();                     /* 流れている途中でも、入り直したら片付ける */
@@ -2460,6 +2502,8 @@ function openDemo(){
      押した先のメニューが消えるので、**目がそこから離れる時間**がいる。
      0 だと、目が来る前に出てしまう */
   D.tBang = setTimeout(function(){
+    /* **気づいた瞬間に止まる。**「！」と同時に世界が止まり、勇者は構える */
+    halt(true); heroPose('stand');
     dBang.classList.remove('on'); void dBang.offsetWidth; dBang.classList.add('on');
     setTimeout(function(){ dBang.classList.remove('on'); }, 450);
   }, 120);
@@ -2501,6 +2545,7 @@ function quitDemo(){
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
   dBang.classList.remove('on');
+  halt(false);
   heroPose(null); slimeIdle();   /* また走り出す */
   paintSel();
 }
@@ -2812,7 +2857,7 @@ function swing(done){
   setTimeout(function(){ slashEl.classList.remove('on'); }, 230);
   setTimeout(function(){
     heroEl.classList.remove('swing');
-    heroPose(null);
+    heroPose('stand');                  /* 斬ったら構えに戻る（走りには戻らない）*/
     slimeEl.classList.remove('hit');
     if (done) done();
   }, 820);
