@@ -2479,6 +2479,30 @@ var dWin  = document.getElementById('dWin'),
 /* 世界を止める／流す。雲は**止めずに遅くする**（`playbackRate` なら途中で跳ばない）*/
 /* 世界を止める／流す。**速さを段々に変える**（`playbackRate` は途中で変えても跳ばない）。
    山と地面は 0 まで、雲は .35 まで。止まりきったら `done` */
+/* **流れる速さを前と同じにする**（2026-09-25、本人：「合わせておいて」）。
+   つなぎ目で跳ばないように、動く距離を「画面の幅以上でいちばん近い、周期の倍数」にした（`@keyframes flow`）。
+   所要時間がそのままだと距離が伸びたぶん速くなる（390 幅の遠い山で 1.33 倍）ので、
+   **所要時間も同じ割合で延ばす**——距離 ÷ 画面の幅。窓の大きさが変わるたびに掛け直す */
+(function(){
+  /* `round()` が読めない端末は前の動き（画面一つぶん）のままなので、延ばさない */
+  if (!(window.CSS && CSS.supports && CSS.supports('width', 'round(up, 10px, 3px)'))) return;
+  var bands = [].slice.call(document.querySelectorAll('#far .band, #near .band, #ground .band'));
+  bands.forEach(function(el){ el.dataset.dur = parseFloat(getComputedStyle(el).animationDuration) || 0; });
+  function fit(){
+    var W = document.documentElement.clientWidth;
+    bands.forEach(function(el){
+      /* `--P` が式（地面の縞は粒 × 14）だと数として読めないので、そのときは実際の柄の幅から読む */
+      var cs = getComputedStyle(el), P = parseFloat(cs.getPropertyValue('--P'));
+      if (!(P > 0) || /calc|var/.test(cs.getPropertyValue('--P'))) P = parseFloat(cs.backgroundSize);
+      var base = +el.dataset.dur;
+      if (!(P > 0) || !base || !W) return;
+      var dist = Math.ceil(W / P - 1e-6) * P;
+      el.style.animationDuration = (base * dist / W).toFixed(3) + 's';
+    });
+  }
+  fit();
+  window.addEventListener('resize', fit);
+})();
 var haltT = null;
 function halt(on, done, ms){
   document.body.classList.toggle('halt', on);
