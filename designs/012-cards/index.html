@@ -226,20 +226,19 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 .ch.on .card{opacity:1}
 .card .k{font-size:clamp(9.5px,1vw,11px); letter-spacing:.3em; color:var(--dim);
   padding-bottom:1em}
-.card .lead{margin:0; font-size:clamp(16px,2.1vw,24px); line-height:1.6;
-  color:var(--hot); letter-spacing:.02em; text-shadow:0 0 18px rgba(125,240,164,.16)}
-/* **grid も flex も使わない。**新しい整形文脈ができて、章の頭に回り込まなくなる */
-.card ul{list-style:none; margin:1.5em 0 0; padding:0}
-/* 印は**絶対位置で置かない。**章の頭に回り込むと行だけが右へ逃げて、
-   印が左端に取り残される。字下げで置けば、印も行と一緒に動く */
-/* 枝。**ぶら下げの幅は幹の長さで決まる**（`--ri` は組むときに入れる）*/
-.card li{padding-left:var(--ri,1.6em); text-indent:calc(-1 * var(--ri,1.6em));
-  margin-bottom:.55em;
-  font-size:clamp(12.5px,1.35vw,15px); line-height:1.85; color:var(--on)}
+/* 木は**章の頭に回り込ませない。**回り込むと、頭の横の行と下の行で左端が変わって
+   桁がずれる（木は桁がすべて）。`flow-root` で箱ごと頭の右に立てる */
+.card ul{display:flow-root; list-style:none; margin:.4em 0 0; padding:0}
+/* 木の一行。**頭では折らない**——折ると桁が崩れて、枝がどこから出たか分からなくなる */
+.card li{white-space:pre-wrap; overflow-wrap:anywhere; margin:0;
+  padding-left:var(--hang,0); text-indent:calc(-1 * var(--hang,0));
+  font-size:clamp(12.5px,1.35vw,15px); line-height:1.45; color:var(--on)}
 /* 幹の語。枝より明るく、太く */
 .card li .rt{color:var(--hot); font-weight:700}
+/* 線は語より沈める。**読むのは語**で、線は語どうしの関係を言うだけ */
+.card li .br{color:var(--dim)}
 /* 枝と枝をつなぐ一本。**行としては空**なので、詰めて細く置く */
-.card li.sp{margin:0; line-height:1.15; color:var(--dim)}
+.card li.sp{line-height:1.15}
 /* まだ出ていない行・字。**消さずに隠す**——消すと出るたびに下が持ち上がって、行が踊る */
 .card .wait{visibility:hidden}
 /* **点けるのではなく、暗がりから浮かせる**（2026-09-15、本人：「あーでも硬いな」）。
@@ -251,7 +250,7 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 /* 影も消す。**透明な字でも影は出る**ので、光の染みだけが先に見えてしまう */
 .card .h{color:transparent; text-shadow:none}
 /* 幹も、まだのあいだは消えている（`.rt` のほうが詳しいので明示する）*/
-.card li .rt.h{color:transparent; text-shadow:none}
+.card li .rt.h, .card li .br.h{color:transparent; text-shadow:none}
 .card .foot{margin-top:1.9em; font-size:clamp(11px,1.15vw,12.5px)}
 .card .back{background:none; border:0; font:inherit; color:var(--dim); cursor:pointer; padding:0;
   letter-spacing:.06em}
@@ -276,11 +275,8 @@ footer a:hover{color:var(--on)}
      壁は端から端、一枚は**左右とも一段内側。**片側だけだと、
      右端が壁と揃ったままで「寄った」に見えない（幅比 0.95 のまま）*/
   .card{max-width:none; margin-left:clamp(14px,5vw,26px); margin-right:clamp(14px,5vw,26px)}
-  /* **ぶら下げは幹の長さで数えない**（2026-09-24）。細い窓では一行 20 字ほどしか無く、
-     幹（2〜3 字）＋腕（3 字）を毎行あけると**一行の三分の一が空白**になって、
-     一項目が四行に伸びていた（320×568 で実測）。
-     → **腕の三桁だけぶら下げる。**一行目は幹から始まるので、負の text-indent で引き戻す */
-  .card li{padding-left:6ch; text-indent:-6ch}
+  /* 木は**章の頭の下へ。**頭の横のすき間に入ると、語が一字ずつ折れる（320px で実測）*/
+  .card ul{clear:both}
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
 </style>
@@ -372,12 +368,11 @@ var CHS = [
     card:{
       k:'PHILOSOPHY',
       root:'夢中',
-      lead:'夢中は、放っておいては生まれない。だから意図的に設計する。',
-      points:[
-        '「遊ぶように働く」は楽をすることではなく、自発的に創造している状態のこと。',
-        '夢中が起こる条件は四つ——自分で動かせる範囲、早く返る結果、致命的でない失敗、言える目的。',
-        'その四つを決めているのは現場ではなく経営。だから「経営の力で」と言う。',
-        '語ることと作ることを同じ会社に置いて、そのあいだで嘘がつけないようにしている。'
+      tree:[
+        ['働き方', ['遊ぶ', '自発']],
+        ['条件', ['範囲', '結果', '失敗', '目的']],
+        ['担い手', ['経営']],
+        ['仕組み', ['語る', '作る']]
       ]}
   },
 
@@ -434,12 +429,11 @@ DX 人材の育成など、地域に根差したデジタル変革を推進す�
     card:{
       k:'SERVICES',
       root:'決め方',
-      lead:'四つとも、道具を入れる前に「決め方」を整えるところから始める。',
-      points:[
-        '01　人間中心の次世代業務システム開発——迷いを消し、判断に時間を回す。',
-        '02　AI による意思決定支援——AI に決めさせない。決めるまでの距離を縮める。',
-        '03　自律型・共創型の組織設計——自律は放任ではなく、共創は仲良しではない。',
-        '04　地域格差の解消——使いこなす人がその土地に残ることまでを支援の条件にする。'
+      tree:[
+        ['業務', ['人間中心', '次世代']],
+        ['ＡＩ', ['意思決定', '事業変革']],
+        ['組織', ['自律', '共創']],
+        ['地域', ['格差', '定着']]
       ]}
   },
 
@@ -493,12 +487,11 @@ AI は、散らばった材料を集めて並べ替えるのが速い。
     card:{
       k:'UPSTREAM',
       root:'上流',
-      lead:'上流に時間をかけろ、ではない。上流を速く回せ、である。',
-      points:[
-        '上流とは、作る前に決めること——目的・利用者・範囲・やらないこと・成功の見え方。',
-        '「固める」と「決める」は違う。文書が固まっても迷いが残れば、作る速さは手戻りの速さになる。',
-        '決まらないのは材料が足りないからではなく、整っていないから。整えるところを仕事にしている。',
-        '納品するのはまずシステムではなく、決めたことと決めなかったことと、その理由。'
+      tree:[
+        ['中身', ['目的', '利用者', '範囲', 'やらないこと', '成功']],
+        ['区別', ['固める', '決める']],
+        ['速さ', ['回す']],
+        ['納品', ['決まったこと', '決めなかったこと', '理由']]
       ]}
   },
 
@@ -536,12 +529,13 @@ contact@alt-dsgn.co.jp
     card:{
       k:'COMPANY',
       root:'会社',
-      lead:'株式会社アルターデザインコンサルティング',
-      points:[
-        '代表者　松岡　真功　／　設立　2025 年 6 月　／　資本金 60 百万円',
-        '本社　東京都港区西新橋 3-23-5　ANYZ304（御成門郵船ビル）　御成門 2 分',
-        '事業内容　AI を活用した組織最適化のコンサルティング／AI とローコードによるシステム開発',
-        'お問い合わせ　contact@alt-dsgn.co.jp'
+      tree:[
+        ['代表者', ['松岡　真功']],
+        ['設立', ['2025 年 6 月']],
+        ['資本金', ['60 百万円']],
+        ['本社', ['西新橋 3-23-5', '御成門 2 分']],
+        ['事業', ['コンサルティング', 'システム開発']],
+        ['連絡', ['contact@alt-dsgn.co.jp']]
       ]}
   }
 ];
@@ -562,37 +556,25 @@ host.innerHTML = CHS.map(function(c){
       }).join('');
     return '<p class="p">' + body + '</p>';
   }).join('');
-  /* **枝で組む**（2026-09-24、本人：「縦型じゃなくて**ワードツリー**みたいに」）。
-     幹の語を左に置いて、そこから枝が右へ伸びる。**縦一列をやめる。**
+  /* **単語で組むロジックツリー**（2026-09-25、本人：「ワードツリーっていうか
+     **ロジックツリー**みたいな」「単語」）。節も葉も単語だけ。文は置かない。
 
      線は**字で引く**——`├ └ ─` は等幅なので桁に乗るし、
      枠線で引くと**章の頭に回り込めない**（`border` は箱に付くので、
      浮かせた頭の下に潜る。行だけが避けるのと同じ理屈で、9/15 に一度踏んでいる）。
 
-     折り返した二行目以降は、幹のぶんだけ**ぶら下げる**（`--ri`）。
-     全角空白で詰めるので、桁がずれない */
-  var R = c.card.root, n = c.card.points.length;
-  var pad = new Array(R.length + 1).join('\u3000');
-  var out = [];
-  c.card.points.forEach(function(p, i){
-    var arm = (i === 0) ? (n > 1 ? '\u2500\u252c\u2500' : '\u2500\u2500\u2500')
-            : (i === n - 1 ? '\u3000\u2514\u2500' : '\u3000\u251c\u2500');
-    /* 幹は **`<span>` でも包んでおく。**動きが走る場では `cells()` が中身を作り直して
-       桁ごとに付け直すが、**動きを止める設定では `cells()` が走らない**
-       ——包んでいないと、そこだけ幹が立たないまま出る */
-    var head = (i === 0 ? '<span class="rt">' + esc(R) + '</span>' : esc(pad))
-             + esc(arm + '\u3000');
-    out.push('<li' + (i === 0 ? ' data-rt="' + R.length + '"' : '')
-            + '>' + head + esc(p) + '</li>');
-    /* **枝と枝のあいだに幹を一本立てる。**印だけだと箇条書きに見える——
-       `\u2502` が通って初めて『一本から分かれた』に見える */
-    if (i < n - 1) out.push('<li class="sp">' + esc(pad + '\u3000\u2502') + '</li>');
-  });
-  var pts = out.join('');
-  /* **桁は `ch` で数える。**全角の字は 16px、`1em` は 15px なので、
-     `em` で組むと**一行ごとに 6px ずつずれる。**半角 `0` 一つが `1ch` なので、
-     全角一つ＝`2ch`。ここは全部全角（`\u3000 \u2500 \u251c \u2502` とも同じ幅）*/
-  var ri = ((R.length + 4) * 2) + 'ch';
+     **兄弟の節は `─` で同じ長さに揃える。**揃えないと孫の列がばらばらになって、
+     階層が読めない。桁は全部全角で数える（全角空白も罫線も同じ幅）。
+     葉は行の終わりなので、半角が混じっても桁は崩れない */
+  var pts = grow(c.card.root, c.card.tree, c.card.root.length, 'rt', true).map(function(l){
+    /* 入らない葉は**葉の頭に揃えて折る**（320px でメールが 56px はみ出した）。
+       頭までは全部全角なので、一字＝`2ch` */
+    var hang = 0;
+    l.p.slice(0, -1).forEach(function(p){ hang += p[0].length; });
+    return '<li' + (l.sp ? ' class="sp"' : '') + ' style="--hang:' + (hang * 2) + 'ch">' + l.p.map(function(p){
+      return p[1] ? '<span class="' + p[1] + '">' + esc(p[0]) + '</span>' : esc(p[0]);
+    }).join('') + '</li>';
+  }).join('');
   return ''
     + '<section class="ch" data-k="' + c.key + '">'
     +   '<div class="head">'
@@ -603,12 +585,38 @@ host.innerHTML = CHS.map(function(c){
     +   '<div class="raw"><div class="col">' + lines + '</div></div>'
     +   '<div class="card">'
     +     '<div class="k">' + c.card.k + '</div>'
-    +     '<p class="lead">' + esc(c.card.lead) + '</p>'
-    +     '<ul style="--ri:' + ri + '">' + pts + '</ul>'
+    +     '<ul>' + pts + '</ul>'
     +     '<div class="foot"><button class="back">← もとの文にもどす</button></div>'
     +   '</div>'
     + '</section>';
 }).join('');
+
+/* 一つの節から下を行に割る。行は `{ sp, p:[[字, 色], …] }`。
+   `w` は自分の語を `─` で伸ばす長さ（兄弟の中でいちばん長い語に揃える） */
+function grow(label, kids, w, cls, top){
+  var line = [[label, cls]];
+  if (!kids) return [{ p: line }];
+  if (w > label.length) line.push([rep('─', w - label.length), 'br']);
+  var blank = [rep('　', w), ''];
+  var m = 0;
+  kids.forEach(function(k){ if (typeof k !== 'string') m = Math.max(m, k[0].length); });
+  var n = kids.length, out = [];
+  kids.forEach(function(k, i){
+    var last = i === n - 1;
+    var sub = typeof k === 'string' ? grow(k, null, 0, 'w') : grow(k[0], k[1], m, 'w');
+    sub.forEach(function(l, j){
+      var pre = (i === 0 && j === 0) ? line.concat([[n > 1 ? '─┬─' : '───', 'br']])
+              : [blank, [j === 0 ? (last ? '　└─' : '　├─')
+                                 : (last ? '　　　' : '　│　'), 'br']];
+      out.push({ p: pre.concat(l.p) });
+    });
+    /* **いちばん上の枝のあいだにだけ一本立てる。**孫のあいだにも立てると、
+       空の行ばかりになって木が間延びする */
+    if (top && !last) out.push({ sp: true, p: [blank, ['　│', 'br']] });
+  });
+  return out;
+}
+function rep(c, k){ return new Array(k + 1).join(c); }
 
 function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -626,22 +634,23 @@ function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/
    どの字がどの行にいるかを測れるようにしておく（行は幅で決まるので、出す直前に測る） */
 function cells(el){
   if (el._cs) return el._cs;
-  var t = el.getAttribute('data-t');
-  if (t === null){ t = el.textContent; el.setAttribute('data-t', t); }
+  /* **色を持ったまま一字ずつに割る。**木は幹・語・線で色が違うので、
+     包んでいた `<span>` の色を、割った一字ずつに付け直す */
+  var parts = [].map.call(el.childNodes, function(nd){
+    return [nd.textContent, nd.nodeType === 1 ? nd.className : ''];
+  });
   el.textContent = '';
   var cs = [];
-  for (var i = 0; i < t.length; i++){
-    var sp = document.createElement('span');
-    sp.textContent = t.charAt(i);
-    el.appendChild(sp);
-    cs.push(sp);
-  }
+  parts.forEach(function(pt){
+    for (var i = 0; i < pt[0].length; i++){
+      var sp = document.createElement('span');
+      sp.textContent = pt[0].charAt(i);
+      if (pt[1]) sp.className = pt[1];
+      el.appendChild(sp);
+      cs.push(sp);
+    }
+  });
   el._cs = cs;
-  /* **幹の語だけ明るく。**`cells()` が中身を作り直すので、
-     入れ子の `<span>` は残らない。**何桁目までが幹か**を要素に持たせて、
-     出来上がった桁に印を付ける */
-  var rt = parseInt(el.getAttribute('data-rt'), 10);
-  if (rt > 0) for (var j = 0; j < rt && j < cs.length; j++) cs[j].className = 'rt';
   return cs;
 }
 /* いまの行組みで、**同じ高さの字をひとまとめ**にする */
