@@ -941,6 +941,8 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    またたきは飾りにする）——動きが走らない場でも、**残らずに消える。**
    この案では逆をやって二度踏んでいる（出現を動きに預けると、出ないまま固まる） */
 #dWish.up,#dLines.up,#dStat.up{opacity:0; animation:blinkout .3s steps(1)}
+/* にげたとき、スライムと体力の帯は**二回またたいて消える**（`flee()`）。跳ね（`body.demo #slime`）に負けないよう頭を揃える */
+body.demo #slime.gone, body.demo #dHp.gone{opacity:0; animation:blinkout .3s steps(1)}
 @keyframes blinkout{
   0%,24%{opacity:1} 25%,49%{opacity:0} 50%,74%{opacity:1} 75%,100%{opacity:0}
 }
@@ -2621,16 +2623,27 @@ function openDemo(){
 
    **またたかせない**（同日、本人：「倒した感あるな、二回点滅だと」→「まずやってみて」）。
    二回またたくのは、この画面では**倒したときの言い方**（クリアの幕・倒したときの帯）だった。
-   → 窓・スライム・体力の帯を**同じ一瞬でまとめて消す。**敵だけが消えるのではなく、戦いの場面が閉じる */
+   → いちど、一言のあと窓・スライム・体力の帯を同じ一瞬でまとめて消した。
+     本人：「消えるの遅くない？逃げ切れたって表示とスライムが並んでる。あと今のままだとやっぱり消えた感がないな…」
+     ——言葉と絵が食い違い、スライムが消えたことが窓の閉じるのに埋もれた。
+
+   **文字なしで、スライムだけ二回またたく**（同日、本人：「文字なしで二回点滅だけする？」→「やってみて」）。
+   ・押した瞬間に**窓を閉じる**（選択肢が中途半端に残らない）
+   ・スライムと体力の帯が**二回またたいて消え**、そのまま元の画面へ
+   倒したときは潰れるコマと「スライムを たおした！」が先に出るので、またたきだけなら倒したとは読まれにくい。
+   「にげる」を押したのは本人なので、文字が無くても「逃げたから消えた」と読める */
 function flee(){
   D.phase = 'flee'; D.n = 0;
-  dStep.textContent = ''; dQ.textContent = 'うまく にげきれた！'; dA.innerHTML = '';
-  placeDWin();
-  D.tFlee = setTimeout(quitDemo, 800);
+  dWin.style.display = 'none';
+  if (REDUCE){ quitDemo(); return; }
+  slimeEl.classList.remove('come');
+  slimeEl.classList.add('gone'); dHp.classList.add('gone');
+  D.tFlee = setTimeout(quitDemo, 300 + 150);
 }
 function quitDemo(){
   clearTimeout(D.tFlee); D.tFlee = null;
   if (D.aFlee){ D.aFlee.cancel(); D.aFlee = null; }
+  slimeEl.classList.remove('gone'); dHp.classList.remove('gone');
   heroEl.classList.remove('flip');
   D.on = false; D.phase = '';
   D.typing = false;
