@@ -1337,9 +1337,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #dWin #dStep{margin-bottom:4px}
   #dWin #dQ{font-size:13px; margin-bottom:6px}
   #dWin #dA li{font-size:11.5px; padding:2px 0}
-  /* リザルトは**名乗りの下（約 80px）から画面の下までのまんなか**に——真ん中のままだと
-     844×390 で上端が名乗りに 3px、750×340 で 25px 乗った。まんなか ＝ 50% ＋ 名乗りの半分 */
-  #dRes{top:calc(50% + 40px)}
+  /* リザルトは**真ん中のまま**。いちど名乗りを避けて 40px 下げたが、社名にかぶってよくなったので戻した */
   /* **エンドロールはメニューの右で流す**（同日、本人：「エンドロールにメニューが被るな。横持」）。
      文字の列は画面の真ん中・幅 470px で、左にいるメニューの裏へ入っていた。
      → 流れる範囲の左端を**メニューの右端＋あいだ**にする。列はその中で真ん中 */
@@ -2779,9 +2777,11 @@ function ask(step, q, list, gen){
 function placeDWin(){
   if (MQ_NARROW.matches){ dWin.style.top = ''; return; }
   if (dWin.style.display === 'none') return;
-  /* 名乗りを避けるのは**横で重なるときだけ**。スマホの横持ちでは窓が名乗りの右にいるので、上から使える */
-  var nr = document.getElementById('name').getBoundingClientRect(), wr = dWin.getBoundingClientRect();
-  var nb = (nr.right > wr.left && !MQ_LAND.matches) ? nr.bottom : 0;   /* 横持ちは社名にかぶってよい */
+  var wr = dWin.getBoundingClientRect();
+  /* **横持ちだけ、社名にかぶってよい**（2026-09-25、本人：「社名にかぶせていいから横持ちしたときのポップの位置もっときれいにして」）。
+     横持ちは画面の上から使う。**PC は本人と決めたとおり、名乗りの下端から**（同日、一度こちらが横持ちの作業で
+     「横で重なるときだけ避ける」に書き換えて、ふつうの PC の窓まで画面の上からになっていた。戻した）*/
+  var nb = MQ_LAND.matches ? 0 : document.getElementById('name').getBoundingClientRect().bottom;
   var hb = dHp.getBoundingClientRect().top;
   var h  = dWin.offsetHeight;
   var t  = nb + (hb - nb - h) / 2;
