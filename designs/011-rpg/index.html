@@ -350,8 +350,7 @@ body{
   z-index:5; min-width:min(46vw,calc(260px*var(--k)))}
 #menu ul{list-style:none; margin:0; padding:0}
 #menu li{display:flex; align-items:center; gap:calc(var(--px)*2);
-  /* 行の上下と字は、勇者の頭にかかる窓だけ JS が詰める（`--mpc` / `--mfs`。`fitMenu()`）*/
-  padding:var(--mpc, calc(var(--px)*1.5)) 0; font-size:var(--mfs, clamp(14px,calc(1.6 * var(--fw)),calc(20px*var(--k)))); font-weight:700;
+  padding:calc(var(--px)*1.5) 0; font-size:clamp(14px,calc(1.6 * var(--fw)),calc(20px*var(--k))); font-weight:700;
   letter-spacing:.06em; cursor:pointer; color:var(--dim)}
 #menu li .cur{width:1em; text-align:center; color:transparent}
 /* **十字キーを使い出したら、乗せっぱなしのマウスは黙る**（`body.kb`）。
@@ -2124,24 +2123,19 @@ function placeMade(){
   document.getElementById('made').style.top = '';
 }
 
-/* **勇者の頭にかかるなら、メニューを詰める**（2026-09-25、本人：「頭被るんだったらなるべく削ってほしい、メニューの方」）。
-   線をそろえてメニューの上端を名乗りの下に固定したので、背の低い窓では**下端が勇者の頭にかかる**
-   （1084×571 で 27px、700×500 で 41px）。**メニューのほうを削る**——まず行の上下、足りなければ字。
+/* **勇者の頭にかかるなら、メニューの横幅を削る**（2026-09-25、本人：「頭被るんだったらなるべく削ってほしい、メニューの方」
+   →（行の上下を詰めたら）「縦じゃなくて横」「上下じゃない」）。
+   線をそろえてメニューの上端を名乗りの下に固定したので、背の低い窓では**メニューが勇者の頭の横まで来る**
+   （1084×571 で 27px、700×500 で 41px 頭の高さにかかった）。箱は「画面の 46% と 260px の小さいほう」で
+   **中身より広い**ので、**右の空きを削って中身の幅まで縮める。**行の高さも字もそのまま。
    横で離れている窓（勇者がメニューより右）では何もしない。スマホ・タブレットは別の作り */
 function fitMenu(mn){
-  mn.style.removeProperty('--mpc'); mn.style.removeProperty('--mfs');
+  mn.style.width = ''; mn.style.minWidth = '';
   if (MQ_LAND.matches || getComputedStyle(mn).display === 'none') return;
   var hr = document.getElementById('hero').getBoundingClientRect();   /* heroEl はまだ無いことがある（読み込みの途中で呼ばれる）*/
-  var li = mn.querySelector('li'); if (!li) return;
-  var n  = mn.querySelectorAll('li').length;
-  function over(){ var r = mn.getBoundingClientRect(); return (r.right > hr.left) ? r.bottom - (hr.top - 8) : 0; }
-  var need = over(); if (need <= 0) return;
-  var pad = parseFloat(getComputedStyle(li).paddingTop) || 0;
-  mn.style.setProperty('--mpc', Math.max(1, pad - need / (2 * n)).toFixed(2) + 'px');
-  need = over(); if (need <= 0) return;
-  /* 行を詰めきっても入らない——字を小さく（13px まで）*/
-  var fs = parseFloat(getComputedStyle(li).fontSize) || 14;
-  mn.style.setProperty('--mfs', Math.max(13, fs - need / n).toFixed(2) + 'px');
+  var r = mn.getBoundingClientRect();
+  if (!(r.right > hr.left && r.bottom > hr.top - 8)) return;
+  mn.style.minWidth = '0'; mn.style.width = 'max-content';
 }
 function placeMenu(){
   var mn = document.getElementById('menu');
