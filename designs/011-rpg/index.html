@@ -1327,7 +1327,9 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
      敵（78%）がたまたまその下にいた。デモのあいだはメニューが消えて左が空くので、なおさら寄って見えた。
      → **敵を 66% へ、問いの真ん中をその真上に。**ただし問いが名乗り（右端 350〜375px）にかからないところまで——
      狭い横持ちでは、問いと敵がそろって右へ寄る（667 幅で 77%）。上下は placeDWin() が画面の上と体力の帯のまんなかへ */
-  :root{ --lw:min(40vw, 420px); --lc:max(66%, calc(380px + var(--lw) / 2)) }
+  /* **社名にかぶってよい**（同日、本人：「社名にかぶせていいから横持ちしたときのポップの位置もっときれいにして」）。
+     名乗りを避けるのをやめたので、**どの横持ちでも PC と同じ 66%**。幅も 44% に戻す（狭いと字が折れて背が伸びる）*/
+  :root{ --lw:min(44vw, 420px); --lc:66% }
   #slime, #dHp, #slash{left:var(--lc)}
   #dWin{width:var(--lw); right:calc(100% - var(--lc) - var(--lw) / 2)}
   /* 問いは幅が狭いぶん字が折れて背が伸び、667・750 幅で体力の帯に 5〜24px 乗った——**問いの中を詰める** */
@@ -1342,6 +1344,15 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
      文字の列は画面の真ん中・幅 470px で、左にいるメニューの裏へ入っていた。
      → 流れる範囲の左端を**メニューの右端＋あいだ**にする。列はその中で真ん中 */
   #dRollIn{left:calc(clamp(16px,4vw,calc(54px*var(--k))) + clamp(170px,28vw,230px) + 12px)}
+}
+/* 幅 800 までの横持ちは、問いの中をもう一段詰める——問いの左下の角が勇者の頭にかかった（667・750 幅）*/
+@media (orientation:landscape) and (max-height:480px) and (min-width:641px) and (max-width:800px){
+  #dWin{padding-top:8px; padding-bottom:8px}
+  #dWin #dStep{margin-bottom:2px}
+  #dWin #dQ{margin-bottom:4px}
+  #dWin #dA li{padding:1px 0}
+  /* 幅も少し広げる。44% だと選択肢の最後の一字（「い」）だけが次の行へ落ちた（667 幅）*/
+  :root{ --lw:min(50vw, 420px) }
 }
 /* ─ 幅 320 の縦（2026-09-25）─────────────────────────────────
    三層に入れると、高さ 640 でも**企業理念の一枚目が勇者に 6px、帯が問いに 18px**乗っていた。
@@ -2770,11 +2781,14 @@ function placeDWin(){
   if (dWin.style.display === 'none') return;
   /* 名乗りを避けるのは**横で重なるときだけ**。スマホの横持ちでは窓が名乗りの右にいるので、上から使える */
   var nr = document.getElementById('name').getBoundingClientRect(), wr = dWin.getBoundingClientRect();
-  var nb = (nr.right > wr.left) ? nr.bottom : 0;
+  var nb = (nr.right > wr.left && !MQ_LAND.matches) ? nr.bottom : 0;   /* 横持ちは社名にかぶってよい */
   var hb = dHp.getBoundingClientRect().top;
   var h  = dWin.offsetHeight;
   var t  = nb + (hb - nb - h) / 2;
   if (t < nb + 8) t = nb + 8;              /* 入りきらないときは名乗りから離す側に寄せる */
+  /* **勇者と横で重なるなら、下端を頭より上に**（横持ちの狭い窓で、左下の角が頭にかかった）*/
+  var hr = heroEl.getBoundingClientRect();
+  if (wr.left < hr.right && t + h > hr.top - 6) t = Math.max(4, hr.top - 6 - h);
   dWin.style.top = Math.round(t) + 'px';
 }
 window.addEventListener('resize', function(){ if (D.on) placeDWin(); });
