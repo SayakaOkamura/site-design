@@ -38,9 +38,18 @@
    **縦長のスマホで言われたことを、PC の窓にまで広げていた。**
    横長ではメニューと勇者のあいだが詰まり、1500×800 では角が勇者の頭に当たっていた。
    縦長の窓は中央に出す作りが別にあるので、ここは横長だけの話 */
+/* ── 線をそろえる（2026-09-25、本人：「なんかぜんぶちゅうとはんぱないちにあるかんじがするんだよね」→「してみて」）──
+   一つずつが別の式で置かれていて、**共通の線が無かった**（1536×864 で、揃っていたのは名乗りとメニューの左だけ。
+   右の余白は窓 138px・右下の一行 61px、メニューの上端 244 と窓の上端 147 もばらばら）。
+   → 線を決めて、そこに寄せる：
+     左右の余白  **名乗りの左と同じ**（clamp(16px,4vw,54px×k)）。窓の右も、右下の一行と同じ
+     上の線     **名乗りの下端 ＋ 粒 6 つ**（`--T`。JS が名乗りを測って置く）。メニューと窓の上端をここに
+     縦の線     勇者 34%・敵と問い 66%（前のまま。三分の一・三分の二として扱う）
+   足もとの二語（12px 左）とクリアの幕（50.1%）は本人が目で決めた位置なので、線には巻き込まない。
+   スマホ・タブレットは別の作り（狭い窓の節・横持ちの節）で上書きする */
 #pop,#dWin{
   --winw:min(46vw, calc(680px*var(--k)));
-  --winr:clamp(28px,9vw,calc(120px*var(--k)));
+  --winr:clamp(16px,4vw,calc(54px*var(--k)));
 }
 
 /* ── 大きい窓では、画面ごと大きくする（2026-09-24）────────────
@@ -83,9 +92,7 @@
    いちど幅 1620 からにしていた（勇者が 30% だと 1500 幅で頭に当たった）。
    勇者を横長で 34% に戻したので、**大きくする窓すべて**で戻せる。
    ここは下の `#menu` より前にあるので、`:root` を頭に付けて勝たせる */
-@media (min-width:1500px) and (min-height:800px){
-  :root #menu{transform:translateY(calc(-62% / 1.25))}
-}
+/* → 同日、メニューの上端は**上の線（`--T`）**に乗せたので、この直しは要らなくなった（線をそろえる、の節）*/
 
 /* ── 空は二つ持っている ───────────────────────────────────────
    **既定は夕焼け**（2026-09-15、本人：「一旦夕焼けで進める…？」）。
@@ -339,7 +346,7 @@ body{
   box-shadow:0 0 0 var(--px) var(--win), 0 0 0 calc(var(--px)*2) rgba(0,0,0,.45);
   padding:calc(var(--px)*3) calc(var(--px)*4);
 }
-#menu{position:absolute; left:clamp(16px,4vw,calc(54px*var(--k))); top:46%; transform:translateY(-62%);
+#menu{position:absolute; left:clamp(16px,4vw,calc(54px*var(--k))); top:var(--T, 46%);
   z-index:5; min-width:min(46vw,calc(260px*var(--k)))}
 #menu ul{list-style:none; margin:0; padding:0}
 #menu li{display:flex; align-items:center; gap:calc(var(--px)*2);
@@ -466,7 +473,7 @@ body:has(#pop.on){cursor:pointer}
      `min()` で揃える。**低い窓では字も縮む。**
      ふだんの窓（高さ 600 以上）では `1.45vw` のほうが小さいので**一切変わらない** */
   --tx:clamp(12px,min(calc(1.45 * var(--fw)),3vh),calc(16px*var(--k)));
-  right:var(--winr); top:17%;
+  right:var(--winr); top:var(--T, 17%);
   width:var(--winw); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
@@ -766,7 +773,7 @@ body:has(#pop.on){cursor:pointer}
   /* **名乗りの下に落とす**（2026-09-24）。`top:17%` は低い窓だと名乗りの下端より
      上に来て、**一行紹介の終わりが窓に隠れていた**（1200×520 で 12px、1000×511 で 9px）。
      名乗りの背は 96〜102px（三行）なので、**112px を床**にする */
-  #pop{ top:max(17%, 112px) }
+  /* 上端は上の線（`--T`）。前は `max(17%, 112px)` で名乗りの下へ落としていた——線が名乗りの下なので、もう要らない */
   #pop{width:min(74vw, 760px,
     calc(100vw - var(--winr) - clamp(16px,4vw,calc(54px*var(--k))) - min(46vw,calc(260px*var(--k)))
          - var(--px)*6))}
@@ -1671,6 +1678,18 @@ function sizeCanvas(cv, cx, w, h){
   cv.width = w*HPX*dpr; cv.height = h*HPX*dpr;
   cx.scale(dpr, dpr); cx.imageSmoothingEnabled = false;
 }
+/* 上の線。**名乗りの下端 ＋ 粒 6 つ**——メニューと窓の上端がここに乗る。
+   名乗りの背は字の大きさで変わるので、窓が変わるたびと、字が読み込まれたときに測り直す */
+function placeLines(){
+  var px = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
+  var nb = document.getElementById('name').getBoundingClientRect().bottom;
+  document.documentElement.style.setProperty('--T', Math.round(nb + px * 6) + 'px');
+}
+placeLines();
+window.addEventListener('resize', placeLines);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){
+  placeLines(); window.dispatchEvent(new Event('resize'));
+});
 window.addEventListener('resize', function(){
   var n = readHpx();
   if (n === HPX) return;
