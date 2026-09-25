@@ -2136,6 +2136,12 @@ function fitMenu(mn){
   var r = mn.getBoundingClientRect();
   if (!(r.right > hr.left && r.bottom > hr.top - 8)) return;
   mn.style.minWidth = '0'; mn.style.width = 'max-content';
+  /* **右にも矢印ぶん残す**（同日、本人：「最大横幅、矢印のために開けてる空白分は詰め切らないようにして。右側も。」）。
+     左は ▶ の場所（字の前の一字ぶん＋あいだ）が空いているのに、右は字の直後で切れて**左右が非対称**だった。
+     → 中身の幅に、▶ の幅＋あいだをもう一つ足す */
+  var cur = mn.querySelector('li .cur'), li0 = mn.querySelector('li');
+  var extra = (cur ? cur.getBoundingClientRect().width : 0) + (parseFloat(getComputedStyle(li0).columnGap) || 0);
+  mn.style.width = Math.ceil(mn.getBoundingClientRect().width + extra) + 'px';
 }
 function placeMenu(){
   var mn = document.getElementById('menu');
