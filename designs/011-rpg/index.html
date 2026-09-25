@@ -585,11 +585,18 @@ body:has(#pop.on){cursor:pointer}
 
      地面は下端まで伸びたままなので、**地平を `--deck` ぶん持ち上げるだけで
      そのぶんが暗い床になる。**その上にコマンドが乗る */
-  /* **高さ 800 から。**それより低い縦長は三層に割れない——
-     デモの問いが上、戦いが真ん中で、地平を上げると**問いが勇者の頭に乗る**
-     （390×620 では、メニューに要る 264px と、問いに残せる 180px が両立しない）。
-     いまどきの端末は 800 以上（390×844・412×915・430×932）*/
-  @media (orientation:portrait) and (min-height:800px){
+  /* **高さ 600 から**（2026-09-25 に 800 から下げた）。
+     前は「いまどきの端末は 800 以上（390×844・412×915・430×932）」として 800 にしていたが、
+     **それは端末の大きさで、ブラウザの中の高さではない。**アドレスバーのぶん低くなり、
+     390×844 の機種でも中は 660〜750px ほど——**実際のスマホではほとんど三層になっていなかった。**
+     本人：「縦でいじった時にポップの横幅がついてきてない瞬間がある」——
+     バーが出入りして 800 をまたぐたび、メニュー（150px）とポップ（幅いっぱい）が入れ替わっていた。
+
+     前に書いていた「390×620 では問いが勇者の頭に乗る」は、**問いが上にあった頃**の話。
+     9/24 にデモも三層に入れて問いを下へ移したので、もう当たらない
+     （360〜430 × 600〜860 の 56 通りで、メニュー・七つの窓の全頁・デモの問いが
+     勇者・名乗り・敵に乗らないことを測った）*/
+  @media (orientation:portrait) and (min-height:600px){
     /* 地平をここまで上げる。**上げたぶんがそのまま暗い床**になり、そこに窓が乗る。
 
        床の割り振り（下から）：**窓 → 間 → 帯 → 足もと → 地平。**
@@ -638,17 +645,12 @@ body:has(#pop.on){cursor:pointer}
           width:min(94vw,calc(520px*var(--k))); min-width:0}
     /* **開いているあいだは出さない。**同じ場所を使うので */
     body.popped #menu{display:none}
-    /* 右下の一行は、**足もととメニューのあいだの暗がり**（2026-09-24）。
-       右下のままだと**メニューに乗る**（390×844 で 12px 食い込む）。
-
-       いちど**地平線のすぐ上**へ上げたが、戻した——空と太陽の裾に乗るので
-       名乗りと同じ縁が要り、**縁を付けたぶん逆に目立った。**
-       本人：「普通気付かないくらいがいいな」。
-
-       あいだの帯（足もとの下からメニューの上まで）は**暗い**ので、縁が要らない。
-       右端に寄せて置くので、足もとの二語の寄せにも触らない。
-       **上は JS が置く**——帯の場所はメニューがどこまで伸びたかで決まる */
-    #made{bottom:auto}
+    /* 右下の一行は、**メニューの下**（2026-09-25、本人：「縦の時のこの画面について、は下にして」）。
+       前は足もととメニューのあいだの暗がりに JS で置いていた。
+       **メニューの下のあき（`--deckB`）のまんなか、右端はメニューの右端に揃える。**
+       暗い床の上なので縁は要らない */
+    #made{bottom:max(2px, calc((var(--deckB) - 1.7em) / 2));   /* 1.7em ＝ この一行の実際の背（9px で 15px）*/
+          right:calc((100% - min(94vw,calc(520px*var(--k)))) / 2)}
   }
   #hero{left:50%}   /* 狭い窓では窓が下へ回るので、真ん中に戻す */
   /* ただし**縦長だけは左へ戻す**（2026-09-24、本人：「**スライムと勇者の位置関係も**」）。
@@ -1158,7 +1160,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 
    **この節は 9/16 のデモ用ブロックより後ろに置く**——メディアクエリは
    強さを足さないので、前に書くと素の `#dBar{top:...}` に負ける（いちど負けた）*/
-@media (max-width:640px) and (orientation:portrait) and (min-height:800px){
+@media (max-width:640px) and (orientation:portrait) and (min-height:600px){
   /* 窓も同じ線に乗せる（上の節で書くと、この後ろの `#pop{bottom:...}` に負ける。
      メディアクエリは強さを足さないので、**後ろにまとめる**）*/
   #pop{bottom:var(--deckB)}
@@ -1817,8 +1819,8 @@ function fitAbout(){
   if (!wasPopped) document.body.classList.remove('popped');
 }
 /* **三層に割れない縦長の窓**では、メニューが上に貼りついて見える（2026-09-24、
-   本人：「**上すぎるのが気になる**」）。高さ 800 以上の縦長は CSS で下に置いてあるので、
-   ここが効くのは**それより低い窓**（390×620・360×640・320×568 など）。
+   本人：「**上すぎるのが気になる**」）。高さ 600 以上の縦長は CSS で下に置いてあるので、
+   ここが効くのは**それより低い窓**（320×568 など。9/25 に境目を 800 → 600 に下げた）。
 
    9/16 に上へ逃がしたのは、下から生えるポップと**必ず重なっていた**から。逃がす向きは正しい。
    ただ `top:clamp(100px,15vh,150px)` は**窓の高さだけ**で決めていて、
@@ -1832,7 +1834,7 @@ function fitAbout(){
    9/16 に画面で決めたもの（84 では乗った） */
 var MQ_NARROW = window.matchMedia('(max-width:640px)');
 /* **三層に割れる窓ではやらない**——あちらはメニューを下に置いてある（CSS 側） */
-var MQ_DECK   = window.matchMedia('(max-width:640px) and (orientation:portrait) and (min-height:800px)');
+var MQ_DECK   = window.matchMedia('(max-width:640px) and (orientation:portrait) and (min-height:600px)');
 var MQ_HIDE   = window.matchMedia('(max-height:600px), (max-width:340px)');
 /* いちばん背の高い頁の上端。**開く動きの最中は高さが嘘になる**ので止めて測る。
 
@@ -1876,15 +1878,10 @@ function topOfTallestPop(){
    その差を箱で埋めるのをやめた、という話 */
 /* **メニューの置き場は一つの関数にまとめる。**いちど `hangMenu` と `placeMenu` に
    分けて、**二つが同じ `top` を書いて消し合った**（320×568 で名乗りに戻って乗った）*/
+/* 右下の一行。**三層の縦でもメニューの下へ移したので、JS では置かない**（2026-09-25）。
+   前に置いた値が残らないように、外すだけ */
 function placeMade(){
-  var md = document.getElementById('made');
-  md.style.top = '';
-  if (!MQ_DECK.matches) return;
-  var g = document.getElementById('ground').getBoundingClientRect();
-  var f = document.getElementById('foot').getBoundingClientRect();
-  if (!f.height) return;                   /* デモ中は足もとが無い */
-  var h = md.getBoundingClientRect().height;
-  md.style.top = Math.round(f.bottom + (f.top - g.top - h) / 2) + 'px';
+  document.getElementById('made').style.top = '';
 }
 
 function placeMenu(){
