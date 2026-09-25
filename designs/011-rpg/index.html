@@ -720,30 +720,6 @@ body.demo #demo{display:block}
 @keyframes bang{ from{transform:translateX(-50%) scale(1.45)}
                  to{transform:translateX(-50%) scale(1)} }
 
-/* ─ 顔を出す敵（2026-09-25、入口を強くする）───────────────────────
-   本人：「デモ目立たせるより**並列で並べた**方がいいかなあ」で、色で引くのはやめた。
-   **ボタンで引かず、場で引く。**勇者の先に敵がちらっと見える——RPG なら押したくなるのはそこ。
-
-   **右の端から出て、二度跳ねて、引っ込む。**居つづけると景色になって、見なくなる。
-   **大きさか位置で動かす**（透明度で動かすと、動きが走らない場で出ないまま）。
-   動きを止める設定では、端の外に居たまま出てこない——それで構わない（入口はメニューにもある）。
-   窓・デモ・エンドロールのあいだは出さない */
-/* 細い窓では 93% だと**半分が外に出る**（390×844）。**右の端から一粒ぶん内側**を上限にする */
-#peek{position:absolute; left:min(93%, calc(100% - var(--hpx)*8px - 12px)); bottom:var(--gh); z-index:3;
-  transform:translateX(-50%) translateX(calc(7vw + var(--hpx)*16px + 12px)); image-rendering:pixelated;
-  cursor:pointer}
-body.demo #peek, body.popped #peek, body.roll #peek{display:none}
-#peek.on{animation:peek 3.6s 1}
-@keyframes peek{
-  0%      {transform:translateX(-50%) translateX(calc(7vw + var(--hpx)*16px + 12px)); animation-timing-function:steps(4)}
-  14%,26% {transform:translateX(-50%) translateX(0) translateY(0); animation-timing-function:steps(1)}
-  32%     {transform:translateX(-50%) translateX(0) translateY(-6px); animation-timing-function:steps(1)}
-  40%,52% {transform:translateX(-50%) translateX(0) translateY(0); animation-timing-function:steps(1)}
-  58%     {transform:translateX(-50%) translateX(0) translateY(-6px); animation-timing-function:steps(1)}
-  66%,84% {transform:translateX(-50%) translateX(0) translateY(0); animation-timing-function:steps(4)}
-  100%    {transform:translateX(-50%) translateX(calc(7vw + var(--hpx)*16px + 12px))}
-}
-
 /* スライム。**勇者の右**（ここを敵の場所にあけてあった） */
 #slime{position:absolute; left:66%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
@@ -1231,9 +1207,6 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   </div>
 
   <canvas id="hero"></canvas>
-  <!-- **場が誘う**（2026-09-25）。勇者の先、右の端に敵が**ちらっと顔を出して、引っ込む。**
-       押すとそのままデモに入る。メニューは五つ並列のまま -->
-  <canvas id="peek" aria-hidden="true"></canvas>
 
   <div id="ground">
     <div class="band"></div>
@@ -2297,41 +2270,6 @@ var SW = 16, SH = 10;
   if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
   /* 勇者より**ゆっくり**ぷるぷるさせる。同じ拍子だと二人で行進して見える */
   setInterval(function(){ i = (i+1) % SLIME.length; if (idle) paint(SLIME[i]); }, 340);
-})();
-
-/* 顔を出す敵。**デモの敵と同じ絵**——押すと、同じものが歩いてくる */
-(function(){
-  var cv = document.getElementById('peek'), cx = cv.getContext('2d');
-  var COL = getComputedStyle(document.documentElement)
-              .getPropertyValue('--slime').trim() || '#4a2e2a';
-  var i = 0;
-  function paint(){
-    sizeCanvas(cv, cx, SW, SH);
-    cx.fillStyle = COL;
-    var m = SLIME[i];
-    for (var y = 0; y < SH; y++) for (var x = 0; x < SW; x++)
-      if (m[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
-  }
-  paint();
-  REDRAW.push(paint);
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  setInterval(function(){
-    if (!cv.classList.contains('on')) return;
-    i = (i+1) % SLIME.length; paint();
-  }, 340);
-  /* **間はまばらに。**毎回同じ間だと、時計に見える */
-  function next(){ setTimeout(show, 7000 + Math.random() * 6000); }
-  function show(){
-    var b = document.body.classList;
-    if (!document.hidden && !b.contains('demo') && !b.contains('popped') && !b.contains('roll')){
-      cv.classList.remove('on'); void cv.offsetWidth; cv.classList.add('on');
-    }
-    next();
-  }
-  cv.addEventListener('animationend', function(){ cv.classList.remove('on'); });
-  /* 押したら**そのままデモ。**出てきた敵が、そのまま歩いてくる相手になる */
-  cv.addEventListener('click', function(e){ e.stopPropagation(); startDemo(); });
-  setTimeout(show, 2600);
 })();
 
 (function(){
