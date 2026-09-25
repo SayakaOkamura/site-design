@@ -901,8 +901,10 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    **製品の見た目には寄せない**（003 からの決めごと） */
 /* **下からせり上がる。**行が増えても**いちばん新しいものが必ず見える**
    （上から流すと、短い窓で打ちたての行が切れる） */
+/* **左右は名乗り・メニューの左端と同じ式**（2026-09-25、ずれの直し）。前は `5vw` で、
+   名乗りとメニュー（`4vw`）より 13px 内側に打たれていた——揃っているようで揃っていない */
 #dBar{position:absolute; left:0; right:0; top:calc(100% - var(--gh) + var(--px)*4); bottom:0; z-index:8;
-  padding:calc(var(--px)*2) clamp(16px,5vw,calc(64px*var(--k))); overflow:hidden;
+  padding:calc(var(--px)*2) clamp(16px,4vw,calc(54px*var(--k))); overflow:hidden;
   display:flex; flex-direction:column; justify-content:flex-end;
   font-family:"SFMono-Regular",Consolas,"Courier New",monospace}
 /* **最初のお願いは別枠**（2026-09-15、本人：「そうやって打たれたもの
