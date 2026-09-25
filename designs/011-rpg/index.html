@@ -1291,7 +1291,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 /* 止めるのは CSS ではなく JS（`halt()`）。**一瞬で止めずに 0.5 秒かけて落とす**ため */
 /* 踏み込み。**位置は変えず、margin だけ**——`transform` は中央寄せに使っている */
 #hero{transition:margin-left .1s steps(2)}
-/* にげるとき、**向きだけ**左へ。位置は変えない（走る位置は変わらない、が注文）*/
+/* にげる B（勇者が背を向けて走る）で使っていた。**向きだけ**左へ、位置は変えない。いまは使っていない */
 #hero.flip{transform:translateX(-50%) scaleX(-1)}
 #hero.swing{margin-left:18px}
 </style>
@@ -2610,41 +2610,27 @@ function openDemo(){
     ask('作戦', 'どんなことを、したい？', TOPICS.map(function(t){ return t.t; }));
   }, 420);
 }
-/* **にげる**（2026-09-25、本人：「逃げたときに逃げた感ほしい」→「スライムが引いていくのを逃げるとはできない？」
-   →（二通り出して）「一旦やってみて。微妙ならもう一個もやってもらうから」）。
+/* **にげる**（2026-09-25、本人：「逃げたときに逃げた感ほしい」→「スライムが引いていくのを逃げるとはできない？」）。
    前は押した瞬間に元の画面へ戻るだけで、**一言も一拍も、置き去りにする絵も無かった。**
 
-   **勇者が背を向けて走り、スライムが遠ざかる。**
+   **A：スライムだけが引いていく**（同日、本人：「Aにしてみて」）。
+   背景はいつもどおり流したまま、勇者も前を向いたまま。スライムは**歩いてきた動きを逆にたどって**右の外へ。
    ・窓に「にげだした！」
-   ・勇者の**向きだけ**左へ（位置は動かさない）、背景を**逆向き**に流す
-   ・スライムは地面に乗っているので、**地面と同じ速さで右へ**流れて画面の外へ
-   ・流れ終わったら前を向き直り、背景は逆向きから止まって、いつもの向きへ戻る（`quitDemo` の `halt(false)`）
-   スライムだけを下がらせる形（背景はそのまま）は「敵が帰った」に見えるので、そちらは取らなかった */
+   ・スライムの引き方は入り（`come`：0.85 秒・9 コマ）と同じ刻み
+   いちど B（勇者が背を向けて走り、背景を逆に流す）を作った。形は git（`d3cb136`）にある */
 function flee(){
   D.phase = 'flee'; D.n = 0;
   dStep.textContent = ''; dQ.textContent = 'にげだした！'; dA.innerHTML = '';
   placeDWin();
   dHp.style.visibility = 'hidden';
   if (REDUCE){ D.tFlee = setTimeout(quitDemo, 700); return; }
-  heroEl.classList.add('flip');
-  var pick = function(sel){ var out = [];
-    [].forEach.call(document.querySelectorAll(sel), function(el){ out = out.concat(el.getAnimations()); });
-    return out; };
-  /* 逆に回す。**始まって間もないと 0 に着いて止まる**ので、周回ぶん先へ送ってから（見た目は同じ）*/
-  pick('#far .band, #near .band, #ground .band, #cloud .band').forEach(function(a){
-    var d = a.effect.getTiming().duration;
-    if (a.currentTime < 3 * d) a.currentTime += 4 * d;
-    a.playbackRate = -1;
-  });
-  /* 地面の縞と同じ速さで右へ。縞は画面一つを `data-dur` 秒で流れる */
-  var g = document.querySelector('#ground .band');
-  var sec = (+(g && g.dataset.dur) || 2.2) * .45;           /* 画面の 45% ぶん＝66% から外まで */
-  D.aFlee = slimeEl.animate([{ transform:'translateX(-50%)' }, { transform:'translateX(calc(-50% + 45vw))' }],
-                            { duration: sec * 1000, easing:'linear', fill:'forwards' });
+  slimeEl.classList.remove('come');
+  D.aFlee = slimeEl.animate([{ transform:'translateX(-50%)' }, { transform:'translateX(-50%) translateX(46vw)' }],
+                            { duration:850, easing:'steps(9)', fill:'forwards' });
   D.tFlee = setTimeout(function(){
     slimeEl.style.display = 'none';
     quitDemo();
-  }, sec * 1000 + 200);
+  }, 850 + 250);
 }
 function quitDemo(){
   clearTimeout(D.tFlee); D.tFlee = null;
