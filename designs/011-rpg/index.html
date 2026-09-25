@@ -1300,6 +1300,25 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 /* にげる B（勇者が背を向けて走る）で使っていた。**向きだけ**左へ、位置は変えない。いまは使っていない */
 #hero.flip{transform:translateX(-50%) scaleX(-1)}
 #hero.swing{margin-left:18px}
+/* ─ スマホの横持ち（2026-09-25、本人：「それはそれとしてスマホ横持の修正はいるかな」→「やって」）──
+   高さ 340〜430px。前は PC の「低い窓」の作り（高さ 500〜600 を見込んだもの）に落ちて、
+   **メニューが名乗りと勇者に乗り、窓は全頁が勇者に、問いは敵の体力に乗っていた**（667×375〜926×428）。
+
+   **左に名乗りとメニュー、真ん中に勇者、右に窓。**縦に積む余地が無いので、横に三つ並べる。
+   ・粒を一段小さく（背景 3px・勇者 4px）。床も薄く
+   ・メニューは**地面のすぐ上**、左。行を詰める
+   ・勇者（と「！」）は 44%——メニューの右に出る
+   ・窓と問いは**右上**、幅 44%。敵は 78%——問いの真下
+   この節は後ろに置く（メディアクエリは強さを足さない）*/
+@media (orientation:landscape) and (max-height:480px) and (min-width:641px){
+  :root{ --px:3px; --hpx:4; --gh:clamp(60px,20vh,86px) }
+  #menu{top:auto; bottom:calc(var(--gh) + 10px); transform:none; min-width:0; width:clamp(170px,28vw,230px)}
+  #menu li{padding:calc(var(--px)*.9) 0; font-size:13px}
+  #hero, #dBang{left:44%}
+  #pop, #dWin{right:12px; left:auto; top:10px; transform:none; width:min(44vw,420px); --winr:12px}
+  #pop{max-height:calc(100% - var(--gh) - 20px); bottom:auto}
+  #slime, #dHp, #slash{left:78%}
+}
 </style>
 
 <div id="screen">
@@ -1896,7 +1915,7 @@ function fitAcc(){
      いちばん背の高い頁で、**地面を下げると勇者の足に乗る。**
      二枚にすると、いちばん背の高い頁が会社概要の一枚目（287px）になって
      地面を 72px 下げられる。**譲るのは枚数**（9/14 の決めごと）*/
-  if (MQ_DECK.matches){ accFits = false; return; }
+  if (MQ_DECK.matches || MQ_LAND.matches){ accFits = false; return; }   /* スマホの横持ちも、縦長と同じく最初から割る */
   var keep = pop.className, kp = page, kb = popB.innerHTML, kg = popGo.innerHTML,
       wasPopped = document.body.classList.contains('popped');
   pop.style.animation = 'none';          /* 開く動きの最中は高さが嘘になる */
@@ -1949,7 +1968,7 @@ function fitAbout(){
   /* **三層の縦では、いつも四枚**（2026-09-24）。三枚だと一枚目が 287px で
      いちばん背が高く、**床を薄くすると勇者の足に乗る。**四枚にすると 253px。
      **譲るのは枚数**（9/14 の決めごと）*/
-  if (MQ_DECK.matches){ aboutFits = false; return; }
+  if (MQ_DECK.matches || MQ_LAND.matches){ aboutFits = false; return; }
   var keep = pop.className, kp = page, kb = popB.innerHTML, kg = popGo.innerHTML,
       wasPopped = document.body.classList.contains('popped');
   pop.style.animation = 'none';
@@ -1989,6 +2008,8 @@ var MQ_NARROW = window.matchMedia('(max-width:640px), ' + TABLET);
 /* **三層に割れる窓ではやらない**——あちらはメニューを下に置いてある（CSS 側） */
 var MQ_DECK   = window.matchMedia('(max-width:640px) and (orientation:portrait) and (min-height:600px), ' + TABLET);
 var MQ_HIDE   = window.matchMedia('(max-height:600px), (max-width:340px)');
+/* スマホの横持ち（CSS の同じ条件の節と対）*/
+var MQ_LAND   = window.matchMedia('(orientation:landscape) and (max-height:480px) and (min-width:641px)');
 /* いちばん背の高い頁の上端。**開く動きの最中は高さが嘘になる**ので止めて測る。
 
    **中身は `draw()` に作らせる。**手で `popT` と `popB` だけ入れて測ったら、
@@ -2710,7 +2731,9 @@ function ask(step, q, list, gen){
 function placeDWin(){
   if (MQ_NARROW.matches){ dWin.style.top = ''; return; }
   if (dWin.style.display === 'none') return;
-  var nb = document.getElementById('name').getBoundingClientRect().bottom;
+  /* 名乗りを避けるのは**横で重なるときだけ**。スマホの横持ちでは窓が名乗りの右にいるので、上から使える */
+  var nr = document.getElementById('name').getBoundingClientRect(), wr = dWin.getBoundingClientRect();
+  var nb = (nr.right > wr.left) ? nr.bottom : 0;
   var hb = dHp.getBoundingClientRect().top;
   var h  = dWin.offsetHeight;
   var t  = nb + (hb - nb - h) / 2;
