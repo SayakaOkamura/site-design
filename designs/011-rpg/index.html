@@ -224,26 +224,45 @@ body{
 
    **物を一つ置くのではなく、景色として流す。**看板と顔を出す敵は「流れる画面の中で
    一人だけ止まっている／出入りする」で外した。雲は勇者以外と同じく**流れていて当たり前**。
-   - **空の上のほう**を通す——勇者の後ろを通らないので、黒い塊にならない
-   - **遠い山（38 秒）より遅く、画面一つ 80 秒ほど。**遠いものほど遅くないと奥行きが崩れる
+   - **空の中を通す**——勇者の後ろを通らないので、黒い塊にならない
+   - **遠い山（38 秒）より遅く。**遠いものほど遅くないと奥行きが崩れる
    - **横に細い筋。**空が横縞の段で描いてあるので、同じ描き方に寄せる。丸い雲は別の絵になる
    - **光らせない**（光らせるのは目だけ）。遠い山の色を薄く敷いて、**空より一段暗い筋**にする
    - 左は名乗りとメニューが前に来るので、見えるのは主に右半分
-   筋の太さは**背景の粒（`--px`）の二つぶん**。型の一目を一粒に合わせてある */
-#cloud{position:absolute; left:0; right:0; top:calc((100% - var(--gh)) * .27);   /* 名乗りの下と太陽の上のあいだ */
-  height:calc(var(--px)*30); overflow:hidden; z-index:0; opacity:.42; pointer-events:none}
-#cloud .band{
+   筋の太さは**背景の粒（`--px`）で数える**（上から一つ・二つ・三つぶん）。型の一目を一粒に合わせてある */
+/* **三つの高さに分ける**（同日、本人：「なんか同じ場所しか流れてない？」→「直して」）。
+   一つの帯（空の上から 27%）に三つのかたまりが 1400px ごとに繰り返していたので、
+   **同じ形が同じ高さで何度も来ていた。**
+   → 高い・中・低いの三層。**上ほど細く・薄く・遅く**（遠い）、下ほど太く・濃く・速く。
+   型の長さも層ごとに変えて、**並びが戻ってくるまでを長くする**（520／430／330 粒）。
+   速さは画面一つ（1536 幅）あたり 上 90 秒ほど／中 70 秒ほど／下 50 秒ほど——遠い山（38 秒）より遅い */
+#cloud{position:absolute; left:0; right:0; top:0; bottom:var(--gh); z-index:0; pointer-events:none}
+#cloud .band{top:0; width:100%;
   background-color:var(--far);
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 350 30' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='10' y='6' width='46' height='2'/%3E%3Crect x='22' y='8' width='70' height='2'/%3E%3Crect x='40' y='10' width='34' height='2'/%3E%3Crect x='150' y='18' width='28' height='2'/%3E%3Crect x='138' y='20' width='64' height='2'/%3E%3Crect x='160' y='22' width='30' height='2'/%3E%3Crect x='250' y='4' width='40' height='2'/%3E%3Crect x='236' y='6' width='84' height='2'/%3E%3Crect x='262' y='8' width='44' height='2'/%3E%3C/g%3E%3C/svg%3E");
-          mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 350 30' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='10' y='6' width='46' height='2'/%3E%3Crect x='22' y='8' width='70' height='2'/%3E%3Crect x='40' y='10' width='34' height='2'/%3E%3Crect x='150' y='18' width='28' height='2'/%3E%3Crect x='138' y='20' width='64' height='2'/%3E%3Crect x='160' y='22' width='30' height='2'/%3E%3Crect x='250' y='4' width='40' height='2'/%3E%3Crect x='236' y='6' width='84' height='2'/%3E%3Crect x='262' y='8' width='44' height='2'/%3E%3C/g%3E%3C/svg%3E");
-  -webkit-mask-size:calc(var(--px)*350) 100%;  mask-size:calc(var(--px)*350) 100%;
-  -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x;
-  /* **型の一周ぶんだけ動かす。**山と同じ `translateX` だと、画面の幅が型の幅で割り切れないとき
-     一周ごとに雲が跳ぶ（山は低くて細かいので目立たない）。75 秒で型一つ（1400px）＝画面一つ 80 秒ほど */
-  width:100%; animation:cloudflow 75s linear infinite;
-}
-@keyframes cloudflow{ from{-webkit-mask-position:0 0; mask-position:0 0}
-                      to{-webkit-mask-position:calc(var(--px)*-350) 0; mask-position:calc(var(--px)*-350) 0} }
+  -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x}
+#cloud .c1{top:calc(100% * .12); height:calc(var(--px)*12); opacity:.28;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 12' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='30' y='2' width='28' height='1'/%3E%3Crect x='40' y='3' width='46' height='1'/%3E%3Crect x='210' y='6' width='20' height='1'/%3E%3Crect x='200' y='7' width='38' height='1'/%3E%3Crect x='390' y='1' width='34' height='1'/%3E%3Crect x='378' y='2' width='58' height='1'/%3E%3Crect x='396' y='3' width='22' height='1'/%3E%3C/g%3E%3C/svg%3E");
+          mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 12' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='30' y='2' width='28' height='1'/%3E%3Crect x='40' y='3' width='46' height='1'/%3E%3Crect x='210' y='6' width='20' height='1'/%3E%3Crect x='200' y='7' width='38' height='1'/%3E%3Crect x='390' y='1' width='34' height='1'/%3E%3Crect x='378' y='2' width='58' height='1'/%3E%3Crect x='396' y='3' width='22' height='1'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-size:calc(var(--px)*520) 100%;  mask-size:calc(var(--px)*520) 100%;
+  animation:cloudc1 120s linear infinite}
+#cloud .c2{top:calc(100% * .30); height:calc(var(--px)*20); opacity:.40;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 430 20' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='10' y='4' width='46' height='2'/%3E%3Crect x='22' y='6' width='70' height='2'/%3E%3Crect x='40' y='8' width='34' height='2'/%3E%3Crect x='168' y='12' width='26' height='2'/%3E%3Crect x='150' y='14' width='64' height='2'/%3E%3Crect x='176' y='16' width='30' height='2'/%3E%3Crect x='300' y='2' width='40' height='2'/%3E%3Crect x='286' y='4' width='84' height='2'/%3E%3Crect x='312' y='6' width='44' height='2'/%3E%3C/g%3E%3C/svg%3E");
+          mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 430 20' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='10' y='4' width='46' height='2'/%3E%3Crect x='22' y='6' width='70' height='2'/%3E%3Crect x='40' y='8' width='34' height='2'/%3E%3Crect x='168' y='12' width='26' height='2'/%3E%3Crect x='150' y='14' width='64' height='2'/%3E%3Crect x='176' y='16' width='30' height='2'/%3E%3Crect x='300' y='2' width='40' height='2'/%3E%3Crect x='286' y='4' width='84' height='2'/%3E%3Crect x='312' y='6' width='44' height='2'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-size:calc(var(--px)*430) 100%;  mask-size:calc(var(--px)*430) 100%;
+  animation:cloudc2 80s linear infinite}
+#cloud .c3{top:calc(100% * .50); height:calc(var(--px)*22); opacity:.50;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 330 22' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='40' y='6' width='60' height='3'/%3E%3Crect x='20' y='9' width='110' height='3'/%3E%3Crect x='54' y='12' width='52' height='3'/%3E%3Crect x='220' y='2' width='44' height='3'/%3E%3Crect x='196' y='5' width='92' height='3'/%3E%3C/g%3E%3C/svg%3E");
+          mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 330 22' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='40' y='6' width='60' height='3'/%3E%3Crect x='20' y='9' width='110' height='3'/%3E%3Crect x='54' y='12' width='52' height='3'/%3E%3Crect x='220' y='2' width='44' height='3'/%3E%3Crect x='196' y='5' width='92' height='3'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-size:calc(var(--px)*330) 100%;  mask-size:calc(var(--px)*330) 100%;
+  animation:cloudc3 42s linear infinite}
+/* **型の一周ぶんだけ動かす。**山と同じ `translateX` だと、画面の幅が型の幅で割り切れないとき
+   一周ごとに雲が跳ぶ（山は低くて細かいので目立たない）*/
+@keyframes cloudc1{ from{-webkit-mask-position:0 0; mask-position:0 0}
+  to{-webkit-mask-position:calc(var(--px)*-520) 0; mask-position:calc(var(--px)*-520) 0} }
+@keyframes cloudc2{ from{-webkit-mask-position:0 0; mask-position:0 0}
+  to{-webkit-mask-position:calc(var(--px)*-430) 0; mask-position:calc(var(--px)*-430) 0} }
+@keyframes cloudc3{ from{-webkit-mask-position:0 0; mask-position:0 0}
+  to{-webkit-mask-position:calc(var(--px)*-330) 0; mask-position:calc(var(--px)*-330) 0} }
 
 /* ─ 遠景の山。ゆっくり流れる ────────────────────────────────── */
 .band{position:absolute; left:0; width:300%; height:100%;
@@ -1248,7 +1267,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 <div id="screen">
   <div id="sky"></div>
   <div id="sun"></div>
-  <div id="cloud"><div class="band"></div></div>
+  <div id="cloud"><div class="band c1"></div><div class="band c2"></div><div class="band c3"></div></div>
   <div id="far"><div class="band"></div></div>
   <div id="near"><div class="band"></div></div>
 
