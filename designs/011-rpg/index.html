@@ -941,6 +941,8 @@ body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)
    またたきは飾りにする）——動きが走らない場でも、**残らずに消える。**
    この案では逆をやって二度踏んでいる（出現を動きに預けると、出ないまま固まる） */
 #dWish.up,#dLines.up,#dStat.up{opacity:0; animation:blinkout .3s steps(1)}
+/* にげたとき、敵と体力の帯は**二回またたいて消える**（`flee()`）。跳ね（`body.demo #slime`）に負けないよう頭を揃える */
+body.demo #slime.gone, body.demo #dHp.gone{opacity:0; animation:blinkout .3s steps(1)}
 @keyframes blinkout{
   0%,24%{opacity:1} 25%,49%{opacity:0} 50%,74%{opacity:1} 75%,100%{opacity:0}
 }
@@ -2610,31 +2612,30 @@ function openDemo(){
     ask('作戦', 'どんなことを、したい？', TOPICS.map(function(t){ return t.t; }));
   }, 420);
 }
-/* **にげる**（2026-09-25、本人：「逃げたときに逃げた感ほしい」→「スライムが引いていくのを逃げるとはできない？」）。
-   前は押した瞬間に元の画面へ戻るだけで、**一言も一拍も、置き去りにする絵も無かった。**
+/* **にげる**（2026-09-25、本人：「逃げたときに逃げた感ほしい」）。
+   前は押した瞬間に元の画面へ戻るだけで、一言も一拍も無かった。
 
-   **A：スライムだけが引いていく**（同日、本人：「Aにしてみて」）。
-   背景はいつもどおり流したまま、勇者も前を向いたまま。スライムは**歩いてきた動きを逆にたどって**右の外へ。
-   ・窓に「にげだした！」
-   ・スライムの引き方は入り（`come`：0.85 秒・9 コマ）と同じ刻み
-   いちど B（勇者が背を向けて走り、背景を逆に流す）を作った。形は git（`d3cb136`）にある */
+   **誰も動かさない。戦いの場面が閉じるだけ**（同日、本人：「スライムが去っていくのも変だけど、
+   勇者が去るのはもっと変なんだよな」→「やってみて」）。
+   位置関係で「逃げた」を言おうとすると、どちらが去っても無理が出た——
+   A（スライムだけ下がる `1ecd24c`）は動くのが敵、B（勇者が背を向けて走る `d3cb136`）は前へ走る芯とぶつかる。
+   RPG のお約束どおり、**一言 → 一拍 → 敵と体力が消える → 窓が閉じる。**
+   消え方は**二回またたく**（`blinkout`）——クリアの幕・倒したときの帯と同じ、この画面の「自分から引く」言い方 */
 function flee(){
   D.phase = 'flee'; D.n = 0;
-  dStep.textContent = ''; dQ.textContent = 'にげだした！'; dA.innerHTML = '';
+  dStep.textContent = ''; dQ.textContent = 'うまく にげきれた！'; dA.innerHTML = '';
   placeDWin();
-  dHp.style.visibility = 'hidden';
   if (REDUCE){ D.tFlee = setTimeout(quitDemo, 700); return; }
-  slimeEl.classList.remove('come');
-  D.aFlee = slimeEl.animate([{ transform:'translateX(-50%)' }, { transform:'translateX(-50%) translateX(46vw)' }],
-                            { duration:850, easing:'steps(9)', fill:'forwards' });
   D.tFlee = setTimeout(function(){
-    slimeEl.style.display = 'none';
-    quitDemo();
-  }, 850 + 250);
+    slimeEl.classList.remove('come');
+    slimeEl.classList.add('gone'); dHp.classList.add('gone');
+    D.tFlee = setTimeout(quitDemo, 300 + 350);
+  }, 450);
 }
 function quitDemo(){
   clearTimeout(D.tFlee); D.tFlee = null;
   if (D.aFlee){ D.aFlee.cancel(); D.aFlee = null; }
+  slimeEl.classList.remove('gone'); dHp.classList.remove('gone');
   heroEl.classList.remove('flip');
   D.on = false; D.phase = '';
   D.typing = false;
