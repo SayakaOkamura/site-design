@@ -216,6 +216,38 @@ body{
     var(--sky4) 62%, var(--sky4) 76%,
     var(--sky5) 76%, var(--sky5) 89%,
     var(--sky6) 89%, var(--sky6) 100%);
+  /* **細かい段でグラデーションに見せる**（2026-09-28、本人：「ん～、なじんでないな。グラデーションに見えるようにできない？」）。
+     六段のままだと、紺・青紫・赤紫・赤橙が**別々の色の帯**に見えて、なじんでいなかった。
+     16bit の夕焼けと同じ作り——**なめらかにはせず、段を細かくする。**隣り合う決めの色（--sky1〜6）のあいだを五つに割り、
+     途中の色は color-mix で混ぜる（決めの色を差し替えれば、途中も付いてくる）。
+     color-mix が読めない古い端末は、すぐ上の六段のまま */
+  background:linear-gradient(180deg,
+    var(--sky1) 0.0%, var(--sky1) 6.0%,
+    color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 6.0%, color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 12.0%,
+    color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 12.0%, color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 18.0%,
+    color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 18.0%, color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 24.0%,
+    color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 24.0%, color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 30.0%,
+    var(--sky2) 30.0%, var(--sky2) 34.4%,
+    color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 34.4%, color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 38.8%,
+    color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 38.8%, color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 43.2%,
+    color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 43.2%, color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 47.6%,
+    color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 47.6%, color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 52.0%,
+    var(--sky3) 52.0%, var(--sky3) 55.6%,
+    color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 55.6%, color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 59.2%,
+    color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 59.2%, color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 62.8%,
+    color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 62.8%, color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 66.4%,
+    color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 66.4%, color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 70.0%,
+    var(--sky4) 70.0%, var(--sky4) 73.0%,
+    color-mix(in oklab, var(--sky4) 80%, var(--sky5)) 73.0%, color-mix(in oklab, var(--sky4) 80%, var(--sky5)) 76.0%,
+    color-mix(in oklab, var(--sky4) 60%, var(--sky5)) 76.0%, color-mix(in oklab, var(--sky4) 60%, var(--sky5)) 79.0%,
+    color-mix(in oklab, var(--sky4) 40%, var(--sky5)) 79.0%, color-mix(in oklab, var(--sky4) 40%, var(--sky5)) 82.0%,
+    color-mix(in oklab, var(--sky4) 20%, var(--sky5)) 82.0%, color-mix(in oklab, var(--sky4) 20%, var(--sky5)) 85.0%,
+    var(--sky5) 85.0%, var(--sky5) 88.0%,
+    color-mix(in oklab, var(--sky5) 80%, var(--sky6)) 88.0%, color-mix(in oklab, var(--sky5) 80%, var(--sky6)) 91.0%,
+    color-mix(in oklab, var(--sky5) 60%, var(--sky6)) 91.0%, color-mix(in oklab, var(--sky5) 60%, var(--sky6)) 94.0%,
+    color-mix(in oklab, var(--sky5) 40%, var(--sky6)) 94.0%, color-mix(in oklab, var(--sky5) 40%, var(--sky6)) 97.0%,
+    color-mix(in oklab, var(--sky5) 20%, var(--sky6)) 97.0%, color-mix(in oklab, var(--sky5) 20%, var(--sky6)) 98.5%,
+    var(--sky6) 98.5%, var(--sky6) 100%);
 }
 /* 帯の境目に粗い網。**段が硬すぎるのをほぐす**（ディザの代わり） */
 #sky::after{content:''; position:absolute; inset:0; opacity:.07;
