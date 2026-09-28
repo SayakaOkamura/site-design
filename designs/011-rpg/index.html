@@ -460,7 +460,10 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
 /* **カーソルは点滅して入力を待つ**（2026-09-28、本人：入口を強くする →（場に足さず、デモだけも目立たせず、メニュー全体が「入力を待っている」と見せる。
    A ▶ を点滅／B 一拍おいて窓が開く、を出して A を勧めた）「点滅いいね」）。窓の送りの ▼ と同じ blink。
    **窓を開いているあいだは止める**（子の窓が開くと親のカーソルは止まる）。足もとの二語も同じカーソルの輪なので同じ */
-body:not(.popped) #menu li[aria-current="true"] .cur, body:not(.popped) #foot button[aria-current="true"] .cur{animation:blink .9s steps(2) infinite}
+/* **一度触れたら止める**（同日、本人：「ずっと点滅してるの鬱陶しい？それとも普通？」→（ゲームでは普通。ただ周りも動いていて、
+   役目は「選べると気づかせる」ことなので、触れたら終わっている、と答えて）「そうしよう」）。
+   触れた＝キーを押す／どこかを押す／メニューの行にマウスを乗せる（body.woke）。マウスを動かしただけでは止めない——気づく前に終わる */
+body:not(.popped):not(.woke) #menu li[aria-current="true"] .cur, body:not(.popped):not(.woke) #foot button[aria-current="true"] .cur{animation:blink .9s steps(2) infinite}
 /* **「デモを触る」に色は付けない**（2026-09-24、本人：「デモ目立たせるより
    **並列で並べた**方がいいかなあ…」→「後者の話」）。
 
@@ -2698,9 +2701,13 @@ function dragged(){
 }
 var lastUp = [0, 0];
 document.addEventListener('pointerup', function(e){ lastUp = [e.clientX, e.clientY]; }, true);
+/* 触れたらカーソルの点滅をやめる（CSS の body.woke）*/
+function wake(){ document.body.classList.add('woke'); }
+document.addEventListener('keydown', wake, true);
+document.addEventListener('pointerdown', wake, true);
 /* マウスを乗せたら、カーソルもそこへ（手が二つあっても印は一つ） */
 ALL.forEach(function(el, i){
-  el.addEventListener('mouseenter', function(){ if (!cur){ sel = i; selStale = false; paintSel(); } });
+  el.addEventListener('mouseenter', function(){ wake(); if (!cur){ sel = i; selStale = false; paintSel(); } });
 });
 
 /* 十字キーに触れたらマウスの印を消す。マウスがまた動いたら戻す */
