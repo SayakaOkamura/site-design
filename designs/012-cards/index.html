@@ -348,7 +348,8 @@ footer a:hover{color:var(--on)}
 /* 3. 畳むときは走査する。一本の光の線が壁を上から下へなぞり、なぞったところから字が消える（線の上に地の色の幕が伸びる）。
    消えきったら一枚の四隅に角の枠が引かれて、打ち出しが始まる */
 .raw{position:relative}
-.raw .mid{position:absolute; left:0; top:50%; width:1px; height:1px; pointer-events:none}   /* 壁の真ん中の目印（スクロールで書き換える）*/
+.raw .mid{position:absolute; left:0; top:0; width:1px; height:1px; pointer-events:none}   /* 壁の上端の目印（スクロールで書き換える）。
+   はじめは壁の真ん中に置いていたが、本人：「スクロール間に合わないな。もう少し早く始められる？」——上端が画面の真ん中に来たら始める（壁の半分ぶん早い）*/
 .raw .sc{position:absolute; left:0; right:0; top:0; pointer-events:none; display:none; z-index:1}
 .raw .sc .cv{position:absolute; left:0; right:0; top:0; height:var(--h,0px); background:var(--bg); transform-origin:top; transform:scaleY(0)}
 .raw .sc .bar{position:absolute; left:0; right:0; top:0; height:2px; background:var(--hot); box-shadow:0 0 12px 1px rgba(125,240,164,.5)}
@@ -357,6 +358,26 @@ footer a:hover{color:var(--on)}
 .ch.scanning .raw .sc .bar{animation:scanbar .36s cubic-bezier(.6,0,.25,1) forwards}
 @keyframes scancv{ to{transform:scaleY(1)} }
 @keyframes scanbar{ to{transform:translateY(var(--h,0px))} }
+/* ページの頭も同じ流れ（同日、本人：「なんでタイトルだけモーション少ないん？」→「やって」）。
+   光の線が上の散らばった字、続けて下の散らばった字をなぞって消し → 社名の四隅に角の枠 → 英字・社名・下の一行を打ち出す */
+.noise{position:relative}
+.noise .sc{position:absolute; left:0; right:0; top:0; pointer-events:none; display:none; z-index:1}
+.noise .sc .cv{position:absolute; left:0; right:0; top:0; height:var(--h,0px); background:var(--bg); transform-origin:top; transform:scaleY(0)}
+.noise .sc .bar{position:absolute; left:0; right:0; top:0; height:2px; background:var(--hot); box-shadow:0 0 12px 1px rgba(125,240,164,.5)}
+#hero.scanning .noise .sc{display:block}
+#hero.scanning .noise .sc .cv{animation:scancv .28s cubic-bezier(.6,0,.25,1) forwards}   /* 本人「今度は逆に遅いな」で .36 → .28 */
+#hero.scanning .noise .sc .bar{animation:scanbar .28s cubic-bezier(.6,0,.25,1) forwards}
+#hero.scanning .noise.b .sc .cv, #hero.scanning .noise.b .sc .bar{animation-delay:.24s}
+.nameline{position:relative}
+.nameline .cn{position:absolute; width:14px; height:14px; border:0 solid var(--on); pointer-events:none; opacity:0}
+.nameline .cn.tl{left:calc(clamp(56px,7vw,86px) - 18px); top:0; border-top-width:1px; border-left-width:1px; transform-origin:0 0}
+.nameline .cn.tr{right:-18px; top:0; border-top-width:1px; border-right-width:1px; transform-origin:100% 0}
+.nameline .cn.bl{left:calc(clamp(56px,7vw,86px) - 18px); bottom:0; border-bottom-width:1px; border-left-width:1px; transform-origin:0 100%}
+.nameline .cn.br{right:-18px; bottom:0; border-bottom-width:1px; border-right-width:1px; transform-origin:100% 100%}
+#hero.on .nameline .cn{animation:corner .2s cubic-bezier(.3,0,.1,1) both}
+.nameline .tw-r{visibility:hidden}
+.nameline .tw-c{background:var(--on); color:transparent}
+.nameline .tw-w{visibility:hidden}
 .card{position:relative}
 .card .cn{position:absolute; width:14px; height:14px; border:0 solid var(--on); pointer-events:none}
 .card .cn.tl{left:-18px; top:0; border-top-width:1px; border-left-width:1px; transform-origin:0 0}
@@ -390,8 +411,8 @@ footer a:hover{color:var(--on)}
 
   <header>
     <div id="hero">
-      <div class="ico heroico" role="button" tabindex="0" aria-label="まとめる"><b>◆</b></div>
-      <div class="heroclue">◀ ここを押す</div>
+      <!-- 頭の印と「◀ ここを押す」は外した（2026-09-28、本人：「この仕様なら押させる必要ない。起動のモーションが終わった時点で社名を起動して」）。
+           社名の左の空きは残す——章の印の列と、字の始まりを揃えるため -->
       <div class="noise a"><div class="col" id="noiseA"></div></div>
       <div class="nameline">
         <div class="en">ALTER DESIGN CONSULTING</div>
@@ -564,12 +585,15 @@ function settle(ch, back){
     return;
   }
 
-  /* **上から下へ、一字ずつ打つ**（2026-09-15 の「上から下の方がいいかも」はそのまま）。
-     **時刻で組む**——何字目まで出ているかを、始めてからの時間で決める。裏の窓で時計が間引かれても、戻ったときに追いつく */
+  if (foot) foot.classList.remove('wait');
+  typeOut(ch, els);
+}
+/* **上から下へ、一字ずつ打つ**（2026-09-15 の「上から下の方がいいかも」はそのまま）。章の一枚とページの頭の社名で共通。
+   **時刻で組む**——何字目まで出ているかを、始めてからの時間で決める。裏の窓で時計が間引かれても、戻ったときに追いつく */
+function typeOut(ch, els){
   ch.dataset.run = String(Date.now());
   var run = ch.dataset.run, CH = 6, GAP = 60;   /* 一字 6ms（同日、倍の速さに）*/
   els.forEach(plainEl);
-  if (foot) foot.classList.remove('wait');
   var plan = [], at = 0;
   els.forEach(function(el){
     var s = el.getAttribute('data-t');
@@ -658,7 +682,7 @@ document.addEventListener('click', function(e){
   /* **印をもう一度押すと戻る**（2026-09-28、本人：「もう一回クリックで戻せる仕様でよくない？」→（「← もとの文にもどす」は残す／外す、と訊いて）「残さず」）。
      一枚の下の「もとの文にもどす」は外した。出口は印だけ */
   var ico = e.target.closest && e.target.closest('.ico');
-  if (ico && !ico.classList.contains('heroico')){ toggle(ico.closest('.ch')); return; }
+  if (ico){ toggle(ico.closest('.ch')); return; }
   /* 先頭の印は章に属していない——そちらは自分の click で畳む（下の hero の節）*/
 });
 document.addEventListener('keydown', function(e){
@@ -667,7 +691,6 @@ document.addEventListener('keydown', function(e){
   if (!ico) return;
   e.preventDefault();
   /* 先頭の印は章に属していない。**同じ鍵で同じことが起きる**ようにしておく */
-  if (ico.classList.contains('heroico')){ ico.click(); return; }
   toggle(ico.closest('.ch'));
 });
 function toggle(ch){
@@ -676,7 +699,13 @@ function toggle(ch){
   ch.querySelector('.ico').setAttribute('aria-pressed', on ? 'false' : 'true');
 }
 
-/* 走査の幕と線、一枚の四隅の枠を足す（飾りなので読み上げない）*/
+/* 走査の幕と線、一枚の四隅の枠を足す（飾りなので読み上げない）。ページの頭の散らばった字と社名にも */
+[].forEach.call(document.querySelectorAll('#hero .noise'), function(r){
+  var sc = document.createElement('div'); sc.className = 'sc'; sc.setAttribute('aria-hidden', 'true');
+  sc.innerHTML = '<div class="cv"></div><div class="bar"></div>'; r.appendChild(sc);
+});
+(function(){ var nm = document.querySelector('#hero .nameline');
+  ['tl', 'tr', 'bl', 'br'].forEach(function(k){ var i = document.createElement('i'); i.className = 'cn ' + k; i.setAttribute('aria-hidden', 'true'); nm.appendChild(i); }); })();
 [].forEach.call(document.querySelectorAll('#chs .raw'), function(r){
   var sc = document.createElement('div'); sc.className = 'sc'; sc.setAttribute('aria-hidden', 'true');
   sc.innerHTML = '<div class="cv"></div><div class="bar"></div>'; r.appendChild(sc);
@@ -764,29 +793,28 @@ var BITS = [
 
 var hero = document.getElementById('hero');
 function heroFold(){
-  if (hero.classList.contains('on')) return;
+  if (hero.classList.contains('on') || hero.classList.contains('scanning')) return;
+  var tok = hero.dataset.fold = String(Date.now());
+  if (!STILL){
+    [].forEach.call(hero.querySelectorAll('.noise'), function(n){ n.style.setProperty('--h', n.offsetHeight + 'px'); });
+    hero.classList.add('scanning');
+    setTimeout(function(){ if (hero.dataset.fold === tok) heroFoldDone(); }, 550);
+    return;
+  }
+  heroFoldDone();
+}
+function heroFoldDone(){
+  hero.classList.remove('scanning');
   [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){
     n.style.maxHeight = n.scrollHeight + 'px';
   });
   void hero.offsetHeight;
   hero.classList.add('on');
   [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){ n.style.maxHeight = '0px'; });
+  var els = [].slice.call(hero.querySelectorAll('.nameline .en, .nameline h1, .nameline .tag'));
+  if (STILL) els.forEach(plainEl); else typeOut(hero, els);
 }
-function heroUnfold(){
-  if (!hero.classList.contains('on')) return;
-  /* 先に reveal を付けてから on を外す——逆だと、社名の色が reveal の transition の前に変わってしまう */
-  hero.classList.remove('reveal'); void hero.offsetHeight; hero.classList.add('reveal');
-  hero.classList.remove('on');
-  clearTimeout(heroUnfold.t); heroUnfold.t = setTimeout(function(){ hero.classList.remove('reveal'); }, 800);
-  [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){
-    n.style.maxHeight = '';
-  });
-}
-/* 押せば何度でも見られる。**気づいた人が確かめられる**ように */
-hero.querySelector('.heroico').addEventListener('click', function(){
-  hero.classList.add('taught');   /* 一度押されたら、案内は引っ込める */
-  hero.classList.contains('on') ? heroUnfold() : heroFold();
-});
+/* 戻す手（heroUnfold）と頭の印の click は、頭の印を外したのでやめた（2026-09-28）*/
 
 /* **自動では畳まない**（2026-09-15、本人：「勝手に閉じられるとわからん」）。
    こちらがやってしまうと、**自分にできることだと分からない**。
@@ -798,14 +826,11 @@ hero.querySelector('.heroico').addEventListener('click', function(){
 if (matchMedia('(prefers-reduced-motion:reduce)').matches){
   heroFold();
 } else {
-  setTimeout(function(){
-    var ic = hero.querySelector('.heroico');
-    ic.classList.add('flash');
-    hero.classList.add('twitch');
-    setTimeout(function(){
-      hero.classList.remove('twitch');
-      ic.classList.remove('flash');
-    }, 620);
-  }, 2600);   /* 起動（1.3 秒ほど）のあと */
+  /* **起動の動きが終わった時点で、社名を起動する**（2026-09-28、本人：「この仕様なら押させる必要ない。起動のモーションが終わった時点で社名を起動して」）。
+     散らばった字と社名が点き終わるのが 1.55 秒ごろ。そこから走査 → 四隅の枠 → 打ち出し。
+     途中の段階：起動の直後（1.5 秒）→「貯めて」で 3.25 秒＋印の合図 → 押させないので、起動の終わりに戻した。
+     9/15 に外した理由は「こちらがやってしまうと、**自分にできることだと分からない**」（本人「勝手に閉じられるとわからん」）。
+     いまは章もスクロールで書き換わるので、押すのは「壁に戻す」ときだけになった。そこは畳んだあとも光る印が言う */
+  setTimeout(heroFold, 1600);
 }
 </script>
