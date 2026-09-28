@@ -191,8 +191,13 @@ body{
               system-ui,-apple-system,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased;
   image-rendering:pixelated;
-  user-select:none;
+  -webkit-user-select:none; user-select:none;
 }
+/* **読む字だけは選べる**（2026-09-28。Codex に見させて出た九つ目）。
+   画面ぜんたいが選べないままで、**住所もメールアドレスも写せなかった。**
+   メニューや ▶ は連打しても青く選ばれないよう、選べないまま——選べるのは窓の本文と、素の一枚だけ。
+   なぞってもめくれないのは 5 で入れてある */
+#popB, #text{-webkit-user-select:text; user-select:text}
 #screen{position:fixed; inset:0; overflow:hidden}
 
 /* ─ 空。**帯で切る** ───────────────────────────────────────── */
