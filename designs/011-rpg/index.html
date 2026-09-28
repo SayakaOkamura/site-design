@@ -470,7 +470,8 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
    右端から離して中央へ寄せ（54px → 120px）、位置も上げた（24% → 17%）*/
 /* 開いているあいだは**画面のどこでも送れる**ので、指の形にしておく
    （押せる場所が画面全部だ、と言葉なしで分かる） */
-body:has(#pop.on){cursor:pointer}
+/* **窓の上だけにした**（2026-09-28）。めくれるのが窓の中だけになったので（下の click の節）*/
+#pop.on{cursor:pointer}
 /* **枠の内側の余白を、字に紐づけた**（2026-09-18、本人：「上下左右の余白の話してるんだけど」）。
 
    前は `.win` から来る **12px / 16px の固定**だった。
@@ -2519,8 +2520,26 @@ document.addEventListener('click', function(e){
      **送るだけ。**最後まで来たら閉じる——**外のリンクへは飛ばさない。**
      どこを押しても飛ぶと、お問い合わせの頁で**手が滑っただけでメールが開く。**
      リンクは「▼」と決定キーに残してある */
-  if (cur){ turn(); }
+  /* **窓の中だけにした**（2026-09-28。Codex に見させて出た五つ目）。
+     本人：「普通のサイトだとどうなってる？」→（サイトは窓の外で閉じる・中の字は選べる、
+     ゲームはどこでも送る、と答えた）→「**めくりはモーダルだけにするか**」→（外は何も起きない、
+     なぞったときはめくらない、を出して）「そうしようか」。
+     どこでもめくれると、**押し間違えても戻れない**（前の頁へ戻る手が無い）うえに、
+     **字を選ぼうとするたびにめくれる。**
+     **窓の外は何も起きない**——閉じる形は 9/15 にやめている。別の窓へはメニューから移れる。
+     **なぞったときはめくらない**——押してから離すまでに動いたか、字が選ばれていれば、押したのではない */
+  if (cur && e.target.closest && e.target.closest('#pop') && !dragged()) turn();
 });
+var downAt = null;
+document.addEventListener('pointerdown', function(e){ downAt = [e.clientX, e.clientY]; });
+function dragged(){
+  var s = window.getSelection && String(window.getSelection());
+  if (s) return true;
+  var p = downAt; downAt = null;
+  return !!p && Math.abs(lastUp[0] - p[0]) + Math.abs(lastUp[1] - p[1]) > 6;
+}
+var lastUp = [0, 0];
+document.addEventListener('pointerup', function(e){ lastUp = [e.clientX, e.clientY]; }, true);
 /* マウスを乗せたら、カーソルもそこへ（手が二つあっても印は一つ） */
 ALL.forEach(function(el, i){
   el.addEventListener('mouseenter', function(){ if (!cur){ sel = i; selStale = false; paintSel(); } });
