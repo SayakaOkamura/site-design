@@ -193,6 +193,7 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 /* **押した瞬間に消す**（同日、本人：「追いつかないというより、開き方が重いのかもしれん」→（待つ・縮む・出る・打つの四段取りを減らす、と出して）「やってみて」）。
    8 段でカクカク縮むのが、処理の遅れに見えていた。ガタガタ感はタイプライターだけに任せる */
 .raw{transition:none}
+.raw .p.gone{display:none}   /* 畳むとき、下の段落から順に消す（fold()）*/
 .ch.on .raw{pointer-events:none}
 /* **段に切らない**（本人：「二段にすらしなくていい」「行数減ってもいいから」）。
    一本の流れにして、**両端をそろえて詰める。**字間も行間も削る——
@@ -529,8 +530,22 @@ function settle(ch, back){
   }, 200 + at + 400);
 }
 
+/* **下の段落から順に、パッパッと消す**（同日、本人：「畳モーション自体はほしいけどなあ」→（A 素早く縮める／B 下から段落を消す／C 押し潰す、B を勧めた）「やってみて」）。
+   端末で行が消されていく消え方。消えるたびに壁が一段縮む——前の「8 段でカクカク縮む」（0.6 秒）と違って、
+   **段落ひとつ 35ms で終わる**ので遅れには見えにくい。全部消えたところで一枚が出て、打ち出しが始まる */
 function fold(ch){
-  if (ch.classList.contains('on')) return;
+  if (ch.classList.contains('on') || ch.classList.contains('folding')) return;
+  var ps = [].slice.call(ch.querySelectorAll('.raw .p')).reverse();
+  var tok = ch.dataset.fold = String(Date.now());
+  if (STILL){ foldDone(ch); return; }
+  ch.classList.add('folding');
+  ps.forEach(function(p, i){
+    setTimeout(function(){ if (ch.dataset.fold === tok) p.classList.add('gone'); }, i * 35);
+  });
+  setTimeout(function(){ if (ch.dataset.fold === tok) foldDone(ch); }, ps.length * 35 + 40);
+}
+function foldDone(ch){
+  ch.classList.remove('folding');
   var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
   /* いまの高さを**数字で押さえてから** 0 へ。`auto` のままだと動かない */
   raw.style.maxHeight = raw.scrollHeight + 'px';
@@ -548,7 +563,12 @@ function fold(ch){
 var sayEl = document.getElementById('say'), sayT = null;
 function say(s){ clearTimeout(sayT); sayEl.textContent = ''; sayT = setTimeout(function(){ sayEl.textContent = s; }, 60); }
 function unfold(ch){
-  if (!ch.classList.contains('on')) return;
+  var folding = ch.classList.contains('folding');
+  if (!ch.classList.contains('on') && !folding) return;
+  ch.dataset.fold = '';        /* 消している途中なら、そこで止める */
+  ch.classList.remove('folding');
+  [].forEach.call(ch.querySelectorAll('.raw .p.gone'), function(p){ p.classList.remove('gone'); });
+  if (folding) return;
   var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
   ch.classList.remove('on');
   ch.dataset.run = '';          /* 走っている収束を降ろす */
@@ -574,7 +594,7 @@ document.addEventListener('keydown', function(e){
   toggle(ico.closest('.ch'));
 });
 function toggle(ch){
-  var on = ch.classList.contains('on');
+  var on = ch.classList.contains('on') || ch.classList.contains('folding');
   on ? unfold(ch) : fold(ch);
   ch.querySelector('.ico').setAttribute('aria-pressed', on ? 'false' : 'true');
 }
