@@ -457,6 +457,10 @@ body{
 /* **選ばれた行は字も金に**（同日、本人：「選択したところだけ色変えるやつ」）。字を白寄りにしたら、選ばれていない行との差が ▶ だけになっていた */
 body:not(.kb) #menu li:hover,#menu li[aria-current="true"]{color:var(--go)}
 body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(--go)}
+/* **カーソルは点滅して入力を待つ**（2026-09-28、本人：入口を強くする →（場に足さず、デモだけも目立たせず、メニュー全体が「入力を待っている」と見せる。
+   A ▶ を点滅／B 一拍おいて窓が開く、を出して A を勧めた）「点滅いいね」）。窓の送りの ▼ と同じ blink。
+   **窓を開いているあいだは止める**（子の窓が開くと親のカーソルは止まる）。足もとの二語も同じカーソルの輪なので同じ */
+body:not(.popped) #menu li[aria-current="true"] .cur, body:not(.popped) #foot button[aria-current="true"] .cur{animation:blink .9s steps(2) infinite}
 /* **「デモを触る」に色は付けない**（2026-09-24、本人：「デモ目立たせるより
    **並列で並べた**方がいいかなあ…」→「後者の話」）。
 
