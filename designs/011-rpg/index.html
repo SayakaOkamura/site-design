@@ -284,6 +284,9 @@ body{
 #sun::after{content:''; position:absolute; inset:0; opacity:.45;
   background:repeating-linear-gradient(180deg,
     transparent 0 calc(var(--px)*3), var(--ray) calc(var(--px)*3) calc(var(--px)*4));
+  /* **縞は空の段の境目に引く**（2026-09-28。`paintSky()` が `--stripes` に書く）。上の一行は JS が止まっているとき */
+  background:var(--stripes, repeating-linear-gradient(180deg,
+    transparent 0 calc(var(--px)*3), var(--ray) calc(var(--px)*3) calc(var(--px)*4)));
   -webkit-mask:radial-gradient(circle at 50% 50%, #000 0 47%, transparent 49%);
           mask:radial-gradient(circle at 50% 50%, #000 0 47%, transparent 49%);
 }
@@ -1894,6 +1897,46 @@ function placeLines(){
   document.documentElement.style.setProperty('--T', Math.round(nb + px * 6) + 'px');
 }
 placeLines();
+/* ─ 空の段と太陽の縞を、同じ線に乗せる（2026-09-28）─────────────────
+   本人：「これだけこまかいと違和感ある？」→「**夕日の線が合わないからかな**」→（A 線を揃える／B 縞をやめる、と出して）「やって」。
+   測ると、太陽のまわりは空の段も太陽の縞も **16px** で、**始まりだけがずれて二組の線が重なっていた。**
+   しかも段の境目は空の高さの % なので、**粒（--px）の格子に乗っていなかった。**
+   → 段の境目を**地平から粒の倍数**に寄せて描き直し、太陽の縞は**その境目の真上に一粒ぶん**引く。
+   色の並び（決めの色の位置と、あいだを五つに割る）は CSS の #sky と同じ。CSS のほうは JS が止まっているときのため */
+var SKY_AT = [0, 30, 52, 70, 85, 100];
+function paintSky(){
+  var sky = document.getElementById('sky'), sun = document.getElementById('sun');
+  var H = sky.clientHeight, g = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
+  if (!H || !(window.CSS && CSS.supports && CSS.supports('color', 'color-mix(in oklab, red 50%, blue)'))) return;
+  var bands = [], i, k, c;
+  for (i = 0; i < 5; i++) for (k = 0; k < 5; k++){
+    c = k === 0 ? 'var(--sky' + (i + 1) + ')'
+                : 'color-mix(in oklab, var(--sky' + (i + 1) + ') ' + (100 - k * 20) + '%, var(--sky' + (i + 2) + '))';
+    bands.push([c, SKY_AT[i] + (SKY_AT[i + 1] - SKY_AT[i]) * k / 5]);
+  }
+  /* いちばん下の一段だけ、地平の色そのもの（CSS の 98.5%）*/
+  bands.push(['var(--sky6)', 98.5]);
+  /* 境目を**地平からの距離**で粒の倍数に寄せる。重なった段（背の低い窓で起きる）は落とす */
+  var edges = bands.map(function(b){ return H - Math.round(H * (100 - b[1]) / 100 / g) * g; });
+  var st = [], ys = [];
+  for (i = 0; i < bands.length; i++){
+    var y0 = i === 0 ? 0 : edges[i], y1 = i === bands.length - 1 ? H : edges[i + 1];
+    if (y1 <= y0) continue;
+    st.push(bands[i][0] + ' ' + y0 + 'px ' + y1 + 'px');
+    if (y0 > 0) ys.push(y0);
+  }
+  sky.style.background = 'linear-gradient(180deg, ' + st.join(', ') + ')';
+  /* 太陽の縞。**境目の真上に一粒ぶん**——前の縞（三粒あけて一粒）と同じく、線は段の下の端に来る */
+  var sr = sun.getBoundingClientRect(), kr = sky.getBoundingClientRect(), top = sr.top - kr.top, h = sr.height, s = [];
+  ys.forEach(function(y){
+    var a = y - g - top, b = y - top;
+    if (b <= 0 || a >= h) return;
+    s.push('transparent ' + Math.max(0, a) + 'px', 'var(--ray) ' + Math.max(0, a) + 'px ' + Math.min(h, b) + 'px', 'transparent ' + Math.min(h, b) + 'px');
+  });
+  sun.style.setProperty('--stripes', s.length ? 'linear-gradient(180deg, transparent 0, ' + s.join(', ') + ')' : 'none');
+}
+paintSky();
+window.addEventListener('resize', paintSky);
 window.addEventListener('resize', placeLines);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){
   placeLines(); window.dispatchEvent(new Event('resize'));
