@@ -305,8 +305,12 @@ body{
    （遠い山 520px・近い山 340px・地面の縞 粒 14／20）。
    → **動く距離を「画面の幅以上でいちばん近い、周期のちょうど倍数」にする**（`round(up, 100vw, 周期)`）。
    周期は各帯の `--P`。`round()` が読めない古い端末は前の動きのまま */
+/* **`round()` をやめて、距離は JS から渡す**（2026-09-28。Codex に見させて出た八つ目）。
+   `round()` は 2024 年のブラウザからで、それより古いと**つなぎ目で跳ぶ動きに戻っていた。**
+   同じ距離は下の所要時間の節ですでに数えているので、それを `--D` として帯に書く。
+   `--D` が無いとき（JS が止まっているとき）は前の動き（画面一つぶん）*/
 @keyframes flow{ from{transform:translateX(0)}
-  to{transform:translateX(-33.3333%); transform:translateX(calc(-1 * round(up, 100vw, var(--P, 100vw))))} }
+  to{transform:translateX(calc(-1 * var(--D, 33.3333%)))} }
 /* **広く・低く**（2026-09-14）。最初は 118px で、**歯車の刃**に見えた */
 #far{position:absolute; left:0; right:0; bottom:var(--gh); height:8vh; overflow:hidden; z-index:2}
 /* **同じ三角の繰り返しをやめた**（2026-09-14）。`conic-gradient` だと片側が
@@ -2844,8 +2848,6 @@ var dWin  = document.getElementById('dWin'),
    所要時間がそのままだと距離が伸びたぶん速くなる（390 幅の遠い山で 1.33 倍）ので、
    **所要時間も同じ割合で延ばす**——距離 ÷ 画面の幅。窓の大きさが変わるたびに掛け直す */
 (function(){
-  /* `round()` が読めない端末は前の動き（画面一つぶん）のままなので、延ばさない */
-  if (!(window.CSS && CSS.supports && CSS.supports('width', 'round(up, 10px, 3px)'))) return;
   var bands = [].slice.call(document.querySelectorAll('#far .band, #near .band, #ground .band'));
   bands.forEach(function(el){ el.dataset.dur = parseFloat(getComputedStyle(el).animationDuration) || 0; });
   function fit(){
@@ -2857,6 +2859,7 @@ var dWin  = document.getElementById('dWin'),
       var base = +el.dataset.dur;
       if (!(P > 0) || !base || !W) return;
       var dist = Math.ceil(W / P - 1e-6) * P;
+      el.style.setProperty('--D', dist + 'px');   /* 動く距離（`@keyframes flow`）*/
       el.style.animationDuration = (base * dist / W).toFixed(3) + 's';
     });
   }
