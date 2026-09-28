@@ -168,7 +168,9 @@
      **暖色の影（地形）＋暖色の空**でできているので、**色味を持たない塊はどの層にも混ざらない。**
      有彩色のように主役も取らない。**山と重なる下半分でも沈まない**のが決め手だった */
   --slime:#4a2e2a;
-  --rim:#4a2a17;   --win:#24130a;   --box:#2a1408;   --edge:#24130a;
+  /* **窓の地を空に寄せた**（2026-09-28、本人：「ゲームっぽさだと前の方？」→（RPG の窓は黒か紺が多く、字を白寄りにしたら茶の窓が浮く、と答えた）
+     →「選択したところだけ色変えるやつと、それもやるか」）。前：--rim #4a2a17・--win #24130a・--box #2a1408・--edge #24130a（こげ茶）*/
+  --rim:#2a3158;   --win:#151a33;   --box:#171c38;   --edge:#151a33;
   /* **字は無彩寄りに、色は金だけ**（2026-09-28、本人：9/25 の「文字の色ぼんやり黄色いな～」→（字の色四つのうち三つが黄みで、
      窓の地のこげ茶とも同じ系統だった。A 字を無彩寄りに／B 窓の地も空に寄せる、と出して A を勧めた）→「やってみて」）。
      前：--dim #e8c39a（砂色）・--warm #ffe7ad（うすい黄）。金（--go）はそのまま——▶・題・太字の目印として立つ */
@@ -433,7 +435,8 @@ body{
 #menu li .cur{width:1em; text-align:center; color:transparent}
 /* **十字キーを使い出したら、乗せっぱなしのマウスは黙る**（`body.kb`）。
    そうしないと、手を動かしていないだけで**▶ が二つ**出る（画面で確かめて分かった）*/
-body:not(.kb) #menu li:hover,#menu li[aria-current="true"]{color:var(--ink)}
+/* **選ばれた行は字も金に**（同日、本人：「選択したところだけ色変えるやつ」）。字を白寄りにしたら、選ばれていない行との差が ▶ だけになっていた */
+body:not(.kb) #menu li:hover,#menu li[aria-current="true"]{color:var(--go)}
 body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(--go)}
 /* **「デモを触る」に色は付けない**（2026-09-24、本人：「デモ目立たせるより
    **並列で並べた**方がいいかなあ…」→「後者の話」）。
@@ -1003,7 +1006,7 @@ body.demo #dHp{display:block}
   color:var(--dim); opacity:.62}
 #dA li.pick{color:var(--ink); cursor:default}
 #dA li.pick .cur{color:var(--go)}
-body:not(.kb) #dA li:hover,#dA li[aria-current="true"]{color:var(--ink)}
+body:not(.kb) #dA li:hover,#dA li[aria-current="true"]{color:var(--go)}
 body:not(.kb) #dA li:hover .cur,#dA li[aria-current="true"] .cur{color:var(--go)}
 
 /* 打ち込まれる帯。**端末の作法だけ借りる**（2026-09-15、本人が選んだ）——
