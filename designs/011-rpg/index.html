@@ -1931,39 +1931,41 @@ var SKY_AT = [0, 14, 28, 44, 74, 100];
 function paintSky(){
   var sky = document.getElementById('sky'), sun = document.getElementById('sun');
   var H = sky.clientHeight, g = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
-  if (!H || !(window.CSS && CSS.supports && CSS.supports('color', 'color-mix(in oklab, red 50%, blue)'))) return;
-  /* **色の区切りごとに、一段の高さを粒の同じ数に揃える**（同日、本人：「しまの感覚変わった？」→（スマホで 12px と 8px が混ざっていた、
-     地平のすぐ上に細い段が一本あった、と答えて）「直して」）。
-     % の境目を一本ずつ格子に寄せると、段が粒二つと三つに割れて**縞の間隔が不揃い**になっていた。
-     → 区切りの中はどの段も同じ粒の数。**一段は粒三つより細くしない**——空の低い窓では段の数を減らす（五つ → 三つ など）。
-     **地平の上の細い段（地平の色そのもの）はやめた。**そこだけ縞の間隔が半分になっていた */
-  var segs = [], i, k, n, m, y = H, hs;
-  for (i = 4; i >= 0; i--){                 /* 地平（下）から積む */
-    hs = H * (SKY_AT[i + 1] - SKY_AT[i]) / 100;
-    n = Math.max(1, Math.min(5, Math.floor(hs / (g * 3))));
-    m = Math.max(3, Math.round(hs / n / g));
-    for (k = n - 1; k >= 0; k--){
-      var c = k === 0 ? 'var(--sky' + (i + 1) + ')'
-                      : 'color-mix(in oklab, var(--sky' + (i + 1) + ') ' + Math.round(100 - k * 100 / n) + '%, var(--sky' + (i + 2) + '))';
-      segs.unshift([c, Math.max(0, y - m * g), y]);
-      y -= m * g;
+  if (!H) return;
+  /* **市松で混ぜる**（同日、本人：「色、この色味保持したまま前みたいなもっとわかりやすい階層にできる？そっちの方が16bitゲーム感がある気が」
+     →（一色ずつの五段と二段ずつの十段を並べた）「あ～。カラフルゼリーみたいになっちゃった」→「レトロゲームっぽい感じにするならどうなる？」
+     →（8bit や PC-98 の空は色が四、五色だけで、境目は二色の点を市松に混ぜて中間に見せた、と答えて）「やってみて」）。
+     **ゼリーに見えたのは、平らな帯の色相が隣で大きく跳んだから**（9/15 の「虹色」と同じ根）。
+     → 色は**六色の平らな帯**、境目だけ **4×4 の網点（ベイヤー）で六段**かけて上の色から下の色へ入れ替える。
+     空は粒ひとつを一画素にした小さな絵として描き、pixelated で引き伸ばす（勇者と同じ格子に乗る）*/
+  var W = sky.clientWidth, cw = Math.ceil(W / g), ch = Math.ceil(H / g);
+  var cs = getComputedStyle(document.documentElement), col = [];
+  for (var q = 1; q <= 6; q++) col.push(cs.getPropertyValue('--sky' + q).trim());
+  /* 帯の境目（粒の段で、地平から数える）。橙の段の下 1/3 を地平の色（--sky6）に */
+  var at = SKY_AT.slice(0, 5).concat([90, 100]), edge = at.map(function(v){ return ch - Math.round(ch * (100 - v) / 100); });
+  var BAY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5], T = 6;
+  var cv = paintSky.cv || (paintSky.cv = document.createElement('canvas')), cx = cv.getContext('2d');
+  cv.width = cw; cv.height = ch;
+  for (var yy = 0; yy < ch; yy++){
+    var bi = 0; while (bi < 5 && yy >= edge[bi + 1]) bi++;
+    /* いちばん近い境目からの距離で、下の色の割合を決める（境目の上下に三段ずつ）*/
+    var up = bi, lo = bi, f = 0;
+    if (bi < 5 && edge[bi + 1] - yy <= T / 2){ lo = bi + 1; f = (T / 2 - (edge[bi + 1] - yy) + .5) / T; }
+    else if (bi > 0 && yy - edge[bi] < T / 2){ up = bi - 1; f = (T / 2 + (yy - edge[bi]) + .5) / T; }
+    for (var xx = 0; xx < cw; xx++){
+      cx.fillStyle = (f > 0 && BAY[(yy % 4) * 4 + (xx % 4)] < f * 16) ? col[lo] : col[up];
+      cx.fillRect(xx, yy, 1, 1);
     }
   }
-  segs[0][1] = 0;                            /* いちばん上の段は天頂まで伸ばす */
-  var st = [], ys = [];
-  segs.forEach(function(s){
-    if (s[2] <= s[1]) return;
-    st.push(s[0] + ' ' + s[1] + 'px ' + s[2] + 'px');
-    if (s[1] > 0) ys.push(s[1]);
-  });
-  sky.style.background = 'linear-gradient(180deg, ' + st.join(', ') + ')';
-  /* 太陽の縞。**境目の真上に一粒ぶん**——前の縞（三粒あけて一粒）と同じく、線は段の下の端に来る */
-  var sr = sun.getBoundingClientRect(), kr = sky.getBoundingClientRect(), top = sr.top - kr.top, h = sr.height, s = [];
-  ys.forEach(function(y){
-    var a = y - g - top, b = y - top;
-    if (b <= 0 || a >= h) return;
-    s.push('transparent ' + Math.max(0, a) + 'px', 'var(--ray) ' + Math.max(0, a) + 'px ' + Math.min(h, b) + 'px', 'transparent ' + Math.min(h, b) + 'px');
-  });
+  sky.style.background = 'url(' + cv.toDataURL() + ') 0 100% / ' + (cw * g) + 'px ' + (ch * g) + 'px no-repeat';
+  /* 太陽の縞。地平から粒四つおき、**一周期の上の端に一粒ぶん**（前の「三粒あけて一粒」と同じ並び）*/
+  var P = g * 4;
+  var sr = sun.getBoundingClientRect(), kr = sky.getBoundingClientRect(), top = sr.top - kr.top, h = sr.height, s = [], j, y2, a0, b0;
+  for (j = 1; (y2 = H - j * P) > top - P; j++){
+    a0 = y2 - top; b0 = a0 + g;
+    if (b0 <= 0 || a0 >= h) continue;
+    s.unshift('transparent ' + Math.max(0, a0) + 'px', 'var(--ray) ' + Math.max(0, a0) + 'px ' + Math.min(h, b0) + 'px', 'transparent ' + Math.min(h, b0) + 'px');
+  }
   sun.style.setProperty('--stripes', s.length ? 'linear-gradient(180deg, transparent 0, ' + s.join(', ') + ')' : 'none');
 }
 paintSky();
