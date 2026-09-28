@@ -3149,6 +3149,9 @@ function ask(step, q, list, gen){
   D.sel = 0;
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
+  /* **出した直後は、乗ったままのマウスで光らせない**（2026-09-28）。選択肢をマウスで押すと、次の問いの同じ位置の行が :hover で光り、
+     ▶（一行目）と合わせて**印が二つ**出ていた。十字キーと同じ「黙らせる」を立てる——マウスを動かせば戻り、その行に ▶ が移る */
+  document.body.classList.add('kb');
   say(step + '　' + q);
   dA.innerHTML = list.map(function(s){
     return '<li><button type="button"><span class="cur" aria-hidden="true">▶</span>' + s + '</button></li>';
