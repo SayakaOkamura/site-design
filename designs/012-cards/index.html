@@ -57,6 +57,9 @@
   --on:#7df0a4;      /* まとまったあとの文字。ここで初めて楽に読める */
   --hot:#b9ffd2;     /* 見出しと発光 */
   --line:#12331f;
+  /* **読ませる層の字**（2026-09-28、本人：「単純に見づらい気がしてきた」→「全体」）。明るさの差 6.8（WCAG の目安 4.5 を、走査線のぶん余裕をみて越える）。
+     章の題・一枚の小見出し・足もと・英字の名乗りに使う。壁と散らばった字（読ませない層）は --dim・--dim2 のまま */
+  --read:#4aa86e;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -65,7 +68,8 @@ body{margin:0; background:var(--bg); color:var(--dim);
   -webkit-font-smoothing:antialiased}
 
 /* 走査線。**画面が古い**ことを言うだけの薄い層 */
-body::after{content:''; position:fixed; inset:0; z-index:9; pointer-events:none; opacity:.3;
+body::after{content:''; position:fixed; inset:0; z-index:9; pointer-events:none; opacity:.15;   /* .3 → .15（同日。読ませる層の上の暗さを減らす）*/
+ 
   background:repeating-linear-gradient(180deg,
     rgba(0,0,0,.45) 0 1px, rgba(0,0,0,0) 1px 3px)}
 
@@ -109,7 +113,7 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
   color:var(--dim); font-weight:400; transition:none}   /* 周りと一緒に一瞬で（同日）*/
 .nameline .tag{margin-top:1.1em; font-size:clamp(12px,1.5vw,15px); color:var(--dim2);
   letter-spacing:.04em; transition:none}
-#hero.on .nameline .en{color:var(--dim)}
+#hero.on .nameline .en{color:var(--read)}
 #hero.on .nameline h1{color:var(--hot); text-shadow:0 0 22px rgba(125,240,164,.18)}
 #hero.on .nameline .tag{color:var(--on)}
 
@@ -156,7 +160,7 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
    題が長い章は二行に折り返してよい——**折り返すほうが、空きを抱えているより詰まって見える** */
 .head{float:left; max-width:clamp(120px,15vw,168px);
   margin:0 clamp(8px,1vw,12px) clamp(3px,.5vh,6px) 0}
-.ch h2{margin:.5em 0 0; font-size:clamp(12px,1.4vw,14px); letter-spacing:.24em; color:var(--dim);
+.ch h2{margin:.5em 0 0; font-size:clamp(13px,1.4vw,15px); letter-spacing:.24em; color:var(--read);
   font-weight:400; line-height:1.7}
 
 /* 発光する印。**押すところ**。章の頭に、題と並べて置く */
@@ -254,7 +258,7 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
   max-width:clamp(320px,52vw,680px); letter-spacing:0;
   padding:clamp(12px,2vh,24px) 0 clamp(18px,2.6vh,30px)}
 .ch.on .card{opacity:1}
-.card .k{font-size:clamp(9.5px,1vw,11px); letter-spacing:.3em; color:var(--dim);
+.card .k{font-size:clamp(11px,1vw,12px); letter-spacing:.3em; color:var(--read);
   padding-bottom:1em}
 .card .lead{margin:0; font-size:clamp(16px,2.1vw,24px); line-height:1.6;
   color:var(--hot); letter-spacing:.02em; text-shadow:0 0 18px rgba(125,240,164,.16)}
@@ -298,8 +302,8 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
    仮であることは NOTES に書けば足りる */
 
 footer{border-top:1px solid var(--line); padding:clamp(40px,8vh,80px) 0 clamp(60px,12vh,120px);
-  font-size:clamp(10px,1.2vw,12px); color:var(--dim2); line-height:2.2}
-footer a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--line)}
+  font-size:clamp(12px,1.2vw,13px); color:var(--read); line-height:2.2}
+footer a{color:var(--on); text-decoration:none; border-bottom:1px solid var(--line)}
 footer a:hover{color:var(--on)}
 
 @media (max-width:760px){
@@ -318,22 +322,24 @@ footer a:hover{color:var(--on)}
 
 /* 1. 開いたときの起動。真っ暗から、真ん中に細い横線が走って、上下に開く（古いモニターの電源を入れたときの形）。
    JS は要らない——CSS だけで始まって、終わったら自分で見えなくなる */
-#boot{position:fixed; inset:0; z-index:20; pointer-events:none; animation:bootgone 0s linear 1.05s forwards}
+/* **開いたときの流れは「OP モーション」**（2026-09-28、本人：「OPモーションくらいの気持ちでいいよ。さあ見るか、ってしてる間に動いてほしい。
+   本腰入れたときにまだ動いてたらおもんないから」）。**打ち出しまで 1.5 秒ほどで終える。**章の畳み方は自分で見に行くところなので別 */
+#boot{position:fixed; inset:0; z-index:20; pointer-events:none; animation:bootgone 0s linear .52s forwards}
 #boot i{position:absolute; left:0; right:0; height:50%; background:#000}
-#boot .t{top:0; animation:bootopen .38s cubic-bezier(.7,0,.2,1) .42s forwards}
-#boot .b{bottom:0; animation:bootopenb .38s cubic-bezier(.7,0,.2,1) .42s forwards}
+#boot .t{top:0; animation:bootopen .26s cubic-bezier(.7,0,.2,1) .24s forwards}
+#boot .b{bottom:0; animation:bootopenb .26s cubic-bezier(.7,0,.2,1) .24s forwards}
 #boot .l{top:50%; height:2px; margin-top:-1px; background:var(--hot); box-shadow:0 0 14px 2px rgba(125,240,164,.55);
-  transform:scaleX(0); animation:bootline .3s cubic-bezier(.5,0,.1,1) .08s forwards, bootlineout .2s linear .5s forwards}
+  transform:scaleX(0); animation:bootline .2s cubic-bezier(.5,0,.1,1) .02s forwards, bootlineout .12s linear .26s forwards}
 @keyframes bootline{ to{transform:scaleX(1)} }
 @keyframes bootlineout{ to{opacity:0} }
 @keyframes bootopen{ to{transform:translateY(-100%)} }
 @keyframes bootopenb{ to{transform:translateY(100%)} }
 @keyframes bootgone{ to{visibility:hidden} }
 /* そのあと、社名のまわりの字が上から順に点く（字の列を上から覗かせる）。社名の三行は少し遅れて */
-.js #hero .noise .col{animation:bootreveal .5s steps(6) .8s both}
-.js #hero .noise.b .col{animation-delay:1.05s}
-.js #hero .nameline > *{animation:booton .24s steps(2) both}
-.js #hero .nameline .en{animation-delay:.95s} .js #hero .nameline h1{animation-delay:1.05s} .js #hero .nameline .tag{animation-delay:1.15s}
+.js #hero .noise .col{animation:bootreveal .3s steps(5) .45s both}
+.js #hero .noise.b .col{animation-delay:.52s}
+.js #hero .nameline > *{animation:booton .16s steps(2) both}
+.js #hero .nameline .en{animation-delay:.5s} .js #hero .nameline h1{animation-delay:.56s} .js #hero .nameline .tag{animation-delay:.62s}
 @keyframes bootreveal{ from{clip-path:inset(0 0 100% 0)} to{clip-path:inset(0 0 0 0)} }
 @keyframes booton{ from{opacity:0} to{opacity:1} }
 
@@ -365,9 +371,9 @@ footer a:hover{color:var(--on)}
 .noise .sc .cv{position:absolute; left:0; right:0; top:0; height:var(--h,0px); background:var(--bg); transform-origin:top; transform:scaleY(0)}
 .noise .sc .bar{position:absolute; left:0; right:0; top:0; height:2px; background:var(--hot); box-shadow:0 0 12px 1px rgba(125,240,164,.5)}
 #hero.scanning .noise .sc{display:block}
-#hero.scanning .noise .sc .cv{animation:scancv .28s cubic-bezier(.6,0,.25,1) forwards}   /* 本人「今度は逆に遅いな」で .36 → .28 */
-#hero.scanning .noise .sc .bar{animation:scanbar .28s cubic-bezier(.6,0,.25,1) forwards}
-#hero.scanning .noise.b .sc .cv, #hero.scanning .noise.b .sc .bar{animation-delay:.24s}
+#hero.scanning .noise .sc .cv{animation:scancv .18s cubic-bezier(.6,0,.25,1) forwards}   /* 本人「今度は逆に遅いな」で .36 → .28、「もっと早くていいよ」で .2 */
+#hero.scanning .noise .sc .bar{animation:scanbar .18s cubic-bezier(.6,0,.25,1) forwards}
+#hero.scanning .noise.b .sc .cv, #hero.scanning .noise.b .sc .bar{animation-delay:.12s}
 .nameline{position:relative}
 .nameline .cn{position:absolute; width:14px; height:14px; border:0 solid var(--on); pointer-events:none; opacity:0}
 .nameline .cn.tl{left:calc(clamp(56px,7vw,86px) - 18px); top:0; border-top-width:1px; border-left-width:1px; transform-origin:0 0}
@@ -590,9 +596,10 @@ function settle(ch, back){
 }
 /* **上から下へ、一字ずつ打つ**（2026-09-15 の「上から下の方がいいかも」はそのまま）。章の一枚とページの頭の社名で共通。
    **時刻で組む**——何字目まで出ているかを、始めてからの時間で決める。裏の窓で時計が間引かれても、戻ったときに追いつく */
-function typeOut(ch, els){
+function typeOut(ch, els, opt){
+  opt = opt || {};
   ch.dataset.run = String(Date.now());
-  var run = ch.dataset.run, CH = 6, GAP = 60;   /* 一字 6ms（同日、倍の速さに）*/
+  var run = ch.dataset.run, CH = opt.ch || 6, GAP = opt.gap || 60;   /* 一字 6ms（同日、倍の速さに）*/
   els.forEach(plainEl);
   var plan = [], at = 0;
   els.forEach(function(el){
@@ -602,7 +609,8 @@ function typeOut(ch, els){
     at += s.length * CH + GAP;
     el.classList.add('tw-w');
   });
-  var t0 = performance.now() + 200;   /* 四隅の枠（0.2 秒）が引かれてから打つ */
+  var WAIT = opt.wait == null ? 200 : opt.wait;
+  var t0 = performance.now() + WAIT;   /* 四隅の枠（0.2 秒）が引かれてから打つ */
   function paint(){
     if (ch.dataset.run !== run) return true;
     var now = performance.now() - t0, done = true;
@@ -622,7 +630,7 @@ function typeOut(ch, els){
   setTimeout(function(){
     if (ch.dataset.run !== run) return;
     clearInterval(iv); els.forEach(plainEl);
-  }, 200 + at + 400);
+  }, WAIT + at + 400);
 }
 
 /* **走査して畳む**（同日、本人：「ロボット起動感でも目指すか」→「一旦全部」）。
@@ -798,7 +806,7 @@ function heroFold(){
   if (!STILL){
     [].forEach.call(hero.querySelectorAll('.noise'), function(n){ n.style.setProperty('--h', n.offsetHeight + 'px'); });
     hero.classList.add('scanning');
-    setTimeout(function(){ if (hero.dataset.fold === tok) heroFoldDone(); }, 550);
+    setTimeout(function(){ if (hero.dataset.fold === tok) heroFoldDone(); }, 320);
     return;
   }
   heroFoldDone();
@@ -812,7 +820,7 @@ function heroFoldDone(){
   hero.classList.add('on');
   [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){ n.style.maxHeight = '0px'; });
   var els = [].slice.call(hero.querySelectorAll('.nameline .en, .nameline h1, .nameline .tag'));
-  if (STILL) els.forEach(plainEl); else typeOut(hero, els);
+  if (STILL) els.forEach(plainEl); else typeOut(hero, els, { ch: 4, gap: 40, wait: 90 });   /* OP なので少し速く */
 }
 /* 戻す手（heroUnfold）と頭の印の click は、頭の印を外したのでやめた（2026-09-28）*/
 
@@ -831,6 +839,6 @@ if (matchMedia('(prefers-reduced-motion:reduce)').matches){
      途中の段階：起動の直後（1.5 秒）→「貯めて」で 3.25 秒＋印の合図 → 押させないので、起動の終わりに戻した。
      9/15 に外した理由は「こちらがやってしまうと、**自分にできることだと分からない**」（本人「勝手に閉じられるとわからん」）。
      いまは章もスクロールで書き換わるので、押すのは「壁に戻す」ときだけになった。そこは畳んだあとも光る印が言う */
-  setTimeout(heroFold, 1600);
+  setTimeout(heroFold, 850);   /* 本人「もっと早くていいよ」で 1.6 → 1.3 秒（散らばった字が点き終わる直前から）*/
 }
 </script>
