@@ -3,6 +3,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
+<!-- **JS が動くかどうかを、いちばん先に印す**（2026-09-28）。動けば `.js`——
+     本文の `#text` を隠して、夕焼けの画面だけにする。止まっていれば印が付かず、`#text` が出る -->
+<script>document.documentElement.className += ' js';</script>
 <!-- ═══════════════════════════════════════════════════════════════
      011 RPG（2026-09-14。**一から作り直し**）
 
@@ -1388,6 +1391,23 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #name b{font-size:12.5px}
   #tag{font-size:10px}
 }
+/* ─ JS が止まっているとき（2026-09-28）──────────────────────────
+   **夕焼けは一画面ぶん残して、その下に本文を素の一枚で出す。**
+   メニュー・窓・デモは JS が無いと動かないので、画面から外す */
+.js #text{display:none}
+html:not(.js), html:not(.js) body{height:auto; overflow:auto}
+html:not(.js) #screen{position:relative; height:100vh}
+html:not(.js) #menu, html:not(.js) #foot, html:not(.js) #made,
+html:not(.js) #pop, html:not(.js) #demo, html:not(.js) #dRoll, html:not(.js) #clear{display:none}
+#text{background:var(--box); color:var(--dim); padding:clamp(32px,6vw,64px) clamp(16px,4vw,54px);
+  font-size:16px; line-height:1.9}
+#text section{max-width:44em; margin:0 auto 3em}
+#text h2{font-size:14px; letter-spacing:.12em; color:var(--go); margin:0 0 1em}
+#text h3, #text .lead, #text dt{color:var(--ink); font-weight:700; margin:1.2em 0 .2em}
+#text p, #text dd, #text ul{margin:0 0 .4em}
+#text dd, #text ul{padding:0}
+#text li{list-style:none}
+#text a{color:var(--go)}
 </style>
 
 <div id="screen">
@@ -1474,6 +1494,79 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     </div>
   </div>
 </div>
+
+<!-- ─ 文。**ここが本文の置き場**（2026-09-28）─────────────────────
+     前は文が全部 JS の中にあって、**JS が止まると社名しか読めなかった**
+     （Codex に見させて出た一つ目）。検索・リンクの下見・読むだけの AI も同じで、中身が空に見える。
+     → **文を HTML に移して、窓は JS がここから読んで組む。**文の置き場は一か所のまま。
+     JS が動いているあいだは隠す。止まっているときだけ、夕焼けの下に素の一枚として出る -->
+<main id="text">
+  <section id="t-mind">
+    <h2>企業理念</h2>
+    <p class="lead" data-a="mind0">経営の力で「遊ぶように働く世界」をデザインする</p>
+    <p data-a="mind1">「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと。</p>
+    <p data-a="mind2">子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと。</p>
+    <p data-a="mind3">このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく。</p>
+    <p class="lead" data-a="mind4">それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です。</p>
+  </section>
+  <section id="t-svc">
+    <h2>サービス</h2>
+    <h3 data-a="svc0h">01　人間中心の次世代業務システム開発</h3>
+    <p data-a="svc0">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します。</p>
+    <h3 data-a="svc1h">02　AI による意思決定支援と事業変革支援</h3>
+    <p data-a="svc1">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します。</p>
+    <h3 data-a="svc2h">03　自律型・共創型の組織設計支援</h3>
+    <p data-a="svc2">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します。</p>
+    <h3 data-a="svc3h">04　地域格差の解消を目指したデジタル支援</h3>
+    <p data-a="svc3">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します。</p>
+  </section>
+  <section id="t-about">
+    <h2>会社概要</h2>
+    <dl>
+      <dt>会社名</dt><dd data-a="name">株式会社アルターデザインコンサルティング</dd>
+      <dt>代表者</dt><dd data-a="rep">松岡　真功</dd>
+      <dt>所在地</dt><dd data-a="addr">本社　東京都港区西新橋 3-23-5　ANYZ304（御成門郵船ビル）</dd>
+      <dt>事業内容</dt><dd data-a="biz">AI 技術を活用した組織最適化に関するコンサルティング事業／AI とローコードを組み合わせた次世代型のシステム開発事業</dd>
+      <dt>設立年月日</dt><dd data-a="est">2025 年 6 月　／　資本金 60 百万円</dd>
+      <dt>株主</dt><dd data-a="own">株式会社ＢｌｕｅＭｅｍｅ／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</dd>
+    </dl>
+  </section>
+  <section id="t-access">
+    <h2>アクセス</h2>
+    <ul data-a="route">
+      <li>御成門 2 分（都営三田線）</li>
+      <li>大門 10 分（都営浅草線・大江戸線）</li>
+      <li>神谷町 10 分（東京メトロ日比谷線）</li>
+      <li>汐留 12 分（都営大江戸線・ゆりかもめ）</li>
+      <li>虎ノ門ヒルズ 12 分（日比谷線）</li>
+      <li>虎ノ門 12 分（東京メトロ銀座線）</li>
+      <li>新橋 12 分（JR 山手線・京浜東北線）</li>
+      <li>浜松町 14 分（JR 山手線・京浜東北線）</li>
+    </ul>
+    <!-- **地図は公式に無い**（公式トップの href は 11 本。地図へ出ているものは一つも無い）。
+         だから**こちらが座標を持たない。**公式に出ている住所をそのまま渡して、
+         **印を置くのは向こう**にさせる。番地まで（所在地の真ん中）を渡す——
+         部屋番号と建物名は入れない（検索が部屋を探しに行く） -->
+    <p><a data-go="access" href="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%B1%E4%BA%AC%E9%83%BD%E6%B8%AF%E5%8C%BA%E8%A5%BF%E6%96%B0%E6%A9%8B%203-23-5" target="_blank" rel="noopener">地図をひらく</a></p>
+  </section>
+  <section id="t-contact">
+    <h2>お問い合わせ</h2>
+    <p class="lead" data-a="contact0">contact@alt-dsgn.co.jp</p>
+    <p data-a="contact1">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたら、お気軽にお問い合わせください。</p>
+    <p><a data-go="contact" href="mailto:contact@alt-dsgn.co.jp">メールをひらく</a></p>
+  </section>
+  <section id="t-policy">
+    <h2>プライバシーポリシー</h2>
+    <p class="lead" data-a="policy0">BlueMeme のページに置かれています。</p>
+    <p data-a="policy1">当社は BlueMeme グループの一社です。プライバシーポリシーは、公式サイトと同じく BlueMeme のページを指しています。</p>
+    <p><a data-go="policy" href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">BlueMeme のページへ</a></p>
+  </section>
+  <section id="t-made">
+    <h2>この画面について</h2>
+    <p class="lead" data-a="made0">この画面は、AI が作りました。</p>
+    <p data-a="made1">イラストやアニメーション、画面構成も AI によるものです。</p>
+  </section>
+</main>
 
 <script>
 /* ─ 勇者。**2頭身。22×22 の四コマ。**走る位置は変えない ──────────
@@ -1766,42 +1859,49 @@ window.addEventListener('resize', function(){
    前は理念 4 枚・サービス 4 枚・会社概要 4 枚だった。
    **「文は削らない」をやめた**——枚数の指示が先。削ったのは**サービスの説明の二文目以降**で、
    **公式の題と一文目はそのまま。**理念と会社概要は**一字も削っていない**（詰め方を変えただけ）*/
+/* **文は HTML の `#text` に置いてある**（2026-09-28）。ここはそれを読んで窓の形に組むだけ。
+   文を直すときは `#text` のほうを直す */
+function A(k){ return document.querySelector('[data-a="' + k + '"]').innerHTML.trim(); }
+/* 会社概要の一行。**項目名も HTML から**（`dt`）*/
+function row(k){
+  var dd = document.querySelector('[data-a="' + k + '"]');
+  return '<b>' + dd.previousElementSibling.innerHTML.trim() + '</b><span class="s">' + dd.innerHTML.trim() + '</span>';
+}
+function T(k){ return document.querySelector('#t-' + k + ' h2').textContent.trim(); }
+
 /* **住所は二か所から指される**（会社概要と、足もとのアクセス）。
-   文はここに一つだけ置いて、両方から引く——**片方だけ直る**のを防ぐ。
+   文は一つだけ置いて、両方から引く——**片方だけ直る**のを防ぐ。
    **駅は足もとだけ**（会社概要からは 2026-09-15 に抜いた） */
 /* 理念は**二か所から指される**（メニューの「企業理念」と、終わりのエンドロール）。
-   住所と同じで、文はここに一つだけ置いて両方から引く */
-var MIND = [
-  '経営の力で「遊ぶように働く世界」をデザインする',
-  '「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと。',
-  '子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと。',
-  'このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく。',
-  'それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です。'
-];
+   住所と同じで、文は一つだけ置いて両方から引く */
+var MIND = [0, 1, 2, 3, 4].map(function(i){ return A('mind' + i); });
 
-var ADDR  = '本社　東京都港区西新橋 3-23-5　ANYZ304（御成門郵船ビル）';
-var ROUTE = '御成門 2 分（都営三田線）／大門 10 分（都営浅草線・大江戸線）／神谷町 10 分（東京メトロ日比谷線）／汐留 12 分（都営大江戸線・ゆりかもめ）／虎ノ門ヒルズ 12 分（日比谷線）／虎ノ門 12 分（東京メトロ銀座線）／新橋 12 分（JR 山手線・京浜東北線）／浜松町 14 分（JR 山手線・京浜東北線）';
+var ADDR  = A('addr');
 
-/* 路線は**一本ずつ行に割る。**`ROUTE` の `／` で切るだけで、**文は触らない。**
+/* 路線は**一本ずつ行に割る。**HTML で一駅一行にしてあるので、それをそのまま並べる。**文は触らない。**
    **駅名が行頭に来る**ので、探すのはこれで足りる（色は付けない。上の節） */
-var RT = ROUTE.split('／').map(function(x){ return '<i>' + x + '</i>'; });
+var RT = [].map.call(document.querySelectorAll('[data-a="route"] li'),
+                     function(li){ return '<i>' + li.innerHTML.trim() + '</i>'; });
 function rtGrid(a){ return '<span class="s rt">' + a.join('') + '</span>'; }
 var ROUTEHTML = rtGrid(RT);
 
 /* 会社概要の中身。**一枚目は入らない窓で二つに割る**ので、対ごとに持っておく */
 var AB = {
-  name:'<b>会社名</b><span class="s">株式会社アルターデザインコンサルティング</span>',
-  rep :'<b>代表者</b><span class="s">松岡　真功</span>',
-  addr:'<b>所在地</b><span class="s">' + ADDR + '</span>',
-  biz :'<b>事業内容</b><span class="s">AI 技術を活用した組織最適化に関するコンサルティング事業／AI とローコードを組み合わせた次世代型のシステム開発事業</span>'
-      + '<b>設立年月日</b><span class="s">2025 年 6 月　／　資本金 60 百万円</span>',
-  own :'<b>株主</b><span class="s">株式会社ＢｌｕｅＭｅｍｅ／株式会社ハイ・アベイラビリティ・システムズ／株式会社サーバーワークス・キャピタル／リックソフト株式会社</span>'
+  name:row('name'),
+  rep :row('rep'),
+  addr:row('addr'),
+  biz :row('biz') + row('est'),
+  own :row('own')
 };
+/* サービスの一項目（題＋説明）*/
+function svc(i){ return '<b>' + A('svc' + i + 'h') + '</b><span class="s">' + A('svc' + i) + '</span>'; }
+/* お問い合わせ・ポリシー・この画面について（太字の一行＋説明）*/
+function one(k){ return '<b>' + A(k + '0') + '</b><span class="s">' + A(k + '1') + '</span>'; }
 
 var DATA = {
   /* **四段落ぜんぶ入れる。**前は三・四段落目が落ちていて、見出しの「やらされる、ではなく」は
      こちらの作文だった。**足さない**と決めたのだから、作文の見出しも置かない */
-  mind: { t:'企業理念', p:[
+  mind: { t:T('mind'), p:[
     '<b>' + MIND[0] + '</b>'
     + '<span class="s">' + MIND[1] + '</span>'
     + '<span class="s">' + MIND[2] + '</span>',
@@ -1812,16 +1912,7 @@ var DATA = {
   /* **一項目ずつ一枚に。**低い窓で二項目ぶん入れると、
      『▼』が枠の外へ落ちた（幅を広げても足りなかった）。
      **文は一字も削らない**——枚数のほうを譲る（9/14 に決めたとおり） */
-  svc: { t:'サービス', p:[
-    '<b>01　人間中心の次世代業務システム開発</b>'
-    + '<span class="s">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します。</span>',
-    '<b>02　AI による意思決定支援と事業変革支援</b>'
-    + '<span class="s">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します。</span>',
-    '<b>03　自律型・共創型の組織設計支援</b>'
-    + '<span class="s">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します。</span>',
-    '<b>04　地域格差の解消を目指したデジタル支援</b>'
-    + '<span class="s">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します。</span>'
-  ]},
+  svc: { t:T('svc'), p:[ svc(0), svc(1), svc(2), svc(3) ]},
   /* **場所を落としていた**（本人：「まだあるよね、**会社の場所とか**」）。
      前は「所在 港区西新橋」の一言で、**番地も建物もアクセスの八駅も無かった。**
      会社概要で**いちばん引かれるのが住所**なので、一枚目に置く */
@@ -1840,7 +1931,7 @@ var DATA = {
 
      割り方は **会社名・代表者 ／ 所在地**。三対を二対と一対に分ける。
      **文は一字も変えない**——9/14 に決めたとおり、譲るのは枚数のほう */
-  about: { t:'会社概要',
+  about: { t:T('about'),
     p:[ AB.name + AB.rep + AB.addr, AB.biz, AB.own ],
     split:[ AB.name + AB.rep, AB.addr, AB.biz, AB.own ] },
   /* **メニューの中**（2026-09-15）。はじめ会社概要の中にあって**開かないと辿り着けず**、
@@ -1856,20 +1947,17 @@ var DATA = {
      **入らない窓では二枚に戻す**（`fitAcc()`。700×500 だけ）。
 
      **見出しを付けない。**窓の題がもう「アクセス」なので、同じ語が縦に二つ並ぶ */
-  access: { t:'アクセス',
-    one:[ '<b>所在地</b><span class="s">' + ADDR + '</span>' + ROUTEHTML ],
+  access: { t:T('access'),
+    one:[ AB.addr + ROUTEHTML ],
     /* **二枚に戻すときも、一枚目に中身を持たせる**（2026-09-18、本人：
        「1ページ目が情報量少ないって争点だったはずだけど」）。
        「住所 ／ 路線」で切ると**一枚目が住所一行のまま**で、直したかったものが残る。
        → **住所＋近い三駅 ／ 残り五駅。**700×500 で 248 / 212（天井 300）。
        4+4 にすると 271 / 199 で、こんどは二枚目が薄い */
-    p:[ '<b>所在地</b><span class="s">' + ADDR + '</span>' + rtGrid(RT.slice(0, 3)),
+    p:[ AB.addr + rtGrid(RT.slice(0, 3)),
         rtGrid(RT.slice(3)) ]
   },
-  contact: { t:'お問い合わせ', p:[
-    '<b>contact@alt-dsgn.co.jp</b>'
-    + '<span class="s">サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたら、お気軽にお問い合わせください。</span>'
-  ]},
+  contact: { t:T('contact'), p:[ one('contact') ]},
   /* **「無い」は間違いだった。**公式の footer は
      bluememe.jp/privacy-policy/ へ出している。こちらで書かず、同じ先へ送る。
      **ここだけ開いた人に、関係が分かるようにした**（2026-09-17）——
@@ -1895,30 +1983,18 @@ var DATA = {
      **キャッチコピーにしない**（2026-09-25、本人：「まじめ寄りでもいい」
      「全部キャッチコピーみたいなんだよな」）。体言止め・三つ並べ・「〜まで。」が
      コピーの型なので、**奥付のような普通の説明文**にする */
-  made: { t:'この画面について', p:[
-    '<b>この画面は、AI が作りました。</b>'
-    + '<span class="s">イラストやアニメーション、画面構成も AI によるものです。</span>'
-  ]},
-  policy: { t:'プライバシーポリシー', p:[
-    '<b>BlueMeme のページに置かれています。</b>'
-    + '<span class="s">当社は BlueMeme グループの一社です。プライバシーポリシーは、公式サイトと同じく BlueMeme のページを指しています。</span>'
-  ]}
+  made: { t:T('made'), p:[ one('made') ]},
+  policy: { t:T('policy'), p:[ one('policy') ]}
 };
-
-/* **地図は公式に無い**（公式トップの href は 11 本。地図へ出ているものは一つも無い）。
-   だから**こちらが座標を持たない。**公式に出ている住所をそのまま渡して、
-   **印を置くのは向こう**にさせる。番地まで（`ADDR` の真ん中）を渡す——
-   部屋番号と建物名は入れない（検索が部屋を探しに行く） */
-var MAP = 'https://www.google.com/maps/search/?api=1&query='
-        + encodeURIComponent(ADDR.split('　')[1]);
 
 /* **窓の最後で外へ出るもの。**公式が出している先と、
-   **公式に出ている住所をそのまま渡した先**だけを指す */
-var GO = {
-  access: { label:'地図をひらく', href:MAP, blank:true },
-  contact:{ label:'メールをひらく', href:'mailto:contact@alt-dsgn.co.jp', blank:false },
-  policy: { label:'BlueMeme のページへ', href:'https://www.bluememe.jp/privacy-policy/', blank:true }
-};
+   **公式に出ている住所をそのまま渡した先**だけを指す。
+   **先も HTML の `#text` のリンクから読む**（2026-09-28）。地図の先をどう作ったかは、そのリンクの横に書いてある */
+function go(k){
+  var a = document.querySelector('[data-go="' + k + '"]');
+  return { label:a.textContent.trim(), href:a.href, blank:a.target === '_blank' };
+}
+var GO = { access:go('access'), contact:go('contact'), policy:go('policy') };
 
 /* **お知らせは置かない**（2026-09-14、本人：「お知らせは消していいよ」）。
    公式トップには帯として載っている（2025-12-17 のプレスリリース＋PDF）が、
