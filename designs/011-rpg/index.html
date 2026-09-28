@@ -320,6 +320,12 @@ body{
   background-color:#e6d6c8;
   background-color:color-mix(in srgb, var(--sky6) 40%, #e4e0dc);
   -webkit-mask-repeat:repeat-x;  mask-repeat:repeat-x}
+/* **混ぜる元は、その高さの空の色**（2026-09-28、空を紺からにしたら、紺の上で**灰色の板**に見えた——
+   混ぜていたのは地平の色（--sky6）で、上の段とは色味が合わなかった）。無彩寄りの割合（灰に六割）は 9/25 のまま。
+   上の雲は青紫（--sky2）、真ん中は赤紫（--sky3）、下は赤橙（--sky4）から借りる */
+#cloud .c1{background-color:color-mix(in srgb, var(--sky2) 40%, #e4e0dc)}
+#cloud .c2{background-color:color-mix(in srgb, var(--sky3) 40%, #e4e0dc)}
+#cloud .c3{background-color:color-mix(in srgb, var(--sky4) 40%, #e4e0dc)}
 #cloud .c1{top:calc(100% * .12); height:calc(var(--px)*12); opacity:.28;
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 12' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='30' y='2' width='28' height='1'/%3E%3Crect x='40' y='3' width='46' height='1'/%3E%3Crect x='210' y='6' width='20' height='1'/%3E%3Crect x='200' y='7' width='38' height='1'/%3E%3Crect x='390' y='1' width='34' height='1'/%3E%3Crect x='378' y='2' width='58' height='1'/%3E%3Crect x='396' y='3' width='22' height='1'/%3E%3C/g%3E%3C/svg%3E");
           mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 12' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cg fill='%23000'%3E%3Crect x='30' y='2' width='28' height='1'/%3E%3Crect x='40' y='3' width='46' height='1'/%3E%3Crect x='210' y='6' width='20' height='1'/%3E%3Crect x='200' y='7' width='38' height='1'/%3E%3Crect x='390' y='1' width='34' height='1'/%3E%3Crect x='378' y='2' width='58' height='1'/%3E%3Crect x='396' y='3' width='22' height='1'/%3E%3C/g%3E%3C/svg%3E");
