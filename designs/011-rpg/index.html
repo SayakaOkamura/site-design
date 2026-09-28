@@ -918,6 +918,11 @@ body.demo #dHp{display:block}
 #menu li > button, #dA li > button{-webkit-appearance:none; appearance:none; border:0; background:none;
   margin:0; padding:0; font:inherit; color:inherit; letter-spacing:inherit; text-align:left; cursor:inherit;
   flex:1 1 auto; display:flex; align-items:inherit; gap:inherit}
+/* **▶ の行では焦点の枠を出さない。**焦点の行には ▶ も来る（`focusin`）ので、印は ▶ 一つで足りる。
+   出していたら、マウスで押したあとにキーを触っただけで、行に白い枠が出た。
+   **▶ の無い行に焦点があるとき**（窓を開いたまま Tab で動いたとき）は、枠がただ一つの目印なので残す */
+#menu li[aria-current="true"] > button:focus-visible,
+#dA li[aria-current="true"] > button:focus-visible{outline:none}
 /* **にげるは、いつも出しておく**（2026-09-15、本人：「常に逃げるコマンドを出して
    戻れるようにしてほしい」）。前は Esc だけで、**画面のどこにも出口が無かった。**
    三択の下に、線で区切って置く——RPG の作法どおり、**戦いの外へ出る手は最後の行** */
@@ -1397,6 +1402,9 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #name b{font-size:12.5px}
   #tag{font-size:10px}
 }
+/* 読み上げにだけ届く一行（下の `#say`）。**画面には出さない** */
+#say{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
+
 /* ─ JS が止まっているとき（2026-09-28）──────────────────────────
    **夕焼けは一画面ぶん残して、その下に本文を素の一枚で出す。**
    メニュー・窓・デモは JS が無いと動かないので、画面から外す */
@@ -1500,6 +1508,12 @@ html:not(.js) #pop, html:not(.js) #demo, html:not(.js) #dRoll, html:not(.js) #cl
     </div>
   </div>
 </div>
+
+<!-- **読み上げにだけ届く一行**（2026-09-28。Codex に見させて出た三つ目）。
+     窓も問いも JS が差し替えるだけで、**読み上げには何も起きていないように聞こえていた。**
+     差し替えたものを、ここに一度だけ書く（`say()`）。焦点は動かさない——
+     この画面は ↑↓ と Enter を画面ぜんたいで受けるので、焦点を奪うと手と印が分かれる -->
+<div id="say" aria-live="polite"></div>
 
 <!-- ─ 文。**ここが本文の置き場**（2026-09-28）─────────────────────
      前は文が全部 JS の中にあって、**JS が止まると社名しか読めなかった**
@@ -2333,6 +2347,17 @@ function pages(d){
   return d.p;
 }
 
+/* 読み上げに渡す。**一度空にしてから書く**——同じ文を続けて出しても読まれるように */
+var sayEl = document.getElementById('say'), sayT = null;
+function say(s){
+  clearTimeout(sayT); sayEl.textContent = '';
+  sayT = setTimeout(function(){ sayEl.textContent = s; }, 60);
+}
+/* 窓の中身を、一項目ずつ区切って読む（見出し・文・駅の一行）。
+   `textContent` のままだと、見出しと文、駅と駅が**切れ目なしにつながる** */
+function textOf(el){
+  return [].map.call(el.querySelectorAll('b, .s:not(.rt), .rt i'), function(x){ return x.textContent.trim(); }).join('　');
+}
 function draw(){
   var d = DATA[cur], ps = pages(d);
   popT.textContent = d.t;
@@ -2360,6 +2385,12 @@ function draw(){
     : '<span class="ar">▼</span>';
   popGo.setAttribute('aria-current', goSel ? 'true' : 'false');
 }
+/* **読むのは開いたときとめくったときだけ。**`draw()` は測るときにも呼ばれる
+   （`topOfTallestPop()` が全部の窓を描いて測る）ので、そこでは読まない */
+function sayPage(){
+  var d = DATA[cur], ps = pages(d);
+  say(d.t + (ps.length > 1 ? '　' + (page + 1) + ' / ' + ps.length : '') + '　' + textOf(popB));
+}
 /* **窓の中の ↓ は、右下の一手を選ぶ。**窓には他に動かすものが無いので、
    ここだけ ↑↓ が生きる。**まだ頁が残っていれば右下は「▼」**なので、指すものが無い。
    選ぶキーと出すキーを分けてある——**Enter や → の連打では選ばれない。** */
@@ -2369,6 +2400,7 @@ function goPick(on){
   if (page < pages(d).length - 1 || !GO[cur]) return;
   if (goSel === on) return;
   goSel = on; draw();
+  if (on) say(GO[cur].label);
 }
 /* **`open` という名前は使えない。**素の script の中で `function open(){}` と書くと、
    それが **`window.open` を上書きする**——外へ出る一手（ポリシー・地図）が、
@@ -2378,7 +2410,7 @@ function openPop(k){
   if (k === 'demo'){ startDemo(); return; }
   cur = k; page = 0; goSel = false; pop.classList.add('on');
   document.body.classList.add('popped');   /* 狭くて低い窓で、メニューを退かせるため */
-  draw();
+  draw(); sayPage();
   var i = ALL.findIndex(function(el){ return el.dataset.k === k; });
   if (i >= 0) sel = i;
   paintSel();
@@ -2391,7 +2423,7 @@ function close(){
 /* めくる。最後まで来たら閉じる（fire と違って、外へは出ない） */
 function turn(){
   var d = DATA[cur];
-  if (page < pages(d).length - 1){ page++; goSel = false; draw(); return; }
+  if (page < pages(d).length - 1){ page++; goSel = false; draw(); sayPage(); return; }
   close();
 }
 
@@ -2399,7 +2431,7 @@ function turn(){
 function fire(){
   if (!cur){ openPop(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
-  if (page < pages(d).length - 1){ page++; goSel = false; draw(); return; }
+  if (page < pages(d).length - 1){ page++; goSel = false; draw(); sayPage(); return; }
   /* **選んでいなければ、閉じるだけ。**Enter や → の連打では飛ばない */
   if (GO[cur] && goSel){
     GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
@@ -2896,6 +2928,7 @@ function ask(step, q, list, gen){
   D.sel = 0;
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
+  say(step + '　' + q);
   dA.innerHTML = list.map(function(s){
     return '<li><button type="button"><span class="cur" aria-hidden="true">▶</span>' + s + '</button></li>';
   }).join('')
@@ -3232,6 +3265,7 @@ function winSeq(){
        走りは止まるので気づきにくい——`HERO_WIN` は一度も画面に出ていなかった */
     heroPose('win');
     dWon.classList.add('on');
+    say(dWon.textContent);
     setTimeout(function(){
       dWon.classList.remove('on');
       /* **`> 整合性を確かめる` は外した**（2026-09-16、本人：
@@ -3338,6 +3372,7 @@ function showResult(){
   D.parts.concat(seen).forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
   seen.forEach(function(el){ el.classList.add('on'); });
   dRes.classList.add('on');
+  say([].map.call(dRes.querySelectorAll('.rt, .rw, .rp, .rtask li'), function(x){ return x.textContent.trim(); }).join('　'));
   if (REDUCE){ openDone(); return; }
   D.phase = 'open';
   /* **待ちの id は二つとも持っておく。**枠が開くまでの待ちを止め忘れると、
