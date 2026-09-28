@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ja">
+<script>document.documentElement.className += ' js';</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
@@ -103,11 +104,11 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
   transition:none}
 #hero.on .nameline{padding:clamp(2px,.6vh,6px) 0 clamp(14px,2vh,22px) clamp(56px,7vw,86px)}
 .nameline .en{font-size:clamp(11px,1.3vw,13px); letter-spacing:.34em; color:var(--dim2);
-  transition:color .3s steps(3) .25s}
+  transition:none}
 .nameline h1{margin:.6em 0 0; font-size:clamp(17px,2.4vw,26px); letter-spacing:.08em;
-  color:var(--dim); font-weight:400; transition:color .3s steps(3) .25s, text-shadow .3s steps(3) .25s}
+  color:var(--dim); font-weight:400; transition:none}   /* 周りと一緒に一瞬で（同日）*/
 .nameline .tag{margin-top:1.1em; font-size:clamp(12px,1.5vw,15px); color:var(--dim2);
-  letter-spacing:.04em; transition:color .3s steps(3) .35s}
+  letter-spacing:.04em; transition:none}
 #hero.on .nameline .en{color:var(--dim)}
 #hero.on .nameline h1{color:var(--hot); text-shadow:0 0 22px rgba(125,240,164,.18)}
 #hero.on .nameline .tag{color:var(--on)}
@@ -311,9 +312,76 @@ footer a:hover{color:var(--on)}
      右端が壁と揃ったままで「寄った」に見えない（幅比 0.95 のまま）*/
   .card{max-width:none; margin-left:clamp(14px,5vw,26px); margin-right:clamp(14px,5vw,26px)}
 }
+/* ═ ロボットが起動する（2026-09-28、本人：「あー、ロボット起動感でも目指すか、これ。かっこいい/スタイリッシュに寄せて」→（四つ出して）「一旦全部」）═
+   **字は足さない。**「SYSTEM BOOT…」のような文字を流すと飾りに見える（011 の英語のログと同じ）。線と光と順番だけ。
+   **動かすのは位置と明るさだけ**（transform と opacity）——描き直しが要らないので重くならない */
+
+/* 1. 開いたときの起動。真っ暗から、真ん中に細い横線が走って、上下に開く（古いモニターの電源を入れたときの形）。
+   JS は要らない——CSS だけで始まって、終わったら自分で見えなくなる */
+#boot{position:fixed; inset:0; z-index:20; pointer-events:none; animation:bootgone 0s linear 1.05s forwards}
+#boot i{position:absolute; left:0; right:0; height:50%; background:#000}
+#boot .t{top:0; animation:bootopen .38s cubic-bezier(.7,0,.2,1) .42s forwards}
+#boot .b{bottom:0; animation:bootopenb .38s cubic-bezier(.7,0,.2,1) .42s forwards}
+#boot .l{top:50%; height:2px; margin-top:-1px; background:var(--hot); box-shadow:0 0 14px 2px rgba(125,240,164,.55);
+  transform:scaleX(0); animation:bootline .3s cubic-bezier(.5,0,.1,1) .08s forwards, bootlineout .2s linear .5s forwards}
+@keyframes bootline{ to{transform:scaleX(1)} }
+@keyframes bootlineout{ to{opacity:0} }
+@keyframes bootopen{ to{transform:translateY(-100%)} }
+@keyframes bootopenb{ to{transform:translateY(100%)} }
+@keyframes bootgone{ to{visibility:hidden} }
+/* そのあと、社名のまわりの字が上から順に点く（字の列を上から覗かせる）。社名の三行は少し遅れて */
+.js #hero .noise .col{animation:bootreveal .5s steps(6) .8s both}
+.js #hero .noise.b .col{animation-delay:1.05s}
+.js #hero .nameline > *{animation:booton .24s steps(2) both}
+.js #hero .nameline .en{animation-delay:.95s} .js #hero .nameline h1{animation-delay:1.05s} .js #hero .nameline .tag{animation-delay:1.15s}
+@keyframes bootreveal{ from{clip-path:inset(0 0 100% 0)} to{clip-path:inset(0 0 0 0)} }
+@keyframes booton{ from{opacity:0} to{opacity:1} }
+
+/* 2. 印が一つずつ起動する。**画面に入ったときに**、短く二、三回またたいてから、いつもの明滅へ。
+   まだ画面に入っていない印は暗く待たせる（.js のときだけ。JS が止まっていれば、はじめから点いている）*/
+.js .ch:not(.armed) .ico{opacity:.18}
+.js .ch:not(.armed) .ico::before{animation:none; opacity:0}
+.js .ch.armed .ico{animation:arm .5s steps(1) both}
+.js #hero .heroico{animation:arm .5s steps(1) 1.25s both}
+@keyframes arm{ 0%{opacity:.18} 18%{opacity:1} 30%{opacity:.25} 46%{opacity:1} 58%{opacity:.4} 72%,100%{opacity:1} }
+
+/* 3. 畳むときは走査する。一本の光の線が壁を上から下へなぞり、なぞったところから字が消える（線の上に地の色の幕が伸びる）。
+   消えきったら一枚の四隅に角の枠が引かれて、打ち出しが始まる */
+.raw{position:relative}
+.raw .sc{position:absolute; left:0; right:0; top:0; pointer-events:none; display:none; z-index:1}
+.raw .sc .cv{position:absolute; left:0; right:0; top:0; height:var(--h,0px); background:var(--bg); transform-origin:top; transform:scaleY(0)}
+.raw .sc .bar{position:absolute; left:0; right:0; top:0; height:2px; background:var(--hot); box-shadow:0 0 12px 1px rgba(125,240,164,.5)}
+.ch.scanning .raw .sc{display:block}
+.ch.scanning .raw .sc .cv{animation:scancv .36s cubic-bezier(.6,0,.25,1) forwards}
+.ch.scanning .raw .sc .bar{animation:scanbar .36s cubic-bezier(.6,0,.25,1) forwards}
+@keyframes scancv{ to{transform:scaleY(1)} }
+@keyframes scanbar{ to{transform:translateY(var(--h,0px))} }
+.card{position:relative}
+.card .cn{position:absolute; width:14px; height:14px; border:0 solid var(--on); pointer-events:none}
+.card .cn.tl{left:-18px; top:0; border-top-width:1px; border-left-width:1px; transform-origin:0 0}
+.card .cn.tr{right:-18px; top:0; border-top-width:1px; border-right-width:1px; transform-origin:100% 0}
+.card .cn.bl{left:-18px; bottom:0; border-bottom-width:1px; border-left-width:1px; transform-origin:0 100%}
+.card .cn.br{right:-18px; bottom:0; border-bottom-width:1px; border-right-width:1px; transform-origin:100% 100%}
+.ch.on .card .cn{animation:corner .2s cubic-bezier(.3,0,.1,1) both}
+@keyframes corner{ from{transform:scale(0); opacity:0} to{transform:scale(1); opacity:1} }
+/* **戻すときも走査する**（同日、本人：「タイトルの変化の仕方が微妙」「あと畳む方も微妙」→「あー、逆。出す方」→「やってみて」）。
+   前は印をもう一度押すと一瞬で壁が戻っていた——畳むときは線でなぞるのに、戻すときは何も動かず、ちぐはぐだった。
+   → 光の線が上から下へ走り、**線が通ったところから壁の字が現れる**（畳むときの逆。幕が下へ縮む）*/
+.ch.revealing .raw .sc{display:block}
+.ch.revealing .raw .sc .cv{transform-origin:bottom; animation:revcv .36s cubic-bezier(.6,0,.25,1) forwards}
+.ch.revealing .raw .sc .bar{animation:scanbar .36s cubic-bezier(.6,0,.25,1) forwards}
+@keyframes revcv{ from{transform:scaleY(1)} to{transform:scaleY(0)} }
+/* ページの頭を戻すときは、散らばった字が開いたときと同じように上から点く */
+#hero.reveal .noise .col{animation:bootreveal2 .5s steps(6) both}
+#hero.reveal .noise.b .col{animation-delay:.1s}
+@keyframes bootreveal2{ from{clip-path:inset(0 0 100% 0)} to{clip-path:inset(0 0 0 0)} }
+
+@media (prefers-reduced-motion:reduce){ #boot{display:none} .js .ch:not(.armed) .ico{opacity:1} }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
 #say{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
 </style>
+
+<div id="boot" aria-hidden="true"><i class="t"></i><i class="b"></i><i class="l"></i></div>
 
 <div class="wrap">
 
@@ -507,7 +575,7 @@ function settle(ch, back){
     at += s.length * CH + GAP;
     el.classList.add('tw-w');
   });
-  var t0 = performance.now() + 60;
+  var t0 = performance.now() + 200;   /* 四隅の枠（0.2 秒）が引かれてから打つ */
   function paint(){
     if (ch.dataset.run !== run) return true;
     var now = performance.now() - t0, done = true;
@@ -530,28 +598,27 @@ function settle(ch, back){
   }, 200 + at + 400);
 }
 
-/* **下の段落から順に、パッパッと消す**（同日、本人：「畳モーション自体はほしいけどなあ」→（A 素早く縮める／B 下から段落を消す／C 押し潰す、B を勧めた）「やってみて」）。
-   端末で行が消されていく消え方。消えるたびに壁が一段縮む——前の「8 段でカクカク縮む」（0.6 秒）と違って、
-   **段落ひとつ 35ms で終わる**ので遅れには見えにくい。全部消えたところで一枚が出て、打ち出しが始まる */
+/* **走査して畳む**（同日、本人：「ロボット起動感でも目指すか」→「一旦全部」）。
+   一本の光の線が壁を上から下へなぞり、なぞったところから字が消える（0.36 秒）。消えきったら一枚が出て、四隅に角の枠が引かれ、打ち出しが始まる。
+   その前の「下の段落から順に消す」（48f3da4）は、これに置き換えた */
 function fold(ch){
   if (ch.classList.contains('on') || ch.classList.contains('folding')) return;
-  var ps = [].slice.call(ch.querySelectorAll('.raw .p')).reverse();
+  var raw = ch.querySelector('.raw');
+  ch.classList.remove('revealing'); ch.dataset.rev = '';
   var tok = ch.dataset.fold = String(Date.now());
   if (STILL){ foldDone(ch); return; }
-  ch.classList.add('folding');
-  ps.forEach(function(p, i){
-    setTimeout(function(){ if (ch.dataset.fold === tok) p.classList.add('gone'); }, i * 35);
-  });
-  setTimeout(function(){ if (ch.dataset.fold === tok) foldDone(ch); }, ps.length * 35 + 40);
+  raw.style.setProperty('--h', raw.offsetHeight + 'px');
+  ch.classList.add('folding'); ch.classList.add('scanning');
+  setTimeout(function(){ if (ch.dataset.fold === tok) foldDone(ch); }, 380);
 }
 function foldDone(ch){
-  ch.classList.remove('folding');
+  ch.classList.remove('folding'); ch.classList.remove('scanning');
   var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
   /* いまの高さを**数字で押さえてから** 0 へ。`auto` のままだと動かない */
   raw.style.maxHeight = raw.scrollHeight + 'px';
   /* カードは先に置いてから `.on`。`display` は動かせないので、
      置いた直後に一度レイアウトを取らないと、出る動きが走らない */
-  card.style.display = 'block';
+  card.style.display = 'flow-root';   /* 印の列の右から箱を始める——四隅の枠が印を囲まないように（2026-09-28）*/
   void raw.offsetHeight;
   ch.classList.add('on');
   raw.style.maxHeight = '0px';
@@ -566,8 +633,7 @@ function unfold(ch){
   var folding = ch.classList.contains('folding');
   if (!ch.classList.contains('on') && !folding) return;
   ch.dataset.fold = '';        /* 消している途中なら、そこで止める */
-  ch.classList.remove('folding');
-  [].forEach.call(ch.querySelectorAll('.raw .p.gone'), function(p){ p.classList.remove('gone'); });
+  ch.classList.remove('folding'); ch.classList.remove('scanning');
   if (folding) return;
   var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
   ch.classList.remove('on');
@@ -575,6 +641,11 @@ function unfold(ch){
   settle(ch, true);             /* 次に開いたとき、読める形から始める */
   raw.style.maxHeight = '';
   card.style.display = 'none';
+  if (STILL) return;
+  raw.style.setProperty('--h', raw.offsetHeight + 'px');
+  ch.classList.remove('revealing'); void raw.offsetHeight; ch.classList.add('revealing');
+  var tok = ch.dataset.rev = String(Date.now());
+  setTimeout(function(){ if (ch.dataset.rev === tok) ch.classList.remove('revealing'); }, 380);
 }
 
 document.addEventListener('click', function(e){
@@ -598,6 +669,24 @@ function toggle(ch){
   on ? unfold(ch) : fold(ch);
   ch.querySelector('.ico').setAttribute('aria-pressed', on ? 'false' : 'true');
 }
+
+/* 走査の幕と線、一枚の四隅の枠を足す（飾りなので読み上げない）*/
+[].forEach.call(document.querySelectorAll('#chs .raw'), function(r){
+  var sc = document.createElement('div'); sc.className = 'sc'; sc.setAttribute('aria-hidden', 'true');
+  sc.innerHTML = '<div class="cv"></div><div class="bar"></div>'; r.appendChild(sc);
+});
+[].forEach.call(document.querySelectorAll('#chs .card'), function(c){
+  ['tl', 'tr', 'bl', 'br'].forEach(function(k){ var i = document.createElement('i'); i.className = 'cn ' + k; i.setAttribute('aria-hidden', 'true'); c.appendChild(i); });
+});
+/* 印は**画面に入ったときに**起動する（CSS の .armed）。一度起動したら、そのまま */
+(function(){
+  var chs = [].slice.call(document.querySelectorAll('#chs .ch'));
+  if (!window.IntersectionObserver){ chs.forEach(function(c){ c.classList.add('armed'); }); return; }
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('armed'); io.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -15% 0px' });
+  chs.forEach(function(c){ io.observe(c); });
+})();
 
 /* はじめは畳まれていない。**壁のまま**置いておく */
 [].slice.call(document.querySelectorAll('.raw')).forEach(function(r){ r.style.maxHeight = ''; });
@@ -647,6 +736,8 @@ function heroFold(){
 function heroUnfold(){
   if (!hero.classList.contains('on')) return;
   hero.classList.remove('on');
+  hero.classList.remove('reveal'); void hero.offsetHeight; hero.classList.add('reveal');
+  clearTimeout(heroUnfold.t); heroUnfold.t = setTimeout(function(){ hero.classList.remove('reveal'); }, 800);
   [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){
     n.style.maxHeight = '';
   });
@@ -675,6 +766,6 @@ if (matchMedia('(prefers-reduced-motion:reduce)').matches){
       hero.classList.remove('twitch');
       ic.classList.remove('flash');
     }, 620);
-  }, 2200);
+  }, 2600);   /* 起動（1.3 秒ほど）のあと */
 }
 </script>
