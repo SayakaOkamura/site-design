@@ -1796,6 +1796,16 @@ var HERO_SKID = HERO_STAND.slice(0, 17).map(function(r){ return r.slice(1) + '.'
     '...###........###.....',
     '..####.........####...'
 ]);
+/* **動きを減らす設定は、見ている途中でも追う**（2026-09-28。Codex に見させて出た六つ目）。
+   前は開いたときに一度だけ見ていて、途中で OS の設定を変えても、勇者とスライムは動いたままだった
+   （CSS の動きは media query なので、前から追っていた）。`REDUCE` はここで持って、変わったら書き換える */
+var MQ_RM = window.matchMedia ? matchMedia('(prefers-reduced-motion:reduce)') : { matches:false };
+var REDUCE = !!MQ_RM.matches;
+function onReduce(f){
+  if (MQ_RM.addEventListener) MQ_RM.addEventListener('change', f);
+  else if (MQ_RM.addListener) MQ_RM.addListener(f);
+}
+onReduce(function(){ REDUCE = !!MQ_RM.matches; });
 var HW = 22, HH = 22;
 /* 粒の大きさは **CSS が持っている**（`--hpx`）。勇者だけ粗い目——**画の主なので大きく**
    （背景は `--px`）。2頭身は**胴が短いぶん小さく見える**ので、5 → 6 に上げた（132px）。
@@ -1871,10 +1881,12 @@ window.addEventListener('resize', function(){
   draw(HERO[0]);
   /* 動きを止める設定なら、**一コマ目で止める**（CSS の animation:none は
      canvas には効かないので、ここで自分で見る） */
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  /* 止める設定に変わったら、走りの一コマ目に戻して止める */
+  onReduce(function(){ if (REDUCE && !pose){ i = 0; draw(HERO[0]); } });
   /* 構えているあいだは**息をする**——0.55 秒ずつ、立ちと息のコマを交互に */
   var b = 0;
   setInterval(function(){
+    if (REDUCE) return;
     i = (i+1) % HERO.length;
     if (!pose){ draw(HERO[i]); return; }
     if (pose === 'stand'){ b = (b+1) % 10; if (b === 0) draw(HERO_STAND); else if (b === 5) draw(HERO_STAND_B); }
@@ -2771,9 +2783,9 @@ var SW = 16, SH = 10;
   window.paintSlime = function(m){ idle = false; paint(m); };
   window.slimeIdle  = function(){ idle = true; };
   paint(SLIME[0]);
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  onReduce(function(){ if (REDUCE && idle){ i = 0; paint(SLIME[0]); } });
   /* 勇者より**ゆっくり**ぷるぷるさせる。同じ拍子だと二人で行進して見える */
-  setInterval(function(){ i = (i+1) % SLIME.length; if (idle) paint(SLIME[i]); }, 340);
+  setInterval(function(){ if (REDUCE) return; i = (i+1) % SLIME.length; if (idle) paint(SLIME[i]); }, 340);
 })();
 
 (function(){
@@ -2797,7 +2809,7 @@ var SW = 16, SH = 10;
    三回斬ると倒れて、選んだ三つが「段取り」の三手になって出る */
 var HPMAX = 3;
 var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:HPMAX, parts:null, tCome:null };
-var REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
+/* `REDUCE` は勇者の節の上で持っている（設定が変わったら書き換わる）*/
 var dWin  = document.getElementById('dWin'),
     dStep = document.getElementById('dStep'), dQ = document.getElementById('dQ'),
     dA    = document.getElementById('dA'),   dWish  = document.getElementById('dWish'),
