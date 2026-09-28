@@ -170,7 +170,8 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
            border-color:var(--on) }
 }
 .ico:hover{border-color:var(--hot); color:#fff}
-.ch.on .ico{animation:none; border-color:var(--line); color:var(--dim2); box-shadow:none}
+/* **畳んだあとも光らせたまま**（2026-09-28、本人：「常に光ってないと流石にわからん」）。戻す手が印だけになったので、
+   前の「押し終わったら暗くする」（.ch.on .ico{animation:none; border-color:var(--line); color:var(--dim2); box-shadow:none}）はやめた */
 /* 章でも**近づくと反応する**。印に触れているあいだ、壁が薄れる。
    `:has()` を使うのは、印が `.head` の中にいて `.raw` の兄弟ではないから */
 .ch:not(.on) .head:has(.ico:hover) ~ .raw .ln,
@@ -271,6 +272,11 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 .card .back{background:none; border:0; font:inherit; color:var(--dim); cursor:pointer; padding:0;
   letter-spacing:.06em}
 .card .back:hover{color:var(--on)}
+/* **要点ごとに、下から少し浮かせて出す**（2026-09-28、本人：「順に現れるモーションがただのラグに見える」→（A 一度に出す／B 要点ごとに浮かせる、を出して B を勧めた）「やってみて」）。
+   前は折り返しで決まった行ごとに色を点けていた——一つの要点の前半と後半が別々に出て、**描画の遅れに見えた**。位置も動かないので、演出だと分かる手がかりが無かった。
+   → 区切りは**見出しと箇条の一行ずつ**（見た目の行ではない）。8px 下から 0.45 秒で浮かぶ */
+.card .k, .card .lead, .card li, .card .foot{transition:opacity .45s ease, transform .45s ease}
+.card .rise{opacity:0; transform:translateY(8px)}
 /* ここが**仮**（本人：「カードにした後についてはまだ決めてない……仮で適当に」）。
    いまは戻せるだけ。次に何を置くかは決まっていない。
    ——一度「（このあとどうするかは、まだ決めていない）」と**画面に書いた。消した。**
@@ -319,7 +325,7 @@ footer a:hover{color:var(--on)}
   <main id="chs">
   <section class="ch" data-k="mind">
     <div class="head">
-      <div class="ico" role="button" tabindex="0" aria-label="企業理念をまとめる"><b>◆</b></div>
+      <div class="ico" role="button" tabindex="0" aria-pressed="false" aria-label="企業理念をまとめる"><b>◆</b></div>
       <h2>企業理念</h2>
     </div>
     <div class="raw"><div class="col">
@@ -328,6 +334,11 @@ footer a:hover{color:var(--on)}
       <p class="p">私たちが「経営の力で」と言うのは、これらの条件が、現場の努力では作れないからだ。権限の配り方、評価の向き、情報の見え方、決裁の段数。どれも経営が決めている。だから、働き方を変えるという話は、つきつめると経営が何を決めているかという話になる。道具を入れれば変わる、という考え方を私たちは取らない。道具は、決め方が変わったあとに効いてくる。</p>
       <p class="p">同時に、私たちは理念を掲げるだけの会社ではない。考え方は、形にならなければ検証できない。だから私たちは、組織のあり方を語ると同時に、その組織が実際に使うシステムを作る。語ることと作ることを同じ会社の中に置いているのは、そのあいだで嘘がつけないようにするためだ。設計した働き方が現場で回らなければ、それはすぐに露見する。露見したものは直せる。直したものは、また設計に戻る。</p>
       <p class="p">「遊ぶように働く」は、楽しさの話ではなく、速さの話でもある。夢中になっている人は速い。やらされている人は、同じ時間をかけても進まない。その差は個人の能力差ではなく、置かれ方の差であることが多い。置かれ方は変えられる。変えられるものを変えずに、変えられないものを嘆くのをやめる。それが、私たちの言う「デザインする」ということである。</p>
+      <p class="p">夢中の反対は、怠けではない。多くの場合、それは消耗である。やることは多いのに、どれが効いているのかが見えない。頑張った結果がどこに届いたのかが分からない。そういう仕事は、まじめな人ほど疲れさせる。疲れた人は、自分で決めることをやめる。決めなくなった人が増えると、組織は決めごとを増やして補おうとする。決めごとが増えると、自分で決められる範囲はさらに狭くなる。この輪は、放っておくと勝手に回り続ける。</p>
+      <p class="p">私たちが最初に見るのは、この輪がどこで回っているかである。誰が、何を、どこまで自分で決めてよいことになっているか。決めた結果は、誰に、どれくらいの間をおいて返ってくるか。失敗したとき、何が起きることになっているか。こうした問いに、組織の中の人が同じ答えを返せることは少ない。答えが揃っていないところが、たいてい輪の回っているところである。</p>
+      <p class="p">理念は、壁に掛けるためのものではない。判断に迷ったときに開く辞書のようなものである。どちらを選べば、人が自分で決められる範囲が広がるか。どちらを選べば、結果が早く返るか。どちらを選べば、失敗しても立ち直れるか。私たちは、提案の一つ一つをこの問いにかけてから出している。問いにかけて答えが出ないものは、まだ提案として出さない。</p>
+      <p class="p">「遊ぶように」という言葉に、軽さを感じる人もいるかもしれない。けれど、遊びにはルールがある。ルールがあるから、人は自由に動ける。何をしてもよい場では、人はかえって動けない。私たちが設計しようとしているのは、ルールをなくすことではなく、動きたくなるルールを置くことである。</p>
+      <p class="p">働く人が夢中になれる組織では、決まったことが翌日には動いている。訊かれたことに、その日のうちに答えが返る。そうした景色を、偶然ではなく当たり前にすること。それが、私たちが経営の力と呼んでいるものの中身である。</p>
     </div></div>
     <div class="card">
       <div class="k">PHILOSOPHY</div>
@@ -338,19 +349,19 @@ footer a:hover{color:var(--on)}
         <li>その四つを決めているのは現場ではなく経営。だから「経営の力で」と言う。</li>
         <li>語ることと作ることを同じ会社に置いて、そのあいだで嘘がつけないようにしている。</li>
       </ul>
-      <div class="foot"><button class="back">← もとの文にもどす</button></div>
     </div>
   </section>
   <section class="ch" data-k="svc">
     <div class="head">
-      <div class="ico" role="button" tabindex="0" aria-label="サービスをまとめる"><b>▣</b></div>
+      <div class="ico" role="button" tabindex="0" aria-pressed="false" aria-label="サービスをまとめる"><b>▣</b></div>
       <h2>サービス</h2>
     </div>
     <div class="raw"><div class="col">
-      <p class="p">01　人間中心の次世代業務システム開発業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供する。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築する。効率化という言葉は、しばしば人を数の側に置く。一人あたりの処理件数、一件あたりの所要時間。それ自体は測るべき数字だが、それだけを見て作られた仕組みは、使う人にとって「こなす」ための道具になる。私たちは、使う人が次に何をすべきか迷わない状態を先に作る。迷いが消えると、判断に時間を使えるようになる。判断に時間を使えるようになると、仕事の質が変わる。この順番を守ることを、人間中心と呼んでいる。</p>
-      <p class="p">02　AI による意思決定支援と事業変革支援経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援する。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備する。ここで重要なのは、AI に決めさせないことだ。決めるのは人であり、AI は決めるまでの距離を縮める道具である。何を根拠に、どこまでの幅で、いつまでに決めるのか。この三つが曖昧な組織に AI を入れても、出てくるのは「参考情報」という名の未処理の山になる。私たちはまず、決め方のほうを先に整える。</p>
-      <p class="p">03　自律型・共創型の組織設計支援テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現する。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案する。自律とは、放任のことではない。何を自分で決めてよいかが、はっきりしている状態のことである。共創とは、仲良くすることではない。違う立場の人が、同じものを見ながら別の視点を出せる状態のことである。どちらも、情報の見え方と権限の置き方で決まる。私たちが組織設計と言うとき、扱っているのはその二つである。</p>
-      <p class="p">04　地域格差の解消を目指したデジタル支援都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進する。ここには、事業としての理由と、理念としての理由の両方がある。事業としては、上流に強い人材が足りていない領域だからだ。理念としては、夢中になれる仕事が都市にしかない状態は、私たちの言う「遊ぶように働く世界」と矛盾するからだ。道具を配って終わりにはしない。使いこなす人がその土地に残ることを、支援の条件として扱う。</p>
+      <p class="p">01　人間中心の次世代業務システム開発業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供する。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築する。効率化という言葉は、しばしば人を数の側に置く。一人あたりの処理件数、一件あたりの所要時間。それ自体は測るべき数字だが、それだけを見て作られた仕組みは、使う人にとって「こなす」ための道具になる。私たちは、使う人が次に何をすべきか迷わない状態を先に作る。迷いが消えると、判断に時間を使えるようになる。判断に時間を使えるようになると、仕事の質が変わる。この順番を守ることを、人間中心と呼んでいる。画面を使いやすくすることと、仕事を使いやすくすることは違う。ボタンの位置を直しても、その前後で人が何を確かめ、誰に何を訊いているかが変わらなければ、迷いは残る。私たちは画面を作る前に、その仕事の中で人が手を止めているところを探す。手が止まるところには、たいてい決まっていないことがある。</p>
+      <p class="p">02　AI による意思決定支援と事業変革支援経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援する。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備する。ここで重要なのは、AI に決めさせないことだ。決めるのは人であり、AI は決めるまでの距離を縮める道具である。何を根拠に、どこまでの幅で、いつまでに決めるのか。この三つが曖昧な組織に AI を入れても、出てくるのは「参考情報」という名の未処理の山になる。私たちはまず、決め方のほうを先に整える。データ資産という言葉も、少し注意して使いたい。集めただけのデータは、資産というより在庫に近い。在庫は、使う場面が決まってはじめて価値を持つ。どの判断に、どのデータを、どの粒度で使うのか。そこが決まっていれば、データは少なくても効く。決まっていなければ、どれだけ集めても判断は速くならない。</p>
+      <p class="p">03　自律型・共創型の組織設計支援テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現する。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案する。自律とは、放任のことではない。何を自分で決めてよいかが、はっきりしている状態のことである。共創とは、仲良くすることではない。違う立場の人が、同じものを見ながら別の視点を出せる状態のことである。どちらも、情報の見え方と権限の置き方で決まる。私たちが組織設計と言うとき、扱っているのはその二つである。組織図を描き直すだけでは、組織は変わらない。変わるのは、日々の小さな判断が誰の手で行われるかが変わったときである。だから私たちは、組織の設計と、その組織が使う道具の設計を分けて考えない。承認の流れを一段減らすことも、画面の上のボタンを一つ消すことも、同じ重さで扱う。</p>
+      <p class="p">04　地域格差の解消を目指したデジタル支援都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進する。ここには、事業としての理由と、理念としての理由の両方がある。事業としては、上流に強い人材が足りていない領域だからだ。理念としては、夢中になれる仕事が都市にしかない状態は、私たちの言う「遊ぶように働く世界」と矛盾するからだ。道具を配って終わりにはしない。使いこなす人がその土地に残ることを、支援の条件として扱う。地域での支援では、何を作るかより先に、誰が続けるかを決める。外から来た人が作ったものは、外から来た人がいなくなると止まりやすい。止まらないためには、作る途中から、その土地の人が手を入れていることが要る。ノーコードやローコードを勧めるのは、速いからだけではない。作った人以外にも直せるからである。</p>
+      <p class="p">四つのサービスは別々の看板に見えるが、根は一つである。どれも、人が迷わずに決められる状態を作る仕事であり、その状態を支える仕組みを作る仕事である。入口がどこであっても、最初にすることは変わらない。いま何が決まっていて、何が決まっていないかを、一緒に書き出すところから始める。</p>
     </div></div>
     <div class="card">
       <div class="k">SERVICES</div>
@@ -361,12 +372,11 @@ footer a:hover{color:var(--on)}
         <li>03　自律型・共創型の組織設計——自律は放任ではなく、共創は仲良しではない。</li>
         <li>04　地域格差の解消——使いこなす人がその土地に残ることまでを支援の条件にする。</li>
       </ul>
-      <div class="foot"><button class="back">← もとの文にもどす</button></div>
     </div>
   </section>
   <section class="ch" data-k="up">
     <div class="head">
-      <div class="ico" role="button" tabindex="0" aria-label="上流工程中心とはをまとめる"><b>◇</b></div>
+      <div class="ico" role="button" tabindex="0" aria-pressed="false" aria-label="上流工程中心とはをまとめる"><b>◇</b></div>
       <h2>上流工程中心とは</h2>
     </div>
     <div class="raw"><div class="col">
@@ -375,6 +385,10 @@ footer a:hover{color:var(--on)}
       <p class="p">では、なぜ決まらないのか。決める材料が足りないから、というのが通り相場だが、実際には、材料が足りないのではなく整っていないことが多い。過去の経緯は人の頭の中にあり、現状の数字は別々の表に散らばり、関係者の言い分は打ち合わせの記憶にしかない。この状態で正しく決めろというのは無理がある。だから私たちは、決めるための材料を整えるところを仕事にしている。問いを立て、選択肢を並べ、それぞれの代償を書き出す。決めるのは相手であって、私たちではない。私たちがするのは、決めやすくすることである。</p>
       <p class="p">ここに AI とローコードが効いてくる。AI は、散らばった材料を集めて並べ替えるのが速い。ローコードは、決めたことをすぐ形にして見せるのが速い。この二つが揃うと、決める前に触って確かめられるようになる。触って確かめられると、決めるのが速くなる。速く決められると、作りはじめてからの蒸し返しが減る。上流工程中心というのは、上流に時間をかけろという話ではなく、上流を速く回せという話である。</p>
       <p class="p">私たちが納品するのは、多くの場合まずシステムではない。決まったことと、決めなかったことと、その理由である。それが残っていれば、次に誰が来ても続けられる。続けられるものだけが、資産になる。</p>
+      <p class="p">上流が回っていない現場では、会議が報告の場になる。報告は増えるが、決まることは増えない。私たちは、会議の数や長さではなく、一回の会議で何が決まったかを見る。決まったことが一つもない会議が続いているなら、それは上流が止まっている合図である。</p>
+      <p class="p">決めることには、勇気が要る。決めれば、外れたときに責任が生じる。だから人は、決めないことで身を守ろうとする。その気持ちは責められない。私たちにできるのは、外れたときの代償を先に小さくしておくことである。すぐに試せて、すぐに戻せるなら、決めることは怖くなくなる。ローコードで早く触れるものを作るのは、そのためでもある。</p>
+      <p class="p">やらないことを決めるのは、やることを決めるより難しい。やらないと決めたものには、必ずそれを望んでいた誰かがいる。その人に理由を説明できなければ、やらないという決定は、いずれ静かに覆される。だから私たちは、やらないことにも理由を書き残す。理由が残っていれば、同じ議論を二度しなくて済む。</p>
+      <p class="p">上流の仕事は、目に見えにくい。画面も動かないし、数字もまだ出ない。そのぶん、何をしているのかを説明する責任が私たちにはある。問いの一覧、選択肢の比較、決めたことの記録。私たちは、それらを成果物として手渡す。見えにくい仕事を見えるようにすることも、上流の仕事の一部だと考えている。</p>
     </div></div>
     <div class="card">
       <div class="k">UPSTREAM</div>
@@ -385,12 +399,11 @@ footer a:hover{color:var(--on)}
         <li>決まらないのは材料が足りないからではなく、整っていないから。整えるところを仕事にしている。</li>
         <li>納品するのはまずシステムではなく、決めたことと決めなかったことと、その理由。</li>
       </ul>
-      <div class="foot"><button class="back">← もとの文にもどす</button></div>
     </div>
   </section>
   <section class="ch" data-k="about">
     <div class="head">
-      <div class="ico" role="button" tabindex="0" aria-label="会社概要をまとめる"><b>▤</b></div>
+      <div class="ico" role="button" tabindex="0" aria-pressed="false" aria-label="会社概要をまとめる"><b>▤</b></div>
       <h2>会社概要</h2>
     </div>
     <div class="raw"><div class="col">
@@ -408,7 +421,6 @@ footer a:hover{color:var(--on)}
         <li>事業内容　AI を活用した組織最適化のコンサルティング／AI とローコードによるシステム開発</li>
         <li>お問い合わせ　contact@alt-dsgn.co.jp</li>
       </ul>
-      <div class="foot"><button class="back">← もとの文にもどす</button></div>
     </div>
   </section>
   </main>
@@ -448,50 +460,12 @@ function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/
 
    **一字ずつ span に分ける**のは残す。行ごとにまとめて出したいので、
    どの字がどの行にいるかを測れるようにしておく（行は幅で決まるので、出す直前に測る） */
-function cells(el){
-  if (el._cs) return el._cs;
-  var t = el.getAttribute('data-t');
-  if (t === null){ t = el.textContent; el.setAttribute('data-t', t); }
-  el.textContent = '';
-  var cs = [];
-  for (var i = 0; i < t.length; i++){
-    var sp = document.createElement('span');
-    sp.textContent = t.charAt(i);
-    el.appendChild(sp);
-    cs.push(sp);
-  }
-  el._cs = cs;
-  return cs;
-}
-/* いまの行組みで、**同じ高さの字をひとまとめ**にする */
-function rowsOf(el){
-  var cs = cells(el), rows = [], last = null;
-  cs.forEach(function(sp, i){
-    var y = sp.offsetTop;
-    if (last === null || y !== last){ rows.push([]); last = y; }
-    rows[rows.length - 1].push(i);
-  });
-  return rows;
-}
+/* 行ごとに字を点けていた仕掛け（cells・rowsOf・resolve）は 2026-09-28 に外した。要点ごとに浮かせる形は settle() */
 function plainEl(el){
   el._seq = (el._seq || 0) + 1;
   if (el._cs) el._cs.forEach(function(sp){ sp.classList.remove('h'); });
   el.classList.remove('wait');
   el.classList.remove('pre');
-}
-function resolve(ch, el, rows, step){
-  var cs = cells(el), run = ch.dataset.run, my = el._seq = (el._seq || 0) + 1;
-  cs.forEach(function(sp){ sp.classList.add('h'); });
-  /* 箇条の「—」も一緒に浮かせる。ここだけ先に点くと、そこが硬く見える */
-  el.classList.add('pre');
-  el.classList.remove('wait');
-  rows.forEach(function(row, r){
-    setTimeout(function(){
-      if (ch.dataset.run !== run || el._seq !== my) return;
-      if (!r) el.classList.remove('pre');
-      row.forEach(function(i){ cs[i].classList.remove('h'); });
-    }, r * step);
-  });
 }
 /* 動きを止める設定のときは、**読める形をそのまま出す** */
 /* **見ている途中で設定を変えても追う**（2026-09-28。011 と同じ。前は開いたときに一度だけ見ていた）*/
@@ -503,43 +477,28 @@ function settle(ch, back){
   var foot = ch.querySelector('.card .foot');
   if (back || STILL){
     els.forEach(plainEl);
+    els.concat(foot ? [foot] : []).forEach(function(el){ el.classList.remove('rise'); });
     if (foot) foot.classList.remove('wait');
     return;
   }
 
-  /* **上から下へ、一行ずつ**（2026-09-15、本人：「上から下の方がいいかも」）。
-     まだの字は**隠すだけで場所は取る**——消すと、点くたびに下が持ち上がる */
+  /* **上から下へ、要点ごとに**（2026-09-15 の「上から下の方がいいかも」はそのまま。区切りを見た目の行から要点に変えた。上の CSS）。
+     **時刻で組む。**「終わったら次」だと、描画が走らない場でそこから先が永久に出てこない */
   ch.dataset.run = String(Date.now());
-  var run = ch.dataset.run;
+  var run = ch.dataset.run, all = foot ? els.concat([foot]) : els;
   els.forEach(plainEl);
-  /* **先に全部測る。**隠してから測ると行組みが変わりかねないので、読める形のまま測る */
-  var plan = els.map(function(el){ return { el: el, rows: rowsOf(el) }; });
-  els.forEach(function(el){ el.classList.add('wait'); });
-  /* 「もどす」も**最後まで出さない。**読み終わる前に出口が見えていると、そこに目が行く */
-  if (foot) foot.classList.add('wait');
-
-  /* **全体の長さで一行あたりを決める。**窓が狭いと行数が倍になるので、
-     一行いくらで固定すると**待ち時間だけが伸びる**。
-     **時刻で組む。**「終わったら次」だと、描画が走らない場で
-     そこから先が永久に出てこない——隠してあるので、消えたのと同じになる */
-  var total = plan.reduce(function(n, p){ return n + p.rows.length; }, 0) || 1;
-  /* 浮かび上がりは 0.55 秒かかるので、間隔はそれより短くてよい——
-     **重なったほうが、一続きの流れ**に見える（間が空くと、また硬くなる） */
-  var step = Math.max(70, Math.min(150, Math.round(1200 / total)));
+  if (foot) foot.classList.remove('wait');
+  all.forEach(function(el){ el.classList.add('rise'); });
+  void ch.offsetHeight;
   var at = 200;
-  plan.forEach(function(p){
-    setTimeout(function(){
-      if (ch.dataset.run !== run) return;
-      resolve(ch, p.el, p.rows, step);
-    }, at);
-    at += p.rows.length * step;
+  all.forEach(function(el, i){
+    setTimeout(function(){ if (ch.dataset.run === run) el.classList.remove('rise'); }, at + i * 160);
   });
   /* 最後は必ず読める形に。隠れたままにならないようにする念押し */
   setTimeout(function(){
     if (ch.dataset.run !== run) return;
-    els.forEach(plainEl);
-    if (foot) foot.classList.remove('wait');
-  }, at + 160);
+    all.forEach(function(el){ el.classList.remove('rise'); });
+  }, at + all.length * 160 + 500);
 }
 
 function fold(ch){
@@ -584,10 +543,11 @@ function unfold(ch){
 }
 
 document.addEventListener('click', function(e){
+  /* **印をもう一度押すと戻る**（2026-09-28、本人：「もう一回クリックで戻せる仕様でよくない？」→（「← もとの文にもどす」は残す／外す、と訊いて）「残さず」）。
+     一枚の下の「もとの文にもどす」は外した。出口は印だけ */
   var ico = e.target.closest && e.target.closest('.ico');
-  if (ico){ fold(ico.closest('.ch')); return; }
-  var back = e.target.closest && e.target.closest('.back');
-  if (back){ unfold(back.closest('.ch')); }
+  if (ico && !ico.classList.contains('heroico')){ toggle(ico.closest('.ch')); return; }
+  if (ico){ fold(ico.closest('.ch')); }
 });
 document.addEventListener('keydown', function(e){
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -596,8 +556,13 @@ document.addEventListener('keydown', function(e){
   e.preventDefault();
   /* 先頭の印は章に属していない。**同じ鍵で同じことが起きる**ようにしておく */
   if (ico.classList.contains('heroico')){ ico.click(); return; }
-  fold(ico.closest('.ch'));
+  toggle(ico.closest('.ch'));
 });
+function toggle(ch){
+  var on = ch.classList.contains('on');
+  on ? unfold(ch) : fold(ch);
+  ch.querySelector('.ico').setAttribute('aria-pressed', on ? 'false' : 'true');
+}
 
 /* はじめは畳まれていない。**壁のまま**置いておく */
 [].slice.call(document.querySelectorAll('.raw')).forEach(function(r){ r.style.maxHeight = ''; });
