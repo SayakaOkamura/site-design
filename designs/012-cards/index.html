@@ -82,17 +82,17 @@ body::after{content:''; position:fixed; inset:0; z-index:9; pointer-events:none;
 header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 #hero{position:relative}
 /* 埋もれている字。畳むのは `.raw` と同じ作法 */
-.noise{overflow:hidden; transition:max-height .75s cubic-bezier(.3,.7,.2,1) .18s}
+.noise{overflow:hidden; transition:none}   /* 押した瞬間に消す（2026-09-28。章と同じ）*/
 .noise .col{text-align:justify; text-justify:inter-character; color:var(--dim2);
   font-size:clamp(10.5px,1.02vw,12px); line-height:1.62; letter-spacing:-.01em}
-.noise .ln{transition:opacity .34s ease, filter .34s ease}
-#hero.on .noise .ln{opacity:0; filter:blur(2px)}
+.noise .col{transition:none}
+#hero.on .noise .col{opacity:0}
 /* **近づくと反応する。**印に触れているあいだ、まわりの字が薄れる——
    畳まないので、押したら何が起きるかだけが分かる。**やるのは相手** */
-.heroico:hover ~ .noise .ln,
-.heroico:focus-visible ~ .noise .ln{opacity:.4; filter:blur(1.2px)}
+.heroico:hover ~ .noise .col,
+.heroico:focus-visible ~ .noise .col{opacity:.4}
 /* 一度だけの身じろぎ。**畳みきらない** */
-#hero.twitch:not(.on) .noise .ln{opacity:.35; filter:blur(1.4px); transition-delay:0s !important}
+#hero.twitch:not(.on) .noise .col{opacity:.35; transition-delay:0s !important}
 .noise.a .col{padding-left:clamp(56px,7vw,86px)}   /* 印のぶんだけ空ける */
 
 /* 社名。**はじめはギリギリ**。埋もれている字と同じ暗さで、大きさだけが違う */
@@ -100,14 +100,14 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
    寄せていないと印と社名が重なる（画面で分かった）。
    章の並び（左に印、右に字）とも揃う */
 .nameline{padding:clamp(10px,1.6vh,18px) 0 clamp(10px,1.6vh,18px) clamp(56px,7vw,86px);
-  transition:padding .5s ease}
+  transition:none}
 #hero.on .nameline{padding:clamp(2px,.6vh,6px) 0 clamp(14px,2vh,22px) clamp(56px,7vw,86px)}
 .nameline .en{font-size:clamp(11px,1.3vw,13px); letter-spacing:.34em; color:var(--dim2);
-  transition:color .5s ease .25s}
+  transition:color .3s steps(3) .25s}
 .nameline h1{margin:.6em 0 0; font-size:clamp(17px,2.4vw,26px); letter-spacing:.08em;
-  color:var(--dim); font-weight:400; transition:color .5s ease .25s, text-shadow .5s ease .25s}
+  color:var(--dim); font-weight:400; transition:color .3s steps(3) .25s, text-shadow .3s steps(3) .25s}
 .nameline .tag{margin-top:1.1em; font-size:clamp(12px,1.5vw,15px); color:var(--dim2);
-  letter-spacing:.04em; transition:color .5s ease .35s}
+  letter-spacing:.04em; transition:color .3s steps(3) .35s}
 #hero.on .nameline .en{color:var(--dim)}
 #hero.on .nameline h1{color:var(--hot); text-shadow:0 0 22px rgba(125,240,164,.18)}
 #hero.on .nameline .tag{color:var(--on)}
@@ -121,7 +121,8 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
         border-color:#fff }
   100%{ box-shadow:0 0 0 0 rgba(125,240,164,.0);  border-color:var(--line) }
 }
-#hero.on .heroico{animation:none; border-color:var(--line); color:var(--dim2); box-shadow:none}
+#hero.on .heroico{border-color:var(--line); color:var(--dim2)}
+#hero.on .heroico::before{animation:none; opacity:0}
 
 /* **ここだけは言葉で言う**（2026-09-15、本人：「チュートリアルとして、
    **ここをクリックみたいなやつをタイトルにだけ**つけちゃってもいい」）。
@@ -162,20 +163,23 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
   display:flex; align-items:center; justify-content:center;
   border:1px solid var(--dim); background:var(--bg2); color:var(--hot);
   font-size:clamp(17px,2vw,22px); cursor:pointer; user-select:none;
-  animation:pulse 2.4s ease-in-out infinite}
-@keyframes pulse{
-  0%,100%{ box-shadow:0 0 0 0 rgba(125,240,164,.00), 0 0 10px 0 rgba(125,240,164,.18) inset;
-           border-color:var(--dim) }
-  50%    { box-shadow:0 0 22px 2px rgba(125,240,164,.38), 0 0 18px 0 rgba(125,240,164,.30) inset;
-           border-color:var(--on) }
-}
+  position:relative; z-index:2; border-color:var(--on)}
+/* **z-index を立てる**（同日）。壁は印のまわりを回り込むので、壁の箱を薄めると（opacity）箱が印の上に重なって描かれ、
+   カーソルが印から外れる → 薄めるのをやめる → 印が上に戻る、をくり返して**点滅していた**（本人：「カーソル合わせたらあり得ない点滅起こすんだけどw」）*/
+/* **軽くした**（2026-09-28、本人：「重い、軽量化するためならモーション削っていいよ」）。
+   前は光の明滅を box-shadow の大きさで毎コマ描き直していた（五つがずっと）。
+   → 光は ::before に一度だけ描き、**明るさ（opacity）だけ**明滅させる——描き直しが要らない */
+.ico::before{content:""; position:absolute; inset:-1px; pointer-events:none;
+  box-shadow:0 0 22px 2px rgba(125,240,164,.38), 0 0 18px 0 rgba(125,240,164,.30) inset;
+  animation:pulse 2.4s ease-in-out infinite; will-change:opacity}
+@keyframes pulse{ 0%,100%{opacity:.15} 50%{opacity:1} }
 .ico:hover{border-color:var(--hot); color:#fff}
 /* **畳んだあとも光らせたまま**（2026-09-28、本人：「常に光ってないと流石にわからん」）。戻す手が印だけになったので、
    前の「押し終わったら暗くする」（.ch.on .ico{animation:none; border-color:var(--line); color:var(--dim2); box-shadow:none}）はやめた */
 /* 章でも**近づくと反応する**。印に触れているあいだ、壁が薄れる。
    `:has()` を使うのは、印が `.head` の中にいて `.raw` の兄弟ではないから */
-.ch:not(.on) .head:has(.ico:hover) ~ .raw .ln,
-.ch:not(.on) .head:has(.ico:focus-visible) ~ .raw .ln{opacity:.4; filter:blur(1.2px)}
+.ch:not(.on) .head:has(.ico:hover) ~ .raw .col,
+.ch:not(.on) .head:has(.ico:focus-visible) ~ .raw .col{opacity:.4}
 .ico b{font-weight:400; pointer-events:none}
 
 /* ─ 生の本文。**読みにくいまま置く** ─────────────────────── */
@@ -185,7 +189,10 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
    **`overflow:hidden` は付けない。**付けると新しい整形文脈ができて、
    **左に浮かせた章の頭に文字が回り込まなくなる**（箱ごと横に避けてしまう）。
    はみ出すぶんは、そのころには字が透明になっているので見えない */
-.raw{transition:max-height .7s cubic-bezier(.3,.7,.2,1) .22s}
+/* **動きは段で刻む**（2026-09-28。下の「タイプライター」の節）。前は cubic-bezier でなめらかに縮めていた */
+/* **押した瞬間に消す**（同日、本人：「追いつかないというより、開き方が重いのかもしれん」→（待つ・縮む・出る・打つの四段取りを減らす、と出して）「やってみて」）。
+   8 段でカクカク縮むのが、処理の遅れに見えていた。ガタガタ感はタイプライターだけに任せる */
+.raw{transition:none}
 .ch.on .raw{pointer-events:none}
 /* **段に切らない**（本人：「二段にすらしなくていい」「行数減ってもいいから」）。
    一本の流れにして、**両端をそろえて詰める。**字間も行間も削る——
@@ -211,9 +218,9 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 /* **段落のあきがいちばん効く。**.8em あると、そこで目が休めてしまう */
 .raw .p{margin:0 0 .3em}
 /* 畳む単位は**一文**。行ではなく文で消えていく（行は流れて決まるので掴めない） */
-.raw .ln{transition:opacity .34s ease, filter .34s ease}
+.raw .col{transition:none}
 .raw .ln:nth-child(3n){color:var(--dim2)}   /* **むらを作る**。均一だと壁に見えない */
-.ch.on .raw .ln{opacity:0; filter:blur(2px)}
+.ch.on .raw .col{opacity:0}
 
 /* ─ 収束した文 ─────────────────────────────────────────── */
 /* **カードを捨てた**（2026-09-15、本人：「いっそカードを捨てるか」）。
@@ -241,7 +248,7 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
            もともと広いあいだをさらに広げるだけ。**詰めをやめる**で足りる）
 
    上下にもあきを取る。**まわりが空くと、そこだけ一枚に見える** */
-.card{display:none; opacity:0; transition:opacity .55s ease .28s;
+.card{display:none; opacity:0; transition:none;
   max-width:clamp(320px,52vw,680px); letter-spacing:0;
   padding:clamp(12px,2vh,24px) 0 clamp(18px,2.6vh,30px)}
 .ch.on .card{opacity:1}
@@ -275,8 +282,13 @@ header{padding:clamp(48px,11vh,110px) 0 clamp(40px,8vh,80px)}
 /* **要点ごとに、下から少し浮かせて出す**（2026-09-28、本人：「順に現れるモーションがただのラグに見える」→（A 一度に出す／B 要点ごとに浮かせる、を出して B を勧めた）「やってみて」）。
    前は折り返しで決まった行ごとに色を点けていた——一つの要点の前半と後半が別々に出て、**描画の遅れに見えた**。位置も動かないので、演出だと分かる手がかりが無かった。
    → 区切りは**見出しと箇条の一行ずつ**（見た目の行ではない）。8px 下から 0.45 秒で浮かぶ */
-.card .k, .card .lead, .card li, .card .foot{transition:opacity .45s ease, transform .45s ease}
-.card .rise{opacity:0; transform:translateY(8px)}
+/* **タイプライター**（2026-09-28、本人：「イメージ的には、ピピピピ言ってる電子系ハッカー的な画面にタイプライターみたいなガタガタ言う感じ(音付けないけど)ってイメージなのね、このサイト」
+   →（いまの動きは溶ける・浮かぶでなめらかすぎる、と答えて）「やってみて」）。浮かせる形（同日の朝）はこの像から離れていたのでやめた。
+   **一字ずつ、決まった順に一度だけ出る。**出た字は動かない——9/15 に外した「化ける」（毎コマ別の字に入れ替わって列が揺れた）とは別物。
+   ガタガタさは**カーソルと段の刻み**で出す。まだの字は場所だけ取る（打つたびに下が動かないように）*/
+.card .tw-r{visibility:hidden}
+.card .tw-c{background:var(--on); color:transparent}
+.card .tw-w{visibility:hidden}
 /* ここが**仮**（本人：「カードにした後についてはまだ決めてない……仮で適当に」）。
    いまは戻せるだけ。次に何を置くかは決まっていない。
    ——一度「（このあとどうするかは、まだ決めていない）」と**画面に書いた。消した。**
@@ -462,10 +474,9 @@ function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/
    どの字がどの行にいるかを測れるようにしておく（行は幅で決まるので、出す直前に測る） */
 /* 行ごとに字を点けていた仕掛け（cells・rowsOf・resolve）は 2026-09-28 に外した。要点ごとに浮かせる形は settle() */
 function plainEl(el){
-  el._seq = (el._seq || 0) + 1;
-  if (el._cs) el._cs.forEach(function(sp){ sp.classList.remove('h'); });
-  el.classList.remove('wait');
-  el.classList.remove('pre');
+  var s = el.getAttribute('data-t');
+  if (s !== null) el.textContent = s;   /* 打ちかけの形から、元の字に戻す */
+  el.classList.remove('wait'); el.classList.remove('pre'); el.classList.remove('tw-w');
 }
 /* 動きを止める設定のときは、**読める形をそのまま出す** */
 /* **見ている途中で設定を変えても追う**（2026-09-28。011 と同じ。前は開いたときに一度だけ見ていた）*/
@@ -477,40 +488,50 @@ function settle(ch, back){
   var foot = ch.querySelector('.card .foot');
   if (back || STILL){
     els.forEach(plainEl);
-    els.concat(foot ? [foot] : []).forEach(function(el){ el.classList.remove('rise'); });
     if (foot) foot.classList.remove('wait');
     return;
   }
 
-  /* **上から下へ、要点ごとに**（2026-09-15 の「上から下の方がいいかも」はそのまま。区切りを見た目の行から要点に変えた。上の CSS）。
-     **時刻で組む。**「終わったら次」だと、描画が走らない場でそこから先が永久に出てこない */
+  /* **上から下へ、一字ずつ打つ**（2026-09-15 の「上から下の方がいいかも」はそのまま）。
+     **時刻で組む**——何字目まで出ているかを、始めてからの時間で決める。裏の窓で時計が間引かれても、戻ったときに追いつく */
   ch.dataset.run = String(Date.now());
-  var run = ch.dataset.run, all = foot ? els.concat([foot]) : els;
+  var run = ch.dataset.run, CH = 6, GAP = 60;   /* 一字 6ms（同日、倍の速さに）*/
   els.forEach(plainEl);
   if (foot) foot.classList.remove('wait');
-  all.forEach(function(el){ el.classList.add('rise'); });
-  void ch.offsetHeight;
-  var at = 200;
-  all.forEach(function(el, i){
-    setTimeout(function(){ if (ch.dataset.run === run) el.classList.remove('rise'); }, at + i * 160);
+  var plan = [], at = 0;
+  els.forEach(function(el){
+    var s = el.getAttribute('data-t');
+    if (s === null){ s = el.textContent; el.setAttribute('data-t', s); }
+    plan.push({ el: el, s: s, at: at });
+    at += s.length * CH + GAP;
+    el.classList.add('tw-w');
   });
+  var t0 = performance.now() + 60;
+  function paint(){
+    if (ch.dataset.run !== run) return true;
+    var now = performance.now() - t0, done = true;
+    plan.forEach(function(p){
+      var n = Math.floor((now - p.at) / CH);
+      if (n < 0){ done = false; return; }
+      p.el.classList.remove('tw-w'); p.el.classList.remove('pre');
+      if (n >= p.s.length){ if (!p.fin){ p.el.textContent = p.s; p.fin = true; } return; }
+      done = false;
+      p.el.innerHTML = esc(p.s.slice(0, n)) + '<span class="tw-c">' + esc(p.s.charAt(n)) + '</span><span class="tw-r">' + esc(p.s.slice(n + 1)) + '</span>';
+    });
+    return done;
+  }
+  /* 書き換えは一秒 30 回（軽くするため）。何字出すかは時間で決めるので、速さは変わらない——一回に二、三字ずつ出る */
+  var iv = setInterval(function(){ if (paint()) clearInterval(iv); }, 33);
   /* 最後は必ず読める形に。隠れたままにならないようにする念押し */
   setTimeout(function(){
     if (ch.dataset.run !== run) return;
-    all.forEach(function(el){ el.classList.remove('rise'); });
-  }, at + all.length * 160 + 500);
+    clearInterval(iv); els.forEach(plainEl);
+  }, 200 + at + 400);
 }
 
 function fold(ch){
   if (ch.classList.contains('on')) return;
   var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
-  var lns = [].slice.call(ch.querySelectorAll('.ln'));
-  var mid = Math.max(1, (lns.length - 1) / 2);
-  lns.forEach(function(el, i){
-    /* **外の行から先に消して、真ん中を最後に残す。**
-       端から順に消すと「上から流れた」に見えて、集まった感じにならない */
-    el.style.transitionDelay = Math.round((1 - Math.abs(i - mid) / mid) * 280) + 'ms';
-  });
   /* いまの高さを**数字で押さえてから** 0 へ。`auto` のままだと動かない */
   raw.style.maxHeight = raw.scrollHeight + 'px';
   /* カードは先に置いてから `.on`。`display` は動かせないので、
@@ -530,16 +551,10 @@ function unfold(ch){
   if (!ch.classList.contains('on')) return;
   var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
   ch.classList.remove('on');
-  [].slice.call(ch.querySelectorAll('.ln')).forEach(function(el, i){
-    el.style.transitionDelay = (i * 3) + 'ms';   /* 戻りは上から順に。読み直す向き */
-  });
   ch.dataset.run = '';          /* 走っている収束を降ろす */
   settle(ch, true);             /* 次に開いたとき、読める形から始める */
-  raw.style.maxHeight = raw.scrollHeight + 'px';
-  setTimeout(function(){
-    raw.style.maxHeight = '';
-    card.style.display = 'none';
-  }, 900);
+  raw.style.maxHeight = '';
+  card.style.display = 'none';
 }
 
 document.addEventListener('click', function(e){
@@ -547,7 +562,7 @@ document.addEventListener('click', function(e){
      一枚の下の「もとの文にもどす」は外した。出口は印だけ */
   var ico = e.target.closest && e.target.closest('.ico');
   if (ico && !ico.classList.contains('heroico')){ toggle(ico.closest('.ch')); return; }
-  if (ico){ fold(ico.closest('.ch')); }
+  /* 先頭の印は章に属していない——そちらは自分の click で畳む（下の hero の節）*/
 });
 document.addEventListener('keydown', function(e){
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -602,11 +617,6 @@ var BITS = [
 var hero = document.getElementById('hero');
 function heroFold(){
   if (hero.classList.contains('on')) return;
-  var lns = [].slice.call(hero.querySelectorAll('.noise .ln'));
-  var mid = Math.max(1, (lns.length - 1) / 2);
-  lns.forEach(function(el, i){
-    el.style.transitionDelay = Math.round((1 - Math.abs(i - mid) / mid) * 280) + 'ms';
-  });
   [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){
     n.style.maxHeight = n.scrollHeight + 'px';
   });
@@ -617,12 +627,8 @@ function heroFold(){
 function heroUnfold(){
   if (!hero.classList.contains('on')) return;
   hero.classList.remove('on');
-  [].slice.call(hero.querySelectorAll('.noise .ln')).forEach(function(el, i){
-    el.style.transitionDelay = (i * 3) + 'ms';
-  });
   [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){
-    n.style.maxHeight = n.scrollHeight + 'px';
-    setTimeout(function(){ n.style.maxHeight = ''; }, 900);
+    n.style.maxHeight = '';
   });
 }
 /* 押せば何度でも見られる。**気づいた人が確かめられる**ように */
