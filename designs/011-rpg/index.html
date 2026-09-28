@@ -230,21 +230,21 @@ body{
      途中の色は color-mix で混ぜる（決めの色を差し替えれば、途中も付いてくる）。
      color-mix が読めない古い端末は、すぐ上の六段のまま。区切りの位置は JS の SKY_AT と同じにしておく */
   background:linear-gradient(180deg,
-    var(--sky1) 0.0%, var(--sky1) 4.0%,
-    color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 4.0%, color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 8.0%,
-    color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 8.0%, color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 12.0%,
-    color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 12.0%, color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 16.0%,
-    color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 16.0%, color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 20.0%,
-    var(--sky2) 20.0%, var(--sky2) 22.4%,
-    color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 22.4%, color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 24.8%,
-    color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 24.8%, color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 27.2%,
-    color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 27.2%, color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 29.6%,
-    color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 29.6%, color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 32.0%,
-    var(--sky3) 32.0%, var(--sky3) 34.4%,
-    color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 34.4%, color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 36.8%,
-    color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 36.8%, color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 39.2%,
-    color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 39.2%, color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 41.6%,
-    color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 41.6%, color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 44.0%,
+    var(--sky1) 0.0%, var(--sky1) 2.8%,
+    color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 2.8%, color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 5.6%,
+    color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 5.6%, color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 8.4%,
+    color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 8.4%, color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 11.2%,
+    color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 11.2%, color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 14.0%,
+    var(--sky2) 14.0%, var(--sky2) 16.8%,
+    color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 16.8%, color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 19.6%,
+    color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 19.6%, color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 22.4%,
+    color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 22.4%, color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 25.2%,
+    color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 25.2%, color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 28.0%,
+    var(--sky3) 28.0%, var(--sky3) 31.2%,
+    color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 31.2%, color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 34.4%,
+    color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 34.4%, color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 37.6%,
+    color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 37.6%, color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 40.8%,
+    color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 40.8%, color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 44.0%,
     var(--sky4) 44.0%, var(--sky4) 50.0%,
     color-mix(in oklab, var(--sky4) 80%, var(--sky5)) 50.0%, color-mix(in oklab, var(--sky4) 80%, var(--sky5)) 56.0%,
     color-mix(in oklab, var(--sky4) 60%, var(--sky5)) 56.0%, color-mix(in oklab, var(--sky4) 60%, var(--sky5)) 62.0%,
@@ -1920,7 +1920,8 @@ placeLines();
 /* **夕焼けを広げた**（同日、本人：「これでもまだ暗いかも、もう少し夕焼け大きくていい」）。暗い側 38% → 28%、赤橙と橙 42% → 52%。前：0, 20, 38, 58, 78, 100 */
 /* **赤橙を広げた**（同日、本人：「赤橙はもう少し広くていい」）。22% → 30%（赤紫と橙から 4% ずつ）。前：0, 14, 28, 48, 70, 100 */
 /* **紫を下げた**（同上）。紺 0〜14 → 0〜20、すみれ 14〜28 → 20〜32、赤紫 28〜44 → 32〜44。前：0, 14, 28, 44, 74, 100 */
-var SKY_AT = [0, 20, 32, 44, 74, 100];
+/* **青の割合は戻した**（同日、本人：「青の割合さっきのに戻していいよ」）。色（天頂を青）はそのまま。前：0, 20, 32, 44, 74, 100 */
+var SKY_AT = [0, 14, 28, 44, 74, 100];
 function paintSky(){
   var sky = document.getElementById('sky'), sun = document.getElementById('sun');
   var H = sky.clientHeight, g = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
