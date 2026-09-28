@@ -2397,7 +2397,11 @@ var PLAIN = false;
 function fitsScreen(){
   var H = window.innerHeight, W = window.innerWidth;
   function inView(r){ return r.width === 0 || (r.top >= -1 && r.left >= -1 && r.bottom <= H + 1 && r.right <= W + 1); }
-  if (!inView(document.getElementById('menu').getBoundingClientRect())) return false;
+  var mr = document.getElementById('menu').getBoundingClientRect();
+  if (!inView(mr)) return false;
+  /* **メニューが名乗りにかかっても、入らない**（同日）。幅 260 以下では社名が二行に折れ、
+     下の一行（AI × ローコードで…）がメニューの裏に隠れていた——画面の外には出ていないので、上の式では拾えない */
+  if (mr.width && mr.top < document.getElementById('name').getBoundingClientRect().bottom) return false;
   if (!inView(document.getElementById('foot').getBoundingClientRect())) return false;
   var keepCur = cur, keepPage = page, keepSel = goSel, keepCls = pop.className,
       wasPopped = document.body.classList.contains('popped'), ok = true, k, ps, i, r, g;
