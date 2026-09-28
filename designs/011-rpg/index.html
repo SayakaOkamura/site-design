@@ -247,8 +247,7 @@ body{
     color-mix(in oklab, var(--sky5) 80%, var(--sky6)) 88.0%, color-mix(in oklab, var(--sky5) 80%, var(--sky6)) 91.0%,
     color-mix(in oklab, var(--sky5) 60%, var(--sky6)) 91.0%, color-mix(in oklab, var(--sky5) 60%, var(--sky6)) 94.0%,
     color-mix(in oklab, var(--sky5) 40%, var(--sky6)) 94.0%, color-mix(in oklab, var(--sky5) 40%, var(--sky6)) 97.0%,
-    color-mix(in oklab, var(--sky5) 20%, var(--sky6)) 97.0%, color-mix(in oklab, var(--sky5) 20%, var(--sky6)) 98.5%,
-    var(--sky6) 98.5%, var(--sky6) 100%);
+    color-mix(in oklab, var(--sky5) 20%, var(--sky6)) 97.0%, color-mix(in oklab, var(--sky5) 20%, var(--sky6)) 100.0%);
 }
 /* 帯の境目に粗い網。**段が硬すぎるのをほぐす**（ディザの代わり） */
 #sky::after{content:''; position:absolute; inset:0; opacity:.07;
@@ -1914,23 +1913,30 @@ function paintSky(){
   var sky = document.getElementById('sky'), sun = document.getElementById('sun');
   var H = sky.clientHeight, g = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
   if (!H || !(window.CSS && CSS.supports && CSS.supports('color', 'color-mix(in oklab, red 50%, blue)'))) return;
-  var bands = [], i, k, c;
-  for (i = 0; i < 5; i++) for (k = 0; k < 5; k++){
-    c = k === 0 ? 'var(--sky' + (i + 1) + ')'
-                : 'color-mix(in oklab, var(--sky' + (i + 1) + ') ' + (100 - k * 20) + '%, var(--sky' + (i + 2) + '))';
-    bands.push([c, SKY_AT[i] + (SKY_AT[i + 1] - SKY_AT[i]) * k / 5]);
+  /* **色の区切りごとに、一段の高さを粒の同じ数に揃える**（同日、本人：「しまの感覚変わった？」→（スマホで 12px と 8px が混ざっていた、
+     地平のすぐ上に細い段が一本あった、と答えて）「直して」）。
+     % の境目を一本ずつ格子に寄せると、段が粒二つと三つに割れて**縞の間隔が不揃い**になっていた。
+     → 区切りの中はどの段も同じ粒の数。**一段は粒三つより細くしない**——空の低い窓では段の数を減らす（五つ → 三つ など）。
+     **地平の上の細い段（地平の色そのもの）はやめた。**そこだけ縞の間隔が半分になっていた */
+  var segs = [], i, k, n, m, y = H, hs;
+  for (i = 4; i >= 0; i--){                 /* 地平（下）から積む */
+    hs = H * (SKY_AT[i + 1] - SKY_AT[i]) / 100;
+    n = Math.max(1, Math.min(5, Math.floor(hs / (g * 3))));
+    m = Math.max(3, Math.round(hs / n / g));
+    for (k = n - 1; k >= 0; k--){
+      var c = k === 0 ? 'var(--sky' + (i + 1) + ')'
+                      : 'color-mix(in oklab, var(--sky' + (i + 1) + ') ' + Math.round(100 - k * 100 / n) + '%, var(--sky' + (i + 2) + '))';
+      segs.unshift([c, Math.max(0, y - m * g), y]);
+      y -= m * g;
+    }
   }
-  /* いちばん下の一段だけ、地平の色そのもの（CSS の 98.5%）*/
-  bands.push(['var(--sky6)', 98.5]);
-  /* 境目を**地平からの距離**で粒の倍数に寄せる。重なった段（背の低い窓で起きる）は落とす */
-  var edges = bands.map(function(b){ return H - Math.round(H * (100 - b[1]) / 100 / g) * g; });
+  segs[0][1] = 0;                            /* いちばん上の段は天頂まで伸ばす */
   var st = [], ys = [];
-  for (i = 0; i < bands.length; i++){
-    var y0 = i === 0 ? 0 : edges[i], y1 = i === bands.length - 1 ? H : edges[i + 1];
-    if (y1 <= y0) continue;
-    st.push(bands[i][0] + ' ' + y0 + 'px ' + y1 + 'px');
-    if (y0 > 0) ys.push(y0);
-  }
+  segs.forEach(function(s){
+    if (s[2] <= s[1]) return;
+    st.push(s[0] + ' ' + s[1] + 'px ' + s[2] + 'px');
+    if (s[1] > 0) ys.push(s[1]);
+  });
   sky.style.background = 'linear-gradient(180deg, ' + st.join(', ') + ')';
   /* 太陽の縞。**境目の真上に一粒ぶん**——前の縞（三粒あけて一粒）と同じく、線は段の下の端に来る */
   var sr = sun.getBoundingClientRect(), kr = sky.getBoundingClientRect(), top = sr.top - kr.top, h = sr.height, s = [];
