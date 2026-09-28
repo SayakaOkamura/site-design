@@ -912,6 +912,12 @@ body.demo #dHp{display:block}
   padding:calc(var(--px)*1.5) 0; font-size:clamp(12px,calc(1.4 * var(--fw)),calc(17px*var(--k))); line-height:1.6;
   letter-spacing:.04em; cursor:pointer; color:var(--dim)}
 #dA li .cur{flex:0 0 1em; text-align:center; color:transparent}
+/* **行の中身は本物のボタン**（2026-09-28。Codex に見させて出た二つ目）。
+   前は `<li>` をそのまま押させていて、**Tab でも読み上げでも「押せるもの」に見えなかった。**
+   見た目は `li` のまま——ボタンは枠も地も持たず、`li` の字と並べ方をそのまま受ける */
+#menu li > button, #dA li > button{-webkit-appearance:none; appearance:none; border:0; background:none;
+  margin:0; padding:0; font:inherit; color:inherit; letter-spacing:inherit; text-align:left; cursor:inherit;
+  flex:1 1 auto; display:flex; align-items:inherit; gap:inherit}
 /* **にげるは、いつも出しておく**（2026-09-15、本人：「常に逃げるコマンドを出して
    戻れるようにしてほしい」）。前は Esc だけで、**画面のどこにも出口が無かった。**
    三択の下に、線で区切って置く——RPG の作法どおり、**戦いの外へ出る手は最後の行** */
@@ -2007,7 +2013,7 @@ var MENU = [['mind','企業理念'],['svc','サービス'],['about','会社概�
             ['access','アクセス'],['demo','デモを触る']];
 var ul = document.getElementById('cmds');
 ul.innerHTML = MENU.map(function(m){
-  return '<li data-k="' + m[0] + '"><span class="cur">▶</span>' + m[1] + '</li>';
+  return '<li data-k="' + m[0] + '"><button type="button"><span class="cur" aria-hidden="true">▶</span>' + m[1] + '</button></li>';
 }).join('');
 
 var pop = document.getElementById('pop'),
@@ -2055,10 +2061,27 @@ function move(d){
      カーソルは輪の中にいるのに Enter が右下を開く（上の '素通し' に当たる）*/
   var a = document.activeElement;
   if (a && a.id === 'made') a.blur();
+  var inRing = a && ALL.some(function(el){ return el.contains(a); });
   sel = (sel + d + ALL.length) % ALL.length;
   selStale = false;
   paintSel();
+  /* **焦点が輪の中にあるなら、焦点も一緒に動かす**（2026-09-28）。
+     置いていくと、▶ と Tab の焦点が別の行に分かれる */
+  if (inRing) focusRow(ALL[sel]);
 }
+function focusRow(el){
+  var b = el.tagName === 'BUTTON' ? el : el.querySelector('button');
+  if (b) b.focus({ preventScroll:true });
+}
+/* **Tab で来た行に ▶ も来る**（2026-09-28）。Enter は ▶ の居場所を開く作りなので、
+   焦点と ▶ が別の行にあると、**焦点の当たっていない行が開く** */
+document.addEventListener('focusin', function(e){
+  if (D.on) return;
+  var i = -1;
+  ALL.forEach(function(el, j){ if (el.contains(e.target)) i = j; });
+  if (i < 0 || cur) return;
+  sel = i; selStale = false; paintSel();
+});
 
 var goSel = false;   /* 右下の一手が選ばれているか */
 /* **入らない窓では枚数を譲る**（9/14 に決めたとおり。文は削らない）。
@@ -2874,15 +2897,15 @@ function ask(step, q, list, gen){
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
   dA.innerHTML = list.map(function(s){
-    return '<li><span class="cur">▶</span>' + s + '</li>';
+    return '<li><button type="button"><span class="cur" aria-hidden="true">▶</span>' + s + '</button></li>';
   }).join('')
     /* **何が起きるかを書いておく**（2026-09-15、本人：「にげる、でどうなるのかの
        注釈は入れておいて」→「カッコがきにして」→「**デモを終了する、とかでいい**」）。
        RPG の「にげる」は**戦いから逃げる**だが、ここでは**デモそのものが終わる。**
        言葉は**リザルトの四角と同じ**「デモを終了する」にそろえた——
        同じことをする手が二つあるので、**呼び方は一つ**にする */
-    + '<li class="flee"><span class="cur">▶</span><span>にげる'
-    + '<span class="note">（デモを終了する）</span></span></li>';
+    + '<li class="flee"><button type="button"><span class="cur" aria-hidden="true">▶</span><span>にげる'
+    + '<span class="note">（デモを終了する）</span></span></button></li>';
   dWin.style.display = '';
   placeDWin();
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
@@ -3510,6 +3533,14 @@ document.addEventListener('mouseover', function(e){
     D.sel = [].slice.call(dA.children).indexOf(li); paintD();
   }
 });
+/* Tab で来た選択肢にも印を（メニューと同じ。Enter は印の居場所を選ぶ）*/
+document.addEventListener('focusin', function(e){
+  if (!D.on || !e.target.closest) return;
+  var li = e.target.closest('#dA li');
+  if (li && (D.phase === 'topic' || D.phase === 'ask')){
+    D.sel = [].slice.call(dA.children).indexOf(li); paintD();
+  }
+});
 
 /* **受けた手は、下へ流さない**（2026-09-17、本人：「デモのにげるが死んでる」→
    「エンターキーにしたときに**多分下が反応してる**」→「マウスだと大丈夫だった」）。
@@ -3544,8 +3575,10 @@ document.addEventListener('keydown', function(e){
     eat(e); return;
   }
   n = dA.children.length;
-  if (k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintD(); eat(e); return; }
-  if (k === 'ArrowUp'){ D.sel = (D.sel+n-1)%n; paintD(); eat(e); return; }
+  /* 焦点が選択肢の中にあるなら、焦点も一緒に動かす（メニューと同じ）*/
+  var inA = dA.contains(document.activeElement);
+  if (k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintD(); if (inA) focusRow(dA.children[D.sel]); eat(e); return; }
+  if (k === 'ArrowUp'){ D.sel = (D.sel+n-1)%n; paintD(); if (inA) focusRow(dA.children[D.sel]); eat(e); return; }
   if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
     choose(D.sel); eat(e); return;
   }
