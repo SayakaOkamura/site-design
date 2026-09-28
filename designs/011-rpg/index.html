@@ -1407,12 +1407,20 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 
 /* ─ JS が止まっているとき（2026-09-28）──────────────────────────
    **夕焼けは一画面ぶん残して、その下に本文を素の一枚で出す。**
-   メニュー・窓・デモは JS が無いと動かないので、画面から外す */
-.js #text{display:none}
-html:not(.js), html:not(.js) body{height:auto; overflow:auto}
-html:not(.js) #screen{position:relative; height:100vh}
+   メニュー・窓・デモは JS が無いと動かないので、画面から外す。
+
+   **画面に入らないときも同じ形にする**（`html.plain`、同日。Codex に見させて出た四つ目）。
+   この画面はスクロールしないので、表示倍率を上げるなどして**メニューか窓が画面からはみ出すと、
+   はみ出したところへ行く手が無かった**（1280×720 を 300% にすると、メニューの下と ▼ の行が切れた）。
+   本人：（A 入らないときだけ素の一枚／B 窓の中だけスクロール／C 直さない、と出して）「A」。
+   **ふだんの画面はスクロールしないまま。**入らない人にだけ、読める形を出す（`placePlain()`）*/
+.js:not(.plain) #text{display:none}
+html:not(.js), html:not(.js) body, html.plain, html.plain body{height:auto; overflow:auto}
+html:not(.js) #screen, html.plain #screen{position:relative; height:100vh}
 html:not(.js) #menu, html:not(.js) #foot, html:not(.js) #made,
-html:not(.js) #pop, html:not(.js) #demo, html:not(.js) #dRoll, html:not(.js) #clear{display:none}
+html:not(.js) #pop, html:not(.js) #demo, html:not(.js) #dRoll, html:not(.js) #clear,
+html.plain #menu, html.plain #foot, html.plain #made,
+html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:none}
 #text{background:var(--box); color:var(--dim); padding:clamp(32px,6vw,64px) clamp(16px,4vw,54px);
   font-size:16px; line-height:1.9}
 #text section{max-width:44em; margin:0 auto 3em}
@@ -1811,7 +1819,10 @@ function sizeCanvas(cv, cx, w, h){
    名乗りの背は字の大きさで変わるので、窓が変わるたびと、字が読み込まれたときに測り直す */
 function placeLines(){
   var px = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
-  var nb = document.getElementById('name').getBoundingClientRect().bottom;
+  /* **画面の上端から測る**（2026-09-28）。素の一枚で下へ読み進めたまま窓が変わると、
+     見えている範囲から測った値はスクロールのぶん上へずれていた（メニューが画面の上へ消えた）*/
+  var nb = document.getElementById('name').getBoundingClientRect().bottom
+         - document.getElementById('screen').getBoundingClientRect().top;
   document.documentElement.style.setProperty('--T', Math.round(nb + px * 6) + 'px');
 }
 placeLines();
@@ -2330,6 +2341,12 @@ function placeMenu(){
 /* **窓が変わったら測り直す。**開いている最中なら描き直す */
 window.addEventListener('resize', function(){
   var wasA = accFits, wasB = aboutFits;
+  /* **素の一枚のままでは測れない**（メニューも窓も隠れている）。いったん外して、最後に `placePlain()` で決め直す */
+  var sy = window.scrollY;
+  document.documentElement.classList.remove('plain');
+  /* **いちばん上へ戻してから測る。**読んでいた位置のままだと、全部が上へずれて見えて「入らない」と答える
+     （素の一枚で下まで読んでから窓を広げても、戻らなかった）*/
+  window.scrollTo(0, 0);
   /* **測る前に、置いた位置を外す。**前の窓で下げたままだと、
      `hitsMenu()` が古い位置で答えて枚数を誤る */
   document.getElementById('menu').style.top = '';
@@ -2339,7 +2356,48 @@ window.addEventListener('resize', function(){
   if ((cur === 'access' && wasA !== accFits) || (cur === 'about' && wasB !== aboutFits)){
     page = 0; goSel = false; draw();
   }
+  placePlain();
+  if (PLAIN) window.scrollTo(0, sy);   /* 外して測ったあいだに、読んでいた位置が上へ戻っている */
 });
+
+/* **画面に入るか。**メニューと足もと、それから**全部の窓の全部の頁**を描いて、
+   枠が画面の中にあるか、送りの行（▼・つづく・外への一手）が枠の中にあるかを見る。
+   窓の測り方は `topOfTallestPop()` と同じ——本番と同じ形で描かないと嘘になる */
+var PLAIN = false;
+function fitsScreen(){
+  var H = window.innerHeight, W = window.innerWidth;
+  function inView(r){ return r.width === 0 || (r.top >= -1 && r.left >= -1 && r.bottom <= H + 1 && r.right <= W + 1); }
+  if (!inView(document.getElementById('menu').getBoundingClientRect())) return false;
+  if (!inView(document.getElementById('foot').getBoundingClientRect())) return false;
+  var keepCur = cur, keepPage = page, keepSel = goSel, keepCls = pop.className,
+      wasPopped = document.body.classList.contains('popped'), ok = true, k, ps, i, r, g;
+  pop.style.animation = 'none';
+  pop.classList.add('on');
+  document.body.classList.add('popped');
+  for (k in DATA){
+    cur = k; ps = pages(DATA[k]);
+    for (i = 0; i < ps.length && ok; i++){
+      page = i; goSel = false; draw();
+      r = pop.getBoundingClientRect(); g = popGo.getBoundingClientRect();
+      if (!inView(r) || g.bottom > r.bottom + 1) ok = false;
+    }
+    if (!ok) break;
+  }
+  pop.style.animation = '';
+  cur = keepCur; page = keepPage; goSel = keepSel; pop.className = keepCls;
+  if (!wasPopped) document.body.classList.remove('popped');
+  if (cur) draw();
+  return ok;
+}
+function placePlain(){
+  var root = document.documentElement;
+  root.classList.remove('plain');
+  var fit = fitsScreen();
+  /* 素の一枚に移るときは、開いているものを畳む（隠れたまま残ると、戻ったときに急に出る）*/
+  if (!fit && !PLAIN){ if (cur) close(); if (D.on) quitDemo(); }
+  root.classList.toggle('plain', !fit);
+  PLAIN = !fit;
+}
 /* いま出す頁。**アクセスは一枚と二枚、会社概要は三枚と四枚**を持っている */
 function pages(d){
   if (d.one) return accFits ? d.one : d.p;
@@ -2442,6 +2500,7 @@ function fire(){
 
 document.addEventListener('click', function(e){
   if (D.on) return;   /* デモ中は、前からある手を止める */
+  if (PLAIN) return;
   var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button') || e.target.closest('#made'));
   if (el){
     var i = ALL.indexOf(el); if (i >= 0) sel = i;
@@ -2473,6 +2532,7 @@ document.addEventListener('mousemove', function(){ document.body.classList.remov
 
 document.addEventListener('keydown', function(e){
   if (D.on) return;   /* デモ中は、前からある手を止める */
+  if (PLAIN) return;  /* 素の一枚では、矢印も Enter もブラウザの手（スクロール・リンク）に返す */
   if (e.ctrlKey || e.metaKey || e.altKey) return;   /* ブラウザの手は通す（上の節と同じ） */
   var k = e.key;
   if (k === 'ArrowUp' || k === 'ArrowDown'){
@@ -3623,5 +3683,6 @@ paintSel();
 fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
 placeMenu();  /* 縦長では、メニューを置き直す（三層は足もとの下、それ以外はまんなか）*/
+placePlain(); /* 画面に入らなければ、素の一枚に */
 
 </script>
