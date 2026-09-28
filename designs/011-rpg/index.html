@@ -26,10 +26,18 @@
 <!-- エンドロールだけ**ドットの字**（2026-09-15、本人：「フォントをゲームっぽく」）。
      本文は読みやすさを取って普通の字のまま——**ドットは読ませる字ではない。**
      流れて消える名乗りだから効く -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <style>
+/* **ドットの字は、ここに置いた一つだけ**（2026-09-28。Codex に見させて出た七つ目）。
+   前は Google Fonts から読んでいて、**届かないとエンドロールだけ普通の字になっていた**
+   （社内の回線・遅い回線・Google に繋がらない場所）。
+   → **エンドロールに出る字だけ**を切り出して、案の中に置いた（9KB。書体まるごとは 2MB）。
+   DotGothic16 は SIL OFL なので同梱してよい（許諾は ）。
+
+   **エンドロールの文を変えたら、ここも作り直す。**入っていない字だけ、下の Hiragino・Yu Gothic に落ちる。
+   作り直し方：理念（#text の mind0〜4）・名乗り（#name）・「企業理念」の字を重ねずに並べて、
+   https://fonts.googleapis.com/css2?family=DotGothic16&text=（その字） の CSS にある woff2 を取ってくる */
+@font-face{font-family:"DotGothic16"; font-style:normal; font-weight:400; font-display:swap;
+  src:url("fonts/DotGothic16-roll.woff2") format("woff2")}
 :root{ --px:4px; --hpx:6; --k:1; --o2:2px; --o3:3px; --gh:20%; --line:#ffffff; --ink:#ffffff }
 /* **字の大きさに使う幅**（2026-09-25）。ふだんは画面の幅（`1vw`）。
    縦持ちのタブレットでは幅が狭く、字が PC の最小に張りつくので、そこだけ差し替える */
