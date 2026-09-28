@@ -348,6 +348,7 @@ footer a:hover{color:var(--on)}
 /* 3. 畳むときは走査する。一本の光の線が壁を上から下へなぞり、なぞったところから字が消える（線の上に地の色の幕が伸びる）。
    消えきったら一枚の四隅に角の枠が引かれて、打ち出しが始まる */
 .raw{position:relative}
+.raw .mid{position:absolute; left:0; top:50%; width:1px; height:1px; pointer-events:none}   /* 壁の真ん中の目印（スクロールで書き換える）*/
 .raw .sc{position:absolute; left:0; right:0; top:0; pointer-events:none; display:none; z-index:1}
 .raw .sc .cv{position:absolute; left:0; right:0; top:0; height:var(--h,0px); background:var(--bg); transform-origin:top; transform:scaleY(0)}
 .raw .sc .bar{position:absolute; left:0; right:0; top:0; height:2px; background:var(--hot); box-shadow:0 0 12px 1px rgba(125,240,164,.5)}
@@ -374,6 +375,8 @@ footer a:hover{color:var(--on)}
 /* ページの頭を戻すときは、散らばった字が開いたときと同じように上から点く */
 #hero.reveal .noise .col{animation:bootreveal2 .5s steps(6) both}
 #hero.reveal .noise.b .col{animation-delay:.1s}
+/* 社名の色も、散らばった字と同じ速さで戻す（同日、本人：「やっぱりタイトルだけ早いな」）。畳むときは一瞬のまま */
+#hero.reveal .nameline .en, #hero.reveal .nameline h1, #hero.reveal .nameline .tag{transition:color .5s steps(6), text-shadow .5s steps(6)}
 @keyframes bootreveal2{ from{clip-path:inset(0 0 100% 0)} to{clip-path:inset(0 0 0 0)} }
 
 @media (prefers-reduced-motion:reduce){ #boot{display:none} .js .ch:not(.armed) .ico{opacity:1} }
@@ -601,8 +604,10 @@ function settle(ch, back){
 /* **走査して畳む**（同日、本人：「ロボット起動感でも目指すか」→「一旦全部」）。
    一本の光の線が壁を上から下へなぞり、なぞったところから字が消える（0.36 秒）。消えきったら一枚が出て、四隅に角の枠が引かれ、打ち出しが始まる。
    その前の「下の段落から順に消す」（48f3da4）は、これに置き換えた */
-function fold(ch){
+function fold(ch, keep){
   if (ch.classList.contains('on') || ch.classList.contains('folding')) return;
+  /* スクロールで書き換えるときは、**章の高さを残す**（下が上がってくると、読んでいる場所が指の下で急にずれる）*/
+  ch.style.minHeight = keep ? ch.offsetHeight + 'px' : '';
   var raw = ch.querySelector('.raw');
   ch.classList.remove('revealing'); ch.dataset.rev = '';
   var tok = ch.dataset.fold = String(Date.now());
@@ -634,6 +639,7 @@ function unfold(ch){
   if (!ch.classList.contains('on') && !folding) return;
   ch.dataset.fold = '';        /* 消している途中なら、そこで止める */
   ch.classList.remove('folding'); ch.classList.remove('scanning');
+  ch.style.minHeight = '';
   if (folding) return;
   var raw = ch.querySelector('.raw'), card = ch.querySelector('.card');
   ch.classList.remove('on');
@@ -678,6 +684,38 @@ function toggle(ch){
 [].forEach.call(document.querySelectorAll('#chs .card'), function(c){
   ['tl', 'tr', 'bl', 'br'].forEach(function(k){ var i = document.createElement('i'); i.className = 'cn ' + k; i.setAttribute('aria-hidden', 'true'); c.appendChild(i); });
 });
+/* **スクロールで章の中ほどまで来たら、壁が一枚に書き換わる**（2026-09-28、本人：「スクロールしたら自動起動でもいいっちゃいい」→
+   （自動で畳むと壁を見せる時間がない、と反対した）「どっちがいいかな」→「**自動でというか、スクロール中盤くらいで書き換わるみたいな**」
+   →（章の高さは残す／戻すのは印だけ、と出して）「やってみて」）。
+   壁の真ん中の目印が画面の真ん中を通ったら走査する。**一章につき一度だけ**——印で壁に戻したあとは、スクロールしても書き換えない */
+[].forEach.call(document.querySelectorAll('#chs .raw'), function(r){
+  var m = document.createElement('i'); m.className = 'mid'; m.setAttribute('aria-hidden', 'true'); r.appendChild(m);
+});
+/* 目印が**画面の真ん中より上に来たか**を、スクロールのたびに見る（一コマに一度）。
+   はじめは高さ 0 の線で見張っていたが、スクロールで一度に大きく動くと目印が線を飛び越して、通ったと数えられなかった */
+(function(){
+  var mids = [].slice.call(document.querySelectorAll('#chs .raw .mid')), queued = false;
+  function check(){
+    queued = false;
+    var c = window.innerHeight / 2;
+    mids = mids.filter(function(m){
+      var ch = m.closest('.ch');
+      if (ch.dataset.auto) return false;
+      if (m.getBoundingClientRect().top > c) return true;
+      ch.dataset.auto = '1';
+      if (!ch.classList.contains('on') && !ch.classList.contains('folding')){
+        fold(ch, true); ch.querySelector('.ico').setAttribute('aria-pressed', 'true');
+      }
+      return false;
+    });
+    if (!mids.length) window.removeEventListener('scroll', onScroll);
+  }
+  function onScroll(){ if (!queued){ queued = true; requestAnimationFrame(check); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
+/* 印で先に畳んだ章は、もう自動では書き換えない */
+document.addEventListener('click', function(e){ var c = e.target.closest && e.target.closest('#chs .ch'); if (c && e.target.closest('.ico')) c.dataset.auto = '1'; }, true);
+
 /* 印は**画面に入ったときに**起動する（CSS の .armed）。一度起動したら、そのまま */
 (function(){
   var chs = [].slice.call(document.querySelectorAll('#chs .ch'));
@@ -735,8 +773,9 @@ function heroFold(){
 }
 function heroUnfold(){
   if (!hero.classList.contains('on')) return;
-  hero.classList.remove('on');
+  /* 先に reveal を付けてから on を外す——逆だと、社名の色が reveal の transition の前に変わってしまう */
   hero.classList.remove('reveal'); void hero.offsetHeight; hero.classList.add('reveal');
+  hero.classList.remove('on');
   clearTimeout(heroUnfold.t); heroUnfold.t = setTimeout(function(){ hero.classList.remove('reveal'); }, 800);
   [].slice.call(hero.querySelectorAll('.noise')).forEach(function(n){
     n.style.maxHeight = '';
