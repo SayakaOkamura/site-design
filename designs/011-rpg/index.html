@@ -464,7 +464,10 @@ body{
 .pdot{position:absolute; width:var(--px); height:var(--px); background:var(--hero); z-index:8; pointer-events:none}
 /* かけた瞬間（palCast）。勇者のほう（右下）へ粒二つ押し出して戻る */
 #pal.cast{animation:palcast .3s steps(1) 1}
-@keyframes palcast{ 0%{transform:translate(calc(var(--px) * 2), var(--px))} 34%{transform:translate(var(--px), 0)} 67%,100%{transform:translate(0, 0)} }
+/* 押し出す向きは勇者のほう（--dir：勇者が右なら 1、左なら −1）*/
+@keyframes palcast{ 0%{transform:translate(calc(var(--px) * 2 * var(--dir, 1)), var(--px))} 34%{transform:translate(calc(var(--px) * var(--dir, 1)), 0)} 67%,100%{transform:translate(0, 0)} }
+/* 置き場が変わるとき（勇者の横 ⇄ 問いの窓）は、コマを刻んで飛ぶ */
+#pal.fly{transition:left .4s steps(6), top .4s steps(6)}
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
@@ -3383,7 +3386,7 @@ function openDemo(){
    「にげる」を押したのは本人なので、文字が無くても「逃げたから消えた」と読める */
 function flee(){
   D.phase = 'flee'; D.n = 0;
-  palHide(true);   /* ④ 勇者の頭の陰へ */
+  palAt('hero'); palHide(true);   /* ④ 勇者の頭の陰へ（問いの窓から戻って）*/
   dWin.style.display = 'none';
   if (REDUCE){ quitDemo(); return; }
   slimeEl.classList.remove('come');
@@ -3392,7 +3395,7 @@ function flee(){
 }
 function quitDemo(){
   clearTimeout(D.tFlee); D.tFlee = null;
-  palHide(false); palChant(false); heroBuff(0);
+  palHide(false); palChant(false); heroBuff(0); palAt('hero');
   if (D.aFlee){ D.aFlee.cancel(); D.aFlee = null; }
   slimeEl.classList.remove('gone'); dHp.classList.remove('gone');
   heroEl.classList.remove('flip');
@@ -3442,6 +3445,7 @@ function ask(step, q, list, gen){
     + '<span class="note">（デモを終了する）</span></span></button></li>';
   dWin.style.display = '';
   placeDWin();
+  palAt('chat');   /* 連れは問いの窓へ */
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
   paintD();
   gen ? draft() : draftSkip();
@@ -3766,6 +3770,7 @@ function swing(done){
 function winSeq(){
   D.phase = 'win';
   dWin.style.display = 'none';
+  palAt('hero');   /* 問いの窓が閉じたので、勇者の横へ戻る（戻ってから回る）*/
   var i = 0;
   var t = setInterval(function(){
     if (i < SLIME_DIE.length){ paintSlime(SLIME_DIE[i++]); return; }
@@ -4211,13 +4216,13 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
   function draw(){
     var p = px(), dpr = Math.min(3, window.devicePixelRatio || 1),
-        m = turn >= 0 ? PAL_TURN[turn] : chanting ? PAL_CAST : PAL[f];
+        m = turn >= 0 ? PAL_TURN[turn] : chanting ? (dir < 0 ? palMirror(PAL_CAST) : PAL_CAST) : PAL[f];
     cv.style.width = (W * p) + 'px'; cv.style.height = (H * p) + 'px';
     cv.width = W * p * dpr; cv.height = H * p * dpr;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
     cx.fillStyle = INK;
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (m[y][x] === '#') cx.fillRect(x * p, y * p, p, p);
-    if (chanting && tipOn && turn < 0){ cx.fillStyle = GOLD; cx.fillRect(7 * p, 0, p, p); }
+    if (chanting && tipOn && turn < 0){ cx.fillStyle = GOLD; cx.fillRect((dir < 0 ? W - 1 - 7 : 7) * p, 0, p, p); }
   }
   /* **勇者の左斜め上**（同日、本人：「左斜め上くらいがいいかも」。前は左の肩の高さ）。連れの右下の角を、勇者の頭の左上の角（絵の 4 列目・2 行目）の
      すぐ外に置く。勇者の置き場は窓の作りごとに違う（34%・30%・44%・50%）ので、勇者から測って置く */
@@ -4226,13 +4231,41 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     if (!r.width) return;
     /* 頭の左上の角から、左へ粒 2・下へ粒 4（同日、本人：「ちょっとだけ下、左」→「ちょい下」→「もう一個左下」→「いや左は動かさなくてよかった、下はもっと」）*/
     var hp = r.width / HW, left = r.left - s.left + hp * 4 - W * p - p * 2, top = r.top - s.top + hp * 2 - H * p + p;   /* →「右下」→「左下」→「割ともうちょい上かも」→「あとちょっとだけ上」→「変わった？もうちょい上げて」→「ちょっとだけ下」で左へ粒 2・下へ粒 1 */
-    cv.style.left = Math.max(4, Math.round(left)) + 'px';
-    cv.style.top = Math.round(top) + 'px';
-    /* **メニューにかかる窓では、勇者の右斜め上へ**（700×500・844×390 でメニューの裏に入った）。頭の右上の角（15 列目）のすぐ外 */
-    var mn = document.getElementById('menu'), c = cv.getBoundingClientRect(), mr = mn.getBoundingClientRect();
-    if (getComputedStyle(mn).display !== 'none' && c.right > mr.left && c.left < mr.right && c.bottom > mr.top && c.top < mr.bottom)
-      cv.style.left = Math.round(r.left - s.left + hp * 15 + p) + 'px';
+    left = Math.max(4, Math.round(left)); top = Math.round(top);
+    /* **メニューにかかる窓では、勇者の右斜め上へ**（700×500・844×390 でメニューの裏に入った）。頭の右上の角（15 列目）のすぐ外。
+       動いている途中でも測れるように、置く先の四角は計算で出す */
+    var mn = document.getElementById('menu'), mr = mn.getBoundingClientRect(),
+        cl = left + s.left, ct = top + s.top, cr = cl + W * p, cb = ct + H * p;
+    if (getComputedStyle(mn).display !== 'none' && cr > mr.left && cl < mr.right && cb > mr.top && ct < mr.bottom)
+      left = Math.round(r.left - s.left + hp * 15 + p);
+    dir = 1;
+    /* **デモのあいだは、問いの窓（AI と話しているところ）へ**（同日、本人：「AIチャットの方移動したら？デモの時」）。
+       窓の左上の角のすぐ上に。上に入らない窓（横持ちで窓が画面の上端）では、窓の左横。かける向きは勇者のほう（左下）*/
+    var dw = document.getElementById('dWin');
+    if (at === 'chat' && D.on && dw.style.display !== 'none' && getComputedStyle(dw).display !== 'none'){
+      var wr = dw.getBoundingClientRect();
+      if (wr.width){
+        left = Math.round(wr.left - s.left + p * 2); top = Math.round(wr.top - s.top - H * p - p);
+        /* 名乗りにかかるなら、窓の右上の角の上へ（1084×571・667×375）*/
+        var nr = document.getElementById('name').getBoundingClientRect();
+        if (left + s.left < nr.right && left + s.left + W * p > nr.left && top + s.top < nr.bottom && top + s.top + H * p > nr.top)
+          left = Math.round(wr.right - s.left - W * p - p * 2);
+        if (top < 4){ left = Math.round(wr.left - s.left - W * p - p * 2); top = Math.round(wr.top - s.top + p * 2); }
+        left = Math.max(4, left);
+        dir = (r.left + r.width / 2 < left + s.left) ? -1 : 1;
+      }
+    }
+    cv.style.left = left + 'px'; cv.style.top = top + 'px';
+    cv.style.setProperty('--dir', dir);
   }
+  var at = 'hero', dir = 1;
+  /* 置き場を変える（'hero' 勇者の頭の横／'chat' 問いの窓）。変わるときだけ、コマを刻んで飛ぶ */
+  window.palAt = function(where){
+    if (where === at && where === 'hero'){ place(); return; }
+    var moving = where !== at; at = where;
+    if (moving && !REDUCE){ cv.classList.add('fly'); clearTimeout(cv._fly); cv._fly = setTimeout(function(){ cv.classList.remove('fly'); }, 450); }
+    place();
+  };
   draw(); place();
   window.addEventListener('resize', function(){ draw(); place(); });
   /* 押したら一回まわる。まわっているあいだは漂うのを止める（同じ transform を取り合う）。デモ・ミニゲームの手は邪魔しない */
