@@ -907,12 +907,10 @@ body.game #gm{display:block}
   text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge)}
 #gHud small{display:block; font-size:.7em; color:var(--dim)}
 body.game #gHud{display:block}
-#gMsg{position:absolute; left:0; right:0; top:36%; z-index:9; display:none; text-align:center;
-  font-size:clamp(18px,calc(3.2 * var(--fw)),calc(34px*var(--k))); font-weight:700; letter-spacing:.14em; color:var(--ink);
-  text-shadow:var(--o3) 0 0 var(--edge), calc(-1*var(--o3)) 0 0 var(--edge), 0 var(--o3) 0 var(--edge), 0 calc(-1*var(--o3)) 0 var(--edge),
-              var(--o3) var(--o3) 0 var(--edge), calc(-1*var(--o3)) var(--o3) 0 var(--edge), var(--o3) calc(-1*var(--o3)) 0 var(--edge), calc(-1*var(--o3)) calc(-1*var(--o3)) 0 var(--edge)}
-#gMsg small{display:block; margin-top:calc(var(--px)*3); font-size:.5em; letter-spacing:.1em}
-body.game #gMsg.on{display:block; animation:won .34s steps(3)}
+/* **真ん中の大きい字は出さない**（2026-09-29、本人：「なんかメイドインワリオみたいになってるな…」→（始まりの命令と終わりの一枚が
+   真ん中に大きく出る、と出して）「それそれ。ちょっと方向性違うな」→（いつもの画面のまま遊べてしまう形に、と出して）「いいよ」）。
+   **場面が切り替わったと言わない。**言うのは右上の数だけ */
+#gHud .hint{font-weight:400; opacity:.8}
 #demo{position:absolute; inset:0; z-index:7; display:none}
 body.demo #demo{display:block}
 
@@ -1571,7 +1569,6 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <!-- ミニゲーム（2026-09-29）。右下の「？」から。**岩と鳥が流れてくる、跳ぶだけ** -->
   <canvas id="gm" aria-hidden="true"></canvas>
   <div id="gHud" aria-hidden="true"></div>
-  <div id="gMsg" role="status"></div>
 
   <div id="ground">
     <div class="band"></div>
@@ -3959,7 +3956,7 @@ var G = { on:false };
   var TJ = .62, JH = 13;          /* 跳ぶ時間（秒）と高さ（粒）*/
   var BIRD_ALT = 23;              /* 鳥の下端。走っている勇者の頭（21 粒）の少し上——跳ぶと当たる */
   var cv = document.getElementById('gm'), cx = cv.getContext('2d');
-  var hud = document.getElementById('gHud'), msg = document.getElementById('gMsg');
+  var hud = document.getElementById('gHud');
   var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
   var raf = null, last = 0, W = 0, CH = 0, vNat = 1, v0 = 1;
   var obs = [], passed = 0, t = 0, spawnAt = 0, jumpT = -1, over = false, overAt = 0, hinted = false, best = 0;
@@ -3984,7 +3981,8 @@ var G = { on:false };
        それだと岩を跳び越えきれない（空中にいるあいだに進む距離が、勇者と岩の幅に足りない）ので底を敷く */
     v0 = Math.max(W * .66 / 1.7, 52 * HPX);
   }
-  function speed(){ return v0 * (1 + Math.min(.8, passed * .025)); }
+  /* **はじめの三秒はゆっくり**（.7 → 1）。字で「とぶ」と言わないので、最初の岩は押してみる間をあけて来る */
+  function speed(){ return v0 * Math.min(1, .7 + t * .1) * (1 + Math.min(.8, passed * .025)); }
   function setRate(r){ lands.forEach(function(a){ a.playbackRate = r; }); }
   /* 当たりは胴と脚だけ（剣は数えない）。一粒ずつ甘くする */
   function heroBox(){
@@ -3992,7 +3990,9 @@ var G = { on:false };
     return { l:r.left - c.left + 5*HPX, r:r.left - c.left + 14*HPX, t:r.top - c.top + 2*HPX, b:r.bottom - c.top - HPX };
   }
   function paintHud(){
-    hud.innerHTML = 'こえた　' + passed + (best ? '<small>さいこう　' + best + '</small>' : '');
+    /* 操作の手がかりは**一行だけ、小さく**。一度跳んだら消す */
+    hud.innerHTML = 'こえた　' + passed + (best ? '<small>さいこう　' + best + '</small>' : '')
+      + (hinted ? '' : '<small class="hint">スペース・タップ</small>');
   }
   function spawn(){
     var bird = passed >= 6 && Math.random() < .3;
@@ -4036,15 +4036,16 @@ var G = { on:false };
   function jump(){
     if (jumpT >= 0) return;
     jumpT = 0; heroPose('jump');     /* `POSE` に無い名前は、いまのコマで止まる（走りの脚が宙で動かない）*/
-    if (!hinted){ hinted = true; msg.classList.remove('on'); }
+    if (!hinted){ hinted = true; paintHud(); }
   }
   function end(){
     over = true;
     heroPose('stand');
     halt(true);
     if (passed > best){ best = passed; try { localStorage.setItem('adc011-game-best', best); } catch(e){} }
-    msg.innerHTML = 'ぶつかった！<small>' + passed + ' こ　こえた' + (best ? '　／　さいこう　' + best : '') + '</small>';
-    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+    /* **終わりも一枚を出さない。**勇者が止まって、右上の数がそのまま残る。押せば戻る */
+    paintHud();
+    say('ぶつかった。' + passed + ' こ　こえた');
     overAt = performance.now();
   }
   window.startGame = function(){
@@ -4058,8 +4059,6 @@ var G = { on:false };
     [].forEach.call(document.querySelectorAll('#far .band, #near .band, #ground .band'), function(el){
       if (el.getAnimations) lands = lands.concat(el.getAnimations()); });
     size(); paintHud();
-    msg.innerHTML = 'スペース・タップで　とぶ';
-    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
     say('ミニゲーム。スペースかタップで跳ぶ。Esc でもどる');
     last = performance.now();
     raf = requestAnimationFrame(frame);
@@ -4071,7 +4070,6 @@ var G = { on:false };
     cx.clearRect(0, 0, W, CH);
     heroEl.style.transform = '';
     heroPose(null);
-    msg.classList.remove('on');
     document.body.classList.remove('game');
     if (document.body.classList.contains('halt')) halt(false); else setRate(1);
     paintSel();
