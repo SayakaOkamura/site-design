@@ -2080,11 +2080,20 @@ function paintSky(){
      区切り（SKY_AT）と桃を真ん中に寄せる形（下の build(adj)）は、この窓では使わない（残してある）*/
   var EQ = true;
   if (EQ){
-    var S = Math.floor(H / P), base = Math.floor(S / 10), extra = S - base * 10, yy2 = H, ii2, kk2, c2, idx, bh;
+    var S = Math.floor(H / P), base = Math.floor(S / 10), extra = S - base * 10, yy2 = H, ii2, kk2, c2, idx, bh, ST = [], z;
+    for (z = 0; z < 10; z++) ST.push(base + (z < extra ? 1 : 0));
+    /* **桃を一目上げる**（同日、本人：「こうなったらちょっと上げて」）。桃（上から六段目）より上の太い段から一目もらい、
+       桃より下の細い段に足す——桃から上がまとめて一目上がる。**太さの差は一目以内のまま**
+       （上に太い段・下に細い段が無ければ、紺から一目もらう。紺は格子に足りない端数も持っているので、細くなりすぎない）*/
+    var donor = -1, recv = -1;
+    for (z = 0; z <= 4; z++) if (donor < 0 || ST[z] >= ST[donor]) donor = z;          /* 上の、いちばん太い段（同じなら桃に近いほう）*/
+    for (z = 9; z >= 6; z--) if (recv < 0 || ST[z] <= ST[recv]) recv = z;            /* 下の、いちばん細い段（同じなら桃に近いほう）*/
+    if (ST[donor] <= ST[recv]) donor = 0;
+    if (ST[donor] > 1){ ST[donor]--; ST[recv]++; }
     segs = [];
     for (ii2 = 4; ii2 >= 0; ii2--) for (kk2 = n - 1; kk2 >= 0; kk2--){
       idx = ii2 * n + kk2;                                 /* 上から数えて何段目か（0 が紺。決めの色が上、混ぜ色が下）*/
-      bh = (base + (idx < extra ? 1 : 0)) * P;
+      bh = ST[idx] * P;
       c2 = kk2 === 0 ? 'var(--sky' + (ii2 + 1) + ')'
          : (bridge && ii2 === 2) ? 'var(--skyB)'
          : 'color-mix(in oklab, var(--sky' + (ii2 + 1) + ') ' + Math.round(100 - kk2 * 100 / n) + '%, var(--sky' + (ii2 + 2) + '))';
