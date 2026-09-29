@@ -1371,6 +1371,12 @@ body.roll #dRoll{display:block}
 /* **枠が開いてから、中身が一行ずつ出る。**一度に出すと、
    ここまで積んできたものが**一瞬で終わる**（本人：「なんかスッと終わっちゃう」）*/
 #dRes.on{display:block; animation:resin .24s steps(4)}
+/* 連れを指す尻尾（吹き出しの形）。左の縁の --tail の高さ、上に連れがいる窓では上の縁の --tail の位置。粒で刻んだ三角 */
+#dRes.on::before{content:''; position:absolute; width:calc(var(--px) * 3); height:calc(var(--px) * 4); background:var(--line);
+  left:calc(var(--px) * -4); top:calc(var(--tail, 24px) - var(--px) * 2);
+  clip-path:polygon(100% 0, 100% 100%, 66% 100%, 66% 75%, 33% 75%, 33% 50%, 0 50%, 0 25%, 33% 25%, 66% 25%, 66% 0)}
+#dRes.on.tailtop::before{width:calc(var(--px) * 4); height:calc(var(--px) * 3); left:calc(var(--tail, 24px) - var(--px) * 2); top:calc(var(--px) * -4);
+  clip-path:polygon(0 100%, 100% 100%, 100% 66%, 75% 66%, 75% 33%, 50% 33%, 50% 0, 25% 0, 25% 33%, 25% 66%, 0 66%)}
 @keyframes resin{ from{transform:translate(-50%,-50%) scaleY(.12)}
                   to{transform:translate(-50%,-50%) scaleY(1)} }
 /* **透明度は素で持たせない**——動きが走らない場でも、`.on` が付けば必ず見える */
@@ -3409,6 +3415,7 @@ function quitDemo(){
   clearLog();
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
+  clearTimeout(D.tPal); D.tPal = null; dRes.classList.remove('tailtop');
   clearTimeout(D.tQ); clearInterval(D.tQL); D.tQ = D.tQL = null;
   /* 勝つところの待ちも（2026-09-29）。前は持っていなかったので、
      倒した直後に Esc で抜けると、あとからリザルトが開いていた */
@@ -3911,13 +3918,35 @@ function showResult(){
   D.parts = [].slice.call(dRes.querySelectorAll('.rtask li,.rn'));
   D.parts.concat(seen).forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
   seen.forEach(function(el){ el.classList.add('on'); });
-  dRes.classList.add('on');
-  palAt('result');   /* 連れはタスクの列の左へ（タスクをまとめる）*/
-  say([].map.call(dRes.querySelectorAll('.rt, .rw, .rp span, .rtask li'), function(x){ return x.textContent.trim(); }).join('　'));
-  if (REDUCE){ openDone(); return; }
-  D.phase = 'open';
-  /* **待ちの id は二つとも持っておく。**枠が開くまでの待ちを止め忘れると、
-     キーで飛ばしたあとから行出しが動き出す */
+  /* **作戦を出したのは連れ**（2026-09-29、本人：「最後の決まった作戦もAI君が出した感じにできん？」）。
+     前は窓が先に開いて、連れはあとから横に来ていた。→ **連れが来てから、連れの押し出しで窓が開く。**
+     窓には**連れのほうを指す尻尾**（吹き出しの形）。連れが窓の上にいる窓（縦のスマホ）では、尻尾は上の縁に。
+     窓が開くまでが 0.45 秒延びる。そのあいだ（D.phase 'pal'）はキーも押しも受けない */
+  dRes.style.visibility = 'hidden'; dRes.style.animation = 'none';
+  dRes.classList.add('on');                /* いったん見えないまま置いて、連れの置き場と尻尾を測る */
+  palAt('result');
+  var pl = parseFloat(document.getElementById('pal').style.left), pt = parseFloat(document.getElementById('pal').style.top),
+      pw = document.getElementById('pal').offsetWidth, ph = document.getElementById('pal').offsetHeight,
+      sc = document.getElementById('screen').getBoundingClientRect(), rr = dRes.getBoundingClientRect();
+  var above = pt + ph <= rr.top - sc.top + 1;
+  dRes.classList.toggle('tailtop', above);
+  dRes.style.setProperty('--tail', Math.round(above ? (pl + pw / 2 - (rr.left - sc.left)) : (pt + ph / 2 - (rr.top - sc.top))) + 'px');
+  dRes.classList.remove('on');
+  dRes.style.visibility = ''; dRes.style.animation = '';
+  D.phase = 'pal';
+  function openRes(){
+    palCast();
+    dRes.classList.add('on');
+    say([].map.call(dRes.querySelectorAll('.rt, .rw, .rp span, .rtask li'), function(x){ return x.textContent.trim(); }).join('　'));
+    if (REDUCE){ openDone(); return; }
+    D.phase = 'open';
+    openLines();
+  }
+  if (REDUCE) openRes(); else D.tPal = setTimeout(openRes, 450);
+}
+/* **待ちの id は二つとも持っておく。**枠が開くまでの待ちを止め忘れると、
+   キーで飛ばしたあとから行出しが動き出す */
+function openLines(){
   D.tOpen = setTimeout(function(){
     var i = 0;
     D.tLine = setInterval(function(){
@@ -4169,7 +4198,7 @@ document.addEventListener('keydown', function(e){
   if (D.phase === 'draft'){ draftDone(); eat(e); return; }
   if (D.phase === 'open'){ openDone(); eat(e); return; }
   if (D.phase === 'won'){ D.wonSkip(); eat(e); return; }
-  if (D.phase === 'type' || D.phase === 'win' || D.phase === 'flee'){ eat(e); return; }
+  if (D.phase === 'type' || D.phase === 'win' || D.phase === 'flee' || D.phase === 'pal'){ eat(e); return; }
   if (D.phase === 'result'){
     if (k === 'ArrowRight' || k === 'ArrowDown'){ selRes(1); eat(e); return; }
     if (k === 'ArrowLeft'  || k === 'ArrowUp'){ selRes(-1); eat(e); return; }
