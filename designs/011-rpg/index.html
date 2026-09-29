@@ -462,6 +462,9 @@ body{
    **いまは使っていない**（勇者の縁取りのバフに置き換えた）。palShot() は残してある。
    影の色の一粒。光らせない。飛ぶ道は JS（palShot）*/
 .pdot{position:absolute; width:var(--px); height:var(--px); background:var(--hero); z-index:8; pointer-events:none}
+/* かけた瞬間（palCast）。勇者のほう（右下）へ粒二つ押し出して戻る */
+#pal.cast{animation:palcast .3s steps(1) 1}
+@keyframes palcast{ 0%{transform:translate(calc(var(--px) * 2), var(--px))} 34%{transform:translate(var(--px), 0)} 67%,100%{transform:translate(0, 0)} }
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
@@ -2179,7 +2182,7 @@ window.addEventListener('resize', function(){
      唱え終わったら**点いたまま**（バフが乗った）。次に斬ると、斬撃がひと回り大きくなって縁取りは消える（バフを使った）。
      **金は、勇者の目のほかに光る二つ目のもの**になる（「光るのは目だけ」の例外。はっきり見せるために置いた）*/
   var BUFF = css.getPropertyValue('--go').trim() || '#ffd270', buff = 0, blinkOn = true;   /* 0 無し・1 点滅・2 点いたまま */
-  window.heroBuff = function(v){ buff = v; blinkOn = true; draw(last); };
+  window.heroBuff = function(v){ buff = v; blinkOn = true; draw(last); if (window.palTip) palTip(v === 1); };
   window.heroBuffed = function(){ return buff === 2; };
   function draw(m){
     var c;
@@ -2214,7 +2217,7 @@ window.addEventListener('resize', function(){
   /* 構えているあいだは**息をする**——0.55 秒ずつ、立ちと息のコマを交互に */
   var b = 0, bt = 0;
   setInterval(function(){
-    if (buff === 1){ bt = (bt + 1) % 2; if (!bt){ blinkOn = !blinkOn; if (pose) draw(last); } }
+    if (buff === 1){ bt = (bt + 1) % 2; if (!bt){ blinkOn = !blinkOn; if (pose) draw(last); if (window.palTip) palTip(blinkOn); } }
     if (REDUCE) return;
     i = (i+1) % HERO.length;
     if (!pose){ draw(HERO[i]); return; }
@@ -3702,7 +3705,8 @@ function typeCmd(s, done){
     if (i < s.length) return;
     clearInterval(t);
     palChant(false);
-    if (D.on) heroBuff(D.hp > 0 ? 2 : 0);   /* 唱え終わったら点いたまま。倒したあとは消す */
+    if (D.on && D.hp > 0){ palCast(); heroBuff(2); }   /* かけた——押し出して、勇者の縁取りが点いたままに */
+    else if (D.on) heroBuff(0);                         /* 倒したあとは消す */
     var cb = dStat.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
     /* **打ち終わってすぐには動かさない。**打った行をそのまま一拍見せる。
        `D.typing` は下げない——下げると、この一拍のあいだに流れが上を動かす */
@@ -4189,8 +4193,11 @@ var PAL = [
 ];
 /* まわるときのコマ（右回り）。**斜め**は目が右へ寄り、**横**は体が細く目が端に一つ、**後ろ**は目が無い。
    左半分は右半分の鏡。触角の根元も向きに合わせて動く */
-/* 帯を見る（目が一段下がる）。唱えているあいだ */
+/* 帯を見る（目が一段下がる）。いまは使っていない（唱えるときは PAL_CAST）*/
 var PAL_DOWN = ['....#.....','....#.....','..######..','.########.','.########.','.##.##.##.','..######..'];
+/* **かける顔**（同日、本人：「こいつがかけた感じがない、モーションで示せない？」）。触角を勇者のほうへ倒し、目も勇者のほうへ。
+   触角の先（0 行 7 列）が、勇者の縁取りと同じ拍子で金に点く——**この光が勇者に移っている**と読める */
+var PAL_CAST = ['.......#..','......#...','..######..','.########.','.####.#.#.','.########.','..######..'];
 var PAL_Q    = ['......#...','.....#....','..######..','.########.','.####.#.#.','.########.','..######..'];
 var PAL_SIDE = ['.....#....','.....#....','...####...','..######..','..####.#..','..######..','...####...'];
 var PAL_BACK = ['...#......','....#.....','..######..','.########.','.########.','.########.','..######..'];
@@ -4198,17 +4205,19 @@ function palMirror(m){ return m.map(function(r){ return r.split('').reverse().jo
 var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q), PAL[0]];
 (function(){
   var cv = document.getElementById('pal'), cx = cv.getContext('2d');
-  var W = PAL[0][0].length, H = PAL[0].length, f = 0, turn = -1, turnT = null, chanting = false;
+  var W = PAL[0][0].length, H = PAL[0].length, f = 0, turn = -1, turnT = null, chanting = false, tipOn = false;
+  var GOLD = getComputedStyle(document.documentElement).getPropertyValue('--go').trim() || '#ffd270';
   var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
   function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
   function draw(){
     var p = px(), dpr = Math.min(3, window.devicePixelRatio || 1),
-        m = turn >= 0 ? PAL_TURN[turn] : chanting ? PAL_DOWN : PAL[f];
+        m = turn >= 0 ? PAL_TURN[turn] : chanting ? PAL_CAST : PAL[f];
     cv.style.width = (W * p) + 'px'; cv.style.height = (H * p) + 'px';
     cv.width = W * p * dpr; cv.height = H * p * dpr;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
     cx.fillStyle = INK;
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (m[y][x] === '#') cx.fillRect(x * p, y * p, p, p);
+    if (chanting && tipOn && turn < 0){ cx.fillStyle = GOLD; cx.fillRect(7 * p, 0, p, p); }
   }
   /* **勇者の左斜め上**（同日、本人：「左斜め上くらいがいいかも」。前は左の肩の高さ）。連れの右下の角を、勇者の頭の左上の角（絵の 4 列目・2 行目）の
      すぐ外に置く。勇者の置き場は窓の作りごとに違う（34%・30%・44%・50%）ので、勇者から測って置く */
@@ -4262,6 +4271,14 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     if (turn < 0) draw();
   };
   window.palHide = function(on){ cv.classList.toggle('hide', !!on); };
+  /* 触角の先の金。勇者の縁取りの点滅から呼ばれる（同じ拍子）*/
+  window.palTip = function(on){ tipOn = !!on; if (chanting) draw(); };
+  /* **かけた瞬間**：勇者のほうへ粒二つぶん押し出して戻る */
+  window.palCast = function(){
+    if (REDUCE || turn >= 0) return;
+    cv.classList.remove('cast'); void cv.offsetWidth; cv.classList.add('cast');
+  };
+  cv.addEventListener('animationend', function(e){ if (e.animationName === 'palcast') cv.classList.remove('cast'); });
   /* 粒を一つ、連れから**勇者の胸**へ。ゆるい弧（途中で上へ膨らむ）で、コマを刻んで飛ぶ */
   window.palShot = function(){
     if (REDUCE || !D.on) return;
