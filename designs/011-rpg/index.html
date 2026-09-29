@@ -591,11 +591,12 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
   /* **左端を勇者の右端に寄せる**（2026-09-29、本人：「メニューとポップアップにちょっと距離あるの気になる」
      →（あいだは勇者の縦の列。窓の下端 490px が勇者の頭 405px より下まで来るので、列にはかけられない、と出して）「Aでやってみて」）。
      前は右の余白（--winr）から置いていて、左端が画面の真ん中だった（9/15「もうちょい真ん中寄せて」）。
-     **幅はそのまま**——寄せたぶん右があく。勇者は 34%、幅は 22 粒（--hpx）、あいだは粒 6 つ。
+     **幅はそのまま**——寄せたぶん右があく。勇者は 34%、幅は 22 粒（--hpx）、あいだは下の行の粒の数。
      右の余白より狭くはしない（幅を削る）。低い窓・狭い窓・横持ちは、それぞれの節で置き直している */
-  /* **上端は線より粒 4 つ下**（同日、本人：「もうちょっとだけ下」）。メニューの上端（--T）とは揃わなくなった */
-  left:calc(34% + var(--hpx) * 11px + var(--px) * 6); right:auto; top:calc(var(--T, 17%) + var(--px) * 4);
-  width:min(var(--winw), calc(66% - var(--hpx) * 11px - var(--px) * 6 - var(--winr))); max-height:60vh; display:none; transform-origin:top;
+  /* **勇者とのあいだは粒 12**（同日。いちど上端を粒 4 つ下げて、本人：「違うな、もうちょっと右か」——下げたのは戻して、粒 6 → 12 に）。
+     上端はメニューと同じ線（--T）のまま */
+  left:calc(34% + var(--hpx) * 11px + var(--px) * 12); right:auto; top:var(--T, 17%);
+  width:min(var(--winw), calc(66% - var(--hpx) * 11px - var(--px) * 12 - var(--winr))); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
 @keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
