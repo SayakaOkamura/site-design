@@ -3153,6 +3153,10 @@ function quitDemo(){
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
   clearTimeout(D.tQ); clearInterval(D.tQL); D.tQ = D.tQL = null;
+  /* 勝つところの待ちも（2026-09-29）。前は持っていなかったので、
+     倒した直後に Esc で抜けると、あとからリザルトが開いていた */
+  clearInterval(D.tWin); clearTimeout(D.tWon); clearTimeout(D.tUp);
+  D.tWin = D.tWon = D.tUp = null; D.wonSkip = null;
   /* **待ちは全部止める。**止め忘れると、デモを出たあとに「！」が出たり歩いてきたりする */
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
   D.tCome = D.tBang = D.tSlime = null;
@@ -3513,7 +3517,21 @@ function winSeq(){
     heroPose('win');
     dWon.classList.add('on');
     say(dWon.textContent);
-    setTimeout(function(){
+    /* **「たおした！」は押せば飛ばせる**（2026-09-29。外からの指摘「勝利後からリザルトが出るまで、
+       何も操作できない時間がある」→（間は約 3.2 秒。いちばん長いのがこの 1.3 秒、と出して）本人：「いいよ」）。
+       **押さなければ間は前のまま。**押したら、帯が抜けるのを待たずにリザルトへ。
+       倒れるところ（三コマ）は飛ばさない——そこを抜くと「勝った」が消える */
+    D.phase = 'won';
+    D.wonSkip = function(){
+      clearTimeout(D.tWon); clearTimeout(D.tUp);
+      D.wonSkip = null; D.phase = 'win';
+      dWon.classList.remove('on');
+      setLog(4); stopStream();
+      dLines.classList.add('up'); dStat.classList.add('up'); dWish.classList.add('up');
+      D.tUp = setTimeout(showResult, 340);
+    };
+    D.tWon = setTimeout(function(){
+      D.wonSkip = null; D.phase = 'win';
       dWon.classList.remove('on');
       /* **`> 整合性を確かめる` は外した**（2026-09-16、本人：
          「**入力したものを下に置いたまま、なんかずっと演算してるな、動いてるなって見せたい**」）。
@@ -3524,15 +3542,16 @@ function winSeq(){
          **帯が消えてから開く。**向きは付けない（下の CSS の節） */
       setLog(4);
       stopStream();                       /* まとめに入ったら、流しは止める（秒は進む） */
-      setTimeout(function(){
+      D.tUp = setTimeout(function(){
         /* **三つ同時に消す。**順に抜けさせると、そこに向きが出てしまう */
         dLines.classList.add('up');
         dStat.classList.add('up');
         dWish.classList.add('up');
-        setTimeout(showResult, 340);
+        D.tUp = setTimeout(showResult, 340);
       }, 900);
     }, 1300);
   }, 170);
+  D.tWin = t;
 }
 
 function choose(i){
@@ -3809,6 +3828,7 @@ document.addEventListener('click', function(e){
   if (!D.on || !e.target.closest) return;
   /* **出ている最中は選べない。**押したら、待たずに全部出るだけ */
   if (D.phase === 'draft'){ e.stopPropagation(); draftDone(); return; }
+  if (D.phase === 'won'){ e.stopPropagation(); D.wonSkip(); return; }
   var li = e.target.closest('#dA li');
   if (li){ e.stopPropagation(); D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
   if (D.phase === 'open'){ e.stopPropagation(); openDone(); return; }
@@ -3857,6 +3877,7 @@ document.addEventListener('keydown', function(e){
   /* 出ている最中にキーを押したら、**待たずに全部出す** */
   if (D.phase === 'draft'){ draftDone(); eat(e); return; }
   if (D.phase === 'open'){ openDone(); eat(e); return; }
+  if (D.phase === 'won'){ D.wonSkip(); eat(e); return; }
   if (D.phase === 'type' || D.phase === 'win' || D.phase === 'flee'){ eat(e); return; }
   if (D.phase === 'result'){
     if (k === 'ArrowRight' || k === 'ArrowDown'){ selRes(1); eat(e); return; }
