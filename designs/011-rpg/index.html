@@ -3700,7 +3700,10 @@ function fireRes(){
   if (D.sel < 0) return;   /* どちらも選んでいない。**何も起きない**——空を押したときと同じ */
   var b = dRes.querySelectorAll('.rb')[D.sel];
   /* お問い合わせを押した人には流さない。**もう次へ進んでいる** */
-  if (b.dataset.d === 'contact'){ location.href = GO.contact.href; return; }
+  /* **メールへ直に飛ばさず、お問い合わせの窓を開く**（2026-09-29、本人：「リザルトから問い合わせへの導線も欲しいしな…」
+     →（いくつか出して）「1はあり」）。前はそのままメールが開いていて、**何を問い合わせる場所なのか**が画面のどこにも無かった。
+     窓には公式の誘い文（「サービスに関するご相談や……」）がある。メールは窓の最後の一手から、足もとと同じ */
+  if (b.dataset.d === 'contact'){ quitDemo(); openPop('contact'); return; }
   startRoll();
 }
 
@@ -3859,7 +3862,7 @@ document.addEventListener('click', function(e){
   if (li){ e.stopPropagation(); D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
   if (D.phase === 'open'){ e.stopPropagation(); openDone(); return; }
   var rb = e.target.closest('#dRes .rb');
-  if (rb){ D.sel = [].slice.call(dRes.querySelectorAll('.rb')).indexOf(rb); fireRes(); }
+  if (rb){ e.stopPropagation(); D.sel = [].slice.call(dRes.querySelectorAll('.rb')).indexOf(rb); fireRes(); }   /* 抜けたあとの下の手（メニューの押し）に流さない */
 }, true);
 /* マウスを乗せたら印もそこへ（メニューと同じ作法） */
 document.addEventListener('mouseover', function(e){
