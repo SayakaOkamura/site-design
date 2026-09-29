@@ -4139,8 +4139,8 @@ var PAL = [
   function place(){
     var r = heroEl.getBoundingClientRect(), s = document.getElementById('screen').getBoundingClientRect(), p = px();
     if (!r.width) return;
-    /* そこから粒一つずつ下・左（同日、本人：「ちょっとだけ下、左」）、さらに粒一つ下（「ちょい下」）、もう一つ左下（「もう一個左下」）*/
-    var hp = r.width / HW, left = r.left - s.left + hp * 4 - W * p - p * 3, top = r.top - s.top + hp * 2 - H * p + p * 2;
+    /* 頭の左上の角から、左へ粒 2・下へ粒 4（同日、本人：「ちょっとだけ下、左」→「ちょい下」→「もう一個左下」→「いや左は動かさなくてよかった、下はもっと」）*/
+    var hp = r.width / HW, left = r.left - s.left + hp * 4 - W * p - p * 2, top = r.top - s.top + hp * 2 - H * p + p * 4;
     cv.style.left = Math.max(4, Math.round(left)) + 'px';
     cv.style.top = Math.round(top) + 'px';
     /* **メニューにかかる窓では、勇者の右斜め上へ**（700×500・844×390 でメニューの裏に入った）。頭の右上の角（15 列目）のすぐ外 */
