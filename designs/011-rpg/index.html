@@ -902,10 +902,17 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
      上に来て、**一行紹介の終わりが窓に隠れていた**（1200×520 で 12px、1000×511 で 9px）。
      名乗りの背は 96〜102px（三行）なので、**112px を床**にする */
   /* 上端は上の線（`--T`）。前は `max(17%, 112px)` で名乗りの下へ落としていた——線が名乗りの下なので、もう要らない */
-  #pop{left:auto; right:var(--winr); top:var(--T, 17%);   /* 低い窓は右から置いて、左へ広げる。上端も線のまま（2026-09-29 に上の置き方を変えたので、ここで戻す）*/
+  /* 低い窓は右から置いて、左へ広げる（2026-09-29 に上の置き方を変えたので、左右はここで戻す）。
+     **上下はふだんの窓と同じ**（同日、本人：「感覚的には全部同じ感じにしたいけど、不都合が生じる場合はしなくていいよ」）——
+     線より粒 3 つ下でメニューと揃え、背の高い頁を持つ窓は線（#pop.tall）。地平に届く窓は placeDrop() が浅くする */
+  #pop{left:auto; right:var(--winr); top:calc(var(--T, 17%) + var(--drop, calc(var(--px) * 3)));
     width:min(74vw, 760px,
     calc(100vw - var(--winr) - clamp(16px,4vw,calc(54px*var(--k))) - min(46vw,calc(260px*var(--k)))
          - var(--px)*6))}
+  /* **左右もふだんの窓と同じにできる窓だけ**（2026-09-29）：左端を勇者の右に。勇者にかぶらなくなるが、窓が細くなる。
+     **頁が増える窓では付けない**（1084×571・1000×600・1000×511・984×631 で一枚ずつ増えた）——`placeLowLeft()` が測って決める */
+  html.lowL #pop{left:calc(34% + var(--hpx) * 11px + var(--px) * 12); right:auto;
+    width:min(74vw, 760px, calc(66% - var(--hpx) * 11px - var(--px) * 12 - var(--winr)))}
 }
 
 @media (prefers-reduced-motion:reduce){ *{animation:none !important} }
@@ -2442,12 +2449,25 @@ function topOfTallestPop(bottom){
 }
 /* **窓を下げる量**（2026-09-29）。ふだんは粒 3 つ（CSS の既定）。**メニューも同じ量**。いちばん背の高い頁の下端が
    **地平から粒 2 つ手前**を越える窓だけ、越えたぶん減らす（0 まで）。`topOfTallestPop(true)` は下端を返す */
+/* 低い窓で、窓の左端を勇者の右に置けるか。**置いて頁が増えるなら置かない**（上の CSS の節）。
+   枚数は fitAcc() / fitAbout() が決めるので、両方の置き方で決めさせて数え比べる */
+function placeLowLeft(){
+  var root = document.documentElement;
+  function count(){ var n = 0, k; for (k in DATA) n += pages(DATA[k]).length; return n; }
+  root.classList.remove('lowL');
+  fitAcc(); fitAbout();
+  if (MQ_NARROW.matches || MQ_LAND.matches || window.innerHeight > 640) return;
+  var n0 = count();
+  root.classList.add('lowL');
+  fitAcc(); fitAbout();
+  if (count() > n0){ root.classList.remove('lowL'); fitAcc(); fitAbout(); }
+}
 var TALLK = {};
 function placeDrop(){
   var root = document.documentElement;
   /* 背の高い頁を持つ窓。本文が最小の高さ（7.2 字）を **1.5 字ぶん以上**越える頁があれば、その窓ごと */
   TALLK = {};
-  if (!MQ_NARROW.matches && !MQ_LAND.matches && window.innerHeight > 640){
+  if (!MQ_NARROW.matches && !MQ_LAND.matches){
     /* **出して測る**（隠れたままだと背が 0 になる）。`topOfTallestPop()` と同じ段取り */
     var keepCur = cur, keepPage = page, keepSel = goSel, keepCls = pop.className,
         wasPopped = document.body.classList.contains('popped'), k, i, ps, cs, lim;
@@ -2528,7 +2548,7 @@ function placeMenu(){
     mn.style.bottom = ''; mn.style.removeProperty('--mpad');
     /* **ふだんの窓では、窓と同じだけ下げる**（2026-09-29、本人：「4の高さでメニューと一緒にできない？」）。
        低い窓（高さ 640 以下）は線のまま——窓もそこでは下げていない */
-    mn.style.top = window.innerHeight > 640 ? 'calc(var(--T, 46%) + var(--drop, calc(var(--px) * 3)))' : '';
+    mn.style.top = !MQ_LAND.matches ? 'calc(var(--T, 46%) + var(--drop, calc(var(--px) * 3)))' : '';
     fitMenu(mn); return;
   }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
@@ -2586,7 +2606,7 @@ window.addEventListener('resize', function(){
   /* **測る前に、置いた位置を外す。**前の窓で下げたままだと、
      `hitsMenu()` が古い位置で答えて枚数を誤る */
   document.getElementById('menu').style.top = '';
-  fitAcc(); fitAbout();
+  placeLowLeft();   /* fitAcc() と fitAbout() もこの中で呼ぶ */
   placeMenu();   /* 枚数が決まってから置く——頁の背が変わると下限も変わる */
   placeDrop();
 
@@ -3979,8 +3999,7 @@ document.addEventListener('keydown', function(e){
 }, true);
 
 paintSel();
-fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
-fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
+placeLowLeft(); /* アクセスが一枚で入るか・会社概要の一枚目が入るかを測る（低い窓では、窓の左右の置き方も一緒に決める）*/
 placeMenu();  /* 縦長では、メニューを置き直す（三層は足もとの下、それ以外はまんなか）*/
 placeDrop();  /* 窓を下げる量（地平に届く窓だけ減らす）*/
 placePlain(); /* 画面に入らなければ、素の一枚に */
