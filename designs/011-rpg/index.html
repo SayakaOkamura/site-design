@@ -1170,6 +1170,7 @@ body.roll #dRoll{display:block}
    社名が「最後の一枚」に見えない */
 #dRollIn .gapx{height:clamp(240px,44vh,calc(420px*var(--k)))}
 #dRollIn .tag{color:var(--warm); font-size:clamp(13px,calc(1.7 * var(--fw)),calc(17px*var(--k))); font-weight:700; line-height:2.2}
+#dRollIn .sub{margin-top:calc(var(--px)*4)}
 #dRollIn .en{font-size:clamp(14px,calc(2.2 * var(--fw)),calc(24px*var(--k))); letter-spacing:.22em; font-weight:700}
 #dRollIn .ja{font-size:clamp(12px,calc(1.6 * var(--fw)),calc(17px*var(--k))); letter-spacing:.08em; font-weight:700;
   margin-top:calc(var(--px)*2)}
@@ -3675,6 +3676,11 @@ function buildRoll(){
   for (var i = 1; i < MIND.length; i++) h += '<p>' + MIND[i] + '</p>';
   h += '<div class="gap"></div>'
      + '<p class="tag">' + tag.replace('で、', 'で、<br>') + '</p>'
+     /* **名乗りの一行の下に、公式の一文**（2026-09-29、本人：「いいよ」）。
+        デモが上流工程の仕事だと、画面のどこにも書いていなかった。
+        「業務設計」が、いま出たタスクとつながる。文は公式の description の二文目——
+        **ここから切り出す**（写しを二か所に置かない） */
+     + '<p class="sub">' + document.querySelector('meta[name="description"]').content.split('。')[1].replace('から', 'から<br>') + '。</p>'
      + '<div class="gapx"></div>'
      + '<div id="rollEnd"><p class="en">' + en + '</p><p class="ja">' + ja + '</p></div>'
      + '<div class="gap"></div>';
