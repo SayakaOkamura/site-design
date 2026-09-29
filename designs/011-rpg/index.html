@@ -2072,8 +2072,27 @@ function paintSky(){
     }
     return out;
   }
-  segs = build(0);
-  if (bridge){
+  /* **十段とも同じ太さ**（同日、本人：「全部均等にしてほしい、なんか細いやつない？」）。桃を下げるたびに赤橙の段を削っていて、
+     一目（16px）まで細くなっていた。→ 空の高さを格子の目で数えて**十段に配る**。割り切れない目は**上の段から一目ずつ**足す
+     （太さの差は多くても一目。太いほうが上）。格子に足りない端数は、いちばん上の紺に。
+     いちど「同じ太さで九段、余りは全部紺」にしたが、390×844 で紺が 8px、1920×1080 で 144px と偏った。
+     桃は下から五段目。
+     区切り（SKY_AT）と桃を真ん中に寄せる形（下の build(adj)）は、この窓では使わない（残してある）*/
+  var EQ = true;
+  if (EQ){
+    var S = Math.floor(H / P), base = Math.floor(S / 10), extra = S - base * 10, yy2 = H, ii2, kk2, c2, idx, bh;
+    segs = [];
+    for (ii2 = 4; ii2 >= 0; ii2--) for (kk2 = n - 1; kk2 >= 0; kk2--){
+      idx = ii2 * n + kk2;                                 /* 上から数えて何段目か（0 が紺。決めの色が上、混ぜ色が下）*/
+      bh = (base + (idx < extra ? 1 : 0)) * P;
+      c2 = kk2 === 0 ? 'var(--sky' + (ii2 + 1) + ')'
+         : (bridge && ii2 === 2) ? 'var(--skyB)'
+         : 'color-mix(in oklab, var(--sky' + (ii2 + 1) + ') ' + Math.round(100 - kk2 * 100 / n) + '%, var(--sky' + (ii2 + 2) + '))';
+      segs.unshift([c2, Math.max(0, yy2 - bh), yy2, ii2, kk2]);
+      yy2 -= bh;
+    }
+  } else segs = build(0);
+  if (bridge && !EQ){
     var pk = segs.filter(function(q){ return q[3] === 2 && q[4] === 1; })[0];
     /* 真ん中から**二目下**（同日、本人：「もうちょい下げて」→「あともうちょっと」）。赤橙の帯は一目より細くしない（小さい窓ではそこで止まる）*/
     var adj = Math.round((H / 2 - (pk[1] + pk[2]) / 2) / P) * P + P * 2;   /* 正なら下へ */
