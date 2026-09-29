@@ -1011,6 +1011,10 @@ body.demo #dHp{display:block}
 #dA li{display:flex; align-items:flex-start; gap:calc(var(--px)*2);
   padding:calc(var(--px)*1.5) 0; font-size:clamp(12px,calc(1.4 * var(--fw)),calc(17px*var(--k))); line-height:1.6;
   letter-spacing:.04em; cursor:pointer; color:var(--dim)}
+/* **押すところは 24px を割らない**（2026-09-29。外からの指摘「スマホで選択肢のタップが小さい」→
+   （縦 23px・横 22px で WCAG 2.5.8 の下限を割っている、と出して）本人：「やってみて」）。
+   9/24〜25 に縦画面へ入れるため上下の余白を 2px まで譲っていた。余白の決めごとは触らず、**底だけ敷く** */
+#dA li{min-height:24px}
 #dA li .cur{flex:0 0 1em; text-align:center; color:transparent}
 /* **行の中身は本物のボタン**（2026-09-28。Codex に見させて出た二つ目）。
    前は `<li>` をそのまま押させていて、**Tab でも読み上げでも「押せるもの」に見えなかった。**
