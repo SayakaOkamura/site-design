@@ -3399,7 +3399,7 @@ function flee(){
 }
 function quitDemo(){
   clearTimeout(D.tFlee); D.tFlee = null;
-  palHide(false); palChant(false); heroBuff(0); palAt('hero');
+  palHide(false); palChant(false); palListen(false); clearTimeout(document.getElementById('pal')._work); heroBuff(0); palAt('hero');
   if (D.aFlee){ D.aFlee.cancel(); D.aFlee = null; }
   slimeEl.classList.remove('gone'); dHp.classList.remove('gone');
   heroEl.classList.remove('flip');
@@ -3560,12 +3560,13 @@ window.addEventListener('resize', function(){ if (D.on) trimLines(); });
 function typeWish(s, done){
   dWish.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   var tx = dWish.querySelector('.tx'), i = 0;
-  palChant(true);   /* ② 唱えているあいだ */
+  palListen(true);   /* 人が打っているあいだ、連れは打たれる一行を見ている */
   var t = setInterval(function(){
     tx.textContent = s.slice(0, ++i);
     if (i < s.length) return;
     clearInterval(t);
-    palChant(false);
+    palListen(false);
+    palWork();         /* 打ち終わったら AI が動かす——唱えて、一拍でかける */
     var cb = dWish.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
     setTimeout(done, 260);
   }, 42);
@@ -3705,15 +3706,13 @@ function typeCmd(s, done){
   dStat.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   D.typing = true;
   var tx = dStat.querySelector('.tx'), i = 0;
-  palChant(true);   /* ② 唱えているあいだ */
-  heroBuff(1);      /* 勇者の縁取りが点滅（連れのバフを受けている）*/
+  palListen(true);   /* 人の入力。連れは見ている */
   var t = setInterval(function(){
     tx.textContent = s.slice(0, ++i);
     if (i < s.length) return;
     clearInterval(t);
-    palChant(false);
-    if (D.on && D.hp > 0){ palCast(); heroBuff(2); }   /* かけた——押し出して、勇者の縁取りが点いたままに */
-    else if (D.on) heroBuff(0);                         /* 倒したあとは消す */
+    palListen(false);
+    palWork();         /* 打ち終わったら AI が動かす（倒したあとは何もしない）*/
     var cb = dStat.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
     /* **打ち終わってすぐには動かさない。**打った行をそのまま一拍見せる。
        `D.typing` は下げない——下げると、この一拍のあいだに流れが上を動かす */
@@ -4201,7 +4200,7 @@ var PAL = [
 ];
 /* まわるときのコマ（右回り）。**斜め**は目が右へ寄り、**横**は体が細く目が端に一つ、**後ろ**は目が無い。
    左半分は右半分の鏡。触角の根元も向きに合わせて動く */
-/* 帯を見る（目が一段下がる）。いまは使っていない（唱えるときは PAL_CAST）*/
+/* 打たれる一行を見る（目が一段下がる）。人が打っているあいだ（palListen）*/
 var PAL_DOWN = ['....#.....','....#.....','..######..','.########.','.########.','.##.##.##.','..######..'];
 /* **かける顔**（同日、本人：「こいつがかけた感じがない、モーションで示せない？」）。触角を勇者のほうへ倒し、目も勇者のほうへ。
    触角の先（0 行 7 列）が、勇者の縁取りと同じ拍子で金に点く——**この光が勇者に移っている**と読める */
@@ -4220,7 +4219,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
   function draw(){
     var p = px(), dpr = Math.min(3, window.devicePixelRatio || 1),
-        m = turn >= 0 ? PAL_TURN[turn] : chanting ? (dir < 0 ? palMirror(PAL_CAST) : PAL_CAST) : PAL[f];
+        m = turn >= 0 ? PAL_TURN[turn] : chanting ? (dir < 0 ? palMirror(PAL_CAST) : PAL_CAST) : listening ? PAL_DOWN : PAL[f];
     cv.style.width = (W * p) + 'px'; cv.style.height = (H * p) + 'px';
     cv.width = W * p * dpr; cv.height = H * p * dpr;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
@@ -4312,6 +4311,22 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     if (turn < 0) draw();
   };
   window.palHide = function(on){ cv.classList.toggle('hide', !!on); };
+  /* **人が打つ／AI が動かす**（同日、本人：「これ、打ち込んでるのは人間じゃない？動かしてるのがAI」）。
+     前は「打たれているあいだ」に唱えていて、役が逆だった。
+     → 打たれているあいだは**打たれる一行を見ている**（palListen：目が下の顔、弾まない）。
+       打ち終わったら**唱える**（勇者の縁取りが点滅）→ 一拍（0.4 秒）で**かける**（押し出し → 縁取りが点いたまま）。
+       打ち終わってから次へ進むまでの一拍（0.45 秒）の中に収まるので、間は延びない。倒したあとは何もしない */
+  var listening = false;
+  window.palListen = function(on){ listening = !!on; if (turn < 0) draw(); };
+  window.palWork = function(){
+    if (!D.on || D.hp <= 0){ heroBuff(0); return; }
+    palChant(true); heroBuff(1);
+    clearTimeout(cv._work);
+    cv._work = setTimeout(function(){
+      palChant(false);
+      if (D.on && D.hp > 0){ palCast(); heroBuff(2); } else heroBuff(0);
+    }, 400);
+  };
   /* 触角の先の金。勇者の縁取りの点滅から呼ばれる（同じ拍子）*/
   window.palTip = function(on){ tipOn = !!on; if (chanting) draw(); };
   /* **かけた瞬間**：勇者のほうへ粒二つぶん押し出して戻る */
