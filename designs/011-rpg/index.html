@@ -3874,4 +3874,19 @@ fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
 placeMenu();  /* 縦長では、メニューを置き直す（三層は足もとの下、それ以外はまんなか）*/
 placePlain(); /* 画面に入らなければ、素の一枚に */
 
+/* **URL の # で窓を開いて始める**（2026-09-29、本人：「順に」）。
+   公式トップの中のリンクは `#philosophy` `#services` `#company` `#contact` の四つ。
+   外から「alt-dsgn.co.jp/#services」と貼られても、前は最初の画面が出るだけだった。
+   **名前は公式のまま**読む（こちらの名前を足さない）。書き換えはしない——読むだけ。
+   素の一枚では、窓の代わりにその節まで送る */
+var HASH = { philosophy:'mind', services:'svc', company:'about', contact:'contact' };
+function openHash(){
+  var k = HASH[location.hash.slice(1)];
+  if (!k || D.on) return;
+  if (PLAIN){ document.getElementById('t-' + k).scrollIntoView(); return; }
+  openPop(k);
+}
+openHash();
+window.addEventListener('hashchange', openHash);
+
 </script>
