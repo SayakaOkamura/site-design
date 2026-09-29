@@ -899,6 +899,7 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 body.demo #menu, body.demo #foot, body.demo #pop, body.demo #made{display:none}
 /* ─ ミニゲーム（2026-09-29）。**デモと同じく、メニューと足もとだけ引っ込める**。世界はそのまま ── */
 body.game #menu, body.game #foot, body.game #pop, body.game #made{display:none}
+body.game{-webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:none}
 #gm{position:absolute; left:0; bottom:var(--gh); z-index:3; pointer-events:none; image-rendering:pixelated; display:none}
 body.game #gm{display:block}
 #gHud{position:absolute; right:clamp(16px,4vw,calc(54px*var(--k))); top:var(--T, 30%); z-index:9; display:none;
@@ -3937,6 +3938,9 @@ placePlain(); /* 画面に入らなければ、素の一枚に */
      岩    地面と同じ速さで流れてくる。跳んで越える（大きさ三通り）
      鳥    少し進んでから混ざる。**跳ぶ高さを飛んでくる**——跳ぶと当たる、走ったままならくぐれる
      操作  スペース／↑／画面を押す（一つだけ。しゃがむは入れない——スマホで二つ目の手が要るため）
+           **長押しで高く跳ぶ**（同日、本人：「長押しで高く飛べるようにしない？」→（高い岩か二つ並びか、と訊いて）「高さ」）。
+           短く押せば前と同じ跳び（13 粒・0.62 秒）。押しているあいだ、上がる途中だけ落ちる力を弱めて 20 粒まで
+     高い岩 16 粒。短く押す跳びでは越えられない。5 こ越えてから混ざる
      速さ  越えるたびに少しずつ上がる。**地面・山も同じ割合で速くなる**（岩だけ速いと滑って見える）
      終わり 当たったら世界が止まる → 押すと元の画面へ。Esc はいつでも抜ける
      記録  最高だけ、この端末の中に覚える
@@ -3949,17 +3953,24 @@ var G = { on:false };
     ['..#..','.###.','.###.','#####','#####','#####','#####'],
     ['...####...','.########.','##########','##########']
   ];
+  var TALL = ['..##..','.####.','.####.','.####.','.#####','######','######','######',
+              '######','######','######','######','######','######','######','######'];
   var BIRD = [
     ['#.......#','##.....##','.##...##.','..#####..','....#....'],
     ['.........','.........','..#####..','.##.#.##.','##.....##']
   ];
-  var TJ = .62, JH = 13;          /* 跳ぶ時間（秒）と高さ（粒）*/
+  /* 跳ぶ。短く押せば 13 粒・0.62 秒（前の跳びと同じ）。**押しているあいだ、上がる途中だけ**落ちる力を弱めて 20 粒まで。
+     離せば、その場からふつうの落ち方に戻る */
+  var TJ = .62, JH = 13, JH_HOLD = 20;
+  var JV = 4 * JH / TJ, JG = 2 * JV / TJ, JG_HOLD = JV * JV / (2 * JH_HOLD);
+  var AIR_MAX = JV / JG_HOLD + Math.sqrt(2 * JH_HOLD / JG);   /* いちばん長く宙にいる時間（0.86 秒ほど）*/
   var BIRD_ALT = 23;              /* 鳥の下端。走っている勇者の頭（21 粒）の少し上——跳ぶと当たる */
   var cv = document.getElementById('gm'), cx = cv.getContext('2d');
   var hud = document.getElementById('gHud');
   var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
   var raf = null, last = 0, W = 0, CH = 0, vNat = 1, v0 = 1;
-  var obs = [], passed = 0, t = 0, spawnAt = 0, jumpT = -1, over = false, overAt = 0, hinted = false, best = 0;
+  var obs = [], passed = 0, t = 0, spawnAt = 0, over = false, overAt = 0, hinted = false, best = 0;
+  var air = false, jy = 0, jv = 0, held = false, tallSeen = false, highDone = false;
   var lands = [];
   try { best = +localStorage.getItem('adc011-game-best') || 0; } catch(e){}
 
@@ -3991,15 +4002,19 @@ var G = { on:false };
   }
   function paintHud(){
     /* 操作の手がかりは**一行だけ、小さく**。一度跳んだら消す */
+    /* 長押しは、**高い岩がはじめて来たときに**一行だけ言う。一度高く跳べたら消す */
+    var hint = !hinted ? 'スペース・タップ' : (tallSeen && !highDone) ? 'ながおしで　たかく' : '';
     hud.innerHTML = 'こえた　' + passed + (best ? '<small>さいこう　' + best + '</small>' : '')
-      + (hinted ? '' : '<small class="hint">スペース・タップ</small>');
+      + (hint ? '<small class="hint">' + hint + '</small>' : '');
   }
   function spawn(){
     var bird = passed >= 6 && Math.random() < .3;
-    var m = bird ? BIRD[0] : ROCKS[Math.floor(Math.random() * ROCKS.length)];
+    var tall = !bird && passed >= 5 && Math.random() < .25;
+    var m = bird ? BIRD[0] : tall ? TALL : ROCKS[Math.floor(Math.random() * ROCKS.length)];
+    if (tall && !tallSeen){ tallSeen = true; paintHud(); }
     obs.push({ x:W, m:m, bird:bird, w:m[0].length, h:m.length, done:false });
     /* 次までの間。**着いてからもう一度跳べる**だけは必ずあける */
-    spawnAt = t + (TJ + .3) + Math.random() * .9 + (m[0].length * HPX) / speed();
+    spawnAt = t + (AIR_MAX + .3) + Math.random() * .9 + (m[0].length * HPX) / speed();
   }
   function frame(now){
     raf = requestAnimationFrame(frame);
@@ -4009,13 +4024,13 @@ var G = { on:false };
     var v = speed();
     setRate(v / vNat);
     if (t >= spawnAt) spawn();
-    var y = 0;
-    if (jumpT >= 0){
-      jumpT += dt;
-      var k = jumpT / TJ;
-      if (k >= 1){ jumpT = -1; heroPose(null); }
-      else y = Math.round(4 * JH * k * (1 - k)) * HPX;   /* 粒の格子に乗せる */
+    if (air){
+      jv -= ((held && jv > 0) ? JG_HOLD : JG) * dt;
+      jy += jv * dt;
+      if (jy > 16.5 && !highDone){ highDone = true; paintHud(); }
+      if (jy <= 0){ air = false; jy = 0; jv = 0; heroPose(null); }
     }
+    var y = Math.round(jy) * HPX;   /* 粒の格子に乗せる */
     heroEl.style.transform = y ? 'translateX(-50%) translateY(' + (-y) + 'px)' : '';
     cx.clearRect(0, 0, W, CH);
     cx.fillStyle = INK;
@@ -4034,8 +4049,8 @@ var G = { on:false };
     if (hit) end();
   }
   function jump(){
-    if (jumpT >= 0) return;
-    jumpT = 0; heroPose('jump');     /* `POSE` に無い名前は、いまのコマで止まる（走りの脚が宙で動かない）*/
+    if (air) return;
+    air = true; jy = 0; jv = JV; heroPose('jump');     /* `POSE` に無い名前は、いまのコマで止まる（走りの脚が宙で動かない）*/
     if (!hinted){ hinted = true; paintHud(); }
   }
   function end(){
@@ -4052,7 +4067,8 @@ var G = { on:false };
     if (D.on || PLAIN || G.on) return;
     close(); stopRoll();
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    G.on = true; over = false; obs = []; passed = 0; t = 0; jumpT = -1; hinted = false;
+    G.on = true; over = false; obs = []; passed = 0; t = 0; hinted = false;
+    air = false; jy = 0; jv = 0; held = false; tallSeen = false; highDone = false;
     spawnAt = 1.2;
     document.body.classList.add('game');
     lands = [];
@@ -4084,15 +4100,24 @@ var G = { on:false };
     if (!G.on || e.ctrlKey || e.metaKey || e.altKey) return;
     var k = e.key;
     if (k === 'Escape'){ quit(); eat(e); return; }
-    if (k === ' ' || k === 'Spacebar' || k === 'ArrowUp' || k === 'Enter' || k === 'z' || k === 'Z' || k === 'w' || k === 'W'){
-      if (!e.repeat) act();
+    if (JUMPKEY.test(k)){
+      if (!e.repeat){ held = true; act(); }
     }
     eat(e);
   }, true);
+  var JUMPKEY = /^( |Spacebar|ArrowUp|Enter|z|Z|w|W)$/;
+  document.addEventListener('keyup', function(e){
+    if (G.on && JUMPKEY.test(e.key)){ held = false; eat(e); }
+  }, true);
   document.addEventListener('pointerdown', function(e){
     if (!G.on) return;
-    act(); e.preventDefault(); e.stopPropagation();
+    held = true; act(); e.preventDefault(); e.stopPropagation();
   }, true);
+  ['pointerup', 'pointercancel'].forEach(function(n){
+    document.addEventListener(n, function(){ held = false; }, true);
+  });
+  /* 長押しで字の選択や右クリックの一覧が出ないように（CSS の body.game と一緒に）*/
+  document.addEventListener('contextmenu', function(e){ if (G.on) e.preventDefault(); }, true);
   document.addEventListener('click', function(e){ if (G.on){ e.preventDefault(); e.stopPropagation(); } }, true);
   window.addEventListener('resize', function(){ if (G.on) quit(); });
 })();
