@@ -2055,11 +2055,15 @@ function paintSky(){
     hs = H * (SKY_AT[i + 1] - SKY_AT[i]) / 100;
     m = Math.max(1, Math.round(hs / n / P)) * P;
     for (k = n - 1; k >= 0; k--){
+      /* **赤橙の帯を格子一目ぶん削る**（2026-09-29、本人：「単に線一本分ずらせないのかなと思うんだけどどうですか」）。
+         区切りの数字を 1〜2% 動かしても、格子（粒四つ）の目をまたがないと帯は動かなかった（1264×671 で 16〜19% は同じ絵、20% で 32px 跳ぶ）。
+         → 数字ではなく**描くときに一目**。桃から上がまとめて一目下がる。橙から下はそのまま */
+      var mk = (i === 3 && k === 0) ? Math.max(P, m - P) : m;
       var c = k === 0 ? 'var(--sky' + (i + 1) + ')'
             : (bridge && i === 2) ? 'var(--skyB)'
             : 'color-mix(in oklab, var(--sky' + (i + 1) + ') ' + Math.round(100 - k * 100 / n) + '%, var(--sky' + (i + 2) + '))';
-      segs.unshift([c, Math.max(0, y - m), y]);
-      y -= m;
+      segs.unshift([c, Math.max(0, y - mk), y]);
+      y -= mk;
     }
   }
   segs[0][1] = 0;
