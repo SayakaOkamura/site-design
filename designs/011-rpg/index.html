@@ -442,8 +442,13 @@ body{
    右の空きが、そのまま**敵の出てくる場所**になる。
    大きさ（24×22 粒）は **JS が付ける**——粒の大きさが一つのところで決まるように */
 /* 連れ。置き場は JS（勇者から測る）。**浮いて漂う**——粒一つぶんを硬く上下（スライムの跳ねと同じ作り、拍子は遅く）*/
-#pal{position:absolute; z-index:4; image-rendering:pixelated; pointer-events:none; animation:palbob 1.6s infinite}
+#pal{position:absolute; z-index:4; image-rendering:pixelated; cursor:pointer; animation:palbob 1.6s infinite}
 @keyframes palbob{ 0%,49%{transform:translateY(0)} 50%,100%{transform:translateY(calc(var(--px) * -1))} }
+/* **押すと、くるんと一回まわる**（2026-09-29、本人：「実際押したら話せるようにしたら？」→「モーションこいつに入れる？」→「クリックしたときの話ね」
+   →（デモに入るか訊いて）「いやそれには入らないけどね」→（動きだけか一言か訊いて）「くるんってしよう」）。**話はしない。**
+   斜めに回すと粒がにじむので、**コインのように横に縮んで裏返る**（幅 1 → 0 → 裏 → 0 → 1）。コマを刻んでドットのまま */
+#pal.spin{animation:palspin .5s steps(8) 1}
+@keyframes palspin{ 0%{transform:scaleX(1)} 25%{transform:scaleX(0)} 50%{transform:scaleX(-1)} 75%{transform:scaleX(0)} 100%{transform:scaleX(1)} }
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
 /* **横長は 34%**（2026-09-25 に戻した）。9/24 に背のある窓で 30% にしたが、
@@ -4150,6 +4155,13 @@ var PAL = [
   }
   draw(); place();
   window.addEventListener('resize', function(){ draw(); place(); });
+  /* 押したら一回まわる。まわっているあいだは漂うのを止める（同じ transform を取り合う）。デモ・ミニゲームの手は邪魔しない */
+  cv.addEventListener('click', function(e){
+    if (D.on || G.on) return;
+    e.stopPropagation();
+    cv.classList.remove('spin'); void cv.offsetWidth; cv.classList.add('spin');
+  });
+  cv.addEventListener('animationend', function(e){ if (e.animationName === 'palspin') cv.classList.remove('spin'); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
   /* 触角が揺れる（漂うのは CSS）。勇者より**ゆっくり**——同じ拍子だと行進して見える */
   setInterval(function(){ if (REDUCE) return; f = 1 - f; draw(); }, 520);
