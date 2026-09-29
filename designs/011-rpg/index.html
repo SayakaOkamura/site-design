@@ -4139,7 +4139,8 @@ var PAL = [
   function place(){
     var r = heroEl.getBoundingClientRect(), s = document.getElementById('screen').getBoundingClientRect(), p = px();
     if (!r.width) return;
-    var hp = r.width / HW, left = r.left - s.left + hp * 4 - W * p - p, top = r.top - s.top + hp * 2 - H * p - p;
+    /* そこから粒一つずつ下・左（同日、本人：「ちょっとだけ下、左」）*/
+    var hp = r.width / HW, left = r.left - s.left + hp * 4 - W * p - p * 2, top = r.top - s.top + hp * 2 - H * p;
     cv.style.left = Math.max(4, Math.round(left)) + 'px';
     cv.style.top = Math.round(top) + 'px';
     /* **メニューにかかる窓では、勇者の右斜め上へ**（700×500・844×390 でメニューの裏に入った）。頭の右上の角（15 列目）のすぐ外 */
