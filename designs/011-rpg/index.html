@@ -442,14 +442,8 @@ body{
    右の空きが、そのまま**敵の出てくる場所**になる。
    大きさ（24×22 粒）は **JS が付ける**——粒の大きさが一つのところで決まるように */
 /* 連れ。置き場は JS（勇者から測る）。**浮いて漂う**——粒一つぶんを硬く上下（スライムの跳ねと同じ作り、拍子は遅く）*/
-/* **進んでいるように漂う**（同日、本人：「できれば横移動してることも加味した動きだと嬉しい。上下するとか」）。
-   前は粒一つを 1.6 秒でゆっくり上下するだけで、止まった世界に浮いているように見えた。
-   → 粒二つの波（0 → 1 → 2 → 1）を 0.9 秒、勇者の走りに近い拍子で。触角は後ろへなびく（JS の PAL）。
-   世界が止まっているとき（body.halt）は、ゆっくりに戻す */
-#pal{position:absolute; z-index:4; image-rendering:pixelated; cursor:pointer; animation:palbob .9s infinite}
-body.halt #pal{animation-duration:2.4s}
-@keyframes palbob{ 0%,24%{transform:translateY(0)} 25%,49%{transform:translateY(calc(var(--px) * -1))}
-                   50%,74%{transform:translateY(calc(var(--px) * -2))} 75%,100%{transform:translateY(calc(var(--px) * -1))} }
+#pal{position:absolute; z-index:4; image-rendering:pixelated; cursor:pointer; animation:palbob 1.6s infinite}
+@keyframes palbob{ 0%,49%{transform:translateY(0)} 50%,100%{transform:translateY(calc(var(--px) * -1))} }
 /* **押すと、くるんと一回まわる**（2026-09-29、本人：「実際押したら話せるようにしたら？」→「モーションこいつに入れる？」→「クリックしたときの話ね」
    →（デモに入るか訊いて）「いやそれには入らないけどね」→（動きだけか一言か訊いて）「くるんってしよう」）。**話はしない。**
    いちどコインのように横に縮んで裏返る形にした → 本人：「立体感出せないか？？」。
@@ -4129,11 +4123,9 @@ placePlain(); /* 画面に入らなければ、素の一枚に */
    ——**最初から一緒にいる。**形は、本人が選んだ「精霊とロボットのあいだ」：丸い体に触角一本、足は無く浮いている。
    勇者と同じ影の色、勇者より小さい（背景の粒）。**目は光らせない**（光るのは勇者の目だけ）——目は抜けていて空が透ける。
    いまは**浮かせるだけ**（本人：「一旦これで、様子見」）。デモでの役は、見てから */
-/* ふだんの二コマは、触角が**後ろ（左）へなびいて**小さくはためく。三つ目は世界が止まったとき——触角がまっすぐ立つ */
 var PAL = [
-  ['...#......','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
-  ['..#.......','...#......','..######..','.########.','.##.##.##.','.########.','..######..'],
-  ['....#.....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..']
+  ['.....#....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
+  ['...#......','....#.....','..######..','.########.','.##.##.##.','.########.','..######..']
 ];
 /* まわるときのコマ（右回り）。**斜め**は目が右へ寄り、**横**は体が細く目が端に一つ、**後ろ**は目が無い。
    左半分は右半分の鏡。触角の根元も向きに合わせて動く */
@@ -4149,7 +4141,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
   function draw(){
     var p = px(), dpr = Math.min(3, window.devicePixelRatio || 1),
-        m = turn >= 0 ? PAL_TURN[turn] : document.body.classList.contains('halt') ? PAL[2] : PAL[f];
+        m = turn >= 0 ? PAL_TURN[turn] : PAL[f];
     cv.style.width = (W * p) + 'px'; cv.style.height = (H * p) + 'px';
     cv.width = W * p * dpr; cv.height = H * p * dpr;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
@@ -4178,17 +4170,22 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     e.stopPropagation();
     if (turn >= 0 || REDUCE) return;
     cv.classList.add('spin');
-    turn = 0; draw();
+    /* **回るあいだだけ、進んでいることを見せる**（同日、本人：「できれば横移動してることも加味した動きだと嬉しい。上下するとか」
+       →（ふだんの漂いに入れたら）「あ、標準時は前のでよかったけど回転する時の話」）。
+       ぴょんと浮きながら回り、進む向きの後ろ（左）へ少し置いていかれてから追いつく（粒の数。コマごと）*/
+    var UP = [1, 2, 3, 2, 1, 0], BACK = [1, 2, 2, 1, 0, 0];
+    function hop(){ var q = px(); cv.style.transform = 'translate(' + (-BACK[turn] * q) + 'px,' + (-UP[turn] * q) + 'px)'; }
+    turn = 0; hop(); draw();
     turnT = setInterval(function(){
       turn++;
-      if (turn >= PAL_TURN.length){ clearInterval(turnT); turn = -1; f = 0; cv.classList.remove('spin'); }
+      if (turn >= PAL_TURN.length){ clearInterval(turnT); turn = -1; f = 0; cv.style.transform = ''; cv.classList.remove('spin'); }
+      else hop();
       draw();
     }, 75);
   });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
   /* 触角が揺れる（漂うのは CSS）。勇者より**ゆっくり**——同じ拍子だと行進して見える */
-  /* はためく（0.3 秒）。世界が止まっているあいだは、まっすぐのコマを出す（draw() が見る）*/
-  setInterval(function(){ if (turn >= 0) return; if (!REDUCE) f = 1 - f; draw(); }, 300);
+  setInterval(function(){ if (REDUCE || turn >= 0) return; f = 1 - f; draw(); }, 520);
 })();
 
 /* ─ ミニゲーム（2026-09-29）──────────────────────────────────
