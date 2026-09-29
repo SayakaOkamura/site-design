@@ -4134,17 +4134,18 @@ var PAL = [
     cx.fillStyle = INK;
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (m[y][x] === '#') cx.fillRect(x * p, y * p, p, p);
   }
-  /* 勇者の左、肩の高さ。勇者の置き場は窓の作りごとに違う（34%・30%・44%・50%）ので、勇者から測って置く */
+  /* **勇者の左斜め上**（同日、本人：「左斜め上くらいがいいかも」。前は左の肩の高さ）。連れの右下の角を、勇者の頭の左上の角（絵の 4 列目・2 行目）の
+     すぐ外に置く。勇者の置き場は窓の作りごとに違う（34%・30%・44%・50%）ので、勇者から測って置く */
   function place(){
     var r = heroEl.getBoundingClientRect(), s = document.getElementById('screen').getBoundingClientRect(), p = px();
     if (!r.width) return;
-    var left = r.left - s.left - W * p - p * 2, top = r.top - s.top + r.height * .3 - H * p / 2;
+    var hp = r.width / HW, left = r.left - s.left + hp * 4 - W * p - p, top = r.top - s.top + hp * 2 - H * p - p;
     cv.style.left = Math.max(4, Math.round(left)) + 'px';
     cv.style.top = Math.round(top) + 'px';
-    /* **メニューにかかる窓では、勇者の右へ**（700×500・844×390 でメニューの裏に入った）*/
+    /* **メニューにかかる窓では、勇者の右斜め上へ**（700×500・844×390 でメニューの裏に入った）。頭の右上の角（15 列目）のすぐ外 */
     var mn = document.getElementById('menu'), c = cv.getBoundingClientRect(), mr = mn.getBoundingClientRect();
     if (getComputedStyle(mn).display !== 'none' && c.right > mr.left && c.left < mr.right && c.bottom > mr.top && c.top < mr.bottom)
-      cv.style.left = Math.round(r.right - s.left + p * 2) + 'px';
+      cv.style.left = Math.round(r.left - s.left + hp * 15 + p) + 'px';
   }
   draw(); place();
   window.addEventListener('resize', function(){ draw(); place(); });
