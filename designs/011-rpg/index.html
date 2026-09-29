@@ -164,6 +164,10 @@
      →（区切りを上げるか、すみれの色相を寄せるか、と訊いて）「B。で、最初の青は変えない。」）。色相 260° → 275°、明るさ 34%・彩度 23% はそのまま。
      9/28 に青の二段を赤へ寄せて「むらさきだな」で戻したので、寄せるのはすみれだけ・わずか。前：#50436b */
   --sky1:#36427c;  --sky2:#5a436b;  --sky3:#875a70;
+  /* **赤紫と赤橙のあいだに、くすんだ珊瑚を一つ**（同日、本人：「紫からオレンジに乗るのが急なんだよな」→（段を増やす／橋渡しの色／赤橙を落ち着かせる、を出して）「B一回見たい」）。
+     くすんだ赤紫（彩度 20%）から鮮やかな赤橙（77%）へ一段で跳んでいた。色相 355°・彩度 40%・明るさ 50%。
+     赤紫の帯（28〜44%）の下半分に置く（36〜44%）。赤橙が始まる 44% は変えない。朝焼けの空には無い（無ければ前の並び）*/
+  --skyB:#b34d55;
   --sky4:#e4552c;  --sky5:#fb851b;  --sky6:#ff9e26;
   --sun:#fff4cf;   --sun2:#ffcb5e;  --sunY:42%;
   --glow1:rgba(250,158,62,.85); --glow2:rgba(244,136,52,.45); --glow3:rgba(236,120,46,.18);
@@ -2037,12 +2041,18 @@ function paintSky(){
      → 平らな帯のまま、色の区切りごとに**二段**（決めの色と、次の色との中間）。五段のゼリーより跳びが半分になる。
      段の高さは地平から粒四つ（縞の一周期）の倍数。いちばん上の段は天頂まで伸ばす。市松の形は 884cd70 に残っている */
   var P = g * 4, n = 2, segs = [], i, k, m, y = H, hs;
-  for (i = 4; i >= 0; i--){
-    hs = H * (SKY_AT[i + 1] - SKY_AT[i]) / 100;
+  /* 決めの色の並び。橋渡しの珊瑚（--skyB）がある空では、赤紫と赤橙のあいだに挟む */
+  var KEYS = ['--sky1', '--sky2', '--sky3', '--sky4', '--sky5', '--sky6'], AT = SKY_AT;
+  if (document.documentElement.dataset.sky !== 'dawn' && getComputedStyle(document.documentElement).getPropertyValue('--skyB').trim()){
+    KEYS = ['--sky1', '--sky2', '--sky3', '--skyB', '--sky4', '--sky5', '--sky6'];
+    AT = [0, 14, 28, 36, 44, 74, 100];
+  }
+  for (i = KEYS.length - 2; i >= 0; i--){
+    hs = H * (AT[i + 1] - AT[i]) / 100;
     m = Math.max(1, Math.round(hs / n / P)) * P;
     for (k = n - 1; k >= 0; k--){
-      var c = k === 0 ? 'var(--sky' + (i + 1) + ')'
-                      : 'color-mix(in oklab, var(--sky' + (i + 1) + ') ' + Math.round(100 - k * 100 / n) + '%, var(--sky' + (i + 2) + '))';
+      var c = k === 0 ? 'var(' + KEYS[i] + ')'
+                      : 'color-mix(in oklab, var(' + KEYS[i] + ') ' + Math.round(100 - k * 100 / n) + '%, var(' + KEYS[i + 1] + '))';
       segs.unshift([c, Math.max(0, y - m), y]);
       y -= m;
     }
