@@ -1523,6 +1523,17 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
 @media (orientation:landscape) and (max-height:350px) and (min-width:641px){
   #menu li{padding:calc(var(--px)*1.2) 0}
 }
+/* **PC の窓を縦に縮めたときは、メニューを縮めない**（2026-09-29、本人：「縦に細くするとき、メニューは地面に被ってもいいからね」
+   →「縦だいぶ小さく圧縮するとぎゅってなるんよ」→（PC の窓だけか、スマホの横持ちもか、と訊いて）「A」）。
+   高さ 480 以下の横長は、PC の窓でもスマホの横持ちの作りに入り、メニューが 13px・地面の 10px 手前に詰まっていた。
+   → マウスで触っている窓だけ、**ふだんの窓と同じ大きさ・名乗りの下の線**に戻す。**下は地面にかかってよい。**
+   画面の下からはみ出しそうなときだけ、行のあきを詰める（`--lpad`、placeMenu() が測る）。スマホの横持ちは 9/25 のまま */
+@media (orientation:landscape) and (max-height:480px) and (min-width:641px) and (hover:hover) and (pointer:fine){
+  #menu{top:var(--T, 46%); bottom:auto; width:auto; min-width:min(46vw,calc(260px*var(--k)))}
+  #menu li{padding:var(--lpad, 6px) 0; font-size:clamp(14px,calc(1.6 * var(--fw)),calc(20px*var(--k)))}
+  /* エンドロールの左端も、戻したメニューの幅から（横持ちの節は 230px で引いている）*/
+  #dRollIn{left:calc(clamp(16px,4vw,calc(54px*var(--k))) + min(46vw,calc(260px*var(--k))) + 12px)}
+}
 /* 幅 800 までの横持ちは、問いの中をもう一段詰める——問いの左下の角が勇者の頭にかかった（667・750 幅）*/
 @media (orientation:landscape) and (max-height:480px) and (min-width:641px) and (max-width:800px){
   #dWin{padding-top:8px; padding-bottom:8px}
@@ -2421,6 +2432,8 @@ var MQ_DECK   = window.matchMedia('(max-width:640px) and (orientation:portrait) 
 var MQ_HIDE   = window.matchMedia('(max-height:600px), (max-width:340px)');
 /* スマホの横持ち（CSS の同じ条件の節と対）*/
 var MQ_LAND   = window.matchMedia('(orientation:landscape) and (max-height:480px) and (min-width:641px)');
+/* マウスで触っている窓（CSS の「PC の窓を縦に縮めたとき」の節と対）*/
+var MQ_PC     = window.matchMedia('(hover:hover) and (pointer:fine)');
 /* いちばん背の高い頁の上端。**開く動きの最中は高さが嘘になる**ので止めて測る。
 
    **中身は `draw()` に作らせる。**手で `popT` と `popB` だけ入れて測ったら、
@@ -2521,7 +2534,7 @@ function placeMade(){
    横で離れている窓（勇者がメニューより右）では何もしない。スマホ・タブレットは別の作り */
 function fitMenu(mn){
   mn.style.width = ''; mn.style.minWidth = '';
-  if (MQ_LAND.matches || getComputedStyle(mn).display === 'none') return;
+  if ((MQ_LAND.matches && !MQ_PC.matches) || getComputedStyle(mn).display === 'none') return;   /* PC の窓を縦に縮めたときは、横持ちの作りでも削る（2026-09-29）*/
   var hr = document.getElementById('hero').getBoundingClientRect();   /* heroEl はまだ無いことがある（読み込みの途中で呼ばれる）*/
   var r = mn.getBoundingClientRect();
   if (!(r.right > hr.left && r.bottom > hr.top - 8)) return;
@@ -2549,6 +2562,12 @@ function placeMenu(){
     /* **ふだんの窓では、窓と同じだけ下げる**（2026-09-29、本人：「4の高さでメニューと一緒にできない？」）。
        低い窓（高さ 640 以下）は線のまま——窓もそこでは下げていない */
     mn.style.top = !MQ_LAND.matches ? 'calc(var(--T, 46%) + var(--drop, calc(var(--px) * 3)))' : '';
+    /* PC の窓を縦に縮めたとき：画面の下からはみ出すぶんだけ、行のあきを詰める（6px → 1px まで）*/
+    mn.style.removeProperty('--lpad');
+    if (MQ_LAND.matches && MQ_PC.matches){
+      var over = mn.getBoundingClientRect().bottom - (window.innerHeight - 8);
+      if (over > 0) mn.style.setProperty('--lpad', Math.max(1, 6 - over / (2 * ul.children.length)).toFixed(1) + 'px');
+    }
     fitMenu(mn); return;
   }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
