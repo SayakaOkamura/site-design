@@ -601,6 +601,10 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
   width:min(var(--winw), calc(66% - var(--hpx) * 11px - var(--px) * 12 - var(--winr))); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
+/* **背の高い頁を持つ窓だけ、線まで上げる**（2026-09-29、本人：「でかい窓の時だけちょっと上に上げて。メニューの位置は変えなくていいけど」
+   →（画面が大きいときか、頁の背が高いときか、と訊いて）「B」）。**窓ごと**に決める——頁ごとだと、めくるたびに上下に跳ねる。
+   どの窓が当たるかは `placeDrop()` が測る。付けるのはふだんの窓でだけ（JS が見る）*/
+#pop.tall{top:var(--T, 17%)}
 @keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
 /* **頭打ちを上げた**（2026-09-16、本人：「でかい画面でも小さい画面でもポップの見え方とか
    メニューの見え方がいい感じになるように」）。1920 幅で窓が 520px＝**画面の 27%** しかなく、
@@ -2438,8 +2442,30 @@ function topOfTallestPop(bottom){
 }
 /* **窓を下げる量**（2026-09-29）。ふだんは粒 3 つ（CSS の既定）。**メニューも同じ量**。いちばん背の高い頁の下端が
    **地平から粒 2 つ手前**を越える窓だけ、越えたぶん減らす（0 まで）。`topOfTallestPop(true)` は下端を返す */
+var TALLK = {};
 function placeDrop(){
   var root = document.documentElement;
+  /* 背の高い頁を持つ窓。本文が最小の高さ（7.2 字）を **1.5 字ぶん以上**越える頁があれば、その窓ごと */
+  TALLK = {};
+  if (!MQ_NARROW.matches && !MQ_LAND.matches && window.innerHeight > 640){
+    /* **出して測る**（隠れたままだと背が 0 になる）。`topOfTallestPop()` と同じ段取り */
+    var keepCur = cur, keepPage = page, keepSel = goSel, keepCls = pop.className,
+        wasPopped = document.body.classList.contains('popped'), k, i, ps, cs, lim;
+    pop.style.animation = 'none'; pop.classList.add('on'); document.body.classList.add('popped');
+    for (k in DATA){
+      cur = k; ps = pages(DATA[k]);
+      for (i = 0; i < ps.length; i++){
+        page = i; goSel = false; draw();
+        cs = getComputedStyle(popB);
+        lim = parseFloat(cs.minHeight) + parseFloat(cs.fontSize) * 1.5;
+        if (popB.offsetHeight > lim){ TALLK[k] = true; break; }
+      }
+    }
+    pop.style.animation = '';
+    cur = keepCur; page = keepPage; goSel = keepSel; pop.className = keepCls;
+    if (!wasPopped) document.body.classList.remove('popped');
+    if (cur) draw(); else pop.classList.remove('tall');
+  }
   root.style.removeProperty('--drop');
   var px = parseFloat(getComputedStyle(root).getPropertyValue('--px')) || 4;
   var over = topOfTallestPop(true) - (document.getElementById('ground').getBoundingClientRect().top - px * 2);
@@ -2635,6 +2661,7 @@ function draw(){
   var d = DATA[cur], ps = pages(d);
   popT.textContent = d.t;
   popB.innerHTML = ps[page];
+  pop.classList.toggle('tall', !!(TALLK && TALLK[cur]));
   /* 帯は**頁の数だけ割って、今いるところまで左から塗る。**
      一枚しかない窓（お問い合わせ・ポリシー）では出さない——前の `1 / 1` と同じ */
   var seg = '';
