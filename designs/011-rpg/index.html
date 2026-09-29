@@ -4481,7 +4481,8 @@ var G = { on:false };
     v0 = Math.max(W * .66 / 1.7, 52 * HPX);
   }
   /* **はじめの三秒はゆっくり**（.7 → 1）。字で「とぶ」と言わないので、最初の岩は押してみる間をあけて来る */
-  function speed(){ return v0 * Math.min(1, .7 + t * .1) * (1 + Math.min(.8, passed * .025)); }
+  /* **だんだん難しく**（同日、本人：「単調すぎて一生おわらん＞ミニゲーム」→（難しくする／終わりを作る）「A」）。上限 1.8 → **2.6 倍**、上がり方も 2.5% → 3% */
+  function speed(){ return v0 * Math.min(1, .7 + t * .1) * (1 + Math.min(1.6, passed * .03)); }
   function setRate(r){ lands.forEach(function(a){ a.playbackRate = r; }); }
   /* 当たりは胴と脚だけ（剣は数えない）。一粒ずつ甘くする */
   function heroBox(){
@@ -4495,14 +4496,35 @@ var G = { on:false };
     hud.innerHTML = 'こえた　' + passed + (best ? '<small>さいこう　' + best + '</small>' : '')
       + (hint ? '<small class="hint">' + hint + '</small>' : '');
   }
+  /* **並び**（同日）。越えた数で混ざりはじめる：
+       二つ続きの岩（10 こから）——一度の跳びで二つ越える
+       岩のすぐあとに鳥（14 こから）——跳んで降りたら、すぐは跳ばない
+       低い鳥（8 こから、鳥の半分）——地面すれすれを飛んでくる。**跳ばないと当たる**（高い鳥の逆）*/
+  var LOW_ALT = 3;
+  function push(m, bird, dx, alt){ obs.push({ x:W + dx, m:m, bird:bird, w:m[0].length, h:m.length, done:false, alt:alt }); }
   function spawn(){
-    var bird = passed >= 6 && Math.random() < .3;
-    var tall = !bird && passed >= 5 && Math.random() < .25;
-    var m = bird ? BIRD[0] : tall ? TALL : ROCKS[Math.floor(Math.random() * ROCKS.length)];
-    if (tall && !tallSeen){ tallSeen = true; paintHud(); }
-    obs.push({ x:W, m:m, bird:bird, w:m[0].length, h:m.length, done:false });
-    /* 次までの間。**着いてからもう一度跳べる**だけは必ずあける */
-    spawnAt = t + (AIR_MAX + .3) + Math.random() * .9 + (m[0].length * HPX) / speed();
+    var v = speed(), r = Math.random(), extra = 0;
+    if (passed >= 14 && r < .18){
+      /* 岩 → 鳥（高い）。鳥は、跳んで降りたところへ来る */
+      var rk = ROCKS[Math.floor(Math.random() * ROCKS.length)];
+      push(rk, false, 0);
+      push(BIRD[0], true, v * (TJ + .12) + rk[0].length * HPX, BIRD_ALT);
+      extra = TJ + .12;
+    } else if (passed >= 10 && r < .36){
+      /* 二つ続きの岩（小さい岩を、岩一つぶんあけて）*/
+      push(ROCKS[0], false, 0);
+      push(ROCKS[0], false, ROCKS[0][0].length * HPX * 2);
+      extra = (ROCKS[0][0].length * HPX * 2) / v;
+    } else {
+      var bird = passed >= 6 && Math.random() < .3;
+      var tall = !bird && passed >= 5 && Math.random() < .25;
+      var low = bird && passed >= 8 && Math.random() < .5;
+      var m = bird ? BIRD[0] : tall ? TALL : ROCKS[Math.floor(Math.random() * ROCKS.length)];
+      if (tall && !tallSeen){ tallSeen = true; paintHud(); }
+      push(m, bird, 0, bird ? (low ? LOW_ALT : BIRD_ALT) : 0);
+    }
+    /* 次までの間。**着いてからもう一度跳べる**だけは必ずあける。あそびの幅は、越えるほど狭く（0.9 → 0.3 秒）*/
+    spawnAt = t + extra + (AIR_MAX + .25) + Math.random() * Math.max(.3, .9 - passed * .015) + (ROCKS[2][0].length * HPX) / v;
   }
   function frame(now){
     raf = requestAnimationFrame(frame);
@@ -4527,7 +4549,7 @@ var G = { on:false };
       var o = obs[i];
       o.x -= (o.bird ? v * 1.12 : v) * dt;
       var m = o.bird ? BIRD[Math.floor(t * 7) % 2] : o.m;
-      var yb = CH - (o.bird ? BIRD_ALT * HPX : 0);
+      var yb = CH - (o.bird ? (o.alt || BIRD_ALT) * HPX : 0);
       sprite(m, o.x, yb, HPX);
       var ol = o.x + HPX, or = o.x + (o.w - 1) * HPX, ot = yb - o.h * HPX + HPX, ob = yb;
       if (or > hb.l && ol < hb.r && ob > hb.t && ot < hb.b) hit = true;
