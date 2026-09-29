@@ -593,11 +593,11 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
      前は右の余白（--winr）から置いていて、左端が画面の真ん中だった（9/15「もうちょい真ん中寄せて」）。
      **幅はそのまま**——寄せたぶん右があく。勇者は 34%、幅は 22 粒（--hpx）、あいだは下の行の粒の数。
      右の余白より狭くはしない（幅を削る）。低い窓・狭い窓・横持ちは、それぞれの節で置き直している */
-  /* **勇者とのあいだは粒 12、上端は線より粒 6 つ下**（同日、本人：「もうちょっとだけ下」→「違うな、もうちょっと右か」
-     →「下げるのは変わらず、もうちょっと」→（下げたのを戻してさらに下、と確かめて）「B」→ 粒 8 から「6にして」）。
-     **メニューの上端（--T）とは揃わない。**
+  /* **勇者とのあいだは粒 12、上端は線より粒 4 つ下、メニューも同じだけ下げて揃える**（同日、本人：「もうちょっとだけ下」→「違うな、もうちょっと右か」
+     →「下げるのは変わらず、もうちょっと」→（下げたのを戻してさらに下、と確かめて）「B」→ 粒 8 から「6にして」→「これ、4の高さでメニューと一緒にできない？」）。
+     **メニューも同じ量だけ下げる**（`placeMenu()` がふだんの窓でだけ付ける）ので、上端は揃ったまま。
      いちばん背の高い頁が地平に届く窓（1366×768 のアクセスで 2px）では、JS が下げる量を減らす（`placeDrop()`）*/
-  left:calc(34% + var(--hpx) * 11px + var(--px) * 12); right:auto; top:calc(var(--T, 17%) + var(--drop, calc(var(--px) * 6)));
+  left:calc(34% + var(--hpx) * 11px + var(--px) * 12); right:auto; top:calc(var(--T, 17%) + var(--drop, calc(var(--px) * 4)));
   width:min(var(--winw), calc(66% - var(--hpx) * 11px - var(--px) * 12 - var(--winr))); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
@@ -2436,14 +2436,14 @@ function topOfTallestPop(bottom){
   if (cur) draw();                         /* 開いていたなら、元の頁に描き戻す */
   return top;
 }
-/* **窓を下げる量**（2026-09-29）。ふだんは粒 6 つ（CSS の既定）。いちばん背の高い頁の下端が
+/* **窓を下げる量**（2026-09-29）。ふだんは粒 4 つ（CSS の既定）。**メニューも同じ量**。いちばん背の高い頁の下端が
    **地平から粒 2 つ手前**を越える窓だけ、越えたぶん減らす（0 まで）。`topOfTallestPop(true)` は下端を返す */
 function placeDrop(){
   var root = document.documentElement;
   root.style.removeProperty('--drop');
   var px = parseFloat(getComputedStyle(root).getPropertyValue('--px')) || 4;
   var over = topOfTallestPop(true) - (document.getElementById('ground').getBoundingClientRect().top - px * 2);
-  if (over > 0) root.style.setProperty('--drop', Math.max(0, px * 6 - over) + 'px');
+  if (over > 0) root.style.setProperty('--drop', Math.max(0, px * 4 - over) + 'px');
 }
 /* **足もとは地平から測る**（`top:calc(100% - var(--gh) + var(--px)*7)`）。
    いちど JS で地平とメニューのまんなかへ置いたが、**戻した**（2026-09-24、本人：
@@ -2498,7 +2498,13 @@ function placeMenu(){
     document.documentElement.style.removeProperty('--deckB');
     document.getElementById('foot').style.top = '';
   }
-  if (!MQ_NARROW.matches){ mn.style.top = ''; mn.style.bottom = ''; mn.style.removeProperty('--mpad'); fitMenu(mn); return; }
+  if (!MQ_NARROW.matches){
+    mn.style.bottom = ''; mn.style.removeProperty('--mpad');
+    /* **ふだんの窓では、窓と同じだけ下げる**（2026-09-29、本人：「4の高さでメニューと一緒にできない？」）。
+       低い窓（高さ 640 以下）は線のまま——窓もそこでは下げていない */
+    mn.style.top = window.innerHeight > 640 ? 'calc(var(--T, 46%) + var(--drop, calc(var(--px) * 4)))' : '';
+    fitMenu(mn); return;
+  }
   /* **隠れているあいだは触らない**（デモ中と、狭くて低い窓で開いているとき）。
      ここで空にすると、戻ってきたときに上へ跳ねる */
   if (getComputedStyle(mn).display === 'none') return;
