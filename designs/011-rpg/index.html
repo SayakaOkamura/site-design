@@ -45,7 +45,7 @@
    DotGothic16 は SIL OFL なので同梱してよい（許諾は ）。
 
    **エンドロールの文を変えたら、ここも作り直す。**入っていない字だけ、下の Hiragino・Yu Gothic に落ちる。
-   作り直し方：理念（#text の mind0〜4）・名乗り（#name・#tag）・「企業理念」・description の二文目（2026-09-29 に足した一行）の字を重ねずに並べて、
+   作り直し方：理念（#text の mind0〜4）・名乗り（#name・#tag）・「企業理念」・description の二文目（2026-09-29 に足した一行）・右下の「？」の字を重ねずに並べて、
    https://fonts.googleapis.com/css2?family=DotGothic16&text=（その字） の CSS にある woff2 を取ってくる */
 @font-face{font-family:"DotGothic16"; font-style:normal; font-weight:400; font-display:swap;
   src:url("fonts/DotGothic16-roll.woff2") format("woff2")}
@@ -537,6 +537,9 @@ body:not(.kb) #foot button:hover .cur,#foot button[aria-current="true"] .cur{col
   font-size:clamp(9px,calc(1 * var(--fw)),calc(11px*var(--k))); letter-spacing:.06em}
 /* 印は字の左外。足もとと同じ作法——行の中に入れると字が右へずれる */
 #made .lb{position:relative}
+/* **「？」はエンドロールと同じドットの字**（2026-09-29、本人：「A でやってみて」）。
+   ふだんの画面でドットの字はここだけ。一字だけ書体が違うのも「なんだろう」のうち */
+#made .q{font-family:"DotGothic16","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
 #made .cur{position:absolute; right:100%; margin-right:calc(var(--px)*1.5); color:transparent}
 /* **印は乗せたときと、Tab の焦点。**輪から外したので `aria-current` は付かない。
    焦点のほうは `body.kb` で黙らせない——十字キーを使っていても、
@@ -1568,8 +1571,12 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
     <button data-k="policy"><span class="lb"><span class="cur">▶</span>ポリシー</span></button>
   </div>
 
-  <!-- 画面の成り立ち。**場には置かない**——端っこに一行 -->
-  <button id="made" data-k="made"><span class="lb"><span class="cur">▶</span>この画面について</span></button>
+  <!-- 画面の成り立ち。**場には置かない**——端っこに一字。
+       **名前は見せない**（2026-09-29、本人：「『この画面について』という表現だと隠し感が薄い」
+       「『？』だけとか……『なんだろう』で押す確率が上がる」→（web では囲んだ「？」がヘルプに見える、と出して）
+       「ゲーム文脈だと謎に見える可能性もある」→（囲まない字にする、と出して）「やってみて」→「A でやってみて」）。
+       名前は読み上げにだけ残す（aria-label） -->
+  <button id="made" data-k="made" aria-label="この画面について"><span class="lb"><span class="cur">▶</span><span class="q">？</span></span></button>
 
   <div id="pop" class="win">
     <p class="t" id="popT"></p>
