@@ -897,6 +897,22 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 /* ─ デモ。**画面をそのまま使う** ─────────────────────────────
    メニューと足もとは隠す（`body.demo`）。空・山・地面・勇者は出したまま */
 body.demo #menu, body.demo #foot, body.demo #pop, body.demo #made{display:none}
+/* ─ ミニゲーム（2026-09-29）。**デモと同じく、メニューと足もとだけ引っ込める**。世界はそのまま ── */
+body.game #menu, body.game #foot, body.game #pop, body.game #made{display:none}
+#gm{position:absolute; left:0; bottom:var(--gh); z-index:3; pointer-events:none; image-rendering:pixelated; display:none}
+body.game #gm{display:block}
+#gHud{position:absolute; right:clamp(16px,4vw,calc(54px*var(--k))); top:var(--T, 30%); z-index:9; display:none;
+  font-size:clamp(13px,calc(1.6 * var(--fw)),calc(20px*var(--k))); font-weight:700; letter-spacing:.12em; color:var(--ink);
+  text-align:right; line-height:1.7;
+  text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge)}
+#gHud small{display:block; font-size:.7em; color:var(--dim)}
+body.game #gHud{display:block}
+#gMsg{position:absolute; left:0; right:0; top:36%; z-index:9; display:none; text-align:center;
+  font-size:clamp(18px,calc(3.2 * var(--fw)),calc(34px*var(--k))); font-weight:700; letter-spacing:.14em; color:var(--ink);
+  text-shadow:var(--o3) 0 0 var(--edge), calc(-1*var(--o3)) 0 0 var(--edge), 0 var(--o3) 0 var(--edge), 0 calc(-1*var(--o3)) 0 var(--edge),
+              var(--o3) var(--o3) 0 var(--edge), calc(-1*var(--o3)) var(--o3) 0 var(--edge), var(--o3) calc(-1*var(--o3)) 0 var(--edge), calc(-1*var(--o3)) calc(-1*var(--o3)) 0 var(--edge)}
+#gMsg small{display:block; margin-top:calc(var(--px)*3); font-size:.5em; letter-spacing:.1em}
+body.game #gMsg.on{display:block; animation:won .34s steps(3)}
 #demo{position:absolute; inset:0; z-index:7; display:none}
 body.demo #demo{display:block}
 
@@ -1552,6 +1568,10 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   </div>
 
   <canvas id="hero"></canvas>
+  <!-- ミニゲーム（2026-09-29）。右下の「？」から。**岩と鳥が流れてくる、跳ぶだけ** -->
+  <canvas id="gm" aria-hidden="true"></canvas>
+  <div id="gHud" aria-hidden="true"></div>
+  <div id="gMsg" role="status"></div>
 
   <div id="ground">
     <div class="band"></div>
@@ -1580,7 +1600,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
        「『？』だけとか……『なんだろう』で押す確率が上がる」→（web では囲んだ「？」がヘルプに見える、と出して）
        「ゲーム文脈だと謎に見える可能性もある」→（囲まない字にする、と出して）「やってみて」→「A でやってみて」）。
        名前は読み上げにだけ残す（aria-label） -->
-  <button id="made" data-k="made" aria-label="この画面について"><span class="lb"><span class="cur">▶</span><span class="q">？</span></span></button>
+  <button id="made" data-k="game" aria-label="ミニゲーム"><span class="lb"><span class="cur">▶</span><span class="q">？</span></span></button>
 
   <div id="pop" class="win">
     <p class="t" id="popT"></p>
@@ -1699,11 +1719,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
     <p data-a="policy1">当社は BlueMeme グループの一社です。プライバシーポリシーは、BlueMeme のサイトでご覧いただけます。</p>
     <p><a data-go="policy" href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">BlueMeme のサイトへ</a></p>
   </section>
-  <section id="t-made">
-    <h2>この画面について</h2>
-    <p class="lead" data-a="made0">この画面は、AI が作りました。</p>
-    <p data-a="made1">絵も動きも画面の組み立ても、AI が手がけています。</p>
-  </section>
+  <!-- 「この画面について」の一枚は外した（2026-09-29。右下の「？」はミニゲームの入口になった）。文は NOTES の 9/29 の節に残してある -->
 </main>
 
 <script>
@@ -2184,7 +2200,7 @@ var DATA = {
      **キャッチコピーにしない**（2026-09-25、本人：「まじめ寄りでもいい」
      「全部キャッチコピーみたいなんだよな」）。体言止め・三つ並べ・「〜まで。」が
      コピーの型なので、**奥付のような普通の説明文**にする */
-  made: { t:T('made'), p:[ one('made') ]},
+  /* ↑ 右下の一枚は**外した**（2026-09-29）。「？」はミニゲームの入口になった。文と経緯は NOTES */
   policy: { t:T('policy'), p:[ one('policy') ]}
 };
 
@@ -2676,6 +2692,7 @@ document.addEventListener('click', function(e){
   if (D.on) return;   /* デモ中は、前からある手を止める */
   if (PLAIN) return;
   var el = e.target.closest && (e.target.closest('#cmds li') || e.target.closest('#foot button') || e.target.closest('#made'));
+  if (el && el.id === 'made'){ startGame(); return; }   /* 右下の「？」はミニゲーム（2026-09-29） */
   if (el){
     var i = ALL.indexOf(el); if (i >= 0) sel = i;
     (cur === el.dataset.k) ? close() : openPop(el.dataset.k);
@@ -3911,6 +3928,176 @@ fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
 placeMenu();  /* 縦長では、メニューを置き直す（三層は足もとの下、それ以外はまんなか）*/
 placePlain(); /* 画面に入らなければ、素の一枚に */
+
+/* ─ ミニゲーム（2026-09-29）──────────────────────────────────
+   本人：「？押してこれしか情報ないのもなんかなあ…」→「なんか単純な隠し要素にしようよ」
+   →「ミニゲームでも作る？ChromeDinoみたいな」→「スライムだと意味変わって来るしなあ。障害物とかで良くない」
+   →「空中は？」→（跳ばずにくぐる鳥、と出して）「いいよー」。
+
+   **借りるのは遊び方だけ。**恐竜・サボテン・灰色の画面は持ち込まない——勇者と夕焼けのまま。
+   この画面はもともと「勇者は定位置で走り、世界が流れてくる」ので、足したのは**跳ぶことと当たり**だけ。
+
+     岩    地面と同じ速さで流れてくる。跳んで越える（大きさ三通り）
+     鳥    少し進んでから混ざる。**跳ぶ高さを飛んでくる**——跳ぶと当たる、走ったままならくぐれる
+     操作  スペース／↑／画面を押す（一つだけ。しゃがむは入れない——スマホで二つ目の手が要るため）
+     速さ  越えるたびに少しずつ上がる。**地面・山も同じ割合で速くなる**（岩だけ速いと滑って見える）
+     終わり 当たったら世界が止まる → 押すと元の画面へ。Esc はいつでも抜ける
+     記録  最高だけ、この端末の中に覚える
+
+   **スライムは使わない**——デモで「困りごとを倒す」相手なので、よけて進むと意味が逆に読める */
+var G = { on:false };
+(function(){
+  var ROCKS = [
+    ['..##..','.####.','######','######'],
+    ['..#..','.###.','.###.','#####','#####','#####','#####'],
+    ['...####...','.########.','##########','##########']
+  ];
+  var BIRD = [
+    ['#.......#','##.....##','.##...##.','..#####..','....#....'],
+    ['.........','.........','..#####..','.##.#.##.','##.....##']
+  ];
+  var TJ = .62, JH = 13;          /* 跳ぶ時間（秒）と高さ（粒）*/
+  var BIRD_ALT = 23;              /* 鳥の下端。走っている勇者の頭（21 粒）の少し上——跳ぶと当たる */
+  var cv = document.getElementById('gm'), cx = cv.getContext('2d');
+  var hud = document.getElementById('gHud'), msg = document.getElementById('gMsg');
+  var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
+  var raf = null, last = 0, W = 0, CH = 0, vNat = 1, v0 = 1;
+  var obs = [], passed = 0, t = 0, spawnAt = 0, jumpT = -1, over = false, overAt = 0, hinted = false, best = 0;
+  var lands = [];
+  try { best = +localStorage.getItem('adc011-game-best') || 0; } catch(e){}
+
+  /* 左端 x・下端 yb（canvas の座標）に、粒 p で描く */
+  function sprite(m, x, yb, p){
+    var h = m.length;
+    for (var r = 0; r < h; r++) for (var c = 0; c < m[r].length; c++)
+      if (m[r][c] === '#') cx.fillRect(Math.round(x + c*p), Math.round(yb - (h - r)*p), p, p);
+  }
+  function size(){
+    W = document.documentElement.clientWidth;
+    CH = (BIRD_ALT + 8) * HPX;
+    var dpr = Math.min(3, window.devicePixelRatio || 1);
+    cv.style.width = W + 'px'; cv.style.height = CH + 'px';
+    cv.width = W*dpr; cv.height = CH*dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
+    vNat = W / 2.2;                       /* 地面の縞の速さ（`#ground .band` の 2.2s で画面一つぶん）*/
+    /* はじめの速さ。**画面の右から勇者まで 1.7 秒**が基本。ただし狭い画面では、
+       それだと岩を跳び越えきれない（空中にいるあいだに進む距離が、勇者と岩の幅に足りない）ので底を敷く */
+    v0 = Math.max(W * .66 / 1.7, 52 * HPX);
+  }
+  function speed(){ return v0 * (1 + Math.min(.8, passed * .025)); }
+  function setRate(r){ lands.forEach(function(a){ a.playbackRate = r; }); }
+  /* 当たりは胴と脚だけ（剣は数えない）。一粒ずつ甘くする */
+  function heroBox(){
+    var r = heroEl.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    return { l:r.left - c.left + 5*HPX, r:r.left - c.left + 14*HPX, t:r.top - c.top + 2*HPX, b:r.bottom - c.top - HPX };
+  }
+  function paintHud(){
+    hud.innerHTML = 'こえた　' + passed + (best ? '<small>さいこう　' + best + '</small>' : '');
+  }
+  function spawn(){
+    var bird = passed >= 6 && Math.random() < .3;
+    var m = bird ? BIRD[0] : ROCKS[Math.floor(Math.random() * ROCKS.length)];
+    obs.push({ x:W, m:m, bird:bird, w:m[0].length, h:m.length, done:false });
+    /* 次までの間。**着いてからもう一度跳べる**だけは必ずあける */
+    spawnAt = t + (TJ + .3) + Math.random() * .9 + (m[0].length * HPX) / speed();
+  }
+  function frame(now){
+    raf = requestAnimationFrame(frame);
+    var dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (over) return;
+    t += dt;
+    var v = speed();
+    setRate(v / vNat);
+    if (t >= spawnAt) spawn();
+    var y = 0;
+    if (jumpT >= 0){
+      jumpT += dt;
+      var k = jumpT / TJ;
+      if (k >= 1){ jumpT = -1; heroPose(null); }
+      else y = Math.round(4 * JH * k * (1 - k)) * HPX;   /* 粒の格子に乗せる */
+    }
+    heroEl.style.transform = y ? 'translateX(-50%) translateY(' + (-y) + 'px)' : '';
+    cx.clearRect(0, 0, W, CH);
+    cx.fillStyle = INK;
+    var hb = heroBox(), hit = false;
+    for (var i = obs.length - 1; i >= 0; i--){
+      var o = obs[i];
+      o.x -= (o.bird ? v * 1.12 : v) * dt;
+      var m = o.bird ? BIRD[Math.floor(t * 7) % 2] : o.m;
+      var yb = CH - (o.bird ? BIRD_ALT * HPX : 0);
+      sprite(m, o.x, yb, HPX);
+      var ol = o.x + HPX, or = o.x + (o.w - 1) * HPX, ot = yb - o.h * HPX + HPX, ob = yb;
+      if (or > hb.l && ol < hb.r && ob > hb.t && ot < hb.b) hit = true;
+      if (!o.done && or < hb.l){ o.done = true; passed++; paintHud(); }
+      if (o.x + o.w * HPX < 0) obs.splice(i, 1);
+    }
+    if (hit) end();
+  }
+  function jump(){
+    if (jumpT >= 0) return;
+    jumpT = 0; heroPose('jump');     /* `POSE` に無い名前は、いまのコマで止まる（走りの脚が宙で動かない）*/
+    if (!hinted){ hinted = true; msg.classList.remove('on'); }
+  }
+  function end(){
+    over = true;
+    heroPose('stand');
+    halt(true);
+    if (passed > best){ best = passed; try { localStorage.setItem('adc011-game-best', best); } catch(e){} }
+    msg.innerHTML = 'ぶつかった！<small>' + passed + ' こ　こえた' + (best ? '　／　さいこう　' + best : '') + '</small>';
+    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+    overAt = performance.now();
+  }
+  window.startGame = function(){
+    if (D.on || PLAIN || G.on) return;
+    close(); stopRoll();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    G.on = true; over = false; obs = []; passed = 0; t = 0; jumpT = -1; hinted = false;
+    spawnAt = 1.2;
+    document.body.classList.add('game');
+    lands = [];
+    [].forEach.call(document.querySelectorAll('#far .band, #near .band, #ground .band'), function(el){
+      if (el.getAnimations) lands = lands.concat(el.getAnimations()); });
+    size(); paintHud();
+    msg.innerHTML = 'スペース・タップで　とぶ';
+    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+    say('ミニゲーム。スペースかタップで跳ぶ。Esc でもどる');
+    last = performance.now();
+    raf = requestAnimationFrame(frame);
+  };
+  function quit(){
+    if (!G.on) return;
+    cancelAnimationFrame(raf); raf = null;
+    G.on = false; over = false; obs = [];
+    cx.clearRect(0, 0, W, CH);
+    heroEl.style.transform = '';
+    heroPose(null);
+    msg.classList.remove('on');
+    document.body.classList.remove('game');
+    if (document.body.classList.contains('halt')) halt(false); else setRate(1);
+    paintSel();
+  }
+  G.quit = quit;
+  /* 当たってすぐの連打で抜けないように、0.6 秒は受けない */
+  function act(){
+    if (over){ if (performance.now() - overAt > 600) quit(); return; }
+    jump();
+  }
+  document.addEventListener('keydown', function(e){
+    if (!G.on || e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'Escape'){ quit(); eat(e); return; }
+    if (k === ' ' || k === 'Spacebar' || k === 'ArrowUp' || k === 'Enter' || k === 'z' || k === 'Z' || k === 'w' || k === 'W'){
+      if (!e.repeat) act();
+    }
+    eat(e);
+  }, true);
+  document.addEventListener('pointerdown', function(e){
+    if (!G.on) return;
+    act(); e.preventDefault(); e.stopPropagation();
+  }, true);
+  document.addEventListener('click', function(e){ if (G.on){ e.preventDefault(); e.stopPropagation(); } }, true);
+  window.addEventListener('resize', function(){ if (G.on) quit(); });
+})();
 
 /* **URL の # で窓を開いて始める**（2026-09-29、本人：「順に」）。
    公式トップの中のリンクは `#philosophy` `#services` `#company` `#contact` の四つ。
