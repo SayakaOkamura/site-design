@@ -468,6 +468,9 @@ body{
 @keyframes palcast{ 0%{transform:translate(calc(var(--px) * 2 * var(--dir, 1)), var(--px))} 34%{transform:translate(calc(var(--px) * var(--dir, 1)), 0)} 67%,100%{transform:translate(0, 0)} }
 /* 置き場が変わるとき（勇者の横 ⇄ 問いの窓）は、コマを刻んで飛ぶ */
 #pal.fly{transition:left .4s steps(6), top .4s steps(6)}
+/* 連れが帯にいるあいだ、帯の字を連れのぶん（粒 12）右へ */
+body.demo #dBar{padding-left:calc(clamp(16px,4vw,calc(54px*var(--k))) + var(--px) * 12)}
+#pal.term{z-index:9}
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
@@ -3287,6 +3290,7 @@ function startDemo(){
   close();
   stopRoll();                     /* 流れている途中でも、入り直したら片付ける */
   openDemo();
+  palAt('band');                  /* 連れは下の帯（AI のトーク）へ */
 }
 function openDemo(){
   /* **`D` を置き換える前に止める。**置き換えたあとでは、前の待ちの id が取れない */
@@ -3386,7 +3390,7 @@ function openDemo(){
    「にげる」を押したのは本人なので、文字が無くても「逃げたから消えた」と読める */
 function flee(){
   D.phase = 'flee'; D.n = 0;
-  palAt('hero'); palHide(true);   /* ④ 勇者の頭の陰へ（問いの窓から戻って）*/
+  palAt('hero'); palHide(true);   /* ④ 勇者の頭の陰へ（帯から戻って）*/
   dWin.style.display = 'none';
   if (REDUCE){ quitDemo(); return; }
   slimeEl.classList.remove('come');
@@ -3445,7 +3449,6 @@ function ask(step, q, list, gen){
     + '<span class="note">（デモを終了する）</span></span></button></li>';
   dWin.style.display = '';
   placeDWin();
-  palAt('chat');   /* 連れは問いの窓へ */
   dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
   paintD();
   gen ? draft() : draftSkip();
@@ -3770,7 +3773,7 @@ function swing(done){
 function winSeq(){
   D.phase = 'win';
   dWin.style.display = 'none';
-  palAt('hero');   /* 問いの窓が閉じたので、勇者の横へ戻る（戻ってから回る）*/
+  palAt('hero');   /* 帯が消えてリザルトになるので、勇者の横へ戻る（戻ってから回る）*/
   var i = 0;
   var t = setInterval(function(){
     if (i < SLIME_DIE.length){ paintSlime(SLIME_DIE[i++]); return; }
@@ -4212,6 +4215,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   var cv = document.getElementById('pal'), cx = cv.getContext('2d');
   var W = PAL[0][0].length, H = PAL[0].length, f = 0, turn = -1, turnT = null, chanting = false, tipOn = false;
   var GOLD = getComputedStyle(document.documentElement).getPropertyValue('--go').trim() || '#ffd270';
+  var TERM = getComputedStyle(document.documentElement).getPropertyValue('--dim').trim() || '#e2dcd6';   /* 帯にいるあいだの色（帯の字と同じ）*/
   var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
   function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
   function draw(){
@@ -4220,7 +4224,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     cv.style.width = (W * p) + 'px'; cv.style.height = (H * p) + 'px';
     cv.width = W * p * dpr; cv.height = H * p * dpr;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
-    cx.fillStyle = INK;
+    cx.fillStyle = cv.classList.contains('term') ? TERM : INK;
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (m[y][x] === '#') cx.fillRect(x * p, y * p, p, p);
     if (chanting && tipOn && turn < 0){ cx.fillStyle = GOLD; cx.fillRect((dir < 0 ? W - 1 - 7 : 7) * p, 0, p, p); }
   }
@@ -4239,27 +4243,31 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     if (getComputedStyle(mn).display !== 'none' && cr > mr.left && cl < mr.right && cb > mr.top && ct < mr.bottom)
       left = Math.round(r.left - s.left + hp * 15 + p);
     dir = 1;
-    /* **デモのあいだは、問いの窓（AI と話しているところ）へ**（同日、本人：「AIチャットの方移動したら？デモの時」）。
-       窓の左上の角のすぐ上に。上に入らない窓（横持ちで窓が画面の上端）では、窓の左横。かける向きは勇者のほう（左下）*/
-    var dw = document.getElementById('dWin');
-    if (at === 'chat' && D.on && dw.style.display !== 'none' && getComputedStyle(dw).display !== 'none'){
-      var wr = dw.getBoundingClientRect();
-      if (wr.width){
-        left = Math.round(wr.left - s.left + p * 2); top = Math.round(wr.top - s.top - H * p - p);
-        /* 名乗りにかかるなら、窓の右上の角の上へ（1084×571・667×375）*/
-        var nr = document.getElementById('name').getBoundingClientRect();
-        if (left + s.left < nr.right && left + s.left + W * p > nr.left && top + s.top < nr.bottom && top + s.top + H * p > nr.top)
-          left = Math.round(wr.right - s.left - W * p - p * 2);
-        if (top < 4){ left = Math.round(wr.left - s.left - W * p - p * 2); top = Math.round(wr.top - s.top + p * 2); }
-        left = Math.max(4, left);
+    /* **デモのあいだは、下の帯（AI のトーク）の左端へ**（同日、本人：「AIチャットの方移動したら？デモの時」→（問いの窓へ寄せたら）
+       「かわいいけどそっちじゃなくてAIのトークの方な…ｗ」）。帯は Claude Code のように処理が流れるところ——**AI がしゃべっている場所。**
+       AI の行（流れる処理といま動いている行）の横、人が打った一行（dWish）のすぐ上。帯の字は連れのぶん右へ寄せる（CSS の body.demo #dBar）。
+       帯は暗い地面の上なので、ここにいるあいだは**帯の字と同じ明るい色**で描く（draw() が見る）*/
+    var bar = document.getElementById('dBar');
+    if (at === 'band' && D.on && getComputedStyle(bar).display !== 'none'){
+      var br = bar.getBoundingClientRect(), wh = document.getElementById('dWish').getBoundingClientRect();
+      if (br.width){
+        /* 左の余白は帯と同じ clamp(16px, 4vw, 54px×k) */
+        var kk = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--k')) || 1;
+        left = Math.round(br.left - s.left + Math.min(54 * kk, Math.max(16, window.innerWidth * .04)));
+        /* 人の一行はデモの始まりにはまだ空なので、字の大きさから一行の高さを出して、帯の下からその分上を基準にする */
+        var wcs = getComputedStyle(document.getElementById('dWish')), bcs = getComputedStyle(bar);
+        var base = br.bottom - parseFloat(bcs.paddingBottom || 0) - parseFloat(wcs.fontSize) * 1.65 - s.top;
+        top = Math.round(base - H * p - p);
         dir = (r.left + r.width / 2 < left + s.left) ? -1 : 1;
       }
     }
     cv.style.left = left + 'px'; cv.style.top = top + 'px';
     cv.style.setProperty('--dir', dir);
+    var inBand = at === 'band' && D.on;
+    if (inBand !== cv.classList.contains('term')){ cv.classList.toggle('term', inBand); draw(); }
   }
   var at = 'hero', dir = 1;
-  /* 置き場を変える（'hero' 勇者の頭の横／'chat' 問いの窓）。変わるときだけ、コマを刻んで飛ぶ */
+  /* 置き場を変える（'hero' 勇者の頭の横／'band' 下の帯）。変わるときだけ、コマを刻んで飛ぶ */
   window.palAt = function(where){
     if (where === at && where === 'hero'){ place(); return; }
     var moving = where !== at; at = where;
