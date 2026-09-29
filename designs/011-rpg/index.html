@@ -465,7 +465,7 @@ body{
 /* かけた瞬間（palCast）。勇者のほう（右下）へ粒二つ押し出して戻る */
 #pal.cast{animation:palcast .3s steps(1) 1}
 /* 押し出す向きは勇者のほう（--dir：勇者が右なら 1、左なら −1）*/
-@keyframes palcast{ 0%{transform:translate(calc(var(--px) * 2 * var(--dir, 1)), var(--px))} 34%{transform:translate(calc(var(--px) * var(--dir, 1)), 0)} 67%,100%{transform:translate(0, 0)} }
+@keyframes palcast{ 0%{transform:translate(calc(var(--px) * 2 * var(--dir, 1)), calc(var(--px) * var(--diry, 1)))} 34%{transform:translate(calc(var(--px) * var(--dir, 1)), 0)} 67%,100%{transform:translate(0, 0)} }
 /* 置き場が変わるとき（勇者の横 ⇄ 問いの窓）は、コマを刻んで飛ぶ */
 #pal.fly{transition:left .4s steps(6), top .4s steps(6)}
 /* 連れが帯にいるあいだ、帯の字を連れのぶん（粒 12）右へ */
@@ -3751,8 +3751,10 @@ function swing(done){
   halt(true, null, 0);
   heroPose('slash');                    /* 剣を振り下ろす */
   slimeEl.classList.add('hit');
-  slashEl.classList.toggle('big', heroBuffed());   /* バフが乗っていれば大きい斬撃 */
-  heroBuff(0);                                     /* 使ったら消える */
+  /* バフ（縁取り・大きい斬撃）は外した（同日、本人：「視線誘導としては面白いけどな～…」→（意味が伝わらない、と確かめて）
+     →（連れの仕事を「次の問いを出す」「タスクをまとめる」にして、バフはやめる、と出して）「なるほど。やってみてC」）。
+     heroBuff() と #slash.big は残してある */
+  slashEl.classList.remove('big');
   slashEl.classList.add('on');          /* 敵の上に斬撃の線 */
   /* 一撃で一目。いちど「勇者で半分・連れの唱えで半分（二人で一つの一撃）」にした → 本人：「AIはあくまでサポート感あってほしいな」。
      **倒すのは勇者**に戻した。連れは唱えた字を勇者へ送って支える（palShot）*/
@@ -3910,6 +3912,7 @@ function showResult(){
   D.parts.concat(seen).forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
   seen.forEach(function(el){ el.classList.add('on'); });
   dRes.classList.add('on');
+  palAt('result');   /* 連れはタスクの列の左へ（タスクをまとめる）*/
   say([].map.call(dRes.querySelectorAll('.rt, .rw, .rp span, .rtask li'), function(x){ return x.textContent.trim(); }).join('　'));
   if (REDUCE){ openDone(); return; }
   D.phase = 'open';
@@ -3919,7 +3922,9 @@ function showResult(){
     var i = 0;
     D.tLine = setInterval(function(){
       if (i >= D.parts.length){ openDone(); return; }
-      D.parts[i++].classList.add('on');
+      D.parts[i].classList.add('on');
+      if (D.parts[i].closest && D.parts[i].closest('#rTask')) palWrite();   /* タスクが一行出るたびに押し出す */
+      i++;
     }, 105);
   }, 260);
 }
@@ -4260,6 +4265,17 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
         dir = (r.left + r.width / 2 < left + s.left) ? -1 : 1;
       }
     }
+    /* リザルトでは、タスクの列の左（タスクの一行目の高さ）*/
+    if (at === 'result' && D.on){
+      var tk = document.getElementById('rTask').getBoundingClientRect(), rr = dRes.getBoundingClientRect();
+      if (tk.width){
+        left = Math.round(rr.left - s.left - W * p - p * 3);
+        top = Math.round(tk.top - s.top);
+        /* 左に入らない窓（縦のスマホでリザルトが幅いっぱい）では、リザルトの左上の角の上 */
+        if (left < 4){ left = Math.round(rr.left - s.left + p * 2); top = Math.round(rr.top - s.top - H * p - p); }
+        dir = 1;
+      }
+    }
     cv.style.left = left + 'px'; cv.style.top = top + 'px';
     cv.style.setProperty('--dir', dir);
     var inBand = at === 'band' && D.on;
@@ -4318,15 +4334,35 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
        打ち終わってから次へ進むまでの一拍（0.45 秒）の中に収まるので、間は延びない。倒したあとは何もしない */
   var listening = false;
   window.palListen = function(on){ listening = !!on; if (turn < 0) draw(); };
+  /* **連れの仕事は二つ**（同日、本人：「なるほど。やってみてC」）：
+     ① **次の問いを出す**——打ち終わったら唱えて、**問いの窓のほうへ**押し出す。そのあと窓に次の問いと選択肢が一行ずつ出る（draft）
+     ② **タスクをまとめる**——リザルトでタスクの列の左に来て、一行出るたびに押し出す（palWrite）
+     斬るのは勇者だけ。**人が決めて手を動かし、AI は段取りを出す** */
   window.palWork = function(){
-    if (!D.on || D.hp <= 0){ heroBuff(0); return; }
-    palChant(true); heroBuff(1);
+    if (!D.on || D.hp <= 0) return;
+    palChant(true); aimAt(document.getElementById('dWin'));
     clearTimeout(cv._work);
     cv._work = setTimeout(function(){
       palChant(false);
-      if (D.on && D.hp > 0){ palCast(); heroBuff(2); } else heroBuff(0);
+      if (D.on && D.hp > 0) palCast();
     }, 400);
   };
+  /* 押し出す向きを、相手（問いの窓・タスクの列）に向ける */
+  function aimAt(el){
+    var a = cv.getBoundingClientRect(), b = el.getBoundingClientRect();
+    if (!b.width) return;
+    dir = (b.left + b.width / 2 < a.left + a.width / 2) ? -1 : 1;
+    cv.style.setProperty('--dir', dir);
+    cv.style.setProperty('--diry', (b.top + b.height / 2 < a.top) ? -1 : 1);
+    if (turn < 0) draw();
+  }
+  window.palWrite = function(){
+    if (REDUCE || turn >= 0) return;
+    aimAt(document.getElementById('rTask'));
+    palCast();
+  };
+  /* 唱えているあいだ、触角の先が自分で点滅する（前は勇者の縁取りと同じ拍子で点いていた）*/
+  setInterval(function(){ if (!chanting || REDUCE) return; tipOn = !tipOn; draw(); }, 150);
   /* 触角の先の金。勇者の縁取りの点滅から呼ばれる（同じ拍子）*/
   window.palTip = function(on){ tipOn = !!on; if (chanting) draw(); };
   /* **かけた瞬間**：勇者のほうへ粒二つぶん押し出して戻る */
