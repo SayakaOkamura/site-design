@@ -588,8 +588,13 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
      `min()` で揃える。**低い窓では字も縮む。**
      ふだんの窓（高さ 600 以上）では `1.45vw` のほうが小さいので**一切変わらない** */
   --tx:clamp(12px,min(calc(1.45 * var(--fw)),3vh),calc(16px*var(--k)));
-  right:var(--winr); top:var(--T, 17%);
-  width:var(--winw); max-height:60vh; display:none; transform-origin:top;
+  /* **左端を勇者の右端に寄せる**（2026-09-29、本人：「メニューとポップアップにちょっと距離あるの気になる」
+     →（あいだは勇者の縦の列。窓の下端 490px が勇者の頭 405px より下まで来るので、列にはかけられない、と出して）「Aでやってみて」）。
+     前は右の余白（--winr）から置いていて、左端が画面の真ん中だった（9/15「もうちょい真ん中寄せて」）。
+     **幅はそのまま**——寄せたぶん右があく。勇者は 34%、幅は 22 粒（--hpx）、あいだは粒 6 つ。
+     右の余白より狭くはしない（幅を削る）。低い窓・狭い窓・横持ちは、それぞれの節で置き直している */
+  left:calc(34% + var(--hpx) * 11px + var(--px) * 6); right:auto; top:var(--T, 17%);
+  width:min(var(--winw), calc(66% - var(--hpx) * 11px - var(--px) * 6 - var(--winr))); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
 @keyframes popin{ from{transform:scaleY(.2)} to{transform:scaleY(1)} }
@@ -889,7 +894,8 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
      上に来て、**一行紹介の終わりが窓に隠れていた**（1200×520 で 12px、1000×511 で 9px）。
      名乗りの背は 96〜102px（三行）なので、**112px を床**にする */
   /* 上端は上の線（`--T`）。前は `max(17%, 112px)` で名乗りの下へ落としていた——線が名乗りの下なので、もう要らない */
-  #pop{width:min(74vw, 760px,
+  #pop{left:auto; right:var(--winr);   /* 低い窓は右から置いて、左へ広げる（2026-09-29 に上の置き方を変えたので、ここで戻す）*/
+    width:min(74vw, 760px,
     calc(100vw - var(--winr) - clamp(16px,4vw,calc(54px*var(--k))) - min(46vw,calc(260px*var(--k)))
          - var(--px)*6))}
 }
