@@ -2075,7 +2075,8 @@ function paintSky(){
   segs = build(0);
   if (bridge){
     var pk = segs.filter(function(q){ return q[3] === 2 && q[4] === 1; })[0];
-    var adj = Math.round((H / 2 - (pk[1] + pk[2]) / 2) / P) * P;   /* 正なら下へ */
+    /* 真ん中から**一目下**（同日、本人：「もうちょい下げて」）*/
+    var adj = Math.round((H / 2 - (pk[1] + pk[2]) / 2) / P) * P + P;   /* 正なら下へ */
     if (adj) segs = build(adj);
   }
   segs[0][1] = 0;
