@@ -940,6 +940,17 @@ body.game #gHud{display:block}
    真ん中に大きく出る、と出して）「それそれ。ちょっと方向性違うな」→（いつもの画面のまま遊べてしまう形に、と出して）「いいよ」）。
    **場面が切り替わったと言わない。**言うのは右上の数だけ */
 #gHud .hint{font-weight:400; opacity:.8}
+/* **終わったら、この画面の窓の形で知らせを一つ**（2026-09-29、本人：「というか終わったってことがわかんないんだよな。戻り方もわかんないし」
+   →（右上に小さく／勇者の上と足もと／窓の形で下に一つ、を出して）「3の感じで」）。
+   真ん中の大きい字（9/29 に外したもの）とは違って、**メニューや窓と同じ枠で、地面の帯に出す**——場面は切り替わらない。
+   送りは「もどる ▼」。**「おすと」とは書かない**（9/18、本人：「押すって言われたらそのままそこを押さなきゃいけないように見えるでしょ」）。
+   上下は JS が地面の帯のまんなかに置く（画面の下からは出さない）*/
+#gEnd{position:absolute; left:50%; transform:translateX(-50%); z-index:9; display:none; white-space:nowrap;
+  padding:calc(var(--px)*2) calc(var(--px)*4); font-size:clamp(13px,calc(1.5 * var(--fw)),calc(18px*var(--k))); font-weight:700}
+#gEnd p{margin:0; line-height:1.7}
+#gEnd .n{text-align:right; font-size:.78em; font-weight:400; color:var(--dim)}
+#gEnd .ar{display:inline-block; color:var(--go); animation:blink .9s steps(2) infinite}
+body.game #gEnd.on{display:block}
 #demo{position:absolute; inset:0; z-index:7; display:none}
 body.demo #demo{display:block}
 
@@ -1609,6 +1620,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <!-- ミニゲーム（2026-09-29）。右下の「？」から。**岩と鳥が流れてくる、跳ぶだけ** -->
   <canvas id="gm" aria-hidden="true"></canvas>
   <div id="gHud" aria-hidden="true"></div>
+  <div id="gEnd" class="win" aria-hidden="true"><p id="gEndT"></p><p class="n">もどる <span class="ar">▼</span></p></div>
 
   <div id="ground">
     <div class="band"></div>
@@ -4162,8 +4174,14 @@ var G = { on:false };
     heroEl.classList.remove('hit'); void heroEl.offsetWidth; heroEl.classList.add('hit');
     halt(true);
     if (passed > best){ best = passed; try { localStorage.setItem('adc011-game-best', best); } catch(e){} }
-    /* **終わりも一枚を出さない。**勇者が止まって、右上の数がそのまま残る。押せば戻る */
+    /* 右上の数はそのまま。**地面の帯に知らせを一つ**（上の CSS の節）*/
     paintHud();
+    var ge = document.getElementById('gEnd');
+    document.getElementById('gEndT').textContent = 'ぶつかった！　' + passed + ' こ　こえた';
+    ge.classList.add('on');
+    var gt = document.getElementById('ground').getBoundingClientRect().top, sc = document.getElementById('screen').getBoundingClientRect().top;
+    var gh = window.innerHeight - gt, eh = ge.offsetHeight;
+    ge.style.top = Math.round(gt - sc + Math.min((gh - eh) / 2, gh - eh - 6)) + 'px';   /* 帯に入らない窓では、画面の下から出さずに上へ（地平にかかる）*/
     say('ぶつかった。' + passed + ' こ　こえた');
     overAt = performance.now();
   }
@@ -4190,6 +4208,7 @@ var G = { on:false };
     cx.clearRect(0, 0, W, CH);
     heroEl.style.transform = '';
     heroEl.classList.remove('hit'); heroEl.style.removeProperty('--jy');
+    document.getElementById('gEnd').classList.remove('on');
     heroPose(null);
     document.body.classList.remove('game');
     if (document.body.classList.contains('halt')) halt(false); else setRate(1);
