@@ -558,7 +558,9 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
    前は 1280 幅で 18px——メニュー（20px）と窓の本文（20px）より**小さく**、名前が画面の隅の注記の重さだった。
    → いちどメニューの 1.3 倍（1280 幅で 26px）にした。本人：「でけえ」→ **1.1 倍**（1280 幅で 22px、大きい窓で 27.5px）*/
 #name b{display:block; font-size:clamp(15px,calc(1.9 * var(--fw)),calc(22px*var(--k))); letter-spacing:.06em; margin-top:calc(4px*var(--k))}
-#tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,calc(1.25 * var(--fw)),calc(13px*var(--k))); color:var(--warm); letter-spacing:.04em}
+/* **名乗りの一行を一段上げた**（2026-09-29、本人：「社名の下に書いてるやつもうちょい目立たせる？」→（1264 幅で 13px、足もとより小さい、と出して）「やって」）。
+   いつも見えている場所で、会社が何をするかを言っている唯一の一行。上限 13 → 16px（社名 22px より下、メニュー 20px より一段下）。スマホの 11px はそのまま */
+#tag{margin-top:calc(var(--px)*2); font-size:clamp(11px,calc(1.55 * var(--fw)),calc(16px*var(--k))); color:var(--warm); letter-spacing:.04em}
 
 /* ─ ポップアップ。**送りは ▼**（枠内スクロールはしない）─────────
    **右上の真ん中あたりへ**（2026-09-14、本人：「下じゃなくて右に出せない？」
