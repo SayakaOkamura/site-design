@@ -1371,12 +1371,6 @@ body.roll #dRoll{display:block}
 /* **枠が開いてから、中身が一行ずつ出る。**一度に出すと、
    ここまで積んできたものが**一瞬で終わる**（本人：「なんかスッと終わっちゃう」）*/
 #dRes.on{display:block; animation:resin .24s steps(4)}
-/* 連れを指す尻尾（吹き出しの形）。左の縁の --tail の高さ、上に連れがいる窓では上の縁の --tail の位置。粒で刻んだ三角 */
-#dRes.on::before{content:''; position:absolute; width:calc(var(--px) * 3); height:calc(var(--px) * 4); background:var(--line);
-  left:calc(var(--px) * -4); top:calc(var(--tail, 24px) - var(--px) * 2);
-  clip-path:polygon(100% 0, 100% 100%, 66% 100%, 66% 75%, 33% 75%, 33% 50%, 0 50%, 0 25%, 33% 25%, 66% 25%, 66% 0)}
-#dRes.on.tailtop::before{width:calc(var(--px) * 4); height:calc(var(--px) * 3); left:calc(var(--tail, 24px) - var(--px) * 2); top:calc(var(--px) * -4);
-  clip-path:polygon(0 100%, 100% 100%, 100% 66%, 75% 66%, 75% 33%, 50% 33%, 50% 0, 25% 0, 25% 33%, 25% 66%, 0 66%)}
 @keyframes resin{ from{transform:translate(-50%,-50%) scaleY(.12)}
                   to{transform:translate(-50%,-50%) scaleY(1)} }
 /* **透明度は素で持たせない**——動きが走らない場でも、`.on` が付けば必ず見える */
@@ -3415,7 +3409,7 @@ function quitDemo(){
   clearLog();
   document.body.classList.remove('demo');
   clearTimeout(D.tOpen); clearInterval(D.tLine); D.tOpen = D.tLine = null;
-  clearTimeout(D.tPal); D.tPal = null; dRes.classList.remove('tailtop');
+  clearTimeout(D.tPal); D.tPal = null;
   clearTimeout(D.tQ); clearInterval(D.tQL); D.tQ = D.tQL = null;
   /* 勝つところの待ちも（2026-09-29）。前は持っていなかったので、
      倒した直後に Esc で抜けると、あとからリザルトが開いていた */
@@ -3920,17 +3914,11 @@ function showResult(){
   seen.forEach(function(el){ el.classList.add('on'); });
   /* **作戦を出したのは連れ**（2026-09-29、本人：「最後の決まった作戦もAI君が出した感じにできん？」）。
      前は窓が先に開いて、連れはあとから横に来ていた。→ **連れが来てから、連れの押し出しで窓が開く。**
-     窓には**連れのほうを指す尻尾**（吹き出しの形）。連れが窓の上にいる窓（縦のスマホ）では、尻尾は上の縁に。
+     連れは窓の左上の角に**乗る**（いちど左に立たせて、窓に連れを指す尻尾を付けた → 本人：「上に乗ろう、さっきみたいに」。尻尾は外した）。
      窓が開くまでが 0.45 秒延びる。そのあいだ（D.phase 'pal'）はキーも押しも受けない */
   dRes.style.visibility = 'hidden'; dRes.style.animation = 'none';
   dRes.classList.add('on');                /* いったん見えないまま置いて、連れの置き場と尻尾を測る */
   palAt('result');
-  var pl = parseFloat(document.getElementById('pal').style.left), pt = parseFloat(document.getElementById('pal').style.top),
-      pw = document.getElementById('pal').offsetWidth, ph = document.getElementById('pal').offsetHeight,
-      sc = document.getElementById('screen').getBoundingClientRect(), rr = dRes.getBoundingClientRect();
-  var above = pt + ph <= rr.top - sc.top + 1;
-  dRes.classList.toggle('tailtop', above);
-  dRes.style.setProperty('--tail', Math.round(above ? (pl + pw / 2 - (rr.left - sc.left)) : (pt + ph / 2 - (rr.top - sc.top))) + 'px');
   dRes.classList.remove('on');
   dRes.style.visibility = ''; dRes.style.animation = '';
   D.phase = 'pal';
@@ -4298,10 +4286,14 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     if (at === 'result' && D.on){
       var tk = document.getElementById('rTask').getBoundingClientRect(), rr = dRes.getBoundingClientRect();
       if (tk.width){
-        left = Math.round(rr.left - s.left - W * p - p * 3);
-        top = Math.round(tk.top - s.top);
-        /* 左に入らない窓（縦のスマホでリザルトが幅いっぱい）では、リザルトの左上の角の上 */
-        if (left < 4){ left = Math.round(rr.left - s.left + p * 2); top = Math.round(rr.top - s.top - H * p - p); }
+        /* **リザルトの左上の角に乗る**（同日、本人：「上に乗ろう、さっきみたいに」。前はタスクの列の左に立って、窓に尻尾を付けていた）。
+           連れの下端を、窓の上の縁にちょうど乗せる */
+        left = Math.round(rr.left - s.left + p * 3);
+        top = Math.round(rr.top - s.top - H * p);
+        /* 名乗りにかかる窓（1084×571・横持ち）では、右上の角に乗る */
+        var nr2 = document.getElementById('name').getBoundingClientRect();
+        if (left + s.left < nr2.right && left + s.left + W * p > nr2.left && top + s.top < nr2.bottom && top + s.top + H * p > nr2.top)
+          left = Math.round(rr.right - s.left - W * p - p * 3);
         dir = 1;
       }
     }
