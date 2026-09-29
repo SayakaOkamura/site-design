@@ -458,7 +458,8 @@ body{
 #pal.chant{animation:palchant .24s infinite}
 @keyframes palchant{ 0%,49%{transform:translateY(0)} 50%,100%{transform:translateY(calc(var(--px) * -1))} }
 /* **唱えた字が粒になって飛ぶ**（同日、本人：「何かしてる感はあんまりないかも。協力プレイ感もないかも」→（二人で一つの一撃／粒が飛ぶ／前に出る）「やってみて」）。
-   はじめは敵へ飛ばしていた → 本人：「AIはあくまでサポート感あってほしいな」。**行き先は勇者**（補助の魔法——仲間に力を送る）。
+   はじめは敵へ飛ばしていた → 本人：「AIはあくまでサポート感あってほしいな」。行き先を勇者にした → 「なぜ粒攻撃…」。
+   **いまは使っていない**（勇者の縁取りのバフに置き換えた）。palShot() は残してある。
    影の色の一粒。光らせない。飛ぶ道は JS（palShot）*/
 .pdot{position:absolute; width:var(--px); height:var(--px); background:var(--hero); z-index:8; pointer-events:none}
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
@@ -1031,6 +1032,8 @@ body.demo #slime.come{animation:come .85s steps(9)}
 #slash{position:absolute; left:66%; bottom:var(--gh); z-index:8;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
 #slash.on{display:block}
+/* バフが乗った一撃は、斬撃の線がひと回り大きい（下の「連れのバフ」）*/
+#slash.on.big{transform:translateX(-50%) scale(1.5); transform-origin:50% 100%}
 /* 体力。**バーにする**（2026-09-15、本人：「普通に HP バーの方がわかりやすいかな」）。
    前は ◆ を三つ消していた——数えないと分からないし、三つが何の三つか読めなかった。
    **敵の頭の上**に置く（中に置くと塊に埋もれる）。数字は出さない */
@@ -2170,10 +2173,26 @@ window.addEventListener('resize', function(){
   var INK = css.getPropertyValue('--hero').trim() || '#150b04';
   var EYE = css.getPropertyValue('--sun2').trim() || '#ffcb5e';
   var last = HERO[0];
+  /* **連れのバフ**（2026-09-29、本人：「AIはあくまでサポート感あってほしいな」→（粒を勇者へ送る形にして）「これなんで粒なの？」
+     →「層じゃなくて、なぜ粒攻撃…」→「ん～～～～バフ？」→「もっと見た目でわかる感じで」）。
+     飛ばす粒はやめて、**効果を勇者に出す**：連れが唱えているあいだ、勇者のまわりに**粒一つの金の縁取りが点滅**し、
+     唱え終わったら**点いたまま**（バフが乗った）。次に斬ると、斬撃がひと回り大きくなって縁取りは消える（バフを使った）。
+     **金は、勇者の目のほかに光る二つ目のもの**になる（「光るのは目だけ」の例外。はっきり見せるために置いた）*/
+  var BUFF = css.getPropertyValue('--go').trim() || '#ffd270', buff = 0, blinkOn = true;   /* 0 無し・1 点滅・2 点いたまま */
+  window.heroBuff = function(v){ buff = v; blinkOn = true; draw(last); };
+  window.heroBuffed = function(){ return buff === 2; };
   function draw(m){
     var c;
     last = m;
     cx.clearRect(0, 0, HW*HPX, HH*HPX);
+    if (buff && (buff === 2 || blinkOn)){
+      cx.fillStyle = BUFF;
+      for (var by = 0; by < HH; by++) for (var bx = 0; bx < HW; bx++){
+        if (m[by][bx] !== '.') continue;
+        if ((by > 0 && m[by-1][bx] !== '.') || (by < HH-1 && m[by+1][bx] !== '.') ||
+            (bx > 0 && m[by][bx-1] !== '.') || (bx < HW-1 && m[by][bx+1] !== '.')) cx.fillRect(bx*HPX, by*HPX, HPX, HPX);
+      }
+    }
     for (var y = 0; y < HH; y++) for (var x = 0; x < HW; x++){
       c = m[y][x]; if (c === '.') continue;
       cx.fillStyle = (c === 'o') ? EYE : INK;
@@ -2193,8 +2212,9 @@ window.addEventListener('resize', function(){
   /* 止める設定に変わったら、走りの一コマ目に戻して止める */
   onReduce(function(){ if (REDUCE && !pose){ i = 0; draw(HERO[0]); } });
   /* 構えているあいだは**息をする**——0.55 秒ずつ、立ちと息のコマを交互に */
-  var b = 0;
+  var b = 0, bt = 0;
   setInterval(function(){
+    if (buff === 1){ bt = (bt + 1) % 2; if (!bt){ blinkOn = !blinkOn; if (pose) draw(last); } }
     if (REDUCE) return;
     i = (i+1) % HERO.length;
     if (!pose){ draw(HERO[i]); return; }
@@ -3369,7 +3389,7 @@ function flee(){
 }
 function quitDemo(){
   clearTimeout(D.tFlee); D.tFlee = null;
-  palHide(false); palChant(false);
+  palHide(false); palChant(false); heroBuff(0);
   if (D.aFlee){ D.aFlee.cancel(); D.aFlee = null; }
   slimeEl.classList.remove('gone'); dHp.classList.remove('gone');
   heroEl.classList.remove('flip');
@@ -3676,12 +3696,13 @@ function typeCmd(s, done){
   D.typing = true;
   var tx = dStat.querySelector('.tx'), i = 0;
   palChant(true);   /* ② 唱えているあいだ */
+  heroBuff(1);      /* 勇者の縁取りが点滅（連れのバフを受けている）*/
   var t = setInterval(function(){
     tx.textContent = s.slice(0, ++i);
-    if (i % 2 === 1) palShot();          /* 二字ごとに一粒 */
     if (i < s.length) return;
     clearInterval(t);
     palChant(false);
+    if (D.on) heroBuff(D.hp > 0 ? 2 : 0);   /* 唱え終わったら点いたまま。倒したあとは消す */
     var cb = dStat.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
     /* **打ち終わってすぐには動かさない。**打った行をそのまま一拍見せる。
        `D.typing` は下げない——下げると、この一拍のあいだに流れが上を動かす */
@@ -3720,6 +3741,8 @@ function swing(done){
   halt(true, null, 0);
   heroPose('slash');                    /* 剣を振り下ろす */
   slimeEl.classList.add('hit');
+  slashEl.classList.toggle('big', heroBuffed());   /* バフが乗っていれば大きい斬撃 */
+  heroBuff(0);                                     /* 使ったら消える */
   slashEl.classList.add('on');          /* 敵の上に斬撃の線 */
   /* 一撃で一目。いちど「勇者で半分・連れの唱えで半分（二人で一つの一撃）」にした → 本人：「AIはあくまでサポート感あってほしいな」。
      **倒すのは勇者**に戻した。連れは唱えた字を勇者へ送って支える（palShot）*/
