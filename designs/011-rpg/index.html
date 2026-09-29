@@ -593,9 +593,11 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
      前は右の余白（--winr）から置いていて、左端が画面の真ん中だった（9/15「もうちょい真ん中寄せて」）。
      **幅はそのまま**——寄せたぶん右があく。勇者は 34%、幅は 22 粒（--hpx）、あいだは下の行の粒の数。
      右の余白より狭くはしない（幅を削る）。低い窓・狭い窓・横持ちは、それぞれの節で置き直している */
-  /* **勇者とのあいだは粒 12**（同日。いちど上端を粒 4 つ下げて、本人：「違うな、もうちょっと右か」——下げたのは戻して、粒 6 → 12 に）。
-     上端はメニューと同じ線（--T）のまま */
-  left:calc(34% + var(--hpx) * 11px + var(--px) * 12); right:auto; top:var(--T, 17%);
+  /* **勇者とのあいだは粒 12、上端は線より粒 8 つ下**（同日、本人：「もうちょっとだけ下」→「違うな、もうちょっと右か」
+     →「下げるのは変わらず、もうちょっと」→（下げたのを戻してさらに下、と確かめて）「B」）。
+     **メニューの上端（--T）とは揃わない。**
+     いちばん背の高い頁が地平に届く窓（1366×768 のアクセスで 2px）では、JS が下げる量を減らす（`placeDrop()`）*/
+  left:calc(34% + var(--hpx) * 11px + var(--px) * 12); right:auto; top:calc(var(--T, 17%) + var(--drop, calc(var(--px) * 8)));
   width:min(var(--winw), calc(66% - var(--hpx) * 11px - var(--px) * 12 - var(--winr))); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
@@ -2413,19 +2415,19 @@ var MQ_LAND   = window.matchMedia('(orientation:landscape) and (max-height:480px
    **中身は `draw()` に作らせる。**手で `popT` と `popB` だけ入れて測ったら、
    **帯（`popP`）が空のぶん 22px 低く出て**、390×620 でメニューが窓に 8px 乗った。
    送りの行の背は帯と「つづく」と右下の一手で決まるので、**本番と同じ形でないと嘘になる** */
-function topOfTallestPop(){
+function topOfTallestPop(bottom){
   var keepCur = cur, keepPage = page, keepSel = goSel, keepCls = pop.className,
       wasPopped = document.body.classList.contains('popped');
   pop.style.animation = 'none';
   pop.classList.add('on');
   document.body.classList.add('popped');
-  var top = Infinity, k, ps, i, t;
+  var top = bottom ? -Infinity : Infinity, k, ps, i, t, r;
   for (k in DATA){
     cur = k; ps = pages(DATA[k]);
     for (i = 0; i < ps.length; i++){
       page = i; goSel = false; draw();
-      t = pop.getBoundingClientRect().top;
-      if (t < top) top = t;
+      r = pop.getBoundingClientRect(); t = bottom ? r.bottom : r.top;
+      if (bottom ? t > top : t < top) top = t;
     }
   }
   pop.style.animation = '';
@@ -2433,6 +2435,15 @@ function topOfTallestPop(){
   if (!wasPopped) document.body.classList.remove('popped');
   if (cur) draw();                         /* 開いていたなら、元の頁に描き戻す */
   return top;
+}
+/* **窓を下げる量**（2026-09-29）。ふだんは粒 8 つ（CSS の既定）。いちばん背の高い頁の下端が
+   **地平から粒 2 つ手前**を越える窓だけ、越えたぶん減らす（0 まで）。`topOfTallestPop(true)` は下端を返す */
+function placeDrop(){
+  var root = document.documentElement;
+  root.style.removeProperty('--drop');
+  var px = parseFloat(getComputedStyle(root).getPropertyValue('--px')) || 4;
+  var over = topOfTallestPop(true) - (document.getElementById('ground').getBoundingClientRect().top - px * 2);
+  if (over > 0) root.style.setProperty('--drop', Math.max(0, px * 8 - over) + 'px');
 }
 /* **足もとは地平から測る**（`top:calc(100% - var(--gh) + var(--px)*7)`）。
    いちど JS で地平とメニューのまんなかへ置いたが、**戻した**（2026-09-24、本人：
@@ -2545,6 +2556,7 @@ window.addEventListener('resize', function(){
   document.getElementById('menu').style.top = '';
   fitAcc(); fitAbout();
   placeMenu();   /* 枚数が決まってから置く——頁の背が変わると下限も変わる */
+  placeDrop();
 
   if ((cur === 'access' && wasA !== accFits) || (cur === 'about' && wasB !== aboutFits)){
     page = 0; goSel = false; draw();
@@ -3937,6 +3949,7 @@ paintSel();
 fitAcc();     /* アクセスが一枚で入る窓かどうか、はじめに一度測る */
 fitAbout();   /* 会社概要の一枚目が入る窓かどうかも */
 placeMenu();  /* 縦長では、メニューを置き直す（三層は足もとの下、それ以外はまんなか）*/
+placeDrop();  /* 窓を下げる量（地平に届く窓だけ減らす）*/
 placePlain(); /* 画面に入らなければ、素の一枚に */
 
 /* ─ ミニゲーム（2026-09-29）──────────────────────────────────
