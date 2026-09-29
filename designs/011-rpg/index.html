@@ -257,26 +257,26 @@ body{
      途中の色は color-mix で混ぜる（決めの色を差し替えれば、途中も付いてくる）。
      color-mix が読めない古い端末は、すぐ上の六段のまま。区切りの位置は JS の SKY_AT と同じにしておく */
   background:linear-gradient(180deg,
-    var(--sky1) 0.0%, var(--sky1) 3.6%,
-    color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 3.6%, color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 7.2%,
-    color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 7.2%, color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 10.8%,
-    color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 10.8%, color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 14.4%,
-    color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 14.4%, color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 18.0%,
-    var(--sky2) 18.0%, var(--sky2) 21.2%,
-    color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 21.2%, color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 24.4%,
-    color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 24.4%, color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 27.6%,
-    color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 27.6%, color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 30.8%,
-    color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 30.8%, color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 34.0%,
-    var(--sky3) 34.0%, var(--sky3) 37.6%,
-    color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 37.6%, color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 41.2%,
-    color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 41.2%, color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 44.8%,
-    color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 44.8%, color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 48.4%,
-    color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 48.4%, color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 52.0%,
-    var(--sky4) 52.0%, var(--sky4) 56.4%,
-    color-mix(in oklab, var(--sky4) 80%, var(--sky5)) 56.4%, color-mix(in oklab, var(--sky4) 80%, var(--sky5)) 60.8%,
-    color-mix(in oklab, var(--sky4) 60%, var(--sky5)) 60.8%, color-mix(in oklab, var(--sky4) 60%, var(--sky5)) 65.2%,
-    color-mix(in oklab, var(--sky4) 40%, var(--sky5)) 65.2%, color-mix(in oklab, var(--sky4) 40%, var(--sky5)) 69.6%,
-    color-mix(in oklab, var(--sky4) 20%, var(--sky5)) 69.6%, color-mix(in oklab, var(--sky4) 20%, var(--sky5)) 74.0%,
+    var(--sky1) 0.0%, var(--sky1) 4.0%,
+    color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 4.0%, color-mix(in oklab, var(--sky1) 80%, var(--sky2)) 8.0%,
+    color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 8.0%, color-mix(in oklab, var(--sky1) 60%, var(--sky2)) 12.0%,
+    color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 12.0%, color-mix(in oklab, var(--sky1) 40%, var(--sky2)) 16.0%,
+    color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 16.0%, color-mix(in oklab, var(--sky1) 20%, var(--sky2)) 20.0%,
+    var(--sky2) 20.0%, var(--sky2) 23.2%,
+    color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 23.2%, color-mix(in oklab, var(--sky2) 80%, var(--sky3)) 26.4%,
+    color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 26.4%, color-mix(in oklab, var(--sky2) 60%, var(--sky3)) 29.6%,
+    color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 29.6%, color-mix(in oklab, var(--sky2) 40%, var(--sky3)) 32.8%,
+    color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 32.8%, color-mix(in oklab, var(--sky2) 20%, var(--sky3)) 36.0%,
+    var(--sky3) 36.0%, var(--sky3) 39.6%,
+    color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 39.6%, color-mix(in oklab, var(--sky3) 80%, var(--sky4)) 43.2%,
+    color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 43.2%, color-mix(in oklab, var(--sky3) 60%, var(--sky4)) 46.8%,
+    color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 46.8%, color-mix(in oklab, var(--sky3) 40%, var(--sky4)) 50.4%,
+    color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 50.4%, color-mix(in oklab, var(--sky3) 20%, var(--sky4)) 54.0%,
+    var(--sky4) 54.0%, var(--sky4) 58.0%,
+    color-mix(in oklab, var(--sky4) 80%, var(--sky5)) 58.0%, color-mix(in oklab, var(--sky4) 80%, var(--sky5)) 62.0%,
+    color-mix(in oklab, var(--sky4) 60%, var(--sky5)) 62.0%, color-mix(in oklab, var(--sky4) 60%, var(--sky5)) 66.0%,
+    color-mix(in oklab, var(--sky4) 40%, var(--sky5)) 66.0%, color-mix(in oklab, var(--sky4) 40%, var(--sky5)) 70.0%,
+    color-mix(in oklab, var(--sky4) 20%, var(--sky5)) 70.0%, color-mix(in oklab, var(--sky4) 20%, var(--sky5)) 74.0%,
     var(--sky5) 74.0%, var(--sky5) 79.2%,
     color-mix(in oklab, var(--sky5) 80%, var(--sky6)) 79.2%, color-mix(in oklab, var(--sky5) 80%, var(--sky6)) 84.4%,
     color-mix(in oklab, var(--sky5) 60%, var(--sky6)) 84.4%, color-mix(in oklab, var(--sky5) 60%, var(--sky6)) 89.6%,
@@ -2035,7 +2035,8 @@ placeLines();
 /* **桃から上を下げた**（2026-09-29、本人：「ピンク含めそこから上をもうちょい下げて。オレンジ群の割合くっていいから」）。
    赤橙の始まり 44 → 50%、その上も同じ割合で伸ばす（14 → 16、28 → 32）。橙 74% から下はそのまま。前：0, 14, 28, 44, 74, 100 */
 /* → 本人：「あと2下げて」。三つとも 2% ずつ（16・32・50 → 18・34・52）*/
-var SKY_AT = [0, 18, 34, 52, 74, 100];
+/* → 「あと2」。18・34・52 → 20・36・54 */
+var SKY_AT = [0, 20, 36, 54, 74, 100];
 function paintSky(){
   var sky = document.getElementById('sky'), sun = document.getElementById('sun');
   var H = sky.clientHeight, g = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4;
