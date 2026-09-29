@@ -457,6 +457,9 @@ body{
 @keyframes palstartle{ 0%{transform:translateY(calc(var(--px) * -2))} 34%{transform:translateY(calc(var(--px) * -1))} 67%,100%{transform:translateY(0)} }
 #pal.chant{animation:palchant .24s infinite}
 @keyframes palchant{ 0%,49%{transform:translateY(0)} 50%,100%{transform:translateY(calc(var(--px) * -1))} }
+/* **唱えた字が粒になって敵へ飛ぶ**（同日、本人：「何かしてる感はあんまりないかも。協力プレイ感もないかも」→（二人で一つの一撃／粒が飛ぶ／前に出る）「やってみて」）。
+   影の色の一粒。光らせない。飛ぶ道は JS（palShot）*/
+.pdot{position:absolute; width:var(--px); height:var(--px); background:var(--hero); z-index:8; pointer-events:none}
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
@@ -3666,7 +3669,16 @@ function clearLog(){
    > よく聞かれることを集める           ← 一段上へズレて
    Resolving… · detect(conflicts)    ← 次の英語が下に出てくる
    ``` */
-function typeCmd(s, done){
+/* 連れの唱えが届く——体力の残り半分が減って、敵がもう一度弾かれる。
+   **最後の一撃がこちらになる**（勇者が斬ってもまだ半分残る）ので、倒れたら世界を止めて勇者を構えさせる（前は swing() がやっていた）*/
+function palHit(){
+  if (!D.on) return;
+  D.hp = Math.max(0, D.hp - .5); paintHp();
+  slimeEl.classList.remove('hit'); void slimeEl.offsetWidth; slimeEl.classList.add('hit');
+  setTimeout(function(){ slimeEl.classList.remove('hit'); }, 340);
+  if (D.hp <= 0){ halt(true, null, 0); heroPose('stand'); }
+}
+function typeCmd(s, done, onTyped){
   dStat.className = 'cmd';
   dStat.innerHTML = '<span class="pr">&gt;</span> <span class="tx"></span><span class="cb">&nbsp;</span>';
   D.typing = true;
@@ -3674,9 +3686,12 @@ function typeCmd(s, done){
   palChant(true);   /* ② 唱えているあいだ */
   var t = setInterval(function(){
     tx.textContent = s.slice(0, ++i);
+    if (i % 2 === 1) palShot();          /* 二字ごとに一粒 */
     if (i < s.length) return;
     clearInterval(t);
     palChant(false);
+    /* 最後の粒が届くころに、唱えが効く */
+    if (onTyped) setTimeout(onTyped, 320);
     var cb = dStat.querySelector('.cb'); if (cb) cb.parentNode.removeChild(cb);
     /* **打ち終わってすぐには動かさない。**打った行をそのまま一拍見せる。
        `D.typing` は下げない——下げると、この一拍のあいだに流れが上を動かす */
@@ -3716,7 +3731,8 @@ function swing(done){
   heroPose('slash');                    /* 剣を振り下ろす */
   slimeEl.classList.add('hit');
   slashEl.classList.add('on');          /* 敵の上に斬撃の線 */
-  D.hp--; paintHp();
+  /* **勇者の一撃は半分**（同日）。残り半分は連れが唱え終わったところで減る（palHit）——**二人で一つの一撃** */
+  D.hp -= .5; paintHp();
   setTimeout(function(){ slashEl.classList.remove('on'); }, 230);
   setTimeout(function(){
     heroEl.classList.remove('swing');
@@ -3820,7 +3836,7 @@ function choose(i){
   swing(function(){ struck = true; next(); });                       /* すぐ斬る */
   typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, function(){
     setLog(st + 1); typed = true; next();
-  });
+  }, palHit);
 }
 
 /* 提案内容（2026-09-16）。**選んだ三つが、そのまま三つのタスクになる。**
@@ -4218,6 +4234,24 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     if (turn < 0) draw();
   };
   window.palHide = function(on){ cv.classList.toggle('hide', !!on); };
+  /* 粒を一つ、連れから敵へ。ゆるい弧（途中で粒三つぶん上へ膨らむ）で、コマを刻んで飛ぶ */
+  window.palShot = function(){
+    if (REDUCE || !D.on) return;
+    var sc = document.getElementById('screen').getBoundingClientRect(), a = cv.getBoundingClientRect(), b = slimeEl.getBoundingClientRect(), q = px();
+    if (!b.width) return;
+    var x0 = a.left + a.width / 2 - sc.left, y0 = a.top + a.height / 2 - sc.top,
+        dx = b.left + b.width / 2 - sc.left - x0, dy = b.top + b.height / 2 - sc.top - y0;
+    var el = document.createElement('div');
+    el.className = 'pdot';
+    el.style.left = Math.round(x0) + 'px'; el.style.top = Math.round(y0) + 'px';
+    document.getElementById('screen').appendChild(el);
+    if (el.animate) el.animate([
+      { transform:'translate(0,0)' },
+      { transform:'translate(' + Math.round(dx / 2) + 'px,' + Math.round(dy / 2 - q * 12) + 'px)' },
+      { transform:'translate(' + Math.round(dx) + 'px,' + Math.round(dy) + 'px)' }
+    ], { duration:320, easing:'steps(8)' });
+    setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 330);
+  };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
   /* 触角が揺れる（漂うのは CSS）。勇者より**ゆっくり**——同じ拍子だと行進して見える */
   setInterval(function(){ if (REDUCE || turn >= 0) return; f = 1 - f; draw(); }, 520);
