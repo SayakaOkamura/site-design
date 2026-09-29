@@ -441,6 +441,9 @@ body{
    **デモで後々敵出したい**」）。58% → **34%**。
    右の空きが、そのまま**敵の出てくる場所**になる。
    大きさ（24×22 粒）は **JS が付ける**——粒の大きさが一つのところで決まるように */
+/* 連れ。置き場は JS（勇者から測る）。**浮いて漂う**——粒一つぶんを硬く上下（スライムの跳ねと同じ作り、拍子は遅く）*/
+#pal{position:absolute; z-index:4; image-rendering:pixelated; pointer-events:none; animation:palbob 1.6s infinite}
+@keyframes palbob{ 0%,49%{transform:translateY(0)} 50%,100%{transform:translateY(calc(var(--px) * -1))} }
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
 /* **横長は 34%**（2026-09-25 に戻した）。9/24 に背のある窓で 30% にしたが、
@@ -1627,6 +1630,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   </div>
 
   <canvas id="hero"></canvas>
+  <canvas id="pal" aria-hidden="true"></canvas>
   <!-- ミニゲーム（2026-09-29）。右下の「？」から。**岩と鳥が流れてくる、跳ぶだけ** -->
   <canvas id="gm" aria-hidden="true"></canvas>
   <div id="gHud" aria-hidden="true"></div>
@@ -4105,6 +4109,49 @@ placeLowLeft(); /* アクセスが一枚で入るか・会社概要の一枚目�
 placeMenu();  /* 縦長では、メニューを置き直す（三層は足もとの下、それ以外はまんなか）*/
 placeDrop();  /* 窓を下げる量（地平に届く窓だけ減らす）*/
 placePlain(); /* 画面に入らなければ、素の一枚に */
+
+/* ─ 連れ（2026-09-29）────────────────────────────────────────
+   本人：「な～んか面白いことしたいな」→（連れ／空が時刻で変わる／勇者が育つ、を出して）「連れのやつ、上手く入れたらいけるんかな」
+   →（手を増やさず、帯に打たれるコマンドを連れが唱える形に）「急に表れる方が変じゃない？」
+   →（外した理由は「流れる画面の中で一人だけ止まっている／出入りする」で、物を足すこと自体ではなかった、と読み直して）「Aでいいんじゃない」
+   ——**最初から一緒にいる。**形は、本人が選んだ「精霊とロボットのあいだ」：丸い体に触角一本、足は無く浮いている。
+   勇者と同じ影の色、勇者より小さい（背景の粒）。**目は光らせない**（光るのは勇者の目だけ）——目は抜けていて空が透ける。
+   いまは**浮かせるだけ**（本人：「一旦これで、様子見」）。デモでの役は、見てから */
+var PAL = [
+  ['.....#....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
+  ['...#......','....#.....','..######..','.########.','.##.##.##.','.########.','..######..']
+];
+(function(){
+  var cv = document.getElementById('pal'), cx = cv.getContext('2d');
+  var W = PAL[0][0].length, H = PAL[0].length, f = 0;
+  var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
+  function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
+  function draw(){
+    var p = px(), dpr = Math.min(3, window.devicePixelRatio || 1), m = PAL[f];
+    cv.style.width = (W * p) + 'px'; cv.style.height = (H * p) + 'px';
+    cv.width = W * p * dpr; cv.height = H * p * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
+    cx.fillStyle = INK;
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (m[y][x] === '#') cx.fillRect(x * p, y * p, p, p);
+  }
+  /* 勇者の左、肩の高さ。勇者の置き場は窓の作りごとに違う（34%・30%・44%・50%）ので、勇者から測って置く */
+  function place(){
+    var r = heroEl.getBoundingClientRect(), s = document.getElementById('screen').getBoundingClientRect(), p = px();
+    if (!r.width) return;
+    var left = r.left - s.left - W * p - p * 2, top = r.top - s.top + r.height * .3 - H * p / 2;
+    cv.style.left = Math.max(4, Math.round(left)) + 'px';
+    cv.style.top = Math.round(top) + 'px';
+    /* **メニューにかかる窓では、勇者の右へ**（700×500・844×390 でメニューの裏に入った）*/
+    var mn = document.getElementById('menu'), c = cv.getBoundingClientRect(), mr = mn.getBoundingClientRect();
+    if (getComputedStyle(mn).display !== 'none' && c.right > mr.left && c.left < mr.right && c.bottom > mr.top && c.top < mr.bottom)
+      cv.style.left = Math.round(r.right - s.left + p * 2) + 'px';
+  }
+  draw(); place();
+  window.addEventListener('resize', function(){ draw(); place(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+  /* 触角が揺れる（漂うのは CSS）。勇者より**ゆっくり**——同じ拍子だと行進して見える */
+  setInterval(function(){ if (REDUCE) return; f = 1 - f; draw(); }, 520);
+})();
 
 /* ─ ミニゲーム（2026-09-29）──────────────────────────────────
    本人：「？押してこれしか情報ないのもなんかなあ…」→「なんか単純な隠し要素にしようよ」
