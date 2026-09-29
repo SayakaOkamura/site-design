@@ -593,7 +593,8 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
      前は右の余白（--winr）から置いていて、左端が画面の真ん中だった（9/15「もうちょい真ん中寄せて」）。
      **幅はそのまま**——寄せたぶん右があく。勇者は 34%、幅は 22 粒（--hpx）、あいだは粒 6 つ。
      右の余白より狭くはしない（幅を削る）。低い窓・狭い窓・横持ちは、それぞれの節で置き直している */
-  left:calc(34% + var(--hpx) * 11px + var(--px) * 6); right:auto; top:var(--T, 17%);
+  /* **上端は線より粒 4 つ下**（同日、本人：「もうちょっとだけ下」）。メニューの上端（--T）とは揃わなくなった */
+  left:calc(34% + var(--hpx) * 11px + var(--px) * 6); right:auto; top:calc(var(--T, 17%) + var(--px) * 4);
   width:min(var(--winw), calc(66% - var(--hpx) * 11px - var(--px) * 6 - var(--winr))); max-height:60vh; display:none; transform-origin:top;
   padding:var(--tx) calc(var(--tx)*1.6)}
 #pop.on{display:block; animation:popin .12s steps(2) both}
@@ -894,7 +895,7 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
      上に来て、**一行紹介の終わりが窓に隠れていた**（1200×520 で 12px、1000×511 で 9px）。
      名乗りの背は 96〜102px（三行）なので、**112px を床**にする */
   /* 上端は上の線（`--T`）。前は `max(17%, 112px)` で名乗りの下へ落としていた——線が名乗りの下なので、もう要らない */
-  #pop{left:auto; right:var(--winr);   /* 低い窓は右から置いて、左へ広げる（2026-09-29 に上の置き方を変えたので、ここで戻す）*/
+  #pop{left:auto; right:var(--winr); top:var(--T, 17%);   /* 低い窓は右から置いて、左へ広げる。上端も線のまま（2026-09-29 に上の置き方を変えたので、ここで戻す）*/
     width:min(74vw, 760px,
     calc(100vw - var(--winr) - clamp(16px,4vw,calc(54px*var(--k))) - min(46vw,calc(260px*var(--k)))
          - var(--px)*6))}
