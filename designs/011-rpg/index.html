@@ -4032,12 +4032,26 @@ function startRoll(){
    **下は切らない。**山と地面が前にあるので、**そこに隠れて出てくる**
    （同日、本人：「地面の中から出てきて」→「地平どころか山の後ろ通っていいよ」）。
    ぼかしで消すより、**景色に隠れる**ほうが、後ろにあることがはっきりする */
+/* **隠すのは名乗りの字がある四角だけ**（2026-09-29、本人：「エンドロール、社名部分に隠れるやつ帯じゃなくて文字のところだけにして」→「文字がある範囲の四角ってイメージ」）。
+   前は名乗りの下端より上を**画面の幅いっぱい**に消していた（帯）。→ 名乗り（三行）の四角＋粒二つの縁だけを抜き、ほかは見せる。
+   四角のまわりの四つの面（上・下・左・右）を、それぞれ塗った面として重ねる（マスクは足し算）*/
 function maskRoll(){
-  var top = Math.round(document.getElementById('name').getBoundingClientRect().bottom);
-  var g = 'linear-gradient(180deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) ' + top + 'px, #000 '
-        + (top + 64) + 'px)';
-  dRoll.style.webkitMaskImage = g;
-  dRoll.style.maskImage = g;
+  var sc = dRoll.getBoundingClientRect(), r = document.getElementById('name').getBoundingClientRect();
+  var q = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4) * 2;
+  var W = Math.round(sc.width), H = Math.round(sc.height),
+      x0 = Math.max(0, Math.round(r.left - sc.left - q)), x1 = Math.min(W, Math.round(r.right - sc.left + q)),
+      y0 = Math.max(0, Math.round(r.top - sc.top - q)),   y1 = Math.min(H, Math.round(r.bottom - sc.top + q));
+  var fill = 'linear-gradient(#000,#000)';
+  var parts = [
+    [0, 0, W, y0], [0, y1, W, H - y1],          /* 上・下 */
+    [0, y0, x0, y1 - y0], [x1, y0, W - x1, y1 - y0]   /* 左・右 */
+  ];
+  var img = parts.map(function(){ return fill; }).join(', '),
+      pos = parts.map(function(p){ return p[0] + 'px ' + p[1] + 'px'; }).join(', '),
+      siz = parts.map(function(p){ return Math.max(0, p[2]) + 'px ' + Math.max(0, p[3]) + 'px'; }).join(', ');
+  [['webkitMaskImage', img], ['maskImage', img], ['webkitMaskPosition', pos], ['maskPosition', pos],
+   ['webkitMaskSize', siz], ['maskSize', siz], ['webkitMaskRepeat', 'no-repeat'], ['maskRepeat', 'no-repeat']]
+    .forEach(function(k){ dRoll.style[k[0]] = k[1]; });
 }
 /* 名乗りの位置は窓の大きさで動く（`clamp`）ので、**流しているあいだに窓が変わったら引き直す** */
 window.addEventListener("resize", function(){
