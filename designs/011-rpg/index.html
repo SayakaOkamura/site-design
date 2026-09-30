@@ -4880,10 +4880,7 @@ var G = { on:false };
   /* **並び**（同日）。越えた数で混ざりはじめる：
        二つ続きの岩（10 こから）——一度の跳びで二つ越える
        岩のすぐあとに鳥（14 こから）——跳んで降りたら、すぐは跳ばない
-       低い鳥（8 こから、鳥の半分）——低く飛んでくる（下端 6 粒。9/29 は 3 粒で地面すれすれだった）。**跳ばないと当たる**（高い鳥の逆）*/
-  /* 低い鳥の高さ。はじめは下端 3 粒（地面すれすれ）→ 本人：「鳥が超低空飛行してるのも気になってる」（2026-09-30）。
-     **下端 6 粒**（勇者のすねのあたり）。上端は 10 粒なので、短い跳び（13 粒）で越えられ、走ったままなら当たるのは同じ */
-  var LOW_ALT = 6;
+       低い鳥（地面すれすれを飛んでくる、跳ばないと当たる）は**外した**——本人：「鳥が超低空飛行してるのも気になってる」→（高さを上げたら）「あ、そういう意味ではなく。鳥は空中だけで」（2026-09-30）*/
   function push(m, bird, dx, alt){ obs.push({ x:W + dx, m:m, bird:bird, w:m[0].length, h:m.length, done:false, alt:alt }); }
   function spawn(){
     var v = speed(), r = Math.random(), extra = 0;
@@ -4901,10 +4898,9 @@ var G = { on:false };
     } else {
       var bird = passed >= 6 && Math.random() < .3;
       var tall = !bird && passed >= 5 && Math.random() < .25;
-      var low = bird && passed >= 8 && Math.random() < .5;
       var m = bird ? BIRD[0] : tall ? TALL : ROCKS[Math.floor(Math.random() * ROCKS.length)];
       if (tall && !tallSeen){ tallSeen = true; paintHud(); }
-      push(m, bird, 0, bird ? (low ? LOW_ALT : BIRD_ALT) : 0);
+      push(m, bird, 0, bird ? BIRD_ALT : 0);
     }
     /* 次までの間。**着いてからもう一度跳べる**だけは必ずあける。あそびの幅は、越えるほど狭く（0.9 → 0.3 秒）*/
     spawnAt = t + extra + (AIR_MAX + .25) + Math.random() * Math.max(.3, .9 - passed * .015) + (ROCKS[2][0].length * HPX) / v;
