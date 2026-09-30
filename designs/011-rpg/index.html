@@ -491,8 +491,9 @@ body.demo #dBar{padding-left:calc(clamp(16px,4vw,calc(54px*var(--k))) + var(--px
 #pal.term{z-index:9}
 /* リザルトの角に乗っているあいだ（JS の place）。漂いを止める——--fx / --fy が 0 に戻り、0.11 秒ごとの写しも 0 になる。
    代わりに**上下にぴこぴこ**（本人：「上下にぴこぴこするくらいはいいよ」）。粒一つ上がってすぐ戻る。勇者の二歩（0.88 秒）で一回、上にいるのは 0.22 秒——下端はほとんど縁に乗ったまま */
-#pal.perch:not(.cast){animation:palpico .88s steps(1) infinite}
-@keyframes palpico{ 0%,74.9%{transform:translateY(0)} 75%,100%{transform:translateY(calc(var(--px) * -1))} }
+#pal.perch:not(.cast){animation:palpico .88s infinite}
+/* 本人：「もうちょい滑らかにピコピコして」→ 刻むのをやめて、すっと上がって（ease-out）ふわっと戻る（ease-in）。縁に乗っているのは 0.44 秒、跳ねているのは 0.44 秒 */
+@keyframes palpico{ 0%,50%{transform:translateY(0); animation-timing-function:ease-out} 72%{transform:translateY(calc(var(--px) * -1)); animation-timing-function:ease-in} 100%{transform:translateY(0)} }
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
