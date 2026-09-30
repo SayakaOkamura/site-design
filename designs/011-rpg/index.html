@@ -491,10 +491,9 @@ body.demo #dBar{padding-left:calc(clamp(16px,4vw,calc(54px*var(--k))) + var(--px
 #pal.term{z-index:9}
 /* リザルトの角に乗っているあいだ（JS の place）。漂いを止める——--fx / --fy が 0 に戻り、0.11 秒ごとの写しも 0 になる。
    代わりに**上下にぴこぴこ**（本人：「上下にぴこぴこするくらいはいいよ」）。はじめは体ごと粒一つ跳ねさせた（勇者の二歩 0.88 秒で一回）*/
-@property --pw{ syntax:'<number>'; inherits:false; initial-value:1 }
-@property --ph{ syntax:'<number>'; inherits:false; initial-value:1 }
-#pal.perch:not(.cast){transform-origin:50% 100%; transform:scale(var(--qw, 1), var(--qh, 1)); animation:palpoyo 1.2s infinite}
-@keyframes palpoyo{ 0%,49.9%{--pw:1; --ph:1} 50%,100%{--pw:1.15; --ph:.8} }
+@property --nod{ syntax:'<number>'; inherits:false; initial-value:0 }
+#pal.perch:not(.cast){animation:palnod 1.2s infinite}
+@keyframes palnod{ 0%,49.9%{--nod:0} 50%,100%{--nod:1} }
 /* 本人：「もうちょい滑らかにピコピコして」→（なめらかに跳ねさせたら）「上部にくっついてぴこぴこしててほしいのね、浮いてるというか乗ってる感じ」
    →（体を縮めて伸ばす／触角だけ、を出して）「A」。**体ごと跳ねるのはやめて、下端は縁に付けたまま体を一段つぶして戻す**（0.11 秒のコマ）。
    → 本人：「つぶれるというか、もっとぽよぽよできる？」→（なめらかに伸び縮み／コマを増やす、を出して）「そんな感じ。やってみ」。
@@ -508,7 +507,10 @@ body.demo #dBar{padding-left:calc(clamp(16px,4vw,calc(54px*var(--k))) + var(--px
    → 本人：「なんか結果あんま動いてないように見える」——縦 .9 は 28px の体で 2.8px、粒一つに届かずコマ送りでは止まって見えた。**縦 .8・横 1.15 まで**（縦に 5.6px、粒一つ半）。
    → 本人：「なんか頷いてる感じで、もっとカクカクしてていいかも」（頷いて見えるのはこのままでよい）→（三段／二段）「一旦A」。
    **三段で刻む**：ふつう 0.42 秒 → 半分つぶれる 0.18 秒 → いちばんつぶれる 0.42 秒 → 半分 0.18 秒。段のあいだは止める（緩急は止まる長さの差でつける）。
-   → 本人：「2でいいかも」。**二段**：ふつう 0.6 秒 ⇄ いちばんつぶれる 0.6 秒。ぺこっ、ぺこっ*/
+   → 本人：「2でいいかも」。**二段**：ふつう 0.6 秒 ⇄ いちばんつぶれる 0.6 秒。ぺこっ、ぺこっ。
+   → 本人：「頷きに見えないかも」→「長さはむしろトントンにしたい。目をずらす？」。つぶれるあいだ目を一段下げた（JS の PAL[4]）
+   → 本人：「一段でこれになる？」——つぶれと目の下げが足し算で、目が 5.6px 下がり額が厚く見えた →（つぶれを戻して目だけ／目は下げずつぶれだけ）「前者でやってみて」。
+   **つぶれるのはやめて、目の下げだけで頷く**：0.6 秒ずつ、ふつうの目 ⇄ 一段下げた目（--nod を JS が見る）。体の形・大きさは変わらない*/
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
@@ -4263,7 +4265,7 @@ var PAL = [
   /* 2 上がっているとき：触角が後ろへ**しなる**（先が根元の高さまで下がる）　3 下がっているとき：触角が**立つ** */
   ['..........','...##.....','..######..','.########.','.##.##.##.','.########.','..######..'],
   ['....#.....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
-  /* 4 **下を向く**（リザルトの角でつぶれているとき）。目が一段下がる——頷いて見える。触角は後ろへなびく形（PAL[1]）、体は PAL_DOWN と同じ
+  /* 4 **下を向く**（リザルトの角で頷くとき）。目が一段下がる——頷いて見える。触角は後ろへなびく形（PAL[1]）、体は PAL_DOWN と同じ
      （2026-09-30、本人：「頷きに見えないかも」→「長さはむしろトントンにしたい。目をずらす？」→「いいよ」）*/
   ['...#......','....#.....','..######..','.########.','.########.','.##.##.##.','..######..']
 ];
@@ -4472,11 +4474,9 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     var cs = getComputedStyle(cv);
     cv.style.setProperty('--sx', REDUCE ? '0px' : (cs.getPropertyValue('--fx').trim() || '0px'));
     cv.style.setProperty('--sy', REDUCE ? '0px' : (cs.getPropertyValue('--fy').trim() || '0px'));
-    cv.style.setProperty('--qw', REDUCE ? '1' : (cs.getPropertyValue('--pw').trim() || '1'));
-    cv.style.setProperty('--qh', REDUCE ? '1' : (cs.getPropertyValue('--ph').trim() || '1'));
     if (REDUCE || turn >= 0) return;
-    /* リザルトの角に乗っているあいだは、触角は後ろへなびくコマ。**つぶれているあいだだけ目を一段下げる**（PAL[4]）——頷き（伸び縮みは CSS の palpoyo）*/
-    if (cv.classList.contains('perch')){ var nf4 = (parseFloat(cs.getPropertyValue('--ph')) || 1) < 1 ? 4 : 1; if (f !== nf4){ f = nf4; draw(); } return; }
+    /* リザルトの角に乗っているあいだは、触角は後ろへなびくコマ。**0.6 秒ずつ目を一段下げる**（PAL[4]）——頷き（拍子は CSS の palnod）*/
+    if (cv.classList.contains('perch')){ var nf4 = (parseFloat(cs.getPropertyValue('--nod')) || 0) >= .5 ? 4 : 1; if (f !== nf4){ f = nf4; draw(); } return; }
     var by = null;
     cv.getAnimations().forEach(function(a){ if (a.animationName === 'palbob') by = a; });
     if (!by){ if (f > 1){ f = 1; draw(); } return; }   /* 漂っていないとき（唱える・押し出すなど）は、しなり・立ちのコマに取り残さない */
