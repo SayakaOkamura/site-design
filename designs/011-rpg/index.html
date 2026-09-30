@@ -491,9 +491,14 @@ body.demo #dBar{padding-left:calc(clamp(16px,4vw,calc(54px*var(--k))) + var(--px
 #pal.term{z-index:9}
 /* リザルトの角に乗っているあいだ（JS の place）。漂いを止める——--fx / --fy が 0 に戻り、0.11 秒ごとの写しも 0 になる。
    代わりに**上下にぴこぴこ**（本人：「上下にぴこぴこするくらいはいいよ」）。はじめは体ごと粒一つ跳ねさせた（勇者の二歩 0.88 秒で一回）*/
-#pal.perch:not(.cast){animation:none}
+#pal.perch:not(.cast){transform-origin:50% 100%; animation:palpoyo 1.2s ease-in-out infinite}
+@keyframes palpoyo{ 0%{transform:scale(1,1)} 15%{transform:scale(1.12,.86)} 30%{transform:scale(.94,1.07)} 45%{transform:scale(1.05,.95)}
+  60%{transform:scale(.98,1.02)} 75%,100%{transform:scale(1,1)} }
 /* 本人：「もうちょい滑らかにピコピコして」→（なめらかに跳ねさせたら）「上部にくっついてぴこぴこしててほしいのね、浮いてるというか乗ってる感じ」
-   →（体を縮めて伸ばす／触角だけ、を出して）「A」。**体ごと跳ねるのはやめて、下端は縁に付けたまま体を一段つぶして戻す**（JS の PAL[4]・0.11 秒のコマ）*/
+   →（体を縮めて伸ばす／触角だけ、を出して）「A」。**体ごと跳ねるのはやめて、下端は縁に付けたまま体を一段つぶして戻す**（0.11 秒のコマ）。
+   → 本人：「つぶれるというか、もっとぽよぽよできる？」→（なめらかに伸び縮み／コマを増やす、を出して）「そんな感じ。やってみ」。
+   **下端を支点に、なめらかに伸び縮みしつづける**——つぶれる → 少し伸びる → 少しつぶれる → 落ち着く（ゼリーの揺れ返し）。1.2 秒で一回、落ち着いているのは 0.3 秒。
+   縦につぶれると横に広がる。途中でドットの大きさが少し不揃いになるのは、承知のうえ*/
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
@@ -4247,9 +4252,7 @@ var PAL = [
   ['...#......','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
   /* 2 上がっているとき：触角が後ろへ**しなる**（先が根元の高さまで下がる）　3 下がっているとき：触角が**立つ** */
   ['..........','...##.....','..######..','.########.','.##.##.##.','.########.','..######..'],
-  ['....#.....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
-  /* 4 **つぶれる**（リザルトの角に乗っているとき）。下端は同じ行のまま、体が一段低く横に広がる。触角も一段下がる */
-  ['..........','...#......','....#.....','.########.','.##.##.##.','##########','.########.']
+  ['....#.....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..']
 ];
 /* まわるときのコマ（右回り）。**斜め**は目が右へ寄り、**横**は体が細く目が端に一つ、**後ろ**は目が無い。
    左半分は右半分の鏡。触角の根元も向きに合わせて動く */
@@ -4265,7 +4268,7 @@ function palMirror(m){ return m.map(function(r){ return r.split('').reverse().jo
 var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q), PAL[0]];
 (function(){
   var cv = document.getElementById('pal'), cx = cv.getContext('2d');
-  var W = PAL[0][0].length, H = PAL[0].length, f = 0, pk = 0, turn = -1, turnT = null, chanting = false, tipOn = false;
+  var W = PAL[0][0].length, H = PAL[0].length, f = 0, turn = -1, turnT = null, chanting = false, tipOn = false;
   var GOLD = getComputedStyle(document.documentElement).getPropertyValue('--go').trim() || '#ffd270';
   var TERM = getComputedStyle(document.documentElement).getPropertyValue('--dim').trim() || '#e2dcd6';   /* 帯にいるあいだの色（帯の字と同じ）*/
   var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
@@ -4457,17 +4460,11 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     cv.style.setProperty('--sx', REDUCE ? '0px' : (cs.getPropertyValue('--fx').trim() || '0px'));
     cv.style.setProperty('--sy', REDUCE ? '0px' : (cs.getPropertyValue('--fy').trim() || '0px'));
     if (REDUCE || turn >= 0) return;
-    /* リザルトの角に乗っているあいだは、**つぶれて戻る**（上の CSS の #pal.perch）。0.88 秒（勇者の二歩）で一回：
-       ふつう四コマ → つぶれる二コマ → 触角だけ反対へ揺れ返す一コマ → ふつう */
-    if (cv.classList.contains('perch')){
-      pk = (pk + 1) % 8;
-      var pf = [1, 1, 1, 1, 4, 4, 0, 1][pk];
-      if (pf !== f){ f = pf; draw(); }
-      return;
-    }
+    /* リザルトの角に乗っているあいだは、絵は後ろへなびくコマのまま（ぽよぽよは CSS の palpoyo）*/
+    if (cv.classList.contains('perch')){ if (f !== 1){ f = 1; draw(); } return; }
     var by = null;
     cv.getAnimations().forEach(function(a){ if (a.animationName === 'palbob') by = a; });
-    if (!by){ if (f > 1){ f = 1; draw(); } return; }   /* 漂っていないとき（唱える・押し出すなど）は、しなり・立ち・つぶれのコマに取り残さない */
+    if (!by){ if (f > 1){ f = 1; draw(); } return; }   /* 漂っていないとき（唱える・押し出すなど）は、しなり・立ちのコマに取り残さない */
     var ty = ((by.currentTime || 0) - 150 + 4000) % 2000;
     var nf = (ty >= 200 && ty < 800) ? 2 : (ty >= 1200 && ty < 1800) ? 3 : 1;
     if (nf !== f){ f = nf; draw(); }
