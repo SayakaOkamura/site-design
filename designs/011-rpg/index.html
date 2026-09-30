@@ -4825,16 +4825,21 @@ var G = { on:false };
   ];
   /* 跳ぶ。短く押せば 13 粒・0.62 秒（前の跳びと同じ）。**押しているあいだ、上がる途中だけ**落ちる力を弱めて 20 粒まで。
      離せば、その場からふつうの落ち方に戻る */
-  var TJ = .62, JH = 13, JH_HOLD = 20;
-  var JV = 4 * JH / TJ, JG = 2 * JV / TJ, JG_HOLD = JV * JV / (2 * JH_HOLD);
-  var AIR_MAX = JV / JG_HOLD + Math.sqrt(2 * JH_HOLD / JG);   /* いちばん長く宙にいる時間（0.86 秒ほど）*/
+  /* **長押しが効くのは、押してから 0.12 秒を過ぎてから**（2026-09-30、本人：「長押しジャンプじゃなくても長いやつ超えられるようになってる？私が軽く長押ししちゃっただけ？」）。
+     前は押した瞬間から効いていて、ふつうに叩いただけ（押している 0.05〜0.1 秒）で 14〜16 粒まで上がり、高い岩（越えるのに 14 粒）を越えられた。
+     → 0.12 秒までは短い跳びと同じ落ち方。そこから押し続けたぶんだけ落ちる力を弱めて、いちばん長く押せば 20 粒（前と同じ）*/
+  var TJ = .62, JH = 13, JH_HOLD = 20, HOLD_T = .12;
+  var JV = 4 * JH / TJ, JG = 2 * JV / TJ,
+      V_T = JV - JG * HOLD_T, Y_T = JV * HOLD_T - JG * HOLD_T * HOLD_T / 2,   /* 0.12 秒の時点の速さと高さ */
+      JG_HOLD = V_T * V_T / (2 * (JH_HOLD - Y_T));
+  var AIR_MAX = HOLD_T + V_T / JG_HOLD + Math.sqrt(2 * JH_HOLD / JG);   /* いちばん長く宙にいる時間（0.97 秒ほど）*/
   var BIRD_ALT = 23;              /* 鳥の下端。走っている勇者の頭（21 粒）の少し上——跳ぶと当たる */
   var cv = document.getElementById('gm'), cx = cv.getContext('2d');
   var hud = document.getElementById('gHud');
   var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
   var raf = null, last = 0, W = 0, CH = 0, vNat = 1, v0 = 1;
   var obs = [], passed = 0, t = 0, spawnAt = 0, over = false, overAt = 0, hinted = false, best = 0;
-  var air = false, jy = 0, jv = 0, held = false, tallSeen = false, highDone = false;
+  var air = false, jy = 0, jv = 0, ta = 0, held = false, tallSeen = false, highDone = false;
   var lands = [];
   try { best = +localStorage.getItem('adc011-game-best') || 0; } catch(e){}
 
@@ -4875,8 +4880,10 @@ var G = { on:false };
   /* **並び**（同日）。越えた数で混ざりはじめる：
        二つ続きの岩（10 こから）——一度の跳びで二つ越える
        岩のすぐあとに鳥（14 こから）——跳んで降りたら、すぐは跳ばない
-       低い鳥（8 こから、鳥の半分）——地面すれすれを飛んでくる。**跳ばないと当たる**（高い鳥の逆）*/
-  var LOW_ALT = 3;
+       低い鳥（8 こから、鳥の半分）——低く飛んでくる（下端 6 粒。9/29 は 3 粒で地面すれすれだった）。**跳ばないと当たる**（高い鳥の逆）*/
+  /* 低い鳥の高さ。はじめは下端 3 粒（地面すれすれ）→ 本人：「鳥が超低空飛行してるのも気になってる」（2026-09-30）。
+     **下端 6 粒**（勇者のすねのあたり）。上端は 10 粒なので、短い跳び（13 粒）で越えられ、走ったままなら当たるのは同じ */
+  var LOW_ALT = 6;
   function push(m, bird, dx, alt){ obs.push({ x:W + dx, m:m, bird:bird, w:m[0].length, h:m.length, done:false, alt:alt }); }
   function spawn(){
     var v = speed(), r = Math.random(), extra = 0;
@@ -4911,7 +4918,8 @@ var G = { on:false };
     setRate(v / vNat);
     if (t >= spawnAt) spawn();
     if (air){
-      jv -= ((held && jv > 0) ? JG_HOLD : JG) * dt;
+      ta += dt;
+      jv -= ((held && jv > 0 && ta > HOLD_T) ? JG_HOLD : JG) * dt;   /* 長押しが効くのは 0.12 秒を過ぎてから */
       jy += jv * dt;
       if (jy > 16.5 && !highDone){ highDone = true; paintHud(); }
       if (jy <= 0){ air = false; jy = 0; jv = 0; heroPose(null); }
@@ -4936,7 +4944,7 @@ var G = { on:false };
   }
   function jump(){
     if (air) return;
-    air = true; jy = 0; jv = JV; heroPose('jump');     /* `POSE` に無い名前は、いまのコマで止まる（走りの脚が宙で動かない）*/
+    air = true; jy = 0; jv = JV; ta = 0; heroPose('jump');     /* `POSE` に無い名前は、いまのコマで止まる（走りの脚が宙で動かない）*/
     if (!hinted){ hinted = true; paintHud(); }
   }
   function end(){
