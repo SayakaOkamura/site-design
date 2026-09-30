@@ -489,6 +489,8 @@ body{
 /* 連れが帯にいるあいだ、帯の字を連れのぶん（粒 12）右へ */
 body.demo #dBar{padding-left:calc(clamp(16px,4vw,calc(54px*var(--k))) + var(--px) * 12)}
 #pal.term{z-index:9}
+/* リザルトの角に乗っているあいだ（JS の place）。漂いを止める——--fx / --fy が 0 に戻り、0.11 秒ごとの写しも 0 になる */
+#pal.perch:not(.cast){animation:none}
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
@@ -4326,6 +4328,10 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     cv.style.setProperty('--dir', dir);
     var inBand = at === 'band' && D.on;
     if (inBand !== cv.classList.contains('term')){ cv.classList.toggle('term', inBand); draw(); }
+    /* **リザルトの角に乗っているあいだは漂わない**——窓の上の縁にくっついたまま（2026-09-30、本人：「ポップの上に出てくる時だけちゃんと上にくっついたままいてほしい＞AIくん」）。
+       押し出し（palCast）は前どおり */
+    var perch = at === 'result' && D.on;
+    if (perch !== cv.classList.contains('perch')) cv.classList.toggle('perch', perch);
   }
   var at = 'hero', dir = 1;
   /* 置き場を変える（'hero' 勇者の頭の横／'band' 下の帯）。変わるときだけ、コマを刻んで飛ぶ */
@@ -4448,7 +4454,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     if (REDUCE || turn >= 0) return;
     var by = null;
     cv.getAnimations().forEach(function(a){ if (a.animationName === 'palbob') by = a; });
-    if (!by) return;
+    if (!by){ if (f > 1){ f = 1; draw(); } return; }   /* 漂っていない（リザルトの角に乗っている）ときは、しなり・立ちのコマに取り残さない */
     var ty = ((by.currentTime || 0) - 150 + 4000) % 2000;
     var nf = (ty >= 200 && ty < 800) ? 2 : (ty >= 1200 && ty < 1800) ? 3 : 1;
     if (nf !== f){ f = nf; draw(); }
