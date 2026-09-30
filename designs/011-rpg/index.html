@@ -4433,7 +4433,14 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
        途中の連れの四角がメニュー（と粒二つの縁）に一度もかからないものを使う：① 上へふくらむ ② 先に横へ出てから上がる ③ 先に上がってから横へ。
        どれもかかるなら、かかるのがいちばん短いもの（homeCtrl）*/
     var cxy = homeCtrl(sx, sy, tx, ty, q), ccx = cxy[0], cy = cxy[1];
-    homing = PAL_CROUCH; cv._homeOn = true; draw();
+    /* 地面の上（帯のあたり）を飛ぶあいだは、帯の字と同じ明るい色で帯より手前に描く（.term）。影の色のままだと暗い地面に溶け、
+       帯（z-index 8）の後ろに隠れて一瞬消えて見えた（本人：「逃げる押して返ってくる時一瞬消えない？」）。空に上がったら影の色 */
+    function tone(){
+      var gt = document.getElementById('ground').getBoundingClientRect().top - document.getElementById('screen').getBoundingClientRect().top;
+      var low = (parseFloat(cv.style.top) || 0) + H * q > gt;
+      if (low !== cv.classList.contains('term')) cv.classList.toggle('term', low);
+    }
+    tone(); homing = PAL_CROUCH; cv._homeOn = true; draw();
     clearInterval(cv._home);
     cv._home = setInterval(function(){
       k++;
@@ -4441,9 +4448,9 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
         var t = k / N, u = 1 - t;
         cv.style.left = Math.round(u * u * sx + 2 * u * t * ccx + t * t * tx) + 'px';
         cv.style.top = Math.round(u * u * sy + 2 * u * t * cy + t * t * ty) + 'px';
-        homing = face; draw();
+        tone(); homing = face; draw();
       } else if (k === N + 1){
-        cv.style.left = tx + 'px'; cv.style.top = ty + 'px'; homing = null; f = 1; draw();
+        cv.style.left = tx + 'px'; cv.style.top = ty + 'px'; tone(); homing = null; f = 1; draw();
       } else {
         clearInterval(cv._home); cv._homeOn = false; cv.classList.remove('spin'); place();
       }
