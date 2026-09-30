@@ -458,9 +458,10 @@ body{
 @property --fx{ syntax:'<length>'; inherits:false; initial-value:0px }
 @property --fy{ syntax:'<length>'; inherits:false; initial-value:0px }
 #pal{position:absolute; z-index:4; image-rendering:pixelated; cursor:pointer; transform:translate(var(--sx, 0px), var(--sy, 0px));
-  animation:palbob 1s ease-in-out infinite alternate, palsway 1.6s ease-in-out infinite alternate}
+  animation:palbob 1s ease-in-out infinite alternate, palsway 3.2s infinite}
 @keyframes palbob{ from{--fy:0px} to{--fy:calc(var(--px) * -5)} }
-@keyframes palsway{ from{--fx:calc(var(--px) * -3)} to{--fx:calc(var(--px) * 3)} }
+/* 横は**前へゆっくり出て（2.24 秒）、後ろへすっと戻る（0.96 秒）**——前へ進もうとして風に押し戻される形。本人：「進んでるって考えると3-3わかりにくいか…」→（前寄りに戻す／行きと帰りの速さを変える／触角をいつも後ろへ、B＋C を勧めて）「やってみて」*/
+@keyframes palsway{ 0%{--fx:calc(var(--px) * -3); animation-timing-function:ease-in-out} 70%{--fx:calc(var(--px) * 3); animation-timing-function:ease-in-out} 100%{--fx:calc(var(--px) * -3)} }
 /* **押すと、くるんと一回まわる**（2026-09-29、本人：「実際押したら話せるようにしたら？」→「モーションこいつに入れる？」→「クリックしたときの話ね」
    →（デモに入るか訊いて）「いやそれには入らないけどね」→（動きだけか一言か訊いて）「くるんってしよう」）。**話はしない。**
    いちどコインのように横に縮んで裏返る形にした → 本人：「立体感出せないか？？」。
@@ -4434,18 +4435,19 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
   /* 触角は**体の上下に半拍遅れてついてくる**（2026-09-30、本人：「浮く、でもこれは動きが単調だからだと思う」→「やっみて」）。
      前は体と関係なく 0.52 秒ごとに左右を切り替えていた。漂う（CSS の palbob / palsway）の時刻から、いまの速さの向きを読む。
-     上がる勢いが強いあいだ（遅れて）→ しなる／下がる勢いが強いあいだ → 立つ／上と下の近く → 左右へ進む向きの後ろになびく */
+     上がる勢いが強いあいだ（遅れて）→ しなる／下がる勢いが強いあいだ → 立つ／上と下の近く → **いつも後ろ（左）へなびく**。
+     前は左右の進む向きの後ろになびいていた——左へ戻るあいだは前へなびき、後ろへ進んで見えた（本人：「進んでるって考えると3-3わかりにくいか…」）*/
   setInterval(function(){
     /* 位置のコマ送り（勇者と同じ 0.11 秒）。漂いが止まっているとき（回る・唱えるなど）は --fx / --fy が 0 に戻るので、そのまま写せばよい */
     var cs = getComputedStyle(cv);
     cv.style.setProperty('--sx', REDUCE ? '0px' : (cs.getPropertyValue('--fx').trim() || '0px'));
     cv.style.setProperty('--sy', REDUCE ? '0px' : (cs.getPropertyValue('--fy').trim() || '0px'));
     if (REDUCE || turn >= 0) return;
-    var by = null, bx = null;
-    cv.getAnimations().forEach(function(a){ if (a.animationName === 'palbob') by = a; else if (a.animationName === 'palsway') bx = a; });
-    if (!by || !bx) return;
-    var ty = ((by.currentTime || 0) - 150 + 4000) % 2000, tx = (bx.currentTime || 0) % 3200;
-    var nf = (ty >= 200 && ty < 800) ? 2 : (ty >= 1200 && ty < 1800) ? 3 : (tx < 1600 ? 1 : 0);
+    var by = null;
+    cv.getAnimations().forEach(function(a){ if (a.animationName === 'palbob') by = a; });
+    if (!by) return;
+    var ty = ((by.currentTime || 0) - 150 + 4000) % 2000;
+    var nf = (ty >= 200 && ty < 800) ? 2 : (ty >= 1200 && ty < 1800) ? 3 : 1;
     if (nf !== f){ f = nf; draw(); }
   }, 110);
 })();
