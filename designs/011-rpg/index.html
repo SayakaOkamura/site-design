@@ -4280,8 +4280,11 @@ var PAL = [
      **スライムの待機に合わせる**：てっぺんが一段下がって、頭の上の段が体のいちばん広い幅（8 粒）まで平たく広がる。はみ出しは無し。目も一段下がる。
      触角は二粒のまま、寝かせずに頭と一緒に一段下がる。切り替えは敵のスライムと同じ 0.34 秒（CSS の palnod）。
      → 本人：「なんかぺこぺこしてる」——顔のある体で目が下がると下を向いたと読まれ、速く繰り返すとお辞儀の連続になった。
-     →（目は動かさない、と出して）「いったんやってみて。あと速度もさっきのくらいで」。**目の高さは止める**（抜くのは目の上の段）。切り替えは 0.6 秒ずつに戻す*/
-  ['..........','...#......','....#.....','.########.','.##.##.##.','.########.','..######..']
+     →（目は動かさない、と出して）「いったんやってみて。あと速度もさっきのくらいで」。**目の高さは止める**（抜くのは目の上の段）。切り替えは 0.6 秒ずつに戻す。
+     → 本人：「やっぱり頭へこんでる感じから抜け出せないわ」——元の丸い頭より低い絵を出すかぎり、削れて見える。
+     →（向きを逆に：上へ伸びる／なめらかな伸び縮みに戻す、前者を勧めて）「Aやってみて」。**上へ一段伸びる**（八行。丸い頭のまま一段高く、目の高さは動かない）。
+     ふつうの形が「下」になる。へこむ絵は出ない*/
+  ['...#......','....#.....','..######..','.########.','.########.','.##.##.##.','.########.','..######..']
 ];
 /* まわるときのコマ（右回り）。**斜め**は目が右へ寄り、**横**は体が細く目が端に一つ、**後ろ**は目が無い。
    左半分は右半分の鏡。触角の根元も向きに合わせて動く */
@@ -4305,11 +4308,13 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   function draw(){
     var p = px(), dpr = Math.min(3, window.devicePixelRatio || 1),
         m = turn >= 0 ? PAL_TURN[turn] : chanting ? (dir < 0 ? palMirror(PAL_CAST) : PAL_CAST) : listening ? PAL_DOWN : PAL[f];
-    cv.style.width = (W * p) + 'px'; cv.style.height = (H * p) + 'px';
-    cv.width = W * p * dpr; cv.height = H * p * dpr;
+    /* 背の高い絵（PAL[4]、八行）は、枠を上へ一段足す——下端は動かさない（margin-top で上へ逃がす）*/
+    var mh = m.length;
+    cv.style.width = (W * p) + 'px'; cv.style.height = (mh * p) + 'px'; cv.style.marginTop = ((H - mh) * p) + 'px';
+    cv.width = W * p * dpr; cv.height = mh * p * dpr;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
     cx.fillStyle = cv.classList.contains('term') ? TERM : INK;
-    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (m[y][x] === '#') cx.fillRect(x * p, y * p, p, p);
+    for (var y = 0; y < mh; y++) for (var x = 0; x < W; x++) if (m[y][x] === '#') cx.fillRect(x * p, y * p, p, p);
     if (chanting && tipOn && turn < 0){ cx.fillStyle = GOLD; cx.fillRect((dir < 0 ? W - 1 - 7 : 7) * p, 0, p, p); }
   }
   /* **勇者の左斜め上**（同日、本人：「左斜め上くらいがいいかも」。前は左の肩の高さ）。連れの右下の角を、勇者の頭の左上の角（絵の 4 列目・2 行目）の
@@ -4489,7 +4494,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     cv.style.setProperty('--sx', REDUCE ? '0px' : (cs.getPropertyValue('--fx').trim() || '0px'));
     cv.style.setProperty('--sy', REDUCE ? '0px' : (cs.getPropertyValue('--fy').trim() || '0px'));
     if (REDUCE || turn >= 0) return;
-    /* リザルトの角に乗っているあいだは、0.6 秒ずつ**頭のてっぺんが一段下がって平たく広がり、戻る**（目の高さは動かない）（PAL[1] ⇄ PAL[4]。拍子は CSS の palnod）。触角も頭と一緒に上下するだけ
+    /* リザルトの角に乗っているあいだは、0.6 秒ずつ**一段伸びて、戻る**（目の高さは動かない）（PAL[1] ⇄ PAL[4]。拍子は CSS の palnod）。触角も頭と一緒に上下するだけ
        （触角が遅れてしなる二コマを付けた → 本人：「触覚がプルンとしてるな　これも上下でいいよ」で外した）*/
     if (cv.classList.contains('perch')){ var nf4 = (parseFloat(cs.getPropertyValue('--nod')) || 0) >= .5 ? 4 : 1; if (f !== nf4){ f = nf4; draw(); } return; }
     var by = null;
