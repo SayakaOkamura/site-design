@@ -4468,6 +4468,8 @@ var PAL_SIDE = ['.....#....','.....#....','...####...','..######..','..####.#..'
 var PAL_BACK = ['...#......','....#.....','..######..','.########.','.########.','.########.','..######..'];
 function palMirror(m){ return m.map(function(r){ return r.split('').reverse().join(''); }); }
 var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q), PAL[0]];
+/* 右を向いているとき（ふだん・エンドロール）の回り方：右向き → 横 → 後ろ → 横 → 斜め（左）→ 正面 → 斜め（右）。右向きで始まって右向きで終わる */
+var TURN_R = [PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q), PAL[0], PAL_Q], turnSeq = PAL_TURN;
 (function(){
   var cv = document.getElementById('pal'), cx = cv.getContext('2d');
   var W = PAL[0][0].length, H = PAL[0].length, f = 0, jk = 0, turn = -1, turnT = null, chanting = false;
@@ -4476,7 +4478,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
   function draw(){
     var p = px(), dpr = Math.min(3, window.devicePixelRatio || 1),
-        m = homing || (turn >= 0 ? PAL_TURN[turn] : chanting ? (dir < 0 ? palMirror(PAL_CAST) : PAL_CAST) : listening ? PAL_DOWN : PAL[f]);
+        m = homing || (turn >= 0 ? turnSeq[turn] : chanting ? (dir < 0 ? palMirror(PAL_CAST) : PAL_CAST) : listening ? PAL_DOWN : PAL[f]);
     /* 背の高い絵（PAL[4]、八行）は、枠を上へ一段足す——下端は動かさない（margin-top で上へ逃がす）*/
     var mh = m.length;
     cv.style.width = (W * p) + 'px'; cv.style.height = (mh * p) + 'px'; cv.style.marginTop = ((H - mh) * p) + 'px';
@@ -4617,7 +4619,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
         cv.style.top = Math.round(u * u * sy + 2 * u * t * cy + t * t * ty) + 'px';
         tone(); homing = face; draw();
       } else if (k === N + 1){
-        cv.style.left = tx + 'px'; cv.style.top = ty + 'px'; tone(); homing = null; f = 1; draw();
+        cv.style.left = tx + 'px'; cv.style.top = ty + 'px'; tone(); homing = null; f = 5; draw();   /* 着いたら右向き（ふだんの向き）*/
       } else {
         clearInterval(cv._home); cv._homeOn = false; cv.classList.remove('spin'); place();
       }
@@ -4639,12 +4641,24 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     /* **回るあいだだけ、進んでいることを見せる**（同日、本人：「できれば横移動してることも加味した動きだと嬉しい。上下するとか」
        →（ふだんの漂いに入れたら）「あ、標準時は前のでよかったけど回転する時の話」）。
        ぴょんと浮きながら回り、進む向きの後ろ（左）へ少し置いていかれてから追いつく（粒の数。コマごと）*/
+    /* **つなぎ**（2026-09-30、本人：「モーションからモーションのつなぎもうちょっと綺麗にしてくれ」）。
+       前は回り始めに漂いを止めて（animation:none）位置が 0 へ跳び、回り終わると漂いが頭からやり直しになって、また跳んでいた。
+       → 漂いは**止めずに一時停止**して、いまの位置（--sx / --sy）から浮いて回り、回り終わったら**同じところから**漂いを続ける。
+       右を向いているとき（5〜7）は、右向きから回って右向きで終わる（TURN_R）。正面のときは前どおり */
     var UP = [1, 2, 3, 2, 1, 0], BACK = [1, 2, 2, 1, 0, 0];
-    function hop(){ var q = px(); cv.style.transform = 'translate(' + (-BACK[turn] * q) + 'px,' + (-UP[turn] * q) + 'px)'; }
+    var right = f >= 5, bx = parseFloat(cv.style.getPropertyValue('--sx')) || 0, by = parseFloat(cv.style.getPropertyValue('--sy')) || 0;
+    var drift = cv.getAnimations().filter(function(a){ return a.animationName === 'palbob' || a.animationName === 'palsway'; });
+    cv.classList.remove('spin');
+    drift.forEach(function(a){ a.pause(); });
+    turnSeq = right ? TURN_R : PAL_TURN;
+    function hop(){ var q = px(); cv.style.transform = 'translate(' + (bx - BACK[turn] * q) + 'px,' + (by - UP[turn] * q) + 'px)'; }
     turn = 0; hop(); draw();
     turnT = setInterval(function(){
       turn++;
-      if (turn >= PAL_TURN.length){ clearInterval(turnT); turn = -1; f = 0; cv.style.transform = ''; cv.classList.remove('spin'); }
+      if (turn >= turnSeq.length){
+        clearInterval(turnT); turn = -1; f = right ? 5 : 0; cv.style.transform = '';
+        drift.forEach(function(a){ a.play(); });
+      }
       else hop();
       draw();
     }, 75);
