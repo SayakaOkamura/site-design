@@ -1086,6 +1086,9 @@ body.demo #slime.come{animation:come .85s steps(9)}
 #slash{position:absolute; left:66%; bottom:var(--gh); z-index:8;
   transform:translateX(-50%); image-rendering:pixelated; display:none}
 #slash.on{display:block}
+/* 選んだ位置で斬り方が変わる（JS の slashKind）。上 = 敵の上寄りに振り下ろし、下 = 敵の下寄りに斬り上げ。中はいまの高さ */
+#slash[data-k="0"]{margin-bottom:calc(var(--px) * 2)}
+#slash[data-k="2"]{margin-bottom:calc(var(--px) * -2)}
 /* バフが乗った一撃は、斬撃の線がひと回り大きい（下の「連れのバフ」）*/
 #slash.on.big{transform:translateX(-50%) scale(1.5); transform-origin:50% 100%}
 /* 体力。**バーにする**（2026-09-15、本人：「普通に HP バーの方がわかりやすいかな」）。
@@ -3240,17 +3243,41 @@ var SW = 16, SH = 10;
   setInterval(function(){ if (REDUCE) return; i = (i+1) % SLIME.length; if (idle) paint(SLIME[i]); }, 340);
 })();
 
+/* **選んだ位置で斬り方が変わる**（2026-09-30、本人：「よく考えたらAiくんがサポートして何を得てるのかという動線はないな…」
+   →「勇者の攻撃とか処理とAiくんの処理とさくせんと、Aiくんとさくせんしか結びついてない感じがする」→（格ゲーのコマンドは「ゲーム混ざるよな～」で外して）
+   →「選択肢の位置で攻撃が変わってる感じが出ればいいのかなと思うけど」→（線だけ／構えも、線だけから）「やってみて」）。
+   選択肢は上・中・下に並んでいるので、**上 = 振り下ろし**（いまの線、敵の上寄り）／**中 = 横薙ぎ**／**下 = 斬り上げ**（線を上下に返す、敵の下寄り）。
+   向きが読めるように、線は**振る向きに三段で伸びる**（上：上から、中：勇者の側＝左から、下：下から）*/
+var SLASH_MID = [
+  '............','............','............','............',
+  '............','..#########.','.#########..','............',
+  '............','............','............','............'
+];
+var SLASH_UP = SLASH.slice().reverse();
 (function(){
   var cv = document.getElementById('slash'), cx = cv.getContext('2d');
   var w = SLASH[0].length, h = SLASH.length;
   var COL = getComputedStyle(document.documentElement)
               .getPropertyValue('--line').trim() || '#ffffff';
+  var KIND = [SLASH, SLASH_MID, SLASH_UP], kind = 0, part = 3, tReveal = null;
   function paint(){
     sizeCanvas(cv, cx, w, h);
     cx.fillStyle = COL;
-    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++)
-      if (SLASH[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
+    var m = KIND[kind];
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++){
+      if (m[y][x] !== '#') continue;
+      var d = kind === 0 ? y / h : kind === 1 ? x / w : 1 - (y + 1) / h;   /* 振る向きにどこまで来たか（0〜1）*/
+      if (d < part / 3) cx.fillRect(x*HPX, y*HPX, HPX, HPX);
+    }
   }
+  /* 斬るたびに呼ぶ（swing）。0 上・1 中・2 下。0.05 秒ずつ三段で伸びる。上下の寄せは CSS の data-k */
+  window.slashKind = function(k){
+    kind = (k === 1 || k === 2) ? k : 0; cv.setAttribute('data-k', kind);
+    clearTimeout(tReveal);
+    if (REDUCE){ part = 3; paint(); return; }
+    part = 1; paint();
+    tReveal = setTimeout(function(){ part = 2; paint(); tReveal = setTimeout(function(){ part = 3; paint(); }, 50); }, 50);
+  };
   paint();
   REDRAW.push(paint);
 })();
@@ -3794,7 +3821,7 @@ function typeCmd(s, done){
    → ふだんは**走ったまま戦い**、斬った瞬間に**ぐっと止める**（一瞬で 0）。振り終わったら 0.25 秒で走り出す。
    止まるのが短いので疾走感は残り、緩急で**斬ったところが立つ。**
    **最後の一太刀のあとは戻さない**——そのまま勝ちのポーズへ（剣を上げたまま走ると、地面の上を滑る）*/
-function swing(done){
+function swing(done, k){
   heroEl.classList.add('swing');
   halt(true, null, 0);
   heroPose('slash');                    /* 剣を振り下ろす */
@@ -3803,6 +3830,7 @@ function swing(done){
      →（連れの仕事を「次の問いを出す」「タスクをまとめる」にして、バフはやめる、と出して）「なるほど。やってみてC」）。
      heroBuff() と #slash.big は残してある */
   slashEl.classList.remove('big');
+  if (window.slashKind) slashKind(k);    /* 選んだ位置で斬り方を変える（上・中・下）*/
   slashEl.classList.add('on');          /* 敵の上に斬撃の線 */
   /* 一撃で一目。いちど「勇者で半分・連れの唱えで半分（二人で一つの一撃）」にした → 本人：「AIはあくまでサポート感あってほしいな」。
      **倒すのは勇者**に戻した。連れは唱えた字を勇者へ送って支える（palShot）*/
@@ -3908,7 +3936,7 @@ function choose(i){
     if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
     else winSeq();
   }
-  swing(function(){ struck = true; next(); });                       /* すぐ斬る */
+  swing(function(){ struck = true; next(); }, i);                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
   typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, function(){
     setLog(st + 1); typed = true; next();
   });
