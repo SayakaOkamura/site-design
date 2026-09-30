@@ -1003,9 +1003,10 @@ body.game #gHud{display:block}
    →（右上に小さく／勇者の上と足もと／窓の形で下に一つ、を出して）「3の感じで」）。
    真ん中の大きい字（9/29 に外したもの）とは違って、**メニューや窓と同じ枠で出す**（9/29 は地面の帯、9/30 から空のまんなか）——場面は切り替わらない。
    送りは「もどる ▼」。**「おすと」とは書かない**（9/18、本人：「押すって言われたらそのままそこを押さなきゃいけないように見えるでしょ」）。
-   上下は JS が置く。**夕日の頭にかかる高さ**——2026-09-30、本人：「ぶつかった表記もっと上でいいよ」→（地平のすぐ上／空のまんなか。
+   上下は JS が置く。**夕日にかぶせる**——2026-09-30、本人：「ぶつかった表記もっと上でいいよ」→（地平のすぐ上／空のまんなか。
    9/29 の「真ん中の大きい知らせ」に近づく、と出して）「あれは最初だった＋テキストボックスじゃなかった＋でかかったからじゃないかね」→「まあ一回やってみよ」。
-   前は地面の帯のまんなか。空のまんなか（名乗りと地平のあいだ）にしたら、本人：「もうちょい下かな。夕日の頭に掛かるくらい」*/
+   前は地面の帯のまんなか。空のまんなか（名乗りと地平のあいだ）にしたら、本人：「もうちょい下かな。夕日の頭に掛かるくらい」
+   →（頭にかけたら）「夕日と思い切りかぶせてもいいかもな」→（太陽のまんなか／丸の上半分）「A」。**太陽のまんなか**に置く*/
 #gEnd{position:absolute; left:50%; transform:translateX(-50%); z-index:9; display:none; white-space:nowrap;
   padding:calc(var(--px)*2) calc(var(--px)*4); font-size:clamp(13px,calc(1.5 * var(--fw)),calc(18px*var(--k))); font-weight:700}
 #gEnd p{margin:0; line-height:1.7}
@@ -4616,12 +4617,12 @@ var G = { on:false };
     ge.classList.add('on');
     var gt = document.getElementById('ground').getBoundingClientRect().top, sc = document.getElementById('screen').getBoundingClientRect().top;
     var nb = document.getElementById('name').getBoundingClientRect().bottom, eh = ge.offsetHeight;
-    /* **夕日の頭にかかる高さ**（上の CSS の節）。窓の下から三分の一が、太陽の丸（外の輪 66%）の上端にかぶる。
+    /* **夕日に思い切りかぶせる**（上の CSS の節）。窓の中心を太陽の中心に。ただし下端は地平の粒二つ上まで（太陽は下が地平に沈んでいる）。
        勇者の頭・浮いた連れと横で重なる窓では、その上に収める（粒二つあける）。
        名乗り・右上の数との間にも入らない窓（320×568 など）は、前の置き場（地面の帯のまんなか）へ */
     var q = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4, hr = heroEl.getBoundingClientRect(), pr = document.getElementById('pal').getBoundingClientRect(),
         hd = document.getElementById('gHud').getBoundingClientRect(), gr = ge.getBoundingClientRect(),
-        su = document.getElementById('sun').getBoundingClientRect(), sunTop = su.top + su.height / 2 * (1 - .66),
+        su = document.getElementById('sun').getBoundingClientRect(),
         ceil = Math.max(nb, (gr.left < hd.right && gr.right > hd.left) ? hd.bottom : 0) + q * 2,
         pe = document.getElementById('pal'), prest = pr.top - (parseFloat(pe.style.getPropertyValue('--sy')) || 0),
         hw = hr.width / 22, sx = parseFloat(pe.style.getPropertyValue('--sx')) || 0,
@@ -4629,7 +4630,7 @@ var G = { on:false };
         floor = Infinity;
     if (gr.left < headR && gr.right > headL) floor = Math.min(floor, hr.top + hw * 2 - q * 2);
     if (gr.left < palR && gr.right > palL) floor = Math.min(floor, prest - q * 5 - q * 2);
-    var y = Math.min(sunTop + eh / 3 - eh, floor - eh);
+    var y = Math.min(su.top + su.height / 2 - eh / 2, gt - q * 2 - eh, floor - eh);
     if (y < ceil){ var gh = window.innerHeight - gt; y = gt + Math.min((gh - eh) / 2, gh - eh - 6); }
     ge.style.top = Math.round(y - sc) + 'px';
     say('ぶつかった。' + passed + ' こ　こえた');
