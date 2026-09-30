@@ -3435,7 +3435,9 @@ function openDemo(){
    「にげる」を押したのは本人なので、文字が無くても「逃げたから消えた」と読める */
 function flee(){
   D.phase = 'flee'; D.n = 0;
-  palAt('hero'); palHide(true);   /* ④ 勇者の頭の陰へ（帯から戻って）*/
+  /* ④ 帯から勇者の横へ、**リザルトから戻るときと同じ丁寧な戻り**で（2026-09-30、本人：「にげるときもね」）。
+     前は戻ってすぐ頭の陰へ隠れていた（palHide）が、戻りが 0.9 秒になり、隠れる前にデモが閉じる（0.45 秒で quitDemo が隠れを解く）ので、隠れるのは外した */
+  palAt('hero', true);
   dWin.style.display = 'none';
   if (REDUCE){ quitDemo(); return; }
   slimeEl.classList.remove('come');
@@ -4376,16 +4378,18 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   }
   var at = 'hero', dir = 1;
   /* 置き場を変える（'hero' 勇者の頭の横／'band' 下の帯）。変わるときだけ、コマを刻んで飛ぶ */
-  window.palAt = function(where){
+  window.palAt = function(where, careful){
+    if (where === 'hero' && cv._homeOn) return;   /* 戻っている途中は、あとから来た「勇者の横へ」で位置を跳ばさない */
     if (where === at && where === 'hero'){ place(); return; }
-    if (at === 'result' && where === 'hero' && !REDUCE){ home(); return; }
+    if ((at === 'result' || careful) && at !== 'hero' && where === 'hero' && !REDUCE){ home(); return; }
     var moving = where !== at; at = where;
     if (moving && !REDUCE){ cv.classList.add('fly'); clearTimeout(cv._fly); cv._fly = setTimeout(function(){ cv.classList.remove('fly'); }, 450); }
     place();
   };
   /* **リザルトの角から勇者の横へ戻る**（2026-09-30、本人：「リザルトの上から戻ってくるモーションもうちょっと丁寧にやって」→（四つ出して）「いいよ」）。
      前は 0.4 秒の直線を 6 コマで飛ぶだけ（.fly）。→ ① 窓の縁で一段ぐっと沈む（0.11 秒）② 上へふくらむ弧で飛ぶ（6 コマ・0.66 秒、はじめの一歩で粒二つほど上がる）
-     ③ 飛ぶあいだは進む向きを向く（回るときの「斜め」の絵）④ 着いたら一拍（0.11 秒）ふつうの顔で止まってから漂いに戻る */
+     ③ 飛ぶあいだは進む向きを向く（回るときの「斜め」の絵）④ 着いたら一拍（0.11 秒）ふつうの顔で止まってから漂いに戻る。
+     にげるとき（帯から）も同じ（本人：「にげるときもね」。palAt の二つ目に true）*/
   var PAL_CROUCH = ['..........','...#......','....#.....','.########.','.##.##.##.','.########.','..######..'];
   function home(){
     var sx = parseFloat(cv.style.left) || 0, sy = parseFloat(cv.style.top) || 0, q = px();
@@ -4394,7 +4398,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     cv.style.left = sx + 'px'; cv.style.top = sy + 'px';
     cv.classList.remove('perch', 'cast'); cv.classList.add('spin'); cv.style.transform = '';
     var face = tx < sx ? palMirror(PAL_Q) : PAL_Q, cy = Math.min(sy, ty) - q * 8, k = 0, N = 6;
-    homing = PAL_CROUCH; draw();
+    homing = PAL_CROUCH; cv._homeOn = true; draw();
     clearInterval(cv._home);
     cv._home = setInterval(function(){
       k++;
@@ -4406,7 +4410,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
       } else if (k === N + 1){
         cv.style.left = tx + 'px'; cv.style.top = ty + 'px'; homing = null; f = 1; draw();
       } else {
-        clearInterval(cv._home); cv.classList.remove('spin'); place();
+        clearInterval(cv._home); cv._homeOn = false; cv.classList.remove('spin'); place();
       }
     }, 110);
   }
