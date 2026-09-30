@@ -1447,7 +1447,7 @@ body.roll #dRoll{display:block}
 /* **ここがこの窓でいちばん大きい余白**（2026-09-18）。矢印を外したぶんを間で持つ——
    上の三行（見出し・言ったこと・選んだ三つ）は 10px と 6px で寄せてあるので、
    **20px 空けば「別のもの」になる**（9/17 の「対の外を空ける」と同じ考え） */
-#dRes .rtask{margin:calc(var(--px)*5) 0 calc(var(--px)*4); padding:0; list-style:none}
+#dRes .rtask{margin:calc(var(--px)*5) 0 0; padding:0; list-style:none}
 #dRes .rtask li{margin:calc(var(--px)*1.5) 0; padding-left:1.7em; text-indent:-1.7em;
   font-size:clamp(14px,calc(1.7 * var(--fw)),calc(19px*var(--k))); line-height:1.6; font-weight:700; color:var(--ink)}
 /* **字下げで置く。**絶対位置にすると、折り返した行だけが右へ逃げて印が取り残される */
@@ -1478,7 +1478,12 @@ body.roll #dRoll{display:block}
 
    切るのは**間**に任せる。タスクは**順に一行ずつ出る**ので、
    出方そのものが「ここから別のもの」と言っている（下の `.rtask` の余白） */
-#dRes .rn{display:flex; gap:calc(var(--px)*6); margin-top:calc(var(--px)*4)}   /* 四角のあいだ 3 → 6 粒（2026-09-30、本人：「左右の話」「四角間の距離と鴨」）*/
+/* 四角のあいだ 3 → 6 粒（2026-09-30、本人：「左右の話」「四角間の距離と鴨」）。
+   **タスクの上と下の空きをそろえる**（同日、本人：「空白の大きさそろえて。さくせんからタスク、タスクから下の箱への空白が揃ってない」）。
+   上は「選んだ三つ」の字からタスクの字まで＝ 5 粒＋選んだ三つの行の上下の余り（.4 × 字）＋タスクの行の余り。
+   下はタスクの字から四角の縁まで＝ ここの margin ＋タスクの行の余り。→ ここを「5 粒＋ .4 × 選んだ三つの字」にすると、見える空きが同じになる
+   （前は下が 4 粒で、見える空きが上 31px・下 22px だった。1284×657）*/
+#dRes .rn{display:flex; gap:calc(var(--px)*6); margin-top:calc(var(--px)*5 + .4 * clamp(11px,calc(1.3 * var(--fw)),calc(13px*var(--k))))}
 /* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
 #dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
   background:none; color:var(--dim); border:calc(var(--px)/2) solid var(--dim);
