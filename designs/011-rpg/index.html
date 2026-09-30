@@ -493,8 +493,8 @@ body.demo #dBar{padding-left:calc(clamp(16px,4vw,calc(54px*var(--k))) + var(--px
    代わりに**上下にぴこぴこ**（本人：「上下にぴこぴこするくらいはいいよ」）。はじめは体ごと粒一つ跳ねさせた（勇者の二歩 0.88 秒で一回）*/
 @property --pw{ syntax:'<number>'; inherits:false; initial-value:1 }
 @property --ph{ syntax:'<number>'; inherits:false; initial-value:1 }
-#pal.perch:not(.cast){transform-origin:50% 100%; transform:scale(var(--qw, 1), var(--qh, 1)); animation:palpoyo 1.2s linear infinite}
-@keyframes palpoyo{ 0%,100%{--pw:1; --ph:1} 50%{--pw:1.08; --ph:.9} }
+#pal.perch:not(.cast){transform-origin:50% 100%; transform:scale(var(--qw, 1), var(--qh, 1)); animation:palpoyo 1.2s ease-in-out infinite}
+@keyframes palpoyo{ 0%,100%{--pw:1; --ph:1} 50%{--pw:1.15; --ph:.8} }
 /* 本人：「もうちょい滑らかにピコピコして」→（なめらかに跳ねさせたら）「上部にくっついてぴこぴこしててほしいのね、浮いてるというか乗ってる感じ」
    →（体を縮めて伸ばす／触角だけ、を出して）「A」。**体ごと跳ねるのはやめて、下端は縁に付けたまま体を一段つぶして戻す**（0.11 秒のコマ）。
    → 本人：「つぶれるというか、もっとぽよぽよできる？」→（なめらかに伸び縮み／コマを増やす、を出して）「そんな感じ。やってみ」。
@@ -503,7 +503,9 @@ body.demo #dBar{padding-left:calc(clamp(16px,4vw,calc(54px*var(--k))) + var(--px
    → 本人：「ぽよぽよしたねえ。それをまたどっとらしさに合わせてほしい」→（時間だけ刻む／形も粒に）「さっきと同じで」。
    **漂いと同じ 0.11 秒のコマ送り**：伸び縮みの値（--pw / --ph）は流れたまま、JS が 0.11 秒ごとに写す（--qw / --qh）。
    → 本人：「跳ね返りはなくていいよ。待機感がほしいだけだから緩急もなくていい」。**つぶれて戻るだけを、一定の速さで**（linear）。
-   縦 .9・横 1.08 まで、1.2 秒で一往復。揺れ返し（伸びる・またつぶれる）と、落ち着いて止まる間は外した*/
+   縦 .9・横 1.08 まで、1.2 秒で一往復。揺れ返し（伸びる・またつぶれる）と、落ち着いて止まる間は外した。
+   → 本人：「かんきゅうあっていいよ」。**緩急は戻す**（ease-in-out：つぶれきる・戻りきるところで遅く）。跳ね返りは無いまま。
+   → 本人：「なんか結果あんま動いてないように見える」——縦 .9 は 28px の体で 2.8px、粒一つに届かずコマ送りでは止まって見えた。**縦 .8・横 1.15 まで**（縦に 5.6px、粒一つ半）*/
 #pal.hide{animation:none; z-index:3; transform:translate(calc(var(--px) * 3), calc(var(--px) * 3)); transition:transform .15s steps(2)}
 #hero{position:absolute; left:34%; bottom:var(--gh); z-index:4;
   transform:translateX(-50%); image-rendering:pixelated}
