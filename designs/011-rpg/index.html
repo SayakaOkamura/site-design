@@ -4307,7 +4307,7 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
   function draw(){
     var p = px(), dpr = Math.min(3, window.devicePixelRatio || 1),
-        m = turn >= 0 ? PAL_TURN[turn] : chanting ? (dir < 0 ? palMirror(PAL_CAST) : PAL_CAST) : listening ? PAL_DOWN : PAL[f];
+        m = homing || (turn >= 0 ? PAL_TURN[turn] : chanting ? (dir < 0 ? palMirror(PAL_CAST) : PAL_CAST) : listening ? PAL_DOWN : PAL[f]);
     /* 背の高い絵（PAL[4]、八行）は、枠を上へ一段足す——下端は動かさない（margin-top で上へ逃がす）*/
     var mh = m.length;
     cv.style.width = (W * p) + 'px'; cv.style.height = (mh * p) + 'px'; cv.style.marginTop = ((H - mh) * p) + 'px';
@@ -4378,15 +4378,44 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
   /* 置き場を変える（'hero' 勇者の頭の横／'band' 下の帯）。変わるときだけ、コマを刻んで飛ぶ */
   window.palAt = function(where){
     if (where === at && where === 'hero'){ place(); return; }
+    if (at === 'result' && where === 'hero' && !REDUCE){ home(); return; }
     var moving = where !== at; at = where;
     if (moving && !REDUCE){ cv.classList.add('fly'); clearTimeout(cv._fly); cv._fly = setTimeout(function(){ cv.classList.remove('fly'); }, 450); }
     place();
   };
+  /* **リザルトの角から勇者の横へ戻る**（2026-09-30、本人：「リザルトの上から戻ってくるモーションもうちょっと丁寧にやって」→（四つ出して）「いいよ」）。
+     前は 0.4 秒の直線を 6 コマで飛ぶだけ（.fly）。→ ① 窓の縁で一段ぐっと沈む（0.11 秒）② 上へふくらむ弧で飛ぶ（6 コマ・0.66 秒、はじめの一歩で粒二つほど上がる）
+     ③ 飛ぶあいだは進む向きを向く（回るときの「斜め」の絵）④ 着いたら一拍（0.11 秒）ふつうの顔で止まってから漂いに戻る */
+  var PAL_CROUCH = ['..........','...#......','....#.....','.########.','.##.##.##.','.########.','..######..'];
+  function home(){
+    var sx = parseFloat(cv.style.left) || 0, sy = parseFloat(cv.style.top) || 0, q = px();
+    at = 'hero'; cv.classList.remove('fly'); place();
+    var tx = parseFloat(cv.style.left) || 0, ty = parseFloat(cv.style.top) || 0;
+    cv.style.left = sx + 'px'; cv.style.top = sy + 'px';
+    cv.classList.remove('perch', 'cast'); cv.classList.add('spin'); cv.style.transform = '';
+    var face = tx < sx ? palMirror(PAL_Q) : PAL_Q, cy = Math.min(sy, ty) - q * 8, k = 0, N = 6;
+    homing = PAL_CROUCH; draw();
+    clearInterval(cv._home);
+    cv._home = setInterval(function(){
+      k++;
+      if (k <= N){
+        var t = k / N, u = 1 - t;
+        cv.style.left = Math.round(u * u * sx + 2 * u * t * (sx + tx) / 2 + t * t * tx) + 'px';
+        cv.style.top = Math.round(u * u * sy + 2 * u * t * cy + t * t * ty) + 'px';
+        homing = face; draw();
+      } else if (k === N + 1){
+        cv.style.left = tx + 'px'; cv.style.top = ty + 'px'; homing = null; f = 1; draw();
+      } else {
+        clearInterval(cv._home); cv.classList.remove('spin'); place();
+      }
+    }, 110);
+  }
+  var homing = null;
   draw(); place();
   window.addEventListener('resize', function(){ draw(); place(); });
   /* 押したら一回まわる。まわっているあいだは漂うのを止める（同じ transform を取り合う）。デモ・ミニゲームの手は邪魔しない */
   cv.addEventListener('click', function(e){
-    if (D.on || G.on) return;
+    if (D.on || G.on || homing) return;
     e.stopPropagation();
     spin();
   });
