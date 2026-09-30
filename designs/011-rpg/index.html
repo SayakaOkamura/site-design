@@ -453,13 +453,14 @@ body{
    → **勇者と同じ 0.11 秒のコマ送り**。漂いの値（--fx / --fy）は流れたまま、JS が 0.11 秒ごとに写して（--sx / --sy）そのあいだは止める。位置は粒より細かくてよい。
    本人：「もうちょい大きく動いてもいいよ」→ 幅を 1.5 倍に：上へ粒二つ → 三つ、横に粒一つ → 一つ半（横は二つにすると頭の左の縁に触れる）。
    本人：「もっと大きくていい、一瞬なら被ってもいいし」→ **上へ粒五つ・横に粒三つ**。いちばん右・いちばん下のあたりで一瞬、頭の左の縁に重なる（連れが上に描かれる）。
-   本人：「横もっと動いていいよ」→ **横は粒三つ → 六つ**（後ろへ粒一つ・前へ粒五つ）。後ろを広げないのは、メニューと画面の左端が近い窓があるから */
+   本人：「横もっと動いていいよ」→ **横は粒三つ → 六つ**（後ろへ粒一つ・前へ粒五つ）→ 本人：「3-3だと変になる？」→「やって」。**後ろへ粒三つ・前へ粒三つ**——揺れの真ん中が置き場にそろう。
+   320×568 は後ろで画面からはみ出すので、置き場を左端から「粒三つ＋2px」より内に（JS の place）*/
 @property --fx{ syntax:'<length>'; inherits:false; initial-value:0px }
 @property --fy{ syntax:'<length>'; inherits:false; initial-value:0px }
 #pal{position:absolute; z-index:4; image-rendering:pixelated; cursor:pointer; transform:translate(var(--sx, 0px), var(--sy, 0px));
   animation:palbob 1s ease-in-out infinite alternate, palsway 1.6s ease-in-out infinite alternate}
 @keyframes palbob{ from{--fy:0px} to{--fy:calc(var(--px) * -5)} }
-@keyframes palsway{ from{--fx:calc(var(--px) * -1)} to{--fx:calc(var(--px) * 5)} }
+@keyframes palsway{ from{--fx:calc(var(--px) * -3)} to{--fx:calc(var(--px) * 3)} }
 /* **押すと、くるんと一回まわる**（2026-09-29、本人：「実際押したら話せるようにしたら？」→「モーションこいつに入れる？」→「クリックしたときの話ね」
    →（デモに入るか訊いて）「いやそれには入らないけどね」→（動きだけか一言か訊いて）「くるんってしよう」）。**話はしない。**
    いちどコインのように横に縮んで裏返る形にした → 本人：「立体感出せないか？？」。
@@ -4275,7 +4276,8 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     if (!r.width) return;
     /* 頭の左上の角から、左へ粒 2・下へ粒 4（同日、本人：「ちょっとだけ下、左」→「ちょい下」→「もう一個左下」→「いや左は動かさなくてよかった、下はもっと」）*/
     var hp = r.width / HW, left = r.left - s.left + hp * 4 - W * p - p * 2, top = r.top - s.top + hp * 2 - H * p + p;   /* →「右下」→「左下」→「割ともうちょい上かも」→「あとちょっとだけ上」→「変わった？もうちょい上げて」→「ちょっとだけ下」で左へ粒 2・下へ粒 1 */
-    left = Math.max(4, Math.round(left)); top = Math.round(top);
+    /* 漂いで後ろへ粒三つ出ても画面の左端から 2px は残す（320×568 で置き場が粒二つ右へ寄る）*/
+    left = Math.max(Math.round(p * 3 + 2), Math.round(left)); top = Math.round(top);
     /* **メニューにかかる窓では、勇者の右斜め上へ**（700×500・844×390 でメニューの裏に入った）。頭の右上の角（15 列目）のすぐ外。
        動いている途中でも測れるように、置く先の四角は計算で出す */
     var mn = document.getElementById('menu'), mr = mn.getBoundingClientRect(),
