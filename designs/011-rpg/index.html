@@ -3067,14 +3067,20 @@ function goPick(on){
 function openPop(k){
   /* **デモだけは窓を出さない**——画面そのものを使う（2026-09-15）*/
   if (k === 'demo'){ startDemo(); return; }
-  cur = k; page = 0; goSel = false; pop.classList.add('on');
+  if (cur && cur !== k) readAt[cur] = page;   /* 開いたまま別の窓へ移るときも、読んだところを覚える */
+  cur = k; page = Math.min(readAt[k] || 0, pages(DATA[k]).length - 1); goSel = false; pop.classList.add('on');   /* 読みかけなら続きから */
   document.body.classList.add('popped');   /* 狭くて低い窓で、メニューを退かせるため */
   draw(); sayPage();
   var i = ALL.findIndex(function(el){ return el.dataset.k === k; });
   if (i >= 0) sel = i;
   paintSel();
 }
-function close(){
+/* **閉じても、読んだところは覚えておく**（2026-09-30、本人：「外側を押したら閉じるようにするか否か…」→「ポップのほうにいちいちまうすあわせるのだるくない？」
+   →（外で閉じる、ただし読みかけは覚えて続きから開く、リザルトは外で閉じない、と出して）「いいよ」）。
+   9/15 に外で閉じるのをやめた理由は「読みかけが消える」だったので、**消えなければいい。**最後まで読んで閉じたときだけ、次は一枚目から */
+var readAt = {};
+function close(done){
+  if (cur){ if (done) delete readAt[cur]; else readAt[cur] = page; }
   cur = null; goSel = false; pop.classList.remove('on');
   document.body.classList.remove('popped');
   paintSel();
@@ -3083,7 +3089,7 @@ function close(){
 function turn(){
   var d = DATA[cur];
   if (page < pages(d).length - 1){ page++; goSel = false; draw(); sayPage(); return; }
-  close();
+  close(true);
 }
 
 /* 決定。**窓が開いていれば送り、最後なら閉じる**（お問い合わせだけメールへ） */
@@ -3096,7 +3102,7 @@ function fire(){
     GO[cur].blank ? window.open(GO[cur].href, '_blank', 'noopener') : (location.href = GO[cur].href);
     return;
   }
-  close();
+  close(true);   /* 最後の頁で閉じた＝読み終わった。次は一枚目から */
 }
 
 document.addEventListener('click', function(e){
@@ -3127,9 +3133,13 @@ document.addEventListener('click', function(e){
      なぞったときはめくらない、を出して）「そうしようか」。
      どこでもめくれると、**押し間違えても戻れない**（前の頁へ戻る手が無い）うえに、
      **字を選ぼうとするたびにめくれる。**
-     **窓の外は何も起きない**——閉じる形は 9/15 にやめている。別の窓へはメニューから移れる。
+     **窓の外は何も起きない**——閉じる形は 9/15 にやめている。別の窓へはメニューから移れる。（→ 9/30 に**外で閉じる**へ戻した。読んだところを覚えるので読みかけは消えない。下）
      **なぞったときはめくらない**——押してから離すまでに動いたか、字が選ばれていれば、押したのではない */
-  if (cur && e.target.closest && e.target.closest('#pop') && !dragged()) turn();
+  /* **窓の外を押したら閉じる**（2026-09-30。上の close() の節）。読んだところは覚えているので、読みかけは消えない。
+     なぞったときは閉じない（めくりと同じ見分け方）。リザルト（デモ中）はここまで来ない（上の D.on で返る） */
+  if (!cur || !e.target.closest) return;
+  if (e.target.closest('#pop')){ if (!dragged()) turn(); return; }
+  if (!dragged()) close();
 });
 var downAt = null;
 document.addEventListener('pointerdown', function(e){ downAt = [e.clientX, e.clientY]; });
