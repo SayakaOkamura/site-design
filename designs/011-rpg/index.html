@@ -446,9 +446,15 @@ body{
    本人：「浮き方で言うと原神のパイ問とかを参考にしてくれればいい。ふよふよ感がほしい」。
    粒一つが 4px なので、二粒の幅では三段しか取れず「跳んで止まる」が残っていた——固さの元はそこ。
    → **位置だけ粒を外す**（絵はドットのまま）。上と下で速さが落ち、真ん中で少し速い（ease-in-out の往復）。一周 2 秒、右上へ横に粒一つ・上へ粒二つ。
-   勇者・敵・背景は粒で動くので、動きの質が違うのは連れだけ——「浮いているのはこいつだけ」の差として置く */
-#pal{position:absolute; z-index:4; image-rendering:pixelated; cursor:pointer; animation:palbob 1s ease-in-out infinite alternate}
-@keyframes palbob{ from{transform:translate(0,0)} to{transform:translate(var(--px), calc(var(--px) * -2))} }
+   勇者・敵・背景は粒で動くので、動きの質が違うのは連れだけ——「浮いているのはこいつだけ」の差として置く。
+   同じ斜めの往復では本人：「浮く、でもこれは動きが単調だからだと思う」→（上下と左右を別の拍子に／触角を遅れて／ときどき間、A＋B を勧めて）「やっみて」。
+   → **上下（2 秒）と左右（3.2 秒）を別の拍子に**——割り切れないので、通る道が毎回ずれる。触角は JS（上下に半拍遅れてしなる）*/
+@property --fx{ syntax:'<length>'; inherits:false; initial-value:0px }
+@property --fy{ syntax:'<length>'; inherits:false; initial-value:0px }
+#pal{position:absolute; z-index:4; image-rendering:pixelated; cursor:pointer; transform:translate(var(--fx), var(--fy));
+  animation:palbob 1s ease-in-out infinite alternate, palsway 1.6s ease-in-out infinite alternate}
+@keyframes palbob{ from{--fy:0px} to{--fy:calc(var(--px) * -2)} }
+@keyframes palsway{ from{--fx:0px} to{--fx:var(--px)} }
 /* **押すと、くるんと一回まわる**（2026-09-29、本人：「実際押したら話せるようにしたら？」→「モーションこいつに入れる？」→「クリックしたときの話ね」
    →（デモに入るか訊いて）「いやそれには入らないけどね」→（動きだけか一言か訊いて）「くるんってしよう」）。**話はしない。**
    いちどコインのように横に縮んで裏返る形にした → 本人：「立体感出せないか？？」。
@@ -4223,7 +4229,10 @@ placePlain(); /* 画面に入らなければ、素の一枚に */
    いまは**浮かせるだけ**（本人：「一旦これで、様子見」）。デモでの役は、見てから */
 var PAL = [
   ['.....#....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
-  ['...#......','....#.....','..######..','.########.','.##.##.##.','.########.','..######..']
+  ['...#......','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
+  /* 2 上がっているとき：触角が後ろへ**しなる**（先が根元の高さまで下がる）　3 下がっているとき：触角が**立つ** */
+  ['..........','...##.....','..######..','.########.','.##.##.##.','.########.','..######..'],
+  ['....#.....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..']
 ];
 /* まわるときのコマ（右回り）。**斜め**は目が右へ寄り、**横**は体が細く目が端に一つ、**後ろ**は目が無い。
    左半分は右半分の鏡。触角の根元も向きに合わせて動く */
@@ -4416,8 +4425,18 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 330);
   };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
-  /* 触角が揺れる（漂うのは CSS）。勇者より**ゆっくり**——同じ拍子だと行進して見える */
-  setInterval(function(){ if (REDUCE || turn >= 0) return; f = 1 - f; draw(); }, 520);
+  /* 触角は**体の上下に半拍遅れてついてくる**（2026-09-30、本人：「浮く、でもこれは動きが単調だからだと思う」→「やっみて」）。
+     前は体と関係なく 0.52 秒ごとに左右を切り替えていた。漂う（CSS の palbob / palsway）の時刻から、いまの速さの向きを読む。
+     上がる勢いが強いあいだ（遅れて）→ しなる／下がる勢いが強いあいだ → 立つ／上と下の近く → 左右へ進む向きの後ろになびく */
+  setInterval(function(){
+    if (REDUCE || turn >= 0) return;
+    var by = null, bx = null;
+    cv.getAnimations().forEach(function(a){ if (a.animationName === 'palbob') by = a; else if (a.animationName === 'palsway') bx = a; });
+    if (!by || !bx) return;
+    var ty = ((by.currentTime || 0) - 150 + 4000) % 2000, tx = (bx.currentTime || 0) % 3200;
+    var nf = (ty >= 200 && ty < 800) ? 2 : (ty >= 1200 && ty < 1800) ? 3 : (tx < 1600 ? 1 : 0);
+    if (nf !== f){ f = nf; draw(); }
+  }, 60);
 })();
 
 /* ─ ミニゲーム（2026-09-29）──────────────────────────────────
