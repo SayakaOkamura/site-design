@@ -1150,6 +1150,11 @@ body.demo #dHp{display:block}
 #dWin .q.on{opacity:1; animation:rise .16s steps(2)}
 #dWin .rt{margin:0}
 #dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,calc(1.1 * var(--fw)),calc(13px*var(--k))); letter-spacing:.12em; color:var(--dim)}
+/* **さくせん**（2026-09-30、本人：「さくせんを質問中に書いておくの、どうだろう」→「増えていくんじゃなくて、さくせんはさくせんな。最初のやつ」→（問いの窓のいちばん上に一行、と出して）「いいよ」）。
+   最初に選んだお題を、三問のあいだずっと出しておく——RPG で戦う前に決めたさくせんが画面に出ているのと同じ。お題を選ぶ一枚目では出さない */
+#dObj{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,calc(1.1 * var(--fw)),calc(13px*var(--k))); letter-spacing:.06em; color:var(--dim)}
+#dObj:empty{display:none}
+#dObj b{font-weight:400; color:var(--go); margin-right:.6em; letter-spacing:.12em}
 #dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,calc(1.5 * var(--fw)),calc(18px*var(--k))); font-weight:700;
   line-height:1.7; color:var(--ink)}
 #dA{list-style:none; margin:0; padding:0}
@@ -1774,6 +1779,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
     <div id="dHp"><i></i></div>
     <!-- 質問と三択。**メニューと同じ場所に出す**——左は「いつもコマンドがある側」 -->
     <nav id="dWin" class="win">
+      <p id="dObj"></p>
       <p id="dStep"></p>
       <p id="dQ"></p>
       <ul id="dA"></ul>
@@ -3438,7 +3444,7 @@ var HPMAX = 3;
 var D = { on:false, phase:'', topic:0, step:0, picks:[], sel:0, hp:HPMAX, parts:null, tCome:null };
 /* `REDUCE` は勇者の節の上で持っている（設定が変わったら書き換わる）*/
 var dWin  = document.getElementById('dWin'),
-    dStep = document.getElementById('dStep'), dQ = document.getElementById('dQ'),
+    dObj = document.getElementById('dObj'), dStep = document.getElementById('dStep'), dQ = document.getElementById('dQ'),
     dA    = document.getElementById('dA'),   dWish  = document.getElementById('dWish'),
     dHp   = document.getElementById('dHp'),  dLines = document.getElementById('dLines'),
     dRes  = document.getElementById('dRes'), slimeEl = document.getElementById('slime'),
@@ -3656,6 +3662,7 @@ function ask(step, q, list, gen){
   D.sel = 0;
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
+  dObj.textContent = '';   /* さくせんは三問のあいだだけ（askStep が書く）*/
   /* **出した直後は、乗ったままのマウスで光らせない**（2026-09-28）。選択肢をマウスで押すと、次の問いの同じ位置の行が :hover で光り、
      ▶（一行目）と合わせて**印が二つ**出ていた。十字キーと同じ「黙らせる」を立てる——マウスを動かせば戻り、その行に ▶ が移る */
   document.body.classList.add('kb');
@@ -3747,6 +3754,9 @@ function askStep(){
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
      枚数だけ出す——ポップアップの「2 / 3」と同じ形 */
   ask((D.step + 1) + ' / 3', s.q, s.a.map(function(a){ return a.t; }), true);
+  /* 最初に選んだお題を「さくせん」として一行（上の CSS の #dObj）。窓の高さが一行ぶん変わるので置き直す */
+  dObj.innerHTML = '<b>さくせん</b>'; dObj.appendChild(document.createTextNode('「' + T.t + '」'));
+  placeDWin();
 }
 
 /* **帯に入る行数は、帯の高さで決まる**（2026-09-16）。
