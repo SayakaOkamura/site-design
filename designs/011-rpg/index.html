@@ -1482,8 +1482,10 @@ body.roll #dRoll{display:block}
 /* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
 #dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
   background:none; color:var(--dim); border:calc(var(--px)/2) solid var(--dim);
-  padding:calc(var(--px)*1.5) calc(var(--px)*4); letter-spacing:.08em;
-  font-size:clamp(12px,calc(1.4 * var(--fw)),calc(14px*var(--k))); font-weight:700}
+  padding:calc(var(--px)*2.5) calc(var(--px)*5); letter-spacing:.08em;   /* 前は 1.5 / 4 粒。本人：「リザルトのした二つの四角がなんかみちっとしてるなーと思う　もう少し余白あってもいいかも、四角の中に」（2026-09-30）*/
+  font-size:clamp(12px,calc(1.4 * var(--fw)),calc(14px*var(--k))); font-weight:700; white-space:nowrap}
+/* 余白を広げたら 320×568 で字が二行に折れた。狭い窓（360 以下）だけ左右の余白を粒三つに */
+@media (max-width:360px){ #dRes .rb{padding-left:calc(var(--px)*3); padding-right:calc(var(--px)*3)} }
 /* 選んでいるほうは**塗る。**縁の色だけだと、どちらを選んでいるか分からなかった */
 body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   background:var(--go); border-color:var(--go); color:var(--edge)}
