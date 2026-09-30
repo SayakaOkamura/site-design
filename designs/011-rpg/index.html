@@ -1483,8 +1483,9 @@ body.roll #dRoll{display:block}
    上は「選んだ三つ」の字からタスクの字まで＝ 5 粒＋選んだ三つの行の上下の余り（.4 × 字）＋タスクの行の余り。
    下はタスクの字から四角の縁まで＝ ここの margin ＋タスクの行の余り。→ ここを「5 粒＋ .4 × 選んだ三つの字」にすると、見える空きが同じになる
    （前は下が 4 粒で、見える空きが上 31px・下 22px だった。1284×657）。
-   左右は窓の中身の端から粒三つ内側（本人：「あ、これもう揃ってるんだ。じゃあもう少しだけ内側にして」）。360 以下の窓は入らないので端まで */
-#dRes .rn{display:flex; gap:calc(var(--px)*6); padding:0 calc(var(--px)*3); margin-top:calc(var(--px)*5 + .4 * clamp(11px,calc(1.3 * var(--fw)),calc(13px*var(--k))))}
+   左右は窓の中身の端から粒三つ内側（本人：「あ、これもう揃ってるんだ。じゃあもう少しだけ内側にして」）
+   → 本人：「四角の大きさこのままで。もうちょっと距離離して」。**四角の幅は変えず、あいだ 6 → 10 粒・端の寄せ 3 → 1 粒**（増えたあいだを両端から譲る）。360 以下の窓は入らないので端まで */
+#dRes .rn{display:flex; gap:calc(var(--px)*10); padding:0 calc(var(--px)*1); margin-top:calc(var(--px)*5 + .4 * clamp(11px,calc(1.3 * var(--fw)),calc(13px*var(--k))))}
 /* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
 #dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
   background:none; color:var(--dim); border:calc(var(--px)/2) solid var(--dim);
