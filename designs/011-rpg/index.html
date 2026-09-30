@@ -1478,14 +1478,14 @@ body.roll #dRoll{display:block}
 
    切るのは**間**に任せる。タスクは**順に一行ずつ出る**ので、
    出方そのものが「ここから別のもの」と言っている（下の `.rtask` の余白） */
-#dRes .rn{display:flex; gap:calc(var(--px)*3); margin-top:calc(var(--px)*4)}
+#dRes .rn{display:flex; gap:calc(var(--px)*6); margin-top:calc(var(--px)*4)}   /* 四角のあいだ 3 → 6 粒（2026-09-30、本人：「左右の話」「四角間の距離と鴨」）*/
 /* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
 #dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
   background:none; color:var(--dim); border:calc(var(--px)/2) solid var(--dim);
-  padding:calc(var(--px)*2.5) calc(var(--px)*5); letter-spacing:.08em;   /* 前は 1.5 / 4 粒。本人：「リザルトのした二つの四角がなんかみちっとしてるなーと思う　もう少し余白あってもいいかも、四角の中に」（2026-09-30）*/
+  padding:calc(var(--px)*1.5) calc(var(--px)*5); letter-spacing:.08em;   /* 左右 4 → 5 粒（上下は 2.5 にして「いや上下はいい」で 1.5 に戻した）。本人：「リザルトのした二つの四角がなんかみちっとしてるなーと思う　もう少し余白あってもいいかも、四角の中に」（2026-09-30）*/
   font-size:clamp(12px,calc(1.4 * var(--fw)),calc(14px*var(--k))); font-weight:700; white-space:nowrap}
 /* 余白を広げたら 320×568 で字が二行に折れた。狭い窓（360 以下）だけ左右の余白を粒三つに */
-@media (max-width:360px){ #dRes .rb{padding-left:calc(var(--px)*3); padding-right:calc(var(--px)*3)} }
+@media (max-width:360px){ #dRes .rb{padding-left:calc(var(--px)*3); padding-right:calc(var(--px)*3)} #dRes .rn{gap:calc(var(--px)*4)} }   /* あいだも粒四つ（六つだと 320×568 で 6px はみ出す）*/
 /* 選んでいるほうは**塗る。**縁の色だけだと、どちらを選んでいるか分からなかった */
 body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   background:var(--go); border-color:var(--go); color:var(--edge)}
