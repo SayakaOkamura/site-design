@@ -451,13 +451,14 @@ body{
    → **上下（2 秒）と左右（3.2 秒）を別の拍子に**——割り切れないので、通る道が毎回ずれる。触角は JS（上下に半拍遅れてしなる）。
    本人：「ゲーム感に合わせるために止めはあってもいいかもね、勇者みたいに」→（時間だけ刻む／位置も粒に、時間だけを勧めて）「いったんやってみて」。
    → **勇者と同じ 0.11 秒のコマ送り**。漂いの値（--fx / --fy）は流れたまま、JS が 0.11 秒ごとに写して（--sx / --sy）そのあいだは止める。位置は粒より細かくてよい。
-   本人：「もうちょい大きく動いてもいいよ」→ 幅を 1.5 倍に：上へ粒二つ → 三つ、横に粒一つ → 一つ半（横は二つにすると頭の左の縁に触れる）*/
+   本人：「もうちょい大きく動いてもいいよ」→ 幅を 1.5 倍に：上へ粒二つ → 三つ、横に粒一つ → 一つ半（横は二つにすると頭の左の縁に触れる）。
+   本人：「もっと大きくていい、一瞬なら被ってもいいし」→ **上へ粒五つ・横に粒三つ**。いちばん右・いちばん下のあたりで一瞬、頭の左の縁に重なる（連れが上に描かれる）*/
 @property --fx{ syntax:'<length>'; inherits:false; initial-value:0px }
 @property --fy{ syntax:'<length>'; inherits:false; initial-value:0px }
 #pal{position:absolute; z-index:4; image-rendering:pixelated; cursor:pointer; transform:translate(var(--sx, 0px), var(--sy, 0px));
   animation:palbob 1s ease-in-out infinite alternate, palsway 1.6s ease-in-out infinite alternate}
-@keyframes palbob{ from{--fy:0px} to{--fy:calc(var(--px) * -3)} }
-@keyframes palsway{ from{--fx:0px} to{--fx:calc(var(--px) * 1.5)} }
+@keyframes palbob{ from{--fy:0px} to{--fy:calc(var(--px) * -5)} }
+@keyframes palsway{ from{--fx:0px} to{--fx:calc(var(--px) * 3)} }
 /* **押すと、くるんと一回まわる**（2026-09-29、本人：「実際押したら話せるようにしたら？」→「モーションこいつに入れる？」→「クリックしたときの話ね」
    →（デモに入るか訊いて）「いやそれには入らないけどね」→（動きだけか一言か訊いて）「くるんってしよう」）。**話はしない。**
    いちどコインのように横に縮んで裏返る形にした → 本人：「立体感出せないか？？」。
