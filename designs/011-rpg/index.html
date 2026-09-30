@@ -4391,20 +4391,55 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
      ③ 飛ぶあいだは進む向きを向く（回るときの「斜め」の絵）④ 着いたら一拍（0.11 秒）ふつうの顔で止まってから漂いに戻る。
      にげるとき（帯から）も同じ（本人：「にげるときもね」。palAt の二つ目に true）*/
   var PAL_CROUCH = ['..........','...#......','....#.....','.########.','.##.##.##.','.########.','..######..'];
+  function homeCtrl(sx, sy, tx, ty, q){
+    /* ①〜③ で足りない窓（844×390 は、メニューの右下の角をかすめて着く）のために、横へ大きく回る ④⑤⑥ も試す。
+       どれもかかるなら、かかるのがいちばん短いもの（出発がメニューの上なら、いちばん早く抜けるもの）*/
+    var cands = [[(sx + tx) / 2, Math.min(sy, ty) - q * 8], [tx, sy], [sx, ty], [tx + q * 8, sy], [tx + q * 16, sy], [tx + q * 8, (sy + ty) / 2]];
+    var mn = document.getElementById('menu'), s = document.getElementById('screen').getBoundingClientRect();
+    /* デモのあいだメニューは隠れている（body.demo）が、戻っている途中でデモが閉じて出てくる。隠れていても見えないまま置いて測る */
+    var hid = getComputedStyle(mn).display === 'none';
+    if (hid){ mn.style.visibility = 'hidden'; mn.style.display = 'block'; }
+    var mr = mn.getBoundingClientRect();
+    if (hid){ mn.style.display = ''; mn.style.visibility = ''; }
+    if (!mr.width) return cands[0];
+    var pad = q * 2,
+        L = mr.left - s.left - pad, T = mr.top - s.top - pad, R = mr.right - s.left + pad, B = mr.bottom - s.top + pad,
+        w = W * q, h = H * q;
+    var best = cands[1], bestHit = Infinity;
+    for (var i = 0; i < cands.length; i++){
+      var hit = 0;
+      for (var j = 1; j < 24; j++){
+        var t = j / 24, u = 1 - t,
+            x = u * u * sx + 2 * u * t * cands[i][0] + t * t * tx, y = u * u * sy + 2 * u * t * cands[i][1] + t * t * ty;
+        if (x < R && x + w > L && y < B && y + h > T) hit++;
+      }
+      if (hit < bestHit){ best = cands[i]; bestHit = hit; }
+      if (!hit) break;
+    }
+    return best;
+  }
   function home(){
     var sx = parseFloat(cv.style.left) || 0, sy = parseFloat(cv.style.top) || 0, q = px();
+    /* 着く先は、デモが閉じてメニューが出たあとの置き場で測る（メニューにかかる窓では勇者の右上へ回る）*/
+    var mn = document.getElementById('menu'), hid = getComputedStyle(mn).display === 'none';
+    if (hid){ mn.style.visibility = 'hidden'; mn.style.display = 'block'; }
     at = 'hero'; cv.classList.remove('fly'); place();
+    if (hid){ mn.style.display = ''; mn.style.visibility = ''; }
     var tx = parseFloat(cv.style.left) || 0, ty = parseFloat(cv.style.top) || 0;
     cv.style.left = sx + 'px'; cv.style.top = sy + 'px';
     cv.classList.remove('perch', 'cast'); cv.classList.add('spin'); cv.style.transform = '';
-    var face = tx < sx ? palMirror(PAL_Q) : PAL_Q, cy = Math.min(sy, ty) - q * 8, k = 0, N = 6;
+    var face = tx < sx ? palMirror(PAL_Q) : PAL_Q, k = 0, N = 6;
+    /* **メニューを避けて飛ぶ**（同日、本人：「できれば常にメニュー避けてきて」）。弧の曲げどころ（制御点）を三つ試して、
+       途中の連れの四角がメニュー（と粒二つの縁）に一度もかからないものを使う：① 上へふくらむ ② 先に横へ出てから上がる ③ 先に上がってから横へ。
+       どれもかかるなら、かかるのがいちばん短いもの（homeCtrl）*/
+    var cxy = homeCtrl(sx, sy, tx, ty, q), ccx = cxy[0], cy = cxy[1];
     homing = PAL_CROUCH; cv._homeOn = true; draw();
     clearInterval(cv._home);
     cv._home = setInterval(function(){
       k++;
       if (k <= N){
         var t = k / N, u = 1 - t;
-        cv.style.left = Math.round(u * u * sx + 2 * u * t * (sx + tx) / 2 + t * t * tx) + 'px';
+        cv.style.left = Math.round(u * u * sx + 2 * u * t * ccx + t * t * tx) + 'px';
         cv.style.top = Math.round(u * u * sy + 2 * u * t * cy + t * t * ty) + 'px';
         homing = face; draw();
       } else if (k === N + 1){
