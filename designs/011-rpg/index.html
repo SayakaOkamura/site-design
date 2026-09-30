@@ -4292,7 +4292,7 @@ var PAL = [
 /* 打たれる一行を見る（目が一段下がる）。人が打っているあいだ（palListen）*/
 var PAL_DOWN = ['....#.....','....#.....','..######..','.########.','.########.','.##.##.##.','..######..'];
 /* **かける顔**（同日、本人：「こいつがかけた感じがない、モーションで示せない？」）。触角を勇者のほうへ倒し、目も勇者のほうへ。
-   触角の先（0 行 7 列）が、勇者の縁取りと同じ拍子で金に点く——**この光が勇者に移っている**と読める */
+   触角の先（0 行 7 列）が金に点いていた——**この光が勇者に移っている**と読ませるため。9/30 に外した（下の palWork の節）*/
 var PAL_CAST = ['.......#..','......#...','..######..','.########.','.####.#.#.','.########.','..######..'];
 var PAL_Q    = ['......#...','.....#....','..######..','.########.','.####.#.#.','.########.','..######..'];
 var PAL_SIDE = ['.....#....','.....#....','...####...','..######..','..####.#..','..######..','...####...'];
@@ -4301,8 +4301,7 @@ function palMirror(m){ return m.map(function(r){ return r.split('').reverse().jo
 var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q), PAL[0]];
 (function(){
   var cv = document.getElementById('pal'), cx = cv.getContext('2d');
-  var W = PAL[0][0].length, H = PAL[0].length, f = 0, turn = -1, turnT = null, chanting = false, tipOn = false;
-  var GOLD = getComputedStyle(document.documentElement).getPropertyValue('--go').trim() || '#ffd270';
+  var W = PAL[0][0].length, H = PAL[0].length, f = 0, turn = -1, turnT = null, chanting = false;
   var TERM = getComputedStyle(document.documentElement).getPropertyValue('--dim').trim() || '#e2dcd6';   /* 帯にいるあいだの色（帯の字と同じ）*/
   var INK = getComputedStyle(document.documentElement).getPropertyValue('--hero').trim() || '#150b04';
   function px(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px')) || 4; }
@@ -4316,7 +4315,6 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.imageSmoothingEnabled = false;
     cx.fillStyle = cv.classList.contains('term') ? TERM : INK;
     for (var y = 0; y < mh; y++) for (var x = 0; x < W; x++) if (m[y][x] === '#') cx.fillRect(x * p, y * p, p, p);
-    if (chanting && tipOn && turn < 0){ cx.fillStyle = GOLD; cx.fillRect((dir < 0 ? W - 1 - 7 : 7) * p, 0, p, p); }
   }
   /* **勇者の左斜め上**（同日、本人：「左斜め上くらいがいいかも」。前は左の肩の高さ）。連れの右下の角を、勇者の頭の左上の角（絵の 4 列目・2 行目）の
      すぐ外に置く。勇者の置き場は窓の作りごとに違う（34%・30%・44%・50%）ので、勇者から測って置く */
@@ -4456,10 +4454,8 @@ var PAL_TURN = [PAL_Q, PAL_SIDE, PAL_BACK, palMirror(PAL_SIDE), palMirror(PAL_Q)
     aimAt(document.getElementById('rTask'));
     palCast();
   };
-  /* 唱えているあいだ、触角の先が自分で点滅する（前は勇者の縁取りと同じ拍子で点いていた）*/
-  setInterval(function(){ if (!chanting || REDUCE) return; tipOn = !tipOn; draw(); }, 150);
-  /* 触角の先の金。勇者の縁取りの点滅から呼ばれる（同じ拍子）*/
-  window.palTip = function(on){ tipOn = !!on; if (chanting) draw(); };
+  /* 唱えているあいだ触角の先を金に点滅させていた（勇者へのバフの光が移る、の名残）→ 2026-09-30、本人：「書き込んでる時触覚の先光ってる？」→「いる？」
+     →（バフは外した・押し出しで足りる・光るのは勇者の目だけ、で要らないと答えて）「いいよ」。**外した**。唱えるあいだは問いの窓を向くだけ */
   /* **かけた瞬間**：勇者のほうへ粒二つぶん押し出して戻る */
   window.palCast = function(){
     if (REDUCE || turn >= 0) return;
