@@ -1152,7 +1152,9 @@ body.demo #dHp{display:block}
 #dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,calc(1.1 * var(--fw)),calc(13px*var(--k))); letter-spacing:.12em; color:var(--dim)}
 /* **さくせん**（2026-09-30、本人：「さくせんを質問中に書いておくの、どうだろう」→「増えていくんじゃなくて、さくせんはさくせんな。最初のやつ」→（問いの窓のいちばん上に一行、と出して）「いいよ」）。
    最初に選んだお題を、三問のあいだずっと出しておく——RPG で戦う前に決めたさくせんが画面に出ているのと同じ。お題を選ぶ一枚目では出さない */
-#dObj{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,calc(1.1 * var(--fw)),calc(13px*var(--k))); letter-spacing:.06em; color:var(--dim)}
+/* 上下の間（2026-10-01、本人：「ちょっと余白足りない気がする」→「もうちょい上下に余白ほしい」）。上 0 → 粒 1、下 1.5 → 3。
+   低い窓では窓が一行ぶん伸びて、体力の帯にかかる（1500×800 で 13px・1276×646 で 7px）。逃がし方は答え待ち */
+#dObj{margin:var(--px) 0 calc(var(--px)*3); font-size:clamp(11px,calc(1.1 * var(--fw)),calc(13px*var(--k))); letter-spacing:.06em; color:var(--dim)}
 #dObj:empty{display:none}
 #dObj b{font-weight:400; color:var(--go); margin-right:.6em; letter-spacing:.12em}
 #dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,calc(1.5 * var(--fw)),calc(18px*var(--k))); font-weight:700;
