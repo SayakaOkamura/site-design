@@ -1153,9 +1153,10 @@ body.demo #dHp{display:block}
 /* **さくせん**（2026-09-30、本人：「さくせんを質問中に書いておくの、どうだろう」→「増えていくんじゃなくて、さくせんはさくせんな。最初のやつ」→（問いの窓のいちばん上に一行、と出して）「いいよ」）。
    最初に選んだお題を、三問のあいだずっと出しておく——RPG で戦う前に決めたさくせんが画面に出ているのと同じ。お題を選ぶ一枚目では出さない */
 /* 上下の間（2026-10-01、本人：「ちょっと余白足りない気がする」→「もうちょい上下に余白ほしい」）。上 0 → 粒 1、下 1.5 → 3。
-   低い窓では窓が一行ぶん伸びて、体力の帯にかかる（1500×800 で 13px・1276×646 で 7px）。逃がし方は答え待ち */
+   伸びたぶん、低い窓では窓を上へ逃がす（placeDWin）。横持ちは窓がもう画面の上にいて逃がせないので、前の間のまま */
 #dObj{margin:var(--px) 0 calc(var(--px)*3); font-size:clamp(11px,calc(1.1 * var(--fw)),calc(13px*var(--k))); letter-spacing:.06em; color:var(--dim)}
 #dObj:empty{display:none}
+@media (orientation:landscape) and (max-height:480px) and (min-width:641px){ #dObj{margin:0 0 calc(var(--px)*1.5)} }
 #dObj b{font-weight:400; color:var(--go); margin-right:.6em; letter-spacing:.12em}
 #dQ{margin:0 0 calc(var(--px)*2.5); font-size:clamp(13px,calc(1.5 * var(--fw)),calc(18px*var(--k))); font-weight:700;
   line-height:1.7; color:var(--ink)}
@@ -3712,7 +3713,9 @@ function placeDWin(){
   var hb = dHp.getBoundingClientRect().top;
   var h  = dWin.offsetHeight;
   var t  = nb + (hb - nb - h) / 2;
-  if (t < nb + 8) t = nb + 8;              /* 入りきらないときは名乗りから離す側に寄せる */
+  /* 入りきらないときは**体力の帯を見せる側**に寄せ、名乗りの下へ上がる（2026-10-01。さくせんの間を広げたら、低い窓で帯が窓の下に隠れた）。
+     名乗りの字は左に寄っていて、窓は勇者の右から始まるので、横では重ならない */
+  if (t < nb + 8) t = Math.max(4, Math.min(nb + 8, hb - 8 - h));
   /* **勇者と横で重なるなら、下端を頭より上に**（横持ちの狭い窓で、左下の角が頭にかかった）*/
   var hr = heroEl.getBoundingClientRect();
   if (wr.left < hr.right && t + h > hr.top - 6) t = Math.max(4, hr.top - 6 - h);
