@@ -66,8 +66,27 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
    →（A 頭の帯の右端に小さく／B いちばん上に細い帯／C 足もと、と出して A を勧めた）→「**Bでやってみて**」。
    いちばん上に細い一行。サイトの色と字で、スクロールすると流れて消える（頭の帯だけが残る） */
 #strip{background:var(--ink); color:#fff; text-align:center; font-size:13px; font-weight:400; letter-spacing:.04em; padding:9px 16px; line-height:1.5}
-#strip a{color:#fff; margin-left:1.2em; text-underline-offset:3px}
-#strip a:hover{color:#d9c6f0}
+#strip a, #strip button{color:#fff; margin-left:1.2em; text-underline-offset:3px}
+#strip button{font:inherit; letter-spacing:inherit; background:none; border:0; padding:0; text-decoration:underline; cursor:pointer}
+#strip a:hover, #strip button:hover{color:#d9c6f0}
+/* **ゲームの途中で難易度を変える**（同日、本人：「ゲームでも見られる、というかなんかもっと違う文言で行きたいかも」→「**ゲームの途中で難易度変更するみたいなイメージでできんかな**」
+   →（「難易度：かんたん　変更する ›」＋押すとその場で難易度選択の窓、を勧めて）「**いったんそれで**」）。
+   サイトそのものを「かんたん」で遊んでいる状態に見立てる。窓はタイトルで出していたもの（二重枠・真ん中から六段）と同じ */
+#diff{position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(20,8,30,.55)}
+#diff[hidden]{display:none}
+#diff .box{position:relative; background:#000; color:#e2dcd6; border:2px solid #fff; padding:1.3em 1.7em; min-width:min(100%,18em);
+  font-size:clamp(18px,1.95vw,25px); line-height:1.8; animation:modein .18s steps(6, jump-start) both}
+#diff .box::before{content:""; position:absolute; inset:3px; border:2px solid #fff; pointer-events:none}
+@keyframes modein{ from{clip-path:inset(50% 0 50% 0)} to{clip-path:inset(0)} }
+#diff h2{margin:0 0 1.1em; text-align:left; font:inherit; font-weight:700; letter-spacing:.12em}
+#diff li + li{margin-top:.5em}
+#diff button{display:flex; align-items:center; gap:.6em; width:100%; min-height:24px; padding:.2em 0; border:0; background:none;
+  font:inherit; font-weight:700; letter-spacing:.06em; color:inherit; text-align:left; cursor:pointer}
+#diff button:focus{outline:none}
+#diff .cur{width:1em; text-align:center; color:transparent}
+#diff button[aria-current="true"], #diff button[aria-current="true"] .cur{color:#ffd270}
+#diff small{font-size:.6em; font-weight:400; opacity:.7; margin-left:.4em}
+@media (prefers-reduced-motion:reduce){ #diff .box{animation:none} }
 
 @media (max-width:760px){
   nav{display:none}
@@ -77,7 +96,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 }
 </style>
 
-<div id="strip">このサイトはゲームでも見られます<a href="index.html?mode=game">ゲームで見る ›</a></div>
+<div id="strip">難易度：かんたん<button type="button" id="diffOpen" aria-haspopup="dialog">変更する ›</button></div>
 
 <header>
   <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
@@ -156,7 +175,49 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
   </section>
 </main>
 
+<div id="diff" role="dialog" aria-modal="true" aria-labelledby="diff-h" hidden>
+  <div class="box">
+    <h2 id="diff-h">難易度選択</h2>
+    <ul>
+      <li><button data-m="site"><span class="cur">▶</span>ふつうのサイトで見る<small>いま</small></button></li>
+      <li><button data-m="game"><span class="cur">▶</span>ゲームで見る</button></li>
+      <li><button data-m="quest"><span class="cur">▶</span>冒険する</button></li>
+    </ul>
+  </div>
+</div>
+
 <footer>
   <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
   <small>© 2025 Alter Design Consulting Co., Ltd.</small>
 </footer>
+
+<script>
+/* 難易度選択の窓。↑↓・Enter・押す／Esc・窓の外で閉じる。
+   ふつうのサイト（いま）→ 閉じる／ゲーム → index.html?mode=game（点いて夕焼け）／冒険 → まだ行き先が無いので何もしない */
+(function(){
+  var W = document.getElementById('diff'), open = document.getElementById('diffOpen');
+  var B = [].slice.call(W.querySelectorAll('button')), at = 0;
+  function paint(){ B.forEach(function(b, i){ b.setAttribute('aria-current', i === at ? 'true' : 'false'); }); }
+  function show(){ at = 0; paint(); W.hidden = false; B[0].focus(); }
+  function hide(){ W.hidden = true; open.focus(); }
+  function pick(i){
+    var m = B[i].dataset.m;
+    if (m === 'site') hide();
+    else if (m === 'game') location.href = 'index.html?mode=game';
+  }
+  open.addEventListener('click', show);
+  B.forEach(function(b, i){
+    b.addEventListener('click', function(){ pick(i); });
+    b.addEventListener('mouseenter', function(){ at = i; paint(); });
+    b.addEventListener('focus', function(){ at = i; paint(); });
+  });
+  W.addEventListener('click', function(e){ if (e.target === W) hide(); });
+  document.addEventListener('keydown', function(e){
+    if (W.hidden) return;
+    var k = e.key;
+    if (k === 'Escape'){ hide(); e.preventDefault(); }
+    else if (k === 'ArrowUp' || k === 'ArrowDown'){ at = (at + (k === 'ArrowDown' ? 1 : -1) + B.length) % B.length; B[at].focus(); e.preventDefault(); }
+    else if (k === 'Tab'){ e.preventDefault(); at = (at + (e.shiftKey ? -1 : 1) + B.length) % B.length; B[at].focus(); }
+  });
+})();
+</script>
