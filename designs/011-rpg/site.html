@@ -86,11 +86,15 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 @keyframes diffin{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
 #diff h2{margin:0 0 1.4em; font-size:clamp(20px,2vw,24px); text-align:center}
 #diff li + li{margin-top:10px}
-#diff button{display:flex; align-items:center; justify-content:space-between; width:100%; min-height:52px; padding:0 18px;
+#diff button{display:flex; align-items:center; justify-content:space-between; width:100%; min-height:60px; padding:10px 18px;
   border:1px solid var(--line); background:#fff; font:inherit; font-size:15px; font-weight:400; color:inherit; text-align:left; cursor:pointer}
 #diff button[aria-current="true"]{border-color:var(--btn); background:var(--pale)}
 #diff button:focus{outline:none}
 #diff small{font-size:12px; color:var(--sub)}
+#diff button em{display:block; font-style:normal; font-size:12px; color:var(--sub); margin-top:2px}
+/* **「難易度」→「スタイル」**（同日、本人：「難易度って文言が変？」→（ゲームの言葉で、押す前に何が変わるか分からない、と答えた）
+   →「ゲームとかでそういうの変えるときなんて書かれる？難易度以外で」→「モードセレクトかプレイスタイルか……」→「ただ別にプレイではないっていう」
+   →「**"スタイル"はどう**」→（色や見た目の切り替えと読まれやすいので、窓の見出しを「スタイルを選ぶ」に、三つに一行ずつ説明、と答えた）→「**それでやってみて**」）*/
 #diff .x{position:absolute; top:10px; right:12px; width:36px; min-height:36px; padding:0; border:0; justify-content:center; font-size:20px; color:var(--sub)}
 @media (prefers-reduced-motion:reduce){ #diff .box{animation:none} }
 
@@ -109,7 +113,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     <li><a href="#services">サービス</a></li>
     <li><a href="#company">会社概要</a></li>
     <li><a href="#contact">お問い合せ</a></li>
-    <li class="dv"><button type="button" id="diffOpen" aria-haspopup="dialog">難易度変更</button></li>
+    <li class="dv"><button type="button" id="diffOpen" aria-haspopup="dialog">スタイル</button></li>
   </ul></nav>
 </header>
 
@@ -182,11 +186,11 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 
 <div id="diff" role="dialog" aria-modal="true" aria-labelledby="diff-h" hidden>
   <div class="box">
-    <h2 id="diff-h" class="serif">難易度選択</h2>
+    <h2 id="diff-h" class="serif">スタイルを選ぶ</h2>
     <ul>
-      <li><button data-m="site">ふつうのサイトで見る<small>いま</small></button></li>
-      <li><button data-m="game">ゲームで見る</button></li>
-      <li><button data-m="quest">冒険する</button></li>
+      <li><button data-m="site"><span>ふつうのサイトで見る<em>いま見ている形</em></span></button></li>
+      <li><button data-m="game"><span>ゲームで見る<em>遊びながら見る</em></span></button></li>
+      <li><button data-m="quest"><span>冒険する<em>歩いてめぐる</em></span></button></li>
     </ul>
     <button class="x" type="button" aria-label="閉じる">×</button>
   </div>
