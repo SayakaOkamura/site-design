@@ -1226,6 +1226,53 @@ body.demo #dHp{display:block}
 
    お題の三つは**作られたものではない**ので、ここは通さない（同時に出る） */
 #dWin .q{opacity:0}
+/* ─ 盤（2026-11-06）。二戦目・三戦目は、窓の三択ではなく**盤の上の物を押す**
+   本人：「1戦目に対して2と3と全然区別着かない　押すだけだもん」→（2戦目は散らばった紙、3戦目は流れ図の穴）「いいよ、やってみて」。
+   押すのは人、拾う・吸い込む・組むのは AI くん（盤の上で物が動く）*/
+#board{margin:calc(var(--px)*1) 0 calc(var(--px)*2)}
+#board:empty{display:none}
+#board button{-webkit-appearance:none; appearance:none; font:inherit; text-align:left; cursor:default;
+  background:var(--box); color:var(--ink); border:calc(var(--px)/2) solid var(--dim); line-height:1.45}
+#board button:focus{outline:none}
+/* 二戦目：散らばった紙 → まとめ */
+#board .pa{position:relative; height:9.6em; font-size:clamp(11px,calc(1.05 * var(--fw)),calc(13px*var(--k)))}
+#board .pp{position:absolute; width:31%; padding:.3em .5em; font-size:1em;
+  transition:transform .38s steps(5), opacity .38s steps(5)}
+/* 背の低い窓では紙の置き場を詰める（横持ちで勇者に、縦の三層で帯にかかった）*/
+@media (max-height:480px){ #board .pa{height:6.4em} #board .pp{padding:.15em .4em} #board .cd{margin-top:4px; padding-top:3px; min-height:1.6em} }
+@media (max-width:640px) and (orientation:portrait){ #board .pa{height:8em} #board .pp{width:32%} }
+#board .pp i{display:block; font-style:normal; font-size:.8em; color:var(--dim); letter-spacing:.06em}
+#board .pp.gone{opacity:0}
+#board .pp.hot{border-color:var(--go); cursor:pointer; animation:hot .9s steps(2) infinite}
+@keyframes hot{ 50%{box-shadow:0 0 0 calc(var(--px)/2) var(--go)} }
+#board .pp[aria-current="true"]{background:var(--go); color:var(--edge); animation:none}
+#board .pp[aria-current="true"] i{color:var(--edge)}
+#board .pp.burn{animation:shock .1s steps(2) 4; opacity:0; transition:opacity .2s .4s}
+#board .cd{margin-top:calc(var(--px)*2); padding-top:calc(var(--px)*1.5); border-top:1px dashed var(--dim);
+  font-size:clamp(11px,calc(1.05 * var(--fw)),calc(13px*var(--k))); min-height:2.6em}
+#board .cd b{color:var(--go); font-size:.85em; letter-spacing:.1em; margin-right:.6em}
+#board .cd span{display:inline-block; margin-right:1em}
+#board .cd span::before{content:'・'; color:var(--go)}
+#board .cd.got{animation:shock .1s steps(2) 2}
+/* 三戦目：流れ図の穴 */
+#board .fl{display:flex; flex-wrap:wrap; align-items:center; gap:calc(var(--px)*1.5);
+  font-size:clamp(11px,calc(1.05 * var(--fw)),calc(13px*var(--k)))}
+#board .ar{color:var(--dim)}
+#board .nd{padding:.3em .5em; font-size:1em}
+#board .nd i{display:block; font-style:normal; font-size:.8em; color:var(--dim); letter-spacing:.06em}
+#board .nd .v{color:var(--ink)}
+#board .nd.hole{border-style:dashed}
+#board .nd.hole .v{color:var(--dim)}
+#board .nd.act{border-color:var(--go); border-style:solid; cursor:pointer; animation:hot .9s steps(2) infinite}
+#board .nd[aria-current="true"]{background:var(--go); color:var(--edge); animation:none}
+#board .nd[aria-current="true"] i, #board .nd[aria-current="true"] .v{color:var(--edge)}
+#board .nd.lit{background:var(--go); color:var(--edge)}
+#board .nd.lit i, #board .nd.lit .v{color:var(--edge)}
+#board .nd.fall{border-color:#e0604e; border-style:solid; animation:shock .1s steps(2) 6}
+#board .ch{display:flex; flex-wrap:wrap; gap:calc(var(--px)*1.5); margin-top:calc(var(--px)*2);
+  font-size:clamp(12px,calc(1.2 * var(--fw)),calc(14px*var(--k)))}
+#board .chip{padding:.3em .7em; cursor:pointer}
+#board .chip[aria-current="true"]{background:var(--go); color:var(--edge); border-color:var(--go)}
 #dWin #dQ:empty, #dWin #dStep:empty{display:none}
 /* はじめから／つづきから（2026-11-06）。敵が出る前なので、敵の真上ではなく真ん中。上端はメニューと同じ線 */
 @media (min-width:641px) and (orientation:landscape), (min-width:1101px){
@@ -1874,6 +1921,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
       <p id="dObj"></p>
       <p id="dStep"></p>
       <p id="dQ"></p>
+      <div id="board"></div>
       <ul id="dA"></ul>
     </nav>
     <!-- 打ち込まれる場所。**地面の下**（ふだんお問い合わせが出ている帯） -->
@@ -3450,40 +3498,37 @@ var TOPICS = [
    **人がするのは決めることだけ。**拾う・まとめる・組むは AI くん（本人：「２に関してはＡＩがやる部分をひとがやってるやん」）。
    形は TOPICS と同じ（q / a / cmd / task）。atk があれば、その問いの前にボスが攻撃する */
 var STAGES = [null, null,
+  /* 二戦目：紙は p（[どこから, 書いてあること]）。fill は AI くんが黙って吸い込む紙、a の二枚が食い違う紙。残すほうを押す */
   { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', done:'きろくが　まとまった！',
     fill:['read(mail)', 'read(chat)', 'read(minutes)', 'extract(decisions)', 'merge(duplicates)',
           'detect(conflicts)', 'align(dates)', 'compose(card)'],
     q:[
-      { q:'メールは「金曜まで」、チャットは「来週の月曜」。しめきりは　どっち？', a:[
-        { t:'金曜に　そろえる', cmd:'しめきりを金曜にそろえる',
+      { q:'しめきりが　食い違っています。どちらを残しますか', fill:[['議事録', '議題は三つ'], ['チャット', '了解です'], ['メール', '資料を送ります']], a:[
+        { p:['メール', '資料は金曜まで'], t:'しめきりは金曜', cmd:'しめきりを金曜にそろえる',
           task:'しめきりは金曜。チャットの「月曜」は消して、そう書き添える' },
-        { t:'月曜に　そろえる', cmd:'しめきりを月曜にそろえる',
-          task:'しめきりは来週の月曜。メールの相手に、のびたことを伝える' },
-        { t:'言った本人に　聞いてから', cmd:'しめきりを保留にする',
-          task:'しめきりは未定。言った本人に今日中に聞く' }
+        { p:['チャット', 'やっぱり来週の月曜で'], t:'しめきりは来週の月曜', cmd:'しめきりを月曜にそろえる',
+          task:'しめきりは来週の月曜。メールの相手に、のびたことを伝える' }
       ]},
-      { q:'担当が　ふたり書かれている。どちらにする？', a:[
-        { t:'「やります」と言った人', cmd:'担当を一人にする',
-          task:'担当は、議事録で「やります」と言った人' },
-        { t:'ふたりで　持つ', cmd:'担当を二人にする',
-          task:'担当は二人。どちらが最後に確かめるかも書く' },
-        { t:'次の打ち合わせで　決める', cmd:'担当を次回に回す',
-          task:'担当は、次の打ち合わせの一つ目の議題にする' }
+      { q:'担当が　ふたり書かれています。どちらを残しますか', fill:[['議事録', '次回は来週の火曜'], ['チャット', '資料見ました']], a:[
+        { p:['議事録', '営業「うちでやります」'], t:'担当は営業', cmd:'担当を営業にする',
+          task:'担当は営業。開発には中身の確かめを頼む' },
+        { p:['チャット', '開発「こっちで持ちます」'], t:'担当は開発', cmd:'担当を開発にする',
+          task:'担当は開発。営業には使う人の声を集めてもらう' }
       ]},
-      { q:'同じ話が　三回出ている。どう残す？', a:[
-        { t:'最後に決まった形だけ', cmd:'最後の形だけ残す',
-          task:'途中の案は消して、決まった形だけを一行で書く' },
-        { t:'流れごと　残す', cmd:'流れを残す',
-          task:'変わった順に三行で書いて、なぜ変わったかを添える' },
-        { t:'まだ決まっていないと　印を付ける', cmd:'未決の印を付ける',
-          task:'決まっていない印を付けて、決める日を書く' }
+      { q:'決まったのか　まだなのか。どちらを残しますか', fill:[['メール', '案A・案Bを添付'], ['チャット', 'おつかれさまです'], ['議事録', '出席は五人']], a:[
+        { p:['議事録', '案Bで決まり'], t:'案Bで決まり', cmd:'案Bで確定する',
+          task:'案Bで決まり。途中の案は消して、決まった形だけを一行で書く' },
+        { p:['チャット', '案Bはまだ検討中'], t:'まだ決まっていない', cmd:'未決の印を付ける',
+          task:'まだ決まっていない印を付けて、決める日を書く' }
       ]}
     ]},
+  /* 三戦目：流れ図の穴（node）を押して、出てきた部品から選ぶ。atk の問いは、玉が流れて穴に落ちてから（ボスの攻撃）*/
   { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', done:'しくみが　くみあがった！',
     fill:['bind(roles)', 'build(form)', 'build(route)', 'connect(approval)', 'test(flow)',
           'detect(gaps)', 'rebuild(route)'],
+    nodes:[{ k:'申請' }, { k:'承認' }, { k:'不在のとき', late:true }, { k:'差しもどし', late:true }, { k:'完了', end:true }],
     q:[
-      { q:'だれが　申請する？', a:[
+      { node:0, q:'だれが　申請する？', a:[
         { t:'社員みんな', cmd:'申請する人を全員にする',
           task:'申請するのは社員みんな。入った日から使える' },
         { t:'部長が　まとめて', cmd:'申請を部長にまとめる',
@@ -3491,7 +3536,7 @@ var STAGES = [null, null,
         { t:'外から手伝う人も', cmd:'申請する人を外にも広げる',
           task:'申請するのは社員と、外から手伝ってくれている人' }
       ]},
-      { q:'いくらから　上の人が見る？', a:[
+      { node:1, q:'いくらから　上の人が見る？', a:[
         { t:'一万円から', cmd:'一万円から承認を通す',
           task:'一万円からは部長が見る' },
         { t:'五万円から', cmd:'五万円から承認を通す',
@@ -3499,7 +3544,7 @@ var STAGES = [null, null,
         { t:'ぜんぶ', cmd:'全部に承認を通す',
           task:'金額にかかわらず部長が見る' }
       ]},
-      { atk:'ミケツの　こうげき！　しくみが　止まった',
+      { node:2, atk:'ミケツの　こうげき！　しくみが　止まった',
         q:'ここが　決まっていません。承認する人が　いないときは？', a:[
         { t:'代わりの人に　回す', cmd:'代わりの承認者を決める',
           task:'承認する人がいないときは、代わりの人に回す' },
@@ -3508,7 +3553,7 @@ var STAGES = [null, null,
         { t:'小さい金額なら　通す', cmd:'小さい金額は通す',
           task:'承認する人がいないときは、一万円までは通して、あとで見てもらう' }
       ]},
-      { atk:'ミケツの　こうげき！　しくみが　くずれた',
+      { node:3, atk:'ミケツの　こうげき！　しくみが　くずれた',
         q:'ここが　決まっていません。差しもどしたら　どこから　直す？', a:[
         { t:'直したところだけ', cmd:'直した欄だけ出し直す',
           task:'差しもどされたら、直した欄だけ出し直す' },
@@ -3998,6 +4043,7 @@ function quitDemo(){
   setEnemy('slime');
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   dRes.classList.remove('on'); dWon.classList.remove('on'); dWin.classList.remove('mid');
+  boardEl.innerHTML = ''; D.items = null;
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
   dBang.classList.remove('on');
   halt(false);
@@ -4009,7 +4055,8 @@ function paintHp(){
 }
 /* 三択を出す。**メニューと同じ形**——左に並べて、▶ が一つだけ動く */
 function ask(step, q, list, gen){
-  D.sel = 0;
+  D.sel = 0; D.items = null;
+  if (!(D.stage > 1)) boardEl.innerHTML = '';
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
   dObj.textContent = '';   /* さくせんは三問のあいだだけ（askStep が書く）*/
@@ -4096,12 +4143,137 @@ function draftSkip(){
   [].slice.call(dA.children).forEach(function(el){ el.classList.remove('q'); });
 }
 function paintD(){
-  [].slice.call(dA.children).forEach(function(el, i){
+  [].slice.call(D.items || dA.children).forEach(function(el, i){
     el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
   });
 }
+/* ─ 盤（二戦目・三戦目）────────────────────────────────────── */
+var boardEl = document.getElementById('board');
+function esc(t){ var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+/* 選べるもの：盤の上の物＋にげる（窓の最後の行）。十字キー・押す・Enter は D.items を見る */
+function setItems(list){
+  D.items = list.concat([].slice.call(dA.children));
+  D.n = list.length; D.sel = 0; paintD();
+}
+/* 二戦目。紙が散らばる → AI くんが関係ない紙を吸い込む → 食い違う二枚だけ光って残る → 残すほうを押す */
+var PP_AT = [[2, 4], [35, 0], [68, 6], [8, 54], [41, 50], [70, 56]];
+function objLine(){ dObj.innerHTML = '<b>さくせん</b>'; dObj.appendChild(document.createTextNode('「' + curT().t + '」')); }
+function board2Step(){
+  var T = curT(), s = T.q[D.step];
+  ask((D.step + 1) + ' / ' + T.q.length, s.q, [], false); objLine();
+  D.phase = 'mz'; D.n = 0;
+  var papers = s.fill.map(function(f){ return { p:f }; });
+  s.a.forEach(function(a, i){ papers.splice(i === 0 ? 1 : 4, 0, { p:a.p, i:i }); });
+  boardEl.innerHTML = '<div class="pa">' + papers.map(function(x, j){
+      var at = PP_AT[j % PP_AT.length];
+      return '<button type="button" class="pp"' + (x.i != null ? ' data-i="' + x.i + '"' : '') +
+             ' style="left:' + at[0] + '%;top:' + at[1] + '%"><i>' + esc(x.p[0]) + '</i>' + esc(x.p[1]) + '</button>';
+    }).join('') + '</div><div class="cd"><b>まとめ</b>' +
+    (D.card || []).map(function(t){ return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
+  placeDWin();
+  var fills = [].slice.call(boardEl.querySelectorAll('.pp:not([data-i])'));
+  var cd = boardEl.querySelector('.cd');
+  /* 関係ない紙は AI くんが吸い込む（まとめの欄へ飛んで消える）*/
+  fills.forEach(function(el, j){
+    setTimeout(function(){
+      if (!D.on || D.stage !== 2) return;
+      var a = el.getBoundingClientRect(), b = cd.getBoundingClientRect();
+      el.style.transform = 'translate(' + Math.round(b.left + 20 - a.left) + 'px,' + Math.round(b.top - a.top) + 'px) scale(.3)';
+      el.classList.add('gone');
+      palWrite();
+    }, 500 + j * 260);
+  });
+  D.tQ = setTimeout(function(){
+    if (!D.on || D.stage !== 2) return;
+    var hot = [].slice.call(boardEl.querySelectorAll('.pp[data-i]'));
+    hot.sort(function(x, y){ return x.dataset.i - y.dataset.i; });
+    hot.forEach(function(el){ el.classList.add('hot'); });
+    D.phase = 'ask'; setItems(hot);
+  }, 500 + fills.length * 260 + 300);
+}
+/* 選んだ紙はまとめへ、もう一枚は燃えて消える */
+function board2Pick(i){
+  var hot = [].slice.call(boardEl.querySelectorAll('.pp[data-i]')), cd = boardEl.querySelector('.cd');
+  hot.forEach(function(el){
+    el.classList.remove('hot'); el.removeAttribute('aria-current');
+    if (+el.dataset.i === i){
+      var a = el.getBoundingClientRect(), b = cd.getBoundingClientRect();
+      el.style.transform = 'translate(' + Math.round(b.left + 20 - a.left) + 'px,' + Math.round(b.top - a.top) + 'px) scale(.3)';
+      el.classList.add('gone');
+    } else el.classList.add('burn');
+  });
+  var t = curT().q[D.step].a[i].t;
+  setTimeout(function(){
+    D.card = (D.card || []).concat([t]);
+    var sp = document.createElement('span'); sp.textContent = t; cd.appendChild(sp);
+    cd.classList.remove('got'); void cd.offsetWidth; cd.classList.add('got');
+    palWrite();
+  }, 400);
+}
+/* 三戦目。流れ図を描く。fill：はめた部品。rev：見えている後出しの穴 */
+function board3Draw(){
+  var T = curT(), act = D.act;
+  boardEl.innerHTML = '<div class="fl">' + T.nodes.map(function(n, k){
+      if (n.late && !D.rev[k]) return '';
+      var v = n.end ? '' : (D.fill[k] ? esc(D.fill[k]) : '＿＿＿＿');
+      var cls = 'nd' + (n.end ? ' end' : (D.fill[k] ? '' : ' hole')) + (k === act ? ' act' : '');
+      return (k ? '<span class="ar" aria-hidden="true">→</span>' : '') +
+             '<button type="button" class="' + cls + '" data-k="' + k + '"><i>' + esc(n.k) + '</i>' +
+             (n.end ? '<span class="v">✓</span>' : '<span class="v">' + v + '</span>') + '</button>';
+    }).join('') + '</div>';
+  placeDWin();
+}
+/* 玉が流れる：はまっているところを順に光らせ、止まるところ（to）まで。to が後出しの穴なら、そこで現れて赤く崩れる */
+function board3Run(to, done){
+  var T = curT(), k = 0;
+  D.phase = 'run'; D.n = 0; D.items = null;
+  (function step(){
+    if (!D.on || D.stage !== 3) return;
+    if (k === to){
+      if (T.nodes[k].late){ D.rev[k] = true; board3Draw(); [].forEach.call(boardEl.querySelectorAll('.nd'), function(x){ if (+x.dataset.k < k) x.classList.add('lit'); }); var el = boardEl.querySelector('.nd[data-k="' + k + '"]'); if (el) el.classList.add('fall'); }
+      else { var en = boardEl.querySelector('.nd[data-k="' + k + '"]'); if (en) en.classList.add('lit'); }
+      setTimeout(done, 420); return;
+    }
+    if (!T.nodes[k].late || D.rev[k]){
+      var nd = boardEl.querySelector('.nd[data-k="' + k + '"]');
+      if (nd) nd.classList.add('lit');
+      palWrite();
+    }
+    k++;
+    D.tQ = setTimeout(step, 230);
+  })();
+}
+function board3Step(){
+  var T = curT(), s = T.q[D.step];
+  if (!D.rev){ D.rev = {}; D.fill = {}; }
+  /* 後出しの穴：まず玉を流して落とす → ボスの攻撃 → 問い */
+  if (s.atk && D.atkAt !== D.step){
+    D.atkAt = D.step;
+    D.act = -1; board3Draw();
+    board3Run(s.node, function(){ bossAtk(s.atk, board3Step); });
+    return;
+  }
+  D.act = s.node;
+  ask((D.step + 1) + ' / ' + T.q.length, s.q, [], false); objLine();
+  board3Draw();
+  D.phase = 'hole';
+  setItems([boardEl.querySelector('.nd.act')]);
+}
+/* 穴を押した → 部品が三つ出る */
+function board3Parts(){
+  var s = curT().q[D.step];
+  var ch = document.createElement('div'); ch.className = 'ch';
+  ch.innerHTML = s.a.map(function(a){ return '<button type="button" class="chip">' + esc(a.t) + '</button>'; }).join('');
+  boardEl.appendChild(ch);
+  placeDWin();
+  D.phase = 'ask';
+  setItems([].slice.call(ch.children));
+  focusRow(D.items[0]);
+}
 function askStep(){
   var T = curT(), s = T.q[D.step];
+  if (D.stage === 2){ board2Step(); return; }
+  if (D.stage === 3){ board3Step(); return; }
   if (s.atk && D.atkAt !== D.step){ D.atkAt = D.step; bossAtk(s.atk, askStep); return; }
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
@@ -4428,6 +4600,7 @@ function choose(i){
   if (!D.n) return;
   /* 最後の行は**にげる。**どの相からでも、押せば元の画面へ戻る */
   if (i >= D.n){ flee(); return; }
+  if (D.phase === 'hole'){ D.n = 0; D.items = null; board3Parts(); return; }
   if (D.phase === 'save'){ D.n = 0; dWin.classList.remove('mid'); openDemo(i === 0 ? 1 : Math.min(stageGot() + 1, 3)); return; }
   if (D.phase === 'topic'){
     /* **頭の帯（「相談　◯◯」）はやめた。**打ち込みの帯に同じものが出るので、
@@ -4445,6 +4618,9 @@ function choose(i){
   if (D.phase !== 'ask') return;
   D.picks[D.step] = i;
   D.phase = 'type';
+  D.items = null;
+  if (D.stage === 2) board2Pick(i);
+  if (D.stage === 3){ var nd0 = curT().q[D.step].node; D.fill[nd0] = curT().q[D.step].a[i].t; D.act = -1; board3Draw(); }
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
@@ -4456,6 +4632,7 @@ function choose(i){
   function next(){
     if (!struck || !typed) return;      /* **両方そろってから**次の問いへ */
     if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
+    else if (D.stage === 3) board3Run(curT().nodes.length - 1, winSeq);   /* 最後は玉が完了まで流れる */
     else winSeq();
   }
   swing(function(){ struck = true; next(); }, i);                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
@@ -4740,8 +4917,10 @@ document.addEventListener('click', function(e){
   /* **出ている最中は選べない。**押したら、待たずに全部出るだけ */
   if (D.phase === 'draft'){ e.stopPropagation(); draftDone(); return; }
   if (D.phase === 'won'){ e.stopPropagation(); D.wonSkip(); return; }
+  var bi = e.target.closest('#board button');
+  if (bi){ e.stopPropagation(); var bix = D.items ? D.items.indexOf(bi) : -1; if (bix >= 0 && (D.phase === 'ask' || D.phase === 'hole')){ D.sel = bix; paintD(); choose(bix); } return; }
   var li = e.target.closest('#dA li');
-  if (li){ e.stopPropagation(); D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
+  if (li){ e.stopPropagation(); D.sel = (D.items || [].slice.call(dA.children)).indexOf(li); paintD(); choose(D.sel); return; }
   if (D.phase === 'open'){ e.stopPropagation(); openDone(); return; }
   var rb = e.target.closest('#dRes .rb');
   if (rb){ e.stopPropagation(); D.sel = rbs().indexOf(rb); fireRes(); }   /* 抜けたあとの下の手（メニューの押し）に流さない */
@@ -4750,16 +4929,20 @@ document.addEventListener('click', function(e){
 document.addEventListener('mouseover', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
-  if (li && (D.phase === 'topic' || D.phase === 'ask' || D.phase === 'save')){
-    D.sel = [].slice.call(dA.children).indexOf(li); paintD();
+  if (!li && D.items) li = e.target.closest('#board button');
+  if (li && (D.phase === 'topic' || D.phase === 'ask' || D.phase === 'save' || D.phase === 'hole')){
+    var ix = (D.items || [].slice.call(dA.children)).indexOf(li);
+    if (ix >= 0){ D.sel = ix; paintD(); }
   }
 });
 /* Tab で来た選択肢にも印を（メニューと同じ。Enter は印の居場所を選ぶ）*/
 document.addEventListener('focusin', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
-  if (li && (D.phase === 'topic' || D.phase === 'ask' || D.phase === 'save')){
-    D.sel = [].slice.call(dA.children).indexOf(li); paintD();
+  if (!li && D.items) li = e.target.closest('#board button');
+  if (li && (D.phase === 'topic' || D.phase === 'ask' || D.phase === 'save' || D.phase === 'hole')){
+    var ix = (D.items || [].slice.call(dA.children)).indexOf(li);
+    if (ix >= 0){ D.sel = ix; paintD(); }
   }
 });
 
@@ -4789,18 +4972,19 @@ document.addEventListener('keydown', function(e){
   if (D.phase === 'draft'){ draftDone(); eat(e); return; }
   if (D.phase === 'open'){ openDone(); eat(e); return; }
   if (D.phase === 'won'){ D.wonSkip(); eat(e); return; }
-  if (D.phase === 'type' || D.phase === 'win' || D.phase === 'flee' || D.phase === 'pal' || D.phase === 'atk'){ eat(e); return; }
+  if (D.phase === 'type' || D.phase === 'win' || D.phase === 'flee' || D.phase === 'pal' || D.phase === 'atk' || D.phase === 'mz' || D.phase === 'run'){ eat(e); return; }
   if (D.phase === 'result'){
     if (k === 'ArrowRight' || k === 'ArrowDown'){ selRes(1); eat(e); return; }
     if (k === 'ArrowLeft'  || k === 'ArrowUp'){ selRes(-1); eat(e); return; }
     if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z'){ fireRes(); eat(e); return; }
     eat(e); return;
   }
-  n = dA.children.length;
-  /* 焦点が選択肢の中にあるなら、焦点も一緒に動かす（メニューと同じ）*/
-  var inA = dA.contains(document.activeElement);
-  if (k === 'ArrowDown'){ D.sel = (D.sel+1)%n; paintD(); if (inA) focusRow(dA.children[D.sel]); eat(e); return; }
-  if (k === 'ArrowUp'){ D.sel = (D.sel+n-1)%n; paintD(); if (inA) focusRow(dA.children[D.sel]); eat(e); return; }
+  var IT = D.items || [].slice.call(dA.children);
+  n = IT.length;
+  /* 焦点が選択肢の中にあるなら、焦点も一緒に動かす（メニューと同じ）。盤の上の物は ←→ でも動く */
+  var inA = dA.contains(document.activeElement) || boardEl.contains(document.activeElement);
+  if (k === 'ArrowDown' || (D.items && k === 'ArrowRight' && D.sel < D.n - 1)){ D.sel = (D.sel+1)%n; paintD(); if (inA) focusRow(IT[D.sel]); eat(e); return; }
+  if (k === 'ArrowUp' || (D.items && k === 'ArrowLeft')){ D.sel = (D.sel+n-1)%n; paintD(); if (inA) focusRow(IT[D.sel]); eat(e); return; }
   if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
     choose(D.sel); eat(e); return;
   }
