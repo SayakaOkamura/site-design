@@ -45,7 +45,7 @@
    DotGothic16 は SIL OFL なので同梱してよい（許諾は ）。
 
    **エンドロールの文を変えたら、ここも作り直す。**入っていない字だけ、下の Hiragino・Yu Gothic に落ちる。
-   作り直し方：理念（#text の mind0〜4）・名乗り（#name・#tag）・「企業理念」・description の二文目（2026-09-29 に足した一行）・右下の「？」の字を重ねずに並べて、
+   作り直し方：理念（#text の mind0〜4）・名乗り（#name・#tag）・「企業理念」・description の二文目（2026-09-29 に足した一行）・右下の「？」・タイトル画面の「おしてね」（2026-11-06）の字を重ねずに並べて、
    https://fonts.googleapis.com/css2?family=DotGothic16&text=（その字） の CSS にある woff2 を取ってくる */
 @font-face{font-family:"DotGothic16"; font-style:normal; font-weight:400; font-display:swap;
   src:url("fonts/DotGothic16-roll.woff2") format("woff2")}
@@ -1004,9 +1004,27 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
    開いたら**これ一枚だけ**。後ろの画面は覆って見せない。窓は一重の枠（ゲームの窓は二重枠）。
    JS が動くときだけ出す（止まっているときは素の一枚がそのまま読める）。# で来た人には出さない */
 #mode{display:none}
-html.js #mode{display:flex; position:fixed; inset:0; z-index:100; align-items:center; justify-content:center;
-  background:rgba(0,0,0,.75); padding:16px}
-/* **後ろに夕焼けを沈めて見せる**（同日、本人：「**黒背景だと本当に虚無すぎて怖いかも**」→（A 夕焼けを暗く沈める／B 夜空／C 黒に走査線、と出して A を勧めた）→「**Aでやってみて**」）。前は #000 */
+html.js #mode{display:flex; flex-direction:column; align-items:center; position:fixed; inset:0; z-index:100;
+  background:transparent; padding:16px}
+/* **後ろに夕焼けを沈めて見せる**（同日、本人：「黒背景だと本当に虚無すぎて怖いかも」→「Aでやってみて」）。前は #000
+   → **タイトル画面を挟んだので沈めるのはやめた**（本人：「軽いOPかタイトル画面挟んで難易度選択ならそんなに違和感ないか」→「おｋ」→「一旦やってみて」）。
+   タイトル画面：夕焼けと走る勇者はそのまま、名乗り・メニュー・足もと・右下の「？」・窓は隠す（body.title）。
+   真ん中に題字（英字・社名・名乗りの一行。ドットの字）、下に「おしてね」が点滅。何か押すと「おしてね」が難易度選択の窓に替わる */
+body.title #name, body.title #menu, body.title #foot, body.title #made, body.title #pop{visibility:hidden}
+#ttl{margin-top:clamp(24px,13vh,140px); text-align:center; font-family:"DotGothic16","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; color:var(--ink);
+  text-shadow:var(--o3) 0 0 var(--edge), calc(-1*var(--o3)) 0 0 var(--edge), 0 var(--o3) 0 var(--edge), 0 calc(-1*var(--o3)) 0 var(--edge),
+              var(--o3) var(--o3) 0 var(--edge), calc(-1*var(--o3)) var(--o3) 0 var(--edge), var(--o3) calc(-1*var(--o3)) 0 var(--edge), calc(-1*var(--o3)) calc(-1*var(--o3)) 0 var(--edge)}
+#ttl .en{font-size:clamp(11px,1.2vw,16px); letter-spacing:.3em}
+#ttl .jp{margin-top:.35em; font-size:clamp(16px,3.6vw,52px); letter-spacing:.04em; line-height:1.25}
+#ttl .tg{margin-top:1em; font-size:clamp(11px,1.35vw,18px); color:var(--warm); letter-spacing:.04em}
+#slot{margin-top:clamp(20px,7vh,72px); display:flex; justify-content:center}
+#press{font-family:"DotGothic16","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-size:clamp(14px,1.7vw,22px); letter-spacing:.2em; color:var(--ink);
+  text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge);
+  animation:blink 1.1s steps(2) infinite}
+#mode .box{display:none}
+#mode.pick .box{display:block}
+#mode.pick #press{display:none}
+#mode:focus{outline:none}
 html.js #mode[hidden]{display:none}
 #mode .box{position:relative; background:#000; border:2px solid #fff; padding:clamp(18px,3vh,28px) clamp(22px,3vw,36px);
   min-width:min(100%,18em); font-size:clamp(15px,1.5vw,19px);
@@ -1869,7 +1887,14 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
      JS が動いているあいだは隠す。止まっているときだけ、夕焼けの下に素の一枚として出る -->
 <div id="tv" aria-hidden="true"><i class="u"></i><i class="d"></i><b></b></div>
 <!-- 難易度選択（2026-11-06）。開いたらこれ一枚だけ -->
-<div id="mode" role="dialog" aria-modal="true" aria-labelledby="mode-h">
+<div id="mode" role="dialog" aria-modal="true" aria-labelledby="ttl-jp" tabindex="-1">
+  <div id="ttl">
+    <div class="en">ALTER DESIGN CONSULTING</div>
+    <div class="jp" id="ttl-jp">株式会社アルターデザインコンサルティング</div>
+    <div class="tg">AI × ローコードで、「上流工程中心のシステム開発」に革新を</div>
+  </div>
+  <div id="slot">
+  <p id="press">おしてね</p>
   <div class="box">
     <h1 id="mode-h">難易度選択</h1>
     <ul>
@@ -1877,6 +1902,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
       <li><button data-m="game"><span class="cur">▶</span>ゲームで見る</button></li>
       <li><button data-m="quest"><span class="cur">▶</span>冒険する</button></li>
     </ul>
+  </div>
   </div>
 </div>
 
@@ -5136,6 +5162,9 @@ window.addEventListener('hashchange', openHash);
   if (!M) return;
   var TV = document.getElementById('tv');
   if (HASH[location.hash.slice(1)]){ M.hidden = true; return; }
+  document.body.classList.add('title');
+  var picking = false;
+  function toPick(){ picking = true; M.classList.add('pick'); B[at].focus({ preventScroll:true }); }
   /* 点く・切れる。段ごとに class を付け替える（間は CSS の transition と同じ長さ）*/
   function seq(steps, done){
     if (MQ_RM.matches){ TV.className = ''; if (done) done(); return; }
@@ -5155,13 +5184,21 @@ window.addEventListener('hashchange', openHash);
     if (B[i].dataset.m !== 'game' || busy) return;
     busy = true;
     if (!MQ_RM.matches){ TV.className = 'go'; }   /* 窓を外すのと同じ瞬間に真っ暗にする（夕焼けが一瞬見えないように）*/
-    M.hidden = true;
+    M.hidden = true; document.body.classList.remove('title');
     ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'].forEach(function(n){ window.removeEventListener(n, stop, true); });
     tvOn();
   }
   function stop(e){
     if (M.hidden) return;
     var b = e.target && e.target.closest ? e.target.closest('#mode button') : null;
+    if (!picking){   /* タイトル：何か押したら窓へ */
+      if (e.type === 'keydown'){
+        if (e.ctrlKey || e.metaKey || e.altKey || e.key === 'Tab' || /^(Shift|Control|Alt|Meta)$/.test(e.key)) return;
+        toPick();
+      } else if (e.type === 'click') toPick();
+      if (e.type !== 'mouseover'){ e.preventDefault(); e.stopImmediatePropagation(); }
+      return;
+    }
     if (e.type === 'keydown'){
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       var k = e.key;
@@ -5179,7 +5216,7 @@ window.addEventListener('hashchange', openHash);
   ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'].forEach(function(n){ window.addEventListener(n, stop, true); });
   B.forEach(function(b, i){ b.addEventListener('focus', function(){ at = i; paint(); }); });
   paint();
-  B[0].focus({ preventScroll:true });
+  M.focus({ preventScroll:true });
 })();
 
 </script>
