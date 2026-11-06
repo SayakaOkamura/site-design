@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- ふつうのサイト（2026-11-06）。本人：「普通のサイトは一旦元のアルターデザインのサイトを軽く再現したような形にしておいて。中身なくていいから簡単に作って」。
+     公式（alt-dsgn.co.jp）の並び・色・字の重さを写した。文は公式のまま。写真・ロゴの画像・地図・お知らせは入れていない -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
+<style>
+:root{ --ink:#2a0e3e; --sub:#715189; --line:#e4dcec; --pale:#f6f3fa; --btn:#654087 }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:88px}
+body{margin:0; background:#fff; color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8}
+h1,h2,h3,p,dl,dd,ul{margin:0}
+ul{padding:0; list-style:none}
+a{color:inherit}
+.serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
+
+header{position:sticky; top:0; z-index:10; height:88px; background:rgba(255,255,255,.85); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:space-between; padding:0 clamp(16px,4vw,48px)}
+.logo{display:flex; align-items:center; gap:12px; text-decoration:none; line-height:1.1}
+.logo i{width:40px; height:40px; border-radius:50%; border:6px solid var(--btn); box-shadow:inset 0 0 0 3px #bb7eea}
+.logo span{font-size:22px; font-weight:400; letter-spacing:.01em}
+.logo small{display:block; font-size:12px; margin-left:4.4em}
+nav ul{display:flex; gap:clamp(16px,3vw,44px)}
+nav a{text-decoration:none; font-size:15px; font-weight:400}
+nav a:hover{color:var(--sub)}
+
+.mv{position:relative; overflow:hidden; min-height:clamp(420px,72vh,760px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 16px}
+.mv svg{position:absolute; inset:0; width:100%; height:100%; z-index:-1}
+.mv h1{font-size:clamp(24px,3.4vw,40px); line-height:1.6; color:#301544}
+.mv p{margin-top:2.4em; font-size:clamp(13px,1.1vw,15px)}
+
+section{padding:clamp(64px,10vw,120px) clamp(16px,5vw,64px)}
+h2{text-align:center; font-size:clamp(24px,2.8vw,35px); margin-bottom:clamp(36px,5vw,60px); line-height:1.5}
+.in{max-width:1080px; margin:0 auto}
+
+.vision .in{display:grid; grid-template-columns:1fr 1.1fr; gap:clamp(24px,4vw,56px); align-items:center}
+.vision .ph{aspect-ratio:750/490; background:linear-gradient(135deg,#efe8f6,#dccdea)}
+.vision h3{font-size:clamp(18px,1.8vw,24px); font-weight:400; line-height:1.6; margin-bottom:1em}
+.vision p{font-size:15px}
+b{font-weight:700}
+
+.service{background:var(--pale)}
+.service ul{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(24px,4vw,56px) clamp(24px,4vw,48px)}
+.service .ph{aspect-ratio:425/268; background:linear-gradient(135deg,#fff,#e6dcf0); margin-bottom:20px}
+.service h3{font-size:clamp(17px,1.6vw,21px); font-weight:400; line-height:1.6; margin-bottom:.6em}
+.service p{font-size:14px}
+
+.overview dl{display:grid; grid-template-columns:10em 1fr; border-top:1px solid var(--line); padding:22px 0}
+.overview dl:last-child{border-bottom:1px solid var(--line)}
+.overview dt{font-size:17px; font-weight:400}
+.overview dd{font-size:15px}
+.overview .acc{margin-top:.8em; font-size:14px; color:var(--sub)}
+
+.contact .card{max-width:880px; margin:0 auto; padding:clamp(40px,6vw,72px) 24px; text-align:center; background:linear-gradient(135deg,#f3eef8,#e3d6ef)}
+.contact h3{font-size:clamp(22px,2.4vw,30px); margin-bottom:.8em}
+.contact a.btn{display:flex; align-items:center; justify-content:center; max-width:500px; height:64px; margin:2em auto 0; background:var(--btn); color:#fff; text-decoration:none; font-weight:400}
+.contact a.btn:hover{background:#4f3070}
+
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:36px clamp(16px,4vw,48px); font-size:13px; border-top:1px solid var(--line)}
+
+@media (max-width:760px){
+  nav{display:none}
+  .vision .in, .service ul{grid-template-columns:1fr}
+  .overview dl{grid-template-columns:1fr; gap:4px}
+}
+</style>
+
+<header>
+  <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy">企業理念</a></li>
+    <li><a href="#services">サービス</a></li>
+    <li><a href="#company">会社概要</a></li>
+    <li><a href="#contact">お問い合せ</a></li>
+  </ul></nav>
+</header>
+
+<main id="top">
+  <div class="mv">
+    <svg viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true" fill="none" stroke-width="1">
+      <g stroke="#b9a6d6" opacity=".55">
+        <path d="M-50 80 C300 620 700 -60 1250 560"/><path d="M-50 110 C320 640 720 -40 1250 600"/>
+        <path d="M-50 140 C340 660 740 -20 1250 640"/><path d="M-50 170 C360 680 760 0 1250 680"/>
+      </g>
+      <g stroke="#9db4dc" opacity=".45">
+        <path d="M-50 640 C380 120 820 760 1250 140"/><path d="M-50 670 C400 150 840 780 1250 170"/>
+        <path d="M-50 700 C420 180 860 800 1250 200"/>
+      </g>
+    </svg>
+    <h1 class="serif">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div>
+
+  <section class="vision" id="philosophy">
+    <h2 class="serif">アルターデザインコンサルティングの企業理念</h2>
+    <div class="in">
+      <div class="ph" aria-hidden="true"></div>
+      <div>
+        <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+        <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+        子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+        このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+        それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="service" id="services">
+    <h2 class="serif">私たちが提供するサービス</h2>
+    <ul class="in">
+      <li><div class="ph"></div><h3>人間中心の次世代業務システム開発</h3>
+        <p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><div class="ph"></div><h3>AI による意思決定支援と事業変革支援</h3>
+        <p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><div class="ph"></div><h3>自律型・共創型の組織設計支援</h3>
+        <p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><div class="ph"></div><h3>地域格差の解消を目指したデジタル支援</h3>
+        <p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section class="overview" id="company">
+    <h2 class="serif">会社概要</h2>
+    <div class="in">
+      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+        <p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+      <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+      <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+      <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="card">
+      <h3 class="serif">お問い合わせ</h3>
+      <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>

@@ -5182,6 +5182,7 @@ window.addEventListener('hashchange', openHash);
   var B = [].slice.call(M.querySelectorAll('button')), at = 0;
   function paint(){ B.forEach(function(b, i){ b.setAttribute('aria-current', i === at ? 'true' : 'false'); }); }
   function pick(i){
+    if (B[i].dataset.m === 'site'){ location.href = 'site.html'; return; }   /* ふつうのサイト（2026-11-06）*/
     if (B[i].dataset.m !== 'game' || busy) return;
     busy = true;
     if (!MQ_RM.matches){ TV.className = 'go'; }   /* 窓を外すのと同じ瞬間に真っ暗にする（夕焼けが一瞬見えないように）*/
