@@ -1226,23 +1226,16 @@ body.demo #dHp{display:block}
 
    お題の三つは**作られたものではない**ので、ここは通さない（同時に出る） */
 #dWin .q{opacity:0}
-/* アクセスの窓の地に地図（2026-11-06）。古いゲームのフィールド。文字が読めるよう暗く沈める */
-#popMap{display:none; position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0}
-#pop.acc #popMap{display:block}
-#popMap svg{position:absolute; inset:0; width:100%; height:100%; shape-rendering:crispEdges; opacity:.45}
-#popMap text{display:none}   /* 地の地図に字は置かない——駅の名前は上の一覧と二重になって読めなかった */
-#pop.acc > :not(#popMap){position:relative; z-index:1}
-#pop.acc .b, #pop.acc .t{text-shadow:0 0 3px #000, 0 0 6px #000}
-#popMap .rd{fill:none; stroke:#8a6a3e; stroke-width:9}
-#popMap .rd2{fill:none; stroke:#a8844f; stroke-width:5; stroke-dasharray:4 4}
-#popMap .tr rect{fill:#24401f} #popMap .tr .tk{fill:#5a3b22}
-#popMap .rf{fill:#b0473a} #popMap .wl{fill:#e8dcc8} #popMap .dr{fill:#3a2a20} #popMap .wd{fill:#6a8fb0}
-#popMap .pl{fill:#e8dcc8} #popMap .fg{fill:var(--go)}
-#popMap .hr rect{fill:#120b08}
-#popMap text{paint-order:stroke; stroke:#1a120c; stroke-width:3px; stroke-linejoin:round}
-#popMap .mn{fill:#e8dcc8; font-size:9px}
-#popMap .sn{fill:#fff; font-size:12px}
-#popMap .hn{fill:var(--go); font-size:10px; text-anchor:middle; font-weight:700}
+/* アクセスの地図（2026-11-06）。輪は点線、駅は金の四角、本社はドットの建物 */
+#pop .amap{display:block; margin:0 auto}
+#pop .amap svg{display:block; width:100%; max-height:10.5em; shape-rendering:crispEdges}   /* 背は路線の頁より低く（高いと「入らない窓」になって素の一枚に落ちた）*/
+#pop .amap .rg{fill:none; stroke:var(--dim); stroke-width:1; stroke-dasharray:3 3; opacity:.6}
+#pop .amap .mn{fill:var(--dim); font-size:9px; opacity:.8}
+#pop .amap .sd{fill:var(--go)}
+#pop .amap .sn{fill:var(--ink); font-size:12px}
+#pop .amap .hq{fill:var(--ink)}
+#pop .amap .wd{fill:var(--win)}
+#pop .amap .hn{fill:var(--go); font-size:9px; text-anchor:middle; font-weight:700}
 /* ─ 盤（2026-11-06）。二戦目・三戦目は、窓の三択ではなく**盤の上の物を押す**
    本人：「1戦目に対して2と3と全然区別着かない　押すだけだもん」→（2戦目は散らばった紙、3戦目は流れ図の穴）「いいよ、やってみて」。
    押すのは人、拾う・吸い込む・組むのは AI くん（盤の上で物が動く）*/
@@ -1917,7 +1910,6 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <button id="made" data-k="game" aria-label="ミニゲーム"><span class="lb"><span class="cur">▶</span><span class="q">？</span></span></button>
 
   <div id="pop" class="win">
-    <div id="popMap" aria-hidden="true"></div>
     <p class="t" id="popT"></p>
     <p class="b" id="popB"></p>
     <div class="n"><span class="p" id="popP"></span>
@@ -2643,73 +2635,44 @@ var ROUTEHTML = rtGrid(RT);
    →（A 歩く分数の輪で描く／B 実際の向きで描く、と出して）「Aでやってみて　目印になるものとかも書きつつ…」）。
    真ん中（左寄り）に本社、まわりに歩く分数の輪、各輪に駅。**向きは描かない**——駅は輪の右側に並べるだけで、地図の上の方角ではない。
    駅と分数は上の路線の行（公式の文）から読む。輪の大きさは順番を見せるだけで、縮尺ではない。目印はまだ入れていない（何を置くか本人に訊いている） */
-/* **アクセスの窓の地に、古いゲームのフィールドの地図**（2026-11-06）。
-   本人：「これならアクセスマップ、ゲームの方だけゲームっぽいマップで書いてもいいな」→ 輪の図を一枚目に →「もうちょっとゲームのマップっぽく」→ 草地の図
-   →「いや、埋め込み型のままで　古いゲームのマップっぽく」→（Google の埋め込みに加工、と読み違えた）→「**いや、背景に埋め込んでくれって意味だ**」→（窓の背景か画面の背景か訊いて）「**A**」。
-   地図の頁はやめて、**アクセスの窓の地**に敷く。文字はその上。頁は前のまま（住所＋駅）。向きは描かない・木は飾り、は前のまま */
-var MAPBG = (function(){
-  /* **ゲームのフィールドの見た目**（同日、本人：「もうちょっとゲームのマップっぽく」）。
-     草地の升目・土の道（輪がそのまま道）・駅は小さな建物・本社は旗の立った建物・勇者が本社の前に立つ。
-     木は飾り（目印ではない。場所の意味は持たせない——道と道のあいだの空いたところに置くだけ）*/
+/* **アクセスの一枚目は地図**（2026-11-06）。描いた形はいくつか試して、ここに戻った：
+   輪の図を一枚目に →「もうちょっとゲームのマップっぽく」→ 草地の図 →「いや、埋め込み型のままで　古いゲームのマップっぽく」→ Google の埋め込みに加工（読み違え）
+   →「いや、背景に埋め込んでくれって意味だ」→ 窓の地に草地の図（読み違え）
+   →「**御免そういう意味じゃなく　背景の色をポップ背景と同じにして、点の位置で表すようにして**」→（一枚目か地か・距離だけか・輪を残すか、を訊いた）
+   →「**一枚目の頁で、距離だけ、輪は点線で残して**」。
+   地は窓と同じ。本社から右へ、歩く分数の輪（点線）。駅は金の点と名前。**向きは描かない**（駅は輪の右側に、字が重ならない角度で並べるだけ）。輪の大きさは順番で、縮尺ではない */
+var MAPHTML = (function(){
   var st = [].map.call(document.querySelectorAll('[data-a="route"] li'), function(li){
     var m = li.textContent.trim().match(/^(.+?)\s*(\d+)\s*分/);
     return m ? { n:m[1], m:+m[2] } : null;
   }).filter(Boolean);
   var mins = st.map(function(x){ return x.m; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).sort(function(a, b){ return a - b; });
-  var W = 400, H = 222, R = {}, cx = 44, cy = 112, RS = [24, 52, 76, 98];
+  var R = {}, cx = 40, cy = 112, RS = [22, 52, 76, 98];
   mins.forEach(function(m, i){ R[m] = RS[Math.min(i, RS.length - 1)] + Math.max(0, i - 3) * 22; });
   var ANG = { 1:[0], 2:[-70, 70], 3:[-55, 0, 55], 4:[-60, -25, 25, 60] };
-  var P = 4;   /* 升目の粒 */
-  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid slice">' +   /* 窓いっぱいに敷く */
-    '<defs><pattern id="gr" width="' + (P * 4) + '" height="' + (P * 4) + '" patternUnits="userSpaceOnUse">' +
-      '<rect width="' + (P * 4) + '" height="' + (P * 4) + '" fill="#3b5a34"/>' +
-      '<rect x="' + P + '" y="' + P + '" width="' + P + '" height="' + P + '" fill="#4a6d40"/>' +
-      '<rect x="' + (P * 3) + '" y="' + (P * 2) + '" width="' + P + '" height="' + P + '" fill="#4a6d40"/>' +
-      '<rect x="0" y="' + (P * 3) + '" width="' + P + '" height="' + P + '" fill="#34502e"/>' +
-    '</pattern></defs>' +
-    '<rect width="' + W + '" height="' + H + '" fill="url(#gr)"/>';
-  /* 道：輪を土の色で太く。外の輪から描く */
-  mins.slice().reverse().forEach(function(m){
-    var r = R[m], d = 'M' + cx + ' ' + (cy - r) + ' A' + (r * 2) + ' ' + r + ' 0 0 1 ' + cx + ' ' + (cy + r);
-    svg += '<path d="' + d + '" class="rd"/><path d="' + d + '" class="rd2"/>';
-  });
-  /* 木（飾り）：道と道のあいだ、左右の端に */
-  var TREE = [[8, 22], [20, 196], [150, 8], [330, 30], [350, 190], [372, 110], [96, 206]];
-  TREE.forEach(function(t){
-    svg += '<g class="tr"><rect x="' + (t[0] - 6) + '" y="' + (t[1] - 10) + '" width="12" height="10"/>' +
-           '<rect x="' + (t[0] - 2) + '" y="' + t[1] + '" width="4" height="5" class="tk"/></g>';
-  });
-  /* 分の札：道の上端に */
+  var svg = '<svg viewBox="0 0 400 222" role="img" aria-label="本社から歩いて：' +
+    st.map(function(x){ return x.n + ' ' + x.m + '分'; }).join('、') + '">';
   mins.forEach(function(m){
-    svg += '<text x="' + (cx + 4) + '" y="' + (cy - R[m] - 4) + '" class="mn">' + m + '分</text>';
+    var r = R[m];
+    svg += '<path d="M' + cx + ' ' + (cy - r) + ' A' + (r * 2) + ' ' + r + ' 0 0 1 ' + cx + ' ' + (cy + r) + '" class="rg"/>';   /* 輪は横に倍（窓が横長なので）*/
+    svg += '<text x="' + (cx + 3) + '" y="' + (cy - r - 3) + '" class="mn">' + m + '分</text>';
   });
-  /* 駅：小さな建物（屋根・壁・入口）＋名札 */
   mins.forEach(function(m){
     var on = st.filter(function(x){ return x.m === m; }), r = R[m], n = on.length;
     on.forEach(function(x, j){
       var a = ((ANG[n] || ANG[4])[j] || 0) * Math.PI / 180;   /* 文字が重ならない角度（向きの意味は無い）*/
-      var x0 = Math.round(cx + 2 * r * Math.cos(a)), y0 = Math.round(cy + r * Math.sin(a));
-      svg += '<g class="sb"><rect x="' + (x0 - 6) + '" y="' + (y0 - 9) + '" width="12" height="3" class="rf"/>' +
-             '<rect x="' + (x0 - 5) + '" y="' + (y0 - 6) + '" width="10" height="8" class="wl"/>' +
-             '<rect x="' + (x0 - 1) + '" y="' + (y0 - 2) + '" width="3" height="4" class="dr"/></g>';
-      svg += '<text x="' + (x0 + 8) + '" y="' + (y0 + 1) + '" class="sn">' + x.n + '</text>';
+      var x0 = cx + 2 * r * Math.cos(a), y0 = cy + r * Math.sin(a);
+      svg += '<rect x="' + (x0 - 3) + '" y="' + (y0 - 3) + '" width="6" height="6" class="sd"/>';
+      svg += '<text x="' + (x0 + 6) + '" y="' + (y0 + 3.5) + '" class="sn">' + x.n + '</text>';
     });
   });
-  /* 本社：旗の立った建物。前に勇者 */
-  svg += '<g class="hq">' +
-    '<rect x="' + (cx - 1) + '" y="' + (cy - 30) + '" width="2" height="12" class="pl"/>' +
-    '<rect x="' + (cx + 1) + '" y="' + (cy - 30) + '" width="7" height="5" class="fg"/>' +
-    '<rect x="' + (cx - 12) + '" y="' + (cy - 18) + '" width="24" height="4" class="rf"/>' +
-    '<rect x="' + (cx - 11) + '" y="' + (cy - 14) + '" width="22" height="18" class="wl"/>' +
-    '<rect x="' + (cx - 7) + '" y="' + (cy - 11) + '" width="4" height="4" class="wd"/><rect x="' + (cx + 3) + '" y="' + (cy - 11) + '" width="4" height="4" class="wd"/>' +
-    '<rect x="' + (cx - 2) + '" y="' + (cy - 3) + '" width="4" height="7" class="dr"/></g>' +
-    '<text x="' + cx + '" y="' + (cy + 15) + '" class="hn">本社</text>' +
-    /* 勇者（影絵の小さな人）*/
-    '<g class="hr"><rect x="' + (cx + 14) + '" y="' + (cy - 3) + '" width="5" height="5"/><rect x="' + (cx + 13) + '" y="' + (cy + 2) + '" width="7" height="5"/>' +
-    '<rect x="' + (cx + 14) + '" y="' + (cy + 7) + '" width="2" height="2"/><rect x="' + (cx + 17) + '" y="' + (cy + 7) + '" width="2" height="2"/></g>';
-  return svg + '</svg>';
+  /* 本社：ドットの建物 */
+  svg += '<rect x="' + (cx - 9) + '" y="' + (cy - 12) + '" width="18" height="22" class="hq"/>' +
+         '<rect x="' + (cx - 5) + '" y="' + (cy - 8) + '" width="3" height="3" class="wd"/><rect x="' + (cx + 2) + '" y="' + (cy - 8) + '" width="3" height="3" class="wd"/>' +
+         '<rect x="' + (cx - 5) + '" y="' + (cy - 1) + '" width="3" height="3" class="wd"/><rect x="' + (cx + 2) + '" y="' + (cy - 1) + '" width="3" height="3" class="wd"/>' +
+         '<text x="' + cx + '" y="' + (cy + 22) + '" class="hn">本社</text>';
+  return '<span class="amap">' + svg + '</svg></span>';
 })();
-document.getElementById('popMap').innerHTML = MAPBG;
 
 /* 会社概要の中身。**一枚目は入らない窓で二つに割る**ので、対ごとに持っておく */
 var AB = {
@@ -3266,7 +3229,7 @@ function placePlain(){
 }
 /* いま出す頁。**アクセスは一枚と二枚、会社概要は三枚と四枚**を持っている */
 function pages(d){
-  if (d.one) return accFits ? d.one : d.p;
+  if (d.one) return [MAPHTML].concat(accFits ? d.one : d.p);   /* アクセスは一枚目が地図 */
   if (d.split && !aboutFits) return d.split;
   return d.p;
 }
@@ -3287,7 +3250,6 @@ function draw(){
   popT.textContent = d.t;
   popB.innerHTML = ps[page];
   pop.classList.toggle('tall', !!(TALLK && TALLK[cur]));
-  pop.classList.toggle('acc', cur === 'access');   /* アクセスだけ地に地図 */
   /* 帯は**頁の数だけ割って、今いるところまで左から塗る。**
      一枚しかない窓（お問い合わせ・ポリシー）では出さない——前の `1 / 1` と同じ */
   var seg = '';
