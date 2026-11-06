@@ -79,24 +79,33 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 /* **窓はサイトの見た目に**（同日、本人：「**悪くない　ただ普通の背景にゲームウィンドゥ出るのが異質すぎるからUIに合わせたウィンドウにしてはどうか**」）。
    前はタイトルと同じゲームの窓（黒地・白の二重枠・真ん中から六段）。白い地・細い線・見出しは Zen Antique、ふわっと出る。
    ゲームに入るのは選んだあと（真っ暗 → 点いて夕焼け）——ゲームの気配はそこから */
-#diff{position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(42,14,62,.28)}
+/* **窓をサイトに合わせて作り直した**（同日、本人：「ポップアップのデザインもうちょい変えてほしいかも　なんか固い」
+   →「**ポップ変えてって言わなかったっけ　今の形はサイトとあってない気が**」）。
+   前は白い箱に細い枠の三段（設定画面・申込みフォームのように見えた）。
+   いま：地は公式のお問い合わせカードと同じ薄紫のグラデーション、見出しは Zen Antique、三つを横並びのカードに（細い線の絵・名前・一行）。
+   選んでいるカードは少し浮いて紫の線。狭い幅では縦に積む */
+#diff{position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(42,14,62,.32)}
 #diff[hidden]{display:none}
-#diff .box{position:relative; background:#fff; color:var(--ink); border:1px solid var(--line); box-shadow:0 18px 50px rgba(42,14,62,.18);
-  width:min(100%,440px); padding:clamp(28px,4vw,40px); animation:diffin .22s ease-out both}
-@keyframes diffin{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
-#diff h2{margin:0 0 1.4em; font-size:clamp(20px,2vw,24px); text-align:center}
-#diff li + li{margin-top:10px}
-#diff button{display:flex; align-items:center; justify-content:space-between; width:100%; min-height:60px; padding:10px 18px;
-  border:1px solid var(--line); background:#fff; font:inherit; font-size:15px; font-weight:400; color:inherit; text-align:left; cursor:pointer}
-#diff button[aria-current="true"]{border-color:var(--btn); background:var(--pale)}
+#diff .box{position:relative; color:var(--ink); background:linear-gradient(135deg,#f6f2fa,#e6daf1); box-shadow:0 24px 60px rgba(42,14,62,.22);
+  width:min(100%,760px); padding:clamp(32px,5vw,56px) clamp(20px,4vw,48px); text-align:center; animation:diffin .25s ease-out both}
+@keyframes diffin{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+#diff h2{margin:0 0 clamp(24px,3.5vw,36px); font-size:clamp(22px,2.4vw,30px)}
+#diff ul{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,1.6vw,18px)}
+#diff ul button{display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; height:100%; padding:clamp(20px,2.6vw,28px) 12px;
+  border:0; border-bottom:3px solid transparent; background:#fff; font:inherit; color:inherit; cursor:pointer;
+  box-shadow:0 2px 10px rgba(42,14,62,.06); transition:transform .15s ease, box-shadow .15s ease, border-color .15s}
+#diff ul button svg{width:44px; height:44px; stroke:var(--btn); fill:none; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round}
+#diff ul button span{display:flex; flex-direction:column; align-items:center; gap:4px}
+#diff ul button b{font-size:16px; font-weight:400}
+#diff ul button em{font-style:normal; font-size:12px; color:var(--sub)}
+#diff ul button[aria-current="true"]{transform:translateY(-3px); box-shadow:0 10px 24px rgba(42,14,62,.14); border-bottom-color:var(--btn)}
 #diff button:focus{outline:none}
-#diff small{font-size:12px; color:var(--sub)}
-#diff button em{display:block; font-style:normal; font-size:12px; color:var(--sub); margin-top:2px}
+#diff .x{position:absolute; top:12px; right:14px; width:36px; height:36px; padding:0; border:0; background:none; font-size:22px; line-height:1; color:var(--sub); cursor:pointer}
+@media (max-width:640px){ #diff ul{grid-template-columns:1fr} #diff ul button{flex-direction:row; justify-content:flex-start; text-align:left; padding:16px 18px} #diff ul button svg{width:36px; height:36px; flex:none} #diff ul button span{align-items:flex-start} }
+@media (prefers-reduced-motion:reduce){ #diff .box{animation:none} #diff ul button{transition:none} }
 /* **「難易度」→「スタイル」**（同日、本人：「難易度って文言が変？」→（ゲームの言葉で、押す前に何が変わるか分からない、と答えた）
    →「ゲームとかでそういうの変えるときなんて書かれる？難易度以外で」→「モードセレクトかプレイスタイルか……」→「ただ別にプレイではないっていう」
    →「**"スタイル"はどう**」→（色や見た目の切り替えと読まれやすいので、窓の見出しを「スタイルを選ぶ」に、三つに一行ずつ説明、と答えた）→「**それでやってみて**」）*/
-#diff .x{position:absolute; top:10px; right:12px; width:36px; min-height:36px; padding:0; border:0; justify-content:center; font-size:20px; color:var(--sub)}
-@media (prefers-reduced-motion:reduce){ #diff .box{animation:none} }
 
 @media (max-width:760px){
   nav li:not(.dv){display:none}   /* 狭い幅では難易度変更だけ残す */
@@ -188,9 +197,15 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
   <div class="box">
     <h2 id="diff-h" class="serif">スタイルを選ぶ</h2>
     <ul>
-      <li><button data-m="site"><span>ふつうのサイトで見る<em>いま見ている形</em></span></button></li>
-      <li><button data-m="game"><span>ゲームで見る<em>遊びながら見る</em></span></button></li>
-      <li><button data-m="quest"><span>冒険する<em>歩いてめぐる</em></span></button></li>
+      <li><button data-m="site">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M12 6h14l8 8v24H12z"/><path d="M26 6v8h8"/><path d="M17 21h12M17 26h12M17 31h8"/></svg>
+        <span><b>ふつうのサイトで見る</b><em>いま見ている形</em></span></button></li>
+      <li><button data-m="game">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M13 15h18a8 8 0 0 1 8 8v3a6 6 0 0 1-10.6 3.9L26 27h-8l-2.4 2.9A6 6 0 0 1 5 26v-3a8 8 0 0 1 8-8z"/><path d="M13 20v6M10 23h6"/><circle cx="29" cy="21.5" r="1.2"/><circle cx="32" cy="25" r="1.2"/></svg>
+        <span><b>ゲームで見る</b><em>遊びながら見る</em></span></button></li>
+      <li><button data-m="quest">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M6 11l10-4 12 4 10-4v26l-10 4-12-4-10 4z"/><path d="M16 7v26M28 11v26"/><path d="M20 22l3 2 4-5" stroke-dasharray="2 2.4"/></svg>
+        <span><b>冒険する</b><em>歩いてめぐる</em></span></button></li>
     </ul>
     <button class="x" type="button" aria-label="閉じる">×</button>
   </div>
@@ -227,7 +242,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     if (W.hidden) return;
     var k = e.key;
     if (k === 'Escape'){ hide(); e.preventDefault(); }
-    else if (k === 'ArrowUp' || k === 'ArrowDown'){ at = (at + (k === 'ArrowDown' ? 1 : -1) + B.length) % B.length; B[at].focus(); e.preventDefault(); }
+    else if (/^Arrow(Up|Down|Left|Right)$/.test(k)){ at = (at + (k === 'ArrowDown' || k === 'ArrowRight' ? 1 : -1) + B.length) % B.length; B[at].focus(); e.preventDefault(); }
     else if (k === 'Tab'){ e.preventDefault(); at = (at + (e.shiftKey ? -1 : 1) + B.length) % B.length; B[at].focus(); }
   });
 })();
