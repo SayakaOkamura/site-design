@@ -1825,7 +1825,6 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <div id="foot">
     <button data-k="contact"><span class="lb"><span class="cur">▶</span>お問い合わせ</span></button>
     <button data-k="policy"><span class="lb"><span class="cur">▶</span>ポリシー</span></button>
-    <button data-k="style"><span class="lb"><span class="cur">▶</span>スタイル</span></button>
   </div>
 
   <!-- 画面の成り立ち。**場には置かない**——端っこに一字。
@@ -2673,8 +2672,10 @@ var GO = { access:go('access'), contact:go('contact'), policy:go('policy') };
    気がしてきた」）。足もとから引っ越した。会社概要のとなりに置く——
    会社の話が続いて、最後が「触る」で終わる並びになる。
    足もとは注文どおりの**お問い合わせとポリシーの二つ**に戻った */
+/* **スタイルもメニューの中**（2026-11-06、本人：「スタイルは普通にメニューに並べたらいい気が」）。
+   いちど足もとの三つ目に置いたが、足もとは二つに戻した（「お」と「ー」が太陽の左右に当たる並び）。押すと選ぶ窓（openStyle）*/
 var MENU = [['mind','企業理念'],['svc','サービス'],['about','会社概要'],
-            ['access','アクセス'],['demo','デモを触る']];
+            ['access','アクセス'],['demo','デモを触る'],['style','スタイル']];
 var ul = document.getElementById('cmds');
 ul.innerHTML = MENU.map(function(m){
   return '<li data-k="' + m[0] + '"><button type="button"><span class="cur" aria-hidden="true">▶</span>' + m[1] + '</button></li>';
