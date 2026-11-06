@@ -5260,9 +5260,13 @@ var openStyle = function(){};
   /* **前に終わったスタイルから始める**（同日、本人：「どの画面で終わったか記憶しておきたいかも　次そこから」→「Aで、初めての人はタイトルから」）。
      覚えるのは見ている人のブラウザだけ（localStorage の adc-style）。ふつうのサイトで終わった人は site.html へ、ゲームで終わった人はタイトルを飛ばして点く。
      初めての人（覚えが無い）はタイトルから */
+  /* **入口はふつうのサイト**（同日、本人：「あーいや入口普通のサイトで」）。覚えが無い人も site.html へ。
+     タイトル画面は ?title で開いたときだけ出る（作り直す前提で残してある）*/
   var last = recall();
-  if (last === 'site'){ location.replace('site.html'); return; }
-  if (last === 'game'){ M.hidden = true; tvOn(); return; }
+  if (!/[?&]title(&|=|$)/.test(location.search)){
+    if (last === 'game'){ M.hidden = true; tvOn(); return; }
+    location.replace('site.html'); return;
+  }
   document.body.classList.add('title');
   listen(true);
   paint();
