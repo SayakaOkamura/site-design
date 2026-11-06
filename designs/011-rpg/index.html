@@ -1008,7 +1008,8 @@ html.js #mode{display:flex; position:fixed; inset:0; z-index:100; align-items:ce
   background:#000; padding:16px}
 html.js #mode[hidden]{display:none}
 #mode .box{background:#000; border:2px solid #fff; padding:clamp(18px,3vh,28px) clamp(22px,3vw,36px);
-  min-width:min(100%,18em); font-size:clamp(15px,1.5vw,19px)}
+  min-width:min(100%,18em); font-size:clamp(15px,1.5vw,19px);
+  transform-origin:top; animation:popin .12s steps(2) both}   /* ゲームの窓（#pop）と同じ開き方 */
 #mode h1{margin:0 0 1.1em; font-size:inherit; font-weight:700; letter-spacing:.12em; color:var(--dim)}
 #mode ul{list-style:none; margin:0; padding:0}
 #mode li + li{margin-top:.5em}
@@ -1019,10 +1020,13 @@ html.js #mode[hidden]{display:none}
 #mode button[aria-current="true"] .cur{color:var(--go)}
 /* **テレビのプツン**（2026-11-06、本人：「開いてる感ほしいな　テレビのプツンてなるやつとか」→（開いたとき／選んだあと、と出して）「C」＝両方）。
    上下の黒い幕と、真ん中の白い横線。点く＝線が横に伸びて幕が上下に開く。切れる＝幕が閉じて線が縮んで点になる。
-   開いたとき：点いて難易度選択。選んだあと：切れて、点いて夕焼け。動きを減らす設定では何もしない */
+   開いたとき：点いて難易度選択。選んだあと：切れて、点いて夕焼け。動きを減らす設定では何もしない
+   → 同日、本人：「**ポップアップはポケモンでメニュー押した時みたいに開いて、難易度選択したらテレビつけるみたいにしたら？**」→（一瞬で出る／すばやく伸びる、と訊いて）「B」。
+   **開いたときのテレビは外した**（幕が開くのにつれて窓の枠が上下に切れて見え、窓が裂けて開くようだった）。窓はゲームの窓と同じ伸び方で出る。
+   **切れるも外した**——選んだら窓が消えて真っ暗、一拍おいて点く */
 #tv{display:none}
-html.js #tv{display:block; position:fixed; inset:0; z-index:200; pointer-events:none}
-html.js #tv.off{display:none}
+html.js #tv{display:none; position:fixed; inset:0; z-index:200; pointer-events:none}
+html.js #tv.go{display:block}
 #tv i{position:absolute; left:0; right:0; height:50.5%; background:#000}
 #tv .u{top:0} #tv .d{bottom:0}
 #tv b{position:absolute; left:0; right:0; top:50%; height:2px; margin-top:-1px; background:#fff;
@@ -1031,11 +1035,6 @@ html.js #tv.off{display:none}
 #tv.on2 b{transform:scaleX(1); opacity:0; transition:opacity .22s ease-in}
 #tv.on2 .u{transform:translateY(-100%); transition:transform .24s cubic-bezier(.5,0,.7,.4)}
 #tv.on2 .d{transform:translateY(100%); transition:transform .24s cubic-bezier(.5,0,.7,.4)}
-#tv.cut0 .u{transform:translateY(-100%)} #tv.cut0 .d{transform:translateY(100%)} #tv.cut0 b{transform:scaleX(1); opacity:0}
-#tv.cut1 b{transform:scaleX(1); opacity:1; transition:opacity .1s}
-#tv.cut1 .u,#tv.cut1 .d{transform:none; transition:transform .14s cubic-bezier(.3,.6,.5,1)}
-#tv.cut2 b{transform:scaleX(.004); transition:transform .12s cubic-bezier(.6,0,.9,.5)}
-#tv.cut3 b{transform:scaleX(.004); opacity:0; transition:opacity .1s}
 #mode button:focus{outline:none}   /* 居場所は ▶ と金で見せる（メニューと同じ）*/
 /* ─ デモ。**画面をそのまま使う** ─────────────────────────────
    メニューと足もとは隠す（`body.demo`）。空・山・地面・勇者は出したまま */
@@ -5126,10 +5125,10 @@ window.addEventListener('hashchange', openHash);
   var M = document.getElementById('mode');
   if (!M) return;
   var TV = document.getElementById('tv');
-  if (HASH[location.hash.slice(1)]){ M.hidden = true; TV.className = 'off'; return; }
+  if (HASH[location.hash.slice(1)]){ M.hidden = true; return; }
   /* 点く・切れる。段ごとに class を付け替える（間は CSS の transition と同じ長さ）*/
   function seq(steps, done){
-    if (MQ_RM.matches){ TV.className = 'off'; if (done) done(); return; }
+    if (MQ_RM.matches){ TV.className = ''; if (done) done(); return; }
     var i = 0;
     (function next(){
       if (i >= steps.length){ if (done) done(); return; }
@@ -5138,19 +5137,17 @@ window.addEventListener('hashchange', openHash);
       setTimeout(next, st[1]);
     })();
   }
-  function tvOn(done){ seq([['', 40], ['on1', 140], ['on2', 250], ['off', 0]], done); }
-  function tvCut(done){ seq([['cut0', 20], ['cut1', 150], ['cut2', 130], ['cut3', 120]], done); }
+  function tvOn(done){ seq([['go', 160], ['go on1', 140], ['go on2', 250], ['', 0]], done); }   /* 頭の 0.16 秒は真っ暗の一拍 */
   var busy = false;
   var B = [].slice.call(M.querySelectorAll('button')), at = 0;
   function paint(){ B.forEach(function(b, i){ b.setAttribute('aria-current', i === at ? 'true' : 'false'); }); }
   function pick(i){
     if (B[i].dataset.m !== 'game' || busy) return;
     busy = true;
-    tvCut(function(){
-      M.hidden = true;
-      ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'].forEach(function(n){ window.removeEventListener(n, stop, true); });
-      setTimeout(function(){ tvOn(); }, 160);   /* 切れてから一拍、真っ暗 */
-    });
+    if (!MQ_RM.matches){ TV.className = 'go'; }   /* 窓を外すのと同じ瞬間に真っ暗にする（夕焼けが一瞬見えないように）*/
+    M.hidden = true;
+    ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'].forEach(function(n){ window.removeEventListener(n, stop, true); });
+    tvOn();
   }
   function stop(e){
     if (M.hidden) return;
@@ -5173,7 +5170,6 @@ window.addEventListener('hashchange', openHash);
   B.forEach(function(b, i){ b.addEventListener('focus', function(){ at = i; paint(); }); });
   paint();
   B[0].focus({ preventScroll:true });
-  tvOn();
 })();
 
 </script>
