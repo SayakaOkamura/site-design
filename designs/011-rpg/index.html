@@ -1005,7 +1005,8 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
    JS が動くときだけ出す（止まっているときは素の一枚がそのまま読める）。# で来た人には出さない */
 #mode{display:none}
 html.js #mode{display:flex; position:fixed; inset:0; z-index:100; align-items:center; justify-content:center;
-  background:#000; padding:16px}
+  background:rgba(0,0,0,.75); padding:16px}
+/* **後ろに夕焼けを沈めて見せる**（同日、本人：「**黒背景だと本当に虚無すぎて怖いかも**」→（A 夕焼けを暗く沈める／B 夜空／C 黒に走査線、と出して A を勧めた）→「**Aでやってみて**」）。前は #000 */
 html.js #mode[hidden]{display:none}
 #mode .box{position:relative; background:#000; border:2px solid #fff; padding:clamp(18px,3vh,28px) clamp(22px,3vw,36px);
   min-width:min(100%,18em); font-size:clamp(15px,1.5vw,19px);
