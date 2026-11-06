@@ -1226,19 +1226,13 @@ body.demo #dHp{display:block}
 
    お題の三つは**作られたものではない**ので、ここは通さない（同時に出る） */
 #dWin .q{opacity:0}
-/* アクセスの地図（2026-11-06）。ゲームのフィールド：草の升目・土の道・小さな建物 */
-#pop .amap{display:block}
-#pop .amap svg{display:block; margin:0 auto; width:min(100%, 19em); aspect-ratio:400/222; height:auto; border:calc(var(--px)/2) solid var(--dim); shape-rendering:crispEdges}   /* 背は路線の頁より低く（高いと「入らない窓」になって素の一枚に落ちた）*/
-#pop .amap .rd{fill:none; stroke:#8a6a3e; stroke-width:9}
-#pop .amap .rd2{fill:none; stroke:#a8844f; stroke-width:5; stroke-dasharray:4 4}
-#pop .amap .tr rect{fill:#24401f} #pop .amap .tr .tk{fill:#5a3b22}
-#pop .amap .rf{fill:#b0473a} #pop .amap .wl{fill:#e8dcc8} #pop .amap .dr{fill:#3a2a20} #pop .amap .wd{fill:#6a8fb0}
-#pop .amap .pl{fill:#e8dcc8} #pop .amap .fg{fill:var(--go)}
-#pop .amap .hr rect{fill:#120b08}
-#pop .amap text{paint-order:stroke; stroke:#1a120c; stroke-width:3px; stroke-linejoin:round}
-#pop .amap .mn{fill:#e8dcc8; font-size:9px}
-#pop .amap .sn{fill:#fff; font-size:12px}
-#pop .amap .hn{fill:var(--go); font-size:10px; text-anchor:middle; font-weight:700}
+/* アクセスの地図（2026-11-06）。Google の埋め込みを、古い携帯ゲーム機の画面のような緑の四階調に寄せる＋升目を重ねる */
+#pop .amap{position:relative; display:block; height:10.5em; border:var(--px) solid #0f380f; background:#9bbc0f; overflow:hidden}
+#pop .amap iframe{position:absolute; inset:0; width:100%; height:100%; border:0;
+  filter:grayscale(1) contrast(2) brightness(.78) sepia(1) hue-rotate(45deg) saturate(1.7)}
+#pop .amap::after{content:""; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(15,56,15,.18) 0 1px, transparent 1px 3px),
+             repeating-linear-gradient(90deg, rgba(15,56,15,.18) 0 1px, transparent 1px 3px)}
 /* ─ 盤（2026-11-06）。二戦目・三戦目は、窓の三択ではなく**盤の上の物を押す**
    本人：「1戦目に対して2と3と全然区別着かない　押すだけだもん」→（2戦目は散らばった紙、3戦目は流れ図の穴）「いいよ、やってみて」。
    押すのは人、拾う・吸い込む・組むのは AI くん（盤の上で物が動く）*/
@@ -2638,69 +2632,21 @@ var ROUTEHTML = rtGrid(RT);
    →（A 歩く分数の輪で描く／B 実際の向きで描く、と出して）「Aでやってみて　目印になるものとかも書きつつ…」）。
    真ん中（左寄り）に本社、まわりに歩く分数の輪、各輪に駅。**向きは描かない**——駅は輪の右側に並べるだけで、地図の上の方角ではない。
    駅と分数は上の路線の行（公式の文）から読む。輪の大きさは順番を見せるだけで、縮尺ではない。目印はまだ入れていない（何を置くか本人に訊いている） */
-var MAPHTML = (function(){
-  /* **ゲームのフィールドの見た目**（同日、本人：「もうちょっとゲームのマップっぽく」）。
-     草地の升目・土の道（輪がそのまま道）・駅は小さな建物・本社は旗の立った建物・勇者が本社の前に立つ。
-     木は飾り（目印ではない。場所の意味は持たせない——道と道のあいだの空いたところに置くだけ）*/
-  var st = [].map.call(document.querySelectorAll('[data-a="route"] li'), function(li){
-    var m = li.textContent.trim().match(/^(.+?)\s*(\d+)\s*分/);
-    return m ? { n:m[1], m:+m[2] } : null;
-  }).filter(Boolean);
-  var mins = st.map(function(x){ return x.m; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).sort(function(a, b){ return a - b; });
-  var W = 400, H = 222, R = {}, cx = 44, cy = 112, RS = [24, 52, 76, 98];
-  mins.forEach(function(m, i){ R[m] = RS[Math.min(i, RS.length - 1)] + Math.max(0, i - 3) * 22; });
-  var ANG = { 1:[0], 2:[-70, 70], 3:[-55, 0, 55], 4:[-60, -25, 25, 60] };
-  var P = 4;   /* 升目の粒 */
-  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="本社から歩いて：' +
-    st.map(function(x){ return x.n + ' ' + x.m + '分'; }).join('、') + '">' +
-    '<defs><pattern id="gr" width="' + (P * 4) + '" height="' + (P * 4) + '" patternUnits="userSpaceOnUse">' +
-      '<rect width="' + (P * 4) + '" height="' + (P * 4) + '" fill="#3b5a34"/>' +
-      '<rect x="' + P + '" y="' + P + '" width="' + P + '" height="' + P + '" fill="#4a6d40"/>' +
-      '<rect x="' + (P * 3) + '" y="' + (P * 2) + '" width="' + P + '" height="' + P + '" fill="#4a6d40"/>' +
-      '<rect x="0" y="' + (P * 3) + '" width="' + P + '" height="' + P + '" fill="#34502e"/>' +
-    '</pattern></defs>' +
-    '<rect width="' + W + '" height="' + H + '" fill="url(#gr)"/>';
-  /* 道：輪を土の色で太く。外の輪から描く */
-  mins.slice().reverse().forEach(function(m){
-    var r = R[m], d = 'M' + cx + ' ' + (cy - r) + ' A' + (r * 2) + ' ' + r + ' 0 0 1 ' + cx + ' ' + (cy + r);
-    svg += '<path d="' + d + '" class="rd"/><path d="' + d + '" class="rd2"/>';
-  });
-  /* 木（飾り）：道と道のあいだ、左右の端に */
-  var TREE = [[8, 22], [20, 196], [150, 8], [330, 30], [350, 190], [372, 110], [96, 206]];
-  TREE.forEach(function(t){
-    svg += '<g class="tr"><rect x="' + (t[0] - 6) + '" y="' + (t[1] - 10) + '" width="12" height="10"/>' +
-           '<rect x="' + (t[0] - 2) + '" y="' + t[1] + '" width="4" height="5" class="tk"/></g>';
-  });
-  /* 分の札：道の上端に */
-  mins.forEach(function(m){
-    svg += '<text x="' + (cx + 4) + '" y="' + (cy - R[m] - 4) + '" class="mn">' + m + '分</text>';
-  });
-  /* 駅：小さな建物（屋根・壁・入口）＋名札 */
-  mins.forEach(function(m){
-    var on = st.filter(function(x){ return x.m === m; }), r = R[m], n = on.length;
-    on.forEach(function(x, j){
-      var a = ((ANG[n] || ANG[4])[j] || 0) * Math.PI / 180;   /* 文字が重ならない角度（向きの意味は無い）*/
-      var x0 = Math.round(cx + 2 * r * Math.cos(a)), y0 = Math.round(cy + r * Math.sin(a));
-      svg += '<g class="sb"><rect x="' + (x0 - 6) + '" y="' + (y0 - 9) + '" width="12" height="3" class="rf"/>' +
-             '<rect x="' + (x0 - 5) + '" y="' + (y0 - 6) + '" width="10" height="8" class="wl"/>' +
-             '<rect x="' + (x0 - 1) + '" y="' + (y0 - 2) + '" width="3" height="4" class="dr"/></g>';
-      svg += '<text x="' + (x0 + 8) + '" y="' + (y0 + 1) + '" class="sn">' + x.n + '</text>';
-    });
-  });
-  /* 本社：旗の立った建物。前に勇者 */
-  svg += '<g class="hq">' +
-    '<rect x="' + (cx - 1) + '" y="' + (cy - 30) + '" width="2" height="12" class="pl"/>' +
-    '<rect x="' + (cx + 1) + '" y="' + (cy - 30) + '" width="7" height="5" class="fg"/>' +
-    '<rect x="' + (cx - 12) + '" y="' + (cy - 18) + '" width="24" height="4" class="rf"/>' +
-    '<rect x="' + (cx - 11) + '" y="' + (cy - 14) + '" width="22" height="18" class="wl"/>' +
-    '<rect x="' + (cx - 7) + '" y="' + (cy - 11) + '" width="4" height="4" class="wd"/><rect x="' + (cx + 3) + '" y="' + (cy - 11) + '" width="4" height="4" class="wd"/>' +
-    '<rect x="' + (cx - 2) + '" y="' + (cy - 3) + '" width="4" height="7" class="dr"/></g>' +
-    '<text x="' + cx + '" y="' + (cy + 15) + '" class="hn">本社</text>' +
-    /* 勇者（影絵の小さな人）*/
-    '<g class="hr"><rect x="' + (cx + 14) + '" y="' + (cy - 3) + '" width="5" height="5"/><rect x="' + (cx + 13) + '" y="' + (cy + 2) + '" width="7" height="5"/>' +
-    '<rect x="' + (cx + 14) + '" y="' + (cy + 7) + '" width="2" height="2"/><rect x="' + (cx + 17) + '" y="' + (cy + 7) + '" width="2" height="2"/></g>';
-  return '<span class="amap">' + svg + '</svg></span>';
-})();
+/* **地図は公式と同じ Google の埋め込み、見た目だけ古いゲームの画面**（2026-11-06）。
+   本人：「これならアクセスマップ、ゲームの方だけゲームっぽいマップで書いてもいいな」→ 輪の図 → 「もうちょっとゲームのマップっぽく」→ 草地の図
+   →「**いや、埋め込み型のままで　古いゲームのマップっぽく**」。
+   描いた図はやめた（向きも目印も描けば嘘になりうる）。本物の地図に色の加工と升目を重ねるだけ——**中身は本物のまま。**
+   URL は公式トップの iframe と同じ（009 でも使った）。中は Google の手（ドラッグ・拡大）がそのまま効く。
+   測るとき（全部の頁を描いて高さを見る）に読み込まないよう、ここでは空の箱だけ置き、見せるとき（sayPage）に iframe を入れる */
+var MAPSRC = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2208.652316518989!2d139.75020019000598!3d35.66178663856873!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188b1b4cad0425%3A0x20c61c8a06a303bc!2sANYZ!5e0!3m2!1sja!2sjp!4v1773913262406!5m2!1sja!2sjp';
+var MAPHTML = '<span class="amap" data-map></span>';
+function fillMap(){
+  var box = popB.querySelector('[data-map]');
+  if (!box || box.firstChild) return;
+  var f = document.createElement('iframe');
+  f.src = MAPSRC; f.title = '地図'; f.loading = 'lazy'; f.referrerPolicy = 'no-referrer-when-downgrade';
+  box.appendChild(f);
+}
 
 /* 会社概要の中身。**一枚目は入らない窓で二つに割る**ので、対ごとに持っておく */
 var AB = {
@@ -3304,6 +3250,7 @@ function draw(){
 /* **読むのは開いたときとめくったときだけ。**`draw()` は測るときにも呼ばれる
    （`topOfTallestPop()` が全部の窓を描いて測る）ので、そこでは読まない */
 function sayPage(){
+  fillMap();
   var d = DATA[cur], ps = pages(d);
   say(d.t + (ps.length > 1 ? '　' + (page + 1) + ' / ' + ps.length : '') + '　' + textOf(popB));
 }
