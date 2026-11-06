@@ -26,6 +26,14 @@ header{position:sticky; top:0; z-index:10; height:88px; background:rgba(255,255,
 nav ul{display:flex; gap:clamp(16px,3vw,44px)}
 nav a{text-decoration:none; font-size:15px; font-weight:400}
 nav a:hover{color:var(--sub)}
+/* **難易度の変更は頭の帯のナビの最後**（2026-11-06）。いちばん上の細い帯は外した。
+   本人：「いいななんか　急に非日常に引き込まれる感があるともっと面白いかもしれん…遊ぶように働くに繋がる動線として存在するといい」
+   →「いやそっちじゃなくて、そもそもそこへの動線自体の話」→（理念の下／カード／ナビの最後、と出して）
+   「**それは普通に邪魔だ　普通にさっとまじめに見たい人の邪魔はしないでおきつつ、動線自体はちゃんと置きたい**」→「てかそこに難易度を変更とか置いといたら？」→「**御免Cだった**」。
+   ほかの四つと細い縦線で分ける。字と色はナビと同じ */
+nav li.dv{padding-left:clamp(16px,3vw,44px); border-left:1px solid var(--line)}
+nav button{font:inherit; font-size:15px; font-weight:400; color:inherit; background:none; border:0; padding:0; cursor:pointer}
+nav button:hover{color:var(--sub)}
 
 .mv{position:relative; overflow:hidden; min-height:clamp(420px,72vh,760px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 16px}
 .mv svg{position:absolute; inset:0; width:100%; height:100%; z-index:-1}
@@ -65,10 +73,6 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
    本人：「ステータスのバー作ってみて」で下の真ん中にゲームの窓を浮かせた →「**モードの位置やばいのとUI似合わせないと浮くと思う。あと常にあるのも邪魔**」
    →（A 頭の帯の右端に小さく／B いちばん上に細い帯／C 足もと、と出して A を勧めた）→「**Bでやってみて**」。
    いちばん上に細い一行。サイトの色と字で、スクロールすると流れて消える（頭の帯だけが残る） */
-#strip{background:var(--ink); color:#fff; text-align:center; font-size:13px; font-weight:400; letter-spacing:.04em; padding:9px 16px; line-height:1.5}
-#strip a, #strip button{color:#fff; margin-left:1.2em; text-underline-offset:3px}
-#strip button{font:inherit; letter-spacing:inherit; background:none; border:0; padding:0; text-decoration:underline; cursor:pointer}
-#strip a:hover, #strip button:hover{color:#d9c6f0}
 /* **ゲームの途中で難易度を変える**（同日、本人：「ゲームでも見られる、というかなんかもっと違う文言で行きたいかも」→「**ゲームの途中で難易度変更するみたいなイメージでできんかな**」
    →（「難易度：かんたん　変更する ›」＋押すとその場で難易度選択の窓、を勧めて）「**いったんそれで**」）。
    サイトそのものを「かんたん」で遊んでいる状態に見立てる。窓はタイトルで出していたもの（二重枠・真ん中から六段）と同じ */
@@ -89,14 +93,12 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 @media (prefers-reduced-motion:reduce){ #diff .box{animation:none} }
 
 @media (max-width:760px){
-  nav{display:none}
+  nav li:not(.dv){display:none}   /* 狭い幅では難易度変更だけ残す */
+  nav li.dv{padding-left:0; border-left:0}
   .vision .in, .service ul{grid-template-columns:1fr}
   .overview dl{grid-template-columns:1fr; gap:4px}
-  #strip{font-size:12px} #strip a{margin-left:.6em}
 }
 </style>
-
-<div id="strip">難易度：かんたん<button type="button" id="diffOpen" aria-haspopup="dialog">変更する ›</button></div>
 
 <header>
   <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
@@ -105,6 +107,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     <li><a href="#services">サービス</a></li>
     <li><a href="#company">会社概要</a></li>
     <li><a href="#contact">お問い合せ</a></li>
+    <li class="dv"><button type="button" id="diffOpen" aria-haspopup="dialog">難易度変更</button></li>
   </ul></nav>
 </header>
 
