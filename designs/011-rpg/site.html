@@ -6,7 +6,7 @@
 <!-- ふつうのサイト（2026-11-06）。本人：「普通のサイトは一旦元のアルターデザインのサイトを軽く再現したような形にしておいて。中身なくていいから簡単に作って」。
      公式（alt-dsgn.co.jp）の並び・色・字の重さを写した。文は公式のまま。写真・ロゴの画像・地図・お知らせは入れていない -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Antique&display=swap">
 <style>
 :root{ --ink:#2a0e3e; --sub:#715189; --line:#e4dcec; --pale:#f6f3fa; --btn:#654087 }
 *{box-sizing:border-box}
@@ -61,10 +61,29 @@ b{font-weight:700}
 
 footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:36px clamp(16px,4vw,48px); font-size:13px; border-top:1px solid var(--line)}
 
+/* ── ステータスのバー（2026-11-06、本人：「ステータス変更みたいなバーとか作ってそこで変えられるようにするのがいいのか？」→「ステータスのバー作ってみて」）──
+   下の真ん中に、ゲームの窓（黒地・白の二重枠・ドットの字）を一本だけ浮かせる。サイトの中で、ここだけゲームの気配がする。
+   いまのモードに ▶ と金。ゲーム → index.html?mode=game（タイトルを飛ばして点いて夕焼け）。冒険はまだ行き先が無いので薄く */
+body{padding-bottom:96px}
+#mode{position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:20; display:flex; align-items:center; gap:1.4em;
+  max-width:calc(100% - 32px); padding:.55em 1.3em; background:#000; color:#e2dcd6; border:2px solid #fff;
+  font-family:"DotGothic16","Hiragino Kaku Gothic ProN",sans-serif; font-size:clamp(13px,1.2vw,16px); letter-spacing:.06em; line-height:1.4; white-space:nowrap}
+#mode::before{content:""; position:absolute; inset:3px; border:2px solid #fff; pointer-events:none}
+#mode .lb{color:#9d93a8}
+#mode ul{display:flex; gap:1.2em}
+#mode a, #mode span.off{display:flex; align-items:center; gap:.35em; text-decoration:none; color:inherit; padding:.2em 0; min-height:24px}
+#mode .cur{width:1em; text-align:center; color:transparent}
+#mode [aria-current="page"]{color:#ffd270}
+#mode [aria-current="page"] .cur, #mode a:hover .cur, #mode a:focus-visible .cur{color:#ffd270}
+#mode a:hover{color:#ffd270}
+#mode a:focus{outline:none}
+#mode span.off{opacity:.4}
+
 @media (max-width:760px){
   nav{display:none}
   .vision .in, .service ul{grid-template-columns:1fr}
   .overview dl{grid-template-columns:1fr; gap:4px}
+  #mode{gap:.8em; padding:.5em .9em} #mode ul{gap:.7em} #mode .lb{display:none}
 }
 </style>
 
@@ -144,6 +163,15 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </div>
   </section>
 </main>
+
+<nav id="mode" aria-label="モード">
+  <span class="lb">モード</span>
+  <ul>
+    <li><a href="site.html" aria-current="page"><span class="cur">▶</span>ふつうのサイト</a></li>
+    <li><a href="index.html?mode=game"><span class="cur">▶</span>ゲーム</a></li>
+    <li><span class="off" aria-disabled="true"><span class="cur">▶</span>冒険</span></li>
+  </ul>
+</nav>
 
 <footer>
   <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>

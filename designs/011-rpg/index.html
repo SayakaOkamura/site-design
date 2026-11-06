@@ -5163,6 +5163,8 @@ window.addEventListener('hashchange', openHash);
   if (!M) return;
   var TV = document.getElementById('tv');
   if (HASH[location.hash.slice(1)]){ M.hidden = true; return; }
+  /* **ふつうのサイトのステータスのバーから来た人**（?mode=game）は、タイトルも難易度選択も出さずに、点いて夕焼け（2026-11-06）*/
+  if (/[?&]mode=game(&|$)/.test(location.search)){ M.hidden = true; tvOn(); return; }
   document.body.classList.add('title');
   var picking = false;
   function toPick(){ picking = true; M.classList.add('pick'); B[at].focus({ preventScroll:true }); }
