@@ -5198,6 +5198,8 @@ var openStyle = function(){};
     })();
   }
   function tvOn(done){ seq([['go', 160], ['go on1', 140], ['go on2', 250], ['', 0]], done); }   /* 頭の 0.16 秒は真っ暗の一拍 */
+  function remember(v){ try { localStorage.setItem('adc-style', v); } catch (e) {} }
+  function recall(){ try { return localStorage.getItem('adc-style'); } catch (e) { return null; } }
   function shut(){
     M.hidden = true; M.classList.remove('ingame'); listen(false);
     document.body.classList.remove('title');
@@ -5216,6 +5218,7 @@ var openStyle = function(){};
     if (m !== 'game' || busy) return;
     if (ingame){ shut(); return; }   /* いまのまま */
     busy = true;
+    remember('game');
     if (!MQ_RM.matches){ TV.className = 'go'; }   /* 窓を外すのと同じ瞬間に真っ暗にする（夕焼けが一瞬見えないように）*/
     shut();
     tvOn();
@@ -5251,9 +5254,15 @@ var openStyle = function(){};
   }
   B.forEach(function(b, i){ b.addEventListener('focus', function(){ at = i; paint(); }); });
 
-  if (HASH[location.hash.slice(1)]){ M.hidden = true; return; }
+  if (HASH[location.hash.slice(1)]){ M.hidden = true; remember('game'); return; }
   /* **ふつうのサイトから来た人**（?mode=game）は、タイトルも難易度選択も出さずに、点いて夕焼け（2026-11-06）*/
-  if (/[?&]mode=game(&|$)/.test(location.search)){ M.hidden = true; tvOn(); return; }
+  if (/[?&]mode=game(&|$)/.test(location.search)){ M.hidden = true; remember('game'); tvOn(); return; }
+  /* **前に終わったスタイルから始める**（同日、本人：「どの画面で終わったか記憶しておきたいかも　次そこから」→「Aで、初めての人はタイトルから」）。
+     覚えるのは見ている人のブラウザだけ（localStorage の adc-style）。ふつうのサイトで終わった人は site.html へ、ゲームで終わった人はタイトルを飛ばして点く。
+     初めての人（覚えが無い）はタイトルから */
+  var last = recall();
+  if (last === 'site'){ location.replace('site.html'); return; }
+  if (last === 'game'){ M.hidden = true; tvOn(); return; }
   document.body.classList.add('title');
   listen(true);
   paint();
