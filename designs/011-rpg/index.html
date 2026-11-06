@@ -999,6 +999,25 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 }
 
 @media (prefers-reduced-motion:reduce){ *{animation:none !important} }
+/* ─ 難易度選択（2026-11-06）──────────────────────────────────
+   本人：「真ん中にウィンドウで、ゲームのやつよりシンプルのウィンドウ　それしか出てこなくていい　ゲームの難易度選択と一緒」。
+   開いたら**これ一枚だけ**。後ろの画面は覆って見せない。窓は一重の枠（ゲームの窓は二重枠）。
+   JS が動くときだけ出す（止まっているときは素の一枚がそのまま読める）。# で来た人には出さない */
+#mode{display:none}
+html.js #mode{display:flex; position:fixed; inset:0; z-index:100; align-items:center; justify-content:center;
+  background:#000; padding:16px}
+html.js #mode[hidden]{display:none}
+#mode .box{background:#000; border:2px solid #fff; padding:clamp(18px,3vh,28px) clamp(22px,3vw,36px);
+  min-width:min(100%,18em); font-size:clamp(15px,1.5vw,19px)}
+#mode h1{margin:0 0 1.1em; font-size:inherit; font-weight:700; letter-spacing:.12em; color:var(--dim)}
+#mode ul{list-style:none; margin:0; padding:0}
+#mode li + li{margin-top:.5em}
+#mode button{display:flex; align-items:center; gap:.6em; width:100%; min-height:24px; padding:.2em 0; border:0; background:none;
+  font:inherit; font-weight:700; letter-spacing:.06em; color:var(--dim); text-align:left; cursor:pointer}
+#mode button .cur{width:1em; text-align:center; color:transparent}
+#mode button[aria-current="true"]{color:var(--go)}
+#mode button[aria-current="true"] .cur{color:var(--go)}
+#mode button:focus{outline:none}   /* 居場所は ▶ と金で見せる（メニューと同じ）*/
 /* ─ デモ。**画面をそのまま使う** ─────────────────────────────
    メニューと足もとは隠す（`body.demo`）。空・山・地面・勇者は出したまま */
 body.demo #menu, body.demo #foot, body.demo #pop, body.demo #made{display:none}
@@ -1820,6 +1839,18 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
      （Codex に見させて出た一つ目）。検索・リンクの下見・読むだけの AI も同じで、中身が空に見える。
      → **文を HTML に移して、窓は JS がここから読んで組む。**文の置き場は一か所のまま。
      JS が動いているあいだは隠す。止まっているときだけ、夕焼けの下に素の一枚として出る -->
+<!-- 難易度選択（2026-11-06）。開いたらこれ一枚だけ -->
+<div id="mode" role="dialog" aria-modal="true" aria-labelledby="mode-h">
+  <div class="box">
+    <h1 id="mode-h">難易度選択</h1>
+    <ul>
+      <li><button data-m="site"><span class="cur">▶</span>ふつうのサイトで見る</button></li>
+      <li><button data-m="game"><span class="cur">▶</span>ゲームで見る</button></li>
+      <li><button data-m="quest"><span class="cur">▶</span>冒険する</button></li>
+    </ul>
+  </div>
+</div>
+
 <main id="text">
   <section id="t-mind">
     <h2>企業理念</h2>
@@ -5066,5 +5097,43 @@ function openHash(){
 }
 openHash();
 window.addEventListener('hashchange', openHash);
+
+/* **難易度選択**（2026-11-06）。開いたら真ん中に窓一枚だけ。
+   後ろの画面の手（↑↓・Enter・押す）は、窓があるあいだ一つも通さない——window の先取りで止める。
+   # で来た人には出さない（その窓をすぐ開いて始める、9/29 のまま）。
+   「ゲームで見る」で窓を外すと、いまの 011 がそのまま出る。ほかの二つは、まだ行き先が無い */
+(function(){
+  var M = document.getElementById('mode');
+  if (!M) return;
+  if (HASH[location.hash.slice(1)]){ M.hidden = true; return; }
+  var B = [].slice.call(M.querySelectorAll('button')), at = 0;
+  function paint(){ B.forEach(function(b, i){ b.setAttribute('aria-current', i === at ? 'true' : 'false'); }); }
+  function pick(i){
+    if (B[i].dataset.m !== 'game') return;
+    M.hidden = true;
+    ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'].forEach(function(n){ window.removeEventListener(n, stop, true); });
+  }
+  function stop(e){
+    if (M.hidden) return;
+    var b = e.target && e.target.closest ? e.target.closest('#mode button') : null;
+    if (e.type === 'keydown'){
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var k = e.key;
+      if (k === 'Tab') return;
+      if (k === 'ArrowUp' || k === 'ArrowDown'){ at = (at + (k === 'ArrowDown' ? 1 : -1) + B.length) % B.length; paint(); B[at].focus(); }
+      else if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z') pick(at);
+      else return;
+      e.preventDefault(); e.stopImmediatePropagation(); return;
+    }
+    if (e.type === 'mouseover'){ if (b){ at = B.indexOf(b); paint(); } return; }
+    if (e.type === 'click' && b) pick(B.indexOf(b));
+    e.stopImmediatePropagation();
+    if (e.type === 'click' || !b) e.preventDefault();
+  }
+  ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'].forEach(function(n){ window.addEventListener(n, stop, true); });
+  B.forEach(function(b, i){ b.addEventListener('focus', function(){ at = i; paint(); }); });
+  paint();
+  B[0].focus({ preventScroll:true });
+})();
 
 </script>
