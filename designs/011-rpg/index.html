@@ -940,6 +940,7 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
     #menu li{padding:calc(var(--px)*1.6) 0}
     /* **開いているあいだは出さない。**同じ場所を使うので */
     body.popped #menu{display:none}
+    body.popped #foot{visibility:hidden}   /* 足もとはメニューの下にいて、窓がそこまで来る（2026-11-06）*/
     /* 右下の一行は、**メニューの下**（2026-09-25、本人：「縦の時のこの画面について、は下にして」）。
        前は足もととメニューのあいだの暗がりに JS で置いていた。
        **メニューの下のあき（`--deckB`）のまんなか、右端はメニューの右端に揃える。**
@@ -1022,6 +1023,10 @@ body.title #name, body.title #menu, body.title #foot, body.title #made, body.tit
   text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge);
   animation:blink 1.1s steps(2) infinite}
 #mode .box{display:none}
+/* ゲームの中から開いたとき：題字は出さず、窓だけ真ん中に。後ろは少し沈める */
+html.js #mode.ingame{justify-content:center; background:rgba(0,0,0,.45)}
+#mode.ingame #ttl{display:none}
+#mode.ingame #slot{margin-top:0}
 #mode.pick .box{display:block}
 #mode.pick #press{display:none}
 #mode:focus{outline:none}
@@ -1820,6 +1825,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <div id="foot">
     <button data-k="contact"><span class="lb"><span class="cur">▶</span>お問い合わせ</span></button>
     <button data-k="policy"><span class="lb"><span class="cur">▶</span>ポリシー</span></button>
+    <button data-k="style"><span class="lb"><span class="cur">▶</span>スタイル</span></button>
   </div>
 
   <!-- 画面の成り立ち。**場には置かない**——端っこに一字。
@@ -3011,7 +3017,13 @@ function placeMenu(){
     var gap = (H - G - fh - mh) / 3;
     if (!fh || gap < 8) return;              /* 入らないときは CSS の置き方のまま */
     var pt = ftEl.offsetParent ? ftEl.offsetParent.getBoundingClientRect().top : 0;
-    ftEl.style.top = Math.round(G + gap - pt) + 'px';
+    /* **足もとはメニューの下**（2026-11-06、本人：「縦画面の時のお問い合わせとポリシーの位置をメニューより下にして」）。
+         前   地平 ─ あき ─ 足もと ─ あき ─ メニュー ─ あき ─ 画面の下
+         いま 地平 ─ あき ─ メニュー ─ あき ─ 足もと ─ あき ─ 画面の下
+       あきは三つとも同じのまま。窓・問い・リザルトは前と同じいちばん下の線（--deckB）に乗る——
+       開いているあいだは足もとを隠す（メニューと同じく、同じ場所を窓が使う）*/
+    ftEl.style.top = Math.round(H - gap - fh - pt) + 'px';
+    mn.style.bottom = Math.round(gap * 2 + fh) + 'px';
     root.style.setProperty('--deckB', Math.round(gap) + 'px');
     return;
   }
@@ -3190,6 +3202,7 @@ function turn(){
 
 /* 決定。**窓が開いていれば送り、最後なら閉じる**（お問い合わせだけメールへ） */
 function fire(){
+  if (!cur && ALL[sel].dataset.k === 'style'){ openStyle(); return; }   /* スタイルは窓ではなく、選ぶ窓を開く（2026-11-06）*/
   if (!cur){ openPop(ALL[sel].dataset.k); return; }
   var d = DATA[cur];
   if (page < pages(d).length - 1){ page++; goSel = false; draw(); sayPage(); return; }
@@ -3208,6 +3221,7 @@ document.addEventListener('click', function(e){
   if (el && el.id === 'made'){ startGame(); return; }   /* 右下の「？」はミニゲーム（2026-09-29） */
   if (el){
     var i = ALL.indexOf(el); if (i >= 0) sel = i;
+    if (el.dataset.k === 'style'){ if (cur) close(); openStyle(); return; }
     (cur === el.dataset.k) ? close() : openPop(el.dataset.k);
     return;
   }
@@ -5157,18 +5171,21 @@ window.addEventListener('hashchange', openHash);
 /* **難易度選択**（2026-11-06）。開いたら真ん中に窓一枚だけ。
    後ろの画面の手（↑↓・Enter・押す）は、窓があるあいだ一つも通さない——window の先取りで止める。
    # で来た人には出さない（その窓をすぐ開いて始める、9/29 のまま）。
-   「ゲームで見る」で窓を外すと、いまの 011 がそのまま出る。ほかの二つは、まだ行き先が無い */
+   「ゲームで見る」で窓を外すと、いまの 011 がそのまま出る。ふつうのサイトは site.html へ。冒険はまだ行き先が無い
+   **ゲームの中からも開く**（同日、本人：「ゲームからもスタイル変更できるようにして」）。足もとの「スタイル」→ 同じ窓を、
+   題字を出さずに真ん中に（#mode.ingame）。見出しは「スタイルを選ぶ」、カーソルは「ゲームで見る」から。Esc・窓の外で閉じる */
+var openStyle = function(){};
 (function(){
   var M = document.getElementById('mode');
   if (!M) return;
-  var TV = document.getElementById('tv');
-  if (HASH[location.hash.slice(1)]){ M.hidden = true; return; }
-  /* **ふつうのサイトのステータスのバーから来た人**（?mode=game）は、タイトルも難易度選択も出さずに、点いて夕焼け（2026-11-06）*/
-  if (/[?&]mode=game(&|$)/.test(location.search)){ M.hidden = true; tvOn(); return; }
-  document.body.classList.add('title');
-  var picking = false;
+  var TV = document.getElementById('tv'), H = document.getElementById('mode-h');
+  var EV = ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'];
+  var picking = false, ingame = false, busy = false;
+  var B = [].slice.call(M.querySelectorAll('button')), at = 0;
+  function listen(on){ EV.forEach(function(n){ (on ? window.addEventListener : window.removeEventListener).call(window, n, stop, true); }); }
+  function paint(){ B.forEach(function(b, i){ b.setAttribute('aria-current', i === at ? 'true' : 'false'); }); }
   function toPick(){ picking = true; M.classList.add('pick'); B[at].focus({ preventScroll:true }); }
-  /* 点く・切れる。段ごとに class を付け替える（間は CSS の transition と同じ長さ）*/
+  /* 点く。段ごとに class を付け替える（間は CSS の transition と同じ長さ）*/
   function seq(steps, done){
     if (MQ_RM.matches){ TV.className = ''; if (done) done(); return; }
     var i = 0;
@@ -5180,16 +5197,26 @@ window.addEventListener('hashchange', openHash);
     })();
   }
   function tvOn(done){ seq([['go', 160], ['go on1', 140], ['go on2', 250], ['', 0]], done); }   /* 頭の 0.16 秒は真っ暗の一拍 */
-  var busy = false;
-  var B = [].slice.call(M.querySelectorAll('button')), at = 0;
-  function paint(){ B.forEach(function(b, i){ b.setAttribute('aria-current', i === at ? 'true' : 'false'); }); }
+  function shut(){
+    M.hidden = true; M.classList.remove('ingame'); listen(false);
+    document.body.classList.remove('title');
+  }
+  openStyle = function(){
+    if (!M.hidden) return;
+    ingame = true; picking = true; busy = false;
+    H.textContent = 'スタイルを選ぶ';
+    M.classList.add('pick', 'ingame'); M.hidden = false;
+    at = 1; paint(); listen(true);
+    B[at].focus({ preventScroll:true });
+  };
   function pick(i){
-    if (B[i].dataset.m === 'site'){ location.href = 'site.html'; return; }   /* ふつうのサイト（2026-11-06）*/
-    if (B[i].dataset.m !== 'game' || busy) return;
+    var m = B[i].dataset.m;
+    if (m === 'site'){ location.href = 'site.html'; return; }
+    if (m !== 'game' || busy) return;
+    if (ingame){ shut(); return; }   /* いまのまま */
     busy = true;
     if (!MQ_RM.matches){ TV.className = 'go'; }   /* 窓を外すのと同じ瞬間に真っ暗にする（夕焼けが一瞬見えないように）*/
-    M.hidden = true; document.body.classList.remove('title');
-    ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'].forEach(function(n){ window.removeEventListener(n, stop, true); });
+    shut();
     tvOn();
   }
   function stop(e){
@@ -5209,16 +5236,25 @@ window.addEventListener('hashchange', openHash);
       if (k === 'Tab') return;
       if (k === 'ArrowUp' || k === 'ArrowDown'){ at = (at + (k === 'ArrowDown' ? 1 : -1) + B.length) % B.length; paint(); B[at].focus(); }
       else if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'z' || k === 'Z') pick(at);
+      else if ((k === 'Escape' || k === 'x' || k === 'X' || k === 'ArrowLeft') && ingame) shut();
       else return;
       e.preventDefault(); e.stopImmediatePropagation(); return;
     }
     if (e.type === 'mouseover'){ if (b){ at = B.indexOf(b); paint(); } return; }
-    if (e.type === 'click' && b) pick(B.indexOf(b));
+    if (e.type === 'click'){
+      if (b) pick(B.indexOf(b));
+      else if (ingame && !(e.target.closest && e.target.closest('#mode .box'))) shut();   /* 窓の外を押したら閉じる */
+    }
     e.stopImmediatePropagation();
     if (e.type === 'click' || !b) e.preventDefault();
   }
-  ['keydown', 'pointerdown', 'pointerup', 'click', 'mouseover'].forEach(function(n){ window.addEventListener(n, stop, true); });
   B.forEach(function(b, i){ b.addEventListener('focus', function(){ at = i; paint(); }); });
+
+  if (HASH[location.hash.slice(1)]){ M.hidden = true; return; }
+  /* **ふつうのサイトから来た人**（?mode=game）は、タイトルも難易度選択も出さずに、点いて夕焼け（2026-11-06）*/
+  if (/[?&]mode=game(&|$)/.test(location.search)){ M.hidden = true; tvOn(); return; }
+  document.body.classList.add('title');
+  listen(true);
   paint();
   M.focus({ preventScroll:true });
 })();
