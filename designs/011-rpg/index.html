@@ -1023,6 +1023,10 @@ body.title #name, body.title #menu, body.title #foot, body.title #made, body.tit
   text-shadow:var(--o2) 0 0 var(--edge), calc(-1*var(--o2)) 0 0 var(--edge), 0 var(--o2) 0 var(--edge), 0 calc(-1*var(--o2)) 0 var(--edge);
   animation:blink 1.1s steps(2) infinite}
 #mode .box{display:none}
+/* **冒険は、三戦目のボスを倒すと解放**（2026-11-06）。それまで薄く、鍵の一言を添える */
+#mode button.lock{opacity:.45}
+#mode .lk{display:none; margin-left:.8em; font-size:.6em; font-weight:400; letter-spacing:.04em}
+#mode button.lock .lk{display:inline}
 /* ゲームの中から開いたとき：題字は出さず、窓だけ真ん中に。後ろは少し沈める */
 html.js #mode.ingame{justify-content:center; background:rgba(0,0,0,.45)}
 #mode.ingame #ttl{display:none}
@@ -1138,6 +1142,10 @@ body.demo #slime{display:block}
    `#slime.hit` だけだと**負けて、当たっても跳ねつづける**（画面で分かった） */
 body.demo #slime.hit{animation:shock .2s steps(2) 3, knock .34s steps(3) 1}
 @keyframes shock{ from{opacity:1} to{opacity:.15} }
+/* **三戦目：ボスの攻撃**（2026-11-06）。決めなかったところで、組み上がったものが崩れる＝ボスが前へ出て、勇者がまたたく */
+body.demo #slime.atk{animation:lunge .5s steps(4)}
+@keyframes lunge{ 0%,100%{transform:translateX(-50%)} 50%{transform:translateX(-50%) translateX(-48px)} }
+#hero.hurt{animation:shock .12s steps(2) 4}
 @keyframes knock{ from{transform:translateX(-50%) translateX(14px)} to{transform:translateX(-50%) translateX(0)} }
 /* **その場で跳ねる**（2026-09-16、本人：「寄ってくる方が動きあってよかったかもなあ」→
    「してみて」）。歩いてこない代わりに、**待っているあいだ動いている。**
@@ -1165,7 +1173,7 @@ body.demo #slime.come{animation:come .85s steps(9)}
 /* 体力。**バーにする**（2026-09-15、本人：「普通に HP バーの方がわかりやすいかな」）。
    前は ◆ を三つ消していた——数えないと分からないし、三つが何の三つか読めなかった。
    **敵の頭の上**に置く（中に置くと塊に埋もれる）。数字は出さない */
-#dHp{position:absolute; left:66%; bottom:calc(var(--gh) + var(--hpx)*10px + 10px); z-index:8;
+#dHp{position:absolute; left:66%; bottom:calc(var(--gh) + var(--hpx)*var(--eh,10)*1px + 10px); z-index:8;   /* --eh は敵の背（粒の段数。ボスは高い。2026-11-06）*/
   /* `box-sizing:border-box` なので、**高さに枠と余白が食われる。**
      14px だと中身が 2px しか残らず、空の箱に見えた（画面で分かった） */
   transform:translateX(-50%); width:calc(108px*var(--k)); height:calc(22px*var(--k)); display:none;
@@ -1574,6 +1582,11 @@ body.roll #dRoll{display:block}
   padding:calc(var(--px)*1.5) calc(var(--px)*4); letter-spacing:.08em;   /* 左右は 5 粒にしてから、半々にしたので 4 に戻した（上下は 2.5 にして「いや上下はいい」で 1.5 に戻した）。本人：「リザルトのした二つの四角がなんかみちっとしてるなーと思う　もう少し余白あってもいいかも、四角の中に」（2026-09-30）*/
   font-size:clamp(12px,calc(1.4 * var(--fw)),calc(14px*var(--k))); font-weight:700; white-space:nowrap}
 /* 余白を広げたら 320×568 で字が二行に折れた。狭い窓（360 以下）だけ左右の余白を粒三つに */
+/* 四角が三つ（つぎへ すすむ）のときは、狭い窓で折り返す（2026-11-06）*/
+#dRes .rn{flex-wrap:wrap; row-gap:calc(var(--px)*3)}
+@media (max-width:560px){ #dRes .rn .rb{flex-basis:40%} }
+#dRes .ru{color:var(--go); font-weight:700; margin-top:calc(var(--px)*3)}
+#dRes .ru:empty{display:none}
 @media (max-width:360px){ #dRes .rb{padding-left:calc(var(--px)*3); padding-right:calc(var(--px)*3)} #dRes .rn{gap:calc(var(--px)*4); padding:0} }   /* あいだも粒四つ（六つだと 320×568 で 6px はみ出す）*/
 /* 選んでいるほうは**塗る。**縁の色だけだと、どちらを選んでいるか分からなかった */
 body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
@@ -1872,8 +1885,10 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
       <p class="rp" id="rPick"></p>
       <!-- 提案内容。**選んだ三つが、そのまま三つのタスクになる** -->
       <ul class="rtask" id="rTask"></ul>
+      <p class="rw ru" id="rUnlock"></p>
       <div class="rn">
         <button class="rb" data-d="contact">お問い合わせ</button>
+        <button class="rb" data-d="next">つぎへ　すすむ</button>
         <button class="rb" data-d="quit">デモを終了する</button>
       </div>
     </div>
@@ -1906,7 +1921,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
     <ul>
       <li><button data-m="site"><span class="cur">▶</span>ふつうのサイトで見る</button></li>
       <li><button data-m="game"><span class="cur">▶</span>ゲームで見る</button></li>
-      <li><button data-m="quest"><span class="cur">▶</span>冒険する</button></li>
+      <li><button data-m="quest"><span class="cur">▶</span>冒険する<span class="lk">ボスをたおすと　かいほう</span></button></li>
     </ul>
   </div>
   </div>
@@ -3420,6 +3435,89 @@ var TOPICS = [
     ]}
 ];
 
+/* ─ 三戦（2026-11-06）────────────────────────────────────────
+   本人：「次のステージに進む(1→2)かどうかはちゃんと選ばせるようにして離脱しやすくはしておこう」
+   「２と３は別のことしたい…もう少し自分の働きかけで何かしてる感じ出したいな」
+   →（アルターエンジン＝これまでの体験ぜんぶ。人は決める、AI は手を動かす、で三戦をそろえて）「いいよ、やってみて」。
+     1戦目 えらぶ      やりたいことを選ぶ → 作戦に落ちる（いままでのデモ。TOPICS）
+     2戦目 まとめる    散らばったメール・チャット・議事録を AI くんが一枚にまとめる。決められないところだけ人が決める
+     3戦目 くむ・なおす 人が決める → AI くんが組み上げる → 決めなかったところで崩れる（ボスの攻撃）→ 人が決める
+   **人がするのは決めることだけ。**拾う・まとめる・組むは AI くん（本人：「２に関してはＡＩがやる部分をひとがやってるやん」）。
+   形は TOPICS と同じ（q / a / cmd / task）。atk があれば、その問いの前にボスが攻撃する */
+var STAGES = [null, null,
+  { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', done:'きろくが　まとまった！',
+    fill:['read(mail)', 'read(chat)', 'read(minutes)', 'extract(decisions)', 'merge(duplicates)',
+          'detect(conflicts)', 'align(dates)', 'compose(card)'],
+    q:[
+      { q:'メールは「金曜まで」、チャットは「来週の月曜」。しめきりは　どっち？', a:[
+        { t:'金曜に　そろえる', cmd:'しめきりを金曜にそろえる',
+          task:'しめきりは金曜。チャットの「月曜」は消して、そう書き添える' },
+        { t:'月曜に　そろえる', cmd:'しめきりを月曜にそろえる',
+          task:'しめきりは来週の月曜。メールの相手に、のびたことを伝える' },
+        { t:'言った本人に　聞いてから', cmd:'しめきりを保留にする',
+          task:'しめきりは未定。言った本人に今日中に聞く' }
+      ]},
+      { q:'担当が　ふたり書かれている。どちらにする？', a:[
+        { t:'「やります」と言った人', cmd:'担当を一人にする',
+          task:'担当は、議事録で「やります」と言った人' },
+        { t:'ふたりで　持つ', cmd:'担当を二人にする',
+          task:'担当は二人。どちらが最後に確かめるかも書く' },
+        { t:'次の打ち合わせで　決める', cmd:'担当を次回に回す',
+          task:'担当は、次の打ち合わせの一つ目の議題にする' }
+      ]},
+      { q:'同じ話が　三回出ている。どう残す？', a:[
+        { t:'最後に決まった形だけ', cmd:'最後の形だけ残す',
+          task:'途中の案は消して、決まった形だけを一行で書く' },
+        { t:'流れごと　残す', cmd:'流れを残す',
+          task:'変わった順に三行で書いて、なぜ変わったかを添える' },
+        { t:'まだ決まっていないと　印を付ける', cmd:'未決の印を付ける',
+          task:'決まっていない印を付けて、決める日を書く' }
+      ]}
+    ]},
+  { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', done:'しくみが　くみあがった！',
+    fill:['bind(roles)', 'build(form)', 'build(route)', 'connect(approval)', 'test(flow)',
+          'detect(gaps)', 'rebuild(route)'],
+    q:[
+      { q:'だれが　申請する？', a:[
+        { t:'社員みんな', cmd:'申請する人を全員にする',
+          task:'申請するのは社員みんな。入った日から使える' },
+        { t:'部長が　まとめて', cmd:'申請を部長にまとめる',
+          task:'申請は部長がまとめて出す' },
+        { t:'外から手伝う人も', cmd:'申請する人を外にも広げる',
+          task:'申請するのは社員と、外から手伝ってくれている人' }
+      ]},
+      { q:'いくらから　上の人が見る？', a:[
+        { t:'一万円から', cmd:'一万円から承認を通す',
+          task:'一万円からは部長が見る' },
+        { t:'五万円から', cmd:'五万円から承認を通す',
+          task:'五万円からは部長が見る' },
+        { t:'ぜんぶ', cmd:'全部に承認を通す',
+          task:'金額にかかわらず部長が見る' }
+      ]},
+      { atk:'ミケツの　こうげき！　しくみが　止まった',
+        q:'ここが　決まっていません。承認する人が　いないときは？', a:[
+        { t:'代わりの人に　回す', cmd:'代わりの承認者を決める',
+          task:'承認する人がいないときは、代わりの人に回す' },
+        { t:'もどるまで　待つ', cmd:'待つ形にする',
+          task:'承認する人がいないときは待つ。三日すぎたら知らせる' },
+        { t:'小さい金額なら　通す', cmd:'小さい金額は通す',
+          task:'承認する人がいないときは、一万円までは通して、あとで見てもらう' }
+      ]},
+      { atk:'ミケツの　こうげき！　しくみが　くずれた',
+        q:'ここが　決まっていません。差しもどしたら　どこから　直す？', a:[
+        { t:'直したところだけ', cmd:'直した欄だけ出し直す',
+          task:'差しもどされたら、直した欄だけ出し直す' },
+        { t:'はじめから', cmd:'はじめから出し直す',
+          task:'差しもどされたら、はじめから出し直す' },
+        { t:'書いた人が　選ぶ', cmd:'出し直し方を選べるようにする',
+          task:'差しもどされたら、どこから直すかを書いた人が選ぶ' }
+      ]}
+    ]}
+];
+/* どこまで倒したか（見ている人のブラウザだけ。adc-stage：0〜3）。3 で「冒険する」が解放される */
+function stageGot(){ try { return Math.max(0, Math.min(3, parseInt(localStorage.getItem('adc-stage'), 10) || 0)); } catch (e) { return 0; } }
+function stageSet(n){ try { if (n > stageGot()) localStorage.setItem('adc-stage', String(n)); } catch (e) {} }
+
 /* ─ スライム。**丸い塊・顔なし**（2026-09-15、本人：「良くあるスライムとかで
    いいけど。商標に引っかからない範囲で」）──────────────────────
    「スライム」という語も、ぬるっとした塊という類型も、特定の会社のものではない。
@@ -3463,6 +3561,93 @@ var SLIME_DIE = [
    '................','................','................','................',
    '.....######.....','..############..']
 ];
+/* **二戦目・三戦目の敵**（2026-11-06）。
+   チラバリ＝散らばった紙の束（端があちこち立っている）。ミケツ＝未決のかたまり。四角い体に**穴が空いている**（決まっていないところ）。
+   どちらも顔なし（目が光るのは勇者だけ、のまま）。ボスは幅 20・高さ 14 で一回り大きい */
+var PAPER = [
+  ['...##.......##..',
+   '..####....####..',
+   '.#####...######.',
+   '..############..',
+   '.##############.',
+   '################',
+   '..############..',
+   '.##############.',
+   '################',
+   '################'],
+  ['.##.........##..',
+   '.####.....####..',
+   '..####...#####..',
+   '..############..',
+   '.##############.',
+   '################',
+   '.############...',
+   '.##############.',
+   '################',
+   '################']
+];
+var PAPER_DIE = [
+  ['................','................','................','.##.......##....',
+   '..####..#####...','.############...','################','..############..',
+   '################','################'],
+  ['................','................','................','................',
+   '................','..##......##....','.#####..######..','################',
+   '################','################'],
+  ['................','................','................','................',
+   '................','................','................','.##..##...##.#..',
+   '..##.###.###....','################']
+];
+var BOSS = [
+  ['.....###....###.....',
+   '.....###....###.....',
+   '...##############...',
+   '..################..',
+   '..###..######..###..',
+   '..################..',
+   '..#####......#####..',
+   '..################..',
+   '.##################.',
+   '####..########..####',
+   '####..########..####',
+   '..######....######..',
+   '..#####......#####..',
+   '.######......######.'],
+  ['....###......###....',
+   '.....###....###.....',
+   '...##############...',
+   '..################..',
+   '..###..######..###..',
+   '..################..',
+   '..#####......#####..',
+   '..################..',
+   '###################.',
+   '.###..########..###.',
+   '.###..########..###.',
+   '..######....######..',
+   '..#####......#####..',
+   '.######......######.']
+];
+var BOSS_DIE = [
+  ['....................','....................','...##.....###.......','..########..######..',
+   '..###..######..###..','..################..','..#####......#####..','..################..',
+   '.##################.','####..########..####','####..########..####','..######....######..',
+   '..#####......#####..','.######......######.'],
+  ['....................','....................','....................','....................',
+   '....................','....##......###.....','..######..#######...','..###..######..###..',
+   '.##################.','####..########..####','####..########..####','..######....######..',
+   '..#####......#####..','.######......######.'],
+  ['....................','....................','....................','....................',
+   '....................','....................','....................','....................',
+   '....................','..##...###...##.....','.####.#####.####.##.','####################',
+   '..#####......#####..','.######......######.'],
+  ['....................','....................','....................','....................',
+   '....................','....................','....................','....................',
+   '....................','....................','....................','....................',
+   '.##..###..####..##..','####################']
+];
+var ENEMIES = { slime:{ idle:SLIME, die:SLIME_DIE }, paper:{ idle:PAPER, die:PAPER_DIE }, boss:{ idle:BOSS, die:BOSS_DIE } };
+var ENEMY = ENEMIES.slime;
+
 /* 斬撃の線。**敵のほうに出す。**勇者は 34%、スライムは 66% で 400px 離れている——
    剣は届かないので、当たったことは**敵の側で言う**（コマンドで戦う RPG の作法） */
 var SLASH = [
@@ -3493,13 +3678,20 @@ var SW = 16, SH = 10;
     for (var y = 0; y < SH; y++) for (var x = 0; x < SW; x++)
       if (m[y][x] === '#') cx.fillRect(x*HPX, y*HPX, HPX, HPX);
   }
+  /* 敵を入れ替える（2026-11-06）。枠の大きさも絵に合わせる。体力の帯は --eh（敵の背）で上へ逃げる */
+  window.setEnemy = function(k){
+    ENEMY = ENEMIES[k] || ENEMIES.slime;
+    SW = ENEMY.idle[0][0].length; SH = ENEMY.idle[0].length;
+    document.documentElement.style.setProperty('--eh', SH);
+    sizeCanvas(cv, cx, SW, SH); i = 0; paint(ENEMY.idle[0]);
+  };
   REDRAW.push(function(){ sizeCanvas(cv, cx, SW, SH); paint(last); });
   window.paintSlime = function(m){ idle = false; paint(m); };
   window.slimeIdle  = function(){ idle = true; };
   paint(SLIME[0]);
-  onReduce(function(){ if (REDUCE && idle){ i = 0; paint(SLIME[0]); } });
+  onReduce(function(){ if (REDUCE && idle){ i = 0; paint(ENEMY.idle[0]); } });
   /* 勇者より**ゆっくり**ぷるぷるさせる。同じ拍子だと二人で行進して見える */
-  setInterval(function(){ if (REDUCE) return; i = (i+1) % SLIME.length; if (idle) paint(SLIME[i]); }, 340);
+  setInterval(function(){ if (REDUCE) return; i = (i+1) % ENEMY.idle.length; if (idle) paint(ENEMY.idle[i]); }, 340);
 })();
 
 /* **選んだ位置で斬り方が変わる**（2026-09-30、本人：「よく考えたらAiくんがサポートして何を得てるのかという動線はないな…」
@@ -3617,16 +3809,37 @@ function halt(on, done, ms){
     if (k >= 1){ clearInterval(haltT); haltT = null; if (done) done(); }
   }, 30);
 }
-function startDemo(){
+function startDemo(st){
   close();
   stopRoll();                     /* 流れている途中でも、入り直したら片付ける */
-  openDemo();
+  openDemo(st);
   palAt('band');                  /* 連れは下の帯（AI のトーク）へ */
 }
-function openDemo(){
+var FILL0 = null;
+/* 一戦目は TOPICS（選んだお題）、二戦目・三戦目は STAGES */
+function curT(){ return D.stage > 1 ? STAGES[D.stage] : TOPICS[D.topic]; }
+function openDemo(st){
   /* **`D` を置き換える前に止める。**置き換えたあとでは、前の待ちの id が取れない */
-  clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
-  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:HPMAX, n:0,
+  clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime); clearTimeout(D.tAtk);
+  /* **はじめから／つづきから**（2026-11-06）。一度でも倒していれば、敵が出る前に訊く。選んだらそこから入り直す */
+  var got = stageGot();
+  if (!st && got >= 1){
+    D = { on:true, phase:'save', topic:0, step:0, picks:[], sel:0, hp:0, hpMax:3, n:0, stage:0 };
+    document.body.classList.add('demo');
+    clearLog(); dLines.innerHTML = ''; dWish.textContent = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
+    slimeEl.style.visibility = 'hidden'; dHp.style.visibility = 'hidden';
+    heroPose(null);
+    ask('', 'どこから　はじめる？', ['はじめから', 'つづきから（' + Math.min(got + 1, 3) + '戦目）']);
+    D.phase = 'save';
+    return;
+  }
+  st = st || 1;
+  if (!FILL0) FILL0 = FILL;
+  FILL = (st > 1 && STAGES[st].fill) || FILL0;
+  setEnemy(st > 1 ? STAGES[st].enemy : 'slime');
+  dWon.textContent = (st > 1 ? STAGES[st].name : 'スライム') + 'を　たおした！';
+  var hm = st > 1 ? STAGES[st].q.length : 3;
+  D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:hm, hpMax:hm, n:0, stage:st,
         tCome:null, tBang:null, tSlime:null };
   document.body.classList.add('demo');
   clearLog();
@@ -3696,8 +3909,29 @@ function openDemo(){
   D.tCome = setTimeout(function(){
     /* 頭の札は**「作戦」**（2026-09-25、本人：「開いて最初のところ、デモじゃなくて作戦、とかにしよう」）。
        「デモ」は画面の外からの呼び名で、戦いの中の言葉ではない */
-    ask('作戦', 'どんなことが　したい？', TOPICS.map(function(t){ return t.t; }));
+    if (D.stage === 1){ ask('作戦', 'どんなことが　したい？', TOPICS.map(function(t){ return t.t; })); return; }
+    /* 二戦目・三戦目：お題は決まっている。打ち込みの帯に願いが打たれて、そのまま一問目へ */
+    D.phase = 'type'; D.n = 0;
+    typeWish(curT().t, function(){
+      startStream(); setLog(0);
+      D.phase = 'ask'; askStep();
+    });
   }, 420);
+}
+/* **ボスの攻撃**（三戦目）。決めなかったところで、組み上がったものが崩れる。一言・勇者がまたたく・一拍おいて問い */
+function bossAtk(msg, done){
+  D.phase = 'atk'; D.n = 0;
+  dStep.textContent = ''; dObj.textContent = ''; dQ.textContent = msg; dA.innerHTML = '';
+  dQ.classList.remove('q'); dQ.classList.add('on');
+  dWin.style.display = ''; placeDWin();
+  dWin.classList.remove('pop'); void dWin.offsetWidth; dWin.classList.add('pop');
+  say(msg);
+  slimeEl.classList.remove('atk'); void slimeEl.offsetWidth; slimeEl.classList.add('atk');
+  setTimeout(function(){ heroEl.classList.add('hurt'); palStartle(); }, 250);
+  D.tAtk = setTimeout(function(){
+    heroEl.classList.remove('hurt'); slimeEl.classList.remove('atk');
+    done();
+  }, 1500);
 }
 /* **にげる**（2026-09-25、本人：「逃げたときに逃げた感ほしい」）。
    前は押した瞬間に元の画面へ戻るだけで、一言も一拍も無かった。
@@ -3749,8 +3983,11 @@ function quitDemo(){
   clearInterval(D.tWin); clearTimeout(D.tWon); clearTimeout(D.tUp);
   D.tWin = D.tWon = D.tUp = null; D.wonSkip = null;
   /* **待ちは全部止める。**止め忘れると、デモを出たあとに「！」が出たり歩いてきたりする */
-  clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime);
-  D.tCome = D.tBang = D.tSlime = null;
+  clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime); clearTimeout(D.tAtk);
+  D.tCome = D.tBang = D.tSlime = D.tAtk = null;
+  heroEl.classList.remove('hurt'); slimeEl.classList.remove('atk');
+  if (FILL0) FILL = FILL0;
+  setEnemy('slime');
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   dRes.classList.remove('on'); dWon.classList.remove('on');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
@@ -3760,7 +3997,7 @@ function quitDemo(){
   paintSel();
 }
 function paintHp(){
-  dHp.firstChild.style.width = (D.hp / HPMAX * 100) + '%';
+  dHp.firstChild.style.width = (D.hp / (D.hpMax || HPMAX) * 100) + '%';
 }
 /* 三択を出す。**メニューと同じ形**——左に並べて、▶ が一つだけ動く */
 function ask(step, q, list, gen){
@@ -3856,11 +4093,12 @@ function paintD(){
   });
 }
 function askStep(){
-  var T = TOPICS[D.topic], s = T.q[D.step];
+  var T = curT(), s = T.q[D.step];
+  if (s.atk && D.atkAt !== D.step){ D.atkAt = D.step; bossAtk(s.atk, askStep); return; }
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
      枚数だけ出す——ポップアップの「2 / 3」と同じ形 */
-  ask((D.step + 1) + ' / 3', s.q, s.a.map(function(a){ return a.t; }), true);
+  ask((D.step + 1) + ' / ' + T.q.length, s.q, s.a.map(function(a){ return a.t; }), true);
   /* 最初に選んだお題を「さくせん」として一行（上の CSS の #dObj）。窓の高さが一行ぶん変わるので置き直す */
   dObj.innerHTML = '<b>さくせん</b>'; dObj.appendChild(document.createTextNode('「' + T.t + '」'));
   placeDWin();
@@ -4122,11 +4360,13 @@ function swing(done, k){
    四つ続けて初めて「勝った」に見える。一つでも抜くと、**窓が変わっただけ**になる */
 function winSeq(){
   D.phase = 'win';
+  D.fresh = D.stage === 3 && stageGot() < 3;   /* いま初めてボスを倒した */
+  stageSet(D.stage);
   dWin.style.display = 'none';
   palAt('hero');   /* 帯が消えてリザルトになるので、勇者の横へ戻る（戻ってから回る）*/
   var i = 0;
   var t = setInterval(function(){
-    if (i < SLIME_DIE.length){ paintSlime(SLIME_DIE[i++]); return; }
+    if (i < ENEMY.die.length){ paintSlime(ENEMY.die[i++]); return; }
     clearInterval(t);
     slimeEl.style.display = 'none';
     dHp.style.display = 'none';   /* 倒したら体力の印も消す（残ると倒れていないように見える） */
@@ -4180,6 +4420,7 @@ function choose(i){
   if (!D.n) return;
   /* 最後の行は**にげる。**どの相からでも、押せば元の画面へ戻る */
   if (i >= D.n){ flee(); return; }
+  if (D.phase === 'save'){ D.n = 0; openDemo(i === 0 ? 1 : Math.min(stageGot() + 1, 3)); return; }
   if (D.phase === 'topic'){
     /* **頭の帯（「相談　◯◯」）はやめた。**打ち込みの帯に同じものが出るので、
        二重になる。**記録は一か所**にしたほうが、糧として読める */
@@ -4199,7 +4440,7 @@ function choose(i){
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
-               + TOPICS[D.topic].q[D.step].a[i].t + '</li>';
+               + curT().q[D.step].a[i].t + '</li>';
   D.n = 0;
   /* **段が進むのは、打ち終わって一段上がったあと。**
      打っているあいだは、下の一行は選んだ行のもの */
@@ -4210,7 +4451,7 @@ function choose(i){
     else winSeq();
   }
   swing(function(){ struck = true; next(); }, i);                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
-  typeCmd(TOPICS[D.topic].q[D.step].a[i].cmd, function(){
+  typeCmd(curT().q[D.step].a[i].cmd, function(){
     setLog(st + 1); typed = true; next();
   });
 }
@@ -4218,20 +4459,24 @@ function choose(i){
 /* 提案内容（2026-09-16）。**選んだ三つが、そのまま三つのタスクになる。**
    **どの問いも、答えが必ずどこかに出る。**出ない問いがあると、選んだ意味が無い */
 function showResult(){
-  var T = TOPICS[D.topic],
-      a0 = T.q[0].a[D.picks[0]], a1 = T.q[1].a[D.picks[1]], a2 = T.q[2].a[D.picks[2]];
+  var T = curT(),
+      AS = T.q.map(function(q, j){ return q.a[D.picks[j]]; });
+  dRes.querySelector('.rt').textContent = D.stage > 1 ? T.done : 'さくせんが　きまった！';
+  /* 三戦目を倒したら一行（いま初めて解放したときだけ）。つぎへは三戦目には無い */
+  document.getElementById('rUnlock').textContent = D.fresh ? '「冒険する」が　かいほうされた！' : '';
+  dRes.querySelector('.rb[data-d="next"]').style.display = D.stage < 3 ? '' : 'none';
   /* **言ったこと**（最初に持ち込んだ願い）と**選んだ三つ**を、そのまま上に置く。
      どちらも見たものなので、読み直す必要がない——**変わったことだけが目に入る** */
   document.getElementById('rWish').textContent = '「' + T.t + '」';
   /* **一つずつ行を分ける**（2026-09-28）。選択肢に全角の空きを入れたので、「　／　」で並べると区切りと見分けにくかった */
   var rp = document.getElementById('rPick');
   rp.innerHTML = '';
-  [a0, a1, a2].forEach(function(a){ var s = document.createElement('span'); s.textContent = a.t; rp.appendChild(s); });
+  AS.forEach(function(a){ var s = document.createElement('span'); s.textContent = a.t; rp.appendChild(s); });
   /* **タスクは組み立てる。**書いてある文をそのまま入れるので、`textContent` で足す——
      文中に「」が入るので、文字列で組むと囲みが壊れる */
   var ul = document.getElementById('rTask');
   ul.innerHTML = '';
-  [a0, a1, a2].forEach(function(a){
+  AS.forEach(function(a){
     var li = document.createElement('li');
     li.textContent = a.task;
     ul.appendChild(li);
@@ -4254,10 +4499,10 @@ function showResult(){
      **見出しも同時**にする——枠が開いて中身が見えているのに、
      いちばん上の「まとまった！」だけ遅れて出るのは、順が後ろへ回って見える。
      順に出すのは、**この場で変わったもの（タスク）だけ** */
-  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw,.rp'));
+  var seen = [].slice.call(dRes.querySelectorAll('.rt,.rw:not(.ru),.rp'));
   /* **一行ずつ出す。**枠が開いてから、タスクを順に。四角は最後。
      キーを押せば、待たずに全部出る */
-  D.parts = [].slice.call(dRes.querySelectorAll('.rtask li,.rn'));
+  D.parts = [].slice.call(dRes.querySelectorAll('.rtask li,.ru,.rn'));
   D.parts.concat(seen).forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
   seen.forEach(function(el){ el.classList.add('on'); });
   /* **作戦を出したのは連れ**（2026-09-29、本人：「最後の決まった作戦もAI君が出した感じにできん？」）。
@@ -4298,25 +4543,27 @@ function openDone(){
   D.parts.forEach(function(el){ el.classList.add('on'); });
   D.phase = 'result'; paintRes();
 }
+function rbs(){ return [].filter.call(dRes.querySelectorAll('.rb'), function(b){ return b.style.display !== 'none'; }); }
 function paintRes(){
-  [].slice.call(dRes.querySelectorAll('.rb')).forEach(function(el, i){
+  rbs().forEach(function(el, i){
     el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
   });
 }
 /* まだどちらも選んでいないなら、**最初の ←→ で先頭が選ばれる**（動きはそこから普通） */
 function selRes(d){
-  var n = dRes.querySelectorAll('.rb').length;
+  var n = rbs().length;
   D.sel = (D.sel < 0) ? 0 : (D.sel + d + n) % n;
   paintRes();
 }
 function fireRes(){
   if (D.sel < 0) return;   /* どちらも選んでいない。**何も起きない**——空を押したときと同じ */
-  var b = dRes.querySelectorAll('.rb')[D.sel];
+  var b = rbs()[D.sel];
   /* お問い合わせを押した人には流さない。**もう次へ進んでいる** */
   /* **メールへ直に飛ばさず、お問い合わせの窓を開く**（2026-09-29、本人：「リザルトから問い合わせへの導線も欲しいしな…」
      →（いくつか出して）「1はあり」）。前はそのままメールが開いていて、**何を問い合わせる場所なのか**が画面のどこにも無かった。
      窓には公式の誘い文（「サービスに関するご相談や……」）がある。メールは窓の最後の一手から、足もとと同じ */
   if (b.dataset.d === 'contact'){ quitDemo(); openPop('contact'); return; }
+  if (b.dataset.d === 'next'){ var nx = D.stage + 1; quitDemo(); startDemo(nx); return; }   /* 次の戦いへ（2026-11-06）*/
   startRoll();
 }
 
@@ -4489,13 +4736,13 @@ document.addEventListener('click', function(e){
   if (li){ e.stopPropagation(); D.sel = [].slice.call(dA.children).indexOf(li); paintD(); choose(D.sel); return; }
   if (D.phase === 'open'){ e.stopPropagation(); openDone(); return; }
   var rb = e.target.closest('#dRes .rb');
-  if (rb){ e.stopPropagation(); D.sel = [].slice.call(dRes.querySelectorAll('.rb')).indexOf(rb); fireRes(); }   /* 抜けたあとの下の手（メニューの押し）に流さない */
+  if (rb){ e.stopPropagation(); D.sel = rbs().indexOf(rb); fireRes(); }   /* 抜けたあとの下の手（メニューの押し）に流さない */
 }, true);
 /* マウスを乗せたら印もそこへ（メニューと同じ作法） */
 document.addEventListener('mouseover', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
-  if (li && (D.phase === 'topic' || D.phase === 'ask')){
+  if (li && (D.phase === 'topic' || D.phase === 'ask' || D.phase === 'save')){
     D.sel = [].slice.call(dA.children).indexOf(li); paintD();
   }
 });
@@ -4503,7 +4750,7 @@ document.addEventListener('mouseover', function(e){
 document.addEventListener('focusin', function(e){
   if (!D.on || !e.target.closest) return;
   var li = e.target.closest('#dA li');
-  if (li && (D.phase === 'topic' || D.phase === 'ask')){
+  if (li && (D.phase === 'topic' || D.phase === 'ask' || D.phase === 'save')){
     D.sel = [].slice.call(dA.children).indexOf(li); paintD();
   }
 });
@@ -4534,7 +4781,7 @@ document.addEventListener('keydown', function(e){
   if (D.phase === 'draft'){ draftDone(); eat(e); return; }
   if (D.phase === 'open'){ openDone(); eat(e); return; }
   if (D.phase === 'won'){ D.wonSkip(); eat(e); return; }
-  if (D.phase === 'type' || D.phase === 'win' || D.phase === 'flee' || D.phase === 'pal'){ eat(e); return; }
+  if (D.phase === 'type' || D.phase === 'win' || D.phase === 'flee' || D.phase === 'pal' || D.phase === 'atk'){ eat(e); return; }
   if (D.phase === 'result'){
     if (k === 'ArrowRight' || k === 'ArrowDown'){ selRes(1); eat(e); return; }
     if (k === 'ArrowLeft'  || k === 'ArrowUp'){ selRes(-1); eat(e); return; }
@@ -5204,8 +5451,11 @@ var openStyle = function(){};
     M.hidden = true; M.classList.remove('ingame'); listen(false);
     document.body.classList.remove('title');
   }
+  function paintLock(){ var q = M.querySelector('[data-m="quest"]'); if (q) q.classList.toggle('lock', stageGot() < 3); }
+  paintLock();
   openStyle = function(){
     if (!M.hidden) return;
+    paintLock();
     ingame = true; picking = true; busy = false;
     H.textContent = 'スタイルを選ぶ';
     M.classList.add('pick', 'ingame'); M.hidden = false;

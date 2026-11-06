@@ -100,6 +100,8 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 #diff ul button em{font-style:normal; font-size:12px; color:var(--sub)}
 #diff ul button[aria-current="true"]{transform:translateY(-3px); box-shadow:0 10px 24px rgba(42,14,62,.14); border-bottom-color:var(--btn)}
 #diff button:focus{outline:none}
+/* 冒険はゲームの三戦目（ボス）を倒すと解放（2026-11-06）。それまで薄く */
+#diff ul button.lock{opacity:.5; cursor:default}
 #diff .x{position:absolute; top:12px; right:14px; width:36px; height:36px; padding:0; border:0; background:none; font-size:22px; line-height:1; color:var(--sub); cursor:pointer}
 @media (max-width:640px){ #diff ul{grid-template-columns:1fr} #diff ul button{flex-direction:row; justify-content:flex-start; text-align:left; padding:16px 18px} #diff ul button svg{width:36px; height:36px; flex:none} #diff ul button span{align-items:flex-start} }
 @media (prefers-reduced-motion:reduce){ #diff .box{animation:none} #diff ul button{transition:none} }
@@ -219,6 +221,12 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 <script>
 /* **ここで終わったことを覚える**（2026-11-06）。次に index.html を開くと、ここへ来る。初めての人はタイトルから */
 try { localStorage.setItem('adc-style', 'site'); } catch (e) {}
+(function(){
+  var got = 0; try { got = parseInt(localStorage.getItem('adc-stage'), 10) || 0; } catch (e) {}
+  if (got >= 3) return;
+  var q = document.querySelector('#diff [data-m="quest"]');
+  q.classList.add('lock'); q.querySelector('em').textContent = 'ゲームのボスをたおすと解放';
+})();
 /* 難易度選択の窓。↑↓・Enter・押す／Esc・窓の外で閉じる。
    ふつうのサイト（いま）→ 閉じる／ゲーム → index.html?mode=game（点いて夕焼け）／冒険 → まだ行き先が無いので何もしない */
 (function(){
