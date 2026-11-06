@@ -1226,6 +1226,11 @@ body.demo #dHp{display:block}
 
    お題の三つは**作られたものではない**ので、ここは通さない（同時に出る） */
 #dWin .q{opacity:0}
+#dWin #dQ:empty, #dWin #dStep:empty{display:none}
+/* はじめから／つづきから（2026-11-06）。敵が出る前なので、敵の真上ではなく真ん中。上端はメニューと同じ線 */
+@media (min-width:641px) and (orientation:landscape), (min-width:1101px){
+  #dWin.mid{left:0; right:0; margin:0 auto; width:fit-content; min-width:min(80vw,280px); top:calc(var(--T, 17%) + var(--px) * 3)}
+}
 #dWin .q.on{opacity:1; animation:rise .16s steps(2)}
 #dWin .rt{margin:0}
 #dStep{margin:0 0 calc(var(--px)*1.5); font-size:clamp(11px,calc(1.1 * var(--fw)),calc(13px*var(--k))); letter-spacing:.12em; color:var(--dim)}
@@ -3829,7 +3834,10 @@ function openDemo(st){
     clearLog(); dLines.innerHTML = ''; dWish.textContent = ''; dRes.classList.remove('on'); dWon.classList.remove('on');
     slimeEl.style.visibility = 'hidden'; dHp.style.visibility = 'hidden';
     heroPose(null);
-    ask('', 'どこから　はじめる？', ['はじめから', 'つづきから（' + Math.min(got + 1, 3) + '戦目）']);
+    /* **何も訊かずに二つだけ**（同日、本人：「どこからはじめる？の位置やばいよ　あと何も聞かずにはじめから　つづきからでいいと思う」）。
+       敵がいないのに敵の真上の窓に出ていた → 真ん中に（#dWin.mid）。縦の三層では前のまま床の窓 */
+    dWin.classList.add('mid');
+    ask('', '', ['はじめから', 'つづきから']);
     D.phase = 'save';
     return;
   }
@@ -3989,7 +3997,7 @@ function quitDemo(){
   if (FILL0) FILL = FILL0;
   setEnemy('slime');
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
-  dRes.classList.remove('on'); dWon.classList.remove('on');
+  dRes.classList.remove('on'); dWon.classList.remove('on'); dWin.classList.remove('mid');
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
   dBang.classList.remove('on');
   halt(false);
@@ -4042,7 +4050,7 @@ function ask(step, q, list, gen){
 
    狭い窓（640 以下）は CSS の置き方のまま（三層・中央の作りが別にある） */
 function placeDWin(){
-  if (MQ_NARROW.matches){ dWin.style.top = ''; return; }
+  if (MQ_NARROW.matches || dWin.classList.contains('mid')){ dWin.style.top = ''; return; }
   if (dWin.style.display === 'none') return;
   var wr = dWin.getBoundingClientRect();
   /* **横持ちだけ、社名にかぶってよい**（2026-09-25、本人：「社名にかぶせていいから横持ちしたときのポップの位置もっときれいにして」）。
@@ -4420,7 +4428,7 @@ function choose(i){
   if (!D.n) return;
   /* 最後の行は**にげる。**どの相からでも、押せば元の画面へ戻る */
   if (i >= D.n){ flee(); return; }
-  if (D.phase === 'save'){ D.n = 0; openDemo(i === 0 ? 1 : Math.min(stageGot() + 1, 3)); return; }
+  if (D.phase === 'save'){ D.n = 0; dWin.classList.remove('mid'); openDemo(i === 0 ? 1 : Math.min(stageGot() + 1, 3)); return; }
   if (D.phase === 'topic'){
     /* **頭の帯（「相談　◯◯」）はやめた。**打ち込みの帯に同じものが出るので、
        二重になる。**記録は一か所**にしたほうが、糧として読める */
