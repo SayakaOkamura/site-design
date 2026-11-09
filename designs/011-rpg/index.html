@@ -6840,7 +6840,15 @@ document.addEventListener('keydown', function(e){
     else if (!inp){ document.getElementById('qCmd').focus({ preventScroll:true }); return; }
     e.stopImmediatePropagation(); return;
   }
-  if (e.key === 'Tab') return;
+  if (e.key === 'Tab'){   /* 地図の上の Tab は、冒険の中の見えている手だけを回る（後ろの見えないメニューへ行かない。2026-11-09）*/
+    var F = [].filter.call(document.querySelectorAll('#quest button, #quest input'), function(x){ return !x.disabled && x.offsetParent !== null; });
+    if (F.length){
+      var at = F.indexOf(document.activeElement), nx = at < 0 ? 0 : (at + (e.shiftKey ? F.length - 1 : 1)) % F.length;
+      F[nx].focus({ preventScroll:true });
+      if (Q.menu){ var mi = [].indexOf.call(document.querySelectorAll('#qMenu button'), F[nx]); if (mi >= 0){ Q.msel = mi; qMenuPaint(); } }
+    }
+    e.preventDefault(); e.stopImmediatePropagation(); return;
+  }
   if (Q.menu){   /* メニュー：↑↓ で選ぶ、Enter・Space で決める、Esc で閉じる */
     var n = document.querySelectorAll('#qMenu button').length;
     if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W'){ Q.msel = (Q.msel + n - 1) % n; qMenuPaint(); }
