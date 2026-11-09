@@ -672,6 +672,7 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 #qLog{min-height:4.8em; display:flex; flex-direction:column; justify-content:flex-end}
 #qLog div{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#8f7a86}
 #qLog div.me{color:#d8c8b0}
+#qLog div.ai{color:#ffd270}
 #qLog div.me::before{content:'> '; color:#ffd270}
 #qBar .qIn{display:flex; gap:.5em; align-items:center}
 #qBar .pr{color:#ffd270}
@@ -708,6 +709,9 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 #qMenu .cur{display:inline-block; width:1.2em; color:#ffd270; visibility:hidden}
 #qMenu button[aria-current="true"] .cur{visibility:visible}
 #qCmd:disabled{opacity:.4}
+#qCmd::placeholder{color:#8f7a86; opacity:1}
+#qBar.look{border-color:#ffd270; animation:qlook .9s steps(2) infinite}
+@keyframes qlook{50%{border-color:#4b2e3f}}
 #qTab{background:none; border:1px solid #4b2e3f; color:#ffd270; font:inherit; padding:0 .6em; cursor:pointer}
 #qTab[hidden]{display:none}
 #qWrap canvas{position:absolute; left:0; top:0; image-rendering:pixelated}
@@ -6555,7 +6559,7 @@ function qMatch(t){
 }
 function qLog(t, me){
   var log = document.getElementById('qLog'), d = document.createElement('div');
-  if (me) d.className = 'me';
+  if (me) d.className = me === true ? 'me' : me;
   d.textContent = t; log.appendChild(d);
   while (log.children.length > 3) log.removeChild(log.firstChild);
 }
@@ -6761,8 +6765,21 @@ function qMenuPick(i){
   if (q === 'look') qLookOpen(); else questClose();
 }
 function qInp(on){ var inp = document.getElementById('qCmd'); inp.disabled = !on; if (on) inp.focus({ preventScroll:true }); else { inp.value = ''; inp.blur(); } }
-function qLookOpen(){ Q.look = true; Q.key = {}; qLog('しらべる'); qInp(true); }
-function qLookClose(){ Q.look = false; qInp(false); }
+/* しらべる → 打ち込みへの動線は露骨に（2026-11-09、本人：「しらべるから打ち込みへの動線もっと露骨でもいい」）。
+   AI くんが訊く一行、帯の縁が金でまたたく、入力の行に候補を薄く出す */
+function qLookOpen(){
+  Q.look = true; Q.key = {}; QP.bob = 1;
+  qLog('AI くん「なにを　しらべる？」', 'ai');
+  var inp = document.getElementById('qCmd');
+  inp.placeholder = 'ここに打つ（例：アクセス／会社概要／サービス／お問い合わせ）';
+  document.getElementById('qBar').classList.add('look');
+  qInp(true);
+}
+function qLookClose(){
+  Q.look = false; document.getElementById('qCmd').placeholder = '';
+  document.getElementById('qBar').classList.remove('look');
+  qInp(false);
+}
 /* ─ 勝ったあとのリザルト（2026-11-09、本人：「勝ったあとのリザルト、デモと同じ形にして」）────────
    デモと同じ並び：見出し → 言ったこと（向かった町）→ 選んだもの（打った三つのコマンド）→ 間をあけて、てにいれたもの（□ の行が一つずつ出る）→ 四角。
    てにいれたものは、町の窓の頁ごとの見出し（公式の文から。足さない）。四角は「よむ」（窓を開く）と「ぼうけんに　もどる」。
