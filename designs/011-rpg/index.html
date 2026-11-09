@@ -666,7 +666,16 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
    **枠が育てば余白も育つ**ので、9/16 のような取り残しが起きない。
    （`--tx` は本文の `font-size` と同じもの。二か所に同じ `clamp` を書かない） */
 /* 冒険する：町のマップ（2026-11-09。JS の同じ名前の節）。窓（#pop, z-index:6）はこの上に開く */
-#quest{position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; background:#0d0610; touch-action:none}
+#quest{position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; background:#0d0610; touch-action:none}
+#qBar{box-sizing:border-box; padding:6px 8px; border:2px solid #4b2e3f; background:#120a12; color:#d8c8b0;
+  font-family:"SFMono-Regular",Consolas,"Courier New",monospace; font-size:clamp(11px,1.6vh,14px); line-height:1.6}
+#qLog{min-height:4.8em; display:flex; flex-direction:column; justify-content:flex-end}
+#qLog div{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#8f7a86}
+#qLog div.me{color:#d8c8b0}
+#qLog div.me::before{content:'> '; color:#ffd270}
+#qBar .qIn{display:flex; gap:.5em; align-items:center}
+#qBar .pr{color:#ffd270}
+#qCmd{flex:1; min-width:0; background:none; border:0; outline:0; color:#fff3dc; font:inherit; caret-color:#ffd270; padding:0}
 #quest[hidden]{display:none}
 #qWrap{position:relative; image-rendering:pixelated}
 #qWrap canvas{position:absolute; left:0; top:0; image-rendering:pixelated}
@@ -1982,7 +1991,8 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <button id="made" data-k="game" aria-label="ミニゲーム"><span class="lb"><span class="cur">▶</span><span class="q">？</span></span></button>
 
   <!-- 冒険する：町のマップ（2026-11-09）-->
-  <div id="quest" hidden><div id="qWrap"><canvas id="qMap" width="320" height="208"></canvas><canvas id="qHero" width="10" height="12"></canvas></div></div>
+  <div id="quest" hidden><div id="qWrap"><canvas id="qMap" width="320" height="208"></canvas><canvas id="qPal" width="12" height="9"></canvas><canvas id="qHero" width="10" height="12"></canvas></div>
+    <div id="qBar"><div id="qLog"></div><label class="qIn"><span class="pr">&gt;</span><input id="qCmd" type="text" autocomplete="off" spellcheck="false" enterkeyhint="send" aria-label="AI くんに頼む"></label></div></div>
 
   <div id="pop" class="win">
     <p class="t" id="popT"></p>
@@ -6202,6 +6212,9 @@ var QH = {
      ['..XXXX..','.XXXXXX.','.XXXXoX.','.XXXXXX.','..XXXX..','..XXXX..','.XXXXXX.','..XXXX..','..XXXX..','...XX...']]
 };
 var Q = { on:false, x:8.5, y:11.5, dir:'u', key:{}, to:null, step:0, last:0, raf:0, s:2 };
+/* AI くん（連れ）。ふだんは勇者のうしろに浮いてついてくる。頼まれたら建物へ行って、紙を持って戻ってくる。
+   浮いているので、ついてくるとき・戻るときは建物の上も通る。行くときだけ道を通る（どこへ行くか見えるように）*/
+var QP = { x:7.5, y:11.8, dir:'u', mode:'follow', path:null, k:null, page:0, t:0, bob:0 };
 function qt(x, y){ var r = QMAP[Math.floor(y)]; return r ? r.charAt(Math.floor(x)) || 'T' : 'T'; }
 function qWalk(c){ return c === '.' || c === ',' || c === 'E' || (c >= 'a' && c <= 'd'); }
 function qFree(x, y){ var h = .28; return qWalk(qt(x - h, y - h + .2)) && qWalk(qt(x + h, y - h + .2)) && qWalk(qt(x - h, y + h)) && qWalk(qt(x + h, y + h)); }
@@ -6252,14 +6265,15 @@ function qHero(){
 }
 /* 画面に合わせて大きさを決める（粒は整数倍に近く、はみ出さない）*/
 function qFit(){
-  var el = document.getElementById('quest'), wrap = document.getElementById('qWrap');
-  var W = el.clientWidth - 16, H = el.clientHeight - 16, w = QMAP[0].length * 16, h = QMAP.length * 16;
+  var el = document.getElementById('quest'), wrap = document.getElementById('qWrap'), bar = document.getElementById('qBar');
+  var W = el.clientWidth - 16, H = el.clientHeight - 24 - bar.offsetHeight, w = QMAP[0].length * 16, h = QMAP.length * 16;
   var s = Math.min(W / w, H / h); s = s >= 2 ? Math.floor(s) : Math.max(.5, Math.floor(s * 4) / 4);
   Q.s = s;
-  wrap.style.width = w * s + 'px'; wrap.style.height = h * s + 'px';
+  wrap.style.width = w * s + 'px'; wrap.style.height = h * s + 'px'; bar.style.width = Math.max(w * s, Math.min(W, 320)) + 'px';
+  var pc = document.getElementById('qPal'); pc.style.width = 12 * s + 'px'; pc.style.height = 9 * s + 'px';
   var hc = document.getElementById('qHero'); hc.style.width = 10 * s + 'px'; hc.style.height = 12 * s + 'px';
   [].forEach.call(wrap.querySelectorAll('.qn'), function(n){ n.style.left = n.dataset.x * 16 * s + 'px'; n.style.top = n.dataset.y * 16 * s + 'px'; n.style.fontSize = Math.max(10, 6 * s) + 'px'; });
-  qHero();
+  qHero(); qPalDraw();
 }
 function questOpen(){
   var el = document.getElementById('quest');
@@ -6276,16 +6290,20 @@ function questOpen(){
     wrap.insertAdjacentHTML('beforeend', h);
     wrap.addEventListener('pointerdown', function(e){
       if (!Q.on || cur) return;
+      e.preventDefault();   /* 打ち込みの帯から焦点を外さない */
       var b = wrap.getBoundingClientRect();
       Q.to = qPath(Math.floor((e.clientX - b.left) / (16 * Q.s)), Math.floor((e.clientY - b.top) / (16 * Q.s)));
     });
     window.addEventListener('resize', function(){ if (Q.on) qFit(); });
   }
   Q.on = true; Q.x = 8.5; Q.y = 11.5; Q.dir = 'u'; Q.key = {}; Q.to = null;
+  QP.x = 7.5; QP.y = 11.8; QP.mode = 'follow'; QP.path = null; QP.k = null;
+  document.getElementById('qLog').innerHTML = ''; var qc = document.getElementById('qCmd'); qc.value = ''; qc.disabled = false;
   el.hidden = false; document.body.classList.add('quest');
   qFit();
   Q.last = performance.now();
   cancelAnimationFrame(Q.raf); Q.raf = requestAnimationFrame(qLoop);
+  if (matchMedia('(pointer:fine)').matches) qc.focus({ preventScroll:true });   /* 指の画面では、帯を押すまでキーボードを出さない */
   say('冒険する');
 }
 function questClose(){
@@ -6298,7 +6316,10 @@ function qLoop(now){
   if (!Q.on) return;
   Q.raf = requestAnimationFrame(qLoop);
   var t = Math.min(.5, (now - Q.last) / 1000); Q.last = now;
-  while (t > 0 && Q.on && !cur){ qTick(Math.min(.04, t)); t -= .04; }
+  if (cur){ Q.was = true; return; }
+  if (Q.was){ Q.was = false; if (matchMedia('(pointer:fine)').matches) document.getElementById('qCmd').focus({ preventScroll:true }); }   /* 窓を閉じたら帯へ */
+  while (t > 0 && Q.on && !cur){ qTick(Math.min(.04, t)); qPalTick(Math.min(.04, t)); t -= .04; }
+  if (Q.on && !cur) qPalDraw();
 }
 function qTick(dt){
   if (cur){ Q.to = null; return; }   /* 窓が開いているあいだは止まる */
@@ -6329,10 +6350,10 @@ function qTick(dt){
   } else if (c === 'E' && Q.y > 12.3) questClose();
 }
 /* 押したところまでの道（升目で探す）。押したのが建物なら、その戸口へ。木なら、いちばん近い歩ける升へ */
-function qPath(tx, ty){
+function qPath(tx, ty, fx, fy){
   var c = qt(tx + .5, ty + .5), L = c.toLowerCase();
   if (QB[L]) QMAP.forEach(function(r, yy){ var dx = r.indexOf(L); if (dx >= 0){ tx = dx; ty = yy; } });
-  var sx = Math.floor(Q.x), sy = Math.floor(Q.y), W = QMAP[0].length, H = QMAP.length, prev = {}, q = [[sx, sy]], best = null, bd = 1e9;
+  var sx = Math.floor(fx == null ? Q.x : fx), sy = Math.floor(fy == null ? Q.y : fy), W = QMAP[0].length, H = QMAP.length, prev = {}, q = [[sx, sy]], best = null, bd = 1e9;
   prev[sx + ',' + sy] = null;
   while (q.length){
     var a = q.shift(), d = Math.abs(a[0] - tx) + Math.abs(a[1] - ty);
@@ -6349,10 +6370,112 @@ function qPath(tx, ty){
   path.unshift({ x:sx, y:sy });   /* まず今の升の真ん中へ寄せる */
   return path;
 }
+/* ─ AI くんに頼む（2026-11-09）──────────────────────────────
+   本人：「これとClaudeCode要素(打ち込みで結果出すやつ)両立できないかなあ」→（A 打てば勇者が動く／B 建物の中で打つ／C AI くんに頼む、と出して）「Cやってみて」。
+   人は打って頼むだけ。走って行って読んで持ってくるのは AI くん（一戦目の「人が決めて、AI がやる」と同じ形）。
+   本物の AI にはつながない（11/6 に決めたまま）——打った文から決まった言葉を拾う。拾えなかったら候補を出す。
+   言葉が見つかった頁から窓を開く（「設立」と打てば、設立の載っている頁）*/
+var QASK = [
+  { k:'about',   w:['会社概要', '概要', '会社', '社名', '代表', '設立', '資本金', '資本', '所在地', '住所', '株主', '事業内容', '役員', '従業員'] },
+  { k:'svc',     w:['サービス', '事業', '開発', 'ローコード', 'ノーコード', 'システム', 'AI', 'ai', 'できること', '何をして'] },
+  { k:'access',  w:['アクセス', '場所', '駅', '地図', '行き方', 'どこ', '道', '虎ノ門', '新橋', '神谷町', '御成門', '大門', '浜松町', '汐留'] },
+  { k:'contact', w:['お問い合わせ', '問い合わせ', '問合せ', '連絡', 'メール', '相談', '依頼', '質問'] }
+];
+function qMatch(t){
+  var best = null, bs = 0, bw = '';
+  QASK.forEach(function(a){
+    var sc = 0, top = '';
+    a.w.forEach(function(w){ if (t.indexOf(w) >= 0){ sc += w.length; if (w.length > top.length) top = w; } });
+    if (sc > bs){ bs = sc; best = a; bw = top; }
+  });
+  if (!best) return null;
+  var ps = pages(DATA[best.k]), pg = 0;
+  for (var i = 0; i < ps.length; i++){ if (String(ps[i]).indexOf(bw) >= 0){ pg = i; break; } }
+  return { k:best.k, page:pg };
+}
+function qLog(t, me){
+  var log = document.getElementById('qLog'), d = document.createElement('div');
+  if (me) d.className = 'me';
+  d.textContent = t; log.appendChild(d);
+  while (log.children.length > 3) log.removeChild(log.firstChild);
+}
+var QNAME = { about:'about', svc:'service', access:'access', contact:'contact' };
+function qAsk(t){
+  qLog(t, true);
+  if (QP.mode !== 'follow'){ qLog('busy(AI くん)'); return; }
+  var m = qMatch(t);
+  if (!m){ qLog('? 会社概要・サービス・アクセス・お問い合わせ'); QP.bob = 1; return; }
+  var door = null;
+  Object.keys(QB).forEach(function(d){ if (QB[d].k === m.k) QMAP.forEach(function(r, yy){ var dx = r.indexOf(d); if (dx >= 0) door = { x:dx, y:yy }; }); });
+  QP.k = m.k; QP.page = m.page; QP.mode = 'go';
+  QP.path = qPath(door.x, door.y, QP.x, QP.y);
+  document.getElementById('qCmd').disabled = false;
+  qLog('walk(' + QNAME[m.k] + ')');
+}
+function qPalTick(dt){
+  QP.bob = Math.max(0, QP.bob - dt * 2);
+  if (QP.mode === 'in'){   /* 建物の中で読んでいる */
+    QP.t -= dt;
+    if (QP.t <= 0){ QP.mode = 'back'; QP.y += 1; qLog('bring(' + QNAME[QP.k] + ')'); }
+    return;
+  }
+  var tx, ty, v;
+  if (QP.mode === 'go'){
+    var wp = QP.path && QP.path[0];
+    if (!wp){ QP.mode = 'in'; QP.t = 1.1; qLog('read(' + QNAME[QP.k] + ')'); return; }
+    tx = wp.x + .5; ty = wp.y + .5; v = 6.5 * dt;
+    if (Math.abs(tx - QP.x) < .05 && Math.abs(ty - QP.y) < .05){ QP.path.shift(); return; }
+  } else {
+    /* ついてくる・戻る：勇者のうしろ（向きの反対側）へ。浮いているので、まっすぐ */
+    var bx = Q.dir === 'l' ? .8 : Q.dir === 'r' ? -.8 : 0, by = Q.dir === 'u' ? .8 : Q.dir === 'd' ? -.8 : 0;
+    tx = Q.x + bx; ty = Q.y + by + .2; v = (QP.mode === 'back' ? 6 : 4.6) * dt;
+    var dx0 = Q.x - QP.x, dy0 = Q.y - QP.y;
+    if (QP.mode === 'back' && Math.abs(dx0) + Math.abs(dy0) < 1.3){   /* 渡す */
+      QP.mode = 'follow'; var k = QP.k; QP.k = null;
+      readAt[k] = QP.page; Q.to = null; Q.key = {};
+      qPalDraw(); openPop(k);
+      return;
+    }
+    if (QP.mode === 'follow' && Math.abs(tx - QP.x) + Math.abs(ty - QP.y) < .3) return;
+  }
+  var ex = tx - QP.x, ey = ty - QP.y, d = Math.sqrt(ex * ex + ey * ey);
+  if (d < 1e-3) return;
+  var st = Math.min(d, v);
+  QP.x += ex / d * st; QP.y += ey / d * st;
+  QP.dir = Math.abs(ex) > Math.abs(ey) ? (ex > 0 ? 'r' : 'l') : (ey > 0 ? 'd' : 'u');
+}
+function qPalDraw(){
+  var cv = document.getElementById('qPal'), cx = cv.getContext('2d');
+  cv.style.visibility = QP.mode === 'in' ? 'hidden' : '';
+  var f = QP.dir === 'u' ? PAL_BACK : (QP.dir === 'l' || QP.dir === 'r') ? PAL_SIDE : PAL[0];
+  cx.clearRect(0, 0, 12, 9);
+  cx.save();
+  if (QP.dir === 'l'){ cx.translate(12, 0); cx.scale(-1, 1); }
+  for (var y = 0; y < 7; y++) for (var x = 0; x < 10; x++){
+    var on = f[y].charAt(x) === '#';
+    if (!on){
+      var n = [[0,-1],[0,1],[-1,0],[1,0]].some(function(o){ var r = f[y + o[1]]; return r && r.charAt(x + o[0]) === '#'; });
+      if (n){ cx.fillStyle = QC.gold; cx.fillRect(x + 1, y + 1, 1, 1); }
+    } else { cx.fillStyle = QC.roof; cx.fillRect(x + 1, y + 1, 1, 1); }
+  }
+  /* 持って戻るときは、金の紙を一枚 */
+  if (QP.mode === 'back'){ cx.fillStyle = QC.win; cx.fillRect(8, 5, 3, 4); }
+  cx.restore();
+  var s = Q.s, hop = QP.bob ? Math.round(Math.sin(QP.bob * 20) * 2) : 0;
+  cv.style.transform = 'translate(' + Math.round((QP.x * 16 - 6) * s + hop * s) + 'px,' + Math.round((QP.y * 16 - 10 - 3 * Math.abs(Math.sin(performance.now() / 300))) * s) + 'px)';
+}
 var QKEY = { ArrowLeft:'l', ArrowRight:'r', ArrowUp:'u', ArrowDown:'d', a:'l', d:'r', w:'u', s:'d', A:'l', D:'r', W:'u', S:'d' };
 document.addEventListener('keydown', function(e){
   if (!Q.on || cur || e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key === 'Tab') return;
+  var inp = e.target && e.target.id === 'qCmd' ? e.target : null;
+  if (inp){   /* 帯に打っているあいだ：字は帯へ、矢印は勇者へ、Enter で頼む。変換中の Enter は変換のもの */
+    if (e.isComposing || e.keyCode === 229) return;
+    if (/^Arrow/.test(e.key)){ Q.key[QKEY[e.key]] = true; e.preventDefault(); }
+    else if (e.key === 'Enter'){ e.preventDefault(); if (inp.value.trim()){ qAsk(inp.value.trim()); inp.value = ''; } }
+    else if (e.key === 'Escape'){ e.preventDefault(); if (inp.value) inp.value = ''; else questClose(); }
+    e.stopImmediatePropagation(); return;
+  }
   if (QKEY[e.key]) Q.key[QKEY[e.key]] = true;
   else if (e.key === 'Escape') questClose();
   e.preventDefault(); e.stopImmediatePropagation();
