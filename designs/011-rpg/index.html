@@ -683,17 +683,22 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
   background:rgba(9,4,11,.88); color:#fff3dc; font-size:clamp(12px,1.9vh,16px); letter-spacing:.08em}
 #qBat[hidden]{display:none}
 #qBat .nm{margin:0}
-#qBat canvas{position:static; width:84px; height:66px; image-rendering:pixelated}
-#qBat canvas.hit{animation:shock .1s steps(2) 4}
+#qWrap #qBat canvas{position:static; width:84px; height:66px; image-rendering:pixelated}
+#qWrap #qBat canvas.hit{animation:shock .1s steps(2) 4}
 #qBat .hp,#qBat .ch{width:min(60%,220px); height:6px; border:1px solid #4b2e3f}
 #qBat .hp i,#qBat .ch i{display:block; height:100%; background:#e0604e}
 #qBat .ch i{background:#ffd270}
+#qBat .ln{margin:4px 0 0; font-family:"SFMono-Regular",Consolas,"Courier New",monospace; letter-spacing:0}
+#qBat .ln .pre{color:#8f7a86; margin-right:.3em}
+#qBat .ln .c{color:#8f7a86; margin:0 .45em}
+#qBat .ln .c.on{color:#120a12; background:#ffd270; padding:0 .3em; animation:hot .9s steps(2) infinite}
 #qBat .me{margin:0; color:#ffd270; letter-spacing:.3em}
 #qBat.ouch{animation:qouch .12s steps(2) 3}
 @keyframes qouch{50%{background:rgba(120,30,30,.9)}}
 #qBat.miss .ch{animation:shock .1s steps(2) 3}
 /* 冒険のリザルト（2026-11-09）。形はデモのリザルトと同じ（上の #dRes の決まりを当てている）。置き場だけ冒険の中 */
 #qRes{z-index:7}
+#qBat:not([hidden]) ~ #qMenuBtn{display:none}
 #qMenuBtn{position:absolute; right:6px; bottom:6px; background:#120a12; border:2px solid #fff3dc; color:#fff3dc; font:inherit; font-size:12px; padding:.2em .6em; cursor:pointer}
 #qMenu{position:absolute; left:50%; top:6px; transform:translateX(-50%); background:#120a12; border:2px solid #fff3dc; box-shadow:0 0 0 2px #120a12; padding:.5em .9em .5em .4em; color:#fff3dc;
   font-size:clamp(12px,1.9vh,16px); letter-spacing:.1em}
@@ -6650,7 +6655,7 @@ function qBatStart(d){
   Q.bat = { d:d, k:QB[d].k, hp:3, me:3, i:0, t:0, lock:0 };
   var el = document.getElementById('qBat');
   el.innerHTML = '<p class="nm">' + B.name + 'が　あらわれた！</p><canvas width="14" height="11"></canvas>' +
-    '<div class="hp"><i></i></div><div class="ch"><i></i></div><p class="me"></p>';
+    '<div class="hp"><i></i></div><div class="ch"><i></i></div><p class="ln"></p><p class="me"></p>';
   var cv = el.querySelector('canvas'), cx = cv.getContext('2d');
   QE.forEach(function(r, y){ for (var x = 0; x < r.length; x++){ var c = r.charAt(x); if (c === '.') continue; cx.fillStyle = c === 'o' ? QC.win : B.col; cx.fillRect(x + 1, y + 1, 1, 1); } });
   el.hidden = false;
@@ -6668,30 +6673,37 @@ function qBatPaint(){
 function qBatTurn(){
   var b = Q.bat, L = QBAT[b.d].lines[b.i % 3];
   b.t = 0;
+  b.want = L[1][(b.i * 5 + b.d.charCodeAt(0)) % L[1].length];
+  document.getElementById('qBat').querySelector('.ln').innerHTML = '<span class="pre">' + L[0] + '</span>' +
+    L[1].map(function(x){ return '<span class="c' + (x === b.want ? ' on' : '') + '">' + x + '</span>'; }).join('');
   var inp = document.getElementById('qCmd');
   inp.value = L[0];
   try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e){}
   qBatPaint();
 }
-/* Tab：いま打っている語を候補で埋める。一つなら閉じかっこまで。複数なら共通の頭まで埋めて、候補を帯に並べる */
+/* **Tab で撃つ**（2026-11-09、本人：「括弧閉じまで書くのもよくわかんないし、もうTabは答えでいいのでは？打ち込むものもよくわからん」
+   →（Tab で撃つ・候補を最初から見せて一つを弱点として光らせる、と出して）「いいよー、それで」）。
+   Tab（Enter も同じ）を押した時点で候補が一つに決まっていれば、閉じかっこまで埋めて撃つ。それが弱点なら当たり、違えば外れ。
+   まだ決まらなければ、共通の頭まで埋めるだけ（もう一字打って、また Tab）*/
+function qBatMiss(){
+  var el = document.getElementById('qBat');
+  el.classList.remove('miss'); void el.offsetWidth; el.classList.add('miss');
+}
 function qBatTab(){
   var b = Q.bat, L = QBAT[b.d].lines[b.i % 3], inp = document.getElementById('qCmd'), v = inp.value;
-  if (v.indexOf(L[0]) !== 0){ v = L[0]; }
+  if (v.indexOf(L[0]) !== 0) v = L[0];
   var w = v.slice(L[0].length).replace(/\)$/, ''), c = L[1].filter(function(x){ return x.indexOf(w) === 0; });
-  if (!c.length){ qLog('no match'); return; }
-  if (c.length === 1){ inp.value = L[0] + c[0] + ')'; return; }
-  var p = c[0];
-  c.forEach(function(x){ while (x.indexOf(p) !== 0) p = p.slice(0, -1); });
-  inp.value = L[0] + p;
-  qLog(c.join('  '));
-}
-/* Enter：候補のどれかで閉じていれば撃つ */
-function qBatEnter(v){
-  var b = Q.bat, L = QBAT[b.d].lines[b.i % 3];
-  var w = v.indexOf(L[0]) === 0 ? v.slice(L[0].length).replace(/\)$/, '') : null;
-  if (w === null || L[1].indexOf(w) < 0){ qLog(v + '  ← ?'); document.getElementById('qBat').classList.remove('miss'); void document.getElementById('qBat').offsetWidth; document.getElementById('qBat').classList.add('miss'); return; }
-  qLog(L[0] + w + ')', true);
-  (b.cmds = b.cmds || []).push(L[0] + w + ')');
+  if (!c.length){ qLog(v + '  ← ?'); qBatMiss(); inp.value = L[0]; return; }
+  if (c.length > 1){
+    var pf = c[0];
+    c.forEach(function(x){ while (x.indexOf(pf) !== 0) pf = pf.slice(0, -1); });
+    inp.value = L[0] + pf;
+    return;
+  }
+  var cmd = L[0] + c[0] + ')';
+  if (c[0] !== b.want){ qLog(cmd + '  ← ?'); qBatMiss(); inp.value = L[0]; return; }
+  qLog(cmd, true);
+  (b.cmds = b.cmds || []).push(cmd);
   b.hp--; b.i++;
   var cv = document.getElementById('qBat').querySelector('canvas');
   cv.classList.remove('hit'); void cv.offsetWidth; cv.classList.add('hit');
@@ -6803,7 +6815,7 @@ document.addEventListener('keydown', function(e){
   if (Q.bat){   /* バトル中：Tab で補完、Enter で撃つ、Esc で逃げる。字は帯へ */
     if (e.isComposing || e.keyCode === 229) return;
     if (e.key === 'Tab'){ e.preventDefault(); if (!Q.bat.end) qBatTab(); }
-    else if (e.key === 'Enter'){ e.preventDefault(); if (!Q.bat.end && inp) qBatEnter(inp.value.trim()); }
+    else if (e.key === 'Enter'){ e.preventDefault(); if (!Q.bat.end) qBatTab(); }
     else if (e.key === 'Escape'){ e.preventDefault(); qBatEnd(); }
     else if (!inp){ document.getElementById('qCmd').focus({ preventScroll:true }); return; }
     e.stopImmediatePropagation(); return;
