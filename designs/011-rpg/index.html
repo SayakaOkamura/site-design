@@ -679,6 +679,21 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 #quest[hidden]{display:none}
 #qWrap{position:relative; overflow:hidden; image-rendering:pixelated; border:2px solid #4b2e3f}
 #qWorld{position:absolute; left:0; top:0}
+#qBat{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  background:rgba(9,4,11,.88); color:#fff3dc; font-size:clamp(12px,1.9vh,16px); letter-spacing:.08em}
+#qBat[hidden]{display:none}
+#qBat .nm{margin:0}
+#qBat canvas{position:static; width:84px; height:66px; image-rendering:pixelated}
+#qBat canvas.hit{animation:shock .1s steps(2) 4}
+#qBat .hp,#qBat .ch{width:min(60%,220px); height:6px; border:1px solid #4b2e3f}
+#qBat .hp i,#qBat .ch i{display:block; height:100%; background:#e0604e}
+#qBat .ch i{background:#ffd270}
+#qBat .me{margin:0; color:#ffd270; letter-spacing:.3em}
+#qBat.ouch{animation:qouch .12s steps(2) 3}
+@keyframes qouch{50%{background:rgba(120,30,30,.9)}}
+#qBat.miss .ch{animation:shock .1s steps(2) 3}
+#qTab{background:none; border:1px solid #4b2e3f; color:#ffd270; font:inherit; padding:0 .6em; cursor:pointer}
+#qTab[hidden]{display:none}
 #qWrap canvas{position:absolute; left:0; top:0; image-rendering:pixelated}
 #qMap,#qFog{width:100%; height:100%}
 #qWrap .qn.fog{opacity:.75; animation:qglow 1.6s steps(2) infinite}
@@ -1994,8 +2009,8 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <button id="made" data-k="game" aria-label="ミニゲーム"><span class="lb"><span class="cur">▶</span><span class="q">？</span></span></button>
 
   <!-- 冒険する：町のマップ（2026-11-09）-->
-  <div id="quest" hidden><div id="qWrap"><div id="qWorld"><canvas id="qMap" width="576" height="384"></canvas><canvas id="qFog" width="576" height="384"></canvas><canvas id="qPal" width="12" height="9"></canvas><canvas id="qHero" width="10" height="12"></canvas></div></div>
-    <div id="qBar"><div id="qLog"></div><label class="qIn"><span class="pr">&gt;</span><input id="qCmd" type="text" autocomplete="off" spellcheck="false" enterkeyhint="send" aria-label="AI くんに頼む"></label></div></div>
+  <div id="quest" hidden><div id="qWrap"><div id="qWorld"><canvas id="qMap" width="576" height="384"></canvas><canvas id="qFog" width="576" height="384"></canvas><canvas id="qPal" width="12" height="9"></canvas><canvas id="qHero" width="10" height="12"></canvas></div><div id="qBat" hidden></div></div>
+    <div id="qBar"><div id="qLog"></div><label class="qIn"><span class="pr">&gt;</span><input id="qCmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-label="AI くんに頼む"><button type="button" id="qTab" hidden>Tab</button></label></div></div>
 
   <div id="pop" class="win">
     <p class="t" id="popT"></p>
@@ -6234,7 +6249,7 @@ var Q = { on:false, x:QSX, y:QSY, dir:'u', key:{}, to:null, step:0, last:0, raf:
    浮いているので、ついてくるとき・戻るときは山や海の上も通る。行くときだけ道を通る（どこへ行くか見えるように）*/
 var QP = { x:QSX - 1, y:QSY + .3, dir:'u', mode:'follow', path:null, k:null, page:0, t:0, bob:0 };
 function qt(x, y){ var r = QMAP[Math.floor(y)]; return r ? r.charAt(Math.floor(x)) || '~' : '~'; }
-function qWalk(c, door){ return c === '.' || c === ',' || c === 'f' || c === '=' || c === 'E' || (c >= 'a' && c <= 'd' && (door || (QB[c] && Q.clear[QB[c].k]))); }
+function qWalk(c){ return c === '.' || c === ',' || c === 'f' || c === '=' || c === 'E' || (c >= 'a' && c <= 'd'); }
 function qFree(x, y){ var h = .28; return qWalk(qt(x - h, y - h + .2)) && qWalk(qt(x + h, y - h + .2)) && qWalk(qt(x - h, y + h)) && qWalk(qt(x + h, y + h)); }
 /* 町の升の範囲 */
 function qBox(d){
@@ -6387,12 +6402,15 @@ function questOpen(){
     wrap.addEventListener('pointerdown', function(e){
       if (!Q.on || cur) return;
       e.preventDefault();   /* 打ち込みの帯から焦点を外さない */
+      if (Q.bat) return;
       var b = wrap.getBoundingClientRect();
       Q.to = qPath(Math.floor((e.clientX - b.left) / (16 * Q.s) + Q.cx), Math.floor((e.clientY - b.top) / (16 * Q.s) + Q.cy));
     });
     window.addEventListener('resize', function(){ if (Q.on) qFit(); });
+    document.getElementById('qTab').addEventListener('pointerdown', function(e){ e.preventDefault(); if (Q.bat && !Q.bat.end) qBatTab(); });
   }
   Q.on = true; Q.x = QSX; Q.y = QSY; Q.dir = 'u'; Q.key = {}; Q.to = null; Q.away = false;
+  Q.bat = null; document.getElementById('qBat').hidden = true; document.getElementById('qTab').hidden = true;
   QP.x = QSX - 1; QP.y = QSY + .3; QP.mode = 'follow'; QP.path = null; QP.k = null;
   Q.clear = {}; Q.seen = QMAP.map(function(r){ return r.split('').map(function(){ return 0; }); });
   qSeeRect(Math.floor(QSX) - 2, Math.floor(QSY) - 2, Math.floor(QSX) + 2, Math.floor(QSY) + 1);   /* 出発のまわりだけ晴れている */
@@ -6417,7 +6435,7 @@ function qLoop(now){
   var t = Math.min(.5, (now - Q.last) / 1000), t0 = t; Q.last = now;
   if (cur){ Q.was = true; return; }
   if (Q.was){ Q.was = false; if (matchMedia('(pointer:fine)').matches) document.getElementById('qCmd').focus({ preventScroll:true }); }   /* 窓を閉じたら帯へ */
-  while (t > 0 && Q.on && !cur){ qTick(Math.min(.04, t)); qPalTick(Math.min(.04, t)); t -= .04; }
+  while (t > 0 && Q.on && !cur){ if (Q.bat) qBatTick(Math.min(.04, t)); else qTick(Math.min(.04, t)); qPalTick(Math.min(.04, t)); t -= .04; }
   if (Q.on && !cur){ qCam(Math.min(1, t0 * 5)); qPalDraw(); qFogDraw(); }
 }
 function qTick(dt){
@@ -6444,10 +6462,10 @@ function qTick(dt){
   qHero();
   var c = qt(Q.x, Q.y);
   if (c !== 'E') Q.away = true;
-  if (QB[c]){   /* 晴れた町に入ったら窓。閉じたら町の一つ下に立っている */
+  if (QB[c]){   /* 町に入ったら：勝っていなければ入り口の敵とバトル、勝っていれば窓。終わったら町の一つ下に立っている */
     var b = qBox(c);
     Q.key = {}; Q.to = null; Q.y = b.y1 + 1.5; Q.x = Math.floor(Q.x) + .5; Q.dir = 'd'; qHero();
-    openPop(QB[c].k);
+    if (Q.clear[QB[c].k]) openPop(QB[c].k); else qBatStart(c);
   } else if (c === 'E' && Q.away) questClose();   /* 出発の升へ戻ったら、冒険を出る */
 }
 /* 押したところまでの道（升目で探す）。押したのが町なら、その町へ。山や海なら、いちばん近い歩ける升へ */
@@ -6525,11 +6543,10 @@ function qPalTick(dt){
     var wp = QP.path && QP.path[0];
     if (!wp){
       QP.mode = 'in'; QP.t = 1.1; qLog('read(' + QNAME[QP.k] + ')');
-      qShop(QP.k);
       return;
     }
     tx = wp.x + .5; ty = wp.y + .5; v = 6.5 * dt;
-    if (Math.abs(tx - QP.x) < .05 && Math.abs(ty - QP.y) < .05){ QP.path.shift(); qSeeRect(wp.x - 1, wp.y - 1, wp.x + 1, wp.y + 1); return; }
+    if (Math.abs(tx - QP.x) < .05 && Math.abs(ty - QP.y) < .05){ QP.path.shift(); return; }
   } else {
     /* ついてくる・戻る：勇者のうしろ（向きの反対側）へ。浮いているので、まっすぐ */
     var bx = Q.dir === 'l' ? .8 : Q.dir === 'r' ? -.8 : 0, by = Q.dir === 'u' ? .8 : Q.dir === 'd' ? -.8 : 0;
@@ -6578,11 +6595,123 @@ function qPalDraw(){
   var s = Q.s, hop = QP.bob ? Math.round(Math.sin(QP.bob * 20) * 2) : 0;
   cv.style.transform = 'translate(' + Math.round((QP.x * 16 - 6) * s + hop * s) + 'px,' + Math.round((QP.y * 16 - 10 - 3 * Math.abs(Math.sin(performance.now() / 300))) * s) + 'px)';
 }
+/* ─ 町の入り口のバトル：補完で戦う（2026-11-09）────────────────────
+   本人：「普通にマップには入れるようにして、勝ったら明かりがついていく感じで、バトルの中にタイピング要素入れる？　それはそれとしてメニューで検索は可能にするみたいな」
+   →「霧掛かってる状態スタートで」「バトルにタイピングというか、ClaudeCode要素入れたいだけだからタイピングゲーにするかは用検討」「4はそれでOK」「勝ったら報酬として見られる。今のリザルトと同じ」
+   →（A 頼んで戦う／B 補完で戦う／C 許可して戦う）「b」。
+   敵が途中で切れた一行（read( など）を出す。頭の何文字かを打って Tab で補完、Enter で撃つ。候補が一つなら Tab だけで埋まる。
+   候補が多い町ほど打つ字が増え、敵がためる時間も短い（町ごとの難しさ）。ためきると敵の攻撃（勇者の ■ が一つ減る）。
+   勇者の ■ が無くなったら逃げ帰る。三回撃てば勝ち → 町のまわりの霧が晴れて、町の中身の窓が開く（報酬）。勝った町は、あとは歩いて入れば読める。
+   打つのは英字のコマンドだけ（帯の流れと同じ作り）。日本語の変換は要らない */
+var QBAT = {
+  a:{ name:'ノッペラ',   col:'#c9b48a', t:9, lines:[['read(', ['about']], ['show(', ['profile']], ['find(', ['office']]] },
+  c:{ name:'マヨイミチ', col:'#7fa0c9', t:7.5, lines:[['open(', ['map', 'mail']], ['walk(', ['station', 'stairs']], ['find(', ['exit', 'entry']]] },
+  b:{ name:'スパゲッチ', col:'#d0805a', t:6.5, lines:[['build(', ['system', 'style', 'stack']], ['plan(', ['workflow', 'workspace', 'worklog']], ['test(', ['flow', 'form', 'font']]] },
+  d:{ name:'ミドック',   col:'#b07ac9', t:5.5, lines:[['send(', ['mail', 'memo', 'message']], ['ask(', ['question', 'quote', 'queue']], ['call(', ['contact', 'counter', 'context']]] }
+};
+var QE = ['....XXXX....', '..XXXXXXXX..', '.XXXXXXXXXX.', 'XXoXXXXXXoXX', 'XXXXXXXXXXXX', 'XXXX....XXXX', '.XXXXXXXXXX.', '.X.XX..XX.X.', 'X..X....X..X'];
+function qBatStart(d){
+  var B = QBAT[d];
+  Q.bat = { d:d, k:QB[d].k, hp:3, me:3, i:0, t:0, lock:0 };
+  var el = document.getElementById('qBat');
+  el.innerHTML = '<p class="nm">' + B.name + 'が　あらわれた！</p><canvas width="14" height="11"></canvas>' +
+    '<div class="hp"><i></i></div><div class="ch"><i></i></div><p class="me"></p>';
+  var cv = el.querySelector('canvas'), cx = cv.getContext('2d');
+  QE.forEach(function(r, y){ for (var x = 0; x < r.length; x++){ var c = r.charAt(x); if (c === '.') continue; cx.fillStyle = c === 'o' ? QC.win : B.col; cx.fillRect(x + 1, y + 1, 1, 1); } });
+  el.hidden = false;
+  document.getElementById('qTab').hidden = false;
+  qLog('battle(' + QNAME[QB[d].k] + ')');
+  qBatTurn();
+  var inp = document.getElementById('qCmd'); if (matchMedia('(pointer:fine)').matches) inp.focus({ preventScroll:true });
+}
+function qBatPaint(){
+  var b = Q.bat, el = document.getElementById('qBat'), B = QBAT[b.d];
+  el.querySelector('.hp i').style.width = (b.hp / 3 * 100) + '%';
+  el.querySelector('.ch i').style.width = Math.min(100, b.t / B.t * 100) + '%';
+  el.querySelector('.me').textContent = '■■■'.slice(0, b.me) + '□□□'.slice(0, 3 - b.me);
+}
+function qBatTurn(){
+  var b = Q.bat, L = QBAT[b.d].lines[b.i % 3];
+  b.t = 0;
+  var inp = document.getElementById('qCmd');
+  inp.value = L[0];
+  try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e){}
+  qBatPaint();
+}
+/* Tab：いま打っている語を候補で埋める。一つなら閉じかっこまで。複数なら共通の頭まで埋めて、候補を帯に並べる */
+function qBatTab(){
+  var b = Q.bat, L = QBAT[b.d].lines[b.i % 3], inp = document.getElementById('qCmd'), v = inp.value;
+  if (v.indexOf(L[0]) !== 0){ v = L[0]; }
+  var w = v.slice(L[0].length).replace(/\)$/, ''), c = L[1].filter(function(x){ return x.indexOf(w) === 0; });
+  if (!c.length){ qLog('no match'); return; }
+  if (c.length === 1){ inp.value = L[0] + c[0] + ')'; return; }
+  var p = c[0];
+  c.forEach(function(x){ while (x.indexOf(p) !== 0) p = p.slice(0, -1); });
+  inp.value = L[0] + p;
+  qLog(c.join('  '));
+}
+/* Enter：候補のどれかで閉じていれば撃つ */
+function qBatEnter(v){
+  var b = Q.bat, L = QBAT[b.d].lines[b.i % 3];
+  var w = v.indexOf(L[0]) === 0 ? v.slice(L[0].length).replace(/\)$/, '') : null;
+  if (w === null || L[1].indexOf(w) < 0){ qLog(v + '  ← ?'); document.getElementById('qBat').classList.remove('miss'); void document.getElementById('qBat').offsetWidth; document.getElementById('qBat').classList.add('miss'); return; }
+  qLog(L[0] + w + ')', true);
+  b.hp--; b.i++;
+  var cv = document.getElementById('qBat').querySelector('canvas');
+  cv.classList.remove('hit'); void cv.offsetWidth; cv.classList.add('hit');
+  if (b.hp <= 0){ qBatWin(); return; }
+  qBatTurn();
+}
+function qBatTick(dt){
+  var b = Q.bat; if (!b || b.end) return;
+  b.t += dt;
+  if (b.t >= QBAT[b.d].t){   /* ためきった：敵の攻撃 */
+    b.me--; b.t = 0;
+    var el = document.getElementById('qBat');
+    el.classList.remove('ouch'); void el.offsetWidth; el.classList.add('ouch');
+    qLog(QBAT[b.d].name + 'の　こうげき！');
+    if (b.me <= 0){ qBatLose(); return; }
+  }
+  qBatPaint();
+}
+function qBatEnd(){
+  document.getElementById('qBat').hidden = true; document.getElementById('qTab').hidden = true;
+  document.getElementById('qCmd').value = '';
+  Q.bat = null;
+}
+function qBatWin(){
+  var b = Q.bat; b.end = true;
+  var el = document.getElementById('qBat');
+  el.querySelector('.nm').textContent = QBAT[b.d].name + 'を　たおした！';
+  qBatPaint();
+  qLog('clear(' + QNAME[b.k] + ')');
+  setTimeout(function(){
+    if (!Q.on) return;
+    qBatEnd();
+    qShop(b.k);          /* 町に明かりがつく（まわりの霧が晴れる）*/
+    readAt[b.k] = 0;
+    openPop(b.k);        /* 報酬：町の中身 */
+  }, 1100);
+}
+function qBatLose(){
+  var b = Q.bat; b.end = true;
+  document.getElementById('qBat').querySelector('.nm').textContent = 'にげかえった…';
+  qBatPaint();
+  setTimeout(function(){ if (Q.on) qBatEnd(); }, 1000);
+}
 var QKEY = { ArrowLeft:'l', ArrowRight:'r', ArrowUp:'u', ArrowDown:'d', a:'l', d:'r', w:'u', s:'d', A:'l', D:'r', W:'u', S:'d' };
 document.addEventListener('keydown', function(e){
   if (!Q.on || cur || e.ctrlKey || e.metaKey || e.altKey) return;
-  if (e.key === 'Tab') return;
   var inp = e.target && e.target.id === 'qCmd' ? e.target : null;
+  if (Q.bat){   /* バトル中：Tab で補完、Enter で撃つ、Esc で逃げる。字は帯へ */
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Tab'){ e.preventDefault(); if (!Q.bat.end) qBatTab(); }
+    else if (e.key === 'Enter'){ e.preventDefault(); if (!Q.bat.end && inp) qBatEnter(inp.value.trim()); }
+    else if (e.key === 'Escape'){ e.preventDefault(); qBatEnd(); }
+    else if (!inp){ document.getElementById('qCmd').focus({ preventScroll:true }); return; }
+    e.stopImmediatePropagation(); return;
+  }
+  if (e.key === 'Tab') return;
   if (inp){   /* 帯に打っているあいだ：字は帯へ、矢印は勇者へ、Enter で頼む。変換中の Enter は変換のもの */
     if (e.isComposing || e.keyCode === 229) return;
     if (/^Arrow/.test(e.key)){ Q.key[QKEY[e.key]] = true; e.preventDefault(); }
