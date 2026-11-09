@@ -6578,8 +6578,19 @@ function qLog(t, me){
   while (log.children.length > 3) log.removeChild(log.firstChild);
 }
 var QNAME = { about:'about', svc:'service', access:'access', contact:'contact' };
+/* 戦いの記録を消す（2026-11-09、本人：「戦闘記録リセットコマンドほしいね」→（メニュー／しらべるで打つ）「B　カタカナでも可」）。
+   しらべるで reset・リセット と打つと、晴らした町を忘れて霧に戻す。デモの三戦の記録（何戦目まで・つづきから）は消さない */
+function qReset(){
+  Q.clear = {}; qSave();
+  Q.seen = QMAP.map(function(r){ return r.split('').map(function(){ return 0; }); });
+  qSeeRect(Math.floor(QSX) - 2, Math.floor(QSY) - 2, Math.floor(QSX) + 2, Math.floor(QSY) + 1);
+  [].forEach.call(document.querySelectorAll('#qWrap .qn'), function(n){ n.classList.add('fog'); });
+  qFogDraw(); QP.bob = 1;
+  qLog('reset(map)');
+}
 function qAsk(t){
   qLog(t, true);
+  if (/^(reset|リセット|りせっと)$/i.test(t.replace(/[\s　]/g, ''))){ qReset(); return; }
   if (QP.mode !== 'follow'){ qLog('busy(AI くん)'); return; }
   var m = qMatch(t);
   if (!m){ qLog('? 会社概要・サービス・アクセス・お問い合わせ'); QP.bob = 1; return; }
