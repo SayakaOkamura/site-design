@@ -1227,8 +1227,10 @@ body.demo #dHp{display:block}
    お題の三つは**作られたものではない**ので、ここは通さない（同時に出る） */
 #dWin .q{opacity:0}
 /* アクセスの地図（2026-11-06）。輪は点線、駅は金の四角、本社はドットの建物 */
-#pop .amap{display:block; margin:0 auto}
-#pop .amap svg{display:block; width:100%; max-height:10.5em; shape-rendering:crispEdges}   /* 背は路線の頁より低く（高いと「入らない窓」になって素の一枚に落ちた）*/
+#pop .amap{display:block; height:10.5em}   /* 頁の中の場所取り。背は路線の頁より低く（高いと「入らない窓」になって素の一枚に落ちた）*/
+#pop .amap svg{position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; shape-rendering:crispEdges}
+/* レーダーは**窓の枠の内側いっぱい**に描く（2026-11-09、本人「上下、タイトルの箱にまでなら掛かっていいからつぶれてるレーダーを直して」）。
+   見出しと送りの行にかかってよい。輪は丸く（横に伸ばさない）*/
 #pop .amap .rg{fill:none; stroke:var(--dim); stroke-width:1; stroke-dasharray:3 3; opacity:.6}
 #pop .amap .mn{fill:var(--dim); font-size:9px; opacity:.8}
 #pop .amap .sd{fill:var(--go)}
@@ -2656,11 +2658,11 @@ var MAPHTML = (function(){
     return m ? { n:m[1], m:+m[2] } : null;
   }).filter(Boolean);
   var mins = st.map(function(x){ return x.m; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).sort(function(a, b){ return a - b; });
-  var R = {}, cx = 200, cy = 111, K = 1.6, RS = [22, 52, 76, 98];   /* K：横に伸ばす（窓が横長なので）*/
+  var R = {}, cx = 180, cy = 111, K = 1, RS = [22, 52, 76, 98];   /* K：横の伸ばし（11/9 に 1.6 → 1。丸く）*/
   mins.forEach(function(m, i){ R[m] = RS[Math.min(i, RS.length - 1)]; });
   var ro = RS[Math.min(mins.length, RS.length) - 1];
   function at(r, deg){ var a = deg * Math.PI / 180; return [cx + K * r * Math.sin(a), cy - r * Math.cos(a)]; }
-  var svg = '<svg viewBox="0 0 400 222" role="img" aria-label="本社から歩いて：' +
+  var svg = '<svg viewBox="0 -10 360 242" role="img" aria-label="本社から歩いて：' +
     st.map(function(x){ return x.n + ' ' + x.m + '分'; }).join('、') + '">';
   /* 十字と北 */
   svg += '<path d="M' + (cx - K * ro) + ' ' + cy + 'H' + (cx + K * ro) + 'M' + cx + ' ' + (cy - ro) + 'V' + (cy + ro) + '" class="ax"/>';
