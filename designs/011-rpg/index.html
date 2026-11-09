@@ -2649,6 +2649,7 @@ var ROUTEHTML = rtGrid(RT);
    **方角は公式に出ていない**——下の BEAR は、こちらが地図（本社＝西新橋 3-23 あたり）から読んだおおよその向き（北から時計回りの度）。
    駅の名前と分数は、これまでどおり路線の行（公式の文）から読む。針は回さない */
 var MAPHTML = (function(){
+  var NUDGE = { '虎ノ門ヒルズ':10 };   /* 名前だけ左へ（虎ノ門と詰まって見えた。2026-11-09 本人「虎ノ門ヒルズの名前を左にずらして」）*/
   var BEAR = { '御成門':180, '大門':152, '神谷町':280, '汐留':83, '虎ノ門ヒルズ':344, '虎ノ門':352, '新橋':54, '浜松町':143 };
   var st = [].map.call(document.querySelectorAll('[data-a="route"] li'), function(li){
     var m = li.textContent.trim().match(/^(.+?)\s*(\d+)\s*分/);
@@ -2674,7 +2675,7 @@ var MAPHTML = (function(){
     var d = BEAR[x.n]; if (d == null) return;
     var q = at(R[x.m], d), left = Math.sin(d * Math.PI / 180) < -0.2;
     svg += '<rect x="' + (q[0] - 3) + '" y="' + (q[1] - 3) + '" width="6" height="6" class="sd"/>';
-    svg += '<text x="' + (q[0] + (left ? -6 : 6)) + '" y="' + (q[1] + 4) + '" class="sn"' + (left ? ' text-anchor="end"' : '') + '>' + x.n + '</text>';
+    svg += '<text x="' + (q[0] + (left ? -6 : 6) - (NUDGE[x.n] || 0)) + '" y="' + (q[1] + 4) + '" class="sn"' + (left ? ' text-anchor="end"' : '') + '>' + x.n + '</text>';
   });
   /* 本社：ドットの建物（名札は上。下は御成門の点）*/
   svg += '<rect x="' + (cx - 9) + '" y="' + (cy - 12) + '" width="18" height="22" class="hq"/>' +
