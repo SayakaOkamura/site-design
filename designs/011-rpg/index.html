@@ -692,6 +692,8 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 #qBat.ouch{animation:qouch .12s steps(2) 3}
 @keyframes qouch{50%{background:rgba(120,30,30,.9)}}
 #qBat.miss .ch{animation:shock .1s steps(2) 3}
+/* 冒険のリザルト（2026-11-09）。形はデモのリザルトと同じ（上の #dRes の決まりを当てている）。置き場だけ冒険の中 */
+#qRes{z-index:7}
 #qMenuBtn{position:absolute; right:6px; bottom:6px; background:#120a12; border:2px solid #fff3dc; color:#fff3dc; font:inherit; font-size:12px; padding:.2em .6em; cursor:pointer}
 #qMenu{position:absolute; left:50%; top:6px; transform:translateX(-50%); background:#120a12; border:2px solid #fff3dc; box-shadow:0 0 0 2px #120a12; padding:.5em .9em .5em .4em; color:#fff3dc;
   font-size:clamp(12px,1.9vh,16px); letter-spacing:.1em}
@@ -1671,16 +1673,16 @@ body.roll #dRoll{display:block}
 @keyframes won{ from{transform:scale(.6)} to{transform:scale(1)} }
 
 /* リザルト。**二段組にする**——縦に積むと短い窓で四角が枠の外へ落ちる */
-#dRes{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+#dRes,#qRes{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
   z-index:9; width:min(88vw,calc(760px*var(--k))); max-height:84vh; display:none}
 /* **枠が開いてから、中身が一行ずつ出る。**一度に出すと、
    ここまで積んできたものが**一瞬で終わる**（本人：「なんかスッと終わっちゃう」）*/
-#dRes.on{display:block; animation:resin .24s steps(4)}
+#dRes.on,#qRes.on{display:block; animation:resin .24s steps(4)}
 @keyframes resin{ from{transform:translate(-50%,-50%) scaleY(.12)}
                   to{transform:translate(-50%,-50%) scaleY(1)} }
 /* **透明度は素で持たせない**——動きが走らない場でも、`.on` が付けば必ず見える */
-#dRes .q{opacity:0}
-#dRes .q.on{opacity:1; animation:rise .16s steps(2)}
+#dRes .q,#qRes .q{opacity:0}
+#dRes .q.on,#qRes .q.on{opacity:1; animation:rise .16s steps(2)}
 @keyframes rise{ from{transform:translateY(5px)} to{transform:translateY(0)} }
 /* **もらったものを一つだけ大きく出す**（2026-09-15、本人の指摘）。
    前は「段取り」という見出しの下に六項目（三手＋要るもの二＋区切り一）が並んでいた。
@@ -1690,7 +1692,7 @@ body.roll #dRoll{display:block}
    宝箱を開けて「クエストが追加されました」と出るのと同じ。
 
    → **一手だけ。**あとは小さく添える */
-#dRes .rt{margin:0; font-size:clamp(12px,calc(1.4 * var(--fw)),calc(14px*var(--k))); letter-spacing:.14em; color:var(--go)}
+#dRes .rt,#qRes .rt{margin:0; font-size:clamp(12px,calc(1.4 * var(--fw)),calc(14px*var(--k))); letter-spacing:.14em; color:var(--go)}
 /* 提案内容（2026-09-16）。**出てくるのはタスク。**
    前は「つぎの一手」を一行だけ大きく出していた。**一人で終わる手**なので、
    本人：「お問い合わせへの動線が薄い」——**足りないものが無い**から呼ぶ理由が立たない。
@@ -1704,11 +1706,11 @@ body.roll #dRoll{display:block}
 /* **ここがこの窓でいちばん大きい余白**（2026-09-18）。矢印を外したぶんを間で持つ——
    上の三行（見出し・言ったこと・選んだ三つ）は 10px と 6px で寄せてあるので、
    **20px 空けば「別のもの」になる**（9/17 の「対の外を空ける」と同じ考え） */
-#dRes .rtask{margin:calc(var(--px)*5) 0 0; padding:0; list-style:none}
-#dRes .rtask li{margin:calc(var(--px)*1.5) 0; padding-left:1.7em; text-indent:-1.7em;
+#dRes .rtask,#qRes .rtask{margin:calc(var(--px)*5) 0 0; padding:0; list-style:none}
+#dRes .rtask li,#qRes .rtask li{margin:calc(var(--px)*1.5) 0; padding-left:1.7em; text-indent:-1.7em;
   font-size:clamp(14px,calc(1.7 * var(--fw)),calc(19px*var(--k))); line-height:1.6; font-weight:700; color:var(--ink)}
 /* **字下げで置く。**絶対位置にすると、折り返した行だけが右へ逃げて印が取り残される */
-#dRes .rtask li::before{content:'□'; color:var(--go); font-weight:400; margin-right:.7em}
+#dRes .rtask li::before,#qRes .rtask li::before{content:'□'; color:var(--go); font-weight:400; margin-right:.7em}
 /* **前と後ろを、一枚に**（2026-09-15、本人：「次の一手がでかいとなんか、次しかわかんないな」
    →「あくまでデモだと割り切ってわかりやすさに振るなら」→「一旦 1 と 2 で」）。
    一手だけを大きく出しても、**何がどう変わったかは画面に無い。**
@@ -1722,13 +1724,13 @@ body.roll #dRoll{display:block}
 /* **帯から来た二行は、着いたときに一度だけ光る。**
    どれがどこになったかが、言葉なしで見える（本人：糧になってるってアピール）。
    色だけを動かすので、動きが走らない場では**ふつうの色で出る** */
-#dRes .rw,#dRes .rp{animation:land .6s steps(2) 1}
+#dRes .rw,#dRes .rp,#qRes .rw,#qRes .rp{animation:land .6s steps(2) 1}
 @keyframes land{ from{color:var(--go)} to{color:var(--dim)} }
-#dRes .rw{margin:calc(var(--px)*2.5) 0 0; font-size:clamp(13px,calc(1.6 * var(--fw)),calc(16px*var(--k)));
+#dRes .rw,#qRes .rw{margin:calc(var(--px)*2.5) 0 0; font-size:clamp(13px,calc(1.6 * var(--fw)),calc(16px*var(--k)));
   line-height:1.7; color:var(--dim)}
-#dRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,calc(1.3 * var(--fw)),calc(13px*var(--k)));
+#dRes .rp,#qRes .rp{margin:calc(var(--px)*1.5) 0 0; font-size:clamp(11px,calc(1.3 * var(--fw)),calc(13px*var(--k)));
   line-height:1.8; color:var(--dim); opacity:.78}
-#dRes .rp span{display:block}
+#dRes .rp span,#qRes .rp span{display:block}
 /* **矢印はやめた**（2026-09-18）。前と後ろを切る印として `▼` を一行使っていたが、
    **この画面の `▼` は「送り」の記号**（ポップの次の頁、デモの窓）。
    同じ記号に二役持たせていたので、**「まだ先がある」に読める。**
@@ -1744,22 +1746,22 @@ body.roll #dRoll{display:block}
    → 本人：「四角の大きさこのままで。もうちょっと距離離して」。**四角の幅は変えず、あいだ 6 → 10 粒・端の寄せ 3 → 1 粒**（増えたあいだを両端から譲る）
    →「あけすぎ」で あいだ 8 粒・端の寄せ 2 粒 →「間隔全部そろえて」→（横の三つ／下も）「A」。
    **枠の内側から左の四角・四角どうし・右の四角→枠を同じに**：窓の左右の余白（粒 4）＋端の寄せ（粒 2）＝ あいだ（粒 6）。360 以下の窓は入らないので端まで */
-#dRes .rn{display:flex; gap:calc(var(--px)*6); padding:0 calc(var(--px)*2); margin-top:calc(var(--px)*5 + .4 * clamp(11px,calc(1.3 * var(--fw)),calc(13px*var(--k))))}
+#dRes .rn,#qRes .rn{display:flex; gap:calc(var(--px)*6); padding:0 calc(var(--px)*2); margin-top:calc(var(--px)*5 + .4 * clamp(11px,calc(1.3 * var(--fw)),calc(13px*var(--k))))}
 /* 終わり方の四角。**リザルトの下**（2026-09-15、本人：「リザルトの下あたりに四角で」）*/
-#dRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
+#dRes .rb,#qRes .rb{-webkit-appearance:none; appearance:none; font:inherit; cursor:pointer;
   background:none; color:var(--dim); border:calc(var(--px)/2) solid var(--dim);
   flex:1 1 0; text-align:center;   /* **半分ずつ横いっぱい**（2026-09-30、本人：「めっちゃ横に広げて半々とってもいいんじゃないとかは思う」→「やってみて」）*/
   padding:calc(var(--px)*1.5) calc(var(--px)*4); letter-spacing:.08em;   /* 左右は 5 粒にしてから、半々にしたので 4 に戻した（上下は 2.5 にして「いや上下はいい」で 1.5 に戻した）。本人：「リザルトのした二つの四角がなんかみちっとしてるなーと思う　もう少し余白あってもいいかも、四角の中に」（2026-09-30）*/
   font-size:clamp(12px,calc(1.4 * var(--fw)),calc(14px*var(--k))); font-weight:700; white-space:nowrap}
 /* 余白を広げたら 320×568 で字が二行に折れた。狭い窓（360 以下）だけ左右の余白を粒三つに */
 /* 四角が三つ（つぎへ すすむ）のときは、狭い窓で折り返す（2026-11-06）*/
-#dRes .rn{flex-wrap:wrap; row-gap:calc(var(--px)*3)}
-@media (max-width:560px){ #dRes .rn .rb{flex-basis:40%} }
-#dRes .ru{color:var(--go); font-weight:700; margin-top:calc(var(--px)*3)}
-#dRes .ru:empty{display:none}
-@media (max-width:360px){ #dRes .rb{padding-left:calc(var(--px)*3); padding-right:calc(var(--px)*3)} #dRes .rn{gap:calc(var(--px)*4); padding:0} }   /* あいだも粒四つ（六つだと 320×568 で 6px はみ出す）*/
+#dRes .rn,#qRes .rn{flex-wrap:wrap; row-gap:calc(var(--px)*3)}
+@media (max-width:560px){ #dRes .rn .rb,#qRes .rn .rb{flex-basis:40%} }
+#dRes .ru,#qRes .ru{color:var(--go); font-weight:700; margin-top:calc(var(--px)*3)}
+#dRes .ru:empty,#qRes .ru:empty{display:none}
+@media (max-width:360px){ #dRes .rb,#qRes .rb{padding-left:calc(var(--px)*3); padding-right:calc(var(--px)*3)} #dRes .rn,#qRes .rn{gap:calc(var(--px)*4); padding:0} }   /* あいだも粒四つ（六つだと 320×568 で 6px はみ出す）*/
 /* 選んでいるほうは**塗る。**縁の色だけだと、どちらを選んでいるか分からなかった */
-body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
+body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"],body:not(.kb) #qRes .rb:hover,#qRes .rb[aria-current="true"]{
   background:var(--go); border-color:var(--go); color:var(--edge)}
 
 @media (max-width:640px), (orientation:portrait) and (min-width:641px) and (max-width:1100px) and (min-height:900px){
@@ -1783,7 +1785,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
     #slime,#dHp,#slash{left:76%}
     #dBang{left:30%}
   }
-  #dRes .rtask li{font-size:clamp(13px,calc(3.6 * var(--fw)),calc(17px*var(--k)))}
+  #dRes .rtask li,#qRes .rtask li{font-size:clamp(13px,calc(3.6 * var(--fw)),calc(17px*var(--k)))}
 }
 /* ─ デモも同じ三層にする（2026-09-24）──────────────────────
    本人：「**デモも直して**」。問いだけ上に残っていて、
@@ -1810,7 +1812,7 @@ body:not(.kb) #dRes .rb:hover,#dRes .rb[aria-current="true"]{
   #dWin{top:auto; bottom:var(--deckB);
         left:50%; right:auto; transform:translateX(-50%);
         width:min(94vw,calc(520px*var(--k)))}
-  #dRes{top:auto; bottom:var(--deckB);
+  #dRes,#qRes{top:auto; bottom:var(--deckB);
         transform:translateX(-50%); transform-origin:bottom}
   @keyframes resin{ from{transform:translateX(-50%) scaleY(.12)}
                     to{transform:translateX(-50%) scaleY(1)} }
@@ -2021,6 +2023,16 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <div id="quest" hidden><div id="qWrap"><div id="qWorld"><canvas id="qMap" width="576" height="384"></canvas><canvas id="qFog" width="576" height="384"></canvas><canvas id="qPal" width="12" height="9"></canvas><canvas id="qHero" width="10" height="12"></canvas></div><div id="qBat" hidden></div>
     <button type="button" id="qMenuBtn">メニュー</button>
     <div id="qMenu" hidden><ul><li><button type="button" data-q="look"><span class="cur">▶</span>しらべる</button></li><li><button type="button" data-q="quit"><span class="cur">▶</span>ぼうけんを　やめる</button></li></ul></div></div>
+    <div id="qRes" class="win">
+      <p class="rt"></p>
+      <p class="rw"></p>
+      <p class="rp"></p>
+      <ul class="rtask"></ul>
+      <div class="rn">
+        <button class="rb" data-d="read">よむ</button>
+        <button class="rb" data-d="back">ぼうけんに　もどる</button>
+      </div>
+    </div>
     <div id="qBar"><div id="qLog"></div><label class="qIn"><span class="pr">&gt;</span><input id="qCmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-label="AI くんに頼む"><button type="button" id="qTab" hidden>Tab</button></label></div></div>
 
   <div id="pop" class="win">
@@ -6420,6 +6432,10 @@ function questOpen(){
       Q.to = qPath(Math.floor((e.clientX - b.left) / (16 * Q.s) + Q.cx), Math.floor((e.clientY - b.top) / (16 * Q.s) + Q.cy));
     });
     window.addEventListener('resize', function(){ if (Q.on) qFit(); });
+    [].forEach.call(document.querySelectorAll('#qRes .rb'), function(b, i){
+      b.addEventListener('click', function(e){ e.stopPropagation(); if (Q.res) qResFire(i); });
+      b.addEventListener('mouseenter', function(){ if (Q.res){ Q.res.sel = i; qResPaint(); } });
+    });
     document.getElementById('qMenuBtn').addEventListener('click', function(e){ e.stopPropagation(); if (Q.look) qLookClose(); else if (Q.menu) qMenuClose(); else qMenuOpen(); });
     [].forEach.call(document.querySelectorAll('#qMenu button'), function(b, i){
       b.addEventListener('click', function(e){ e.stopPropagation(); qMenuPick(i); });
@@ -6428,7 +6444,7 @@ function questOpen(){
     document.getElementById('qTab').addEventListener('pointerdown', function(e){ e.preventDefault(); if (Q.bat && !Q.bat.end) qBatTab(); });
   }
   Q.on = true; Q.x = QSX; Q.y = QSY; Q.dir = 'u'; Q.key = {}; Q.to = null; Q.away = false;
-  Q.bat = null; document.getElementById('qBat').hidden = true; document.getElementById('qTab').hidden = true;
+  Q.bat = null; document.getElementById('qBat').hidden = true; qResClose(); document.getElementById('qTab').hidden = true;
   QP.x = QSX - 1; QP.y = QSY + .3; QP.mode = 'follow'; QP.path = null; QP.k = null;
   Q.clear = {}; Q.seen = QMAP.map(function(r){ return r.split('').map(function(){ return 0; }); });
   qSeeRect(Math.floor(QSX) - 2, Math.floor(QSY) - 2, Math.floor(QSX) + 2, Math.floor(QSY) + 1);   /* 出発のまわりだけ晴れている */
@@ -6453,7 +6469,8 @@ function qLoop(now){
   var t = Math.min(.5, (now - Q.last) / 1000), t0 = t; Q.last = now;
   if (cur){ Q.was = true; return; }
   if (Q.was) Q.was = false;
-  if (Q.menu || Q.look) Q.key = {};
+  if (Q.menu || Q.look || Q.res) Q.key = {};
+  if (Q.res) return;
   while (t > 0 && Q.on && !cur){ if (Q.bat) qBatTick(Math.min(.04, t)); else qTick(Math.min(.04, t)); qPalTick(Math.min(.04, t)); t -= .04; }
   if (Q.on && !cur){ qCam(Math.min(1, t0 * 5)); qPalDraw(); qFogDraw(); }
 }
@@ -6674,6 +6691,7 @@ function qBatEnter(v){
   var w = v.indexOf(L[0]) === 0 ? v.slice(L[0].length).replace(/\)$/, '') : null;
   if (w === null || L[1].indexOf(w) < 0){ qLog(v + '  ← ?'); document.getElementById('qBat').classList.remove('miss'); void document.getElementById('qBat').offsetWidth; document.getElementById('qBat').classList.add('miss'); return; }
   qLog(L[0] + w + ')', true);
+  (b.cmds = b.cmds || []).push(L[0] + w + ')');
   b.hp--; b.i++;
   var cv = document.getElementById('qBat').querySelector('canvas');
   cv.classList.remove('hit'); void cv.offsetWidth; cv.classList.add('hit');
@@ -6707,8 +6725,7 @@ function qBatWin(){
     if (!Q.on) return;
     qBatEnd();
     qShop(b.k);          /* 町に明かりがつく（まわりの霧が晴れる）*/
-    readAt[b.k] = 0;
-    openPop(b.k);        /* 報酬：町の中身 */
+    qResOpen(b.k, b.cmds);   /* 報酬：デモと同じ形のリザルト */
   }, 1100);
 }
 function qBatLose(){
@@ -6731,10 +6748,58 @@ function qMenuPick(i){
 function qInp(on){ var inp = document.getElementById('qCmd'); inp.disabled = !on; if (on) inp.focus({ preventScroll:true }); else { inp.value = ''; inp.blur(); } }
 function qLookOpen(){ Q.look = true; Q.key = {}; qLog('しらべる'); qInp(true); }
 function qLookClose(){ Q.look = false; qInp(false); }
+/* ─ 勝ったあとのリザルト（2026-11-09、本人：「勝ったあとのリザルト、デモと同じ形にして」）────────
+   デモと同じ並び：見出し → 言ったこと（向かった町）→ 選んだもの（打った三つのコマンド）→ 間をあけて、てにいれたもの（□ の行が一つずつ出る）→ 四角。
+   てにいれたものは、町の窓の頁ごとの見出し（公式の文から。足さない）。四角は「よむ」（窓を開く）と「ぼうけんに　もどる」。
+   開いたときはどちらも選ばれていない（デモと同じ。倒した直後の Enter で飛ばない）*/
+function qGot(k){
+  if (k === 'access') return ['地図', '所在地', '駅からの分数'];
+  return pages(DATA[k]).map(function(p){
+    var d = document.createElement('div'); d.innerHTML = p;
+    var h = [].map.call(d.querySelectorAll('b, h3'), function(x){ return x.textContent.trim(); }).filter(Boolean);
+    return h.join('・') || d.textContent.trim().slice(0, 24);
+  });
+}
+function qResOpen(k, cmds){
+  var R = document.getElementById('qRes');
+  R.querySelector('.rt').textContent = DATA[k].t + 'の　まちに　あかりが　ついた！';
+  R.querySelector('.rw').textContent = '「' + DATA[k].t + '」';
+  var rp = R.querySelector('.rp'); rp.innerHTML = '';
+  cmds.forEach(function(c){ var sp = document.createElement('span'); sp.textContent = '> ' + c; rp.appendChild(sp); });
+  var ul = R.querySelector('.rtask'); ul.innerHTML = '';
+  qGot(k).forEach(function(t){ var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+  Q.res = { k:k, sel:-1 }; qResPaint();
+  var parts = [].slice.call(R.querySelectorAll('.rtask li, .rn'));
+  parts.forEach(function(el){ el.classList.add('q'); el.classList.remove('on'); });
+  R.classList.add('on');
+  say([].map.call(R.querySelectorAll('.rt, .rw, .rp span, .rtask li'), function(x){ return x.textContent.trim(); }).join('　'));
+  var i = 0;
+  clearInterval(Q.tRes);
+  Q.tRes = setInterval(function(){ if (i >= parts.length){ clearInterval(Q.tRes); return; } parts[i++].classList.add('on'); }, REDUCE ? 1 : 140);
+}
+function qResPaint(){ [].forEach.call(document.querySelectorAll('#qRes .rb'), function(b, i){ b.setAttribute('aria-current', Q.res && i === Q.res.sel ? 'true' : 'false'); }); }
+function qResFire(i){
+  var k = Q.res.k, d = document.querySelectorAll('#qRes .rb')[i].dataset.d;
+  qResClose();
+  if (d === 'read'){ readAt[k] = 0; openPop(k); }
+}
+function qResClose(){
+  clearInterval(Q.tRes); Q.res = null;
+  document.getElementById('qRes').classList.remove('on');
+}
 var QKEY = { ArrowLeft:'l', ArrowRight:'r', ArrowUp:'u', ArrowDown:'d', a:'l', d:'r', w:'u', s:'d', A:'l', D:'r', W:'u', S:'d' };
 document.addEventListener('keydown', function(e){
   if (!Q.on || cur || e.ctrlKey || e.metaKey || e.altKey) return;
   var inp = e.target && e.target.id === 'qCmd' ? e.target : null;
+  if (Q.res){   /* リザルト：←→（↑↓）で四角を選ぶ、Enter で決める、Esc で戻る */
+    var nb = document.querySelectorAll('#qRes .rb').length, k = e.key;
+    clearInterval(Q.tRes); [].forEach.call(document.querySelectorAll('#qRes .q'), function(x){ x.classList.add('on'); });
+    if (k === 'ArrowRight' || k === 'ArrowDown'){ Q.res.sel = (Q.res.sel + 1 + nb) % nb; qResPaint(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp'){ Q.res.sel = Q.res.sel < 0 ? 0 : (Q.res.sel + nb - 1) % nb; qResPaint(); }
+    else if ((k === 'Enter' || k === ' ' || k === 'z' || k === 'Z') && Q.res.sel >= 0) qResFire(Q.res.sel);
+    else if (k === 'Escape' || k === 'x' || k === 'X') qResClose();
+    e.preventDefault(); e.stopImmediatePropagation(); return;
+  }
   if (Q.bat){   /* バトル中：Tab で補完、Enter で撃つ、Esc で逃げる。字は帯へ */
     if (e.isComposing || e.keyCode === 229) return;
     if (e.key === 'Tab'){ e.preventDefault(); if (!Q.bat.end) qBatTab(); }
