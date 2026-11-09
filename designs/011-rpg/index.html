@@ -6221,6 +6221,7 @@ var openStyle = function(){};
   var last = recall();
   if (!/[?&]title(&|=|$)/.test(location.search)){
     if (last === 'game'){ M.hidden = true; tvOn(); return; }
+    if (last === 'quest'){ M.hidden = true; tvOn(); setTimeout(questOpen, 0); return; }   /* 冒険で終わった人は冒険から（F5 でも冒険のまま）*/
     location.replace('site.html'); return;
   }
   document.body.classList.add('title');
@@ -6460,6 +6461,10 @@ function questOpen(){
   [].forEach.call(document.querySelectorAll('#qWrap .qn'), function(n){ n.classList.add('fog'); });
   document.getElementById('qLog').innerHTML = ''; var qc = document.getElementById('qCmd'); qc.value = ''; qc.disabled = false;
   el.hidden = false; document.body.classList.add('quest');
+  /* **F5 で冒険のまま**（2026-11-09、本人：「f5押したときに更新できるようにするだけ　他の画面と同じで独立させて」）。
+     ほかの画面と同じく、どこで終わったかを覚える（adc-style = quest）。アドレスも ?mode=adv にしておく */
+  try { localStorage.setItem('adc-style', 'quest'); } catch (e) {}
+  try { if (!/[?&]mode=adv(&|$)/.test(location.search)) history.replaceState(null, '', location.pathname + '?mode=adv'); } catch (e) {}
   qFit();
   Q.last = performance.now();
   cancelAnimationFrame(Q.raf); Q.raf = requestAnimationFrame(qLoop);
@@ -6470,6 +6475,8 @@ function questClose(){
   Q.on = false; cancelAnimationFrame(Q.raf);
   if (cur) close();
   document.getElementById('quest').hidden = true; document.body.classList.remove('quest');
+  try { localStorage.setItem('adc-style', 'game'); } catch (e) {}
+  try { history.replaceState(null, '', location.pathname + '?mode=game'); } catch (e) {}
 }
 /* 歩く速さは実際の時間で（コマ落ちしても遅くならない）。一度に進むのは 0.04 秒ぶんずつ——山を飛び越えないように */
 function qLoop(now){
