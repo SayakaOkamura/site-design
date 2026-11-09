@@ -1287,6 +1287,19 @@ body.demo #dHp{display:block}
   font-size:clamp(12px,calc(1.2 * var(--fw)),calc(14px*var(--k)))}
 #board .chip{padding:.3em .7em; cursor:pointer}
 #board .chip[aria-current="true"]{background:var(--go); color:var(--edge); border-color:var(--go)}
+/* **入らないときは盤を詰める**（2026-11-09、本人：小さい画面で盤の窓が帯・勇者にかかる →「盤をその場で縮める」）。
+   fitBoard が測って .tight を付ける。文は削らない——譲るのは間と、紙の置き場の高さ */
+#board.tight .pa .pp[data-i]{width:49%}   /* 残る二枚は半分ずつの幅で横に（折り返して背が伸びていた）*/
+#board.tight .cd{margin-top:4px; padding-top:3px; min-height:1.6em}
+#board.tight .fl{flex-wrap:nowrap; gap:4px; overflow-x:auto; scrollbar-width:none}   /* 流れ図は一行に。はみ出すぶんは横に送る（光っている穴を見える所へ）*/
+#board.tight .fl::-webkit-scrollbar{display:none}
+#board.tight .fl > *{flex:none}
+#board.tight .ch{gap:4px; margin-top:4px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none}   /* 部品も一行で横に送る（本人「部品も横に送る＋さくせんを外す」）*/
+#board.tight .ch::-webkit-scrollbar{display:none}
+#board.tight .ch > *{flex:none}
+/* それでも入らないときだけ、さくせんの行を外す（同日。窓の高さが足りない小さい画面の、三戦目の後半）*/
+#dWin.noobj #dObj{display:none}
+#board.tight .chip{padding:.2em .4em; white-space:nowrap}
 #dWin #dQ:empty, #dWin #dStep:empty{display:none}
 /* はじめから／つづきから（2026-11-06）。敵が出る前なので、敵の真上ではなく真ん中。上端はメニューと同じ線 */
 @media (min-width:641px) and (orientation:landscape), (min-width:1101px){
@@ -4161,7 +4174,48 @@ function ask(step, q, list, gen){
    選んだ瞬間に窓が下へ跳ねる。縮むのは下から——上端は問いのあいだ動かない。
 
    狭い窓（640 以下）は CSS の置き方のまま（三層・中央の作りが別にある） */
+/* 盤が入らないとき（窓が帯・勇者・体力の帯にかかるとき）、その場で測って盤を詰める（2026-11-09）。
+   まず間を詰めて部品を一行に（.tight）。まだなら紙の置き場を低くする——下の段は置き場の底に付け、
+   残る二枚は左半分と右半分に置いて、横で重ならないようにする（散る紙は吸い込まれて消えるので重なってよい）。
+   流れ図と部品は一行にして横に送る。それでも入らなければ、さくせんの行を外す（.noobj）*/
+function boardOver(){
+  var wr = dWin.getBoundingClientRect(), gap = 8;
+  if (MQ_NARROW.matches) return Math.ceil(document.getElementById('dBar').getBoundingClientRect().bottom + gap - wr.top);
+  var L = dHp.getBoundingClientRect().top - 8, hr = heroEl.getBoundingClientRect();
+  if (wr.left < hr.right) L = Math.min(L, hr.top - 6);
+  return Math.ceil(4 + dWin.offsetHeight - L);
+}
+/* 一行の流れ図で、その箱を見える所へ（詰めていないときは何もしない）*/
+function flShow(el){
+  var fl = el && el.parentNode;
+  if (!fl || !boardEl.classList.contains('tight') || !boardEl.contains(el)) return;
+  fl.scrollLeft = Math.max(0, el.offsetLeft - fl.offsetLeft - (fl.clientWidth - el.offsetWidth) / 2);
+}
+function fitBoard(){
+  var pa = boardEl.querySelector('.pa');
+  boardEl.classList.remove('tight'); dWin.classList.remove('noobj');
+  if (pa){ pa.style.height = ''; [].forEach.call(pa.children, function(el){ if (el.dataset.top) el.style.top = el.dataset.top; if (el.dataset.left) el.style.left = el.dataset.left; }); }
+  if (!boardEl.firstChild || dWin.style.display === 'none' || dWin.classList.contains('mid')) return;
+  if (boardOver() <= 0) return;
+  boardEl.classList.add('tight');
+  flShow(boardEl.querySelector('.fl .act, .fl .fall'));
+  var over = boardOver();
+  if (over <= 0) return;
+  if (pa){
+  var ph = 0;
+  [].forEach.call(pa.children, function(el){ ph = Math.max(ph, el.offsetHeight); });
+  var H = Math.max(ph + 2, pa.offsetHeight - over);
+  pa.style.height = H + 'px';
+  [].forEach.call(pa.children, function(el){
+    el.dataset.top = el.dataset.top || el.style.top; el.dataset.left = el.dataset.left || el.style.left;
+    if (parseFloat(el.dataset.top) >= 50) el.style.top = Math.max(0, H - el.offsetHeight) + 'px';
+    if (el.dataset.i) el.style.left = el.dataset.i === '1' ? '51%' : '0';
+  });
+  }
+  if (boardOver() > 0) dWin.classList.add('noobj');
+}
 function placeDWin(){
+  fitBoard();
   if (MQ_NARROW.matches || dWin.classList.contains('mid')){ dWin.style.top = ''; return; }
   if (dWin.style.display === 'none') return;
   var wr = dWin.getBoundingClientRect();
@@ -4211,6 +4265,7 @@ function paintD(){
   [].slice.call(D.items || dA.children).forEach(function(el, i){
     el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
   });
+  if (D.items && D.items[D.sel] && D.items[D.sel].classList.contains('chip')) flShow(D.items[D.sel]);   /* 横に送った部品を見える所へ */
 }
 /* ─ 盤（二戦目・三戦目）────────────────────────────────────── */
 var boardEl = document.getElementById('board');
@@ -4295,13 +4350,13 @@ function board3Run(to, done){
   (function step(){
     if (!D.on || D.stage !== 3) return;
     if (k === to){
-      if (T.nodes[k].late){ D.rev[k] = true; board3Draw(); [].forEach.call(boardEl.querySelectorAll('.nd'), function(x){ if (+x.dataset.k < k) x.classList.add('lit'); }); var el = boardEl.querySelector('.nd[data-k="' + k + '"]'); if (el) el.classList.add('fall'); }
-      else { var en = boardEl.querySelector('.nd[data-k="' + k + '"]'); if (en) en.classList.add('lit'); }
+      if (T.nodes[k].late){ D.rev[k] = true; board3Draw(); [].forEach.call(boardEl.querySelectorAll('.nd'), function(x){ if (+x.dataset.k < k) x.classList.add('lit'); }); var el = boardEl.querySelector('.nd[data-k="' + k + '"]'); if (el){ el.classList.add('fall'); flShow(el); } }
+      else { var en = boardEl.querySelector('.nd[data-k="' + k + '"]'); if (en){ en.classList.add('lit'); flShow(en); } }
       setTimeout(done, 420); return;
     }
     if (!T.nodes[k].late || D.rev[k]){
       var nd = boardEl.querySelector('.nd[data-k="' + k + '"]');
-      if (nd) nd.classList.add('lit');
+      if (nd){ nd.classList.add('lit'); flShow(nd); }
       palWrite();
     }
     k++;
