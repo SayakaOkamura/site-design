@@ -665,6 +665,14 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
    → **本文の字（`--tx`）で測る。**上下 1 字、左右 1.6 字。
    **枠が育てば余白も育つ**ので、9/16 のような取り残しが起きない。
    （`--tx` は本文の `font-size` と同じもの。二か所に同じ `clamp` を書かない） */
+/* 冒険する：町のマップ（2026-11-09。JS の同じ名前の節）。窓（#pop, z-index:6）はこの上に開く */
+#quest{position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; background:#0d0610; touch-action:none}
+#quest[hidden]{display:none}
+#qWrap{position:relative; image-rendering:pixelated}
+#qWrap canvas{position:absolute; left:0; top:0; image-rendering:pixelated}
+#qMap{width:100%; height:100%}
+#qWrap .qn{position:absolute; transform:translate(-50%,-50%); white-space:nowrap; color:#ffd270; letter-spacing:.08em; pointer-events:none;
+  text-shadow:1px 1px 0 #150b04, -1px 1px 0 #150b04, 1px -1px 0 #150b04, -1px -1px 0 #150b04}
 #pop{position:absolute; z-index:6;
   /* **高さも見る**（2026-09-18）。**天井は `60vh` で高さだけ、字は `vw` で幅だけ**を
      見ていた——**見ているものが食い違っていた**のが、はみ出しのそもそもの原因。
@@ -1972,6 +1980,9 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
        「ゲーム文脈だと謎に見える可能性もある」→（囲まない字にする、と出して）「やってみて」→「A でやってみて」）。
        名前は読み上げにだけ残す（aria-label） -->
   <button id="made" data-k="game" aria-label="ミニゲーム"><span class="lb"><span class="cur">▶</span><span class="q">？</span></span></button>
+
+  <!-- 冒険する：町のマップ（2026-11-09）-->
+  <div id="quest" hidden><div id="qWrap"><canvas id="qMap" width="320" height="208"></canvas><canvas id="qHero" width="10" height="12"></canvas></div></div>
 
   <div id="pop" class="win">
     <p class="t" id="popT"></p>
@@ -6096,6 +6107,8 @@ var openStyle = function(){};
   function pick(i){
     var m = B[i].dataset.m;
     if (m === 'site'){ location.href = 'site.html'; return; }
+    /* 冒険する：ボスを倒していれば町へ（2026-11-09）*/
+    if (m === 'quest'){ if (stageGot() < 3 || busy) return; if (!ingame){ remember('game'); shut(); tvOn(); } else shut(); questOpen(); return; }
     if (m !== 'game' || busy) return;
     if (ingame){ shut(); return; }   /* いまのまま */
     busy = true;
@@ -6138,6 +6151,8 @@ var openStyle = function(){};
   if (HASH[location.hash.slice(1)]){ M.hidden = true; remember('game'); return; }
   /* **ふつうのサイトから来た人**（?mode=game）は、タイトルも難易度選択も出さずに、点いて夕焼け（2026-11-06）*/
   if (/[?&]mode=game(&|$)/.test(location.search)){ M.hidden = true; remember('game'); tvOn(); return; }
+  /* 冒険を直接開く（確かめるため。解放していなくても開く）*/
+  if (/[?&]mode=adv(&|$)/.test(location.search)){ M.hidden = true; tvOn(); setTimeout(questOpen, 0); return; }
   /* **前に終わったスタイルから始める**（同日、本人：「どの画面で終わったか記憶しておきたいかも　次そこから」→「Aで、初めての人はタイトルから」）。
      覚えるのは見ている人のブラウザだけ（localStorage の adc-style）。ふつうのサイトで終わった人は site.html へ、ゲームで終わった人はタイトルを飛ばして点く。
      初めての人（覚えが無い）はタイトルから */
@@ -6154,4 +6169,193 @@ var openStyle = function(){};
   M.focus({ preventScroll:true });
 })();
 
+/* ─ 冒険する：町のマップ（2026-11-09）───────────────────────────
+   本人：「マップのやつざっくり作れない？」→（町一枚・建物がサイトの中身・入ると窓に公式の文・歩くのは矢印キーか押したところへ・
+   打ち込みは入れない・?mode=adv で直接開く、と出して）「いいよー、その4つで」（会社概要・サービス・アクセス・お問い合わせ）。
+   昔の RPG の形（見下ろし・歩いて入る・窓）だけ借りる。窓はメニューから開くのと同じもの（openPop）——文の置き場は一か所のまま。
+   地の文字：T 木　. 地面　, 道　E 出口　A〜D 建物（小文字が戸口）*/
+var QMAP = [
+  'TTTTTTTTTTTTTTTTTTTT',
+  'T..................T',
+  'T.AAAA........BBBB.T',
+  'T.AAAA........BBBB.T',
+  'T.AaAA........BbBB.T',
+  'T..,............,..T',
+  'T..,,,,,,,,,,,,,,..T',
+  'T.......,..........T',
+  'T.CCCC..,.....DDDD.T',
+  'T.CCCC..,.....DDDD.T',
+  'T.CcCC..,.....DdDD.T',
+  'T..,,,,,,,,,,,,,,..T',
+  'TTTTTTTTETTTTTTTTTTT'
+];
+var QB = { a:{ k:'about', t:'会社概要' }, b:{ k:'svc', t:'サービス' }, c:{ k:'access', t:'アクセス' }, d:{ k:'contact', t:'お問い合わせ' } };
+var QC = { ground:'#3b2433', dot:'#4b2e3f', path:'#5e3d3b', pathD:'#6b4744', tree:'#1d0f17', treeL:'#2c1722',
+           roof:'#150b04', wall:'#2e1c1e', win:'#ffcb5e', door:'#0d0603', gold:'#ffd270' };
+/* 勇者（見下ろし）。X 体　o 目　. 空き。下向き・上向き・横向き、それぞれ二コマ */
+var QH = {
+  d:[['..XXXX..','.XXXXXX.','.XoXXoX.','.XXXXXX.','..XXXX..','.XXXXXX.','XXXXXXXX','.XXXXXX.','.XX..XX.','.XX.....'],
+     ['..XXXX..','.XXXXXX.','.XoXXoX.','.XXXXXX.','..XXXX..','.XXXXXX.','XXXXXXXX','.XXXXXX.','.XX..XX.','.....XX.']],
+  u:[['..XXXX..','.XXXXXX.','.XXXXXX.','.XXXXXX.','..XXXX..','.XXXXXX.','XXXXXXXX','.XXXXXX.','.XX..XX.','.XX.....'],
+     ['..XXXX..','.XXXXXX.','.XXXXXX.','.XXXXXX.','..XXXX..','.XXXXXX.','XXXXXXXX','.XXXXXX.','.XX..XX.','.....XX.']],
+  s:[['..XXXX..','.XXXXXX.','.XXXXoX.','.XXXXXX.','..XXXX..','..XXXX..','.XXXXXX.','..XXXX..','..XX.XX.','..XX....'],
+     ['..XXXX..','.XXXXXX.','.XXXXoX.','.XXXXXX.','..XXXX..','..XXXX..','.XXXXXX.','..XXXX..','..XXXX..','...XX...']]
+};
+var Q = { on:false, x:8.5, y:11.5, dir:'u', key:{}, to:null, step:0, last:0, raf:0, s:2 };
+function qt(x, y){ var r = QMAP[Math.floor(y)]; return r ? r.charAt(Math.floor(x)) || 'T' : 'T'; }
+function qWalk(c){ return c === '.' || c === ',' || c === 'E' || (c >= 'a' && c <= 'd'); }
+function qFree(x, y){ var h = .28; return qWalk(qt(x - h, y - h + .2)) && qWalk(qt(x + h, y - h + .2)) && qWalk(qt(x - h, y + h)) && qWalk(qt(x + h, y + h)); }
+function qDraw(){
+  var cv = document.getElementById('qMap'), cx = cv.getContext('2d'), T = 16, x, y, c;
+  for (y = 0; y < QMAP.length; y++) for (x = 0; x < QMAP[0].length; x++){
+    c = QMAP[y].charAt(x);
+    var px = x * T, py = y * T;
+    cx.fillStyle = (c === ',' || c === 'E' || (c >= 'a' && c <= 'd')) ? QC.path : QC.ground; cx.fillRect(px, py, T, T);
+    if (c === '.'){ cx.fillStyle = QC.dot; if ((x * 7 + y * 3) % 5 === 0){ cx.fillRect(px + 4, py + 6, 1, 2); cx.fillRect(px + 6, py + 5, 1, 2); } if ((x * 3 + y * 5) % 7 === 0) cx.fillRect(px + 11, py + 11, 1, 2); }
+    if (c === ',' || c === 'E'){ cx.fillStyle = QC.pathD; if ((x + y) % 2) cx.fillRect(px + 3, py + 9, 2, 1); else cx.fillRect(px + 10, py + 4, 2, 1); }
+    if (c === 'T'){ cx.fillStyle = QC.tree; cx.fillRect(px + 2, py + 1, 12, 11); cx.fillRect(px + 1, py + 3, 14, 7); cx.fillRect(px + 7, py + 12, 2, 4);
+                    cx.fillStyle = QC.treeL; cx.fillRect(px + 4, py + 3, 3, 2); }
+    if (c === 'E'){ cx.fillStyle = QC.gold; cx.fillRect(px + 7, py + 6, 2, 7); cx.fillRect(px + 5, py + 10, 6, 1); cx.fillRect(px + 6, py + 11, 4, 1); cx.fillRect(px + 7, py + 12, 2, 1); }
+  }
+  /* 建物：上の一段が屋根、下が壁と窓、戸口は暗い口に金の枠 */
+  'ABCD'.split('').forEach(function(L){
+    var x0 = 99, y0 = 99, x1 = 0, y1 = 0;
+    QMAP.forEach(function(r, yy){ for (var xx = 0; xx < r.length; xx++){ var ch = r.charAt(xx); if (ch === L || ch === L.toLowerCase()){ x0 = Math.min(x0, xx); y0 = Math.min(y0, yy); x1 = Math.max(x1, xx); y1 = Math.max(y1, yy); } } });
+    var X = x0 * T, Y = y0 * T, W = (x1 - x0 + 1) * T, H = (y1 - y0 + 1) * T;
+    cx.fillStyle = QC.roof; cx.fillRect(X - 2, Y, W + 4, T + 6); cx.fillRect(X + 2, Y - 3, W - 4, 3);
+    cx.fillStyle = QC.wall; cx.fillRect(X, Y + T + 6, W, H - T - 6);
+    for (var wx = X + 6; wx < X + W - 6; wx += 12){ cx.fillStyle = QC.win; cx.fillRect(wx, Y + T + 11, 5, 5); cx.fillStyle = QC.wall; cx.fillRect(wx + 2, Y + T + 11, 1, 5); }
+    QMAP.forEach(function(r, yy){ var dx = r.indexOf(L.toLowerCase()); if (dx < 0) return;
+      cx.fillStyle = QC.gold; cx.fillRect(dx * T + 2, yy * T + 3, 12, 13);
+      cx.fillStyle = QC.door; cx.fillRect(dx * T + 4, yy * T + 5, 8, 11); });
+  });
+}
+function qHero(){
+  var cv = document.getElementById('qHero'), cx = cv.getContext('2d');
+  var f = QH[Q.dir === 'l' || Q.dir === 'r' ? 's' : Q.dir][Math.floor(Q.step) % 2];
+  cx.clearRect(0, 0, 10, 12);
+  cx.save();
+  if (Q.dir === 'l'){ cx.translate(10, 0); cx.scale(-1, 1); }
+  /* 金の縁取り（暗い地面の上で見えるように）→ 体 → 目 */
+  for (var y = 0; y < 10; y++) for (var x = 0; x < 8; x++){
+    if (f[y].charAt(x) !== '.') continue;
+    var n = [[0,-1],[0,1],[-1,0],[1,0]].some(function(d){ var r = f[y + d[1]]; return r && r.charAt(x + d[0]) && r.charAt(x + d[0]) !== '.'; });
+    if (n){ cx.fillStyle = QC.gold; cx.fillRect(x + 1, y + 1, 1, 1); }
+  }
+  for (y = 0; y < 10; y++) for (x = 0; x < 8; x++){
+    var c = f[y].charAt(x); if (c === '.') continue;
+    cx.fillStyle = c === 'o' ? QC.win : QC.roof; cx.fillRect(x + 1, y + 1, 1, 1);
+  }
+  cx.restore();
+  var el = document.getElementById('qHero');
+  el.style.transform = 'translate(' + Math.round((Q.x - .5) * 16 * Q.s + 3 * Q.s) + 'px,' + Math.round((Q.y - .5) * 16 * Q.s + 2 * Q.s) + 'px)';
+}
+/* 画面に合わせて大きさを決める（粒は整数倍に近く、はみ出さない）*/
+function qFit(){
+  var el = document.getElementById('quest'), wrap = document.getElementById('qWrap');
+  var W = el.clientWidth - 16, H = el.clientHeight - 16, w = QMAP[0].length * 16, h = QMAP.length * 16;
+  var s = Math.min(W / w, H / h); s = s >= 2 ? Math.floor(s) : Math.max(.5, Math.floor(s * 4) / 4);
+  Q.s = s;
+  wrap.style.width = w * s + 'px'; wrap.style.height = h * s + 'px';
+  var hc = document.getElementById('qHero'); hc.style.width = 10 * s + 'px'; hc.style.height = 12 * s + 'px';
+  [].forEach.call(wrap.querySelectorAll('.qn'), function(n){ n.style.left = n.dataset.x * 16 * s + 'px'; n.style.top = n.dataset.y * 16 * s + 'px'; n.style.fontSize = Math.max(10, 6 * s) + 'px'; });
+  qHero();
+}
+function questOpen(){
+  var el = document.getElementById('quest');
+  if (!el.dataset.ready){
+    el.dataset.ready = '1';
+    qDraw();
+    var wrap = document.getElementById('qWrap'), h = '';
+    /* 看板：建物の名前を屋根の上に */
+    Object.keys(QB).forEach(function(d){
+      var L = d.toUpperCase(), x0 = 99, y0 = 99, x1 = 0;
+      QMAP.forEach(function(r, yy){ for (var xx = 0; xx < r.length; xx++){ var ch = r.charAt(xx); if (ch === L || ch === d){ x0 = Math.min(x0, xx); y0 = Math.min(y0, yy); x1 = Math.max(x1, xx); } } });
+      h += '<span class="qn" data-x="' + ((x0 + x1 + 1) / 2) + '" data-y="' + (y0 + .55) + '">' + QB[d].t + '</span>';
+    });
+    wrap.insertAdjacentHTML('beforeend', h);
+    wrap.addEventListener('pointerdown', function(e){
+      if (!Q.on || cur) return;
+      var b = wrap.getBoundingClientRect();
+      Q.to = qPath(Math.floor((e.clientX - b.left) / (16 * Q.s)), Math.floor((e.clientY - b.top) / (16 * Q.s)));
+    });
+    window.addEventListener('resize', function(){ if (Q.on) qFit(); });
+  }
+  Q.on = true; Q.x = 8.5; Q.y = 11.5; Q.dir = 'u'; Q.key = {}; Q.to = null;
+  el.hidden = false; document.body.classList.add('quest');
+  qFit();
+  Q.last = performance.now();
+  cancelAnimationFrame(Q.raf); Q.raf = requestAnimationFrame(qLoop);
+  say('冒険する');
+}
+function questClose(){
+  Q.on = false; cancelAnimationFrame(Q.raf);
+  if (cur) close();
+  document.getElementById('quest').hidden = true; document.body.classList.remove('quest');
+}
+/* 歩く速さは実際の時間で（コマ落ちしても遅くならない）。一度に進むのは 0.04 秒ぶんずつ——木を飛び越えないように */
+function qLoop(now){
+  if (!Q.on) return;
+  Q.raf = requestAnimationFrame(qLoop);
+  var t = Math.min(.5, (now - Q.last) / 1000); Q.last = now;
+  while (t > 0 && Q.on && !cur){ qTick(Math.min(.04, t)); t -= .04; }
+}
+function qTick(dt){
+  if (cur){ Q.to = null; return; }   /* 窓が開いているあいだは止まる */
+  var K = Q.key, mx = (K.r ? 1 : 0) - (K.l ? 1 : 0), my = (K.d ? 1 : 0) - (K.u ? 1 : 0);
+  if (mx || my) Q.to = null;
+  else if (Q.to){
+    var wp = Q.to[0], ex = wp.x + .5 - Q.x, ey = wp.y + .5 - Q.y;
+    if (Math.abs(ex) < .1 && Math.abs(ey) < .1){ Q.to.shift(); if (!Q.to.length) Q.to = null; }
+    else { mx = Math.abs(ex) >= .1 ? (ex > 0 ? 1 : -1) : 0; my = Math.abs(ey) >= .1 ? (ey > 0 ? 1 : -1) : 0; }
+  }
+  if (!mx && !my){ if (Q.step % 1){ Q.step = 0; qHero(); } return; }
+  var v = 4.2 * dt, n = (mx && my) ? Math.SQRT1_2 : 1, moved = false;
+  if (Q.to){   /* 道どおりに歩くときは、通り過ぎない */
+    var wq = Q.to[0], sx = Math.min(v * n, Math.abs(wq.x + .5 - Q.x)), sy = Math.min(v * n, Math.abs(wq.y + .5 - Q.y));
+    Q.x += mx * sx; Q.y += my * sy; moved = true;
+  } else {
+  if (mx && qFree(Q.x + mx * v * n, Q.y)){ Q.x += mx * v * n; moved = true; }
+  if (my && qFree(Q.x, Q.y + my * v * n)){ Q.y += my * v * n; moved = true; }
+  }
+  if (!moved && Q.to) Q.to = null;   /* 押したところへ行けないときは、ぶつかったところで止まる */
+  Q.dir = mx && !my ? (mx > 0 ? 'r' : 'l') : (my > 0 ? 'd' : my < 0 ? 'u' : Q.dir);
+  Q.step += dt * 6;
+  qHero();
+  var c = qt(Q.x, Q.y);
+  if (QB[c]){   /* 戸口に入ったら窓。閉じたら戸口の一つ下に立っている */
+    Q.key = {}; Q.to = null; Q.y = Math.floor(Q.y) + 1.5; Q.x = Math.floor(Q.x) + .5; Q.dir = 'd'; qHero();
+    openPop(QB[c].k);
+  } else if (c === 'E' && Q.y > 12.3) questClose();
+}
+/* 押したところまでの道（升目で探す）。押したのが建物なら、その戸口へ。木なら、いちばん近い歩ける升へ */
+function qPath(tx, ty){
+  var c = qt(tx + .5, ty + .5), L = c.toLowerCase();
+  if (QB[L]) QMAP.forEach(function(r, yy){ var dx = r.indexOf(L); if (dx >= 0){ tx = dx; ty = yy; } });
+  var sx = Math.floor(Q.x), sy = Math.floor(Q.y), W = QMAP[0].length, H = QMAP.length, prev = {}, q = [[sx, sy]], best = null, bd = 1e9;
+  prev[sx + ',' + sy] = null;
+  while (q.length){
+    var a = q.shift(), d = Math.abs(a[0] - tx) + Math.abs(a[1] - ty);
+    if (d < bd){ bd = d; best = a; }
+    if (!d) break;
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(function(o){
+      var x = a[0] + o[0], y = a[1] + o[1], k = x + ',' + y;
+      if (x < 0 || y < 0 || x >= W || y >= H || k in prev || !qWalk(QMAP[y].charAt(x))) return;
+      prev[k] = a; q.push([x, y]);
+    });
+  }
+  var path = [], at = best;
+  while (at && !(at[0] === sx && at[1] === sy)){ path.unshift({ x:at[0], y:at[1] }); at = prev[at[0] + ',' + at[1]]; }
+  path.unshift({ x:sx, y:sy });   /* まず今の升の真ん中へ寄せる */
+  return path;
+}
+var QKEY = { ArrowLeft:'l', ArrowRight:'r', ArrowUp:'u', ArrowDown:'d', a:'l', d:'r', w:'u', s:'d', A:'l', D:'r', W:'u', S:'d' };
+document.addEventListener('keydown', function(e){
+  if (!Q.on || cur || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Tab') return;
+  if (QKEY[e.key]) Q.key[QKEY[e.key]] = true;
+  else if (e.key === 'Escape') questClose();
+  e.preventDefault(); e.stopImmediatePropagation();
+}, true);
+document.addEventListener('keyup', function(e){ if (Q.on && QKEY[e.key]) Q.key[QKEY[e.key]] = false; }, true);
 </script>
