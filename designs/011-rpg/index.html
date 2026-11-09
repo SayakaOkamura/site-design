@@ -678,6 +678,9 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 #qBar .pr{color:#ffd270}
 #qCmd{flex:1; min-width:0; background:none; border:0; outline:0; color:#fff3dc; font:inherit; caret-color:#ffd270; padding:0}
 #quest[hidden]{display:none}
+/* 冒険のあいだは、後ろの素の一枚（低い窓で出る本文）を隠して、ページごと動かないように（2026-11-09、スマホの横持ちで後ろがスクロールした）*/
+body.quest{overflow:hidden}
+body.quest #text{display:none}
 #qWrap{position:relative; overflow:hidden; image-rendering:pixelated; border:2px solid #4b2e3f}
 #qWorld{position:absolute; left:0; top:0}
 #qBat{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
@@ -2042,7 +2045,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
         <button class="rb" data-d="back">ぼうけんに　もどる</button>
       </div>
     </div>
-    <div id="qBar"><div id="qLog"></div><label class="qIn"><span class="pr">&gt;</span><input id="qCmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-label="AI くんに頼む"><button type="button" id="qTab" hidden>Tab</button></label></div></div>
+    <div id="qBar"><div id="qLog"></div><label class="qIn"><span class="pr">&gt;</span><input id="qCmd" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-label="AI くんに頼む"><button type="button" id="qTab" hidden>Tab</button></label></div></div>
 
   <div id="pop" class="win">
     <p class="t" id="popT"></p>
@@ -6395,7 +6398,9 @@ function qHero(){
 function qFit(){
   var el = document.getElementById('quest'), wrap = document.getElementById('qWrap'), world = document.getElementById('qWorld'), bar = document.getElementById('qBar');
   var W = el.clientWidth - 16, H = el.clientHeight - 24 - bar.offsetHeight;
-  var s = Math.min(W / (16 * 18), H / (16 * 12)); s = s >= 2 ? Math.floor(s) : Math.max(1, Math.floor(s * 4) / 4);
+  /* 幅の狭い画面（スマホの縦持ち）は横 12 升ほどにして粒を大きく。広い画面は横 18・縦 12 升ほど（2026-11-09、スマホで勇者が小さすぎた）*/
+  var TW = W < 560 ? 12 : 18, TH = W < 560 ? 11 : 12;
+  var s = Math.min(W / (16 * TW), H / (16 * TH)); s = s >= 2 ? Math.floor(s) : Math.max(1, Math.floor(s * 4) / 4);
   Q.s = s;
   Q.vw = Math.min(22, Math.floor(W / (16 * s))); Q.vh = Math.min(14, Math.floor(H / (16 * s)));   /* 広い画面でも地図の全部は見せない（歩いて先が見えてくる）*/
   wrap.style.width = Q.vw * 16 * s + 'px'; wrap.style.height = Q.vh * 16 * s + 'px';
@@ -6462,7 +6467,7 @@ function questOpen(){
   [].forEach.call(document.querySelectorAll('#qWrap .qn'), function(n){ n.classList.add('fog'); });
   qLoad().forEach(function(k){ qShop(k, true); });   /* 前に晴らした町（とその一角）は晴れたまま */
   document.getElementById('qLog').innerHTML = ''; var qc = document.getElementById('qCmd'); qc.value = ''; qc.disabled = false;
-  el.hidden = false; document.body.classList.add('quest');
+  el.hidden = false; document.body.classList.add('quest'); window.scrollTo(0, 0);
   /* **F5 で冒険のまま**（2026-11-09、本人：「f5押したときに更新できるようにするだけ　他の画面と同じで独立させて」）。
      ほかの画面と同じく、どこで終わったかを覚える（adc-style = quest）。アドレスも ?mode=adv にしておく */
   try { localStorage.setItem('adc-style', 'quest'); } catch (e) {}
