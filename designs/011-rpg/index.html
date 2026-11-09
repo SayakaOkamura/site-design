@@ -2031,7 +2031,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <!-- 冒険する：町のマップ（2026-11-09）-->
   <div id="quest" hidden><div id="qWrap"><div id="qWorld"><canvas id="qMap" width="576" height="384"></canvas><canvas id="qFog" width="576" height="384"></canvas><canvas id="qPal" width="12" height="9"></canvas><canvas id="qHero" width="10" height="12"></canvas></div><div id="qBat" hidden></div>
     <button type="button" id="qMenuBtn">メニュー</button>
-    <div id="qMenu" hidden><ul><li><button type="button" data-q="look"><span class="cur">▶</span>しらべる</button></li><li><button type="button" data-q="quit"><span class="cur">▶</span>ぼうけんを　やめる</button></li></ul></div></div>
+    <div id="qMenu" hidden><ul><li><button type="button" data-q="look"><span class="cur">▶</span>しらべる</button></li><li><button type="button" data-q="style"><span class="cur">▶</span>スタイル</button></li></ul></div></div>
     <div id="qRes" class="win">
       <p class="rt"></p>
       <p class="rw"></p>
@@ -6161,16 +6161,16 @@ var openStyle = function(){};
     ingame = true; picking = true; busy = false;
     H.textContent = 'スタイルを選ぶ';
     M.classList.add('pick', 'ingame'); M.hidden = false;
-    at = 1; paint(); listen(true);
+    at = (window.Q && Q.on) ? 2 : 1; paint(); listen(true);   /* いまのスタイルに ▶（冒険の中からなら冒険する）*/
     B[at].focus({ preventScroll:true });
   };
   function pick(i){
     var m = B[i].dataset.m;
     if (m === 'site'){ location.href = 'site.html'; return; }
     /* 冒険する：ボスを倒していれば町へ（2026-11-09）*/
-    if (m === 'quest'){ if (stageGot() < 3 || busy) return; if (!ingame){ remember('game'); shut(); tvOn(); } else shut(); questOpen(); return; }
+    if (m === 'quest'){ if (Q.on){ shut(); return; } if (stageGot() < 3 || busy) return;   /* 冒険の中から選んだら、そのまま */ if (!ingame){ remember('game'); shut(); tvOn(); } else shut(); questOpen(); return; }
     if (m !== 'game' || busy) return;
-    if (ingame){ shut(); return; }   /* いまのまま */
+    if (ingame){ shut(); if (Q.on) questClose(); return; }   /* いまのまま（冒険の中からなら、冒険を出てゲームへ）*/
     busy = true;
     remember('game');
     if (!MQ_RM.matches){ TV.className = 'go'; }   /* 窓を外すのと同じ瞬間に真っ暗にする（夕焼けが一瞬見えないように）*/
@@ -6316,7 +6316,6 @@ function qDraw(){
     if (c === ',' || c === 'E'){
       cx.fillStyle = QC.road; cx.fillRect(px, py, T, T);
       cx.fillStyle = QC.roadD; if ((x + y) % 2) cx.fillRect(px + 3, py + 9, 2, 1); else cx.fillRect(px + 10, py + 4, 2, 1);
-      if (c === 'E'){ cx.fillStyle = QC.gold; cx.fillRect(px + 7, py + 6, 2, 7); cx.fillRect(px + 5, py + 10, 6, 1); cx.fillRect(px + 6, py + 11, 4, 1); cx.fillRect(px + 7, py + 12, 2, 1); }
       continue;
     }
     grass(px, py, x, y);
@@ -6519,7 +6518,7 @@ function qTick(dt){
     var b = qBox(c);
     Q.key = {}; Q.to = null; Q.y = b.y1 + 1.5; Q.x = Math.floor(Q.x) + .5; Q.dir = 'd'; qHero();
     if (Q.clear[QB[c].k]) openPop(QB[c].k); else qBatStart(c);
-  } else if (c === 'E' && Q.away) questClose();   /* 出発の升へ戻ったら、冒険を出る */
+  }
 }
 /* 押したところまでの道（升目で探す）。押したのが町なら、その町へ。山や海なら、いちばん近い歩ける升へ */
 function qPath(tx, ty, fx, fy, door){
@@ -6774,7 +6773,8 @@ function qMenuPaint(){ [].forEach.call(document.querySelectorAll('#qMenu button'
 function qMenuPick(i){
   var q = document.querySelectorAll('#qMenu button')[i].dataset.q;
   qMenuClose();
-  if (q === 'look') qLookOpen(); else questClose();
+  /* スタイル：ゲームのメニューと同じスタイルの窓（2026-11-09、本人：「escじゃなくて普通にメニューからスタイル変えられるようにしたらいいのでは」→「いいよ」）*/
+  if (q === 'look') qLookOpen(); else openStyle();
 }
 function qInp(on){ var inp = document.getElementById('qCmd'); inp.disabled = !on; if (on) inp.focus({ preventScroll:true }); else { inp.value = ''; inp.blur(); } }
 /* しらべる → 打ち込みへの動線は露骨に（2026-11-09、本人：「しらべるから打ち込みへの動線もっと露骨でもいい」）。
@@ -6878,7 +6878,6 @@ document.addEventListener('keydown', function(e){
   }
   if (QKEY[e.key]) Q.key[QKEY[e.key]] = true;
   else if (e.key === 'Enter' || e.key === ' ' || e.key === 'z' || e.key === 'Z') qMenuOpen();
-  else if (e.key === 'Escape') questClose();
   e.preventDefault(); e.stopImmediatePropagation();
 }, true);
 document.addEventListener('keyup', function(e){ if (Q.on && QKEY[e.key]) Q.key[QKEY[e.key]] = false; }, true);
