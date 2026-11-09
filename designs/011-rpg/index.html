@@ -6459,6 +6459,7 @@ function questOpen(){
   Q.clear = {}; Q.seen = QMAP.map(function(r){ return r.split('').map(function(){ return 0; }); });
   qSeeRect(Math.floor(QSX) - 2, Math.floor(QSY) - 2, Math.floor(QSX) + 2, Math.floor(QSY) + 1);   /* 出発のまわりだけ晴れている */
   [].forEach.call(document.querySelectorAll('#qWrap .qn'), function(n){ n.classList.add('fog'); });
+  qLoad().forEach(function(k){ qShop(k, true); });   /* 前に晴らした町（とその一角）は晴れたまま */
   document.getElementById('qLog').innerHTML = ''; var qc = document.getElementById('qCmd'); qc.value = ''; qc.disabled = false;
   el.hidden = false; document.body.classList.add('quest');
   /* **F5 で冒険のまま**（2026-11-09、本人：「f5押したときに更新できるようにするだけ　他の画面と同じで独立させて」）。
@@ -6618,8 +6619,12 @@ function qPalTick(dt){
   QP.dir = Math.abs(ex) > Math.abs(ey) ? (ex > 0 ? 'r' : 'l') : (ey > 0 ? 'd' : 'u');
 }
 /* 店が晴れる。四つとも晴れたら、町ぜんぶ */
-function qShop(k){
+/* 晴れた町は覚える（2026-11-09、本人：「晴れた町も覚えておいて」）。見ている人のブラウザだけ（localStorage の adc-quest）*/
+function qSave(){ try { localStorage.setItem('adc-quest', Object.keys(Q.clear).join(',')); } catch (e) {} }
+function qLoad(){ try { return (localStorage.getItem('adc-quest') || '').split(',').filter(function(k){ return DATA[k]; }); } catch (e) { return []; } }
+function qShop(k, quiet){
   Q.clear[k] = true;
+  if (!quiet) qSave();
   var d = Object.keys(QB).filter(function(x){ return QB[x].k === k; })[0], L = d.toUpperCase(), x0 = 99, y0 = 99, x1 = 0, y1 = 0;
   QMAP.forEach(function(r, yy){ for (var xx = 0; xx < r.length; xx++){ var ch = r.charAt(xx); if (ch === L || ch === d){ x0 = Math.min(x0, xx); y0 = Math.min(y0, yy); x1 = Math.max(x1, xx); y1 = Math.max(y1, yy); } } });
   /* 晴れるのは町のまわりだけでなく、その一角ぜんぶ（2026-11-09、本人：「光るのは町周りだけじゃなくて辺り一角ね　全部クリアしたら普通に見える」）。
@@ -6627,7 +6632,7 @@ function qShop(k){
   var cxm = Math.floor(QMW / 2), cym = 11, L0 = x0 < cxm, T0 = y0 < cym;
   qSeeRect(L0 ? 0 : cxm, T0 ? 0 : cym, L0 ? cxm : QMW - 1, T0 ? cym : QMH - 1);
   var n = document.querySelector('#qWrap .qn[data-k="' + k + '"]'); if (n) n.classList.remove('fog');
-  if (Object.keys(Q.clear).length === 4){ qSeeRect(0, 0, 99, 99); qLog('clear(map)'); }
+  if (Object.keys(Q.clear).length === 4){ qSeeRect(0, 0, 99, 99); if (!quiet) qLog('clear(map)'); }
 }
 function qPalDraw(){
   var cv = document.getElementById('qPal'), cx = cv.getContext('2d');
