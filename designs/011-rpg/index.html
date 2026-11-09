@@ -6611,7 +6611,10 @@ function qShop(k){
   Q.clear[k] = true;
   var d = Object.keys(QB).filter(function(x){ return QB[x].k === k; })[0], L = d.toUpperCase(), x0 = 99, y0 = 99, x1 = 0, y1 = 0;
   QMAP.forEach(function(r, yy){ for (var xx = 0; xx < r.length; xx++){ var ch = r.charAt(xx); if (ch === L || ch === d){ x0 = Math.min(x0, xx); y0 = Math.min(y0, yy); x1 = Math.max(x1, xx); y1 = Math.max(y1, yy); } } });
-  qSeeRect(x0 - 2, y0 - 2, x1 + 2, y1 + 2);
+  /* 晴れるのは町のまわりだけでなく、その一角ぜんぶ（2026-11-09、本人：「光るのは町周りだけじゃなくて辺り一角ね　全部クリアしたら普通に見える」）。
+     地図を真ん中の道（縦）と川（横）で四つに分けて、町のある一角を晴らす */
+  var cxm = Math.floor(QMW / 2), cym = 11, L0 = x0 < cxm, T0 = y0 < cym;
+  qSeeRect(L0 ? 0 : cxm, T0 ? 0 : cym, L0 ? cxm : QMW - 1, T0 ? cym : QMH - 1);
   var n = document.querySelector('#qWrap .qn[data-k="' + k + '"]'); if (n) n.classList.remove('fog');
   if (Object.keys(Q.clear).length === 4){ qSeeRect(0, 0, 99, 99); qLog('clear(map)'); }
 }
