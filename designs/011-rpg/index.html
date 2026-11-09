@@ -692,6 +692,15 @@ body:not(.kb) #made:hover .cur,#made:focus-visible .cur{color:var(--go)}
 #qBat.ouch{animation:qouch .12s steps(2) 3}
 @keyframes qouch{50%{background:rgba(120,30,30,.9)}}
 #qBat.miss .ch{animation:shock .1s steps(2) 3}
+#qMenuBtn{position:absolute; right:6px; bottom:6px; background:#120a12; border:2px solid #fff3dc; color:#fff3dc; font:inherit; font-size:12px; padding:.2em .6em; cursor:pointer}
+#qMenu{position:absolute; left:50%; top:6px; transform:translateX(-50%); background:#120a12; border:2px solid #fff3dc; box-shadow:0 0 0 2px #120a12; padding:.5em .9em .5em .4em; color:#fff3dc;
+  font-size:clamp(12px,1.9vh,16px); letter-spacing:.1em}
+#qMenu[hidden]{display:none}
+#qMenu ul{list-style:none; margin:0; padding:0}
+#qMenu button{display:block; background:none; border:0; color:inherit; font:inherit; letter-spacing:inherit; padding:.25em 0; cursor:pointer; white-space:nowrap}
+#qMenu .cur{display:inline-block; width:1.2em; color:#ffd270; visibility:hidden}
+#qMenu button[aria-current="true"] .cur{visibility:visible}
+#qCmd:disabled{opacity:.4}
 #qTab{background:none; border:1px solid #4b2e3f; color:#ffd270; font:inherit; padding:0 .6em; cursor:pointer}
 #qTab[hidden]{display:none}
 #qWrap canvas{position:absolute; left:0; top:0; image-rendering:pixelated}
@@ -2009,7 +2018,9 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
   <button id="made" data-k="game" aria-label="ミニゲーム"><span class="lb"><span class="cur">▶</span><span class="q">？</span></span></button>
 
   <!-- 冒険する：町のマップ（2026-11-09）-->
-  <div id="quest" hidden><div id="qWrap"><div id="qWorld"><canvas id="qMap" width="576" height="384"></canvas><canvas id="qFog" width="576" height="384"></canvas><canvas id="qPal" width="12" height="9"></canvas><canvas id="qHero" width="10" height="12"></canvas></div><div id="qBat" hidden></div></div>
+  <div id="quest" hidden><div id="qWrap"><div id="qWorld"><canvas id="qMap" width="576" height="384"></canvas><canvas id="qFog" width="576" height="384"></canvas><canvas id="qPal" width="12" height="9"></canvas><canvas id="qHero" width="10" height="12"></canvas></div><div id="qBat" hidden></div>
+    <button type="button" id="qMenuBtn">メニュー</button>
+    <div id="qMenu" hidden><ul><li><button type="button" data-q="look"><span class="cur">▶</span>しらべる</button></li><li><button type="button" data-q="quit"><span class="cur">▶</span>ぼうけんを　やめる</button></li></ul></div></div>
     <div id="qBar"><div id="qLog"></div><label class="qIn"><span class="pr">&gt;</span><input id="qCmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-label="AI くんに頼む"><button type="button" id="qTab" hidden>Tab</button></label></div></div>
 
   <div id="pop" class="win">
@@ -6401,12 +6412,19 @@ function questOpen(){
     world.insertAdjacentHTML('beforeend', h);
     wrap.addEventListener('pointerdown', function(e){
       if (!Q.on || cur) return;
+      if (e.target.closest && e.target.closest('#qMenu, #qMenuBtn')) return;
       e.preventDefault();   /* 打ち込みの帯から焦点を外さない */
       if (Q.bat) return;
+      if (Q.menu){ qMenuClose(); return; }
       var b = wrap.getBoundingClientRect();
       Q.to = qPath(Math.floor((e.clientX - b.left) / (16 * Q.s) + Q.cx), Math.floor((e.clientY - b.top) / (16 * Q.s) + Q.cy));
     });
     window.addEventListener('resize', function(){ if (Q.on) qFit(); });
+    document.getElementById('qMenuBtn').addEventListener('click', function(e){ e.stopPropagation(); if (Q.look) qLookClose(); else if (Q.menu) qMenuClose(); else qMenuOpen(); });
+    [].forEach.call(document.querySelectorAll('#qMenu button'), function(b, i){
+      b.addEventListener('click', function(e){ e.stopPropagation(); qMenuPick(i); });
+      b.addEventListener('mouseenter', function(){ Q.msel = i; qMenuPaint(); });
+    });
     document.getElementById('qTab').addEventListener('pointerdown', function(e){ e.preventDefault(); if (Q.bat && !Q.bat.end) qBatTab(); });
   }
   Q.on = true; Q.x = QSX; Q.y = QSY; Q.dir = 'u'; Q.key = {}; Q.to = null; Q.away = false;
@@ -6420,7 +6438,7 @@ function questOpen(){
   qFit();
   Q.last = performance.now();
   cancelAnimationFrame(Q.raf); Q.raf = requestAnimationFrame(qLoop);
-  if (matchMedia('(pointer:fine)').matches) qc.focus({ preventScroll:true });   /* 指の画面では、帯を押すまでキーボードを出さない */
+  Q.menu = false; Q.look = false; qMenuClose(); qInp(false);   /* 帯はメニューの「しらべる」で開く */
   say('冒険する');
 }
 function questClose(){
@@ -6434,7 +6452,8 @@ function qLoop(now){
   Q.raf = requestAnimationFrame(qLoop);
   var t = Math.min(.5, (now - Q.last) / 1000), t0 = t; Q.last = now;
   if (cur){ Q.was = true; return; }
-  if (Q.was){ Q.was = false; if (matchMedia('(pointer:fine)').matches) document.getElementById('qCmd').focus({ preventScroll:true }); }   /* 窓を閉じたら帯へ */
+  if (Q.was) Q.was = false;
+  if (Q.menu || Q.look) Q.key = {};
   while (t > 0 && Q.on && !cur){ if (Q.bat) qBatTick(Math.min(.04, t)); else qTick(Math.min(.04, t)); qPalTick(Math.min(.04, t)); t -= .04; }
   if (Q.on && !cur){ qCam(Math.min(1, t0 * 5)); qPalDraw(); qFogDraw(); }
 }
@@ -6528,7 +6547,6 @@ function qAsk(t){
   Object.keys(QB).forEach(function(d){ if (QB[d].k === m.k) QMAP.forEach(function(r, yy){ var dx = r.indexOf(d); if (dx >= 0) door = { x:dx, y:yy }; }); });
   QP.k = m.k; QP.page = m.page; QP.mode = 'go';
   QP.path = qPath(door.x, door.y, QP.x, QP.y, true);
-  document.getElementById('qCmd').disabled = false;
   qLog('walk(' + QNAME[m.k] + ')');
 }
 function qPalTick(dt){
@@ -6622,7 +6640,7 @@ function qBatStart(d){
   document.getElementById('qTab').hidden = false;
   qLog('battle(' + QNAME[QB[d].k] + ')');
   qBatTurn();
-  var inp = document.getElementById('qCmd'); if (matchMedia('(pointer:fine)').matches) inp.focus({ preventScroll:true });
+  qMenuClose(); Q.look = false; qInp(true);
 }
 function qBatPaint(){
   var b = Q.bat, el = document.getElementById('qBat'), B = QBAT[b.d];
@@ -6676,7 +6694,7 @@ function qBatTick(dt){
 }
 function qBatEnd(){
   document.getElementById('qBat').hidden = true; document.getElementById('qTab').hidden = true;
-  document.getElementById('qCmd').value = '';
+  qInp(false);
   Q.bat = null;
 }
 function qBatWin(){
@@ -6699,6 +6717,20 @@ function qBatLose(){
   qBatPaint();
   setTimeout(function(){ if (Q.on) qBatEnd(); }, 1000);
 }
+/* ─ メニュー（2026-11-09、本人：「しらべるをメニューにして」）────────────────
+   ふだん帯は閉じていて、打てない。Enter・Space（指の画面は右下の「メニュー」）でメニューを開く → 「しらべる」を選ぶと帯が開いて打てる。
+   打って Enter で AI くんが取ってくる（前のお使いのまま）。Esc でやめる。バトルの中は、メニューを通さずに帯が開く */
+function qMenuOpen(){ if (Q.bat || Q.look) return; Q.menu = true; Q.msel = 0; Q.key = {}; Q.to = null; document.getElementById('qMenu').hidden = false; qMenuPaint(); }
+function qMenuClose(){ Q.menu = false; document.getElementById('qMenu').hidden = true; }
+function qMenuPaint(){ [].forEach.call(document.querySelectorAll('#qMenu button'), function(b, i){ b.setAttribute('aria-current', i === Q.msel ? 'true' : 'false'); }); }
+function qMenuPick(i){
+  var q = document.querySelectorAll('#qMenu button')[i].dataset.q;
+  qMenuClose();
+  if (q === 'look') qLookOpen(); else questClose();
+}
+function qInp(on){ var inp = document.getElementById('qCmd'); inp.disabled = !on; if (on) inp.focus({ preventScroll:true }); else { inp.value = ''; inp.blur(); } }
+function qLookOpen(){ Q.look = true; Q.key = {}; qLog('しらべる'); qInp(true); }
+function qLookClose(){ Q.look = false; qInp(false); }
 var QKEY = { ArrowLeft:'l', ArrowRight:'r', ArrowUp:'u', ArrowDown:'d', a:'l', d:'r', w:'u', s:'d', A:'l', D:'r', W:'u', S:'d' };
 document.addEventListener('keydown', function(e){
   if (!Q.on || cur || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -6712,14 +6744,23 @@ document.addEventListener('keydown', function(e){
     e.stopImmediatePropagation(); return;
   }
   if (e.key === 'Tab') return;
-  if (inp){   /* 帯に打っているあいだ：字は帯へ、矢印は勇者へ、Enter で頼む。変換中の Enter は変換のもの */
+  if (Q.menu){   /* メニュー：↑↓ で選ぶ、Enter・Space で決める、Esc で閉じる */
+    var n = document.querySelectorAll('#qMenu button').length;
+    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W'){ Q.msel = (Q.msel + n - 1) % n; qMenuPaint(); }
+    else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S'){ Q.msel = (Q.msel + 1) % n; qMenuPaint(); }
+    else if (e.key === 'Enter' || e.key === ' ' || e.key === 'z' || e.key === 'Z') qMenuPick(Q.msel);
+    else if (e.key === 'Escape' || e.key === 'x' || e.key === 'X') qMenuClose();
+    e.preventDefault(); e.stopImmediatePropagation(); return;
+  }
+  if (Q.look){   /* しらべる：字は帯へ、Enter で頼む、Esc でやめる。変換中の Enter は変換のもの */
     if (e.isComposing || e.keyCode === 229) return;
-    if (/^Arrow/.test(e.key)){ Q.key[QKEY[e.key]] = true; e.preventDefault(); }
-    else if (e.key === 'Enter'){ e.preventDefault(); if (inp.value.trim()){ qAsk(inp.value.trim()); inp.value = ''; } }
-    else if (e.key === 'Escape'){ e.preventDefault(); if (inp.value) inp.value = ''; else questClose(); }
+    if (e.key === 'Enter'){ e.preventDefault(); var v = document.getElementById('qCmd').value.trim(); if (v){ qLookClose(); qAsk(v); } }
+    else if (e.key === 'Escape'){ e.preventDefault(); qLookClose(); }
+    else if (!inp){ document.getElementById('qCmd').focus({ preventScroll:true }); return; }
     e.stopImmediatePropagation(); return;
   }
   if (QKEY[e.key]) Q.key[QKEY[e.key]] = true;
+  else if (e.key === 'Enter' || e.key === ' ' || e.key === 'z' || e.key === 'Z') qMenuOpen();
   else if (e.key === 'Escape') questClose();
   e.preventDefault(); e.stopImmediatePropagation();
 }, true);
