@@ -1235,7 +1235,9 @@ body.demo #dHp{display:block}
 #pop .amap .sn{fill:var(--ink); font-size:12px}
 #pop .amap .hq{fill:var(--ink)}
 #pop .amap .wd{fill:var(--win)}
-#pop .amap .hn{fill:var(--go); font-size:9px; text-anchor:middle; font-weight:700}
+#pop .amap .hn{fill:var(--go); font-size:9px; font-weight:700}
+#pop .amap .ax{stroke:var(--dim); stroke-width:1; opacity:.25}   /* レーダーの十字 */
+#pop .amap .nn{fill:var(--dim); font-size:9px; opacity:.8}
 /* ─ 盤（2026-11-06）。二戦目・三戦目は、窓の三択ではなく**盤の上の物を押す**
    本人：「1戦目に対して2と3と全然区別着かない　押すだけだもん」→（2戦目は散らばった紙、3戦目は流れ図の穴）「いいよ、やってみて」。
    押すのは人、拾う・吸い込む・組むのは AI くん（盤の上で物が動く）*/
@@ -2641,36 +2643,44 @@ var ROUTEHTML = rtGrid(RT);
    →「**御免そういう意味じゃなく　背景の色をポップ背景と同じにして、点の位置で表すようにして**」→（一枚目か地か・距離だけか・輪を残すか、を訊いた）
    →「**一枚目の頁で、距離だけ、輪は点線で残して**」。
    地は窓と同じ。本社から右へ、歩く分数の輪（点線）。駅は金の点と名前。**向きは描かない**（駅は輪の右側に、字が重ならない角度で並べるだけ）。輪の大きさは順番で、縮尺ではない */
+/* **レーダーの地図**（2026-11-09、本人：「レーダーマップっぽくして」→（扇／まる・向きを描くか・針を回すか、を訊いて）
+   「半円（扇形）」「実際の方角」「回さない」→ 扇では西の神谷町が入らない、と出して「**まるにする**」）。
+   本社が真ん中、歩く分数の輪（点線、順番の大きさで縮尺ではない）、十字の線と北の印。駅は**実際の方角**に置く。
+   **方角は公式に出ていない**——下の BEAR は、こちらが地図（本社＝西新橋 3-23 あたり）から読んだおおよその向き（北から時計回りの度）。
+   駅の名前と分数は、これまでどおり路線の行（公式の文）から読む。針は回さない */
 var MAPHTML = (function(){
+  var BEAR = { '御成門':180, '大門':152, '神谷町':280, '汐留':83, '虎ノ門ヒルズ':344, '虎ノ門':352, '新橋':54, '浜松町':143 };
   var st = [].map.call(document.querySelectorAll('[data-a="route"] li'), function(li){
     var m = li.textContent.trim().match(/^(.+?)\s*(\d+)\s*分/);
     return m ? { n:m[1], m:+m[2] } : null;
   }).filter(Boolean);
   var mins = st.map(function(x){ return x.m; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).sort(function(a, b){ return a - b; });
-  var R = {}, cx = 40, cy = 112, RS = [22, 52, 76, 98];
-  mins.forEach(function(m, i){ R[m] = RS[Math.min(i, RS.length - 1)] + Math.max(0, i - 3) * 22; });
-  var ANG = { 1:[0], 2:[-70, 70], 3:[-55, 0, 55], 4:[-60, -25, 25, 60] };
+  var R = {}, cx = 200, cy = 111, K = 1.6, RS = [22, 52, 76, 98];   /* K：横に伸ばす（窓が横長なので）*/
+  mins.forEach(function(m, i){ R[m] = RS[Math.min(i, RS.length - 1)]; });
+  var ro = RS[Math.min(mins.length, RS.length) - 1];
+  function at(r, deg){ var a = deg * Math.PI / 180; return [cx + K * r * Math.sin(a), cy - r * Math.cos(a)]; }
   var svg = '<svg viewBox="0 0 400 222" role="img" aria-label="本社から歩いて：' +
     st.map(function(x){ return x.n + ' ' + x.m + '分'; }).join('、') + '">';
+  /* 十字と北 */
+  svg += '<path d="M' + (cx - K * ro) + ' ' + cy + 'H' + (cx + K * ro) + 'M' + cx + ' ' + (cy - ro) + 'V' + (cy + ro) + '" class="ax"/>';
+  svg += '<text x="' + (cx - 4) + '" y="' + (cy - ro - 3) + '" class="nn" text-anchor="end">N</text>';
   mins.forEach(function(m){
     var r = R[m];
-    svg += '<path d="M' + cx + ' ' + (cy - r) + ' A' + (r * 2) + ' ' + r + ' 0 0 1 ' + cx + ' ' + (cy + r) + '" class="rg"/>';   /* 輪は横に倍（窓が横長なので）*/
-    svg += '<text x="' + (cx + 3) + '" y="' + (cy - r - 3) + '" class="mn">' + m + '分</text>';
+    svg += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + (K * r) + '" ry="' + r + '" class="rg"/>';
+    var q = at(r, 225);   /* 分の札は南西（駅の無いところ）*/
+    svg += '<text x="' + (q[0] - 3) + '" y="' + (q[1] + 9) + '" class="mn" text-anchor="end">' + m + '分</text>';
   });
-  mins.forEach(function(m){
-    var on = st.filter(function(x){ return x.m === m; }), r = R[m], n = on.length;
-    on.forEach(function(x, j){
-      var a = ((ANG[n] || ANG[4])[j] || 0) * Math.PI / 180;   /* 文字が重ならない角度（向きの意味は無い）*/
-      var x0 = cx + 2 * r * Math.cos(a), y0 = cy + r * Math.sin(a);
-      svg += '<rect x="' + (x0 - 3) + '" y="' + (y0 - 3) + '" width="6" height="6" class="sd"/>';
-      svg += '<text x="' + (x0 + 6) + '" y="' + (y0 + 3.5) + '" class="sn">' + x.n + '</text>';
-    });
+  st.forEach(function(x){
+    var d = BEAR[x.n]; if (d == null) return;
+    var q = at(R[x.m], d), left = Math.sin(d * Math.PI / 180) < -0.2;
+    svg += '<rect x="' + (q[0] - 3) + '" y="' + (q[1] - 3) + '" width="6" height="6" class="sd"/>';
+    svg += '<text x="' + (q[0] + (left ? -6 : 6)) + '" y="' + (q[1] + 4) + '" class="sn"' + (left ? ' text-anchor="end"' : '') + '>' + x.n + '</text>';
   });
-  /* 本社：ドットの建物 */
+  /* 本社：ドットの建物（名札は上。下は御成門の点）*/
   svg += '<rect x="' + (cx - 9) + '" y="' + (cy - 12) + '" width="18" height="22" class="hq"/>' +
          '<rect x="' + (cx - 5) + '" y="' + (cy - 8) + '" width="3" height="3" class="wd"/><rect x="' + (cx + 2) + '" y="' + (cy - 8) + '" width="3" height="3" class="wd"/>' +
          '<rect x="' + (cx - 5) + '" y="' + (cy - 1) + '" width="3" height="3" class="wd"/><rect x="' + (cx + 2) + '" y="' + (cy - 1) + '" width="3" height="3" class="wd"/>' +
-         '<text x="' + cx + '" y="' + (cy + 22) + '" class="hn">本社</text>';
+         '<text x="' + (cx + 12) + '" y="' + (cy - 5) + '" class="hn">本社</text>';
   return '<span class="amap">' + svg + '</svg></span>';
 })();
 
