@@ -1300,6 +1300,28 @@ body.demo #dHp{display:block}
 /* それでも入らないときだけ、さくせんの行を外す（同日。窓の高さが足りない小さい画面の、三戦目の後半）*/
 #dWin.noobj #dObj{display:none}
 #board.tight .chip{padding:.2em .4em; white-space:nowrap}
+/* **見て押す**（2026-11-09。JS の「見て押す」の節）。二戦目：舞う紙、色の違う一枚。三戦目：切れた線 */
+#board .pa.sp{height:8.4em}
+#board .sp .pp{width:13%; height:2.6em; padding:.35em .4em; cursor:pointer;
+  animation:drift var(--d,2.4s) steps(6) infinite; transform:rotate(var(--r,0deg))}
+@keyframes drift{ 0%,100%{transform:translate(0,0) rotate(var(--r,0deg))} 50%{transform:translate(var(--dx,0px),var(--dy,0px)) rotate(calc(var(--r,0deg) * -1))} }
+#board .sp .pp .l{display:block; height:2px; margin:3px 0; background:var(--dim); opacity:.5}
+#board .sp .pp .l:nth-child(2){width:70%}
+#board .sp .pp .l:nth-child(3){width:45%}
+#board .sp .pp.odd{border-color:#e0604e}
+#board .sp .pp.odd .l{background:#e0604e; opacity:1}
+#board .sp .pp[aria-current="true"]{background:var(--box); outline:calc(var(--px)/2) solid var(--go); outline-offset:1px}
+#board .sp .pp.ok{background:var(--go); border-color:var(--go); animation:none}
+#board .sp .pp.ok .l{background:var(--edge); opacity:1}
+#board .sp .pp.gone{animation:none; pointer-events:none}
+#board .sp .pp.miss, #board .lk.miss{animation:shock .1s steps(2) 3}
+#board .fl.sp .nd{cursor:default}
+#board .fl.sp .nd .v + .v{margin-left:.3em}
+#board .nd.new{animation:shock .1s steps(2) 4}
+#board .lk{background:none; border:0; color:var(--dim); padding:.2em .3em; cursor:pointer; line-height:1}
+#board .lk.cut{color:#e0604e; animation:shock .45s steps(2) infinite alternate}
+#board .lk.fix{color:var(--go)}
+#board .lk[aria-current="true"]{outline:1px dashed var(--go); outline-offset:2px}
 #dWin #dQ:empty, #dWin #dStep:empty{display:none}
 /* はじめから／つづきから（2026-11-06）。敵が出る前なので、敵の真上ではなく真ん中。上端はメニューと同じ線 */
 @media (min-width:641px) and (orientation:landscape), (min-width:1101px){
@@ -3576,70 +3598,36 @@ var TOPICS = [
    **人がするのは決めることだけ。**拾う・まとめる・組むは AI くん（本人：「２に関してはＡＩがやる部分をひとがやってるやん」）。
    形は TOPICS と同じ（q / a / cmd / task）。atk があれば、その問いの前にボスが攻撃する */
 var STAGES = [null, null,
-  /* 二戦目：紙は p（[どこから, 書いてあること]）。fill は AI くんが黙って吸い込む紙、a の二枚が食い違う紙。残すほうを押す */
+  /* **見て押す**（2026-11-09）。二戦目・三戦目は字を読ませない——盤の上のおかしいところを押す。直すのは AI くん。
+     a は一つだけ（押して見つけたもの）。t はリザルトの「見つけたもの」、cmd は打ち込みの帯、task はタスク。
+     前の「読んで選ぶ」版の中身は 968e815 にある */
+  /* 二戦目：紙が舞う。AI くんが関係ない紙を吸い込んでいくなかで、一枚だけ色が違う（食い違い）→ それを押す */
   { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', done:'きろくが　まとまった！',
     fill:['read(mail)', 'read(chat)', 'read(minutes)', 'extract(decisions)', 'merge(duplicates)',
           'detect(conflicts)', 'align(dates)', 'compose(card)'],
     q:[
-      { q:'しめきりが　食い違っています。どちらを残しますか', fill:[['議事録', '議題は三つ'], ['チャット', '了解です'], ['メール', '資料を送ります']], a:[
-        { p:['メール', '資料は金曜まで'], t:'しめきりは金曜', cmd:'しめきりを金曜にそろえる',
-          task:'しめきりは金曜。チャットの「月曜」は消して、そう書き添える' },
-        { p:['チャット', 'やっぱり来週の月曜で'], t:'しめきりは来週の月曜', cmd:'しめきりを月曜にそろえる',
-          task:'しめきりは来週の月曜。メールの相手に、のびたことを伝える' }
-      ]},
-      { q:'担当が　ふたり書かれています。どちらを残しますか', fill:[['議事録', '次回は来週の火曜'], ['チャット', '資料見ました']], a:[
-        { p:['議事録', '営業「うちでやります」'], t:'担当は営業', cmd:'担当を営業にする',
-          task:'担当は営業。開発には中身の確かめを頼む' },
-        { p:['チャット', '開発「こっちで持ちます」'], t:'担当は開発', cmd:'担当を開発にする',
-          task:'担当は開発。営業には使う人の声を集めてもらう' }
-      ]},
-      { q:'決まったのか　まだなのか。どちらを残しますか', fill:[['メール', '案A・案Bを添付'], ['チャット', 'おつかれさまです'], ['議事録', '出席は五人']], a:[
-        { p:['議事録', '案Bで決まり'], t:'案Bで決まり', cmd:'案Bで確定する',
-          task:'案Bで決まり。途中の案は消して、決まった形だけを一行で書く' },
-        { p:['チャット', '案Bはまだ検討中'], t:'まだ決まっていない', cmd:'未決の印を付ける',
-          task:'まだ決まっていない印を付けて、決める日を書く' }
-      ]}
+      { a:[{ t:'しめきりの食い違い', cmd:'しめきりをそろえる',
+             task:'しめきりが二つ書かれていた。新しいほうにそろえて、相手に伝える' }]},
+      { a:[{ t:'担当の重なり', cmd:'担当を一人にする',
+             task:'担当がふたり書かれていた。どちらが持つか決めて、もう一人には確かめを頼む' }]},
+      { a:[{ t:'決まったかどうかの食い違い', cmd:'まだの印を付ける',
+             task:'決まったのか、まだなのかが割れていた。まだの印を付けて、決める日を書く' }]}
     ]},
-  /* 三戦目：流れ図の穴（node）を押して、出てきた部品から選ぶ。atk の問いは、玉が流れて穴に落ちてから（ボスの攻撃）*/
+  /* 三戦目：AI くんが流れ図を組んでいく（問いごとに箱が一つ増える）。玉が流れたところでボスが線を切る → 切れた線を押す */
   { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', done:'しくみが　くみあがった！',
     fill:['bind(roles)', 'build(form)', 'build(route)', 'connect(approval)', 'test(flow)',
           'detect(gaps)', 'rebuild(route)'],
-    nodes:[{ k:'申請' }, { k:'承認' }, { k:'不在のとき', late:true }, { k:'差しもどし', late:true }, { k:'完了', end:true }],
+    nodes:[{ k:'申請' }, { k:'承認' }, { k:'不在のとき', r:1 }, { k:'差しもどし', r:2 }, { k:'完了', end:true }],
     q:[
-      { node:0, q:'だれが　申請する？', a:[
-        { t:'社員みんな', cmd:'申請する人を全員にする',
-          task:'申請するのは社員みんな。入った日から使える' },
-        { t:'部長が　まとめて', cmd:'申請を部長にまとめる',
-          task:'申請は部長がまとめて出す' },
-        { t:'外から手伝う人も', cmd:'申請する人を外にも広げる',
-          task:'申請するのは社員と、外から手伝ってくれている人' }
-      ]},
-      { node:1, q:'いくらから　上の人が見る？', a:[
-        { t:'一万円から', cmd:'一万円から承認を通す',
-          task:'一万円からは部長が見る' },
-        { t:'五万円から', cmd:'五万円から承認を通す',
-          task:'五万円からは部長が見る' },
-        { t:'ぜんぶ', cmd:'全部に承認を通す',
-          task:'金額にかかわらず部長が見る' }
-      ]},
-      { node:2, atk:'ミケツの　こうげき！　しくみが　止まった',
-        q:'ここが　決まっていません。承認する人が　いないときは？', a:[
-        { t:'代わりの人に　回す', cmd:'代わりの承認者を決める',
-          task:'承認する人がいないときは、代わりの人に回す' },
-        { t:'もどるまで　待つ', cmd:'待つ形にする',
-          task:'承認する人がいないときは待つ。三日すぎたら知らせる' },
-        { t:'小さい金額なら　通す', cmd:'小さい金額は通す',
-          task:'承認する人がいないときは、一万円までは通して、あとで見てもらう' }
-      ]},
-      { node:3, atk:'ミケツの　こうげき！　しくみが　くずれた',
-        q:'ここが　決まっていません。差しもどしたら　どこから　直す？', a:[
-        { t:'直したところだけ', cmd:'直した欄だけ出し直す',
-          task:'差しもどされたら、直した欄だけ出し直す' },
-        { t:'はじめから', cmd:'はじめから出し直す',
-          task:'差しもどされたら、はじめから出し直す' },
-        { t:'書いた人が　選ぶ', cmd:'出し直し方を選べるようにする',
-          task:'差しもどされたら、どこから直すかを書いた人が選ぶ' }
-      ]}
+      { cut:0, atk:'ミケツの　こうげき！　線が　切れた',
+        a:[{ t:'申請と承認のあいだ', cmd:'申請と承認をつなぐ',
+             task:'申請が出たら、承認する人に知らせが届くようにする' }]},
+      { cut:1, atk:'ミケツの　こうげき！　しくみが　止まった',
+        a:[{ t:'承認する人が　いないとき', cmd:'代わりの人へ回す',
+             task:'承認する人がいないときは、代わりの人に回す' }]},
+      { cut:2, atk:'ミケツの　こうげき！　しくみが　くずれた',
+        a:[{ t:'差しもどしの戻り道', cmd:'差しもどしを申請へつなぐ',
+             task:'差しもどされたら、直した欄だけ出し直す' }]}
     ]}
 ];
 /* どこまで倒したか（見ている人のブラウザだけ。adc-stage：0〜3）。3 で「冒険する」が解放される */
@@ -4390,10 +4378,168 @@ function board3Parts(){
   setItems([].slice.call(ch.children));
   focusRow(D.items[0]);
 }
+/* ─ 見て押す（2026-11-09）────────────────────────────────────
+   本人：「そもそも内容を読ませて選択肢を押すっていうのが、1回やったら限度だと思うけど」
+   →（A 見て押す／B 一度だけ決めて見る／C 速さで押す）「一旦Aから見せて」。
+   二戦目・三戦目は字を読ませない。盤の上でおかしいところを見つけて押すのは人、直すのは AI くん。
+   問いの窓の問いは空（枚数だけ）。何を押すかは書かない（9/16 の「説明しない」のまま）*/
+function spotRng(seed){ var v = seed; return function(){ v = (v * 9301 + 49297) % 233280; return v / 233280; }; }
+function spotHead(){ ask((D.step + 1) + ' / ' + curT().q.length, '', [], false); objLine(); }
+function spotMiss(el){
+  el.classList.remove('miss'); void el.offsetWidth; el.classList.add('miss');
+  setTimeout(function(){ el.classList.remove('miss'); }, 400);
+}
+function spotHit(i){
+  var el = D.items && D.items[i];
+  if (!el) return false;
+  if (D.stage === 2 ? el === D.spotOdd : el.classList.contains('cut')) return true;
+  spotMiss(el); return false;
+}
+/* 初めの印は当たりでないものに（当たりに付いていると、Enter 一つで済んでしまう）*/
+function spotSel(){
+  for (var i = 0; i < D.n; i++) if (D.stage === 2 ? D.items[i] !== D.spotOdd : !D.items[i].classList.contains('cut')){ D.sel = i; break; }
+  paintD();
+}
+function spotSuck(el, cd){
+  var a = el.getBoundingClientRect(), b = cd.getBoundingClientRect();
+  el.classList.add('gone');
+  el.style.transform = 'translate(' + Math.round(b.left + 20 - a.left) + 'px,' + Math.round(b.top - a.top) + 'px) scale(.3)';
+}
+/* 二戦目。紙が舞う → AI くんが関係ない紙を吸い込んでいく → 一枚だけ食い違いの色になる → それを押す。
+   三問目は、色の違う一枚が逃げる（ほかの紙へ移る）*/
+function spot2Step(){
+  var r = D.step, rnd = spotRng(11 + r * 37), n = 7 + r * 2, tok = D.tok = {};
+  spotHead();
+  D.phase = 'spot'; D.n = 0;
+  var h = '';
+  for (var j = 0; j < n; j++){
+    var x = Math.round(rnd() * 84), y = Math.round(rnd() * 62);
+    h += '<button type="button" class="pp" style="left:' + x + '%;top:' + y + '%;--dx:' + Math.round((rnd() - .5) * 28) + 'px;--dy:' +
+         Math.round((rnd() - .5) * 18) + 'px;--r:' + Math.round((rnd() - .5) * 18) + 'deg;--d:' + (2.2 - r * .5 + rnd() * .8).toFixed(2) + 's">' +
+         '<span class="l"></span><span class="l"></span><span class="l"></span></button>';
+  }
+  boardEl.innerHTML = '<div class="pa sp">' + h + '</div><div class="cd"><b>まとめ</b>' +
+    (D.card || []).map(function(t){ return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
+  placeDWin();
+  var pp = [].slice.call(boardEl.querySelectorAll('.pp')), cd = boardEl.querySelector('.cd');
+  var odd = Math.floor(rnd() * n);
+  D.spotOdd = pp[odd];
+  /* 関係ない紙は AI くんが吸い込みつづける（半分ほど。色の違う一枚は残す）*/
+  pp.filter(function(el){ return el !== D.spotOdd; }).slice(0, Math.floor(n / 2)).forEach(function(el, j){
+    setTimeout(function(){
+      if (D.tok !== tok || el === D.spotOdd) return;
+      spotSuck(el, cd); palWrite();
+    }, 700 + j * 520);
+  });
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    D.spotOdd.classList.add('odd');
+    D.phase = 'ask';
+    setItems(pp); spotSel();
+    if (r < 2) return;
+    /* 三問目：色の違う一枚が、ほかの紙へ移る */
+    (function hop(){
+      setTimeout(function(){
+        if (D.tok !== tok || D.phase !== 'ask') return;
+        var left = pp.filter(function(el){ return el !== D.spotOdd && !el.classList.contains('gone'); });
+        if (left.length){
+          D.spotOdd.classList.remove('odd');
+          D.spotOdd = left[Math.floor(rnd() * left.length)];
+          D.spotOdd.classList.add('odd');
+        }
+        hop();
+      }, 1100);
+    })();
+  }, 1000);
+}
+/* 押した → その一枚は金になってまとめへ。残りも吸い込まれて、まとめに一行 */
+function spot2Fix(){
+  D.tok = null;
+  var el = D.spotOdd, cd = boardEl.querySelector('.cd'), t = curT().q[D.step].a[0].t;
+  el.classList.remove('odd'); el.classList.add('ok');
+  setTimeout(function(){ spotSuck(el, cd); }, 260);
+  [].forEach.call(boardEl.querySelectorAll('.pp:not(.gone)'), function(x, j){
+    if (x !== el) setTimeout(function(){ spotSuck(x, cd); }, 120 + j * 40);
+  });
+  setTimeout(function(){
+    D.card = (D.card || []).concat([t]);
+    var sp = document.createElement('span'); sp.textContent = t; cd.appendChild(sp);
+    cd.classList.remove('got'); void cd.offsetWidth; cd.classList.add('got');
+    placeDWin();   /* まとめが一行増えると窓が伸びるので、測り直す */
+    palWrite();
+  }, 560);
+}
+/* 三戦目。流れ図を描く。箱はその問いまでに出ているもの（r）。線は押せる（切れた線だけが当たり）*/
+function spot3Draw(litTo){
+  var T = curT(), prev = -1, lit = true;
+  var vis = T.nodes.filter(function(n){ return !(n.r > D.step); });
+  boardEl.innerHTML = '<div class="fl sp">' + vis.map(function(n, j){
+      var k = T.nodes.indexOf(n), out = '';
+      if (j){
+        var cut = D.cutAt === prev;
+        out += '<button type="button" class="lk' + (cut ? ' cut' : '') + '" data-f="' + prev + '" aria-label="線">' + (cut ? '✕' : '→') + '</button>';
+      }
+      var on = litTo != null && lit;
+      if (k === litTo) lit = false;
+      out += '<button type="button" tabindex="-1" class="nd' + (n.end ? ' end' : '') + (on ? ' lit' : '') +
+             (n.r && n.r === D.step && D.cutAt < 0 && litTo == null ? ' new' : '') + '" data-k="' + k + '">' +
+             '<span class="v">' + esc(n.k) + '</span>' + (n.end ? '<span class="v">✓</span>' : '') + '</button>';
+      prev = k;
+      return out;
+    }).join('') + '</div>';
+  placeDWin();
+}
+/* 玉が流れる：箱を順に光らせて、to の箱まで */
+function spot3Run(to, done){
+  var nds = [].slice.call(boardEl.querySelectorAll('.nd')), j = 0, tok = D.tok;
+  (function step(){
+    if (D.tok !== tok) return;
+    var nd = nds[j];
+    if (!nd){ done(); return; }
+    nd.classList.add('lit'); flShow(nd); palWrite();
+    if (+nd.dataset.k === to){ setTimeout(function(){ if (D.tok === tok) done(); }, 320); return; }
+    j++; setTimeout(step, 260);
+  })();
+}
+function spot3Step(){
+  var T = curT(), s = T.q[D.step], tok = D.tok = {};
+  D.cutAt = -1;
+  spotHead();
+  D.phase = 'run'; D.n = 0;
+  spot3Draw();                    /* 新しい箱は AI くんが置く（またたいて出る）*/
+  if (D.step) palWrite();
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    spot3Run(s.cut, function(){
+      D.cutAt = s.cut;
+      bossAtk(s.atk, function(){
+        if (D.tok !== tok) return;
+        spotHead();
+        spot3Draw(s.cut);
+        var lk = [].slice.call(boardEl.querySelectorAll('.lk'));
+        D.phase = 'ask'; setItems(lk); spotSel();
+        flShow(boardEl.querySelector('.lk.cut'));
+      });
+    });
+  }, D.step ? 700 : 400);
+}
+/* 押した → AI くんがつなぎ直す（✕ が金の → に戻る）*/
+function spot3Fix(){
+  D.tok = null; D.cutAt = -1;
+  var c = boardEl.querySelector('.lk.cut');
+  if (c){ c.classList.remove('cut'); c.classList.add('fix'); c.textContent = '→'; }
+  palWrite();
+}
+/* 最後は玉が完了まで流れる */
+function spot3End(done){
+  D.tok = {}; D.cutAt = -1;
+  spot3Draw();
+  spot3Run(curT().nodes.length - 1, done);
+}
 function askStep(){
   var T = curT(), s = T.q[D.step];
-  if (D.stage === 2){ board2Step(); return; }
-  if (D.stage === 3){ board3Step(); return; }
+  if (D.stage === 2){ spot2Step(); return; }
+  if (D.stage === 3){ spot3Step(); return; }
   if (s.atk && D.atkAt !== D.step){ D.atkAt = D.step; bossAtk(s.atk, askStep); return; }
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
@@ -4736,15 +4882,17 @@ function choose(i){
     return;
   }
   if (D.phase !== 'ask') return;
-  D.picks[D.step] = i;
+  if (D.stage > 1 && !spotHit(i)) return;   /* 見て押す：違うところを押したら、そこがまたたくだけ */
+  var ai = D.stage > 1 ? 0 : i;
+  D.picks[D.step] = ai;
   D.phase = 'type';
   D.items = null;
-  if (D.stage === 2) board2Pick(i);
-  if (D.stage === 3){ var nd0 = curT().q[D.step].node; D.fill[nd0] = curT().q[D.step].a[i].t; D.act = -1; board3Draw(); }
+  if (D.stage === 2) spot2Fix();
+  if (D.stage === 3) spot3Fix();
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
-               + curT().q[D.step].a[i].t + '</li>';
+               + curT().q[D.step].a[ai].t + '</li>';
   D.n = 0;
   /* **段が進むのは、打ち終わって一段上がったあと。**
      打っているあいだは、下の一行は選んだ行のもの */
@@ -4752,11 +4900,11 @@ function choose(i){
   function next(){
     if (!struck || !typed) return;      /* **両方そろってから**次の問いへ */
     if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
-    else if (D.stage === 3) board3Run(curT().nodes.length - 1, winSeq);   /* 最後は玉が完了まで流れる */
+    else if (D.stage === 3) spot3End(winSeq);   /* 最後は玉が完了まで流れる */
     else winSeq();
   }
-  swing(function(){ struck = true; next(); }, i);                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
-  typeCmd(curT().q[D.step].a[i].cmd, function(){
+  swing(function(){ struck = true; next(); }, D.stage > 1 ? st % 3 : i);                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
+  typeCmd(curT().q[D.step].a[ai].cmd, function(){
     setLog(st + 1); typed = true; next();
   });
 }
