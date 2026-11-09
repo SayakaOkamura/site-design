@@ -1322,6 +1322,31 @@ body.demo #dHp{display:block}
 #board .lk.cut{color:#e0604e; animation:shock .45s steps(2) infinite alternate}
 #board .lk.fix{color:var(--go)}
 #board .lk[aria-current="true"]{outline:1px dashed var(--go); outline-offset:2px}
+/* 二戦目はタイミング、三戦目はよける（2026-11-09。JS の同じ名前の節）*/
+#board .tm{position:relative; display:block; width:100%; height:3.4em; padding:0; overflow:hidden; cursor:pointer;
+  background:none; border:calc(var(--px)/2) solid var(--dim); font-size:clamp(11px,calc(1.05 * var(--fw)),calc(13px*var(--k)))}
+#board .tm[aria-current="true"]{border-color:var(--go)}
+#board .tm .fr{position:absolute; left:50%; top:3px; bottom:3px; transform:translateX(-50%); border:calc(var(--px)/2) dashed var(--go); pointer-events:none}
+#board .tm .fr.ng{border-color:#e0604e; animation:shock .1s steps(2) 3}
+#board .tm .fr.ok{border-style:solid}
+#board .tm .pp{left:0; top:.55em; width:2.2em; height:2.3em; padding:.35em .4em; transition:opacity .3s steps(3);
+  border:calc(var(--px)/2) solid var(--dim); background:var(--box); pointer-events:none}
+#board .tm .pp .l{display:block; height:2px; margin:3px 0; background:var(--dim); opacity:.5}
+#board .tm .pp .l:nth-child(2){width:70%}
+#board .tm .pp .l:nth-child(3){width:45%}
+#board .tm .pp.odd{border-color:#e0604e}
+#board .tm .pp.odd .l{background:#e0604e; opacity:1}
+#board .tm .pp.ok{background:var(--go); border-color:var(--go)}
+#board .tm .pp.ok .l{background:var(--edge); opacity:1}
+#board .tm .pp.gone{opacity:0}
+#board .bx{position:relative; height:7.5em; overflow:hidden; border:calc(var(--px)/2) solid var(--dim); touch-action:none; cursor:crosshair;
+  font-size:clamp(11px,calc(1.05 * var(--fw)),calc(13px*var(--k)))}
+#board .bx .tb{position:absolute; left:0; right:0; top:0; height:3px; background:none}
+#board .bx .tb i{display:block; height:100%; width:100%; background:var(--go)}
+#board .bx .me{position:absolute; left:0; top:0; width:10px; height:10px; background:var(--go)}
+#board .bx .me.hit{animation:shock .1s steps(2) 9}
+#board .bx .bl{position:absolute; left:0; top:0; width:14px; height:10px; border:2px solid #e0604e; background:var(--box); transition:opacity .3s steps(3)}
+#board .bx .bl.gone{opacity:0}
 #dWin #dQ:empty, #dWin #dStep:empty{display:none}
 /* はじめから／つづきから（2026-11-06）。敵が出る前なので、敵の真上ではなく真ん中。上端はメニューと同じ線 */
 @media (min-width:641px) and (orientation:landscape), (min-width:1101px){
@@ -4090,6 +4115,7 @@ function quitDemo(){
   slimeEl.classList.remove('gone'); dHp.classList.remove('gone');
   heroEl.classList.remove('flip');
   D.on = false; D.phase = '';
+  D.tok = null; D.dg = null;
   D.typing = false;
   selStale = true;   /* カーソルは「デモを触る」に乗ったまま。動かすまで効かせない */
   clearLog();
@@ -4182,6 +4208,7 @@ function flShow(el){
 function fitBoard(){
   var pa = boardEl.querySelector('.pa');
   boardEl.classList.remove('tight'); dWin.classList.remove('noobj');
+  var bx = boardEl.querySelector('.bx'); if (bx) bx.style.height = '';
   if (pa){ pa.style.height = ''; [].forEach.call(pa.children, function(el){ if (el.dataset.top) el.style.top = el.dataset.top; if (el.dataset.left) el.style.left = el.dataset.left; }); }
   if (!boardEl.firstChild || dWin.style.display === 'none' || dWin.classList.contains('mid')) return;
   if (boardOver() <= 0) return;
@@ -4200,6 +4227,7 @@ function fitBoard(){
     if (el.dataset.i) el.style.left = el.dataset.i === '1' ? '51%' : '0';
   });
   }
+  if (bx){ over = boardOver(); if (over > 0) bx.style.height = Math.max(64, bx.offsetHeight - over) + 'px'; }
   if (boardOver() > 0) dWin.classList.add('noobj');
 }
 function placeDWin(){
@@ -4390,6 +4418,8 @@ function spotMiss(el){
   setTimeout(function(){ el.classList.remove('miss'); }, 400);
 }
 function spotHit(i){
+  if (D.stage === 2) return tm2Hit();   /* 二戦目はタイミング、三戦目はよけ切ったら進む（下の節）*/
+  if (D.stage === 3) return true;
   var el = D.items && D.items[i];
   if (!el) return false;
   if (D.stage === 2 ? el === D.spotOdd : el.classList.contains('cut')) return true;
@@ -4536,10 +4566,150 @@ function spot3End(done){
   spot3Draw();
   spot3Run(curT().nodes.length - 1, done);
 }
+/* ─ 二戦目はタイミング、三戦目はよける（2026-11-09）──────────────
+   本人：「アンダーテールの戦闘みたいにするか…」→「2と3で難易度変えつつ別の戦闘スタイル使ったらいいよ」
+   →（二戦目＝やさしめ：流れる紙を枠で止める／三戦目＝むずかしめ：箱の中でよける、と出して）「いいよー」。
+   借りたのは仕組みだけ（見た目・キャラ・音は借りない）。前の「見て押す」は 2696482、関数は上に残してある */
+/* 二戦目。紙が横に流れる。色の違う一枚が真ん中の枠に重なったときに押す。問いごとに速く、枠は狭く。
+   v は一秒に進む量（レーンの幅に対して）、f は枠の広さ（紙の何枚ぶん）*/
+var TM = [{ v:.20, f:1.9 }, { v:.30, f:1.5 }, { v:.42, f:1.2 }];
+function tm2Step(){
+  var P = TM[Math.min(D.step, 2)], tok = D.tok = {}, n = 6, h = '';
+  spotHead();
+  D.phase = 'tm'; D.n = 0;
+  for (var j = 0; j < n; j++) h += '<span class="pp' + (j ? '' : ' odd') + '"><span class="l"></span><span class="l"></span><span class="l"></span></span>';
+  boardEl.innerHTML = '<button type="button" class="tm" aria-label="とめる"><span class="fr"></span>' + h + '</button><div class="cd"><b>まとめ</b>' +
+    (D.card || []).map(function(t){ return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
+  placeDWin();
+  var lane = boardEl.querySelector('.tm'), fr = lane.querySelector('.fr'), pp = [].slice.call(lane.querySelectorAll('.pp'));
+  var m = D.tm = { lane:lane, fr:fr, pp:pp, x:-999, c:0, fw:0, lock:0 }, t0 = performance.now();
+  (function loop(now){
+    if (D.tok !== tok) return;
+    var W = lane.clientWidth, pw = pp[0].offsetWidth, L = W + pw, s = (now - t0) / 1000 * P.v * W;
+    pp.forEach(function(el, j){
+      var x = ((j * L / n + s) % L) - pw;
+      el.style.transform = 'translateX(' + x.toFixed(1) + 'px)';
+      if (!j) m.x = x + pw / 2;
+    });
+    m.c = W / 2; m.fw = pw * P.f; fr.style.width = Math.round(m.fw) + 'px';
+    requestAnimationFrame(loop);
+  })(t0);
+  setTimeout(function(){ if (D.tok === tok){ D.phase = 'ask'; setItems([lane]); } }, 300);
+}
+/* 枠の外で押したら、枠がまたたいて少しのあいだ押せない（連打で当たらないように）*/
+function tm2Hit(){
+  var m = D.tm, now = Date.now();
+  if (!m || now < m.lock) return false;
+  if (Math.abs(m.x - m.c) <= m.fw / 2) return true;
+  m.lock = now + 600;
+  spotMiss(m.fr); m.fr.classList.add('ng');
+  setTimeout(function(){ m.fr.classList.remove('ng'); }, 600);
+  return false;
+}
+/* 当たった → その一枚は金になって止まる。ほかの紙は消えて、まとめに一行 */
+function tm2Fix(){
+  D.tok = null;
+  var m = D.tm, cd = boardEl.querySelector('.cd'), t = curT().q[D.step].a[0].t;
+  m.pp[0].classList.remove('odd'); m.pp[0].classList.add('ok'); m.fr.classList.add('ok');
+  m.pp.slice(1).forEach(function(el){ el.classList.add('gone'); });
+  setTimeout(function(){
+    D.card = (D.card || []).concat([t]);
+    var sp = document.createElement('span'); sp.textContent = t; cd.appendChild(sp);
+    cd.classList.remove('got'); void cd.offsetWidth; cd.classList.add('got');
+    palWrite(); placeDWin();
+  }, 420);
+}
+
+/* 三戦目。流れ図を玉が流れ、ボスが線を切る → ボスの番：箱の中で紙をよける → よけ切ったら AI くんがつなぎ直す。
+   s はよける秒、n は飛んでくる紙の数、v は紙の速さ（箱の高さに対して毎秒）。当たると残りが少し戻る */
+var DG = [{ s:4, n:6, v:.55 }, { s:5, n:10, v:.7 }, { s:6, n:15, v:.85 }];
+function dg3Step(){
+  var T = curT(), s = T.q[D.step], tok = D.tok = {};
+  D.cutAt = -1;
+  spotHead();
+  D.phase = 'run'; D.n = 0;
+  spot3Draw();                    /* 新しい箱は AI くんが置く（またたいて出る）*/
+  if (D.step) palWrite();
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    spot3Run(s.cut, function(){
+      D.cutAt = s.cut;
+      bossAtk(s.atk, function(){
+        if (D.tok !== tok) return;
+        dg3Box(tok, function(){
+          spotHead(); spot3Draw(s.cut); flShow(boardEl.querySelector('.lk.cut'));
+          setTimeout(function(){ if (D.tok !== tok) return; D.phase = 'ask'; D.n = 1; choose(0); }, 600);
+        });
+      });
+    });
+  }, D.step ? 700 : 400);
+}
+function dg3Box(tok, done){
+  var r = Math.min(D.step, 2), P = DG[r];
+  D.phase = 'dodge'; D.n = 0; dA.innerHTML = '';
+  boardEl.innerHTML = '<div class="bx"><span class="tb"><i></i></span><span class="me"></span></div>';
+  placeDWin();
+  var bx = boardEl.querySelector('.bx'), me = bx.querySelector('.me'), tb = bx.querySelector('.tb i');
+  var W = bx.clientWidth, H = bx.clientHeight, S = 10;
+  var p = { x:W / 2, y:H * .7 }, left = P.s, inv = 0, last = performance.now(), next = 0, k = 0, B = [];
+  var G = D.dg = { key:{}, to:null };
+  function local(e){ var b = bx.getBoundingClientRect(); return { x:e.clientX - b.left, y:e.clientY - b.top }; }
+  bx.addEventListener('pointerdown', function(e){ G.to = local(e); try { bx.setPointerCapture(e.pointerId); } catch (x){} e.preventDefault(); });
+  bx.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' || e.buttons) G.to = local(e); });
+  bx.addEventListener('pointerup', function(e){ if (e.pointerType !== 'mouse') G.to = null; });
+  /* 紙を一枚出す。一問目は上から、二問目は上と横から、三問目はそれに勇者のコマをねらう紙が混じる */
+  function shoot(){
+    var el = document.createElement('span'), b = { el:el, w:14, h:10 }, sp = P.v * H, kind = r === 0 ? 0 : (k % (r === 1 ? 2 : 3));
+    el.className = 'bl'; bx.appendChild(el);
+    if (kind === 0){ b.x = 8 + Math.random() * (W - 30); b.y = -b.h; b.vx = 0; b.vy = sp; }
+    else if (kind === 1){ var lt = k % 2; b.x = lt ? -b.w : W; b.y = 6 + Math.random() * (H - 26); b.vx = (lt ? 1 : -1) * sp * 1.3; b.vy = 0; }
+    else { b.x = Math.random() * (W - b.w); b.y = -b.h; var dx = p.x - b.x, dy = p.y - b.y, d = Math.sqrt(dx * dx + dy * dy) || 1; b.vx = dx / d * sp * 1.1; b.vy = dy / d * sp * 1.1; }
+    B.push(b); k++;
+  }
+  (function loop(now){
+    if (D.tok !== tok || D.phase !== 'dodge') return;
+    var rt = Math.min(.5, (now - last) / 1000), dt = Math.min(.05, rt); last = now;   /* 残りは実際の時間で減らす（コマ落ちしても長引かない）*/
+    W = bx.clientWidth; H = bx.clientHeight;
+    /* 動かす：矢印キー（WASD）か、指・マウスの居るほうへ */
+    var v = Math.max(110, W * .45) * dt, K = G.key, mx = (K.r ? 1 : 0) - (K.l ? 1 : 0), my = (K.d ? 1 : 0) - (K.u ? 1 : 0);
+    if (mx || my){ G.to = null; p.x += mx * v; p.y += my * v; }
+    else if (G.to){ var ex = G.to.x - p.x, ey = G.to.y - p.y, ed = Math.sqrt(ex * ex + ey * ey); if (ed > 1){ var st = Math.min(ed, v * 1.6); p.x += ex / ed * st; p.y += ey / ed * st; } }
+    p.x = Math.max(S / 2, Math.min(W - S / 2, p.x)); p.y = Math.max(S / 2 + 4, Math.min(H - S / 2, p.y));
+    me.style.transform = 'translate(' + Math.round(p.x - S / 2) + 'px,' + Math.round(p.y - S / 2) + 'px)';
+    next -= rt;
+    if (next <= 0 && left > .6){ shoot(); next = (P.s - .6) / P.n; }
+    var nowMs = Date.now();
+    B = B.filter(function(b){
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      if (b.x < -30 || b.x > W + 30 || b.y < -30 || b.y > H + 30){ b.el.remove(); return false; }
+      b.el.style.transform = 'translate(' + Math.round(b.x) + 'px,' + Math.round(b.y) + 'px)';
+      if (nowMs > inv && Math.abs(b.x + b.w / 2 - p.x) < (b.w + S) / 2 - 2 && Math.abs(b.y + b.h / 2 - p.y) < (b.h + S) / 2 - 2){
+        inv = nowMs + 900; left = Math.min(P.s, left + .8);
+        me.classList.remove('hit'); void me.offsetWidth; me.classList.add('hit');
+        heroEl.classList.remove('hurt'); void heroEl.offsetWidth; heroEl.classList.add('hurt');
+        setTimeout(function(){ heroEl.classList.remove('hurt'); }, 500);
+      }
+      return true;
+    });
+    left -= rt;
+    tb.style.width = Math.max(0, left / P.s * 100).toFixed(1) + '%';
+    if (left <= 0){
+      D.phase = 'run'; G.key = {}; G.to = null;
+      B.forEach(function(b){ b.el.classList.add('gone'); });
+      me.classList.add('ok'); palWrite();
+      setTimeout(function(){ if (D.tok === tok) done(); }, 500);
+      return;
+    }
+    requestAnimationFrame(loop);
+  })(last);
+}
+var DGKEY = { ArrowLeft:'l', ArrowRight:'r', ArrowUp:'u', ArrowDown:'d', a:'l', d:'r', w:'u', s:'d', A:'l', D:'r', W:'u', S:'d' };
+function dgKey(k, on){ if (D.dg && DGKEY[k]) D.dg.key[DGKEY[k]] = on; }
+document.addEventListener('keyup', function(e){ if (D.on) dgKey(e.key, false); }, true);
 function askStep(){
   var T = curT(), s = T.q[D.step];
-  if (D.stage === 2){ spot2Step(); return; }
-  if (D.stage === 3){ spot3Step(); return; }
+  if (D.stage === 2){ tm2Step(); return; }
+  if (D.stage === 3){ dg3Step(); return; }
   if (s.atk && D.atkAt !== D.step){ D.atkAt = D.step; bossAtk(s.atk, askStep); return; }
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
@@ -4887,7 +5057,7 @@ function choose(i){
   D.picks[D.step] = ai;
   D.phase = 'type';
   D.items = null;
-  if (D.stage === 2) spot2Fix();
+  if (D.stage === 2) tm2Fix();
   if (D.stage === 3) spot3Fix();
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
@@ -5240,6 +5410,7 @@ document.addEventListener('keydown', function(e){
   if (D.phase === 'draft'){ draftDone(); eat(e); return; }
   if (D.phase === 'open'){ openDone(); eat(e); return; }
   if (D.phase === 'won'){ D.wonSkip(); eat(e); return; }
+  if (D.phase === 'dodge'){ dgKey(k, true); eat(e); return; }
   if (D.phase === 'type' || D.phase === 'win' || D.phase === 'flee' || D.phase === 'pal' || D.phase === 'atk' || D.phase === 'mz' || D.phase === 'run'){ eat(e); return; }
   if (D.phase === 'result'){
     if (k === 'ArrowRight' || k === 'ArrowDown'){ selRes(1); eat(e); return; }
