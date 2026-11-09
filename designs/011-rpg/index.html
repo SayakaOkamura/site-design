@@ -2119,7 +2119,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
     <ul>
       <li><button data-m="site"><span class="cur">▶</span>ふつうのサイトで見る</button></li>
       <li><button data-m="game"><span class="cur">▶</span>ゲームで見る</button></li>
-      <li><button data-m="quest"><span class="cur">▶</span>冒険する<span class="lk">ボスをたおすと　かいほう</span></button></li>
+      <li><button data-m="quest"><span class="cur">▶</span>冒険する</button></li>
     </ul>
   </div>
   </div>
@@ -5157,7 +5157,7 @@ function showResult(){
       AS = T.q.map(function(q, j){ return q.a[D.picks[j]]; });
   dRes.querySelector('.rt').textContent = D.stage > 1 ? T.done : 'さくせんが　きまった！';
   /* 三戦目を倒したら一行（いま初めて解放したときだけ）。つぎへは三戦目には無い */
-  document.getElementById('rUnlock').textContent = D.fresh ? '「冒険する」が　かいほうされた！' : '';
+  document.getElementById('rUnlock').textContent = '';   /* 解放の一行はやめた（冒険は最初から選べる。2026-11-09）*/
   dRes.querySelector('.rb[data-d="next"]').style.display = D.stage < 3 ? '' : 'none';
   /* **言ったこと**（最初に持ち込んだ願い）と**選んだ三つ**を、そのまま上に置く。
      どちらも見たものなので、読み直す必要がない——**変わったことだけが目に入る** */
@@ -6153,7 +6153,9 @@ var openStyle = function(){};
     M.hidden = true; M.classList.remove('ingame'); listen(false);
     document.body.classList.remove('title');
   }
-  function paintLock(){ var q = M.querySelector('[data-m="quest"]'); if (q) q.classList.toggle('lock', stageGot() < 3); }
+  /* **冒険は最初から選べる**（2026-11-09、本人：「なくてもいい…結構役割が変わったのでぞくへんあつかいにするひつようはないかも」→「おｋ」）。
+     前は三戦目を倒すと解放（11/6）。冒険がサイトの中身を見る道になったので、続編あつかいはやめた。薄くするしかけ（.lock）は残してある */
+  function paintLock(){}
   paintLock();
   openStyle = function(){
     if (!M.hidden) return;
@@ -6168,7 +6170,7 @@ var openStyle = function(){};
     var m = B[i].dataset.m;
     if (m === 'site'){ location.href = 'site.html'; return; }
     /* 冒険する：ボスを倒していれば町へ（2026-11-09）*/
-    if (m === 'quest'){ if (Q.on){ shut(); return; } if (stageGot() < 3 || busy) return;   /* 冒険の中から選んだら、そのまま */ if (!ingame){ remember('game'); shut(); tvOn(); } else shut(); questOpen(); return; }
+    if (m === 'quest'){ if (Q.on){ shut(); return; } if (busy) return;   /* 冒険の中から選んだら、そのまま */ if (!ingame){ remember('game'); shut(); tvOn(); } else shut(); questOpen(); return; }
     if (m !== 'game' || busy) return;
     if (ingame){ shut(); if (Q.on) questClose(); return; }   /* いまのまま（冒険の中からなら、冒険を出てゲームへ）*/
     busy = true;

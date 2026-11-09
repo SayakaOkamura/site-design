@@ -221,14 +221,9 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 <script>
 /* **ここで終わったことを覚える**（2026-11-06）。次に index.html を開くと、ここへ来る。初めての人はタイトルから */
 try { localStorage.setItem('adc-style', 'site'); } catch (e) {}
-(function(){
-  var got = 0; try { got = parseInt(localStorage.getItem('adc-stage'), 10) || 0; } catch (e) {}
-  if (got >= 3) return;
-  var q = document.querySelector('#diff [data-m="quest"]');
-  q.classList.add('lock'); q.querySelector('em').textContent = 'ゲームのボスをたおすと解放';
-})();
+/* 冒険は最初から選べる（2026-11-09。前はゲームのボスを倒すと解放）*/
 /* 難易度選択の窓。↑↓・Enter・押す／Esc・窓の外で閉じる。
-   ふつうのサイト（いま）→ 閉じる／ゲーム → index.html?mode=game（点いて夕焼け）／冒険 → まだ行き先が無いので何もしない */
+   ふつうのサイト（いま）→ 閉じる／ゲーム → index.html?mode=game（点いて夕焼け）／冒険 → index.html?mode=adv */
 (function(){
   var W = document.getElementById('diff'), open = document.getElementById('diffOpen');
   var B = [].slice.call(W.querySelectorAll('button[data-m]')), at = 0;
@@ -240,6 +235,7 @@ try { localStorage.setItem('adc-style', 'site'); } catch (e) {}
     var m = B[i].dataset.m;
     if (m === 'site') hide();
     else if (m === 'game') location.href = 'index.html?mode=game';
+    else if (m === 'quest') location.href = 'index.html?mode=adv';
   }
   open.addEventListener('click', show);
   B.forEach(function(b, i){
