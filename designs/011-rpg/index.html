@@ -6178,6 +6178,7 @@ var openStyle = function(){};
     if (ingame){ shut(); if (Q.on) questClose(); return; }   /* いまのまま（冒険の中からなら、冒険を出てゲームへ）*/
     busy = true;
     remember('game');
+    try { history.replaceState(null, '', location.pathname + '?mode=game'); } catch (e) {}   /* F5 でゲームのまま */
     if (!MQ_RM.matches){ TV.className = 'go'; }   /* 窓を外すのと同じ瞬間に真っ暗にする（夕焼けが一瞬見えないように）*/
     shut();
     tvOn();
@@ -6223,12 +6224,13 @@ var openStyle = function(){};
      初めての人（覚えが無い）はタイトルから */
   /* **入口はふつうのサイト**（同日、本人：「あーいや入口普通のサイトで」）。覚えが無い人も site.html へ。
      タイトル画面は ?title で開いたときだけ出る（作り直す前提で残してある）*/
+  /* **最初は毎回、難易度選択**（2026-11-10、本人：「最初は毎回そっちでいいんじゃないかな　難易度選択」
+     →（覚える仕様をどうするか訊いて）「▶ の位置にだけ使う」）。
+     アドレス無しで開いたら、覚えがあってもタイトル → 難易度選択。覚え（adc-style）は ▶ を置く場所にだけ使う。
+     F5 でいまの画面のまま残るのはアドレスのほう（冒険 ?mode=adv・ゲーム ?mode=game・ふつうのサイト site.html）。
+     前の「入口はふつうのサイト」「終わったスタイルから始める」は、これで置き換えた */
   var last = recall();
-  if (!/[?&]title(&|=|$)/.test(location.search)){
-    if (last === 'game'){ M.hidden = true; tvOn(); return; }
-    if (last === 'quest'){ M.hidden = true; tvOn(); setTimeout(questOpen, 0); return; }   /* 冒険で終わった人は冒険から（F5 でも冒険のまま）*/
-    location.replace('site.html'); return;
-  }
+  at = last === 'quest' ? 2 : last === 'game' ? 1 : 0;
   document.body.classList.add('title');
   listen(true);
   paint();
