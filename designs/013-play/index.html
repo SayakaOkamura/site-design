@@ -1408,6 +1408,20 @@ body.demo #dHp{display:block}
   color:var(--warm); font-size:.9em; line-height:1.2; animation:shock .45s steps(2) infinite alternate}
 #board .tg .pp.burn{pointer-events:none}
 #board .tg .pp.open{width:auto; height:auto; white-space:nowrap; padding:.3em .6em; color:var(--edge); animation:none; z-index:2}
+/* 2戦目の分身（2026-11-10）。本体と同じ絵を写して並べる。札は頭の上、▶ が乗っている分身は金の札 */
+.clw{position:absolute; bottom:var(--gh); z-index:5; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center;
+  transition:left .1s steps(2), opacity .3s steps(3)}
+.clw canvas{display:block; image-rendering:pixelated; animation:clbob 1.1s infinite}
+@keyframes clbob{ 0%,49%{transform:translateY(0)} 50%,100%{transform:translateY(-6px)} }
+.clw.pop{animation:clpop .3s steps(3)}
+@keyframes clpop{ from{opacity:0} to{opacity:1} }
+.clw.gone{opacity:0; pointer-events:none}
+.clw.burn{animation:shock .1s steps(2) 3; opacity:0; transition:opacity .2s .3s}
+.clw .ctg{visibility:hidden; margin-bottom:6px; padding:.15em .5em; white-space:nowrap; font-size:clamp(11px,calc(1.05 * var(--fw)),calc(13px*var(--k)));
+  background:var(--box); color:var(--ink); border:calc(var(--px)/2) solid var(--dim); line-height:1.3}
+.clw.tag{cursor:pointer}
+.clw.tag .ctg{visibility:visible}
+.clw.sel .ctg{background:var(--go); color:var(--edge); border-color:var(--go)}
 /* 3戦目：しくみが止まっているあいだ、勇者はゆっくりまたたく（状態異常）*/
 #hero.ail{animation:ail 1.2s steps(2) infinite}
 @keyframes ail{ 50%{opacity:.55} }
@@ -3735,34 +3749,51 @@ var STAGES = [null, null,
   { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', done:'きろくが　まとまった！',
     fill:['read(mail)', 'read(chat)', 'read(minutes)', 'extract(decisions)', 'merge(duplicates)',
           'detect(conflicts)', 'align(dates)', 'compose(card)'],
-    /* **狙う相手を選ぶ**（2026-11-10）。チラバリは紙の群れ。AI くんが自分の番に群れを読んで、本体に印を付ける → 人は印を狙って斬る。
-       t は本体の紙に出る字（AI くんが見つけたこと。リザルトの「見つけたもの」）、cmd は打ち込みの帯、task はタスク。
-       題材を差し替えるときは、ここだけ書き換える */
+    /* **分身を狙う**（2026-11-10、本人：「狙い付けるなら敵自体が分身でよくね？何選んでんのこれ」→「いいよ、両方作って見せて」）。
+       チラバリが分身する → AI くんが分身を読んで、食い違っている二体に札を付けて残す → どちらを斬るか＝どちらに決めるか。
+       f は AI くんが見つけたこと（窓の一行）。a の二つが札の付いた分身：tag 頭の上の札、src どこに書いてあったか、
+       t リザルトの「決めたこと」、cmd 打ち込みの帯、task タスク。題材を差し替えるときは、ここだけ書き換える */
     q:[
-      { a:[{ t:'しめきりの食い違い', cmd:'しめきりをそろえる',
-             task:'しめきりが二つ書かれていた。新しいほうにそろえて、相手に伝える' }]},
-      { a:[{ t:'担当の重なり', cmd:'担当を一人にする',
-             task:'担当がふたり書かれていた。どちらが持つか決めて、もう一人には確かめを頼む' }]},
-      { a:[{ t:'決まったかどうかの食い違い', cmd:'まだの印を付ける',
-             task:'決まったのか、まだなのかが割れていた。まだの印を付けて、決める日を書く' }]}
+      { f:'しめきりが　ふたつ　ある',
+        a:[{ tag:'〆 水曜', src:'メール', t:'しめきりは　水曜', cmd:'しめきりを水曜にそろえる',
+             task:'しめきりを水曜にそろえて、相手に伝える' },
+           { tag:'〆 金曜', src:'議事録', t:'しめきりは　金曜', cmd:'しめきりを金曜にそろえる',
+             task:'しめきりを金曜にそろえて、相手に伝える' }]},
+      { f:'担当が　ふたり　いる',
+        a:[{ tag:'担当 営業', src:'議事録', t:'担当は　営業', cmd:'担当を営業にする',
+             task:'営業が持つ。開発には確かめを頼む' },
+           { tag:'担当 開発', src:'チャット', t:'担当は　開発', cmd:'担当を開発にする',
+             task:'開発が持つ。営業には確かめを頼む' }]},
+      { f:'決まったのか　割れている',
+        a:[{ tag:'決定', src:'議事録', t:'もう　決まった', cmd:'決まりの印を付ける',
+             task:'決まったことにして、みんなに知らせる' },
+           { tag:'未定', src:'チャット', t:'まだ　決まっていない', cmd:'まだの印を付ける',
+             task:'まだの印を付けて、決める日を書く' }]}
     ]},
   /* 三戦目：AI くんが流れ図を組んでいく（問いごとに箱が一つ増える）。玉が流れたところでボスが線を切る → 切れた線を押す */
   { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', done:'しくみが　くみあがった！',
     fill:['bind(roles)', 'build(form)', 'build(route)', 'connect(approval)', 'test(flow)',
           'detect(gaps)', 'rebuild(route)'],
     nodes:[{ k:'申請' }, { k:'承認' }, { k:'不在のとき', r:1 }, { k:'差しもどし', r:2 }, { k:'完了', end:true }],
-    /* **状態異常となおす**（2026-11-10）。ミケツの攻撃で、しくみが止まる（状態異常）。たたかうは効かない。なおすを選ぶと AI くんが直して、斬れる。
-       st は止まっているあいだの一行、t は直すところ（なおすの横・リザルトの「見つけたもの」）*/
+    /* **状態異常と直し方**（2026-11-10）。ミケツの攻撃で、しくみが止まる（状態異常）。AI くんが調べて戻ってくる → どう直すかを選ぶ。
+       本人：「AIに放って戻ってきた時点で、なおすかなおさないかではなくどう決定するかな気もする」。どちらを選んでも直って、斬れる。
+       f は AI くんが調べて分かったこと（窓の一行）、a の二つが直し方（t がコマンド・リザルトの「決めたこと」）*/
     q:[
-      { cut:0, atk:'ミケツの　こうげき！　線が　切れた', st:'しくみが　つながっていない',
-        a:[{ t:'申請と承認のあいだ', cmd:'申請と承認をつなぐ',
-             task:'申請が出たら、承認する人に知らせが届くようにする' }]},
-      { cut:1, atk:'ミケツの　こうげき！　しくみが　止まった', st:'しくみが　止まっている',
-        a:[{ t:'承認する人が　いないとき', cmd:'代わりの人へ回す',
-             task:'承認する人がいないときは、代わりの人に回す' }]},
-      { cut:2, atk:'ミケツの　こうげき！　しくみが　くずれた', st:'しくみが　くずれている',
-        a:[{ t:'差しもどしの戻り道', cmd:'差しもどしを申請へつなぐ',
-             task:'差しもどされたら、直した欄だけ出し直す' }]}
+      { cut:0, atk:'ミケツの　こうげき！　線が　切れた', f:'申請が　承認へ　届かない',
+        a:[{ t:'出たら　すぐ　知らせる', cmd:'申請と承認をつなぐ',
+             task:'申請が出たら、承認する人にすぐ知らせが届くようにする' },
+           { t:'朝に　まとめて　知らせる', cmd:'申請と承認をつなぐ',
+             task:'申請は、毎朝まとめて承認する人に知らせる' }]},
+      { cut:1, atk:'ミケツの　こうげき！　しくみが　止まった', f:'承認する人が　いない',
+        a:[{ t:'代わりの人へ　回す', cmd:'代わりの人へ回す',
+             task:'承認する人がいないときは、代わりの人に回す' },
+           { t:'戻るまで　待つ', cmd:'戻るまで待たせる',
+             task:'承認する人がいないときは、戻るまで待って、申請した人に知らせる' }]},
+      { cut:2, atk:'ミケツの　こうげき！　しくみが　くずれた', f:'差しもどしの　戻り道が　ない',
+        a:[{ t:'直した欄だけ　出し直す', cmd:'差しもどしを申請へつなぐ',
+             task:'差しもどされたら、直した欄だけ出し直す' },
+           { t:'はじめから　出し直す', cmd:'差しもどしを申請へつなぐ',
+             task:'差しもどされたら、はじめから出し直す' }]}
     ]}
 ];
 /* どこまで倒したか（見ている人のブラウザだけ。adc-stage：0〜3）。3 で「冒険する」が解放される */
@@ -4241,6 +4272,7 @@ function quitDemo(){
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime); clearTimeout(D.tAtk);
   D.tCome = D.tBang = D.tSlime = D.tAtk = null;
   heroEl.classList.remove('hurt', 'ail'); slimeEl.classList.remove('atk');
+  clClear();
   if (FILL0) FILL = FILL0;
   setEnemy('slime');
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
@@ -4392,6 +4424,7 @@ function paintD(){
     el.setAttribute('aria-current', i === D.sel ? 'true' : 'false');
   });
   if (D.items && D.items[D.sel] && D.items[D.sel].classList.contains('chip')) flShow(D.items[D.sel]);   /* 横に送った部品を見える所へ */
+  if (CL.length) clSel();   /* 2戦目：▶ と同じ分身を光らせる */
 }
 /* ─ 盤（二戦目・三戦目）────────────────────────────────────── */
 var boardEl = document.getElementById('board');
@@ -5076,10 +5109,137 @@ function fx3Fix(){
   spot3Fix();
 }
 
+/* ─ 2戦目は分身を狙う、3戦目は直し方を選ぶ（2026-11-10）──────────────
+   本人：「実質一択やんね」→「AIに放って戻ってきた時点で、なおすかなおさないかではなくどう決定するかな気もする」
+   →「狙い付けるなら敵自体が分身でよくね？何選んでんのこれ」→「いいよ、両方作って見せて」。
+   AI くんが動いて戻ってくる → 人は二つのうちどちらにするかを決める。どちらを選んでも進み、選んだものがリザルトに出る（1戦目と同じ）*/
+var CL = [];   /* 分身：{ w:包み, cv:絵, tg:札 } */
+function clDraw(){
+  CL.forEach(function(c){
+    var cx = c.cv.getContext('2d');
+    cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, c.cv.width, c.cv.height); cx.drawImage(slimeEl, 0, 0);
+  });
+}
+setInterval(function(){ if (CL.length) clDraw(); }, 170);
+function clClear(){
+  CL.forEach(function(c){ c.w.remove(); }); CL = [];
+  slimeEl.style.visibility = ''; dHp.style.visibility = '';
+}
+/* 分身を並べる：勇者の右から画面の右端まで、入るだけ（2〜5 体）*/
+function clSpawn(){
+  clClear();
+  var host = slimeEl.parentNode, hr = heroEl.getBoundingClientRect(), sr = slimeEl.getBoundingClientRect(), pr = host.getBoundingClientRect();
+  /* 二体も入らない狭い画面では、分身を縮める（縦長で、二体が重なった）*/
+  var A = pr.right - 8 - (hr.right + 8), k = Math.min(1, A / (2 * (sr.width + 10))), w = sr.width * k;
+  var L = hr.right + 8 + w / 2 + 5 - pr.left, R = pr.right - 8 - w / 2 - 5 - pr.left;
+  var n = Math.max(2, Math.min(5, Math.floor((R - L) / (w + 10)) + 1));
+  for (var j = 0; j < n; j++){
+    var x = n === 1 ? (L + R) / 2 : L + (R - L) * j / (n - 1);
+    var wr = document.createElement('div'); wr.className = 'clw';
+    wr.style.left = Math.round(x) + 'px';
+    wr.innerHTML = '<span class="ctg"></span>';
+    var cv = document.createElement('canvas'); cv.width = slimeEl.width; cv.height = slimeEl.height;
+    cv.style.width = (sr.width * k) + 'px'; cv.style.height = (sr.height * k) + 'px';
+    cv.style.animationDelay = (-j * .27) + 's';
+    wr.appendChild(cv); host.appendChild(wr);
+    CL.push({ w:wr, cv:cv, tg:wr.firstChild, x:x });
+  }
+  clDraw();
+  slimeEl.style.visibility = 'hidden'; dHp.style.visibility = 'hidden';
+}
+/* ▶ と同じ分身を光らせる */
+function clSel(){
+  CL.forEach(function(c){ c.w.classList.toggle('sel', c.i === D.sel && D.n > 0); });
+}
+function cl2Step(){
+  var s = curT().q[D.step], tok = D.tok = {};
+  ask((D.step + 1) + ' / ' + curT().q.length, '', [], false); objLine();
+  D.phase = 'run'; D.n = 0;
+  boardEl.innerHTML = '<div class="cd"><b>まとめ</b>' + (D.card || []).map(function(t){ return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
+  say2('チラバリは　ぶんしんした！');
+  clSpawn();
+  CL.forEach(function(c){ c.w.classList.add('pop'); });
+  /* AI くんの番：分身を読んで、関係ないものを消し、食い違っている二体に札を付ける */
+  var keep = [0, CL.length - 1];
+  if (CL.length > 3) keep = [1, CL.length - 2];
+  if (D.step === 1 && CL.length > 2) keep = [0, Math.floor(CL.length / 2)];
+  var junk = CL.filter(function(c, j){ return keep.indexOf(j) < 0; });
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    say2('AI くんは　ぶんしんを　よんでいる…');
+    junk.forEach(function(c, j){ setTimeout(function(){ if (D.tok !== tok) return; c.w.classList.add('gone'); palWrite(); }, 300 + j * 300); });
+  }, 800);
+  var t1 = 800 + 300 + junk.length * 300 + 200;
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    keep.forEach(function(j, i){ var c = CL[j]; c.i = i; c.tg.textContent = s.a[i].tag; c.w.classList.add('tag'); });
+    palWrite();
+  }, t1);
+  /* 勇者の番：どちらを斬るか（窓は 1戦目と同じコマンドの形。札と同じ字に、どこに書いてあったかを添える）*/
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    ask((D.step + 1) + ' / ' + curT().q.length, s.f,
+        s.a.map(function(a){ return a.tag + '<span class="note">（' + esc(a.src) + '）</span>'; }), true);
+    objLine(); placeDWin();
+    clSel();
+  }, t1 + 700);
+}
+/* 斬った分身は本体の場所へ戻り、もう一体は散る */
+function cl2Fix(i){
+  var c = CL.filter(function(x){ return x.i === i; })[0], o = CL.filter(function(x){ return x.i != null && x.i !== i; })[0];
+  D.card = (D.card || []).concat([curT().q[D.step].a[i].t]);
+  CL.forEach(function(x){ x.w.classList.remove('sel'); });
+  if (o) o.w.classList.add('burn');
+  if (c){
+    var host = slimeEl.parentNode, sr = slimeEl.getBoundingClientRect(), pr = host.getBoundingClientRect();
+    c.w.style.left = Math.round(sr.left + sr.width / 2 - pr.left) + 'px';
+  }
+  setTimeout(function(){
+    clClear();
+    var cd = boardEl.querySelector('.cd');
+    if (cd){ var sp = document.createElement('span'); sp.textContent = curT().q[D.step].a[i].t; cd.appendChild(sp);
+      cd.classList.remove('got'); void cd.offsetWidth; cd.classList.add('got'); placeDWin(); }
+  }, 110);
+}
+/* 分身を押しても選べる */
+document.addEventListener('click', function(e){
+  if (!D.on || D.stage !== 2 || D.phase !== 'ask' || !e.target.closest) return;
+  var w = e.target.closest('.clw.tag'); if (!w) return;
+  var c = CL.filter(function(x){ return x.w === w; })[0]; if (!c || c.i == null) return;
+  e.stopPropagation(); e.preventDefault(); D.sel = c.i; paintD(); choose(c.i);
+}, true);
+/* 3戦目：ミケツが線を切る → しくみが止まる（状態異常）→ AI くんが調べて戻ってくる → 直し方を選ぶ */
+function fx3Step2(){
+  var s = curT().q[D.step], tok = D.tok = {};
+  D.cutAt = -1;
+  spotHead();
+  D.phase = 'run'; D.n = 0;
+  spot3Draw();
+  if (D.step) palWrite();
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    spot3Run(s.cut, function(){
+      D.cutAt = s.cut;
+      bossAtk(s.atk, function(){
+        if (D.tok !== tok) return;
+        heroEl.classList.add('ail');
+        spotHead(); spot3Draw(s.cut); flShow(boardEl.querySelector('.lk.cut'));
+        D.phase = 'run'; D.n = 0;
+        say2('AI くんが　しらべている…'); palWrite();
+        setTimeout(function(){
+          if (D.tok !== tok) return;
+          ask((D.step + 1) + ' / ' + curT().q.length, s.f, s.a.map(function(a){ return esc(a.t); }), true);
+          objLine(); placeDWin();
+        }, 1100);
+      });
+    });
+  }, D.step ? 700 : 400);
+}
+
 function askStep(){
   var T = curT(), s = T.q[D.step];
-  if (D.stage === 2){ tg2Step(); return; }
-  if (D.stage === 3){ fx3Step(); return; }
+  if (D.stage === 2){ cl2Step(); return; }
+  if (D.stage === 3){ fx3Step2(); return; }
   if (s.atk && D.atkAt !== D.step){ D.atkAt = D.step; bossAtk(s.atk, askStep); return; }
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
@@ -5422,13 +5582,11 @@ function choose(i){
     return;
   }
   if (D.phase !== 'ask') return;
-  if (D.stage === 2 && D.items[i] !== D.spotOdd){ tg2Miss(i); return; }   /* 本体でない紙：散るだけ */
-  if (D.stage === 3 && i === 0){ fx3Miss(); return; }                     /* たたかう：止まっていて効かない */
-  var ai = D.stage > 1 ? 0 : i;
+  var ai = i;   /* 2・3戦目も、選んだほうがそのまま決めたこと（2026-11-10）*/
   D.picks[D.step] = ai;
   D.phase = 'type';
   D.items = null;
-  if (D.stage === 2) tg2Fix();
+  if (D.stage === 2) cl2Fix(i);
   if (D.stage === 3) fx3Fix();
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
