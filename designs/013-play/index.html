@@ -1401,6 +1401,27 @@ body.demo #dHp{display:block}
   font-size:clamp(11px,calc(1.05 * var(--fw)),calc(13px*var(--k)))}
 #board .bx .tb{position:absolute; left:0; right:0; top:0; height:3px; background:none}
 #board .bx .tb i{display:block; height:100%; width:100%; background:var(--go)}
+/* はんこ（2026-11-10）。AI くんの紙は白い紙（窓の地より明るく、手で触る紙に見えるように）。はんこは朱 */
+#board .hkw{font-size:clamp(11px,calc(1.05 * var(--fw)),calc(13px*var(--k))); margin-top:calc(var(--px)*1.5)}
+#board .hkw.gone{opacity:0; transition:opacity .3s steps(3)}
+#board .hk{position:relative; background:var(--warm); color:var(--edge); padding:.55em .8em .6em; line-height:1.5;
+  border:calc(var(--px)/2) solid var(--dim); animation:hkin .32s steps(4);
+  transition:transform .4s steps(5), opacity .4s steps(5)}
+@keyframes hkin{ from{transform:translateY(-.8em); opacity:0} to{transform:none; opacity:1} }
+#board .hk i{display:block; font-style:normal; font-size:.8em; letter-spacing:.06em; opacity:.7}
+#board .hk .p{display:block; font-size:1.08em}
+#board .hk.back{transform:translateY(-1.2em) scale(.9); opacity:0}
+#board .hk.gone{opacity:0}
+#board .mk{position:absolute; right:.7em; top:50%; padding:.15em .45em; line-height:1.2; letter-spacing:.1em; font-size:1.3em;
+  color:#e0604e; border:var(--px) solid #e0604e; border-radius:.3em; transform:translateY(-50%) rotate(-10deg);
+  animation:mk .22s steps(3); pointer-events:none}
+#board .mk.ng{transform:translateY(-50%) rotate(8deg)}
+@keyframes mk{ from{transform:translateY(-50%) rotate(-10deg) scale(1.8); opacity:0} 60%{opacity:1} }
+#board .sts{display:flex; gap:calc(var(--px)*2); margin-top:calc(var(--px)*1.5)}
+#board .st{flex:1; text-align:center; padding:.35em .5em; cursor:pointer; letter-spacing:.1em;
+  color:#e0604e; border-color:#e0604e; background:none}
+#board .st[aria-current="true"]{background:#e0604e; color:var(--warm)}
+#board .st:disabled{opacity:.35}
 #board .bx .me{position:absolute; left:0; top:0; width:10px; height:10px; background:var(--go)}
 #board .bx .me.hit{animation:shock .1s steps(2) 9}
 #board .bx .bl{position:absolute; left:0; top:0; width:14px; height:10px; border:2px solid #e0604e; background:var(--box); transition:opacity .3s steps(3)}
@@ -3704,13 +3725,24 @@ var STAGES = [null, null,
   { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', done:'きろくが　まとまった！',
     fill:['read(mail)', 'read(chat)', 'read(minutes)', 'extract(decisions)', 'merge(duplicates)',
           'detect(conflicts)', 'align(dates)', 'compose(card)'],
+    /* **はんこ**（2026-11-10）。f は AI くんが見つけたこと、a は AI くんの案（一つ目）と、差し戻したあとの案（二つ目）。
+       p は紙に書く案、t はリザルトの「決めたこと」、cmd は打ち込みの帯、task はタスク。題材を差し替えるときは、ここだけ書き換える */
     q:[
-      { a:[{ t:'しめきりの食い違い', cmd:'しめきりをそろえる',
-             task:'しめきりが二つ書かれていた。新しいほうにそろえて、相手に伝える' }]},
-      { a:[{ t:'担当の重なり', cmd:'担当を一人にする',
-             task:'担当がふたり書かれていた。どちらが持つか決めて、もう一人には確かめを頼む' }]},
-      { a:[{ t:'決まったかどうかの食い違い', cmd:'まだの印を付ける',
-             task:'決まったのか、まだなのかが割れていた。まだの印を付けて、決める日を書く' }]}
+      { f:'しめきりが　二つ　書いてある',
+        a:[{ p:'金曜に　そろえる（新しい　メールに　あわせる）', t:'しめきりは　金曜', cmd:'しめきりを金曜にそろえる',
+             task:'しめきりを金曜にそろえて、相手に伝える' },
+           { p:'水曜に　そろえる（議事録に　あわせる）', t:'しめきりは　水曜', cmd:'しめきりを水曜にそろえる',
+             task:'しめきりを水曜にそろえて、相手に伝える' }]},
+      { f:'担当が　ふたり　書いてある',
+        a:[{ p:'議事録に　書いた人が　持つ', t:'担当は　議事録の人', cmd:'担当を一人にする',
+             task:'議事録に書いた人が持つ。もう一人には確かめを頼む' },
+           { p:'チャットで　名乗った人が　持つ', t:'担当は　チャットの人', cmd:'担当を一人にする',
+             task:'チャットで名乗った人が持つ。もう一人には確かめを頼む' }]},
+      { f:'決まったのか　まだなのか　割れている',
+        a:[{ p:'まだ　ということに　する', t:'まだ　決まっていない', cmd:'まだの印を付ける',
+             task:'まだの印を付けて、決める日を書く' },
+           { p:'決まった　ということに　する', t:'もう　決まった', cmd:'決まりの印を付ける',
+             task:'決まったことにして、みんなに知らせる' }]}
     ]},
   /* 三戦目：AI くんが流れ図を組んでいく（問いごとに箱が一つ増える）。玉が流れたところでボスが線を切る → 切れた線を押す */
   { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', done:'しくみが　くみあがった！',
@@ -3718,15 +3750,21 @@ var STAGES = [null, null,
           'detect(gaps)', 'rebuild(route)'],
     nodes:[{ k:'申請' }, { k:'承認' }, { k:'不在のとき', r:1 }, { k:'差しもどし', r:2 }, { k:'完了', end:true }],
     q:[
-      { cut:0, atk:'ミケツの　こうげき！　線が　切れた',
-        a:[{ t:'申請と承認のあいだ', cmd:'申請と承認をつなぐ',
-             task:'申請が出たら、承認する人に知らせが届くようにする' }]},
-      { cut:1, atk:'ミケツの　こうげき！　しくみが　止まった',
-        a:[{ t:'承認する人が　いないとき', cmd:'代わりの人へ回す',
-             task:'承認する人がいないときは、代わりの人に回す' }]},
-      { cut:2, atk:'ミケツの　こうげき！　しくみが　くずれた',
-        a:[{ t:'差しもどしの戻り道', cmd:'差しもどしを申請へつなぐ',
-             task:'差しもどされたら、直した欄だけ出し直す' }]}
+      { cut:0, atk:'ミケツの　こうげき！　線が　切れた', f:'申請が　承認へ　届かない',
+        a:[{ p:'出たら　すぐ　知らせる', t:'申請は　すぐ知らせる', cmd:'申請と承認をつなぐ',
+             task:'申請が出たら、承認する人にすぐ知らせが届くようにする' },
+           { p:'朝に　まとめて　知らせる', t:'申請は　朝にまとめて知らせる', cmd:'申請と承認をつなぐ',
+             task:'申請は、毎朝まとめて承認する人に知らせる' }]},
+      { cut:1, atk:'ミケツの　こうげき！　しくみが　止まった', f:'承認する人が　いない',
+        a:[{ p:'代わりの人へ　回す', t:'いないときは　代わりの人へ', cmd:'代わりの人へ回す',
+             task:'承認する人がいないときは、代わりの人に回す' },
+           { p:'戻るまで　待つ', t:'いないときは　戻るまで待つ', cmd:'戻るまで待たせる',
+             task:'承認する人がいないときは、戻るまで待って、申請した人に知らせる' }]},
+      { cut:2, atk:'ミケツの　こうげき！　しくみが　くずれた', f:'差しもどしの　戻り道が　ない',
+        a:[{ p:'直した欄だけ　出し直す', t:'差しもどしは　直した欄だけ', cmd:'差しもどしを申請へつなぐ',
+             task:'差しもどされたら、直した欄だけ出し直す' },
+           { p:'はじめから　出し直す', t:'差しもどしは　はじめから', cmd:'差しもどしを申請へつなぐ',
+             task:'差しもどされたら、はじめから出し直す' }]}
     ]}
 ];
 /* どこまで倒したか（見ている人のブラウザだけ。adc-stage：0〜3）。3 で「冒険する」が解放される */
@@ -4780,10 +4818,143 @@ function dg3Box(tok, done){
 var DGKEY = { ArrowLeft:'l', ArrowRight:'r', ArrowUp:'u', ArrowDown:'d', a:'l', d:'r', w:'u', s:'d', A:'l', D:'r', W:'u', S:'d' };
 function dgKey(k, on){ if (D.dg && DGKEY[k]) D.dg.key[DGKEY[k]] = on; }
 document.addEventListener('keyup', function(e){ if (D.on) dgKey(e.key, false); }, true);
+
+/* ─ はんこ（2026-11-10）─────────────────────────────────────
+   本人：「押し方は変えたい　正直やりにくかったから」→（A はんこ／B 並べる／C つまみ・レバー）「Aのはんこで一回見せて」。
+   AI くんが見つけたことと案を紙に書いて持ってくる。人は「承認」か「差し戻し」のはんこを押すだけ。
+   差し戻すと AI くんが紙を持ち帰って、もう一つの案に書き直して持ってくる（何度でも）。承認すると、その案で進む。
+   速さも当たり外れも無い。前のタイミング・よける（11/9）は関数ごと上に残してある */
+function hkPaper(){
+  var s = curT().q[D.step], a = s.a[D.alt];
+  return '<div class="hk"><i>' + esc(s.f) + '</i><span class="p">' + esc(a.p) + '</span></div>' +
+         '<div class="sts"><button type="button" class="st">承認</button><button type="button" class="st ng">差し戻し</button></div>';
+}
+function hkCard(){
+  return '<div class="cd"><b>まとめ</b>' + (D.card || []).map(function(t){ return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
+}
+/* 紙が来る：AI くんが書いて、またたいて出る → はんこが押せる */
+function hkAsk(tok){
+  var w = document.createElement('div'); w.className = 'hkw'; w.innerHTML = hkPaper();
+  var old = boardEl.querySelector('.hkw');
+  if (old) old.parentNode.replaceChild(w, old);
+  else if (D.stage === 2) boardEl.insertBefore(w, boardEl.firstChild);
+  else boardEl.appendChild(w);
+  placeDWin(); palWrite();
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    D.phase = 'ask'; setItems([].slice.call(w.querySelectorAll('.st')));
+  }, 300);
+}
+/* はんこを紙に押す（k：承認／差戻）*/
+function hkStamp(k){
+  var hk = boardEl.querySelector('.hk'); if (!hk) return;
+  var m = document.createElement('span'); m.className = 'mk' + (k === '承認' ? '' : ' ng'); m.textContent = k;
+  hk.appendChild(m);
+  [].forEach.call(boardEl.querySelectorAll('.st'), function(b){ b.disabled = true; b.removeAttribute('aria-current'); });
+}
+/* 差し戻し：紙は AI くんのほうへ下がり、もう一つの案になって戻ってくる */
+function hkBack(){
+  var tok = D.tok;
+  D.phase = 'run'; D.n = 0; D.items = null;
+  hkStamp('差戻');
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    var hk = boardEl.querySelector('.hk'); if (hk) hk.classList.add('back');
+    palWrite();
+  }, 450);
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    D.alt = 1 - D.alt;
+    hkAsk(tok);
+  }, 1000);
+}
+/* 二戦目：散らばった紙を AI くんが一枚にまとめる → 案の紙が来る */
+function hk2Step(){
+  var tok = D.tok = {}, rnd = spotRng(11 + D.step * 37), h = '';
+  D.alt = 0;
+  spotHead();
+  D.phase = 'run'; D.n = 0;
+  for (var j = 0; j < 6; j++){
+    h += '<span class="pp" style="left:' + Math.round(rnd() * 84) + '%;top:' + Math.round(rnd() * 62) + '%;--dx:' + Math.round((rnd() - .5) * 28) +
+         'px;--dy:' + Math.round((rnd() - .5) * 18) + 'px;--r:' + Math.round((rnd() - .5) * 18) + 'deg;--d:' + (2 + rnd() * .8).toFixed(2) + 's">' +
+         '<span class="l"></span><span class="l"></span><span class="l"></span></span>';
+  }
+  boardEl.innerHTML = '<div class="pa sp">' + h + '</div>' + hkCard();
+  placeDWin();
+  var pp = [].slice.call(boardEl.querySelectorAll('.pp')), pa = boardEl.querySelector('.pa');
+  /* AI くんが紙を一か所に集める（集める先は紙の置き場のまんなか）*/
+  pp.forEach(function(el, j){
+    setTimeout(function(){
+      if (D.tok !== tok) return;
+      var a = el.getBoundingClientRect(), b = pa.getBoundingClientRect();
+      el.classList.add('gone');
+      el.style.transform = 'translate(' + Math.round(b.left + b.width / 2 - a.left - a.width / 2) + 'px,' + Math.round(b.top + b.height / 2 - a.top - a.height / 2) + 'px) scale(.3)';
+      palWrite();
+    }, 400 + j * 160);
+  });
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    pa.remove();
+    hkAsk(tok);
+  }, 400 + pp.length * 160 + 350);
+}
+/* 承認した → 紙はまとめへ飛んで、まとめに一行 */
+function hk2Fix(){
+  var tok = D.tok = {};
+  hkStamp('承認');
+  var a = curT().q[D.step].a[D.alt];
+  D.card = (D.card || []).concat([a.t]);   /* 覚えるのは先に（次の問いが早く来ても落ちないように）。見せるのは紙が飛んだあと */
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    var hk = boardEl.querySelector('.hk'), cd = boardEl.querySelector('.cd');
+    if (hk && cd){ var r = hk.getBoundingClientRect(), b = cd.getBoundingClientRect();
+      hk.classList.add('gone'); hk.style.transform = 'translate(' + Math.round(b.left + 20 - r.left) + 'px,' + Math.round(b.top - r.top) + 'px) scale(.3)'; }
+  }, 450);
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    var w = boardEl.querySelector('.hkw'); if (w) w.remove();
+    var cd = boardEl.querySelector('.cd'), sp = document.createElement('span'); sp.textContent = a.t; cd.appendChild(sp);
+    cd.classList.remove('got'); void cd.offsetWidth; cd.classList.add('got');
+    palWrite(); placeDWin();
+  }, 850);
+}
+/* 三戦目：流れ図を玉が流れ、ミケツが線を切る → AI くんが見つけたことと直し方を紙に → はんこ */
+function hk3Step(){
+  var s = curT().q[D.step], tok = D.tok = {};
+  D.cutAt = -1; D.alt = 0;
+  spotHead();
+  D.phase = 'run'; D.n = 0;
+  spot3Draw();
+  if (D.step) palWrite();
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    spot3Run(s.cut, function(){
+      D.cutAt = s.cut;
+      bossAtk(s.atk, function(){
+        if (D.tok !== tok) return;
+        spotHead(); spot3Draw(s.cut); flShow(boardEl.querySelector('.lk.cut'));
+        D.phase = 'run'; D.n = 0;
+        setTimeout(function(){ if (D.tok === tok) hkAsk(tok); }, 300);
+      });
+    });
+  }, D.step ? 700 : 400);
+}
+/* 承認した → 紙が消えて、AI くんが線をつなぎ直す */
+function hk3Fix(){
+  var tok = D.tok = {};
+  hkStamp('承認');
+  setTimeout(function(){
+    if (D.tok !== tok) return;
+    var w = boardEl.querySelector('.hkw'); if (w) w.classList.add('gone');
+    spot3Fix(); D.tok = tok;
+  }, 450);
+  setTimeout(function(){ if (D.tok !== tok) return; var w = boardEl.querySelector('.hkw'); if (w) w.remove(); placeDWin(); }, 800);
+}
+
 function askStep(){
   var T = curT(), s = T.q[D.step];
-  if (D.stage === 2){ tm2Step(); return; }
-  if (D.stage === 3){ dg3Step(); return; }
+  if (D.stage === 2){ hk2Step(); return; }
+  if (D.stage === 3){ hk3Step(); return; }
   if (s.atk && D.atkAt !== D.step){ D.atkAt = D.step; bossAtk(s.atk, askStep); return; }
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
@@ -5126,13 +5297,13 @@ function choose(i){
     return;
   }
   if (D.phase !== 'ask') return;
-  if (D.stage > 1 && !spotHit(i)) return;   /* 見て押す：違うところを押したら、そこがまたたくだけ */
-  var ai = D.stage > 1 ? 0 : i;
+  if (D.stage > 1 && i === 1){ hkBack(); return; }   /* はんこ：差し戻すと AI くんが書き直して持ってくる */
+  var ai = D.stage > 1 ? D.alt : i;
   D.picks[D.step] = ai;
   D.phase = 'type';
   D.items = null;
-  if (D.stage === 2) tm2Fix();
-  if (D.stage === 3) spot3Fix();
+  if (D.stage === 2) hk2Fix();
+  if (D.stage === 3) hk3Fix();
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
