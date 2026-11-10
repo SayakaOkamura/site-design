@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- ふつうのサイト（2026-11-06）。本人：「普通のサイトは一旦元のアルターデザインのサイトを軽く再現したような形にしておいて。中身なくていいから簡単に作って」。
+     公式（alt-dsgn.co.jp）の並び・色・字の重さを写した。文は公式のまま。写真・ロゴの画像・地図・お知らせは入れていない -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
+<style>
+:root{ --ink:#2a0e3e; --sub:#715189; --line:#e4dcec; --pale:#f6f3fa; --btn:#654087 }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:88px}
+body{margin:0; background:#fff; color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8}
+h1,h2,h3,p,dl,dd,ul{margin:0}
+ul{padding:0; list-style:none}
+a{color:inherit}
+.serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
+
+header{position:sticky; top:0; z-index:10; height:88px; background:rgba(255,255,255,.85); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:space-between; padding:0 clamp(16px,4vw,48px)}
+.logo{display:flex; align-items:center; gap:12px; text-decoration:none; line-height:1.1}
+.logo i{width:40px; height:40px; border-radius:50%; border:6px solid var(--btn); box-shadow:inset 0 0 0 3px #bb7eea}
+.logo span{font-size:22px; font-weight:400; letter-spacing:.01em}
+.logo small{display:block; font-size:12px; margin-left:4.4em}
+nav ul{display:flex; gap:clamp(16px,3vw,44px)}
+nav a{text-decoration:none; font-size:15px; font-weight:400}
+nav a:hover{color:var(--sub)}
+/* **難易度の変更は頭の帯のナビの最後**（2026-11-06）。いちばん上の細い帯は外した。
+   本人：「いいななんか　急に非日常に引き込まれる感があるともっと面白いかもしれん…遊ぶように働くに繋がる動線として存在するといい」
+   →「いやそっちじゃなくて、そもそもそこへの動線自体の話」→（理念の下／カード／ナビの最後、と出して）
+   「**それは普通に邪魔だ　普通にさっとまじめに見たい人の邪魔はしないでおきつつ、動線自体はちゃんと置きたい**」→「てかそこに難易度を変更とか置いといたら？」→「**御免Cだった**」。
+   ほかの四つと細い縦線で分ける。字と色はナビと同じ */
+nav li.dv{padding-left:clamp(16px,3vw,44px); border-left:1px solid var(--line)}
+nav button{font:inherit; font-size:15px; font-weight:400; color:inherit; background:none; border:0; padding:0; cursor:pointer}
+nav button:hover{color:var(--sub)}
+
+.mv{position:relative; overflow:hidden; min-height:clamp(420px,72vh,760px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 16px}
+.mv svg{position:absolute; inset:0; width:100%; height:100%; z-index:-1}
+.mv h1{font-size:clamp(24px,3.4vw,40px); line-height:1.6; color:#301544}
+.mv p{margin-top:2.4em; font-size:clamp(13px,1.1vw,15px)}
+
+section{padding:clamp(64px,10vw,120px) clamp(16px,5vw,64px)}
+h2{text-align:center; font-size:clamp(24px,2.8vw,35px); margin-bottom:clamp(36px,5vw,60px); line-height:1.5}
+.in{max-width:1080px; margin:0 auto}
+
+.vision .in{display:grid; grid-template-columns:1fr 1.1fr; gap:clamp(24px,4vw,56px); align-items:center}
+.vision .ph{aspect-ratio:750/490; background:linear-gradient(135deg,#efe8f6,#dccdea)}
+.vision h3{font-size:clamp(18px,1.8vw,24px); font-weight:400; line-height:1.6; margin-bottom:1em}
+.vision p{font-size:15px}
+b{font-weight:700}
+
+.service{background:var(--pale)}
+.service ul{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(24px,4vw,56px) clamp(24px,4vw,48px)}
+.service .ph{aspect-ratio:425/268; background:linear-gradient(135deg,#fff,#e6dcf0); margin-bottom:20px}
+.service h3{font-size:clamp(17px,1.6vw,21px); font-weight:400; line-height:1.6; margin-bottom:.6em}
+.service p{font-size:14px}
+
+.overview dl{display:grid; grid-template-columns:10em 1fr; border-top:1px solid var(--line); padding:22px 0}
+.overview dl:last-child{border-bottom:1px solid var(--line)}
+.overview dt{font-size:17px; font-weight:400}
+.overview dd{font-size:15px}
+.overview .acc{margin-top:.8em; font-size:14px; color:var(--sub)}
+
+.contact .card{max-width:880px; margin:0 auto; padding:clamp(40px,6vw,72px) 24px; text-align:center; background:linear-gradient(135deg,#f3eef8,#e3d6ef)}
+.contact h3{font-size:clamp(22px,2.4vw,30px); margin-bottom:.8em}
+.contact a.btn{display:flex; align-items:center; justify-content:center; max-width:500px; height:64px; margin:2em auto 0; background:var(--btn); color:#fff; text-decoration:none; font-weight:400}
+.contact a.btn:hover{background:#4f3070}
+
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:36px clamp(16px,4vw,48px); font-size:13px; border-top:1px solid var(--line)}
+
+/* ── モードの帯（2026-11-06）──
+   本人：「ステータスのバー作ってみて」で下の真ん中にゲームの窓を浮かせた →「**モードの位置やばいのとUI似合わせないと浮くと思う。あと常にあるのも邪魔**」
+   →（A 頭の帯の右端に小さく／B いちばん上に細い帯／C 足もと、と出して A を勧めた）→「**Bでやってみて**」。
+   いちばん上に細い一行。サイトの色と字で、スクロールすると流れて消える（頭の帯だけが残る） */
+/* **ゲームの途中で難易度を変える**（同日、本人：「ゲームでも見られる、というかなんかもっと違う文言で行きたいかも」→「**ゲームの途中で難易度変更するみたいなイメージでできんかな**」
+   →（「難易度：かんたん　変更する ›」＋押すとその場で難易度選択の窓、を勧めて）「**いったんそれで**」）。
+   サイトそのものを「かんたん」で遊んでいる状態に見立てる。窓はタイトルで出していたもの（二重枠・真ん中から六段）と同じ */
+/* **窓はサイトの見た目に**（同日、本人：「**悪くない　ただ普通の背景にゲームウィンドゥ出るのが異質すぎるからUIに合わせたウィンドウにしてはどうか**」）。
+   前はタイトルと同じゲームの窓（黒地・白の二重枠・真ん中から六段）。白い地・細い線・見出しは Zen Antique、ふわっと出る。
+   ゲームに入るのは選んだあと（真っ暗 → 点いて夕焼け）——ゲームの気配はそこから */
+/* **窓をサイトに合わせて作り直した**（同日、本人：「ポップアップのデザインもうちょい変えてほしいかも　なんか固い」
+   →「**ポップ変えてって言わなかったっけ　今の形はサイトとあってない気が**」）。
+   前は白い箱に細い枠の三段（設定画面・申込みフォームのように見えた）。
+   いま：地は公式のお問い合わせカードと同じ薄紫のグラデーション、見出しは Zen Antique、三つを横並びのカードに（細い線の絵・名前・一行）。
+   選んでいるカードは少し浮いて紫の線。狭い幅では縦に積む */
+#diff{position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(42,14,62,.32)}
+#diff[hidden]{display:none}
+#diff .box{position:relative; color:var(--ink); background:linear-gradient(135deg,#f6f2fa,#e6daf1); box-shadow:0 24px 60px rgba(42,14,62,.22);
+  width:min(100%,760px); padding:clamp(32px,5vw,56px) clamp(20px,4vw,48px); text-align:center; animation:diffin .25s ease-out both}
+@keyframes diffin{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+#diff h2{margin:0 0 clamp(24px,3.5vw,36px); font-size:clamp(22px,2.4vw,30px)}
+#diff ul{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,1.6vw,18px)}
+#diff ul button{display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; height:100%; padding:clamp(20px,2.6vw,28px) 12px;
+  border:0; border-bottom:3px solid transparent; background:#fff; font:inherit; color:inherit; cursor:pointer;
+  box-shadow:0 2px 10px rgba(42,14,62,.06); transition:transform .15s ease, box-shadow .15s ease, border-color .15s}
+#diff ul button svg{width:44px; height:44px; stroke:var(--btn); fill:none; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round}
+#diff ul button span{display:flex; flex-direction:column; align-items:center; gap:4px}
+#diff ul button b{font-size:16px; font-weight:400}
+#diff ul button em{font-style:normal; font-size:12px; color:var(--sub)}
+#diff ul button[aria-current="true"]{transform:translateY(-3px); box-shadow:0 10px 24px rgba(42,14,62,.14); border-bottom-color:var(--btn)}
+#diff button:focus{outline:none}
+/* 冒険はゲームの三戦目（ボス）を倒すと解放（2026-11-06）。それまで薄く */
+#diff ul button.lock{opacity:.5; cursor:default}
+#diff .x{position:absolute; top:12px; right:14px; width:36px; height:36px; padding:0; border:0; background:none; font-size:22px; line-height:1; color:var(--sub); cursor:pointer}
+@media (max-width:640px){ #diff ul{grid-template-columns:1fr} #diff ul button{flex-direction:row; justify-content:flex-start; text-align:left; padding:16px 18px} #diff ul button svg{width:36px; height:36px; flex:none} #diff ul button span{align-items:flex-start} }
+@media (prefers-reduced-motion:reduce){ #diff .box{animation:none} #diff ul button{transition:none} }
+/* **「難易度」→「スタイル」**（同日、本人：「難易度って文言が変？」→（ゲームの言葉で、押す前に何が変わるか分からない、と答えた）
+   →「ゲームとかでそういうの変えるときなんて書かれる？難易度以外で」→「モードセレクトかプレイスタイルか……」→「ただ別にプレイではないっていう」
+   →「**"スタイル"はどう**」→（色や見た目の切り替えと読まれやすいので、窓の見出しを「スタイルを選ぶ」に、三つに一行ずつ説明、と答えた）→「**それでやってみて**」）*/
+
+@media (max-width:760px){
+  nav li:not(.dv){display:none}   /* 狭い幅では難易度変更だけ残す */
+  nav li.dv{padding-left:0; border-left:0}
+  .vision .in, .service ul{grid-template-columns:1fr}
+  .overview dl{grid-template-columns:1fr; gap:4px}
+}
+</style>
+
+<header>
+  <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy">企業理念</a></li>
+    <li><a href="#services">サービス</a></li>
+    <li><a href="#company">会社概要</a></li>
+    <li><a href="#contact">お問い合せ</a></li>
+    <li class="dv"><button type="button" id="diffOpen" aria-haspopup="dialog">スタイル</button></li>
+  </ul></nav>
+</header>
+
+<main id="top">
+  <div class="mv">
+    <svg viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true" fill="none" stroke-width="1">
+      <g stroke="#b9a6d6" opacity=".55">
+        <path d="M-50 80 C300 620 700 -60 1250 560"/><path d="M-50 110 C320 640 720 -40 1250 600"/>
+        <path d="M-50 140 C340 660 740 -20 1250 640"/><path d="M-50 170 C360 680 760 0 1250 680"/>
+      </g>
+      <g stroke="#9db4dc" opacity=".45">
+        <path d="M-50 640 C380 120 820 760 1250 140"/><path d="M-50 670 C400 150 840 780 1250 170"/>
+        <path d="M-50 700 C420 180 860 800 1250 200"/>
+      </g>
+    </svg>
+    <h1 class="serif">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div>
+
+  <section class="vision" id="philosophy">
+    <h2 class="serif">アルターデザインコンサルティングの企業理念</h2>
+    <div class="in">
+      <div class="ph" aria-hidden="true"></div>
+      <div>
+        <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+        <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+        子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+        このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+        それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="service" id="services">
+    <h2 class="serif">私たちが提供するサービス</h2>
+    <ul class="in">
+      <li><div class="ph"></div><h3>人間中心の次世代業務システム開発</h3>
+        <p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><div class="ph"></div><h3>AI による意思決定支援と事業変革支援</h3>
+        <p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><div class="ph"></div><h3>自律型・共創型の組織設計支援</h3>
+        <p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><div class="ph"></div><h3>地域格差の解消を目指したデジタル支援</h3>
+        <p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section class="overview" id="company">
+    <h2 class="serif">会社概要</h2>
+    <div class="in">
+      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+        <p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+      <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+      <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+      <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="card">
+      <h3 class="serif">お問い合わせ</h3>
+      <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    </div>
+  </section>
+</main>
+
+<div id="diff" role="dialog" aria-modal="true" aria-labelledby="diff-h" hidden>
+  <div class="box">
+    <h2 id="diff-h" class="serif">スタイルを選ぶ</h2>
+    <ul>
+      <li><button data-m="site">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M12 6h14l8 8v24H12z"/><path d="M26 6v8h8"/><path d="M17 21h12M17 26h12M17 31h8"/></svg>
+        <span><b>ふつうのサイトで見る</b><em>いま見ている形</em></span></button></li>
+      <li><button data-m="game">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M13 15h18a8 8 0 0 1 8 8v3a6 6 0 0 1-10.6 3.9L26 27h-8l-2.4 2.9A6 6 0 0 1 5 26v-3a8 8 0 0 1 8-8z"/><path d="M13 20v6M10 23h6"/><circle cx="29" cy="21.5" r="1.2"/><circle cx="32" cy="25" r="1.2"/></svg>
+        <span><b>ゲームで見る</b><em>遊びながら見る</em></span></button></li>
+      <li><button data-m="quest">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M6 11l10-4 12 4 10-4v26l-10 4-12-4-10 4z"/><path d="M16 7v26M28 11v26"/><path d="M20 22l3 2 4-5" stroke-dasharray="2 2.4"/></svg>
+        <span><b>冒険する</b><em>歩いてめぐる</em></span></button></li>
+    </ul>
+    <button class="x" type="button" aria-label="閉じる">×</button>
+  </div>
+</div>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>
+
+<script>
+/* **ここで終わったことを覚える**（2026-11-06）。次に index.html を開くと、ここへ来る。初めての人はタイトルから */
+try { localStorage.setItem('adc-style', 'site'); } catch (e) {}
+/* 冒険は最初から選べる（2026-11-09。前はゲームのボスを倒すと解放）*/
+/* 難易度選択の窓。↑↓・Enter・押す／Esc・窓の外で閉じる。
+   ふつうのサイト（いま）→ 閉じる／ゲーム → index.html?mode=game（点いて夕焼け）／冒険 → index.html?mode=adv */
+(function(){
+  var W = document.getElementById('diff'), open = document.getElementById('diffOpen');
+  var B = [].slice.call(W.querySelectorAll('button[data-m]')), at = 0;
+  W.querySelector('.x').addEventListener('click', function(){ hide(); });
+  function paint(){ B.forEach(function(b, i){ b.setAttribute('aria-current', i === at ? 'true' : 'false'); }); }
+  function show(){ at = 0; paint(); W.hidden = false; B[0].focus(); }
+  function hide(){ W.hidden = true; open.focus(); }
+  function pick(i){
+    var m = B[i].dataset.m;
+    if (m === 'site') hide();
+    else if (m === 'game') location.href = 'index.html?mode=game';
+    else if (m === 'quest') location.href = 'index.html?mode=adv';
+  }
+  open.addEventListener('click', show);
+  B.forEach(function(b, i){
+    b.addEventListener('click', function(){ pick(i); });
+    b.addEventListener('mouseenter', function(){ at = i; paint(); });
+    b.addEventListener('focus', function(){ at = i; paint(); });
+  });
+  W.addEventListener('click', function(e){ if (e.target === W) hide(); });
+  document.addEventListener('keydown', function(e){
+    if (W.hidden) return;
+    var k = e.key;
+    if (k === 'Escape'){ hide(); e.preventDefault(); }
+    else if (/^Arrow(Up|Down|Left|Right)$/.test(k)){ at = (at + (k === 'ArrowDown' || k === 'ArrowRight' ? 1 : -1) + B.length) % B.length; B[at].focus(); e.preventDefault(); }
+    else if (k === 'Tab'){ e.preventDefault(); at = (at + (e.shiftKey ? -1 : 1) + B.length) % B.length; B[at].focus(); }
+  });
+})();
+</script>
