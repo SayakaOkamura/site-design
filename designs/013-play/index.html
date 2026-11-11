@@ -1352,6 +1352,12 @@ body.demo #dHp{display:block}
 .clw.tag{cursor:pointer}
 .clw.tag .ctg{visibility:visible}
 .clw.sel .ctg{background:var(--go); color:var(--edge); border-color:var(--go)}
+/* おすすめ（2026-11-11）。AI くんが前へ連れてくる。札の縁は金 */
+.clw.pull{transition:left .4s steps(4), opacity .3s steps(3)}
+.clw.rec .ctg{border-color:var(--go)}
+#dQ .why{display:block; margin-top:.35em; font-size:.78em; font-weight:400; letter-spacing:.04em}
+#dQ .why b{margin-right:.6em; color:var(--go)}
+#dA .rec{margin-left:.6em; font-size:.8em; color:var(--go); letter-spacing:.04em}
 /* 3戦目：しくみが止まっているあいだ、勇者はゆっくりまたたく（状態異常）*/
 #hero.ail{animation:ail 1.2s steps(2) infinite}
 @keyframes ail{ 50%{opacity:.55} }
@@ -3655,21 +3661,22 @@ var STAGES = [null, null,
     fill:['read(mail)', 'read(chat)', 'read(minutes)', 'extract(decisions)', 'merge(duplicates)',
           'detect(conflicts)', 'align(dates)', 'compose(card)'],
     /* **分身を狙う**（2026-11-10、本人：「狙い付けるなら敵自体が分身でよくね？何選んでんのこれ」→「いいよ、両方作って見せて」）。
-       チラバリが分身する → AI くんが分身を読んで、食い違っている二体に札を付けて残す → どちらを斬るか＝どちらに決めるか。
+       チラバリのむれが出る（2026-11-11 に分身から変えた）→ AI くんがむれを読んで、食い違っている二体に札を付けて残す → どちらを斬るか＝どちらに決めるか。
        f は AI くんが見つけたこと（窓の一行）。a の二つが札の付いた分身：tag 頭の上の札、src どこに書いてあったか、
-       t リザルトの「決めたこと」、cmd 打ち込みの帯、task タスク。題材を差し替えるときは、ここだけ書き換える */
+       t リザルトの「決めたこと」、cmd 打ち込みの帯、task タスク。題材を差し替えるときは、ここだけ書き換える。
+       rec は AI くんのおすすめ（a の何番目か）、why はその理由（窓の一行）。どちらもこちらで書いた例（2026-11-11）*/
     q:[
-      { f:'しめきりが　ふたつ　ある',
+      { f:'しめきりが　ふたつ　ある', rec:1, why:'議事録は　みんなで　決めた　記録',
         a:[{ tag:'〆 水曜', src:'メール', t:'しめきりは　水曜', cmd:'しめきりを水曜にそろえる',
              task:'しめきりを水曜にそろえて、相手に伝える' },
            { tag:'〆 金曜', src:'議事録', t:'しめきりは　金曜', cmd:'しめきりを金曜にそろえる',
              task:'しめきりを金曜にそろえて、相手に伝える' }]},
-      { f:'担当が　ふたり　いる',
+      { f:'担当が　ふたり　いる', rec:0, why:'議事録の　ほうが　正式',
         a:[{ tag:'担当 営業', src:'議事録', t:'担当は　営業', cmd:'担当を営業にする',
              task:'営業が持つ。開発には確かめを頼む' },
            { tag:'担当 開発', src:'チャット', t:'担当は　開発', cmd:'担当を開発にする',
              task:'開発が持つ。営業には確かめを頼む' }]},
-      { f:'決まったのか　割れている',
+      { f:'決まったのか　割れている', rec:1, why:'チャットの　ほうが　あたらしい',
         a:[{ tag:'決定', src:'議事録', t:'もう　決まった', cmd:'決まりの印を付ける',
              task:'決まったことにして、みんなに知らせる' },
            { tag:'未定', src:'チャット', t:'まだ　決まっていない', cmd:'まだの印を付ける',
@@ -4109,7 +4116,7 @@ function openDemo(st){
   }, 420);
 }
 /* **ボスの攻撃**（三戦目）。決めなかったところで、組み上がったものが崩れる。一言・勇者がまたたく・一拍おいて問い */
-function bossAtk(msg, done){
+function bossAtk(msg, done, ms){
   D.phase = 'atk'; D.n = 0;
   dStep.textContent = ''; dObj.textContent = ''; dQ.textContent = msg; dA.innerHTML = '';
   dQ.classList.remove('q'); dQ.classList.add('on');
@@ -4121,7 +4128,7 @@ function bossAtk(msg, done){
   D.tAtk = setTimeout(function(){
     heroEl.classList.remove('hurt'); slimeEl.classList.remove('atk');
     done();
-  }, 1500);
+  }, ms || 1500);
 }
 /* **にげる**（2026-09-25、本人：「逃げたときに逃げた感ほしい」）。
    前は押した瞬間に元の画面へ戻るだけで、一言も一拍も無かった。
@@ -4318,9 +4325,9 @@ function esc(t){ var d = document.createElement('div'); d.textContent = t; retur
 function objLine(){ dObj.innerHTML = '<b>さくせん</b>'; dObj.appendChild(document.createTextNode('「' + curT().t + '」')); }
 function spotHead(){ ask((D.step + 1) + ' / ' + curT().q.length, '', [], false); objLine(); }
 /* 三戦目。流れ図を描く。箱はその問いまでに出ているもの（r）。切れた線は ✕ */
-function spot3Draw(litTo){
-  var T = curT(), prev = -1, lit = true;
-  var vis = T.nodes.filter(function(n){ return !(n.r > D.step); });
+function spot3Draw(litTo, k0){
+  var T = curT(), prev = -1, lit = true, st = k0 == null ? D.step : k0;
+  var vis = T.nodes.filter(function(n){ return !(n.r > st); });
   boardEl.innerHTML = '<div class="fl sp">' + vis.map(function(n, j){
       var k = T.nodes.indexOf(n), out = '';
       if (j){
@@ -4330,7 +4337,7 @@ function spot3Draw(litTo){
       var on = litTo != null && lit;
       if (k === litTo) lit = false;
       out += '<button type="button" tabindex="-1" class="nd' + (n.end ? ' end' : '') + (on ? ' lit' : '') +
-             (n.r && n.r === D.step && D.cutAt < 0 && litTo == null ? ' new' : '') + '" data-k="' + k + '">' +
+             (n.r && n.r === st && D.cutAt < 0 && litTo == null ? ' new' : '') + '" data-k="' + k + '">' +
              '<span class="v">' + esc(n.k) + '</span>' + (n.end ? '<span class="v">✓</span>' : '') + '</button>';
       prev = k;
       return out;
@@ -4345,8 +4352,8 @@ function spot3Run(to, done){
     var nd = nds[j];
     if (!nd){ done(); return; }
     nd.classList.add('lit'); flShow(nd); palWrite();
-    if (+nd.dataset.k === to){ setTimeout(function(){ if (D.tok === tok) done(); }, 320); return; }
-    j++; setTimeout(step, 260);
+    if (+nd.dataset.k === to){ setTimeout(function(){ if (D.tok === tok) done(); }, 200); return; }
+    j++; setTimeout(step, 180);
   })();
 }
 /* 押した → AI くんがつなぎ直す（✕ が金の → に戻る）*/
@@ -4386,21 +4393,25 @@ function clClear(){
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
 }
 /* 分身を並べる：勇者の右から画面の右端まで、入るだけ（2〜5 体）*/
+/* いちばん勇者寄りの一枠は空けておく——AI くんが、おすすめをそこへ連れてくる（2026-11-11）。枠は三つ以上（前の一つ＋むれ二体以上）*/
 function clSpawn(){
   clClear();
   var host = slimeEl.parentNode, hr = heroEl.getBoundingClientRect(), sr = slimeEl.getBoundingClientRect(), pr = host.getBoundingClientRect();
-  /* 二体も入らない狭い画面では、分身を縮める（縦長で、二体が重なった）*/
-  var A = pr.right - 8 - (hr.right + 8), k = Math.min(1, A / (2 * (sr.width + 10))), w = sr.width * k;
+  /* 前の一体＋むれ三体が入らない狭い画面では、縮める */
+  var A = pr.right - 8 - (hr.right + 8), k = Math.min(1, A / (4.8 * (sr.width + 10))), w = sr.width * k;
   var L = hr.right + 8 + w / 2 + 5 - pr.left, R = pr.right - 8 - w / 2 - 5 - pr.left;
-  var n = Math.max(2, Math.min(5, Math.floor((R - L) / (w + 10)) + 1));
-  for (var j = 0; j < n; j++){
-    var x = n === 1 ? (L + R) / 2 : L + (R - L) * j / (n - 1);
+  var L2 = L + 1.7 * (w + 10);   /* むれは、前の枠から一体半あけて */
+  var n = Math.max(3, Math.min(5, Math.floor((R - L2) / (w + 10)) + 1));   /* むれは三体以上（一体連れてきても、むれに見える）*/
+  CL.front = L;
+  for (var j = 1; j <= n; j++){
+    var x = L2 + (R - L2) * (j - 1) / (n - 1);
     var wr = document.createElement('div'); wr.className = 'clw';
     wr.style.left = Math.round(x) + 'px';
     wr.innerHTML = '<span class="ctg"></span>';
     var cv = document.createElement('canvas'); cv.width = slimeEl.width; cv.height = slimeEl.height;
     cv.style.width = (sr.width * k) + 'px'; cv.style.height = (sr.height * k) + 'px';
     cv.style.animationDelay = (-j * .27) + 's';
+    wr.style.zIndex = 5 - j;
     wr.appendChild(cv); host.appendChild(wr);
     CL.push({ w:wr, cv:cv, tg:wr.firstChild, x:x });
   }
@@ -4411,51 +4422,76 @@ function clSpawn(){
 function clSel(){
   CL.forEach(function(c){ c.w.classList.toggle('sel', c.i === D.sel && D.n > 0); });
 }
-function cl2Step(){
-  var s = curT().q[D.step], tok = D.tok = {};
-  ask((D.step + 1) + ' / ' + curT().q.length, '', [], false); objLine();
-  D.phase = 'run'; D.n = 0;
-  boardEl.innerHTML = '<div class="cd"><b>まとめ</b>' + (D.card || []).map(function(t){ return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
-  say2('チラバリは　ぶんしんした！');
+/* **攻撃から攻撃が長い**（2026-11-10、本人：「攻撃から攻撃がながいんだよなやっぱり　次回直す」→（重ねる／削る／速くする／飛ばせる、と出して）「重ねる」）。
+   前は打ち終わってから分身が並び、AI くんが読み、札が付いてから窓が出ていた（押してから次まで約 3.5〜4.5 秒）。
+   → **場の動き（分身が並ぶ／玉が流れる）は斬り終わりから始める**（cl2Pre・fx3Pre）。窓の字が変わるのは打ち終わってから（cl2Go・fx3Go）。
+   AI くんの待ちも詰めた */
+/* **削った**（2026-11-11、本人：「次　ちなみにまだ長いと思う」→「削るほうもやって」）。
+   「AI くんは　むれを　よんでいる…」の段を外した。関係ないチラバリが消えて札が付くのは、むれが出たすぐあと（打っているあいだ）に済ませる。
+   打ち終わったら、すぐ窓 */
+/* **おすすめを AI くんが連れてくる**（2026-11-11、本人：「これ、分身を消すんじゃなくておすすめをAIが引っ張ってくる形にすればいいのでは？」
+   →（A 候補を二体とも連れてくる／B おすすめの一体を連れてくる、と出して）「B」→（理由を添える（勧め）／出さない）「一旦載せてやってみて」）。
+   むれは消さない。AI くんが、食い違っている二体に札を付け、おすすめの一体を勇者の前（空けておいた枠）へ連れてくる。もう一体はむれの中で札だけ。
+   窓には、見つけたことの下におすすめの理由を一行。どちらを選んでも進み、選んだほうが「決めたこと」（正解は無い）。
+   前は関係ないチラバリを消して二体を残していた（11/10〜11/11）*/
+function cl2Pre(k){
+  var tok = D.tok = {}, s = curT().q[k];
+  say2('チラバリの　むれが　あらわれた！');
   clSpawn();
   CL.forEach(function(c){ c.w.classList.add('pop'); });
-  /* AI くんの番：分身を読んで、関係ないものを消し、食い違っている二体に札を付ける */
-  var keep = [0, CL.length - 1];
-  if (CL.length > 3) keep = [1, CL.length - 2];
-  if (D.step === 1 && CL.length > 2) keep = [0, Math.floor(CL.length / 2)];
-  var junk = CL.filter(function(c, j){ return keep.indexOf(j) < 0; });
+  /* 札を付ける二体（むれの中から）。おすすめ（s.rec）の札が付いた一体を前へ */
+  var m = CL.length, keep = m > 2 ? [0, m - 1] : [0, 1];
+  if (k === 1 && m > 2) keep = [1, m - 1];
   setTimeout(function(){
     if (D.tok !== tok) return;
-    say2('AI くんは　ぶんしんを　よんでいる…');
-    junk.forEach(function(c, j){ setTimeout(function(){ if (D.tok !== tok) return; c.w.classList.add('gone'); palWrite(); }, 300 + j * 300); });
-  }, 800);
-  var t1 = 800 + 300 + junk.length * 300 + 200;
-  setTimeout(function(){
-    if (D.tok !== tok) return;
-    keep.forEach(function(j, i){ var c = CL[j]; c.i = i; c.tg.textContent = s.a[i].tag; c.w.classList.add('tag'); });
+    say2('AI くんが　おすすめを　つれてきた！');
+    keep.forEach(function(j, i){
+      var c = CL[j]; c.i = i; c.tg.textContent = s.a[i].tag; c.w.classList.add('tag');
+      if (i === s.rec){ c.w.classList.add('rec', 'pull'); c.w.style.left = Math.round(CL.front) + 'px'; c.w.style.zIndex = 6; }
+    });
     palWrite();
-  }, t1);
+  }, 220);
+  return { tok:tok, ready:Date.now() + 220 + 450 };
+}
+function cl2Step(pre){
+  if (!pre){
+    ask((D.step + 1) + ' / ' + curT().q.length, '', [], false); objLine();
+    boardEl.innerHTML = '<div class="cd"><b>まとめ</b>' + (D.card || []).map(function(t){ return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
+    pre = cl2Pre(D.step);
+  }
+  var s = curT().q[D.step], tok = pre.tok;
+  D.phase = 'run'; D.n = 0;
   /* 勇者の番：どちらを斬るか（窓は 1戦目と同じコマンドの形。札と同じ字に、どこに書いてあったかを添える）*/
   setTimeout(function(){
     if (D.tok !== tok) return;
     ask((D.step + 1) + ' / ' + curT().q.length, s.f,
-        s.a.map(function(a){ return a.tag + '<span class="note">（' + esc(a.src) + '）</span>'; }), true);
+        s.a.map(function(a, j){ return a.tag + '<span class="note">（' + esc(a.src) + '）</span>' + (j === s.rec ? '<span class="rec">おすすめ</span>' : ''); }), false);   /* 選択肢は窓と同時（順に出さない。2026-11-11）*/
+    if (s.why) dQ.insertAdjacentHTML('beforeend', '<span class="why"><b>おすすめ</b>' + esc(s.why) + '</span>');
+    D.phase = 'ask';
     objLine(); placeDWin();
     clSel();
-  }, t1 + 700);
+  }, Math.max(0, pre.ready - Date.now()));
 }
-/* 斬った分身は本体の場所へ戻り、もう一体は散る */
+/* **分身ではなく、むれ**（2026-11-11、本人：「分身の二択に正解がないの変じゃない？」→（形を変える／正解を作る／両方本物と言う、と出して）「形を変える」）。
+   分身は「本物と偽物」に読めるのに、どちらを斬っても進んでいた。→ 一体ずつ別のチラバリで、二体がそれぞれの言い分を背負う。どちらの言い分を採るか、なので正解は無い。
+   前は斬った分身が本体の場所へ戻って本体に重なり、もう一体だけが散っていた（＝斬ったほうが本物、に見える）。
+   → 斬ったほうは前へ出て斬られて散る。もう一体も同時に引く。どちらも本体には重ならない。本体（体力のあるチラバリ）は、むれが引いてから戻る */
 function cl2Fix(i){
   var c = CL.filter(function(x){ return x.i === i; })[0], o = CL.filter(function(x){ return x.i != null && x.i !== i; })[0];
   D.card = (D.card || []).concat([curT().q[D.step].a[i].t]);
   CL.forEach(function(x){ x.w.classList.remove('sel'); });
-  if (o) o.w.classList.add('burn');
   if (c){
+    c.w.classList.remove('pull');   /* 斬られに出るのは速く */
     var host = slimeEl.parentNode, sr = slimeEl.getBoundingClientRect(), pr = host.getBoundingClientRect();
-    c.w.style.left = Math.round(sr.left + sr.width / 2 - pr.left) + 'px';
+    c.w.style.left = Math.round(sr.left + sr.width / 2 - pr.left) + 'px';   /* 斬撃の線は本体の位置に出るので、そこへ出てくる */
   }
   setTimeout(function(){
-    clClear();
+    if (c) c.w.classList.add('burn');
+    CL.forEach(function(x){ if (x !== c) x.w.classList.add('gone'); });   /* むれごと引く */
+  }, 110);
+  /* むれが引いたら本体が戻る（体力の減りが見える）。次のむれは斬り終わり（0.82 秒）から */
+  setTimeout(clClear, 450);
+  setTimeout(function(){
     var cd = boardEl.querySelector('.cd');
     if (cd){ var sp = document.createElement('span'); sp.textContent = curT().q[D.step].a[i].t; cd.appendChild(sp);
       cd.classList.remove('got'); void cd.offsetWidth; cd.classList.add('got'); placeDWin(); }
@@ -4469,37 +4505,50 @@ document.addEventListener('click', function(e){
   e.stopPropagation(); e.preventDefault(); D.sel = c.i; paintD(); choose(c.i);
 }, true);
 /* 3戦目：ミケツが線を切る → しくみが止まる（状態異常）→ AI くんが調べて戻ってくる → 直し方を選ぶ */
-function fx3Step(){
-  var s = curT().q[D.step], tok = D.tok = {};
+/* **ミケツの攻撃も重ねる**（2026-11-11、本人：「削るほうもやって」→（3戦目は玉を削っても縮まなかった。攻撃を重ねる／しらべているを外す、と出して）「攻撃を重ねる」）。
+   二問目からは、勇者が斬り終わったらすぐミケツが打ち返す（打っているあいだに）→ AI くんが調べる。窓に問いが出るのは、それと打ち終わりの両方が済んでから */
+function fx3Pre(k){
+  var s = curT().q[k], tok = D.tok = {}, pre = { tok:tok, done:false, go:null };
   D.cutAt = -1;
-  spotHead();
-  D.phase = 'run'; D.n = 0;
-  spot3Draw();
-  if (D.step) palWrite();
+  spot3Draw(null, k);
+  function attack(){
+    if (D.tok !== tok) return;
+    D.cutAt = s.cut;
+    bossAtk(s.atk, function(){
+      if (D.tok !== tok) return;
+      heroEl.classList.add('ail');
+      spot3Draw(s.cut, k); flShow(boardEl.querySelector('.lk.cut'));
+      D.phase = 'run'; D.n = 0;
+      /* 「AI くんが　しらべている…」の一拍は外した（2026-11-11、削った）。攻撃は 1.1 → 0.7 秒 */
+      palWrite();
+      pre.done = true; if (pre.go) pre.go();
+    }, 700);
+  }
+  /* **玉が流れるのは最初の問いだけ**（2026-11-11、削った）。二問目からは、図が描き変わったらすぐミケツの攻撃 */
+  if (k){ palWrite(); attack(); return pre; }
   setTimeout(function(){
     if (D.tok !== tok) return;
-    spot3Run(s.cut, function(){
-      D.cutAt = s.cut;
-      bossAtk(s.atk, function(){
-        if (D.tok !== tok) return;
-        heroEl.classList.add('ail');
-        spotHead(); spot3Draw(s.cut); flShow(boardEl.querySelector('.lk.cut'));
-        D.phase = 'run'; D.n = 0;
-        say2('AI くんが　しらべている…'); palWrite();
-        setTimeout(function(){
-          if (D.tok !== tok) return;
-          ask((D.step + 1) + ' / ' + curT().q.length, s.f, s.a.map(function(a){ return esc(a.t); }), true);
-          objLine(); placeDWin();
-        }, 1100);
-      });
-    });
-  }, D.step ? 700 : 400);
+    spot3Run(s.cut, attack);
+  }, 400);
+  return pre;
+}
+function fx3Step(pre){
+  if (!pre){ spotHead(); pre = fx3Pre(D.step); }
+  var s = curT().q[D.step], tok = pre.tok;
+  D.phase = 'run'; D.n = 0;
+  pre.go = function(){
+    if (D.tok !== tok) return;
+    ask((D.step + 1) + ' / ' + curT().q.length, s.f, s.a.map(function(a){ return esc(a.t); }), false);   /* 選択肢は窓と同時（順に出さない。2026-11-11）*/
+    D.phase = 'ask';
+    objLine(); placeDWin();
+  };
+  if (pre.done) pre.go();
 }
 
-function askStep(){
+function askStep(pre){
   var T = curT(), s = T.q[D.step];
-  if (D.stage === 2){ cl2Step(); return; }
-  if (D.stage === 3){ fx3Step(); return; }
+  if (D.stage === 2){ cl2Step(pre); return; }
+  if (D.stage === 3){ fx3Step(pre); return; }
   if (s.atk && D.atkAt !== D.step){ D.atkAt = D.step; bossAtk(s.atk, askStep); return; }
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
      やっていることを名前で言うと、**触って分かるはずのものを先に言ってしまう。**
@@ -4854,14 +4903,22 @@ function choose(i){
   D.n = 0;
   /* **段が進むのは、打ち終わって一段上がったあと。**
      打っているあいだは、下の一行は選んだ行のもの */
-  var st = D.step, struck = false, typed = false;
+  var st = D.step, struck = false, typed = false, pre = null;
   function next(){
     if (!struck || !typed) return;      /* **両方そろってから**次の問いへ */
-    if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(); }
+    if (D.stage === 3 && D.hp > 0 && !pre) return;   /* 3戦目は打ち返しが始まってから */
+    if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(pre); }
     else if (D.stage === 3) spot3End(winSeq);   /* 最後は玉が完了まで流れる */
     else winSeq();
   }
-  swing(function(){ struck = true; next(); }, D.stage > 1 ? st % 3 : i);                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
+  swing(function(){
+    struck = true;
+    /* 2・3戦目は、斬り終わったら次の場の動きを始める（窓はまだ選んだ行のまま）*/
+    if (D.hp > 0 && D.stage === 2) pre = cl2Pre(st + 1);
+    next();
+  }, D.stage > 1 ? st % 3 : i);
+  /* 3戦目は、斬撃が当たった直後にミケツが打ち返す（2026-11-11、本人：「斬る途中で打ち返す」）*/
+  if (D.stage === 3 && D.hp > 0) setTimeout(function(){ if (D.phase !== 'type' || D.step !== st) return; pre = fx3Pre(st + 1); next(); }, 300);                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
   typeCmd(curT().q[D.step].a[ai].cmd, function(){
     setLog(st + 1); typed = true; next();
   });
