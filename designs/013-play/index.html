@@ -1446,6 +1446,34 @@ body.demo #dHp{display:block}
 #field.flow .lk.cut.want{border-color:var(--go); color:var(--go)}
 #field.flow .lk.tw{color:var(--go)}
 #field.flow .lk.tw span{display:inline-block; margin-left:.5em; padding:.1em .5em; border:2px solid var(--go); font-size:14px}
+/* 3戦目の道＝流れ図（2026-11-11）。駅（申請・承認…）を道に並べ、穴が開いた線に台 */
+#td{position:fixed; inset:0; z-index:7; pointer-events:none}
+#td .trk{position:absolute; transform:translateY(-50%)}
+#td .trk::before{content:''; position:absolute; left:0; right:0; top:50%; border-top:3px dashed rgba(255,255,255,.3)}
+#td .fl{position:relative; display:flex; justify-content:space-between; align-items:center; gap:4px}
+#td .nd{-webkit-appearance:none; appearance:none; font:inherit; font-size:13px; letter-spacing:.04em; padding:.3em .55em; cursor:default; white-space:nowrap;
+  background:var(--win); color:var(--ink); border:2px solid var(--dim); pointer-events:auto}
+#td .nd .v + .v{margin-left:.3em}
+#td .nd.lit{background:var(--go); color:var(--edge); border-color:var(--go)}
+#td .nd.new{animation:shock .1s steps(2) 4}
+#td .lk{-webkit-appearance:none; appearance:none; position:relative; flex:0 0 auto; width:12px; height:36px; padding:0; background:none; border:0; font:inherit; pointer-events:none}
+#td .lk.cut,#td .lk.tw{flex:0 0 auto; width:36px; pointer-events:auto; font-size:16px; line-height:1}
+#td .lk.cut{color:#e0604e; background:var(--win); border:2px dashed #e0604e; cursor:pointer; animation:shock .45s steps(2) infinite alternate}
+#td .lk.cut.want{color:var(--go); border:2px solid var(--go); background:var(--box)}
+#td .lk.tw{color:var(--edge); background:var(--go); border:2px solid var(--go); cursor:default}
+#td .lk.tw span{position:absolute; left:50%; bottom:calc(100% + 4px); transform:translateX(-50%); white-space:nowrap; padding:.1em .4em;
+  font-size:11px; letter-spacing:.04em; color:var(--go); background:var(--win); border:1px solid var(--go)}
+#td.low .fl{gap:2px}
+#td.low .nd{font-size:10.5px; padding:.2em .3em; letter-spacing:0}
+#td.low .lk{width:4px; height:26px}
+#td.low .lk.cut,#td.low .lk.tw{width:26px; font-size:12px}
+#td.low .lk.tw:not(.last) span{display:none}   /* 狭い窓は、いま建てた塔の名前だけ */
+#td .mob{position:fixed; width:22px; height:18px; transform:translate(-50%, -50%); background:#e0604e; box-shadow:inset 0 -3px 0 #a33;
+  transition:left .6s steps(6); animation:mob .3s steps(2) infinite}
+#td .mob::before,#td .mob::after{content:''; position:absolute; top:5px; width:4px; height:4px; background:var(--win)}
+#td .mob::before{left:4px} #td .mob::after{right:4px}
+#td .mob.pop{animation:shock .1s steps(2) 3; opacity:0; transition:opacity .2s steps(2) .1s}
+@keyframes mob{ 0%,49%{margin-top:0} 50%,100%{margin-top:-2px} }
 .shot.back{background:var(--go); box-shadow:0 0 0 3px rgba(255,210,112,.35)}
 .peel{position:fixed; z-index:9998; pointer-events:none; padding:.2em .5em; font-style:normal; font-size:12px; letter-spacing:.04em; white-space:nowrap;
   background:var(--box); color:var(--go); border:2px solid var(--go); transition:transform .28s steps(5)}
@@ -3796,7 +3824,7 @@ var STAGES = [null, null,
              task:'次の打ち合わせで、打ち上げの店を決める' }]}
     ]},
   /* 三戦目：AI くんが流れ図を組んでいく（問いごとに箱が一つ増える）。玉が流れたところでボスが線を切る → 切れた線を押す */
-  { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', td:true, done:'しくみが　くみあがった！',
+  { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', td:true, ground:true, done:'しくみが　くみあがった！',
     fill:['bind(roles)', 'build(form)', 'build(route)', 'connect(approval)', 'test(flow)',
           'detect(gaps)', 'rebuild(route)'],
     nodes:[{ k:'申請' }, { k:'承認' }, { k:'不在のとき', r:1 }, { k:'差しもどし', r:2 }, { k:'完了', end:true }],
@@ -4168,7 +4196,7 @@ function openDemo(st){
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   slashEl.classList.remove('on');
   heroPose(null); slimeIdle();
-  fieldOff(); handOff(); slimeEl.style.scale = '';
+  fieldOff(); handOff(); tdOff(); slimeEl.style.scale = '';
 
   /* **「！」が先、窓はあとから**（2026-09-16、本人：「**ビックリ→窓にしてほしいのね**」）。
 
@@ -4306,7 +4334,7 @@ function quitDemo(){
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime); clearTimeout(D.tAtk);
   D.tCome = D.tBang = D.tSlime = D.tAtk = null;
   heroEl.classList.remove('hurt', 'ail'); slimeEl.classList.remove('atk');
-  clClear(); fieldOff(); handOff(); slimeEl.style.scale = '';
+  clClear(); fieldOff(); handOff(); tdOff(); slimeEl.style.scale = '';
   if (FILL0) FILL = FILL0;
   setEnemy('slime');
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
@@ -4470,7 +4498,7 @@ function fieldPlace(){
   fieldEl.style.top = Math.round(b.t + Math.max(0, (b.b - b.t - h) / 2)) + 'px';
   fieldEl.style.left = Math.round(b.l + Math.max(0, (b.r - b.l - fieldEl.offsetWidth) / 2)) + 'px';
 }
-function flHost(){ return fieldEl && fieldEl.classList.contains('flow') ? fieldEl : boardEl; }
+function flHost(){ if (tdEl && tdEl.trk) return tdEl.trk; return fieldEl && fieldEl.classList.contains('flow') ? fieldEl : boardEl; }
 /* ミケツの攻撃が、場の流れ図へ飛んでいく */
 function shoot(to, from, cls){
   from = from || slimeEl;
@@ -4500,13 +4528,14 @@ function spotHead(){ ask((D.step + 1) + ' / ' + curT().q.length, '', [], false);
 /* 三戦目。流れ図を描く。箱はその問いまでに出ているもの（r）。切れた線は ✕ */
 function spot3Draw(litTo, k0){
   var T = curT(), prev = -1, lit = true, st = k0 == null ? D.step : k0;
-  var vis = T.nodes.filter(function(n){ return !(n.r > st); }), host = flHost(), AR = host === boardEl ? '→' : '↓';
-  host.innerHTML = (host === boardEl ? '' : '<b class="fh">しくみ</b>') + '<div class="fl sp' + (T.td ? ' td' : '') + '">' + vis.map(function(n, j){
+  var vis = T.nodes.filter(function(n){ return !(n.r > st); }), host = flHost(), road = !!(tdEl && host === tdEl.trk), AR = road ? '' : host === boardEl ? '→' : '↓';
+  host.innerHTML = (host === fieldEl ? '<b class="fh">しくみ</b>' : '') + '<div class="fl sp' + (T.td ? ' td' : '') + '">' + vis.map(function(n, j){
       var k = T.nodes.indexOf(n), out = '';
       if (j){
         var cut = D.cutAt === prev, tw = !cut && D.tw && D.tw[prev];
         out += '<button type="button" class="lk' + (cut ? ' cut' : '') + (tw ? ' tw' : '') + '" data-f="' + prev + '" aria-label="線">' +
-               (cut ? '✕' : tw ? (AR === '↓' ? '↓<span>' + esc(tw) + '</span>' : '→<span>' + esc(tw) + '</span>→') : AR) + '</button>';
+               (road ? (cut ? '＋' : tw ? '◆<span>' + esc(tw) + '</span>' : '') :
+               cut ? '✕' : tw ? (AR === '↓' ? '↓<span>' + esc(tw) + '</span>' : '→<span>' + esc(tw) + '</span>→') : AR) + '</button>';
       }
       var on = litTo != null && lit;
       if (k === litTo) lit = false;
@@ -4517,7 +4546,7 @@ function spot3Draw(litTo, k0){
       prev = k;
       return out;
     }).join('') + '</div>';
-  if (host !== boardEl) fieldPlace();
+  if (host === fieldEl) fieldPlace();
   placeDWin();
 }
 /* 玉が流れる：箱を順に光らせて、to の箱まで */
@@ -4557,11 +4586,21 @@ function fx3Fix(i){
     var lk = flHost().querySelector('.lk.cut'), pc = dA.children[i], vt = flHost() !== boardEl;
     D.tw = D.tw || {}; D.tw[q.cut] = a.w;
     spot3Fix();
-    if (lk){ lk.classList.add('tw'); lk.classList.remove('want'); lk.innerHTML = vt ? '↓<span>' + esc(a.w) + '</span>' : '→<span>' + esc(a.w) + '</span>→'; flShow(lk); }
-    if (pc && lk && !D.dropped) flyTo(pc.querySelector('button'), lk.querySelector('span'));
+    var road = !!(tdEl && flHost() === tdEl.trk);
+    if (lk){ lk.classList.add('tw'); lk.classList.remove('want'); lk.innerHTML = road ? '◆<span>' + esc(a.w) + '</span>' : vt ? '↓<span>' + esc(a.w) + '</span>' : '→<span>' + esc(a.w) + '</span>→'; flShow(lk); }
+    if (road && lk){
+      /* 台に塔を建てる → 塔が手下を撃つ → 続けてミケツを撃つ */
+      if (pc && !D.dropped) flyTo(pc.querySelector('button'), lk);
+      [].forEach.call(tdEl.querySelectorAll('.lk.last'), function(x){ x.classList.remove('last'); });
+      lk.classList.add('last');
+      setTimeout(function(){ tdShoot(lk); }, 150);
+      setTimeout(function(){ shoot(slimeEl, lk, 'back'); }, 320);
+    } else {
+      if (pc && lk && !D.dropped) flyTo(pc.querySelector('button'), lk.querySelector('span'));
+      /* 置いた駒で止まった攻撃が、ミケツへ跳ね返る（カウンター。2026-11-11）。勇者は斬らない */
+      if (lk) setTimeout(function(){ shoot(slimeEl, lk.querySelector('span') || lk, 'back'); }, 200);
+    }
     D.dropped = false;
-    /* 置いた駒で止まった攻撃が、ミケツへ跳ね返る（カウンター。2026-11-11）。勇者は斬らない */
-    if (lk) setTimeout(function(){ shoot(slimeEl, lk.querySelector('span') || lk, 'back'); }, 200);
     return;
   }
   if (a && a.w != null && q.at != null){
@@ -4827,17 +4866,58 @@ function flyTo(el, to){
   c.style.opacity = '0';
   setTimeout(function(){ c.remove(); }, 260);
 }
+/* ─ 3戦目の道と台（2026-11-11）。タワーディフェンスの見た目を借りる ─────────────
+   本人：「3もやって」（2戦目の手札と同じ考え：型の見た目まで借りる）。
+   地面に道（ミケツ → 勇者）、道の上に塔を建てる台が三つ。ミケツの攻撃で手下が道を歩いてきて、台の前で止まる。
+   台に方針（塔）を建てると、塔が手下を撃って消し、続けてミケツを撃つ */
+var tdEl = null;
+function tdOff(){ if (tdEl){ tdEl.remove(); tdEl = null; } }
+/* 道＝流れ図（2026-11-11、本人：「しくみいる？これ」→（地面の道と左の窓で同じことを二か所。A 道を流れ図にする（勧め）／B 窓を外すだけ）「A」）。
+   地面の道に駅（申請・承認…）を並べ、攻撃で穴が開いた線に台が出る。左の「しくみ」の窓は出さない */
+function tdBuild(){
+  tdOff();
+  var hr = heroEl.getBoundingClientRect(), sr = slimeEl.getBoundingClientRect();
+  var low = MQ_NARROW.matches || innerHeight < 480;
+  var y = Math.round(Math.min(innerHeight - 24, low ? hr.bottom - 4 : hr.bottom + 22));
+  var L = low ? 10 : Math.max(16, Math.round(hr.left - 120)), R = low ? innerWidth - 10 : Math.min(innerWidth - 16, Math.round(sr.right + 160));
+  var el = document.createElement('div'); el.id = 'td'; if (low) el.className = 'low';
+  el.innerHTML = '<div class="trk" style="left:' + L + 'px; width:' + (R - L) + 'px; top:' + y + 'px"></div>';
+  document.body.appendChild(el);
+  el.trk = el.firstChild;
+  tdEl = el;
+}
+/* 手下がミケツから道を歩いてきて、穴（台）の前で止まる */
+function tdWalk(){
+  if (!tdEl) return;
+  var pad = tdEl.trk.querySelector('.lk.cut'); if (!pad) return;
+  var sr = slimeEl.getBoundingClientRect(), pr = pad.getBoundingClientRect();
+  var m = document.createElement('i'); m.className = 'mob';
+  m.style.left = Math.round(sr.left + sr.width / 2) + 'px'; m.style.top = Math.round(pr.top - 12) + 'px';   /* 道の上を歩く */
+  tdEl.appendChild(m); void m.offsetWidth;
+  m.style.left = Math.round(pr.right + 14) + 'px';
+  tdEl.mob = m;
+}
+/* 塔が手下を撃つ → 手下が消える */
+function tdShoot(pad){
+  var m = tdEl && tdEl.mob;
+  if (!pad || !m) return;
+  shoot(m, pad, 'back');
+  setTimeout(function(){ m.classList.add('pop'); setTimeout(function(){ m.remove(); }, 300); }, 300);
+  tdEl.mob = null;
+}
+/* いまの置き場：切れた線（道なら台）*/
+function tdSlot(){ return flHost().querySelector('.lk.cut'); }
 /* 3戦目：方針を持つ（押した・つまんだ）→ 切れた線が置き場として光る */
 function tdHold(ix){
   D.hold = ix;
   [].forEach.call(dA.children, function(li, j){ li.classList.toggle('held', j === ix); });
-  var sl = flHost().querySelector('.lk.cut'); if (sl) sl.classList.add('want');
+  var sl = tdSlot(); if (sl) sl.classList.add('want');
 }
 function tdOn(){ return D.on && D.stage === 3 && curT().td && D.phase === 'ask'; }
 document.addEventListener('click', function(e){
   if (!tdOn() || !e.target.closest) return;
   if (D.noClick){ D.noClick = false; e.stopImmediatePropagation(); e.preventDefault(); return; }
-  if (e.target.closest('#board .lk.cut, #field .lk.cut')){ e.stopImmediatePropagation(); e.preventDefault(); if (D.hold != null) choose(D.hold); return; }
+  if (e.target.closest('#board .lk.cut, #field .lk.cut, #td .lk.cut')){ e.stopImmediatePropagation(); e.preventDefault(); if (D.hold != null) choose(D.hold); return; }
   var li = e.target.closest('#dA li');
   if (!li || li.classList.contains('flee')) return;
   e.stopImmediatePropagation(); e.preventDefault();
@@ -4873,7 +4953,7 @@ document.addEventListener('click', function(e){
     if (!g) return;
     g.remove(); g = null; D.noClick = true; setTimeout(function(){ D.noClick = false; }, 0);
     var at = document.elementFromPoint(e.clientX, e.clientY);
-    if (tdOn() && at && at.closest && at.closest('#board .lk.cut, #field .lk.cut')){ D.dropped = true; choose(i); }
+    if (tdOn() && at && at.closest && at.closest('#board .lk.cut, #field .lk.cut, #td .lk.cut')){ D.dropped = true; choose(i); }
   }
   document.addEventListener('pointerup', end);
   document.addEventListener('pointercancel', function(){ if (g){ g.remove(); g = null; } ix = -1; });
@@ -4899,7 +4979,8 @@ function fx3Pre(k){
       if (D.tok !== tok) return;
       heroEl.classList.add('ail');
       spot3Draw(s.cut, k); flShow(boardEl.querySelector('.lk.cut'));
-      if (flHost() !== boardEl) shoot(flHost().querySelector('.lk.cut'));   /* 攻撃が場の流れ図に当たる */
+      if (tdEl) tdWalk();   /* 手下が道を歩いてくる */
+      else if (flHost() !== boardEl) shoot(flHost().querySelector('.lk.cut'));   /* 攻撃が場の流れ図に当たる */
       D.phase = 'run'; D.n = 0;
       /* 「AI くんが　しらべている…」の一拍は外した（2026-11-11、削った）。攻撃は 1.1 → 0.7 秒 */
       palWrite();
@@ -4917,7 +4998,8 @@ function fx3Pre(k){
 function fx3Step(pre){
   if (!pre){
     spotHead();
-    if (curT().td && D.step === 0) fieldOn('flow', 300);   /* 流れ図は場に大きく（入らなければ窓の中）*/
+    if (curT().ground && D.step === 0) tdBuild();   /* 道＝流れ図 */
+    else if (curT().td && D.step === 0) fieldOn('flow', 300);   /* 流れ図は場に大きく（入らなければ窓の中）*/
     pre = fx3Pre(D.step);
   }
   var s = curT().q[D.step], tok = pre.tok;
@@ -5319,7 +5401,7 @@ function choose(i){
 /* 提案内容（2026-09-16）。**選んだ三つが、そのまま三つのタスクになる。**
    **どの問いも、答えが必ずどこかに出る。**出ない問いがあると、選んだ意味が無い */
 function showResult(){
-  fieldOff(); handOff();
+  fieldOff(); handOff(); tdOff();
   var T = curT(),
       AS = T.q.map(function(q, j){ return q.a[D.picks[j]]; });
   dRes.querySelector('.rt').textContent = D.stage > 1 ? T.done : 'さくせんが　きまった！';
