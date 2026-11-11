@@ -1358,6 +1358,107 @@ body.demo #dHp{display:block}
 #dQ .why{display:block; margin-top:.35em; font-size:.78em; font-weight:400; letter-spacing:.04em}
 #dQ .why b{margin-right:.6em; color:var(--go)}
 #dA .rec{margin-left:.6em; font-size:.8em; color:var(--go); letter-spacing:.04em}
+/* 2戦目はカード（2026-11-11）。切れ端が手札で配られ、一枚切ると敵へ飛ぶ */
+#dWin.hand #dA,#dWin.tray #dA{display:flex; flex-wrap:wrap; gap:calc(var(--px)*2)}
+#dWin.hand #dA li:not(.flee):not(.pick),#dWin.tray #dA li:not(.flee):not(.pick){flex:1 1 0; min-width:0; padding:0}
+#dWin.hand #dA li.flee,#dWin.tray #dA li.flee{flex:1 1 100%}
+#dWin.hand #dA li:not(.flee) .cur,#dWin.tray #dA li:not(.flee) .cur{display:none}
+#dWin.hand #dA li:not(.flee):not(.pick) > button{flex-direction:column; align-items:flex-start; gap:.25em; padding:.5em .6em .7em; min-height:5.4em;
+  border:calc(var(--px)/2) solid var(--dim); background:var(--box); animation:deal .3s steps(3) both}
+#dWin.hand #dA li:nth-child(2) > button{animation-delay:.08s}
+#dWin.hand #dA li:nth-child(3) > button{animation-delay:.16s}
+#dWin.hand #dA li[aria-current="true"]:not(.flee) > button{border-color:var(--go); transform:translateY(-5px)}
+@keyframes deal{ from{opacity:0; transform:translateY(16px)} to{opacity:1} }
+/* 狭い窓・低い窓では、カードを詰める（帯にかからないように）*/
+@media (max-width:640px), (max-height:480px){
+  #dWin.hand #dA li:not(.flee):not(.pick) > button{min-height:0; padding:.3em .5em .4em; gap:.1em}
+  #dWin.hand #dA .ct{font-size:.72em; line-height:1.35}
+}
+@media (max-width:640px){ #dWin.hand #dA .cs{display:none} }   /* 縦の狭い窓は、どこに書いてあったかを外す */
+#dA .cs{font-size:.7em; letter-spacing:.08em; opacity:.8}
+#dA .cb{font-size:1.1em; color:var(--ink)}
+#dA li[aria-current="true"] .cb{color:var(--go)}
+#dA .ct{font-size:.76em; line-height:1.45}
+.fly{position:fixed; z-index:9999; margin:0; pointer-events:none; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:.2em;
+  padding:.4em .6em; border:2px solid var(--go); background:var(--box); color:var(--go); font:inherit; font-size:13px; letter-spacing:.04em;
+  transition:transform .22s steps(4), opacity .22s steps(4)}
+.fly .cur{display:none}
+.fly.drag{transition:none; opacity:.9; flex-direction:row; align-items:center}
+/* 手札（2026-11-11）。画面の下に扇形。窓は問いの行とにげるだけ */
+#dWin.deck #dA li:not(.flee):not(.pick){display:none}
+#dWin.deck #dA li.flee{margin-top:0; padding-top:0; border-top:0}
+#hand{position:fixed; z-index:9; left:50%; bottom:8px; display:flex; align-items:flex-end; transform:translateX(-50%); pointer-events:none}
+#hand.out{opacity:0; transform:translate(-50%, 40px); transition:transform .25s steps(4), opacity .25s steps(4)}
+.card{-webkit-appearance:none; appearance:none; font:inherit; text-align:left; letter-spacing:.04em; cursor:grab; touch-action:none;
+  display:flex; flex-direction:column; align-items:flex-start; gap:.3em;
+  width:min(124px, calc((100vw - 40px) / 3 + 8px)); aspect-ratio:4 / 5; margin:0 -6px; padding:.6em .7em;
+  background:var(--win); color:var(--ink); border:var(--px) solid var(--line);
+  box-shadow:0 0 0 var(--px) var(--win), 0 0 0 calc(var(--px)*2) rgba(0,0,0,.45);
+  transform:translateY(var(--y)) rotate(var(--r)); transform-origin:50% 100%;
+  transition:transform .1s steps(2); animation:deal .3s steps(3) both}
+#hand .card{pointer-events:auto}
+#hand .card[aria-current="true"]{transform:translateY(-36px) rotate(0); border-color:var(--go); z-index:2}
+.card .cs{font-size:11px; letter-spacing:.1em; color:var(--dim)}
+.card .cb{font-size:20px; line-height:1.2; color:var(--ink)}
+.card[aria-current="true"] .cb{color:var(--go)}
+.card .ct{margin-top:auto; font-size:12px; line-height:1.45; color:var(--dim)}
+.card.drag{position:fixed; z-index:9999; margin:0; transform:rotate(-4deg); pointer-events:none; animation:none; border-color:var(--go)}
+#slime.tgt{filter:drop-shadow(0 0 0 var(--go)) brightness(1.35)}
+@media (max-width:640px), (max-height:480px){   /* 狭い窓・低い窓は、小さい横長のカード */
+  .card{aspect-ratio:auto; min-height:0; padding:.4em .5em .5em; gap:.15em; margin:0 -3px}
+  .card .cs{display:none}
+  .card .cb{font-size:15px}
+  .card .ct{margin-top:0; font-size:11px}
+  #hand .card[aria-current="true"]{transform:translateY(-10px) rotate(0)}
+}
+/* 3戦目は置いて守る（2026-11-11）。方針の駒を、切れた線に置く。置いた方針は線の上に残る */
+#dWin.tray #dA li:not(.flee):not(.pick) > button{align-items:center; gap:.5em; padding:.45em .6em; border:calc(var(--px)/2) solid var(--dim);
+  background:var(--box); touch-action:none; cursor:grab}
+#dWin.tray #dA li[aria-current="true"]:not(.flee) > button{border-color:var(--go)}
+#dWin.tray #dA li.held:not(.flee):not(.pick) > button{background:var(--go); color:var(--edge); border-color:var(--go)}
+#dA .tg{color:var(--go)}
+#dA li.held .tg{color:var(--edge)}
+#board .fl.td .lk.cut{border:1px dashed #e0604e; padding:.25em .6em}
+#board .fl.td .lk.cut.want{border:2px dashed var(--go); color:var(--go)}
+#board .lk.tw{color:var(--go)}
+#board .lk.tw span{display:inline-block; margin:0 .25em; padding:.1em .4em; border:1px solid var(--go); font-size:.8em; letter-spacing:.04em}
+#dRes .rp .rfl em.tw span{display:inline-block; margin:0 .25em; padding:0 .35em; border:1px solid var(--go); color:var(--go); font-size:.85em}
+/* 場（2026-11-11）。勇者の左に、まとめの紙／大きな流れ図 */
+#field{position:fixed; z-index:4; color:var(--ink); animation:winin .12s steps(2)}
+#field .fh{display:block; margin-bottom:4px; font-size:12px; font-weight:400; letter-spacing:.2em; color:var(--dim)}
+#field.sheet{font-size:15px; line-height:1.5; letter-spacing:.04em}
+#field.sheet p{margin:8px 0 0; padding-bottom:4px; border-bottom:1px dashed rgba(255,255,255,.18); min-height:2.6em}
+#field.sheet p i{display:block; font-style:normal; font-size:11px; letter-spacing:.12em; color:var(--dim)}
+#field.sheet p span{font-weight:700}
+#field.sheet p span:empty::before{content:'？？？'; font-weight:400; color:var(--dim); opacity:.5}
+#field.sheet p.now{border-bottom-color:var(--go)}
+#field.sheet p.now i{color:var(--go)}
+#field.sheet p.got span{display:inline-block; color:var(--go); animation:shock .1s steps(2) 3}
+#field.flow .fl{display:flex; flex-direction:column; align-items:flex-start; gap:2px}
+#field.flow .nd{-webkit-appearance:none; appearance:none; font:inherit; font-size:16px; letter-spacing:.06em; padding:.3em .7em; cursor:default;
+  background:none; color:var(--ink); border:2px solid var(--dim)}
+#field.flow .nd .v + .v{margin-left:.4em}
+#field.flow .nd.lit{background:var(--go); color:var(--edge); border-color:var(--go)}
+#field.flow .nd.new{animation:shock .1s steps(2) 4}
+#field.flow .lk{-webkit-appearance:none; appearance:none; background:none; border:0; font:inherit; font-size:16px; line-height:1.2;
+  color:var(--dim); padding:3px 0 3px 20px}
+#field.flow .lk.cut{color:#e0604e; border:2px dashed #e0604e; padding:3px 12px; margin-left:10px; cursor:pointer; animation:shock .45s steps(2) infinite alternate}
+#field.flow .lk.cut.want{border-color:var(--go); color:var(--go)}
+#field.flow .lk.tw{color:var(--go)}
+#field.flow .lk.tw span{display:inline-block; margin-left:.5em; padding:.1em .5em; border:2px solid var(--go); font-size:14px}
+.shot.back{background:var(--go); box-shadow:0 0 0 3px rgba(255,210,112,.35)}
+.peel{position:fixed; z-index:9998; pointer-events:none; padding:.2em .5em; font-style:normal; font-size:12px; letter-spacing:.04em; white-space:nowrap;
+  background:var(--box); color:var(--go); border:2px solid var(--go); transition:transform .28s steps(5)}
+.shot{position:fixed; z-index:9998; width:14px; height:14px; background:#e0604e; box-shadow:0 0 0 3px rgba(224,96,78,.35); pointer-events:none;
+  transition:transform .3s steps(5)}
+/* A（2026-11-11）：まとめの欄の名前、流れ図に書き込まれた方針、リザルトの流れ図 */
+#board .cd span i,#dRes .rp span > i{font-style:normal; color:var(--go); margin-right:.6em; font-size:.9em}
+#board .nd i{color:var(--go)}
+#board .nd.lit i{color:var(--edge)}
+#dRes .rp .rfl{display:flex; flex-wrap:wrap; align-items:center; gap:.2em .5em}
+#dRes .rp .rfl b{font-weight:400; color:var(--ink)}
+#dRes .rp .rfl i{display:block; font-style:normal; font-size:.85em; color:var(--go)}
+#dRes .rp .rfl em{font-style:normal}
 /* 3戦目：しくみが止まっているあいだ、勇者はゆっくりまたたく（状態異常）*/
 #hero.ail{animation:ail 1.2s steps(2) infinite}
 @keyframes ail{ 50%{opacity:.55} }
@@ -3657,7 +3758,7 @@ var STAGES = [null, null,
      a は一つだけ（押して見つけたもの）。t はリザルトの「見つけたもの」、cmd は打ち込みの帯、task はタスク。
      前の「読んで選ぶ」版の中身は 968e815 にある */
   /* 二戦目：紙が舞う。AI くんが関係ない紙を吸い込んでいくなかで、一枚だけ色が違う（食い違い）→ それを押す */
-  { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', done:'きろくが　まとまった！',
+  { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', one:true, hand:true, deck:true, done:'きろくが　まとまった！',
     fill:['read(mail)', 'read(chat)', 'read(minutes)', 'extract(decisions)', 'merge(duplicates)',
           'detect(conflicts)', 'align(dates)', 'compose(card)'],
     /* **分身を狙う**（2026-11-10、本人：「狙い付けるなら敵自体が分身でよくね？何選んでんのこれ」→「いいよ、両方作って見せて」）。
@@ -3665,47 +3766,67 @@ var STAGES = [null, null,
        f は AI くんが見つけたこと（窓の一行）。a の二つが札の付いた分身：tag 頭の上の札、src どこに書いてあったか、
        t リザルトの「決めたこと」、cmd 打ち込みの帯、task タスク。題材を差し替えるときは、ここだけ書き換える。
        rec は AI くんのおすすめ（a の何番目か）、why はその理由（窓の一行）。どちらもこちらで書いた例（2026-11-11）*/
+    /* **三戦で一つのものを作る（A）**（2026-11-11、本人：「遊びながら働く要素が消えてるのが問題なのかな」「1問目はそれをカバーしてると思うんだよ」
+       →（仕事の手順がそのまま戦いの手順になっている、選んだものに正解・不正解がない、積み上がってリザルトで形になる、と出して）「そう　じゃあ2・3戦目どうする？」
+       →（A 三戦で一つのものを作る／B 3戦目は組み上がるのを見せる／C 二戦にまとめる）「Aで題材の表を見せて」→「それでやってみて」）。
+       むれは打ち合わせの切れ端。AI くんが三体に札を付ける。どれを斬ってもよく、斬った一体がまとめの一行（k の欄）になる。正解は無い。
+       k まとめの欄、f 窓の一行。a：tag 頭の上の札、src どこに書いてあったか、t まとめの一行・リザルト、cmd 打ち込みの帯、task タスク。
+       中身はすべてこちらで書いた例（2026-11-11）。前の「食い違いのどちらに決めるか＋おすすめ」版は 7960523 にある */
     q:[
-      { f:'しめきりが　ふたつ　ある', rec:1, why:'議事録は　みんなで　決めた　記録',
-        a:[{ tag:'〆 水曜', src:'メール', t:'しめきりは　水曜', cmd:'しめきりを水曜にそろえる',
-             task:'しめきりを水曜にそろえて、相手に伝える' },
-           { tag:'〆 金曜', src:'議事録', t:'しめきりは　金曜', cmd:'しめきりを金曜にそろえる',
-             task:'しめきりを金曜にそろえて、相手に伝える' }]},
-      { f:'担当が　ふたり　いる', rec:0, why:'議事録の　ほうが　正式',
-        a:[{ tag:'担当 営業', src:'議事録', t:'担当は　営業', cmd:'担当を営業にする',
-             task:'営業が持つ。開発には確かめを頼む' },
-           { tag:'担当 開発', src:'チャット', t:'担当は　開発', cmd:'担当を開発にする',
-             task:'開発が持つ。営業には確かめを頼む' }]},
-      { f:'決まったのか　割れている', rec:1, why:'チャットの　ほうが　あたらしい',
-        a:[{ tag:'決定', src:'議事録', t:'もう　決まった', cmd:'決まりの印を付ける',
-             task:'決まったことにして、みんなに知らせる' },
-           { tag:'未定', src:'チャット', t:'まだ　決まっていない', cmd:'まだの印を付ける',
-             task:'まだの印を付けて、決める日を書く' }]}
+      { k:'決めたこと', f:'「決めたこと」の　てふだ',
+        a:[{ tag:'〆 金曜', src:'議事録', t:'しめきりは　金曜', cmd:'しめきりは金曜、と書く',
+             task:'しめきりを金曜で書きとめて、みんなに知らせる' },
+           { tag:'色 青', src:'チャット', t:'色は　青で　いく', cmd:'色は青、と書く',
+             task:'色は青でいくと書きとめて、デザインの人に伝える' },
+           { tag:'週一', src:'メール', t:'来月から　週一で　集まる', cmd:'週一の集まりを書く',
+             task:'来月からの週一の集まりを、予定に入れる' }]},
+      { k:'宿題', f:'「宿題」の　てふだ',
+        a:[{ tag:'見積もり', src:'メモ', t:'見積もりを　出す', cmd:'宿題に見積もりを書く',
+             task:'見積もりを出す人と日を決めて、まとめに書く' },
+           { tag:'資料', src:'メール', t:'先方に　資料を　送る', cmd:'宿題に資料送りを書く',
+             task:'先方に送る資料をそろえて、送る日を書く' },
+           { tag:'会議室', src:'チャット', t:'会議室を　取る', cmd:'宿題に会議室を書く',
+             task:'次の会議室を取って、まとめに書く' }]},
+      { k:'次に　話すこと', f:'「次に　話すこと」の　てふだ',
+        a:[{ tag:'予算', src:'議事録', t:'予算の　上限', cmd:'次は予算の上限、と書く',
+             task:'次の打ち合わせで、予算の上限を話す' },
+           { tag:'承認', src:'チャット', t:'誰が　承認するか', cmd:'次は承認する人、と書く',
+             task:'次の打ち合わせで、誰が承認するかを話す' },
+           { tag:'打ち上げ', src:'メモ', t:'打ち上げの　店', cmd:'次は打ち上げの店、と書く',
+             task:'次の打ち合わせで、打ち上げの店を決める' }]}
     ]},
   /* 三戦目：AI くんが流れ図を組んでいく（問いごとに箱が一つ増える）。玉が流れたところでボスが線を切る → 切れた線を押す */
-  { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', done:'しくみが　くみあがった！',
+  { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', td:true, done:'しくみが　くみあがった！',
     fill:['bind(roles)', 'build(form)', 'build(route)', 'connect(approval)', 'test(flow)',
           'detect(gaps)', 'rebuild(route)'],
     nodes:[{ k:'申請' }, { k:'承認' }, { k:'不在のとき', r:1 }, { k:'差しもどし', r:2 }, { k:'完了', end:true }],
     /* **状態異常と直し方**（2026-11-10）。ミケツの攻撃で、しくみが止まる（状態異常）。AI くんが調べて戻ってくる → どう直すかを選ぶ。
        本人：「AIに放って戻ってきた時点で、なおすかなおさないかではなくどう決定するかな気もする」。どちらを選んでも直って、斬れる。
        f は AI くんが調べて分かったこと（窓の一行）、a の二つが直し方（t がコマンド・リザルトの「決めたこと」）*/
+    /* **A**（2026-11-11、上の二戦目と同じ）。直し方は三つで、どれも正解。選んだ方針（w）が流れ図の箱（at）に書き込まれ、リザルトの流れ図にも出る。
+       中身はすべてこちらで書いた例（2026-11-11）*/
     q:[
-      { cut:0, atk:'ミケツの　こうげき！　線が　切れた', f:'申請が　承認へ　届かない',
-        a:[{ t:'出たら　すぐ　知らせる', cmd:'申請と承認をつなぐ',
+      { cut:0, at:1, atk:'ミケツの　こうげき！　線が　切れた', f:'申請が　承認へ　届かない',
+        a:[{ t:'出たら　すぐ　知らせる', w:'すぐ　知らせる', cmd:'申請と承認をつなぐ',
              task:'申請が出たら、承認する人にすぐ知らせが届くようにする' },
-           { t:'朝に　まとめて　知らせる', cmd:'申請と承認をつなぐ',
-             task:'申請は、毎朝まとめて承認する人に知らせる' }]},
-      { cut:1, atk:'ミケツの　こうげき！　しくみが　止まった', f:'承認する人が　いない',
-        a:[{ t:'代わりの人へ　回す', cmd:'代わりの人へ回す',
+           { t:'朝に　まとめて　知らせる', w:'朝に　まとめて', cmd:'申請と承認をつなぐ',
+             task:'申請は、毎朝まとめて承認する人に知らせる' },
+           { t:'高いときだけ　すぐ　知らせる', w:'高いときだけ　すぐ', cmd:'申請と承認をつなぐ',
+             task:'高い額の申請だけ、承認する人にすぐ知らせる。ほかは朝にまとめる' }]},
+      { cut:1, at:2, atk:'ミケツの　こうげき！　しくみが　止まった', f:'承認する人が　いない',
+        a:[{ t:'代わりの人へ　回す', w:'代わりの　人へ', cmd:'代わりの人へ回す',
              task:'承認する人がいないときは、代わりの人に回す' },
-           { t:'戻るまで　待つ', cmd:'戻るまで待たせる',
-             task:'承認する人がいないときは、戻るまで待って、申請した人に知らせる' }]},
-      { cut:2, atk:'ミケツの　こうげき！　しくみが　くずれた', f:'差しもどしの　戻り道が　ない',
-        a:[{ t:'直した欄だけ　出し直す', cmd:'差しもどしを申請へつなぐ',
+           { t:'戻るまで　待つ', w:'戻るまで　待つ', cmd:'戻るまで待たせる',
+             task:'承認する人がいないときは、戻るまで待って、申請した人に知らせる' },
+           { t:'少ない額なら　自動で　通す', w:'少額は　自動で', cmd:'少額は自動で通す',
+             task:'承認する人がいないときは、少ない額なら自動で通す' }]},
+      { cut:2, at:3, atk:'ミケツの　こうげき！　しくみが　くずれた', f:'差しもどしの　戻り道が　ない',
+        a:[{ t:'直した欄だけ　出し直す', w:'直した欄だけ', cmd:'差しもどしを申請へつなぐ',
              task:'差しもどされたら、直した欄だけ出し直す' },
-           { t:'はじめから　出し直す', cmd:'差しもどしを申請へつなぐ',
-             task:'差しもどされたら、はじめから出し直す' }]}
+           { t:'はじめから　出し直す', w:'はじめから', cmd:'差しもどしを申請へつなぐ',
+             task:'差しもどされたら、はじめから出し直す' },
+           { t:'AI くんが　直して　出し直す', w:'AI くんが　直す', cmd:'差しもどしを AI くんへ回す',
+             task:'差しもどされたら、AI くんが直して出し直す。申請した人は確かめるだけ' }]}
     ]}
 ];
 /* どこまで倒したか（見ている人のブラウザだけ。adc-stage：0〜3）。3 で「冒険する」が解放される */
@@ -4047,6 +4168,7 @@ function openDemo(st){
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   slashEl.classList.remove('on');
   heroPose(null); slimeIdle();
+  fieldOff(); handOff(); slimeEl.style.scale = '';
 
   /* **「！」が先、窓はあとから**（2026-09-16、本人：「**ビックリ→窓にしてほしいのね**」）。
 
@@ -4184,11 +4306,11 @@ function quitDemo(){
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime); clearTimeout(D.tAtk);
   D.tCome = D.tBang = D.tSlime = D.tAtk = null;
   heroEl.classList.remove('hurt', 'ail'); slimeEl.classList.remove('atk');
-  clClear();
+  clClear(); fieldOff(); handOff(); slimeEl.style.scale = '';
   if (FILL0) FILL = FILL0;
   setEnemy('slime');
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
-  dRes.classList.remove('on'); dWon.classList.remove('on'); dWin.classList.remove('mid');
+  dRes.classList.remove('on'); dWon.classList.remove('on'); dWin.classList.remove('mid', 'hand', 'tray');
   boardEl.innerHTML = ''; D.items = null;
   slashEl.classList.remove('on'); slimeEl.classList.remove('come');
   dBang.classList.remove('on');
@@ -4201,7 +4323,8 @@ function paintHp(){
 }
 /* 三択を出す。**メニューと同じ形**——左に並べて、▶ が一つだけ動く */
 function ask(step, q, list, gen){
-  D.sel = 0; D.items = null;
+  D.sel = 0; D.items = null; D.hold = null;
+  dWin.classList.remove('hand', 'tray', 'deck'); handOff();
   if (!(D.stage > 1)) boardEl.innerHTML = '';
   D.n = list.length;              /* 本当の選択肢の数。この次が「にげる」 */
   dStep.textContent = step; dQ.textContent = q;
@@ -4318,6 +4441,56 @@ function paintD(){
   });
   if (D.items && D.items[D.sel] && D.items[D.sel].classList.contains('chip')) flShow(D.items[D.sel]);   /* 横に送った部品を見える所へ */
   if (CL.length) clSel();   /* 2戦目：▶ と同じ分身を光らせる */
+  if (handEl) [].forEach.call(handEl.children, function(c, j){ c.setAttribute('aria-current', j === D.sel ? 'true' : 'false'); });
+}
+/* ─ 場（2026-11-11）。できていくものを、窓の中ではなく場に大きく出す ───────────────
+   本人：「デモに求めるなら直感性の方、視覚理解」→（できていくものを場の主役に、と出して）「一旦見せて」。
+   勇者の左（名乗りの下から地面まで）が空いていれば、そこに出す。空いていない窓（縦の狭い窓など）は、前のとおり窓の中 */
+var fieldEl = null;
+function fieldOff(){ if (fieldEl){ fieldEl.remove(); fieldEl = null; } }
+function fieldOn(kind, need){
+  fieldOff();
+  if (MQ_NARROW.matches) return false;
+  var hr = heroEl.getBoundingClientRect(), nb = document.getElementById('name').getBoundingClientRect().bottom;
+  var L = 24, R = hr.left - 20, T = nb + 14, B = hr.bottom - 6;
+  if (R - L < 220 || B - T < need) return false;
+  /* ゲームの窓にそろえる（2026-11-11、本人：「ゲームから逸脱してる感じを減らして溶け込ませたい。特殊なゲームシステム、で説明しきれるくらいがいい」→（A 窓にそろえる／B 場の物にする）「とりあえずA」）*/
+  var el = document.createElement('div'); el.id = 'field'; el.className = 'win ' + kind;
+  document.body.appendChild(el);
+  el.style.left = L + 'px';
+  if (kind === 'sheet') el.style.width = Math.min(R - L, 340) + 'px'; else { el.style.maxWidth = (R - L) + 'px'; el.style.minWidth = '200px'; }   /* 流れ図は中身の幅 */
+  el.box = { l:L, r:R, t:T, b:B, need:need };
+  fieldEl = el;
+  return true;
+}
+/* 上下は、出してから中身の高さで真ん中に */
+function fieldPlace(){
+  if (!fieldEl) return;
+  var b = fieldEl.box, h = Math.max(fieldEl.offsetHeight, b.need);
+  fieldEl.style.top = Math.round(b.t + Math.max(0, (b.b - b.t - h) / 2)) + 'px';
+  fieldEl.style.left = Math.round(b.l + Math.max(0, (b.r - b.l - fieldEl.offsetWidth) / 2)) + 'px';
+}
+function flHost(){ return fieldEl && fieldEl.classList.contains('flow') ? fieldEl : boardEl; }
+/* ミケツの攻撃が、場の流れ図へ飛んでいく */
+function shoot(to, from, cls){
+  from = from || slimeEl;
+  if (!to || !from || REDUCE) return;
+  var a = from.getBoundingClientRect(), b = to.getBoundingClientRect(), c = document.createElement('i');
+  var ay = from === slimeEl ? a.height / 3 : a.height / 2, by = to === slimeEl ? b.height / 3 : b.height / 2;
+  c.className = 'shot' + (cls ? ' ' + cls : ''); c.style.left = (a.left + a.width / 2 - 7) + 'px'; c.style.top = (a.top + ay - 7) + 'px';
+  document.body.appendChild(c); void c.offsetWidth;
+  c.style.transform = 'translate(' + Math.round(b.left + b.width / 2 - a.left - a.width / 2) + 'px,' + Math.round(b.top + by - a.top - ay) + 'px)';
+  setTimeout(function(){ c.remove(); }, 320);
+}
+/* 2戦目：当たったら、敵の体から紙が一枚剥がれて、まとめへ飛ぶ */
+function peel(to, text){
+  if (!to || REDUCE) return;
+  var a = slimeEl.getBoundingClientRect(), b = to.getBoundingClientRect(), c = document.createElement('i');
+  c.className = 'peel'; c.textContent = text;
+  c.style.left = (a.left + a.width / 2 - 30) + 'px'; c.style.top = (a.top + a.height / 3) + 'px';
+  document.body.appendChild(c); void c.offsetWidth;
+  c.style.transform = 'translate(' + Math.round(b.left + 30 - a.left - a.width / 2) + 'px,' + Math.round(b.top - a.top - a.height / 3) + 'px)';
+  setTimeout(function(){ c.remove(); }, 300);
 }
 /* ─ 盤（二戦目・三戦目）────────────────────────────────────── */
 var boardEl = document.getElementById('board');
@@ -4327,26 +4500,29 @@ function spotHead(){ ask((D.step + 1) + ' / ' + curT().q.length, '', [], false);
 /* 三戦目。流れ図を描く。箱はその問いまでに出ているもの（r）。切れた線は ✕ */
 function spot3Draw(litTo, k0){
   var T = curT(), prev = -1, lit = true, st = k0 == null ? D.step : k0;
-  var vis = T.nodes.filter(function(n){ return !(n.r > st); });
-  boardEl.innerHTML = '<div class="fl sp">' + vis.map(function(n, j){
+  var vis = T.nodes.filter(function(n){ return !(n.r > st); }), host = flHost(), AR = host === boardEl ? '→' : '↓';
+  host.innerHTML = (host === boardEl ? '' : '<b class="fh">しくみ</b>') + '<div class="fl sp' + (T.td ? ' td' : '') + '">' + vis.map(function(n, j){
       var k = T.nodes.indexOf(n), out = '';
       if (j){
-        var cut = D.cutAt === prev;
-        out += '<button type="button" class="lk' + (cut ? ' cut' : '') + '" data-f="' + prev + '" aria-label="線">' + (cut ? '✕' : '→') + '</button>';
+        var cut = D.cutAt === prev, tw = !cut && D.tw && D.tw[prev];
+        out += '<button type="button" class="lk' + (cut ? ' cut' : '') + (tw ? ' tw' : '') + '" data-f="' + prev + '" aria-label="線">' +
+               (cut ? '✕' : tw ? (AR === '↓' ? '↓<span>' + esc(tw) + '</span>' : '→<span>' + esc(tw) + '</span>→') : AR) + '</button>';
       }
       var on = litTo != null && lit;
       if (k === litTo) lit = false;
       out += '<button type="button" tabindex="-1" class="nd' + (n.end ? ' end' : '') + (on ? ' lit' : '') +
              (n.r && n.r === st && D.cutAt < 0 && litTo == null ? ' new' : '') + '" data-k="' + k + '">' +
-             '<span class="v">' + esc(n.k) + '</span>' + (n.end ? '<span class="v">✓</span>' : '') + '</button>';
+             '<span class="v">' + esc(n.k) + '</span>' + (n.end ? '<span class="v">✓</span>' : '') +
+             (D.fx && D.fx[k] != null ? '<i>' + esc(D.fx[k]) + '</i>' : '') + '</button>';
       prev = k;
       return out;
     }).join('') + '</div>';
+  if (host !== boardEl) fieldPlace();
   placeDWin();
 }
 /* 玉が流れる：箱を順に光らせて、to の箱まで */
 function spot3Run(to, done){
-  var nds = [].slice.call(boardEl.querySelectorAll('.nd')), j = 0, tok = D.tok;
+  var nds = [].slice.call(flHost().querySelectorAll('.nd')), j = 0, tok = D.tok;
   (function step(){
     if (D.tok !== tok) return;
     var nd = nds[j];
@@ -4359,7 +4535,7 @@ function spot3Run(to, done){
 /* 押した → AI くんがつなぎ直す（✕ が金の → に戻る）*/
 function spot3Fix(){
   D.tok = null; D.cutAt = -1;
-  var c = boardEl.querySelector('.lk.cut');
+  var c = flHost().querySelector('.lk.cut');
   if (c){ c.classList.remove('cut'); c.classList.add('fix'); c.textContent = '→'; }
   palWrite();
 }
@@ -4372,8 +4548,27 @@ function spot3End(done){
 /* 窓の一行を差し替える（2・3戦目の「AI くんは　〜」など）*/
 function say2(t){ dQ.textContent = t; dQ.classList.remove('q'); dQ.classList.add('on'); say(t); placeDWin(); }
 /* 直し方を選んだ：AI くんが線をつなぎ直して、状態異常が消える（このあと勇者が斬る）*/
-function fx3Fix(){
+/* A（2026-11-11）：選んだ方針（w）を、流れ図の箱（at）に書き込む */
+function fx3Fix(i){
   heroEl.classList.remove('ail');
+  var q = curT().q[D.step], a = q && q.a[i];
+  if (curT().td && a){
+    /* 置いて守る（2026-11-11）：切れた線に、選んだ方針を置く。置いた方針は線の上に残る */
+    var lk = flHost().querySelector('.lk.cut'), pc = dA.children[i], vt = flHost() !== boardEl;
+    D.tw = D.tw || {}; D.tw[q.cut] = a.w;
+    spot3Fix();
+    if (lk){ lk.classList.add('tw'); lk.classList.remove('want'); lk.innerHTML = vt ? '↓<span>' + esc(a.w) + '</span>' : '→<span>' + esc(a.w) + '</span>→'; flShow(lk); }
+    if (pc && lk && !D.dropped) flyTo(pc.querySelector('button'), lk.querySelector('span'));
+    D.dropped = false;
+    /* 置いた駒で止まった攻撃が、ミケツへ跳ね返る（カウンター。2026-11-11）。勇者は斬らない */
+    if (lk) setTimeout(function(){ shoot(slimeEl, lk.querySelector('span') || lk, 'back'); }, 200);
+    return;
+  }
+  if (a && a.w != null && q.at != null){
+    D.fx = D.fx || {}; D.fx[q.at] = a.w;
+    var nd = boardEl.querySelector('.nd[data-k="' + q.at + '"]');
+    if (nd){ var w = document.createElement('i'); w.textContent = a.w; nd.appendChild(w); nd.classList.remove('new'); void nd.offsetWidth; nd.classList.add('new'); }
+  }
   spot3Fix();
 }
 /* ─ 2戦目は分身を狙う、3戦目は直し方を選ぶ（2026-11-10）──────────────
@@ -4394,13 +4589,14 @@ function clClear(){
 }
 /* 分身を並べる：勇者の右から画面の右端まで、入るだけ（2〜5 体）*/
 /* いちばん勇者寄りの一枠は空けておく——AI くんが、おすすめをそこへ連れてくる（2026-11-11）。枠は三つ以上（前の一つ＋むれ二体以上）*/
-function clSpawn(){
+/* A（2026-11-11）では前へ連れてこないので、枠は空けない（front が真のときだけ空ける）*/
+function clSpawn(front){
   clClear();
   var host = slimeEl.parentNode, hr = heroEl.getBoundingClientRect(), sr = slimeEl.getBoundingClientRect(), pr = host.getBoundingClientRect();
   /* 前の一体＋むれ三体が入らない狭い画面では、縮める */
-  var A = pr.right - 8 - (hr.right + 8), k = Math.min(1, A / (4.8 * (sr.width + 10))), w = sr.width * k;
+  var A = pr.right - 8 - (hr.right + 8), k = Math.min(1, A / ((front ? 4.8 : 3.4) * (sr.width + 10))), w = sr.width * k;
   var L = hr.right + 8 + w / 2 + 5 - pr.left, R = pr.right - 8 - w / 2 - 5 - pr.left;
-  var L2 = L + 1.7 * (w + 10);   /* むれは、前の枠から一体半あけて */
+  var L2 = front ? L + 1.7 * (w + 10) : L;   /* むれは、前の枠から一体半あけて */
   var n = Math.max(3, Math.min(5, Math.floor((R - L2) / (w + 10)) + 1));   /* むれは三体以上（一体連れてきても、むれに見える）*/
   CL.front = L;
   for (var j = 1; j <= n; j++){
@@ -4434,17 +4630,25 @@ function clSel(){
    むれは消さない。AI くんが、食い違っている二体に札を付け、おすすめの一体を勇者の前（空けておいた枠）へ連れてくる。もう一体はむれの中で札だけ。
    窓には、見つけたことの下におすすめの理由を一行。どちらを選んでも進み、選んだほうが「決めたこと」（正解は無い）。
    前は関係ないチラバリを消して二体を残していた（11/10〜11/11）*/
+/* **敵は一体、切れ端はコマンド**（2026-11-11、本人：「結局なんで分身複数全部正解になり得るのかの説明はついてないから、分身って設計自体が問題なんだろうか」
+   →（分身より、選択肢を敵の体にしたのが問題。敵を斬るのは「倒す相手を選ぶ」なので、当たりか捨てたかに読める。
+     1戦目と同じく、敵は散らかった打ち合わせ一体、切れ端は窓のコマンド＝散らかりを削る一撃、と出して）「一旦やって見せて」）。
+   STAGES[2].one が真なら、むれは出さない。むれの仕組み（下）は残してある */
 function cl2Pre(k){
   var tok = D.tok = {}, s = curT().q[k];
+  if (curT().one) return { tok:tok, ready:Date.now() };
+  var rec = s.rec != null;
   say2('チラバリの　むれが　あらわれた！');
-  clSpawn();
+  clSpawn(rec);
   CL.forEach(function(c){ c.w.classList.add('pop'); });
-  /* 札を付ける二体（むれの中から）。おすすめ（s.rec）の札が付いた一体を前へ */
-  var m = CL.length, keep = m > 2 ? [0, m - 1] : [0, 1];
-  if (k === 1 && m > 2) keep = [1, m - 1];
+  /* 札を付ける体（むれの中から）。おすすめ（s.rec）があれば、その一体を前へ。
+     A（2026-11-11）は三体に札：両端と真ん中（体のあいだに札の幅が要る）*/
+  var m = CL.length, keep;
+  if (s.a.length > 2) keep = [0, Math.floor((m - 1) / 2), m - 1];
+  else { keep = m > 2 ? [0, m - 1] : [0, 1]; if (k === 1 && m > 2) keep = [1, m - 1]; }
   setTimeout(function(){
     if (D.tok !== tok) return;
-    say2('AI くんが　おすすめを　つれてきた！');
+    say2(rec ? 'AI くんが　おすすめを　つれてきた！' : 'AI くんが　ふだを　つけた！');
     keep.forEach(function(j, i){
       var c = CL[j]; c.i = i; c.tg.textContent = s.a[i].tag; c.w.classList.add('tag');
       if (i === s.rec){ c.w.classList.add('rec', 'pull'); c.w.style.left = Math.round(CL.front) + 'px'; c.w.style.zIndex = 6; }
@@ -4456,7 +4660,12 @@ function cl2Pre(k){
 function cl2Step(pre){
   if (!pre){
     ask((D.step + 1) + ' / ' + curT().q.length, '', [], false); objLine();
-    boardEl.innerHTML = '<div class="cd"><b>まとめ</b>' + (D.card || []).map(function(t){ return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
+    /* カードは、場の一枚の紙（まとめ）に貼っていく（2026-11-11）。入らなければ前のとおり窓の中 */
+    if (curT().hand && D.step === 0 && fieldOn('sheet', 170)){
+      fieldEl.innerHTML = '<b class="fh">まとめ</b>' + curT().q.map(function(q, j){ return '<p data-j="' + j + '"><i>' + esc(q.k || '') + '</i><span></span></p>'; }).join('');
+      fieldPlace();
+    }
+    boardEl.innerHTML = fieldEl ? '' : '<div class="cd"><b>まとめ</b>' + (D.card || []).map(function(t){ return '<span>' + t + '</span>'; }).join('') + '</div>';
     pre = cl2Pre(D.step);
   }
   var s = curT().q[D.step], tok = pre.tok;
@@ -4465,7 +4674,13 @@ function cl2Step(pre){
   setTimeout(function(){
     if (D.tok !== tok) return;
     ask((D.step + 1) + ' / ' + curT().q.length, s.f,
-        s.a.map(function(a, j){ return a.tag + '<span class="note">（' + esc(a.src) + '）</span>' + (j === s.rec ? '<span class="rec">おすすめ</span>' : ''); }), false);   /* 選択肢は窓と同時（順に出さない。2026-11-11）*/
+        s.a.map(function(a, j){
+          if (curT().deck) return esc(a.t);
+          if (curT().hand) return '<span class="cs">' + esc(a.src) + '</span><b class="cb">' + esc(a.tag) + '</b><span class="ct">' + esc(a.t) + '</span>';   /* カード（2026-11-11）*/
+          return (s.rec != null ? a.tag : esc(a.t)) + '<span class="note">（' + esc(a.src) + '）</span>' + (j === s.rec ? '<span class="rec">おすすめ</span>' : ''); }), false);
+    if (curT().deck){ dWin.classList.add('deck'); placeDWin(); handShow(s.a); }
+    else if (curT().hand) dWin.classList.add('hand');
+    if (fieldEl) [].forEach.call(fieldEl.querySelectorAll('p'), function(r, j){ r.classList.toggle('now', j === D.step); });   /* 次に貼る欄 */   /* 選択肢は窓と同時（順に出さない。2026-11-11）*/
     if (s.why) dQ.insertAdjacentHTML('beforeend', '<span class="why"><b>おすすめ</b>' + esc(s.why) + '</span>');
     D.phase = 'ask';
     objLine(); placeDWin();
@@ -4478,7 +4693,19 @@ function cl2Step(pre){
    → 斬ったほうは前へ出て斬られて散る。もう一体も同時に引く。どちらも本体には重ならない。本体（体力のあるチラバリ）は、むれが引いてから戻る */
 function cl2Fix(i){
   var c = CL.filter(function(x){ return x.i === i; })[0], o = CL.filter(function(x){ return x.i != null && x.i !== i; })[0];
-  D.card = (D.card || []).concat([curT().q[D.step].a[i].t]);
+  var row = fieldEl && fieldEl.querySelector('p[data-j="' + D.step + '"]');
+  /* **やったことと起きたことをつなぐ**（2026-11-11、本人：「やってることと起こってることが繋がんないんだよな」→（カードを投げつけると散らかりが剥がれる、と出して）「やってみて」）。
+     切ったカードは敵へ飛んで当たる → 敵の体から紙が一枚剥がれて、まとめの欄へ飛ぶ。体力が減るほど敵が小さくなる */
+  if (curT().deck){ var cd0 = handEl && handEl.children[i]; if (cd0 && !D.dropped) flyTo(cd0, slimeEl); D.dropped = false; handOff(true); }
+  else if (curT().hand){ var li = dA.children[i]; if (li) flyTo(li.querySelector('button'), slimeEl); }
+  var rt = curT().q[D.step].a[i].t;
+  if (row){
+    setTimeout(function(){ peel(row.querySelector('span'), rt); }, 200);
+    setTimeout(function(){ row.classList.remove('now'); row.classList.add('got'); row.querySelector('span').textContent = rt; fieldPlace(); }, 480);
+  }
+  if (curT().hand) setTimeout(function(){ slimeEl.style.transformOrigin = '50% 100%'; slimeEl.style.scale = String(.55 + .45 * Math.max(0, D.hp) / D.hpMax); }, 220);
+  var q = curT().q[D.step], line = (q.k ? '<i>' + esc(q.k) + '</i>' : '') + esc(q.a[i].t);   /* A：まとめの欄の名前を添える */
+  D.card = (D.card || []).concat([line]);
   CL.forEach(function(x){ x.w.classList.remove('sel'); });
   if (c){
     c.w.classList.remove('pull');   /* 斬られに出るのは速く */
@@ -4493,10 +4720,164 @@ function cl2Fix(i){
   setTimeout(clClear, 450);
   setTimeout(function(){
     var cd = boardEl.querySelector('.cd');
-    if (cd){ var sp = document.createElement('span'); sp.textContent = curT().q[D.step].a[i].t; cd.appendChild(sp);
+    if (cd){ var sp = document.createElement('span'); sp.innerHTML = line; cd.appendChild(sp);   /* 一体のときも、まとめに積む */
       cd.classList.remove('got'); void cd.offsetWidth; cd.classList.add('got'); placeDWin(); }
   }, 110);
 }
+/* ─ 手札（2026-11-11）。カードバトルの見た目を借りる——手札は画面の下に扇形、敵へつまんで出す ─────
+   本人：「2.3戦目は何してるのかもなぜクリックが必要なのかもパッと見わかんない」→（押し方は変える、ただし見て分かる型。
+   型の名前だけ借りて見た目を借りていなかった、と出して）「ok」（まず 2戦目だけ）。
+   押しても出せる（押した一枚がそのまま敵へ）。キーは ←→ と Enter */
+var handEl = null;
+function handOff(keepFly){
+  if (!handEl) return;
+  var h = handEl; handEl = null;
+  if (keepFly){ h.classList.add('out'); setTimeout(function(){ h.remove(); }, 260); } else h.remove();
+  slimeEl.classList.remove('tgt');
+}
+function handShow(list){
+  handOff();
+  var h = document.createElement('div'); h.id = 'hand';
+  var n = list.length;
+  h.innerHTML = list.map(function(a, j){
+    var r = (j - (n - 1) / 2) * 7, y = Math.abs(j - (n - 1) / 2) * 10;
+    return '<button type="button" class="card" style="--r:' + r + 'deg; --y:' + y + 'px; animation-delay:' + (j * .07) + 's" aria-current="' + (j === D.sel ? 'true' : 'false') + '">' +
+      '<span class="cs">' + esc(a.src) + '</span><b class="cb">' + esc(a.tag) + '</b><span class="ct">' + esc(a.t) + '</span></button>';
+  }).join('');
+  document.body.appendChild(h);
+  handEl = h;
+  handPlace(); setTimeout(handPlace, 160);   /* 窓が開き終わってから測り直す */
+}
+/* 縦の狭い窓は、窓の上に。ほかは画面の下に少し沈めて（場にかからないように。選んだ一枚だけ上がる）*/
+function handPlace(){
+  if (!handEl) return;
+  var b = -Math.round(handEl.firstChild ? handEl.firstChild.offsetHeight * .3 : 40);
+  if (MQ_NARROW.matches && dWin.style.display !== 'none') b = Math.max(8, innerHeight - dWin.getBoundingClientRect().top + 8);
+  handEl.style.bottom = b + 'px';
+}
+window.addEventListener('resize', handPlace);
+function handOn(){ return D.on && D.stage === 2 && curT().deck && D.phase === 'ask' && handEl; }
+document.addEventListener('mouseover', function(e){
+  if (!handOn() || !e.target.closest) return;
+  var c = e.target.closest('#hand .card'); if (!c) return;
+  var ix = [].indexOf.call(handEl.children, c); if (ix >= 0 && ix !== D.sel){ D.sel = ix; paintD(); }
+});
+document.addEventListener('click', function(e){
+  if (!handOn() || !e.target.closest) return;
+  if (D.noClick){ D.noClick = false; e.stopImmediatePropagation(); e.preventDefault(); return; }
+  var c = e.target.closest('#hand .card'); if (!c) return;
+  e.stopImmediatePropagation(); e.preventDefault();
+  var ix = [].indexOf.call(handEl.children, c); D.sel = ix; paintD(); choose(ix);
+}, true);
+(function(){
+  var g = null, sx = 0, sy = 0, ix = -1, src = null;
+  function overEnemy(x, y){
+    var r = slimeEl.getBoundingClientRect(), m = 40;
+    return x > r.left - m && x < r.right + m && y > r.top - m * 2 && y < r.bottom + m;
+  }
+  document.addEventListener('pointerdown', function(e){
+    if (!handOn() || !e.target.closest) return;
+    var c = e.target.closest('#hand .card'); if (!c) return;
+    ix = [].indexOf.call(handEl.children, c); src = c; sx = e.clientX; sy = e.clientY;
+  });
+  document.addEventListener('pointermove', function(e){
+    if (ix < 0) return;
+    if (!g){
+      if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) < 8 || !handOn()) return;
+      var r = src.getBoundingClientRect();
+      g = src.cloneNode(true); g.className = 'card drag'; g.removeAttribute('style');
+      g.style.left = r.left + 'px'; g.style.top = r.top + 'px'; g.style.width = r.width + 'px'; g.style.height = r.height + 'px';
+      g.dx = sx - r.left; g.dy = sy - r.top;
+      document.body.appendChild(g);
+      src.style.visibility = 'hidden';
+      D.sel = ix; paintD();
+    }
+    g.style.left = (e.clientX - g.dx) + 'px'; g.style.top = (e.clientY - g.dy) + 'px';
+    slimeEl.classList.toggle('tgt', overEnemy(e.clientX, e.clientY));
+    e.preventDefault();
+  }, { passive:false });
+  function end(e){
+    if (ix < 0) return;
+    var i = ix; ix = -1;
+    if (!g) return;
+    var hit = overEnemy(e.clientX, e.clientY);
+    D.noClick = true; setTimeout(function(){ D.noClick = false; }, 0);
+    slimeEl.classList.remove('tgt');
+    if (hit && handOn()){
+      /* 敵の上で離した：その場から敵へ */
+      g.className = 'fly'; g.style.transform = ''; void g.offsetWidth;
+      var a = g.getBoundingClientRect(), b = slimeEl.getBoundingClientRect();
+      g.style.transform = 'translate(' + Math.round(b.left + b.width / 2 - a.left - a.width / 2) + 'px,' + Math.round(b.top + b.height / 2 - a.top - a.height / 2) + 'px) scale(.4)';
+      g.style.opacity = '0';
+      var gg = g; setTimeout(function(){ gg.remove(); }, 260);
+      g = null; D.dropped = true; choose(i);
+    } else { g.remove(); g = null; if (src) src.style.visibility = ''; }   /* 敵の外で離したら手札へ戻る */
+  }
+  document.addEventListener('pointerup', end);
+  document.addEventListener('pointercancel', function(){ if (g){ g.remove(); g = null; } if (src) src.style.visibility = ''; ix = -1; slimeEl.classList.remove('tgt'); });
+})();
+/* 切ったカード・置いた方針が、そこへ飛ぶ（2026-11-11）*/
+function flyTo(el, to){
+  if (!el || !to || REDUCE) return;
+  var a = el.getBoundingClientRect(), b = to.getBoundingClientRect(), c = el.cloneNode(true);
+  c.className = 'fly'; c.removeAttribute('aria-current');
+  c.style.left = a.left + 'px'; c.style.top = a.top + 'px'; c.style.width = a.width + 'px'; c.style.height = a.height + 'px';
+  document.body.appendChild(c); void c.offsetWidth;
+  c.style.transform = 'translate(' + Math.round(b.left + b.width / 2 - a.left - a.width / 2) + 'px,' + Math.round(b.top + b.height / 2 - a.top - a.height / 2) + 'px) scale(.4)';
+  c.style.opacity = '0';
+  setTimeout(function(){ c.remove(); }, 260);
+}
+/* 3戦目：方針を持つ（押した・つまんだ）→ 切れた線が置き場として光る */
+function tdHold(ix){
+  D.hold = ix;
+  [].forEach.call(dA.children, function(li, j){ li.classList.toggle('held', j === ix); });
+  var sl = flHost().querySelector('.lk.cut'); if (sl) sl.classList.add('want');
+}
+function tdOn(){ return D.on && D.stage === 3 && curT().td && D.phase === 'ask'; }
+document.addEventListener('click', function(e){
+  if (!tdOn() || !e.target.closest) return;
+  if (D.noClick){ D.noClick = false; e.stopImmediatePropagation(); e.preventDefault(); return; }
+  if (e.target.closest('#board .lk.cut, #field .lk.cut')){ e.stopImmediatePropagation(); e.preventDefault(); if (D.hold != null) choose(D.hold); return; }
+  var li = e.target.closest('#dA li');
+  if (!li || li.classList.contains('flee')) return;
+  e.stopImmediatePropagation(); e.preventDefault();
+  var ix = [].indexOf.call(dA.children, li);
+  if (D.hold === ix){ choose(ix); return; }   /* もう一度押したら、そのまま置く */
+  D.sel = ix; paintD(); tdHold(ix);
+}, true);
+/* つまんで、切れた線へ運ぶ */
+(function(){
+  var g = null, sx = 0, sy = 0, ix = -1, src = null;
+  document.addEventListener('pointerdown', function(e){
+    if (!tdOn() || !e.target.closest) return;
+    var li = e.target.closest('#dA li'); if (!li || li.classList.contains('flee')) return;
+    ix = [].indexOf.call(dA.children, li); src = li.querySelector('button'); sx = e.clientX; sy = e.clientY;
+  });
+  document.addEventListener('pointermove', function(e){
+    if (ix < 0) return;
+    if (!g){
+      if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) < 8 || !tdOn()) return;
+      var r = src.getBoundingClientRect();
+      g = src.cloneNode(true); g.className = 'fly drag';
+      g.style.left = r.left + 'px'; g.style.top = r.top + 'px'; g.style.width = r.width + 'px'; g.style.height = r.height + 'px';
+      g.dx = sx - r.left; g.dy = sy - r.top;
+      document.body.appendChild(g);
+      D.sel = ix; paintD(); tdHold(ix);
+    }
+    g.style.left = (e.clientX - g.dx) + 'px'; g.style.top = (e.clientY - g.dy) + 'px';
+    e.preventDefault();
+  }, { passive:false });
+  function end(e){
+    if (ix < 0) return;
+    var i = ix; ix = -1;
+    if (!g) return;
+    g.remove(); g = null; D.noClick = true; setTimeout(function(){ D.noClick = false; }, 0);
+    var at = document.elementFromPoint(e.clientX, e.clientY);
+    if (tdOn() && at && at.closest && at.closest('#board .lk.cut, #field .lk.cut')){ D.dropped = true; choose(i); }
+  }
+  document.addEventListener('pointerup', end);
+  document.addEventListener('pointercancel', function(){ if (g){ g.remove(); g = null; } ix = -1; });
+})();
 /* 分身を押しても選べる */
 document.addEventListener('click', function(e){
   if (!D.on || D.stage !== 2 || D.phase !== 'ask' || !e.target.closest) return;
@@ -4518,6 +4899,7 @@ function fx3Pre(k){
       if (D.tok !== tok) return;
       heroEl.classList.add('ail');
       spot3Draw(s.cut, k); flShow(boardEl.querySelector('.lk.cut'));
+      if (flHost() !== boardEl) shoot(flHost().querySelector('.lk.cut'));   /* 攻撃が場の流れ図に当たる */
       D.phase = 'run'; D.n = 0;
       /* 「AI くんが　しらべている…」の一拍は外した（2026-11-11、削った）。攻撃は 1.1 → 0.7 秒 */
       palWrite();
@@ -4533,12 +4915,18 @@ function fx3Pre(k){
   return pre;
 }
 function fx3Step(pre){
-  if (!pre){ spotHead(); pre = fx3Pre(D.step); }
+  if (!pre){
+    spotHead();
+    if (curT().td && D.step === 0) fieldOn('flow', 300);   /* 流れ図は場に大きく（入らなければ窓の中）*/
+    pre = fx3Pre(D.step);
+  }
   var s = curT().q[D.step], tok = pre.tok;
   D.phase = 'run'; D.n = 0;
   pre.go = function(){
     if (D.tok !== tok) return;
-    ask((D.step + 1) + ' / ' + curT().q.length, s.f, s.a.map(function(a){ return esc(a.t); }), false);   /* 選択肢は窓と同時（順に出さない。2026-11-11）*/
+    var td = curT().td;
+    ask((D.step + 1) + ' / ' + curT().q.length, s.f, s.a.map(function(a){ return td ? '<b class="tg">◆</b><span>' + esc(a.w) + '</span>' : esc(a.t); }), false);   /* 選択肢は窓と同時（順に出さない。2026-11-11）*/
+    if (td) dWin.classList.add('tray');
     D.phase = 'ask';
     objLine(); placeDWin();
   };
@@ -4779,7 +5167,8 @@ function typeCmd(s, done){
    → ふだんは**走ったまま戦い**、斬った瞬間に**ぐっと止める**（一瞬で 0）。振り終わったら 0.25 秒で走り出す。
    止まるのが短いので疾走感は残り、緩急で**斬ったところが立つ。**
    **最後の一太刀のあとは戻さない**——そのまま勝ちのポーズへ（剣を上げたまま走ると、地面の上を滑る）*/
-function swing(done, k){
+function swing(done, k, how){
+  /* how：'throw' 投げる（2戦目のカード。斬撃の線は出さず、カードが当たったところで弾かれる）／'counter' 跳ね返す（3戦目。勇者は動かない）*/
   heroEl.classList.add('swing');
   halt(true, null, 0);
   /* **選んだ位置で、構え（0.11 秒）→ 振り抜き**（2026-09-30、HERO_RAISE ほかの節）。上：振りかぶって振り下ろす／中：引いて横一文字／下：下げて斬り上げる。
@@ -4787,8 +5176,9 @@ function swing(done, k){
   k = (k === 1 || k === 2) ? k : 0;
   var WIND = ['raise', 'back', 'low'], HIT = ['slash', 'mid', 'up'];
   function strike(){
-    heroPose(HIT[k]);
+    if (how !== 'counter') heroPose(HIT[k]);
     slimeEl.classList.add('hit');
+    if (how) return;
     /* バフ（縁取り・大きい斬撃）は外した（同日、本人：「視線誘導としては面白いけどな～…」→（意味が伝わらない、と確かめて）
        →（連れの仕事を「次の問いを出す」「タスクをまとめる」にして、バフはやめる、と出して）「なるほど。やってみてC」）。
        heroBuff() と #slash.big は残してある */
@@ -4798,6 +5188,8 @@ function swing(done, k){
     setTimeout(function(){ slashEl.classList.remove('on'); }, 230);
   }
   if (REDUCE) strike();
+  else if (how === 'counter') setTimeout(strike, 480);
+  else if (how === 'throw'){ heroPose(WIND[k]); setTimeout(strike, 210); }
   else { heroPose(WIND[k]); setTimeout(strike, 110); }
   /* 一撃で一目。いちど「勇者で半分・連れの唱えで半分（二人で一つの一撃）」にした → 本人：「AIはあくまでサポート感あってほしいな」。
      **倒すのは勇者**に戻した。連れは唱えた字を勇者へ送って支える（palShot）*/
@@ -4895,7 +5287,7 @@ function choose(i){
   D.phase = 'type';
   D.items = null;
   if (D.stage === 2) cl2Fix(i);
-  if (D.stage === 3) fx3Fix();
+  if (D.stage === 3) fx3Fix(i);
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
   dA.innerHTML = '<li class="pick"><span class="cur">▶</span>'
@@ -4916,9 +5308,9 @@ function choose(i){
     /* 2・3戦目は、斬り終わったら次の場の動きを始める（窓はまだ選んだ行のまま）*/
     if (D.hp > 0 && D.stage === 2) pre = cl2Pre(st + 1);
     next();
-  }, D.stage > 1 ? st % 3 : i);
+  }, D.stage > 1 ? st % 3 : i, D.stage === 2 && curT().hand ? 'throw' : D.stage === 3 && curT().td ? 'counter' : null);
   /* 3戦目は、斬撃が当たった直後にミケツが打ち返す（2026-11-11、本人：「斬る途中で打ち返す」）*/
-  if (D.stage === 3 && D.hp > 0) setTimeout(function(){ if (D.phase !== 'type' || D.step !== st) return; pre = fx3Pre(st + 1); next(); }, 300);                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
+  if (D.stage === 3 && D.hp > 0) setTimeout(function(){ if (D.phase !== 'type' || D.step !== st) return; pre = fx3Pre(st + 1); next(); }, curT().td ? 650 : 300);   /* 跳ね返しが当たってから */                    /* すぐ斬る（選んだ位置 i で斬り方が変わる）*/
   typeCmd(curT().q[D.step].a[ai].cmd, function(){
     setLog(st + 1); typed = true; next();
   });
@@ -4927,6 +5319,7 @@ function choose(i){
 /* 提案内容（2026-09-16）。**選んだ三つが、そのまま三つのタスクになる。**
    **どの問いも、答えが必ずどこかに出る。**出ない問いがあると、選んだ意味が無い */
 function showResult(){
+  fieldOff(); handOff();
   var T = curT(),
       AS = T.q.map(function(q, j){ return q.a[D.picks[j]]; });
   dRes.querySelector('.rt').textContent = D.stage > 1 ? T.done : 'さくせんが　きまった！';
@@ -4939,7 +5332,26 @@ function showResult(){
   /* **一つずつ行を分ける**（2026-09-28）。選択肢に全角の空きを入れたので、「　／　」で並べると区切りと見分けにくかった */
   var rp = document.getElementById('rPick');
   rp.innerHTML = '';
-  AS.forEach(function(a){ var s = document.createElement('span'); s.textContent = a.t; rp.appendChild(s); });
+  if (D.stage === 3 && T.nodes && (D.fx || D.tw)){
+    /* A（2026-11-11）：選んだ方針が書き込まれた流れ図 */
+    var fl = document.createElement('span'); fl.className = 'rfl';
+    T.nodes.forEach(function(n, k){
+      if (k){
+        var ar = document.createElement('em'), tw = D.tw && D.tw[k - 1];
+        if (tw){ ar.className = 'tw'; ar.appendChild(document.createTextNode('→')); var ts = document.createElement('span'); ts.textContent = tw; ar.appendChild(ts); ar.appendChild(document.createTextNode('→')); }
+        else ar.textContent = '→';
+        fl.appendChild(ar);
+      }
+      var b = document.createElement('b'); b.textContent = n.k;
+      if (D.fx && D.fx[k] != null){ var w = document.createElement('i'); w.textContent = D.fx[k]; b.appendChild(w); }
+      fl.appendChild(b);
+    });
+    rp.appendChild(fl);
+  } else AS.forEach(function(a, j){
+    var s = document.createElement('span'), k = T.q[j].k;
+    if (k){ var b = document.createElement('i'); b.textContent = k; s.appendChild(b); }   /* A：まとめの欄の名前 */
+    s.appendChild(document.createTextNode(a.t)); rp.appendChild(s);
+  });
   /* **タスクは組み立てる。**書いてある文をそのまま入れるので、`textContent` で足す——
      文中に「」が入るので、文字列で組むと囲みが壊れる */
   var ul = document.getElementById('rTask');
@@ -5266,8 +5678,10 @@ document.addEventListener('keydown', function(e){
   n = IT.length;
   /* 焦点が選択肢の中にあるなら、焦点も一緒に動かす（メニューと同じ）。盤の上の物は ←→ でも動く */
   var inA = dA.contains(document.activeElement) || boardEl.contains(document.activeElement);
-  if (k === 'ArrowDown' || (D.items && k === 'ArrowRight' && D.sel < D.n - 1)){ D.sel = (D.sel+1)%n; paintD(); if (inA) focusRow(IT[D.sel]); eat(e); return; }
-  if (k === 'ArrowUp' || (D.items && k === 'ArrowLeft')){ D.sel = (D.sel+n-1)%n; paintD(); if (inA) focusRow(IT[D.sel]); eat(e); return; }
+  var hz = D.items || dWin.classList.contains('hand') || dWin.classList.contains('tray') || dWin.classList.contains('deck');   /* カード・方針は横並び（2026-11-11）*/
+  if (hz && k === 'ArrowRight' && D.sel >= D.n - 1){ eat(e); return; }
+  if (k === 'ArrowDown' || (hz && k === 'ArrowRight' && D.sel < D.n - 1)){ D.sel = (D.sel+1)%n; paintD(); if (inA) focusRow(IT[D.sel]); eat(e); return; }
+  if (k === 'ArrowUp' || (hz && k === 'ArrowLeft')){ D.sel = (D.sel+n-1)%n; paintD(); if (inA) focusRow(IT[D.sel]); eat(e); return; }
   if (k === 'Enter' || k === ' ' || k === 'Spacebar' || k === 'ArrowRight' || k === 'z' || k === 'Z'){
     choose(D.sel); eat(e); return;
   }
