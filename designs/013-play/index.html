@@ -1446,33 +1446,29 @@ body.demo #dHp{display:block}
 #field.flow .lk.cut.want{border-color:var(--go); color:var(--go)}
 #field.flow .lk.tw{color:var(--go)}
 #field.flow .lk.tw span{display:inline-block; margin-left:.5em; padding:.1em .5em; border:2px solid var(--go); font-size:14px}
-/* 3戦目の道＝流れ図（2026-11-11）。駅（申請・承認…）を道に並べ、穴が開いた線に台 */
-#td{position:fixed; inset:0; z-index:7; pointer-events:none}
-#td .trk{position:absolute; transform:translateY(-50%)}
-#td .trk::before{content:''; position:absolute; left:0; right:0; top:50%; border-top:3px dashed rgba(255,255,255,.3)}
-#td .fl{position:relative; display:flex; justify-content:space-between; align-items:center; gap:4px}
-#td .nd{-webkit-appearance:none; appearance:none; font:inherit; font-size:13px; letter-spacing:.04em; padding:.3em .55em; cursor:default; white-space:nowrap;
-  background:var(--win); color:var(--ink); border:2px solid var(--dim); pointer-events:auto}
-#td .nd .v + .v{margin-left:.3em}
-#td .nd.lit{background:var(--go); color:var(--edge); border-color:var(--go)}
-#td .nd.new{animation:shock .1s steps(2) 4}
-#td .lk{-webkit-appearance:none; appearance:none; position:relative; flex:0 0 auto; width:12px; height:36px; padding:0; background:none; border:0; font:inherit; pointer-events:none}
-#td .lk.cut,#td .lk.tw{flex:0 0 auto; width:36px; pointer-events:auto; font-size:16px; line-height:1}
-#td .lk.cut{color:#e0604e; background:var(--win); border:2px dashed #e0604e; cursor:pointer; animation:shock .45s steps(2) infinite alternate}
-#td .lk.cut.want{color:var(--go); border:2px solid var(--go); background:var(--box)}
-#td .lk.tw{color:var(--edge); background:var(--go); border:2px solid var(--go); cursor:default}
-#td .lk.tw span{position:absolute; left:50%; bottom:calc(100% + 4px); transform:translateX(-50%); white-space:nowrap; padding:.1em .4em;
-  font-size:11px; letter-spacing:.04em; color:var(--go); background:var(--win); border:1px solid var(--go)}
-#td.low .fl{gap:2px}
-#td.low .nd{font-size:10.5px; padding:.2em .3em; letter-spacing:0}
-#td.low .lk{width:4px; height:26px}
-#td.low .lk.cut,#td.low .lk.tw{width:26px; font-size:12px}
-#td.low .lk.tw:not(.last) span{display:none}   /* 狭い窓は、いま建てた塔の名前だけ */
-#td .mob{position:fixed; width:22px; height:18px; transform:translate(-50%, -50%); background:#e0604e; box-shadow:inset 0 -3px 0 #a33;
-  transition:left .6s steps(6); animation:mob .3s steps(2) infinite}
-#td .mob::before,#td .mob::after{content:''; position:absolute; top:5px; width:4px; height:4px; background:var(--win)}
-#td .mob::before{left:4px} #td .mob::after{right:4px}
-#td .mob.pop{animation:shock .1s steps(2) 3; opacity:0; transition:opacity .2s steps(2) .1s}
+/* 3戦目は上から見た地図に管（2026-11-17）。名乗りの下から帯の上までを地図にして、窓は横（広い窓）か下。管の穴を部品でふさぐ */
+#td{position:fixed; z-index:5; overflow:hidden; pointer-events:none;
+  box-shadow:0 0 0 var(--px) var(--edge), 0 0 0 calc(var(--px)*2) var(--dim)}
+#td canvas.map{position:absolute; left:0; top:0; image-rendering:pixelated}
+#td .sg{position:absolute; z-index:3; transform:translate(-50%,-100%); white-space:nowrap; padding:.1em .45em; font-weight:400; letter-spacing:.06em;
+  color:var(--ink); background:rgba(13,6,16,.78); border:1px solid var(--dim)}
+#td .hole{-webkit-appearance:none; appearance:none; position:absolute; z-index:2; transform:translate(-50%,-50%); padding:0; margin:0;
+  font:inherit; line-height:1; background:none; border:2px dashed transparent; cursor:default; pointer-events:none}
+#td .hole.now{border-color:#e0604e; cursor:pointer; pointer-events:auto; animation:shock .45s steps(2) infinite alternate}
+#td .hole.want{border:2px solid var(--go)}
+#td .hole.tw{background:var(--go); border:2px solid var(--go); box-shadow:inset 0 -3px 0 #b8872f; animation:shock .1s steps(2) 4}
+#td .hole span{position:absolute; left:50%; bottom:calc(100% + 4px); transform:translateX(-50%); white-space:nowrap; padding:.1em .4em;
+  font-size:11px; line-height:1.3; letter-spacing:.04em; color:var(--go); background:var(--win); border:1px solid var(--go)}
+#td .ball{position:absolute; z-index:1; transform:translate(-50%,-50%); background:var(--go); box-shadow:0 0 0 2px #6b4a1e; pointer-events:none}
+#td .ball.drop{transition:transform .5s cubic-bezier(.5,0,1,1), opacity .5s steps(4); transform:translate(-50%, calc(-50% + var(--dy, 40px))); opacity:0}
+#td .boss,#td .base{position:absolute; z-index:4; image-rendering:pixelated}
+#td .boss.hit{animation:shock .1s steps(2) 3}
+#td .bhp{position:absolute; z-index:5; height:6px; background:var(--edge); box-shadow:0 0 0 1px var(--ink)}
+#td .bhp i{display:block; height:100%; background:#e0604e; transition:width .2s steps(3)}
+body.td3 #dHp,body.td3 #slash,body.td3 #dBang,body.td3 #field,body.td3 #slime,body.td3 #hero{visibility:hidden !important}
+#dWin.tdp{right:auto !important; bottom:auto !important; transform:none !important; animation:none !important}
+#dWin.tdp.side #dA{flex-direction:column; flex-wrap:nowrap}
+#dWin.tdp.side #dA li:not(.flee):not(.pick){flex:none}
 @keyframes mob{ 0%,49%{margin-top:0} 50%,100%{margin-top:-2px} }
 .shot.back{background:var(--go); box-shadow:0 0 0 3px rgba(255,210,112,.35)}
 .peel{position:fixed; z-index:9998; pointer-events:none; padding:.2em .5em; font-style:normal; font-size:12px; letter-spacing:.04em; white-space:nowrap;
@@ -4417,6 +4413,8 @@ function fitBoard(){
   if (boardOver() > 0) dWin.classList.add('noobj');
 }
 function placeDWin(){
+  /* 3戦目の地図のあいだは、窓は地図の横（または下）の建てるメニュー */
+  if (tdEl && dWin.classList.contains('tdp')){ var P = tdEl.lay.pan; dWin.style.left = P.l + 'px'; dWin.style.top = P.t + 'px'; dWin.style.width = P.w + 'px'; return; }
   fitBoard();
   if (MQ_NARROW.matches || dWin.classList.contains('mid')){ dWin.style.top = ''; return; }
   if (dWin.style.display === 'none') return;
@@ -4581,6 +4579,22 @@ function say2(t){ dQ.textContent = t; dQ.classList.remove('q'); dQ.classList.add
 function fx3Fix(i){
   heroEl.classList.remove('ail');
   var q = curT().q[D.step], a = q && q.a[i];
+  if (tdEl && a){
+    /* 管（2026-11-17）：いまの穴を、選んだ部品でふさぐ。部品の名前が穴の上に残る */
+    var ho = tdEl.holes[D.step];
+    D.tok = null; D.cutAt = -1;
+    D.tw = D.tw || {}; D.tw[q.cut] = a.w;
+    tdEl.open[D.step] = false;
+    if (ho){
+      var pc0 = dA.children[i];
+      if (pc0 && !D.dropped) flyTo(pc0.querySelector('button'), ho);
+      ho.classList.remove('now', 'want'); ho.classList.add('tw');
+      ho.innerHTML = '<span>' + esc(a.w) + '</span>';
+    }
+    palWrite();
+    D.dropped = false;
+    return;
+  }
   if (curT().td && a){
     /* 置いて守る（2026-11-11）：切れた線に、選んだ方針を置く。置いた方針は線の上に残る */
     var lk = flHost().querySelector('.lk.cut'), pc = dA.children[i], vt = flHost() !== boardEl;
@@ -4593,7 +4607,6 @@ function fx3Fix(i){
       if (pc && !D.dropped) flyTo(pc.querySelector('button'), lk);
       [].forEach.call(tdEl.querySelectorAll('.lk.last'), function(x){ x.classList.remove('last'); });
       lk.classList.add('last');
-      setTimeout(function(){ tdShoot(lk); }, 150);
       setTimeout(function(){ shoot(slimeEl, lk, 'back'); }, 320);
     } else {
       if (pc && lk && !D.dropped) flyTo(pc.querySelector('button'), lk.querySelector('span'));
@@ -4866,66 +4879,224 @@ function flyTo(el, to){
   c.style.opacity = '0';
   setTimeout(function(){ c.remove(); }, 260);
 }
-/* ─ 3戦目の道と台（2026-11-11）。タワーディフェンスの見た目を借りる ─────────────
-   本人：「3もやって」（2戦目の手札と同じ考え：型の見た目まで借りる）。
-   地面に道（ミケツ → 勇者）、道の上に塔を建てる台が三つ。ミケツの攻撃で手下が道を歩いてきて、台の前で止まる。
-   台に方針（塔）を建てると、塔が手下を撃って消し、続けてミケツを撃つ */
+/* ─ 3戦目は上から見た地図に管、穴をふさぐ（2026-11-17）─────────────
+   本人：「これほんとにタワーディフェンス？」→「なんか結局1問目とほぼ変わらない気がする」→「3の見直しだけ」
+   →「今やってる方式自体がタワーディフェンス系には見えないし、なにこれ？と思ってるよずっと」→「3戦目だけ画面の枠を変える方向で考えて」
+   → いちど上から見た地図でタワーディフェンスを作った → 本人：「私はタワーディフェンスを知ってるから思想自体は理解できるよ。
+   でも知らない人は何？ってなるだろうな。1.2はそこをクリアしてる」→（型を替える候補を四つ出して）「Aを基盤にしたCは？」
+   （A 切れた線をつなぐ＋C 穴をふさぐ）→「いや、元々開いてるのをふさぐ感じで」→「1は問いの順、2は全通してから」。
+   地図に管（申請 → 承認 → 差しもどし → 完了）。左上に勇者、管の先にミケツ。管には最初から穴が三つ開いていて、
+   申請の玉が流れては穴からこぼれ落ちている。問いの順に穴が一つずつ光る → 窓の方針（部品）を当ててふさぐ → 玉が次の穴まで進む。
+   三つともふさぐと玉が完了まで届き、管の先のミケツに当たって倒れる（ふさいでいるあいだ、体力は減らない）*/
 var tdEl = null;
-function tdOff(){ if (tdEl){ tdEl.remove(); tdEl = null; } }
-/* 道＝流れ図（2026-11-11、本人：「しくみいる？これ」→（地面の道と左の窓で同じことを二か所。A 道を流れ図にする（勧め）／B 窓を外すだけ）「A」）。
-   地面の道に駅（申請・承認…）を並べ、攻撃で穴が開いた線に台が出る。左の「しくみ」の窓は出さない */
+function tdOff(){
+  if (!tdEl) return;
+  var el = tdEl; tdEl = null;
+  cancelAnimationFrame(el.raf); clearInterval(el.tick); clearInterval(el.gen); clearTimeout(el.tw8);
+  el.remove();
+  document.body.classList.remove('td3');
+  dWin.classList.remove('tdp', 'side');
+  dWin.style.left = dWin.style.width = dWin.style.top = '';
+}
+/* 地図と窓の割り振り。名乗りの下から帯の上まで。横に余るなら窓は右、余らなければ下。縦の狭い窓は窓をいつもの帯の下に */
+function tdLay(){
+  var nb = document.getElementById('name').getBoundingClientRect().bottom, bt = document.getElementById('dBar').getBoundingClientRect().top;
+  var l = 16, r = innerWidth - 16, t = Math.round(nb + 12), b = Math.round(bt - 10);
+  if (MQ_NARROW.matches && innerHeight > innerWidth) return { side:false, map:{ l:l, t:t, w:r - l, h:b - t }, pan:null };
+  if ((r - l) / Math.max(1, b - t) >= 1.5){
+    var pw = Math.round(Math.max(220, Math.min(330, (r - l) * .28)));
+    return { side:true, map:{ l:l, t:t, w:r - l - pw - 14, h:b - t }, pan:{ l:r - pw, t:t, w:pw } };
+  }
+  var ph = Math.round(Math.min(180, (b - t) * .48));
+  return { side:false, map:{ l:l, t:t, w:r - l, h:b - t - ph - 10 }, pan:{ l:l, t:b - ph, w:r - l } };
+}
+/* 管（升目）。勇者の横から右へ、下りて左へ、下りて右のミケツまで */
+function tdPath(C){ return [[1, 1], [C - 2, 1], [C - 2, 3], [1, 3], [1, 5], [C - 3, 5]]; }
+/* 穴（問いの順＝流れの順）と札。[区間, 区間の中の割合] */
+var TD_HOLE = [[0, .55], [2, .45], [4, .5]];
+var TD_SIGN = [['申請', 0, .02], ['承認', 2, .12], ['差しもどし', 4, .2], ['完了', 4, .93]];
+function tdP(col, row){ var g = tdEl.g; return { x:g.ox + (col + .5) * g.c, y:g.oy + (row + .5) * g.c }; }
+function tdSegD(si, f){ var d = 0; for (var i = 0; i < si; i++) d += tdEl.seg[i]; return d + tdEl.seg[si] * f; }
+/* 管の上の距離 d の点（h：横の管か）*/
+function tdAt(d){
+  var wp = tdEl.wp, seg = tdEl.seg;
+  d = Math.max(0, d);
+  for (var i = 0; i < seg.length; i++){
+    if (d <= seg[i] || i === seg.length - 1){
+      var a = wp[i], b = wp[i + 1], f = Math.min(1, d / (seg[i] || 1));
+      return { x:a.x + (b.x - a.x) * f, y:a.y + (b.y - a.y) * f, h:a.y === b.y };
+    }
+    d -= seg[i];
+  }
+}
 function tdBuild(){
   tdOff();
-  var hr = heroEl.getBoundingClientRect(), sr = slimeEl.getBoundingClientRect();
-  var low = MQ_NARROW.matches || innerHeight < 480;
-  var y = Math.round(Math.min(innerHeight - 24, low ? hr.bottom - 4 : hr.bottom + 22));
-  var L = low ? 10 : Math.max(16, Math.round(hr.left - 120)), R = low ? innerWidth - 10 : Math.min(innerWidth - 16, Math.round(sr.right + 160));
-  var el = document.createElement('div'); el.id = 'td'; if (low) el.className = 'low';
-  el.innerHTML = '<div class="trk" style="left:' + L + 'px; width:' + (R - L) + 'px; top:' + y + 'px"></div>';
-  document.body.appendChild(el);
-  el.trk = el.firstChild;
+  var el = document.createElement('div'); el.id = 'td';
+  el.innerHTML = '<canvas class="map"></canvas><canvas class="base"></canvas><canvas class="boss"></canvas><div class="bhp"><i></i></div>';
+  document.getElementById('demo').appendChild(el);
   tdEl = el;
+  el.cv = el.querySelector('.map'); el.boss = el.querySelector('.boss'); el.base = el.querySelector('.base'); el.bhp = el.querySelector('.bhp');
+  el.boss.width = slimeEl.width; el.boss.height = slimeEl.height;
+  el.base.width = heroEl.width; el.base.height = heroEl.height;
+  el.balls = []; el.holes = []; el.signs = []; el.open = [true, true, true]; el.done = null;
+  TD_HOLE.forEach(function(){
+    var h = document.createElement('button'); h.type = 'button'; h.className = 'hole'; h.setAttribute('aria-label', '穴');
+    el.appendChild(h); el.holes.push(h);
+  });
+  TD_SIGN.forEach(function(s){ var b = document.createElement('b'); b.className = 'sg'; b.textContent = s[0]; el.appendChild(b); el.signs.push(b); });
+  document.body.classList.add('td3');
+  tdLayout();
+  tdProxy(); el.tick = setInterval(tdProxy, 170);
+  tdHpPaint(D.hp);
+  /* 申請の玉は、地図が出たときから流れつづける */
+  el.gen = setInterval(tdBall, 420); tdBall();
+  el.t0 = performance.now();
+  el.raf = requestAnimationFrame(tdLoop);
 }
-/* 手下がミケツから道を歩いてきて、穴（台）の前で止まる */
-function tdWalk(){
+/* 勇者とミケツは、横の場面の絵をそのまま写す（動きも同じ）*/
+function tdProxy(){
   if (!tdEl) return;
-  var pad = tdEl.trk.querySelector('.lk.cut'); if (!pad) return;
-  var sr = slimeEl.getBoundingClientRect(), pr = pad.getBoundingClientRect();
-  var m = document.createElement('i'); m.className = 'mob';
-  m.style.left = Math.round(sr.left + sr.width / 2) + 'px'; m.style.top = Math.round(pr.top - 12) + 'px';   /* 道の上を歩く */
-  tdEl.appendChild(m); void m.offsetWidth;
-  m.style.left = Math.round(pr.right + 14) + 'px';
-  tdEl.mob = m;
+  [[tdEl.boss, slimeEl], [tdEl.base, heroEl]].forEach(function(a){
+    var x = a[0].getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, a[0].width, a[0].height); x.drawImage(a[1], 0, 0);
+  });
 }
-/* 塔が手下を撃つ → 手下が消える */
-function tdShoot(pad){
-  var m = tdEl && tdEl.mob;
-  if (!pad || !m) return;
-  shoot(m, pad, 'back');
-  setTimeout(function(){ m.classList.add('pop'); setTimeout(function(){ m.remove(); }, 300); }, 300);
-  tdEl.mob = null;
+function tdLayout(){
+  var el = tdEl; if (!el) return;
+  var L = el.lay = tdLay(), m = L.map;
+  el.style.left = m.l + 'px'; el.style.top = m.t + 'px'; el.style.width = m.w + 'px'; el.style.height = m.h + 'px';
+  var R = 7, c = Math.max(12, Math.floor(Math.min(m.h / R, m.w / 9))), C = Math.floor(m.w / c);
+  el.g = { R:R, C:C, c:c, ox:Math.floor((m.w - C * c) / 2), oy:Math.floor((m.h - R * c) / 2) };
+  el.classList.toggle('low', c < 34);
+  el.wp = tdPath(C).map(function(q){ return tdP(q[0], q[1]); });
+  el.seg = []; el.len = 0;
+  for (var i = 1; i < el.wp.length; i++){ var dl = Math.abs(el.wp[i].x - el.wp[i - 1].x) + Math.abs(el.wp[i].y - el.wp[i - 1].y); el.seg.push(dl); el.len += dl; }
+  el.hd = TD_HOLE.map(function(h){ return tdSegD(h[0], h[1]); });
+  tdDraw();
+  el.holes.forEach(function(h, j){
+    var pt = tdAt(el.hd[j]), s = Math.round(c * .9);
+    h.style.left = Math.round(pt.x) + 'px'; h.style.top = Math.round(pt.y) + 'px'; h.style.width = s + 'px'; h.style.height = Math.round(c * .7) + 'px';
+    h.style.fontSize = Math.max(10, Math.round(c * .3)) + 'px';
+  });
+  el.signs.forEach(function(b, j){
+    var s = TD_SIGN[j], pt = tdAt(tdSegD(s[1], s[2]));
+    b.style.left = Math.round(pt.x) + 'px'; b.style.top = Math.round(pt.y - c * .42) + 'px'; b.style.fontSize = Math.max(10, Math.round(c * .26)) + 'px';
+  });
+  var hh = Math.round(c * 1.7), hw = Math.round(hh * el.base.width / Math.max(1, el.base.height)), s0 = el.wp[0];
+  el.base.style.height = hh + 'px'; el.base.style.width = hw + 'px';
+  el.base.style.left = Math.max(0, Math.round(s0.x - c - hw / 2)) + 'px'; el.base.style.top = Math.round(s0.y + c / 2 - hh) + 'px';
+  var bh = Math.round(c * 1.9), bw = Math.round(bh * el.boss.width / Math.max(1, el.boss.height)), e = el.wp[el.wp.length - 1];
+  el.boss.style.height = bh + 'px'; el.boss.style.width = bw + 'px';
+  var BL = Math.round(Math.min(m.w - bw, e.x + c * .5)), BT = Math.round(e.y + c / 2 - bh);
+  el.boss.style.left = BL + 'px'; el.boss.style.top = BT + 'px';
+  el.bhp.style.width = Math.round(Math.max(c * 1.4, bw * .7)) + 'px';
+  el.bhp.style.left = Math.round(BL + (bw - Math.max(c * 1.4, bw * .7)) / 2) + 'px'; el.bhp.style.top = Math.max(2, BT - 6) + 'px';
+  el.balls.forEach(function(b){ b.el.style.width = b.el.style.height = Math.round(c * .3) + 'px'; });
+  dWin.classList.toggle('tdp', !!L.pan); dWin.classList.toggle('side', L.side);
+  if (!L.pan) dWin.style.left = dWin.style.width = dWin.style.top = '';
+  placeDWin();
 }
-/* いまの置き場：切れた線（道なら台）*/
-function tdSlot(){ return flHost().querySelector('.lk.cut'); }
-/* 3戦目：方針を持つ（押した・つまんだ）→ 切れた線が置き場として光る */
+/* 地は暗い草、その上に管。穴のところは管が割れている */
+function tdDraw(){
+  var el = tdEl, g = el.g, cv = el.cv, m = el.lay.map, c = g.c, u = Math.max(2, Math.round(c / 9));
+  cv.width = m.w; cv.height = m.h; cv.style.width = m.w + 'px'; cv.style.height = m.h + 'px';
+  var x = cv.getContext('2d');
+  function rnd(n){ var s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); }
+  x.fillStyle = '#21172a'; x.fillRect(0, 0, m.w, m.h);
+  for (var r = -1; r <= g.R; r++) for (var col = -1; col <= g.C; col++){
+    var X = g.ox + col * c, Y = g.oy + r * c, k = (col + 3) * 31 + (r + 3) * 17;
+    x.fillStyle = (col + r) % 2 ? '#271b30' : '#2b1e34'; x.fillRect(X, Y, c, c);
+    if (rnd(k) > .45){ x.fillStyle = '#3b2b44'; x.fillRect(X + Math.floor(rnd(k + 1) * (c - 2 * u)), Y + Math.floor(rnd(k + 2) * (c - 3 * u)), u, u * 2); }
+  }
+  /* 管：太い暗い縁 → 胴 → 上の照り。角は四角く */
+  function line(w, col, dy){
+    x.strokeStyle = col; x.lineWidth = w; x.lineJoin = 'miter'; x.lineCap = 'square';
+    x.beginPath(); el.wp.forEach(function(p, i){ x[i ? 'lineTo' : 'moveTo'](Math.round(p.x), Math.round(p.y + (dy || 0))); }); x.stroke();
+  }
+  line(Math.round(c * .52), '#1a1f27');
+  line(Math.round(c * .38), '#5f6e7e');
+  line(Math.max(2, Math.round(c * .08)), '#93a6b8', -Math.round(c * .09));
+  /* 継ぎ目 */
+  x.fillStyle = '#3d4855';
+  for (var d = c; d < el.len; d += c){
+    var p = tdAt(d), a = Math.round(c * .27), b = Math.max(2, Math.round(c * .07));
+    if (p.h) x.fillRect(Math.round(p.x - b / 2), Math.round(p.y - a), b, a * 2); else x.fillRect(Math.round(p.x - a), Math.round(p.y - b / 2), a * 2, b);
+  }
+  /* 穴：管が割れて、地が見えている */
+  el.hd.forEach(function(hd){
+    var p = tdAt(hd), w = Math.round(c * .62), h = Math.round(c * .56);
+    x.fillStyle = '#120c16';
+    if (p.h) x.fillRect(Math.round(p.x - w / 2), Math.round(p.y - h / 2), w, h); else x.fillRect(Math.round(p.x - h / 2), Math.round(p.y - w / 2), h, w);
+  });
+}
+function tdHpPaint(hp){ if (tdEl) tdEl.bhp.firstChild.style.width = Math.max(0, hp / (D.hpMax || 3) * 100) + '%'; }
+function tdBossHit(){ var b = tdEl && tdEl.boss; if (!b) return; b.classList.remove('hit'); void b.offsetWidth; b.classList.add('hit'); }
+/* 申請の玉を一つ、管の入口から流す */
+function tdBall(){
+  var el = tdEl; if (!el || el.balls.length > 40) return;
+  var e = document.createElement('i'); e.className = 'ball'; e.style.setProperty('--dy', Math.round(el.g.c * 1.3) + 'px');
+  e.style.width = e.style.height = Math.round(el.g.c * .3) + 'px';
+  el.appendChild(e);
+  el.balls.push({ el:e, d:0, t:performance.now() });
+}
+/* 玉が流れる。最初の開いた穴でこぼれ落ちる。穴が全部ふさがっていれば、管の先のミケツに当たる */
+function tdLoop(now){
+  var el = tdEl; if (!el) return;
+  var v = el.len / 4.2, first = -1;
+  for (var j = 0; j < el.open.length; j++) if (el.open[j]){ first = j; break; }
+  var stop = first < 0 ? el.len : el.hd[first];
+  el.balls = el.balls.filter(function(b){
+    var dt = (now - b.t) / 1000; b.t = now;
+    b.d += dt * v;
+    if (b.d >= stop){
+      if (first >= 0){
+        var p = tdAt(stop); b.el.style.left = Math.round(p.x) + 'px'; b.el.style.top = Math.round(p.y) + 'px';
+        b.el.classList.add('drop'); setTimeout(function(){ b.el.remove(); }, 520);
+      } else { b.el.remove(); tdReach(); }
+      return false;
+    }
+    var pt = tdAt(b.d);
+    b.el.style.left = Math.round(pt.x) + 'px'; b.el.style.top = Math.round(pt.y) + 'px';
+    return true;
+  });
+  el.raf = requestAnimationFrame(tdLoop);
+}
+/* 全部通った玉がミケツに当たる。三つ当たると倒れる */
+function tdReach(){
+  var el = tdEl; if (!el || !el.done) return;
+  tdBossHit();
+  if (D.hp > 0){ D.hp--; paintHp(); tdHpPaint(D.hp); }
+  if (D.hp <= 0){ var f = el.done; el.done = null; clearInterval(el.gen); el.tw8 = setTimeout(function(){ if (tdEl === el) f(); }, 600); }
+}
+/* いまの穴を光らせる（問いの順）*/
+function tdNow(k){ if (tdEl) tdEl.holes.forEach(function(h, j){ h.classList.toggle('now', j === k && tdEl.open[j]); }); }
+/* ふさいだ：玉が次の穴まで進むのを見せてから次へ。最後の穴なら、玉がミケツを倒すまで */
+function tdPlug(last, done){
+  var el = tdEl; if (!el) return;
+  if (last){ el.done = done; return; }
+  el.tw8 = setTimeout(function(){ if (tdEl === el) done(); }, 1100);
+}
+window.addEventListener('resize', function(){ if (tdEl) tdLayout(); });
+/* 3戦目：部品（方針）を持つ（押した・つまんだ）→ いまの穴が置き場として光る */
 function tdHold(ix){
   D.hold = ix;
   [].forEach.call(dA.children, function(li, j){ li.classList.toggle('held', j === ix); });
-  var sl = tdSlot(); if (sl) sl.classList.add('want');
+  if (tdEl) tdEl.holes.forEach(function(h){ if (h.classList.contains('now')) h.classList.add('want'); });
 }
 function tdOn(){ return D.on && D.stage === 3 && curT().td && D.phase === 'ask'; }
 document.addEventListener('click', function(e){
   if (!tdOn() || !e.target.closest) return;
   if (D.noClick){ D.noClick = false; e.stopImmediatePropagation(); e.preventDefault(); return; }
-  if (e.target.closest('#board .lk.cut, #field .lk.cut, #td .lk.cut')){ e.stopImmediatePropagation(); e.preventDefault(); if (D.hold != null) choose(D.hold); return; }
+  var ho = e.target.closest('#td .hole');
+  if (ho){ e.stopImmediatePropagation(); e.preventDefault(); if (!ho.classList.contains('now')) return; choose(D.hold != null ? D.hold : D.sel); return; }
+  if (e.target.closest('#board .lk.cut, #field .lk.cut')){ e.stopImmediatePropagation(); e.preventDefault(); if (D.hold != null) choose(D.hold); return; }
   var li = e.target.closest('#dA li');
   if (!li || li.classList.contains('flee')) return;
   e.stopImmediatePropagation(); e.preventDefault();
   var ix = [].indexOf.call(dA.children, li);
-  if (D.hold === ix){ choose(ix); return; }   /* もう一度押したら、そのまま置く */
+  if (D.hold === ix){ choose(ix); return; }   /* もう一度押したら、そのまま穴へ */
   D.sel = ix; paintD(); tdHold(ix);
 }, true);
-/* つまんで、切れた線へ運ぶ */
+/* つまんで、穴へ運ぶ */
 (function(){
   var g = null, sx = 0, sy = 0, ix = -1, src = null;
   document.addEventListener('pointerdown', function(e){
@@ -4947,13 +5118,21 @@ document.addEventListener('click', function(e){
     g.style.left = (e.clientX - g.dx) + 'px'; g.style.top = (e.clientY - g.dy) + 'px';
     e.preventDefault();
   }, { passive:false });
+  /* 穴の上で離した：穴は小さいので、穴のまわり（升目一つぶん）まで受ける */
+  function onHole(x, y){
+    if (!tdEl) return false;
+    var h = tdEl.querySelector('.hole.now'); if (!h) return false;
+    var r = h.getBoundingClientRect(), m = tdEl.g.c * .5;
+    return x > r.left - m && x < r.right + m && y > r.top - m && y < r.bottom + m;
+  }
   function end(e){
     if (ix < 0) return;
     var i = ix; ix = -1;
     if (!g) return;
     g.remove(); g = null; D.noClick = true; setTimeout(function(){ D.noClick = false; }, 0);
     var at = document.elementFromPoint(e.clientX, e.clientY);
-    if (tdOn() && at && at.closest && at.closest('#board .lk.cut, #field .lk.cut, #td .lk.cut')){ D.dropped = true; choose(i); }
+    if (tdOn() && onHole(e.clientX, e.clientY)){ D.dropped = true; choose(i); }
+    else if (tdOn() && at && at.closest && at.closest('#board .lk.cut, #field .lk.cut')){ D.dropped = true; choose(i); }
   }
   document.addEventListener('pointerup', end);
   document.addEventListener('pointercancel', function(){ if (g){ g.remove(); g = null; } ix = -1; });
@@ -4971,6 +5150,20 @@ document.addEventListener('click', function(e){
 function fx3Pre(k){
   var s = curT().q[k], tok = D.tok = {}, pre = { tok:tok, done:false, go:null };
   D.cutAt = -1;
+  if (tdEl){
+    /* 管（2026-11-17）：いまの穴が光る → 窓に問い。最初は玉がこぼれているのを少し見せてから */
+    setTimeout(function(){
+      if (D.tok !== tok || !tdEl) return;
+      tdNow(k);
+      bossAtk(k ? 'つぎの　あなから　こぼれている！' : 'しくみに　あなが　あいている！', function(){
+        if (D.tok !== tok) return;
+        D.phase = 'run'; D.n = 0;
+        palWrite();
+        pre.done = true; if (pre.go) pre.go();
+      }, 700);
+    }, k ? 0 : 1200);
+    return pre;
+  }
   spot3Draw(null, k);
   function attack(){
     if (D.tok !== tok) return;
@@ -4979,8 +5172,7 @@ function fx3Pre(k){
       if (D.tok !== tok) return;
       heroEl.classList.add('ail');
       spot3Draw(s.cut, k); flShow(boardEl.querySelector('.lk.cut'));
-      if (tdEl) tdWalk();   /* 手下が道を歩いてくる */
-      else if (flHost() !== boardEl) shoot(flHost().querySelector('.lk.cut'));   /* 攻撃が場の流れ図に当たる */
+      if (flHost() !== boardEl) shoot(flHost().querySelector('.lk.cut'));   /* 攻撃が場の流れ図に当たる */
       D.phase = 'run'; D.n = 0;
       /* 「AI くんが　しらべている…」の一拍は外した（2026-11-11、削った）。攻撃は 1.1 → 0.7 秒 */
       palWrite();
@@ -5382,8 +5574,15 @@ function choose(i){
     if (!struck || !typed) return;      /* **両方そろってから**次の問いへ */
     if (D.stage === 3 && D.hp > 0 && !pre) return;   /* 3戦目は打ち返しが始まってから */
     if (D.hp > 0){ D.step++; D.phase = 'ask'; askStep(pre); }
+    else if (D.stage === 3 && tdEl){ tdOff(); winSeq(); }   /* 地図を閉じて、横の場面でミケツが倒れる */
     else if (D.stage === 3) spot3End(winSeq);   /* 最後は玉が完了まで流れる */
     else winSeq();
+  }
+  /* 管（2026-11-17）：勇者は斬らない。ふさいだら玉が次の穴まで進む。最後の穴なら、玉が完了まで届いてミケツに当たる */
+  if (D.stage === 3 && tdEl){
+    tdPlug(st === curT().q.length - 1, function(){ struck = true; if (D.hp > 0) pre = fx3Pre(st + 1); next(); });
+    typeCmd(curT().q[D.step].a[ai].cmd, function(){ setLog(st + 1); typed = true; next(); });
+    return;
   }
   swing(function(){
     struck = true;
