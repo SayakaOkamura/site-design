@@ -90,7 +90,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
   width:min(100%,760px); padding:clamp(32px,5vw,56px) clamp(20px,4vw,48px); text-align:center; animation:diffin .25s ease-out both}
 @keyframes diffin{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
 #diff h2{margin:0 0 clamp(24px,3.5vw,36px); font-size:clamp(22px,2.4vw,30px)}
-#diff ul{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,1.6vw,18px)}
+#diff ul{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(10px,1.6vw,18px)}   /* 二つ（冒険は外した。2026-11-17）*/
 #diff ul button{display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; height:100%; padding:clamp(20px,2.6vw,28px) 12px;
   border:0; border-bottom:3px solid transparent; background:#fff; font:inherit; color:inherit; cursor:pointer;
   box-shadow:0 2px 10px rgba(42,14,62,.06); transition:transform .15s ease, box-shadow .15s ease, border-color .15s}
@@ -205,9 +205,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
       <li><button data-m="game">
         <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M13 15h18a8 8 0 0 1 8 8v3a6 6 0 0 1-10.6 3.9L26 27h-8l-2.4 2.9A6 6 0 0 1 5 26v-3a8 8 0 0 1 8-8z"/><path d="M13 20v6M10 23h6"/><circle cx="29" cy="21.5" r="1.2"/><circle cx="32" cy="25" r="1.2"/></svg>
         <span><b>ゲームで見る</b><em>遊びながら見る</em></span></button></li>
-      <li><button data-m="quest">
-        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M6 11l10-4 12 4 10-4v26l-10 4-12-4-10 4z"/><path d="M16 7v26M28 11v26"/><path d="M20 22l3 2 4-5" stroke-dasharray="2 2.4"/></svg>
-        <span><b>冒険する</b><em>歩いてめぐる</em></span></button></li>
+      <!-- 冒険する は外した（2026-11-17）。index.html?mode=adv は残してある -->
     </ul>
     <button class="x" type="button" aria-label="閉じる">×</button>
   </div>

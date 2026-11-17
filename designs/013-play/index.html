@@ -2203,7 +2203,7 @@ html.plain #pop, html.plain #demo, html.plain #dRoll, html.plain #clear{display:
     <ul>
       <li><button data-m="site"><span class="cur">▶</span>ふつうのサイトで見る</button></li>
       <li><button data-m="game"><span class="cur">▶</span>ゲームで見る</button></li>
-      <li><button data-m="quest"><span class="cur">▶</span>冒険する</button></li>
+      <!-- 冒険する は外した（2026-11-17、本人：「今のところ何のために存在してるのかわかんないんだよな」→「外して」）。冒険のコードと ?mode=adv は残してある -->
     </ul>
   </div>
   </div>
@@ -6631,7 +6631,7 @@ var openStyle = function(){};
     ingame = true; picking = true; busy = false;
     H.textContent = 'スタイルを選ぶ';
     M.classList.add('pick', 'ingame'); M.hidden = false;
-    at = (window.Q && Q.on) ? 2 : 1; paint(); listen(true);   /* いまのスタイルに ▶（冒険の中からなら冒険する）*/
+    at = 1; paint(); listen(true);   /* いまのスタイルに ▶（冒険は外した。2026-11-17）*/
     B[at].focus({ preventScroll:true });
   };
   function pick(i){
@@ -6695,7 +6695,7 @@ var openStyle = function(){};
      F5 でいまの画面のまま残るのはアドレスのほう（冒険 ?mode=adv・ゲーム ?mode=game・ふつうのサイト site.html）。
      前の「入口はふつうのサイト」「終わったスタイルから始める」は、これで置き換えた */
   var last = recall();
-  at = last === 'quest' ? 2 : last === 'game' ? 1 : 0;
+  at = last === 'quest' || last === 'game' ? 1 : 0;   /* 冒険で終わった人もゲームに ▶（冒険は外した。2026-11-17）*/
   document.body.classList.add('title');
   listen(true);
   paint();
