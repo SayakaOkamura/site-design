@@ -1871,16 +1871,9 @@ body:not(.kb) #dRes.got .rfold:hover{color:var(--ink); border-color:var(--ink)}
   pointer-events:none; transition:transform .4s steps(5)}
 .bit.suck{transition:transform .32s cubic-bezier(.6,0,1,1), opacity .32s steps(3); opacity:.2}
 #pal.gulp{filter:brightness(1.8)}
-/* AI くんが道具を持っている（2026-11-17）：一回り大きく、金の縁 */
-#pal.lv1{scale:1.25; filter:drop-shadow(0 0 2px var(--go))}
-.bit.wrain{transition:transform .55s cubic-bezier(.4,0,1,1), opacity .55s steps(3)}
-.wwrap{position:fixed; z-index:9997; pointer-events:none; background:#f3ead8; box-shadow:inset 0 3px 0 #c9b48a, inset 0 -3px 0 #c9b48a, 0 0 0 2px #2a160c;
-  transform-origin:0 50%; animation:wwrap .6s steps(6) both}
-@keyframes wwrap{ 0%{transform:scaleX(0)} 45%{transform:scaleX(1); opacity:1} 100%{transform:scaleX(1); opacity:0} }
 .wflash{position:fixed; z-index:9997; pointer-events:none; border-radius:50%; background:radial-gradient(circle, #fffbe8 0 30%, rgba(255,210,112,.7) 55%, rgba(255,210,112,0) 72%);
   animation:wflash .6s steps(5) both}
 @keyframes wflash{ 0%{transform:scale(.2); opacity:1} 40%{transform:scale(1); opacity:1} 100%{transform:scale(1.15); opacity:0} }
-#pal.lv1.gulp{filter:brightness(1.8) drop-shadow(0 0 2px var(--go))}
 #dRes .ru:empty,#qRes .ru:empty{display:none}
 @media (max-width:360px){ #dRes .rb,#qRes .rb{padding-left:calc(var(--px)*3); padding-right:calc(var(--px)*3)} #dRes .rn,#qRes .rn{gap:calc(var(--px)*4); padding:0} }   /* あいだも粒四つ（六つだと 320×568 で 6px はみ出す）*/
 /* 選んでいるほうは**塗る。**縁の色だけだと、どちらを選んでいるか分からなかった */
@@ -2805,7 +2798,7 @@ window.addEventListener('resize', function(){
   var BUFF = css.getPropertyValue('--go').trim() || '#ffd270', buff = 0, blinkOn = true;   /* 0 無し・1 点滅・2 点いたまま */
   window.heroBuff = function(v){ buff = v; blinkOn = true; draw(last); if (window.palTip) palTip(v === 1); };
   window.heroBuffed = function(){ return buff === 2; };
-  /* **武器が道具になる**（2026-11-17）。剣の粒を消して、手の位置に道具の絵を重ねる。
+  /* **武器が金の剣になる**（2026-11-17）。剣の粒を見分けて、ひと回り太く金で描き、黒い縁を付ける（夕焼けに溶けないように。体はその上に黒で重ねる）。
      剣の粒＝体（左から最初のひとかたまり）から離れた粒（脚の段より上）と、x13 より右から始まる粒 */
   var IT = null, ITP = { d:'#2a160c', g:BUFF, w:'#fff4d6' };
   var STRIP = new Map();
@@ -2819,13 +2812,6 @@ window.addEventListener('resize', function(){
     });
     STRIP.set(m, out); return out;
   }
-  /* 道具の真ん中（粒の座標）。振りかぶり・勝ちは頭の右上、斬り下ろし・横は前の下、斬り上げは前の上、ほかは手の前 */
-  function itAt(m){
-    if (m === HERO_RAISE || m === HERO_WIN) return [17, 3];
-    if (m === HERO_SLASH || m === HERO_MID) return [18, 14];
-    if (m === HERO_UP) return [18, 4];
-    return [17, 9];
-  }
   window.heroItem = function(it){ IT = it; draw(last); };
   window.heroItemOn = function(){ return !!IT; };
   function draw(m){
@@ -2833,6 +2819,20 @@ window.addEventListener('resize', function(){
     last = m;
     if (IT) m = strip(m);
     cx.clearRect(0, 0, HW*HPX, HH*HPX);
+    if (IT){
+      for (var sy = 0; sy < HH; sy++) for (var sx = 0; sx < HW; sx++){
+        if (src[sy][sx] === '.' || m[sy][sx] !== '.') continue;
+        cx.fillStyle = INK; cx.fillRect((sx-2)*HPX, (sy-2)*HPX, HPX*5, HPX*5);
+      }
+      for (var sy = 0; sy < HH; sy++) for (var sx = 0; sx < HW; sx++){
+        if (src[sy][sx] === '.' || m[sy][sx] !== '.') continue;
+        cx.fillStyle = ITP.g; cx.fillRect((sx-1)*HPX, (sy-1)*HPX, HPX*3, HPX*3);
+      }
+      for (var sy = 0; sy < HH; sy++) for (var sx = 0; sx < HW; sx++){
+        if (src[sy][sx] === '.' || m[sy][sx] !== '.') continue;
+        cx.fillStyle = ITP.w; cx.fillRect(sx*HPX, sy*HPX, HPX, HPX);
+      }
+    }
     if (buff && (buff === 2 || blinkOn)){
       cx.fillStyle = BUFF;
       for (var by = 0; by < HH; by++) for (var bx = 0; bx < HW; bx++){
@@ -2846,10 +2846,6 @@ window.addEventListener('resize', function(){
       cx.fillStyle = (c === 'o') ? EYE : INK;
       cx.fillRect(x*HPX, y*HPX, HPX, HPX);
     }
-    if (IT){
-      var at = itAt(src), u = HPX * 2 / 3, ox = (at[0] - 4) * HPX, oy = (at[1] - 4) * HPX;
-      IT.ic.forEach(function(row, iy){ for (var ix = 0; ix < 12; ix++){ var k = row.charAt(ix); if (ITP[k]){ cx.fillStyle = ITP[k]; cx.fillRect(Math.round(ox + ix * u), Math.round(oy + iy * u), Math.ceil(u), Math.ceil(u)); } } });
-    }
   }
   REDRAW.push(function(){ sizeCanvas(cv, cx, HW, HH); draw(last); });
   var i = 0, pose = null;
@@ -2858,7 +2854,7 @@ window.addEventListener('resize', function(){
                raise:HERO_RAISE, back:HERO_BACK, mid:HERO_MID, low:HERO_LOW, up:HERO_UP };
   /* **名前で呼ぶ**（`'win'` / `'slash'`）。真偽値を渡すと `POSE[n]` が undefined になって、
      **走りが止まるだけ**になる（それで 9/15 から勝ちのコマが出ていなかった）*/
-  window.heroPose = function(n){ if (IT && (n === 'back' || n === 'low')) n = 'raise'; pose = n; draw(POSE[n] || HERO[i]); };   /* 道具は後ろへ引く絵が無いので、振りかぶる */
+  window.heroPose = function(n){ pose = n; draw(POSE[n] || HERO[i]); };
   draw(HERO[0]);
   /* 動きを止める設定なら、**一コマ目で止める**（CSS の animation:none は
      canvas には効かないので、ここで自分で見る） */
@@ -3743,7 +3739,6 @@ document.addEventListener('keydown', function(e){
    名前と絵はゲームの中のもので、事実ではない */
 var TOPICS = [
   { t:'聞けば答えてくれるものを　社内につくりたい',
-    item:{ n:'こたえばこ', fx:'rain', ic:['............','.dddddddddd.','.dggggggggd.','.dgwwggwwgd.','.dddddddddd.','.dggggggggd.','.dgggddgggd.','.dgggwwgggd.','.dgggddgggd.','.dggggggggd.','.dddddddddd.','............'] },
     q:[
       { q:'どんな方針でいく？', a:[
         { t:'よく聞かれることから', cmd:'よく聞かれることを集める',
@@ -3772,7 +3767,6 @@ var TOPICS = [
     ]},
 
   { t:'話すだけで　記録が残るようにしたい',
-    item:{ n:'きろくの　まきもの', fx:'wrap', ic:['............','.dddddddddd.','dgwwwwwwwwgd','.dddddddddd.','..dwwwwwwd..','..dwddddwd..','..dwwwwwwd..','..dwdddwwd..','..dwwwwwwd..','.dddddddddd.','dgwwwwwwwwgd','.dddddddddd.'] },
     q:[
       { q:'どんな方針でいく？', a:[
         { t:'まずは　打ち合わせから', cmd:'拾う場面を決める',
@@ -3804,7 +3798,6 @@ var TOPICS = [
      願いのほうは冗談だが、**答えは大真面目に返す。**
      そこが可笑しいし、同時に「**どんな言い方で入れても形になる**」の証明にもなる */
   { t:'寝ているあいだに　仕事が終わっていてほしい',
-    item:{ n:'よるの　ランプ', fx:'flash', ic:['....dddd....','...dggggd...','..dddddddd..','..dwwwwwwd..','..dwggggwd..','..dwgwwgwd..','..dwgwwgwd..','..dwggggwd..','..dwwwwwwd..','..dddddddd..','...dggggd...','..dddddddd..'] },
     q:[
       { q:'どんな方針でいく？', a:[
         { t:'寝ているあいだに動かせるものを　探す', cmd:'夜に回せるものを探す',
@@ -5554,39 +5547,29 @@ function swing(done, k, how){
    →（勇者が持つ／AI くんが使う段はやめる、と出して）「**いいよ**」「**2戦目はまた考えよ**」→「**上だけ後回し、武器にして2戦目で振るのは作って**」。
    1戦目の道具が、2戦目のあいだ勇者の武器になる（剣の代わりに持つ。当たりの絵が道具ごとに変わる）。AI くんが使う段は外した。
    持っているかは見ている人のブラウザだけ（localStorage の adc-item1 にお題の番号）*/
+/* **手に入れるのは武器一つ**（2026-11-17、本人：（箱を振り回すのは変、と受けて）「武器お道具箱変じゃない？中から出てきたものとかでは」→「普通に武器でよくない？」
+   →（三つとも武器にする、と出して）「見た目は一律でいいと思うけど」→（名前と当たりの絵も、と訊いて）「同じでいいよ」）。
+   どのお題でも同じ剣。いまの剣より太く、金色 */
+var ITEM1 = { n:'ひかりの　つるぎ', ic:['..........ww','.........wgw','........wgw.','.......wgw..','......wgw...','.....wgw....','..g.wgw.....','..gggw......','...gg.......','..gg.g......','.gg...g.....','gg..........'] };
 function aiItem(){
   var k; try { k = localStorage.getItem('adc-item1'); } catch (e) { k = null; }
-  var t = k == null ? null : TOPICS[+k];
-  return t && t.item ? t.item : null;
+  return k == null ? null : ITEM1;
 }
-function aiKeep(k){ try { localStorage.setItem('adc-item1', String(k)); } catch (e) {} aiGrow(); }
-/* 道具を持っているあいだ、AI くんは一回り大きく明るい */
-function aiGrow(){ var pe = document.getElementById('pal'); if (pe) pe.classList.toggle('lv1', !!aiItem()); }
-aiGrow();
+function aiKeep(k){ try { localStorage.setItem('adc-item1', String(k)); } catch (e) {} }
 function icDraw(cv, ic){
   var x = cv.getContext('2d'), P = { d:'#2a160c', g:getComputedStyle(document.documentElement).getPropertyValue('--go').trim() || '#ffd270', w:'#fff4d6' };
   x.clearRect(0, 0, 12, 12);
   ic.forEach(function(row, y){ for (var i = 0; i < 12; i++){ var c = row.charAt(i); if (P[c]){ x.fillStyle = P[c]; x.fillRect(i, y, 1, 1); } } });
 }
-/* 武器（道具）の当たりの絵。箱は紙が降る、巻物は敵を包む、ランプはまぶしく光る。どれも 0.6 秒ほど */
+/* 金の剣の当たりの絵。まぶしく光る。0.6 秒ほど */
 function wfx(it){
   if (!it || REDUCE) return;
   var r = slimeEl.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-  if (it.fx === 'rain'){
-    for (var i = 0; i < 9; i++) (function(i){
-      var e = document.createElement('i'); e.className = 'bit wrain';
-      e.style.left = Math.round(r.left + r.width * (i + .5) / 9) + 'px'; e.style.top = Math.round(r.top - 30 - (i % 3) * 12) + 'px';
-      document.body.appendChild(e); void e.offsetWidth;
-      e.style.transform = 'translateY(' + Math.round(r.height * .8 + 30) + 'px) rotate(' + ((i % 2) ? 20 : -20) + 'deg)'; e.style.opacity = '0';
-      setTimeout(function(){ e.remove(); }, 650);
-    })(i);
-  } else {
-    var e = document.createElement('i'); e.className = it.fx === 'wrap' ? 'wwrap' : 'wflash';
-    var w = it.fx === 'wrap' ? r.width * 1.2 : Math.max(r.width, r.height) * 1.6, h = it.fx === 'wrap' ? r.height * .45 : w;
-    e.style.left = Math.round(cx - w / 2) + 'px'; e.style.top = Math.round(cy - h / 2) + 'px'; e.style.width = Math.round(w) + 'px'; e.style.height = Math.round(h) + 'px';
-    document.body.appendChild(e);
-    setTimeout(function(){ e.remove(); }, 650);
-  }
+  var e = document.createElement('i'); e.className = 'wflash';
+  var w = Math.max(r.width, r.height) * 1.6, h = w;
+  e.style.left = Math.round(cx - w / 2) + 'px'; e.style.top = Math.round(cy - h / 2) + 'px'; e.style.width = Math.round(w) + 'px'; e.style.height = Math.round(h) + 'px';
+  document.body.appendChild(e);
+  setTimeout(function(){ e.remove(); }, 650);
 }
 /* 1戦目：倒れた敵の体がばらけて紙切れになって散り、AI くんに吸い込まれる（多 → 一つ）*/
 function burst(){
@@ -5736,7 +5719,7 @@ function showResult(){
   /* **1戦目は、手に入れた道具一つ**（2026-11-17、本人：「クリアした！→で、このゲームは何だったの？ってとこでしょう」→「リザルトの時」→（敵がばらけて AI くんに吸い込まれ、
      一つにまとまって「〇〇を　てにいれた！」。やることは外すか畳む、と出して）「やってみて」）。
      見出しは道具の名前と絵。言った願いと選んだ三つは小さくそのまま。やること三つは「やること　３つ」を押すと開く */
-  var IT = D.stage > 1 ? null : T.item;
+  var IT = D.stage > 1 ? null : ITEM1;
   dRes.classList.toggle('got', !!IT); dRes.classList.remove('open');
   if (IT){
     dRes.querySelector('.rt').textContent = IT.n + 'を　てにいれた！';
