@@ -14,7 +14,7 @@
       [236, 148, 236, 166], [236, 166, 292, 166], [292, 118, 292, 166]    // ゴールの箱
     ],
     goal: { x1: 237, x2: 291, y1: 150, y2: 166 },
-    stock: { plank: 3, spring: 1 }
+    stock: { plank: 2, spring: 1 }   // いた 3 枚だと一直線につないで、ばね無しで届いた（2 枚では届かない）
   };
 
   function segs(part) {
@@ -33,11 +33,12 @@
     var nx = dx / d, ny = dy / d;
     b.x += nx * (reach - d); b.y += ny * (reach - d);
     var vn = b.vx * nx + b.vy * ny;
-    if (vn >= 0) return false;
-    if (s[4] === 'spring' && ny < -0.5) {
+    // ばねは、上から触れていれば転がってきても跳ばす（前は落ちてきたときだけで、地面で転がる玉は素通りした）
+    if (s[4] === 'spring' && ny < -0.5 && vn < 0.5) {
       b.vy = -LAUNCH;                       // 横の速さはそのまま、決まった強さで上へ（角に当たっても横へは飛ばさない）
       return 'spring';
     }
+    if (vn >= 0) return false;
     b.vx -= 1.25 * vn * nx; b.vy -= 1.25 * vn * ny;   // 少しだけ跳ねる
     b.vx *= 0.997; b.vy *= 0.997;
     return 'plank';
