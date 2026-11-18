@@ -133,11 +133,14 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   });
 
   function start(){ dropTip(); aiHome(); trace = []; ball = P.ball(); mode = 'run'; hold = null; tries++; say.hidden = true; paintTray(); }
-  function build(msg){
-    if (msg && ball) lastTrace = trace;   // 外れたら、通った跡を残す
+  // missed：外れた（落ちた・止まった・自分で「とめる」を押した）
+  function build(msg, missed){
+    missed = missed || !!msg;
+    if (missed && ball) lastTrace = trace;   // 外れたら、通った跡を残す
     mode = 'build'; ball = null; balls = []; nextBtn.hidden = true; paintTray();
     say.hidden = !msg; if (msg) say.textContent = msg;
-    if (msg){ var at0 = lastTrace[lastTrace.length - 1]; if (at0){ ai.tx = at0[0]; ai.ty = at0[1] - 14; } think0(); }   // 外れたら、相棒が止まったところへ行って考える
+    // 相棒は三回目から手を出す（二回やって届かなかったら）。どう外れたかは問わない——待ちきれずに「とめる」を押しても考える
+    if (missed && tries >= 2){ var at0 = lastTrace[lastTrace.length - 1]; if (at0){ ai.tx = at0[0]; ai.ty = at0[1] - 14; } think0(); }
   }
 
   // ─ 相棒：外れたら、届きそうな置き方を一つ探して見せる。押すと置いてくれる（決めるのは遊ぶ人）
@@ -203,7 +206,7 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   function dropTip(){ if (tip || seek){ tip = null; seek = null; say.hidden = true; } }
   // 届いたら止めない。同じ出口から玉が出つづけて、組んだ仕掛けを通って箱へ入りつづける
   function flow(){ mode = 'flow'; balls = []; spawn = 0; got = 1; lastTrace = []; say.textContent = 'とどいた　' + got + 'こ'; say.hidden = false; paintTray(); }
-  goBtn.addEventListener('click', function(){ mode === 'build' ? start() : build(); });
+  goBtn.addEventListener('click', function(){ mode === 'build' ? start() : mode === 'run' ? build(null, true) : build(); });
 
   // ─ 絵
   var SKY = ['#2a1640','#3d1d4f','#5a2652','#7a3150','#9e4249','#c25c44','#de7c45','#f0a04f','#ffcb5e'];
