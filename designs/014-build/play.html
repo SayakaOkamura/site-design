@@ -60,8 +60,8 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   <div class="win" role="dialog" aria-modal="true" aria-labelledby="clh">
     <h2 id="clh">とどいた！</h2>
     <p id="clTries"></p>
-    <p class="rp">「遊ぶように働く」とは、楽をすることではなく、<br>人が夢中になり自発的に創造する状態で働くこと<br>
-      <a href="index.html#philosophy">アルターデザインコンサルティングの企業理念 ›</a></p>
+    <p class="rp">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を<br>
+      <a href="index.html#services">私たちが提供するサービス ›</a></p>
     <div class="act"><button id="again">くみなおす</button><a href="index.html">サイトへもどる</a></div>
   </div>
 </div>
@@ -73,6 +73,29 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   var say = document.getElementById('say'), goBtn = document.getElementById('go');
   var tools = [].slice.call(document.querySelectorAll('.tray button[data-k]'));
   var parts = [], hold = null, drag = null, ball = null, run = false, tries = 0, flash = 0, sparks = [], ghost = null;
+  var trace = [], lastTrace = [], won = 0;
+
+  // ─ 勇者と AI くん（013 の絵をそのまま。# が体、o が光る目）
+  var HERO_STAND = ['......................','.........##...........','......#######.........','.....#########........','....###########.......','....###########.......',
+    '....######o#o##....##.','....######o#o##...###.','....###########..###..','.....#########..###...','......#######..###....','.....#######..###.....',
+    '....############......','...###########........','...##########.........','...##########.........','....#########.........','.......##..##.........',
+    '.......##..##.........','.......##..##.........','......###..###........','......###..###........'];
+  var HERO_WIN = ['......................','.........##.....##....','......#######...##....','.....#########..##....','....###########.##....','....###########.##....',
+    '....######o#o##.##....','....######o#o##.##....','....###########.##....','.....#########.####...','......#######.##......','.....#######.##.......',
+    '....##########........','...#########..........','...#########..........','....#########.........','.....########.........','.......##..##.........',
+    '.......##..##.........','.......##..##.........','......###..###........','......###..###........'];
+  var PAL = [['.....#....','....#.....','..######..','.########.','.##.##.##.','.########.','..######..'],
+             ['...#......','....#.....','..######..','.########.','.##.##.##.','.########.','..######..']];
+  var HX = 4, HY = 148;                                         // 勇者の左上
+  var ai = { x: 30, y: 128, tx: 30, ty: 128, job: null };      // AI くんの真ん中。job：組みに行く部品
+  function home(){ ai.tx = HX + 26; ai.ty = HY - 20; }
+  function sprite(m, x, y, ink, eye, flip){
+    for (var j = 0; j < m.length; j++) for (var i = 0; i < m[j].length; i++){
+      var c = m[j][flip ? m[j].length - 1 - i : i];
+      if (c === '#'){ cx.fillStyle = ink; cx.fillRect(x + i, y + j, 1, 1); }
+      else if (c === 'o' && eye){ cx.fillStyle = eye; cx.fillRect(x + i, y + j, 1, 1); }
+    }
+  }
 
   // ─ 大きさ：整数倍に合わせる（粒をそろえる）
   function fit(){
@@ -112,7 +135,8 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
     var q = at(e), p = pickPart(q);
     if (p){ drag = { p: p, ox: p.x - q.x, oy: p.y - q.y, moved: false }; cv.setPointerCapture(e.pointerId); return; }
     if (hold && left(hold) > 0){
-      parts.push(hold === 'plank' ? { kind:'plank', x: q.x, y: q.y, a: 3 } : { kind:'spring', x: q.x, y: q.y });
+      var np = hold === 'plank' ? { kind:'plank', x: q.x, y: q.y, a: 3, ready: false } : { kind:'spring', x: q.x, y: q.y, ready: false };
+      parts.push(np); ai.job = np; ai.tx = q.x; ai.ty = q.y - 10;
       if (left(hold) === 0) hold = null;
       say.hidden = true; paintTray();
     }
@@ -120,7 +144,7 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   cv.addEventListener('pointermove', function(e){
     var q = at(e); ghost = hold && !run ? q : null;
     if (!drag) return;
-    drag.moved = true; drag.p.x = q.x + drag.ox; drag.p.y = q.y + drag.oy;
+    drag.moved = true; drag.p.x = q.x + drag.ox; drag.p.y = q.y + drag.oy; ai.tx = drag.p.x; ai.ty = drag.p.y - 10;
   });
   cv.addEventListener('pointerleave', function(){ ghost = null; });
   cv.addEventListener('pointerup', function(e){
@@ -131,8 +155,9 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
     drag = null; paintTray();
   });
 
-  function start(){ ball = P.ball(); run = true; hold = null; tries++; say.hidden = true; paintTray(); }
+  function start(){ parts.forEach(function(p){ p.ready = true; }); ai.job = null; home(); trace = []; ball = P.ball(); run = true; hold = null; tries++; say.hidden = true; paintTray(); }
   function stop(msg){
+    if (msg && ball){ lastTrace = trace; ai.tx = ball.x; ai.ty = ball.y - 14; }   // 外れたところへ AI くんが行って、通った跡を残す
     run = false; ball = null; paintTray();
     if (msg){ say.textContent = msg; say.hidden = false; }
   }
@@ -142,7 +167,7 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); run ? stop() : start(); }
   });
   var clear = document.getElementById('clear');
-  document.getElementById('again').addEventListener('click', function(){ clear.hidden = true; stop(); });
+  document.getElementById('again').addEventListener('click', function(){ clear.hidden = true; won = 0; home(); stop(); });
 
   // ─ 絵
   var SKY = ['#2a1640','#3d1d4f','#5a2652','#7a3150','#9e4249','#c25c44','#de7c45','#f0a04f','#ffcb5e'];
@@ -184,7 +209,16 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   }
   function draw(){
     drawBack(); drawLevel();
-    parts.forEach(function(p){ drawPart(p); });
+    lastTrace.forEach(function(t, i){ if (i % 2 === 0) px(t[0], t[1], 'rgba(255,244,207,.55)'); });
+    parts.forEach(function(p){ drawPart(p, p.ready === false ? .35 : 1); });
+    sprite(won ? HERO_WIN : HERO_STAND, HX, HY, '#150b04', '#fff4cf');
+    // AI くん：行き先へ寄っていく。着いたら部品を組む
+    ai.x += (ai.tx - ai.x) * .18; ai.y += (ai.ty - ai.y) * .18;
+    if (ai.job && Math.abs(ai.tx - ai.x) < 1.5 && Math.abs(ai.ty - ai.y) < 1.5){
+      ai.job.ready = true; burst(ai.job.x, ai.job.y, 10, '#ffd270'); ai.job = null;
+    }
+    var bob = Math.round(Math.sin(Date.now() / 300)), fr = Math.floor(Date.now() / 600) % 2;
+    sprite(PAL[fr], Math.round(ai.x - 5), Math.round(ai.y - 3 + bob), '#150b04', null, ai.tx < ai.x - 2);
     if (ghost && hold){ drawPart(hold === 'plank' ? { kind:'plank', x: ghost.x, y: ghost.y, a: 3 } : { kind:'spring', x: ghost.x, y: ghost.y }, .45); }
     if (ball){ disc(ball.x, ball.y + 1, P.R, '#150b04'); disc(ball.x, ball.y, P.R, '#fff4cf'); px(ball.x - 1, ball.y - 2, '#fff'); }
     else if (!run){ disc(P.LEVEL.start.x, P.LEVEL.start.y, P.R, 'rgba(255,244,207,.5)'); }
@@ -196,10 +230,11 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   // ─ まわす
   function loop(){
     if (run && ball){
-      var all = P.world(parts);
+      var all = P.world(parts.filter(function(p){ return p.ready !== false; }));
       var r = P.tick(ball, all, function(h){ if (h === 'spring') burst(ball.x, ball.y + 4, 6, '#ffd270'); });
+      if (ball.t % 3 === 0) trace.push([ball.x, ball.y]);
       if (r === 'goal'){
-        burst(ball.x, ball.y, 40, '#ffd270'); burst(ball.x, ball.y, 20, '#fff'); flash = 30;
+        burst(ball.x, ball.y, 40, '#ffd270'); burst(ball.x, ball.y, 20, '#fff'); flash = 30; won = 1; lastTrace = [];
         run = false; paintTray();
         setTimeout(function(){
           ball = null;
