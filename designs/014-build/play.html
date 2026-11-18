@@ -30,6 +30,8 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
 .tray button:disabled{opacity:.4; cursor:default}
 .tray button.go{border-color:#fff; color:#fff}
 .tray i{font-style:normal}
+.tray button.next{border-color:var(--go); color:var(--go)}
+.tray button[hidden]{display:none}
 .tray .sep{width:1px; align-self:stretch; background:#6d5a80; margin:4px 2px}
 </style>
 
@@ -46,6 +48,7 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   <button id="del">けす</button>
   <span class="sep" aria-hidden="true"></span>
   <button id="go" class="go">▶ うごかす</button>
+  <button id="next" class="go next" hidden>もどる ›</button>
 </div>
 
 <script src="phys.js"></script>
@@ -54,7 +57,10 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   var P = PHYS, W = P.W, H = P.H, cv = document.getElementById('cv'), cx = cv.getContext('2d');
   var say = document.getElementById('say'), goBtn = document.getElementById('go');
   var tools = [].slice.call(document.querySelectorAll('.tray button[data-k]'));
-  var turnBtn = document.getElementById('turn'), delBtn = document.getElementById('del');
+  var turnBtn = document.getElementById('turn'), delBtn = document.getElementById('del'), nextBtn = document.getElementById('next');
+  try { localStorage.setItem('adc-played', '1'); } catch (e) {}   // 一度入ったら、メニューの「デモを触る」は光らせない
+  // 流れ続けて三つ届いたら、下に「もどる ›」（左上の「‹ もどる」と同じ行き先）
+  nextBtn.addEventListener('click', function(){ document.getElementById('back').click(); });
   // mode：'build'（組む）／'run'（一つ目を落とす）／'flow'（届いたあと、止めるまで流れ続ける）
   var parts = [], hold = null, sel = null, drag = null, mode = 'build', tries = 0, flash = 0, sparks = [], ghost = null;
   var ball = null, trace = [], lastTrace = [], balls = [], spawn = 0, got = 0;
@@ -127,7 +133,7 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   function start(){ trace = []; ball = P.ball(); mode = 'run'; hold = null; tries++; say.hidden = true; paintTray(); }
   function build(msg){
     if (msg && ball) lastTrace = trace;   // 外れたら、通った跡を残す
-    mode = 'build'; ball = null; balls = []; paintTray();
+    mode = 'build'; ball = null; balls = []; nextBtn.hidden = true; paintTray();
     say.hidden = !msg; if (msg) say.textContent = msg;
   }
   // 届いたら止めない。同じ出口から玉が出つづけて、組んだ仕掛けを通って箱へ入りつづける
@@ -180,13 +186,16 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
     if (ball) drawBall(ball);
     balls.forEach(drawBall);
     if (mode === 'build'){ disc(P.LEVEL.start.x, P.LEVEL.start.y, P.R, 'rgba(255,244,207,.5)'); }
-    sparks = sparks.filter(function(s){ s.x += s.vx; s.y += s.vy; s.vy += .05; s.l--; if (s.l > 0) px(s.x, s.y, s.c); return s.l > 0; });
-    if (flash > 0){ cx.fillStyle = 'rgba(255,244,207,' + (flash / 30) + ')'; cx.fillRect(0, 0, W, H); flash--; }
+    sparks.forEach(function(s){ px(s.x, s.y, s.c); });
+    if (flash > 0){ cx.fillStyle = 'rgba(255,244,207,' + (flash / 30) + ')'; cx.fillRect(0, 0, W, H); }
   }
   function burst(x, y, n, c){ for (var i = 0; i < n; i++) sparks.push({ x: x, y: y, vx: (Math.random()-.5)*2.4, vy: -Math.random()*2.2, l: 20 + Math.random()*20, c: c }); }
 
-  // ─ まわす
-  function loop(){
+  // ─ まわす。玉は経過した時間で進める（画面の更新が遅い端末でも、同じ速さで動く。1 コマ＝1/60 秒、遅れは 15 コマ（1/4 秒）まで取り戻す）
+  var last = performance.now(), acc = 0;
+  function step(){
+    sparks = sparks.filter(function(s){ s.x += s.vx; s.y += s.vy; s.vy += .05; s.l--; return s.l > 0; });   // 火花と光も時間で進める
+    if (flash > 0) flash--;
     var all = P.world(parts);
     if (mode === 'run' && ball){
       var r = P.tick(ball, all, function(h){ if (h === 'spring') burst(ball.x, ball.y + 4, 6, '#ffd270'); });
@@ -199,10 +208,16 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
       if (--spawn <= 0){ balls.push(P.ball()); spawn = 70; }
       balls = balls.filter(function(b){
         var r = P.tick(b, all, function(h){ if (h === 'spring') burst(b.x, b.y + 4, 4, '#ffd270'); });
-        if (r === 'goal'){ got++; burst(b.x, b.y, 12, '#ffd270'); say.textContent = 'とどいた　' + got + 'こ'; }
+        if (r === 'goal'){ got++; burst(b.x, b.y, 12, '#ffd270'); say.textContent = 'とどいた　' + got + 'こ'; if (got >= 3) nextBtn.hidden = false; }
         return !r;
       });
     }
+  }
+  function loop(now){
+    acc += Math.min(250, now - last); last = now;
+    var n = 0;
+    while (acc >= 1000 / 60 && n < 15){ step(); acc -= 1000 / 60; n++; }
+    if (n === 15) acc = 0;
     draw(); requestAnimationFrame(loop);
   }
   // もどる：サイトの右下から来たとき（?next=world）と、メニューの世界から来たときは、タイトルを通らずにメニューの世界へ。
@@ -211,6 +226,6 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
     var r = document.referrer;
     if (/[?&]next=world(&|$)/.test(location.search) || (r && r.indexOf(location.origin) === 0 && /world\.html/.test(r))){ e.preventDefault(); location.href = 'world.html?mode=game'; }
   });
-  fit(); paintTray(); loop();
+  fit(); paintTray(); requestAnimationFrame(loop);
 })();
 </script>

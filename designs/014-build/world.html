@@ -549,6 +549,12 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
    役目は「選べると気づかせる」ことなので、触れたら終わっている、と答えて）「そうしよう」）。
    触れた＝キーを押す／どこかを押す／メニューの行にマウスを乗せる（body.woke）。マウスを動かしただけでは止めない——気づく前に終わる */
 body:not(.popped):not(.woke) #menu li[aria-current="true"] .cur, body:not(.popped):not(.woke) #foot button[aria-current="true"] .cur{animation:blink .9s steps(2) infinite}
+/* 014：**「デモを触る」を光らせる**（2026-11-18、本人：「OP→メニュー→デモで任せる？」→（デモが六つに埋もれる、と答えて）「光らせておいたら？」
+   →（9/24 の「並列で並べた方がいい」を伝えて）「光らせて組んで」）。デモがこの世界の主役になったので、9/24 の下の決めは 014 では外す。
+   一度デモに入ったら光らせない（adc-played。play.html で立てる）*/
+@keyframes demoglow{ 0%,100%{color:var(--dim); text-shadow:none} 50%{color:var(--go); text-shadow:0 0 calc(var(--px)*2) rgba(255,210,112,.85)} }
+body:not(.played) #menu li[data-k="demo"]:not([aria-current="true"]){animation:demoglow 1.8s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){ body:not(.played) #menu li[data-k="demo"]:not([aria-current="true"]){animation:none; color:var(--go)} }
 /* **「デモを触る」に色は付けない**（2026-09-24、本人：「デモ目立たせるより
    **並列で並べた**方がいいかなあ…」→「後者の話」）。
 
@@ -6717,6 +6723,7 @@ function openHash(){
 }
 openHash();
 window.addEventListener('hashchange', openHash);
+try { if (localStorage.getItem('adc-played')) document.body.classList.add('played'); } catch (e) {}   /* 014：一度デモに入ったら「デモを触る」は光らせない */
 
 /* **難易度選択**（2026-11-06）。開いたら真ん中に窓一枚だけ。
    後ろの画面の手（↑↓・Enter・押す）は、窓があるあいだ一つも通さない——window の先取りで止める。
