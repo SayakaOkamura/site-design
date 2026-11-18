@@ -551,10 +551,12 @@ body:not(.kb) #menu li:hover .cur,#menu li[aria-current="true"] .cur{color:var(-
 body:not(.popped):not(.woke) #menu li[aria-current="true"] .cur, body:not(.popped):not(.woke) #foot button[aria-current="true"] .cur{animation:blink .9s steps(2) infinite}
 /* 014：**「デモを触る」を光らせる**（2026-11-18、本人：「OP→メニュー→デモで任せる？」→（デモが六つに埋もれる、と答えて）「光らせておいたら？」
    →（9/24 の「並列で並べた方がいい」を伝えて）「光らせて組んで」）。デモがこの世界の主役になったので、9/24 の下の決めは 014 では外す。
-   一度デモに入ったら光らせない（adc-played。play.html で立てる）*/
-@keyframes demoglow{ 0%,100%{color:var(--dim); text-shadow:none} 50%{color:var(--go); text-shadow:0 0 calc(var(--px)*2) rgba(255,210,112,.85)} }
-body:not(.played) #menu li[data-k="demo"]:not([aria-current="true"]){animation:demoglow 1.8s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){ body:not(.played) #menu li[data-k="demo"]:not([aria-current="true"]){animation:none; color:var(--go)} }
+   一度デモに入ったら光らせない、は下の節で外した */
+/* **いつも光らせる**（同日、本人「もっと恒常的に光らせて」）。前は暗い字と金を行き来して、一度デモに入ったら止めていた。
+   いまは金のまま、光のにじみだけがゆっくり強まる・弱まる（暗くはならない）。選ばれているときも同じ */
+@keyframes demoglow{ 0%,100%{text-shadow:0 0 calc(var(--px)*1.5) rgba(255,210,112,.55)} 50%{text-shadow:0 0 calc(var(--px)*3) rgba(255,210,112,.95), 0 0 calc(var(--px)*6) rgba(255,170,60,.45)} }
+#menu li[data-k="demo"]{color:var(--go); animation:demoglow 2.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){ #menu li[data-k="demo"]{animation:none; text-shadow:0 0 calc(var(--px)*2) rgba(255,210,112,.8)} }
 /* **「デモを触る」に色は付けない**（2026-09-24、本人：「デモ目立たせるより
    **並列で並べた**方がいいかなあ…」→「後者の話」）。
 
@@ -3086,8 +3088,8 @@ var GO = { access:go('access'), contact:go('contact'), policy:go('policy') };
    足もとは注文どおりの**お問い合わせとポリシーの二つ**に戻った */
 /* **スタイルもメニューの中**（2026-11-06、本人：「スタイルは普通にメニューに並べたらいい気が」）。
    いちど足もとの三つ目に置いたが、足もとは二つに戻した（「お」と「ー」が太陽の左右に当たる並び）。押すと選ぶ窓（openStyle）*/
-var MENU = [['mind','企業理念'],['svc','サービス'],['about','会社概要'],
-            ['access','アクセス'],['demo','デモを触る'],['style','サイトにもどる']];   /* 014：スタイルの窓は出さず、ふつうのサイトへ */
+var MENU = [['demo','デモを触る'],['mind','企業理念'],['svc','サービス'],['about','会社概要'],
+            ['access','アクセス'],['style','サイトにもどる']];   /* 014：デモを触るをいちばん上に（2026-11-18、本人「デモを触るを上に持ってきて、もっと恒常的に光らせて」）*/   /* 014：スタイルの窓は出さず、ふつうのサイトへ */
 var ul = document.getElementById('cmds');
 ul.innerHTML = MENU.map(function(m){
   return '<li data-k="' + m[0] + '"><button type="button"><span class="cur" aria-hidden="true">▶</span>' + m[1] + '</button></li>';
@@ -6723,7 +6725,6 @@ function openHash(){
 }
 openHash();
 window.addEventListener('hashchange', openHash);
-try { if (localStorage.getItem('adc-played')) document.body.classList.add('played'); } catch (e) {}   /* 014：一度デモに入ったら「デモを触る」は光らせない */
 
 /* **難易度選択**（2026-11-06）。開いたら真ん中に窓一枚だけ。
    後ろの画面の手（↑↓・Enter・押す）は、窓があるあいだ一つも通さない——window の先取りで止める。

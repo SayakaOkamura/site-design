@@ -58,7 +58,6 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   var say = document.getElementById('say'), goBtn = document.getElementById('go');
   var tools = [].slice.call(document.querySelectorAll('.tray button[data-k]'));
   var turnBtn = document.getElementById('turn'), delBtn = document.getElementById('del'), nextBtn = document.getElementById('next');
-  try { localStorage.setItem('adc-played', '1'); } catch (e) {}   // 一度入ったら、メニューの「デモを触る」は光らせない
   // 流れ続けて三つ届いたら、下に「もどる ›」（左上の「‹ もどる」と同じ行き先）
   nextBtn.addEventListener('click', function(){ document.getElementById('back').click(); });
   // mode：'build'（組む）／'run'（一つ目を落とす）／'flow'（届いたあと、止めるまで流れ続ける）
