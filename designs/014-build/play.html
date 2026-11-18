@@ -33,7 +33,10 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
 
 #clear{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(18,10,28,.55)}
 #clear[hidden]{display:none}
-#clear .win{max-width:560px; font-size:clamp(13px,1.5vw,16px)}
+#clear .win{max-width:560px; max-height:calc(100vh - 32px); overflow:auto; font-size:clamp(13px,1.5vw,16px)}
+#clear .bp{margin:0 0 .8em}
+#clear .bp small{display:block; color:var(--dim); font-size:.85em; margin-bottom:.4em}
+#clear canvas{display:block; height:min(34vh,236px); width:auto; max-width:100%; aspect-ratio:16/9; image-rendering:auto; cursor:default}
 #clear h2{margin:0 0 .6em; font-size:1.4em; font-weight:400; color:var(--go)}
 #clear p{margin:0 0 .8em}
 #clear .rp{color:var(--dim); font-size:.9em; border-top:1px dashed #6d5a80; padding-top:.8em; margin-top:1em}
@@ -59,10 +62,11 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
 <div id="clear" hidden>
   <div class="win" role="dialog" aria-modal="true" aria-labelledby="clh">
     <h2 id="clh">とどいた！</h2>
+    <div class="bp"><small>あなたの　せっけいず</small><canvas id="bp" width="640" height="360" role="img" aria-label="くんだ　しかけの　せっけいず"></canvas></div>
     <p id="clTries"></p>
     <p class="rp">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を<br>
       <a href="index.html#services">私たちが提供するサービス ›</a></p>
-    <div class="act"><button id="again">くみなおす</button><a href="index.html">サイトへもどる</a></div>
+    <div class="act"><button id="again">くみなおす</button><button id="save">ほぞんする</button><a href="index.html">サイトへもどる</a></div>
   </div>
 </div>
 
@@ -194,6 +198,31 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
     sparks = sparks.filter(function(s){ s.x += s.vx; s.y += s.vy; s.vy += .05; s.l--; if (s.l > 0) px(s.x, s.y, s.c); return s.l > 0; });
     if (flash > 0){ cx.fillStyle = 'rgba(255,244,207,' + (flash / 30) + ')'; cx.fillRect(0, 0, W, H); flash--; }
   }
+  // ─ せっけいず：組んだものと、届いた道すじを青焼きに
+  function blueprint(path){
+    var b = document.getElementById('bp'), c = b.getContext('2d');
+    c.setTransform(2, 0, 0, 2, 0, 0);
+    c.fillStyle = '#173867'; c.fillRect(0, 0, W, H);
+    for (var x = 0; x <= W; x += 10){ c.fillStyle = x % 50 ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.14)'; c.fillRect(x, 0, .5, H); }
+    for (var y = 0; y <= H; y += 10){ c.fillStyle = y % 50 ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.14)'; c.fillRect(0, y, W, .5); }
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    function seg(a, w, col, dash){ c.beginPath(); c.setLineDash(dash || []); c.moveTo(a[0], a[1]); c.lineTo(a[2], a[3]); c.lineWidth = w; c.strokeStyle = col; c.stroke(); }
+    P.LEVEL.walls.forEach(function(w){ seg(w, .8, 'rgba(255,255,255,.5)'); });
+    c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = .8; c.setLineDash([]); c.strokeRect(24, 0, 17, 8);   // 出口
+    c.beginPath(); c.setLineDash([3, 2]); c.strokeStyle = '#ffd270'; c.lineWidth = 1;
+    path.forEach(function(t, i){ i ? c.lineTo(t[0], t[1]) : c.moveTo(t[0], t[1]); }); c.stroke();
+    parts.forEach(function(p){
+      var a = P.segs(p)[0];
+      seg(a, 1.6, '#fff');
+      if (p.kind === 'spring'){ c.beginPath(); c.setLineDash([]); c.moveTo(p.x - 4, p.y + 1); for (var i = 0; i < 4; i++) c.lineTo(p.x + (i % 2 ? -4 : 4), p.y + 2.5 + i * 2); c.lineWidth = .8; c.strokeStyle = '#fff'; c.stroke(); }
+      c.beginPath(); c.setLineDash([]); c.arc(p.x, p.y, 1.2, 0, Math.PI * 2); c.fillStyle = '#fff'; c.fill();     // 留め
+    });
+    c.setLineDash([]);
+  }
+  document.getElementById('save').addEventListener('click', function(){
+    var a = document.createElement('a'); a.download = 'sekkeizu.png'; a.href = document.getElementById('bp').toDataURL('image/png'); a.click();
+  });
+
   function burst(x, y, n, c){ for (var i = 0; i < n; i++) sparks.push({ x: x, y: y, vx: (Math.random()-.5)*2.4, vy: -Math.random()*2.2, l: 20 + Math.random()*20, c: c }); }
 
   // ─ まわす
@@ -203,7 +232,7 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
       var r = P.tick(ball, all, function(h){ if (h === 'spring') burst(ball.x, ball.y + 4, 6, '#ffd270'); });
       if (ball.t % 3 === 0) trace.push([ball.x, ball.y]);
       if (r === 'goal'){
-        burst(ball.x, ball.y, 40, '#ffd270'); burst(ball.x, ball.y, 20, '#fff'); flash = 30; lastTrace = [];
+        burst(ball.x, ball.y, 40, '#ffd270'); burst(ball.x, ball.y, 20, '#fff'); flash = 30; lastTrace = []; blueprint(trace);
         run = false; paintTray();
         setTimeout(function(){
           ball = null;
