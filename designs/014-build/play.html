@@ -32,6 +32,8 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
 .tray i{font-style:normal}
 .tray button.next{border-color:var(--go); color:var(--go)}
 .tray button[hidden]{display:none}
+/* 014：三戦の 3戦目として窓の中で開くとき（?embed=1）。上の帯は出さない（にげるは外の窓が持つ）*/
+body.embed .bar{visibility:hidden}
 .tray .sep{width:1px; align-self:stretch; background:#6d5a80; margin:4px 2px}
 </style>
 
@@ -57,6 +59,8 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   var P = PHYS, W = P.W, H = P.H, cv = document.getElementById('cv'), cx = cv.getContext('2d');
   var say = document.getElementById('say'), goBtn = document.getElementById('go');
   var tools = [].slice.call(document.querySelectorAll('.tray button[data-k]'));
+  var EMBED = /[?&]embed=1(&|$)/.test(location.search);
+  if (EMBED) document.body.classList.add('embed');
   var turnBtn = document.getElementById('turn'), delBtn = document.getElementById('del'), nextBtn = document.getElementById('next');
   // 流れ続けて三つ届いたら、下に「もどる ›」（左上の「‹ もどる」と同じ行き先）
   nextBtn.addEventListener('click', function(){ document.getElementById('back').click(); });
@@ -205,7 +209,8 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
   }
   function dropTip(){ if (tip || seek){ tip = null; seek = null; say.hidden = true; } }
   // 届いたら止めない。同じ出口から玉が出つづけて、組んだ仕掛けを通って箱へ入りつづける
-  function flow(){ mode = 'flow'; balls = []; spawn = 0; got = 1; lastTrace = []; say.textContent = 'とどいた　' + got + 'こ'; say.hidden = false; paintTray(); }
+  function flow(){ if (EMBED) try { parent.postMessage({ kumu: 'goal', tries: tries }, location.origin); } catch (e) {}   // 三戦の中では、届いたら外へ知らせる
+    mode = 'flow'; balls = []; spawn = 0; got = 1; lastTrace = []; say.textContent = 'とどいた　' + got + 'こ'; say.hidden = false; paintTray(); }
   goBtn.addEventListener('click', function(){ mode === 'build' ? start() : mode === 'run' ? build(null, true) : build(); });
 
   // ─ 絵

@@ -1870,6 +1870,13 @@ body.roll #dRoll{display:block}
 #dRes .ru,#qRes .ru{color:var(--go); font-weight:700; margin-top:calc(var(--px)*3)}
 /* 1戦目：手に入れた道具（2026-11-17）。絵と名前を大きく、やることは畳む */
 #rIcon{display:none; image-rendering:pixelated}
+/* 014：3戦目の組むの窓。戦いの場の上に、play.html を開く */
+#kumu{position:absolute; left:50%; top:clamp(8px,4vh,40px); transform:translateX(-50%); z-index:30;
+  width:min(94vw,780px); height:min(84vh,520px); padding:0}
+#kumu iframe{display:block; width:100%; height:100%; border:0; background:#120a1c}
+#kumu .kx{position:absolute; right:calc(var(--px)*2); top:calc(var(--px)*2); font:inherit; font-size:13px; color:var(--dim);
+  background:none; border:0; padding:4px 8px; cursor:pointer}
+#kumu .kx:hover{color:#fff}
 /* 014：ほんとうの問題は大きく、だれ・いつは小さく */
 #rWish .rpb{display:block; margin:.35em 0 .2em; font-size:1.35em; color:var(--go); letter-spacing:.04em}
 #rWish .rps{display:block; font-size:.92em}
@@ -3098,7 +3105,7 @@ var GO = { access:go('access'), contact:go('contact'), policy:go('policy') };
    足もとは注文どおりの**お問い合わせとポリシーの二つ**に戻った */
 /* **スタイルもメニューの中**（2026-11-06、本人：「スタイルは普通にメニューに並べたらいい気が」）。
    いちど足もとの三つ目に置いたが、足もとは二つに戻した（「お」と「ー」が太陽の左右に当たる並び）。押すと選ぶ窓（openStyle）*/
-var MENU = [['demo','デモを触る'],['fight','たたかうデモ'],['mind','企業理念'],['svc','サービス'],['about','会社概要'],
+var MENU = [['demo','デモを触る'],['mind','企業理念'],['svc','サービス'],['about','会社概要'],
             ['access','アクセス'],['style','サイトにもどる']];   /* 014：デモを触るをいちばん上に（2026-11-18、本人「デモを触るを上に持ってきて、もっと恒常的に光らせて」）*/   /* 014：スタイルの窓は出さず、ふつうのサイトへ */
 var ul = document.getElementById('cmds');
 ul.innerHTML = MENU.map(function(m){
@@ -3599,8 +3606,8 @@ function goPick(on){
    自分自身を URL 付きで呼び直して落ちていた（2026-09-14 から 9/17 まで気づかず） */
 function openPop(k){
   /* **デモだけは窓を出さない**——画面そのものを使う（2026-09-15）*/
-  if (k === 'demo'){ location.href = 'play.html'; return; }   /* 014：デモは「組む」 */
-  if (k === 'fight'){ startDemo(1); return; }   /* 014：三戦（1戦目は影から見えてくる形で試している。ブランチ 014-mieru）*/
+  /* 014：デモを触るは三戦（2026-11-18、本人「前者」——三戦に入り、組むは 3戦目に）。前は play.html（組む）へ飛んでいた */
+  if (k === 'demo'){ startDemo(); return; }
   if (cur && cur !== k) readAt[cur] = page;   /* 開いたまま別の窓へ移るときも、読んだところを覚える */
   cur = k; page = Math.min(readAt[k] || 0, pages(DATA[k]).length - 1); goSel = false; pop.classList.add('on');   /* 読みかけなら続きから */
   document.body.classList.add('popped');   /* 狭くて低い窓で、メニューを退かせるため */
@@ -4274,7 +4281,7 @@ function openDemo(st){
   slimeEl.style.visibility = ''; dHp.style.visibility = '';
   slashEl.classList.remove('on');
   heroPose(null); slimeIdle();
-  fieldOff(); handOff(); tdOff(); slimeEl.style.scale = '';
+  fieldOff(); handOff(); tdOff(); kumuClose(); slimeEl.style.scale = '';
   heroItem(st === 2 ? aiItem() : null);   /* 2戦目は 1戦目の道具が武器（2026-11-17）*/
 
   /* **「！」が先、窓はあとから**（2026-09-16、本人：「**ビックリ→窓にしてほしいのね**」）。
@@ -4340,11 +4347,33 @@ function openDemo(st){
     D.phase = 'type'; D.n = 0;
     typeWish(curT().t, function(){
       startStream(); setLog(0);
+      if (D.stage === 3){ kumuOpen(); return; }   /* 014：3戦目は組む（管の穴をふさぐ形と入れ替え）*/
       D.phase = 'ask'; askStep();
     });
   }, 420);
 }
 /* **ボスの攻撃**（三戦目）。決めなかったところで、組み上がったものが崩れる。一言・勇者がまたたく・一拍おいて問い */
+/* ─ 014：**3戦目は「組む」**（2026-11-18、本人：（デモを分けたのか、と訊かれて、一つにまとめる形を出して）「前者」）。
+   play.html を窓の中に開く（?embed=1）。届いたら知らせが来て、窓を閉じてボスが倒れる。リザルトは「しくみが　くみあがった！」と、何回目で届いたか。
+   前の 3戦目（管の穴をふさぐ・td）は残っているが、通らない */
+var kumuEl = null;
+function kumuOpen(){
+  kumuClose();
+  D.phase = 'kumu'; D.kumu = true; D.n = 0;
+  kumuEl = document.createElement('div'); kumuEl.id = 'kumu'; kumuEl.className = 'win';
+  kumuEl.innerHTML = '<iframe src="play.html?embed=1" title="くむ"></iframe><button type="button" class="kx">にげる</button>';
+  document.getElementById('demo').appendChild(kumuEl);
+  kumuEl.querySelector('.kx').addEventListener('click', function(){ kumuClose(); flee(); });
+  var f = kumuEl.querySelector('iframe');
+  f.addEventListener('load', function(){ try { f.contentWindow.focus(); } catch (e) {} });
+}
+function kumuClose(){ if (kumuEl){ kumuEl.remove(); kumuEl = null; } }
+window.addEventListener('message', function(e){
+  if (e.origin !== location.origin || !e.data || e.data.kumu !== 'goal') return;
+  if (!D.on || D.stage !== 3 || D.phase !== 'kumu') return;
+  D.kumuTries = e.data.tries; D.phase = 'kumuWon';
+  setTimeout(function(){ if (D.phase !== 'kumuWon') return; kumuClose(); D.hp = 0; paintHp(); winSeq(); }, 1400);
+});
 function bossAtk(msg, done, ms){
   D.phase = 'atk'; D.n = 0;
   dStep.textContent = ''; dObj.textContent = ''; dQ.textContent = msg; dA.innerHTML = '';
@@ -4413,7 +4442,7 @@ function quitDemo(){
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime); clearTimeout(D.tAtk);
   D.tCome = D.tBang = D.tSlime = D.tAtk = null;
   heroEl.classList.remove('hurt', 'ail'); slimeEl.classList.remove('atk');
-  clClear(); fieldOff(); handOff(); tdOff(); slimeEl.style.scale = '';
+  clClear(); fieldOff(); handOff(); tdOff(); kumuClose(); slimeEl.style.scale = '';
   heroItem(null);
   if (FILL0) FILL = FILL0;
   setEnemy('slime');
@@ -5739,7 +5768,7 @@ function choose(i){
 function showResult(){
   fieldOff(); handOff(); tdOff();
   var T = curT(),
-      AS = T.q.map(function(q, j){ return q.a[D.picks[j]]; });
+      AS = D.kumu ? [] : T.q.map(function(q, j){ return q.a[D.picks[j]]; });   /* 014：組んだ 3戦目は、選んだものが無い */
   dRes.querySelector('.rt').textContent = D.stage > 1 ? T.done : 'さくせんが　きまった！';
   /* **1戦目は、手に入れた道具一つ**（2026-11-17、本人：「クリアした！→で、このゲームは何だったの？ってとこでしょう」→「リザルトの時」→（敵がばらけて AI くんに吸い込まれ、
      一つにまとまって「〇〇を　てにいれた！」。やることは外すか畳む、と出して）「やってみて」）。
@@ -5773,6 +5802,13 @@ function showResult(){
     var ps = document.createElement('span'); ps.className = 'rps'; ps.textContent = AS[0].w + 'が　こまるのは、' + AS[2].w;   /* 「〇〇が　△△に」だと、△△の中の「が」と重なった */ rw.appendChild(ps);
     dRes.querySelector('.rfold').textContent = 'こたえた　３つ';
   } else dRes.querySelector('.rfold').textContent = 'えらんだ　３つ';
+  /* 014：組んだ 3戦目。言ったことの下に、何回目で届いたか。えらんだ三つは無いので畳みも出さない */
+  dRes.querySelector('.rfold').style.display = D.kumu ? 'none' : '';
+  if (D.kumu){
+    var kt = document.createElement('span'); kt.className = 'rps';
+    kt.textContent = (D.kumuTries || 1) + 'かいめで　うごいた';
+    document.getElementById('rWish').appendChild(kt);
+  }
   /* **一つずつ行を分ける**（2026-09-28）。選択肢に全角の空きを入れたので、「　／　」で並べると区切りと見分けにくかった */
   var rp = document.getElementById('rPick');
   rp.innerHTML = '';
