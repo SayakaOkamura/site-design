@@ -205,10 +205,11 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
     }
     draw(); requestAnimationFrame(loop);
   }
-  // もどる：来たところへ（メニューの世界から来たら、タイトルを通らずにメニューへ）
+  // もどる：サイトの右下から来たとき（?next=world）と、メニューの世界から来たときは、タイトルを通らずにメニューの世界へ。
+  // サービスの下の「デモを体験する」から来たときは、ふつうのサイトへ
   document.getElementById('back').addEventListener('click', function(e){
     var r = document.referrer;
-    if (r && r.indexOf(location.origin) === 0 && /world\.html/.test(r)){ e.preventDefault(); location.href = 'world.html?mode=game'; }
+    if (/[?&]next=world(&|$)/.test(location.search) || (r && r.indexOf(location.origin) === 0 && /world\.html/.test(r))){ e.preventDefault(); location.href = 'world.html?mode=game'; }
   });
   fit(); paintTray(); loop();
 })();
