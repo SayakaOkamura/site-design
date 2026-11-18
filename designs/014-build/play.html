@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>くむ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
+<style>
+:root{ --win:#241533; --ink:#fff; --dim:#e2dcd6; --go:#ffd270; --px:3px }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; background:#120a1c; color:var(--ink); font-family:"DotGothic16",monospace; letter-spacing:.06em;
+  display:flex; flex-direction:column; align-items:center; overflow:hidden; user-select:none; -webkit-user-select:none}
+a{color:inherit}
+.bar{width:100%; display:flex; justify-content:space-between; align-items:center; padding:10px 16px; font-size:13px; color:var(--dim)}
+.bar a{text-decoration:none}
+.bar a:hover{color:#fff}
+#stage{position:relative; flex:1; width:100%; display:flex; align-items:center; justify-content:center; min-height:0; padding:0 16px}
+canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:crosshair}
+.win{background:var(--win); border:var(--px) solid #fff; box-shadow:0 0 0 var(--px) var(--win), 0 0 0 calc(var(--px)*2) rgba(0,0,0,.45);
+  padding:10px 16px; line-height:1.7}
+#say{position:absolute; left:50%; top:12px; transform:translateX(-50%); font-size:clamp(12px,1.4vw,16px); white-space:nowrap; pointer-events:none}
+#say[hidden]{display:none}
+
+.tray{display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:center; padding:12px 16px 16px}
+.tray button{font:inherit; letter-spacing:inherit; color:var(--dim); background:var(--win); border:var(--px) solid #6d5a80; padding:8px 14px; cursor:pointer;
+  display:flex; align-items:center; gap:8px; font-size:14px}
+.tray button:hover{color:#fff}
+.tray button[aria-pressed="true"]{border-color:var(--go); color:var(--go)}
+.tray button:disabled{opacity:.4; cursor:default}
+.tray button.go{border-color:#fff; color:#fff}
+.tray i{font-style:normal}
+
+#clear{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(18,10,28,.55)}
+#clear[hidden]{display:none}
+#clear .win{max-width:560px; font-size:clamp(13px,1.5vw,16px)}
+#clear h2{margin:0 0 .6em; font-size:1.4em; font-weight:400; color:var(--go)}
+#clear p{margin:0 0 .8em}
+#clear .rp{color:var(--dim); font-size:.9em; border-top:1px dashed #6d5a80; padding-top:.8em; margin-top:1em}
+#clear .rp a{color:var(--go)}
+#clear .act{display:flex; gap:16px; margin-top:1em}
+#clear .act button,#clear .act a{font:inherit; letter-spacing:inherit; color:#fff; background:none; border:0; padding:0; cursor:pointer; text-decoration:none}
+#clear .act button::before,#clear .act a::before{content:"▶ "; color:transparent}
+#clear .act button:hover::before,#clear .act button:focus::before,#clear .act a:hover::before,#clear .act a:focus::before{color:var(--go)}
+#clear .act :focus{outline:none}
+</style>
+
+<div class="bar"><a href="index.html">‹ サイトへもどる</a><span id="tries"></span></div>
+<div id="stage">
+  <canvas id="cv" width="320" height="180" aria-label="いたと　ばねを　おいて、たまを　はこへ　とどける"></canvas>
+  <p id="say" class="win">いたと　ばねを　おいて、たまを　はこへ</p>
+</div>
+<div class="tray">
+  <button data-k="plank" aria-pressed="false"><i id="nPlank"></i>いた</button>
+  <button data-k="spring" aria-pressed="false"><i id="nSpring"></i>ばね</button>
+  <button id="go" class="go">▶ うごかす</button>
+</div>
+
+<div id="clear" hidden>
+  <div class="win" role="dialog" aria-modal="true" aria-labelledby="clh">
+    <h2 id="clh">とどいた！</h2>
+    <p id="clTries"></p>
+    <p class="rp">「遊ぶように働く」とは、楽をすることではなく、<br>人が夢中になり自発的に創造する状態で働くこと<br>
+      <a href="index.html#philosophy">アルターデザインコンサルティングの企業理念 ›</a></p>
+    <div class="act"><button id="again">くみなおす</button><a href="index.html">サイトへもどる</a></div>
+  </div>
+</div>
+
+<script src="phys.js"></script>
+<script>
+(function(){
+  var P = PHYS, W = P.W, H = P.H, cv = document.getElementById('cv'), cx = cv.getContext('2d');
+  var say = document.getElementById('say'), goBtn = document.getElementById('go');
+  var tools = [].slice.call(document.querySelectorAll('.tray button[data-k]'));
+  var parts = [], hold = null, drag = null, ball = null, run = false, tries = 0, flash = 0, sparks = [], ghost = null;
+
+  // ─ 大きさ：整数倍に合わせる（粒をそろえる）
+  function fit(){
+    var st = document.getElementById('stage'), aw = st.clientWidth - 32, ah = st.clientHeight - 8;
+    var s = Math.min(aw / W, ah / H); s = s >= 2 ? Math.floor(s) : s;
+    cv.style.width = (W * s) + 'px'; cv.style.height = (H * s) + 'px';
+  }
+  addEventListener('resize', fit);
+
+  // ─ 在庫
+  function left(k){ return P.LEVEL.stock[k] - parts.filter(function(p){ return p.kind === k; }).length; }
+  function paintTray(){
+    document.getElementById('nPlank').textContent = '×' + left('plank') + ' ';
+    document.getElementById('nSpring').textContent = '×' + left('spring') + ' ';
+    tools.forEach(function(b){
+      var k = b.dataset.k; b.disabled = run || left(k) === 0;
+      b.setAttribute('aria-pressed', hold === k ? 'true' : 'false');
+    });
+    goBtn.textContent = run ? '■ とめる' : '▶ うごかす';
+    document.getElementById('tries').textContent = tries ? tries + 'かいめ' : '';
+  }
+  tools.forEach(function(b){ b.addEventListener('click', function(){ hold = hold === b.dataset.k ? null : b.dataset.k; paintTray(); }); });
+
+  // ─ 置く・まわす・うごかす・とりのぞく
+  function at(e){ var r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; }
+  function pickPart(q){
+    for (var i = parts.length - 1; i >= 0; i--){
+      var s = P.segs(parts[i])[0], ex = s[2]-s[0], ey = s[3]-s[1], L = ex*ex+ey*ey;
+      var t = Math.max(0, Math.min(1, ((q.x-s[0])*ex + (q.y-s[1])*ey) / L));
+      var dx = q.x - (s[0]+ex*t), dy = q.y - (s[1]+ey*t);
+      if (dx*dx + dy*dy < 36) return parts[i];
+    }
+    return null;
+  }
+  cv.addEventListener('pointerdown', function(e){
+    if (run) return;
+    var q = at(e), p = pickPart(q);
+    if (p){ drag = { p: p, ox: p.x - q.x, oy: p.y - q.y, moved: false }; cv.setPointerCapture(e.pointerId); return; }
+    if (hold && left(hold) > 0){
+      parts.push(hold === 'plank' ? { kind:'plank', x: q.x, y: q.y, a: 3 } : { kind:'spring', x: q.x, y: q.y });
+      if (left(hold) === 0) hold = null;
+      say.hidden = true; paintTray();
+    }
+  });
+  cv.addEventListener('pointermove', function(e){
+    var q = at(e); ghost = hold && !run ? q : null;
+    if (!drag) return;
+    drag.moved = true; drag.p.x = q.x + drag.ox; drag.p.y = q.y + drag.oy;
+  });
+  cv.addEventListener('pointerleave', function(){ ghost = null; });
+  cv.addEventListener('pointerup', function(e){
+    if (!drag) return;
+    var p = drag.p;
+    if (p.x < 0 || p.x > W || p.y < 0 || p.y > H){ parts.splice(parts.indexOf(p), 1); }   // 外へ出したら箱にもどる
+    else if (!drag.moved && p.kind === 'plank'){ p.a = (p.a + 1) % P.ANG.length; }       // 押しただけなら向きを変える
+    drag = null; paintTray();
+  });
+
+  function start(){ ball = P.ball(); run = true; hold = null; tries++; say.hidden = true; paintTray(); }
+  function stop(msg){
+    run = false; ball = null; paintTray();
+    if (msg){ say.textContent = msg; say.hidden = false; }
+  }
+  goBtn.addEventListener('click', function(){ run ? stop() : start(); });
+  document.addEventListener('keydown', function(e){
+    if (!document.getElementById('clear').hidden) return;
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); run ? stop() : start(); }
+  });
+  var clear = document.getElementById('clear');
+  document.getElementById('again').addEventListener('click', function(){ clear.hidden = true; stop(); });
+
+  // ─ 絵
+  var SKY = ['#2a1640','#3d1d4f','#5a2652','#7a3150','#9e4249','#c25c44','#de7c45','#f0a04f','#ffcb5e'];
+  function px(x, y, c){ cx.fillStyle = c; cx.fillRect(x|0, y|0, 1, 1); }
+  function line(x1, y1, x2, y2, c, w){
+    var n = Math.ceil(Math.max(Math.abs(x2-x1), Math.abs(y2-y1)));
+    cx.fillStyle = c;
+    for (var i = 0; i <= n; i++){ var x = Math.round(x1 + (x2-x1)*i/n), y = Math.round(y1 + (y2-y1)*i/n); cx.fillRect(x - (w>>1), y - (w>>1), w, w); }
+  }
+  function disc(x, y, r, c){ cx.fillStyle = c; x = Math.round(x); y = Math.round(y);
+    for (var j = -r; j <= r; j++) for (var i = -r; i <= r; i++) if (i*i + j*j <= r*r + r*.6) cx.fillRect(x+i, y+j, 1, 1); }
+
+  function drawBack(){
+    var band = Math.ceil(H / SKY.length);
+    SKY.forEach(function(c, i){ cx.fillStyle = c; cx.fillRect(0, i*band, W, band); });
+    disc(250, 128, 18, '#fff4cf');                                        // 夕日
+    cx.fillStyle = '#3a2016'; for (var x = 0; x < W; x++){ var h = 152 + Math.round(Math.sin(x/23)*6 + Math.sin(x/9)*2); cx.fillRect(x, h, 1, H-h); }
+    cx.fillStyle = '#150b04'; cx.fillRect(0, 170, W, H - 170); cx.fillStyle = '#4a2a17'; cx.fillRect(0, 170, W, 1);   // 地面（立てる）
+  }
+  function drawLevel(){
+    P.LEVEL.walls.forEach(function(w){ line(w[0], w[1], w[2], w[3], '#150b04', 3); });
+    cx.fillStyle = '#150b04'; cx.fillRect(197, 100, 15, 80);             // まんなかの壁の中
+    line(196, 99, 212, 99, '#4a2a17', 1);
+    // ゴールの箱と旗
+    var g = P.LEVEL.goal; cx.fillStyle = 'rgba(255,210,112,.18)'; cx.fillRect(g.x1, g.y1, g.x2-g.x1, g.y2-g.y1);
+    line(292, 118, 292, 100, '#150b04', 1); cx.fillStyle = '#ffd270'; cx.fillRect(293, 100, 8, 5);
+    // 出口
+    cx.fillStyle = '#150b04'; cx.fillRect(24, 0, 17, 8); cx.fillStyle = '#4a2a17'; cx.fillRect(24, 8, 17, 1);
+  }
+  function drawPart(p, alpha){
+    cx.globalAlpha = alpha || 1;
+    var s = P.segs(p)[0];
+    if (p.kind === 'plank'){ line(s[0], s[1]+1, s[2], s[3]+1, '#7a4a12', 3); line(s[0], s[1], s[2], s[3], '#ffd270', 2); }
+    else {
+      line(s[0], s[1], s[2], s[3], '#ffd270', 2);
+      for (var i = 0; i < 4; i++){ cx.fillStyle = i % 2 ? '#e2dcd6' : '#9b8aa8'; cx.fillRect(p.x - 5 + (i%2)*2, p.y + 2 + i*2, 8, 1); }
+    }
+    cx.globalAlpha = 1;
+  }
+  function draw(){
+    drawBack(); drawLevel();
+    parts.forEach(function(p){ drawPart(p); });
+    if (ghost && hold){ drawPart(hold === 'plank' ? { kind:'plank', x: ghost.x, y: ghost.y, a: 3 } : { kind:'spring', x: ghost.x, y: ghost.y }, .45); }
+    if (ball){ disc(ball.x, ball.y + 1, P.R, '#150b04'); disc(ball.x, ball.y, P.R, '#fff4cf'); px(ball.x - 1, ball.y - 2, '#fff'); }
+    else if (!run){ disc(P.LEVEL.start.x, P.LEVEL.start.y, P.R, 'rgba(255,244,207,.5)'); }
+    sparks = sparks.filter(function(s){ s.x += s.vx; s.y += s.vy; s.vy += .05; s.l--; if (s.l > 0) px(s.x, s.y, s.c); return s.l > 0; });
+    if (flash > 0){ cx.fillStyle = 'rgba(255,244,207,' + (flash / 30) + ')'; cx.fillRect(0, 0, W, H); flash--; }
+  }
+  function burst(x, y, n, c){ for (var i = 0; i < n; i++) sparks.push({ x: x, y: y, vx: (Math.random()-.5)*2.4, vy: -Math.random()*2.2, l: 20 + Math.random()*20, c: c }); }
+
+  // ─ まわす
+  function loop(){
+    if (run && ball){
+      var all = P.world(parts);
+      var r = P.tick(ball, all, function(h){ if (h === 'spring') burst(ball.x, ball.y + 4, 6, '#ffd270'); });
+      if (r === 'goal'){
+        burst(ball.x, ball.y, 40, '#ffd270'); burst(ball.x, ball.y, 20, '#fff'); flash = 30;
+        run = false; paintTray();
+        setTimeout(function(){
+          ball = null;
+          document.getElementById('clTries').textContent = tries === 1 ? 'いっかいめで　とどいた。' : tries + 'かいめで　とどいた。';
+          clear.hidden = false; document.getElementById('again').focus();
+        }, 900);
+      }
+      else if (r === 'fall') stop('おちた。くみなおして　もういちど');
+      else if (r === 'stop') stop('とまった。くみなおして　もういちど');
+    }
+    draw(); requestAnimationFrame(loop);
+  }
+  fit(); paintTray(); loop();
+})();
+</script>
