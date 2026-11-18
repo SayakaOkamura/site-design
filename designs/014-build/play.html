@@ -33,15 +33,17 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
 
 #clear{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(18,10,28,.55)}
 #clear[hidden]{display:none}
-#clear .win{max-width:560px; max-height:calc(100vh - 32px); overflow:auto; font-size:clamp(13px,1.5vw,16px)}
-#clear .bp{margin:0 0 .8em}
+#clear .win{max-width:780px; max-height:calc(100vh - 32px); overflow:auto; font-size:clamp(13px,1.5vw,16px)}
+#clear .cols{display:grid; grid-template-columns:auto 1fr; gap:0 22px; align-items:end}   /* せっけいずの横に、公式の一行 */
+#clear .bp{margin:0}
 #clear .bp small{display:block; color:var(--dim); font-size:.85em; margin-bottom:.4em}
-#clear canvas{display:block; height:min(34vh,236px); width:auto; max-width:100%; aspect-ratio:16/9; image-rendering:auto; cursor:default}
+#clear canvas{display:block; height:min(40vh,220px); width:auto; max-width:100%; aspect-ratio:16/9; image-rendering:auto; cursor:default}
 #clear h2{margin:0 0 .6em; font-size:1.4em; font-weight:400; color:var(--go)}
 #clear p{margin:0 0 .8em}
 #clear .rp{color:var(--dim); font-size:.9em; border-top:1px dashed #6d5a80; padding-top:.8em; margin-top:1em}
 #clear .rp a{color:var(--go)}
-#clear .act{display:flex; gap:16px; margin-top:1em}
+#clear .act{display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:1em; white-space:nowrap}
+@media (max-width:600px){ #clear .cols{grid-template-columns:1fr} #clear .bp{margin-bottom:.8em} #clear canvas{height:auto; width:100%} }
 #clear .act button,#clear .act a{font:inherit; letter-spacing:inherit; color:#fff; background:none; border:0; padding:0; cursor:pointer; text-decoration:none}
 #clear .act button::before,#clear .act a::before{content:"▶ "; color:transparent}
 #clear .act button:hover::before,#clear .act button:focus::before,#clear .act a:hover::before,#clear .act a:focus::before{color:var(--go)}
@@ -62,10 +64,14 @@ canvas{display:block; image-rendering:pixelated; touch-action:none; cursor:cross
 <div id="clear" hidden>
   <div class="win" role="dialog" aria-modal="true" aria-labelledby="clh">
     <h2 id="clh">とどいた！</h2>
+    <div class="cols">
     <div class="bp"><small>あなたの　せっけいず</small><canvas id="bp" width="640" height="360" role="img" aria-label="くんだ　しかけの　せっけいず"></canvas></div>
+    <div>
     <p id="clTries"></p>
     <p class="rp">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を<br>
       <a href="index.html#services">私たちが提供するサービス ›</a></p>
+    </div>
+    </div>
     <div class="act"><button id="again">くみなおす</button><button id="save">ほぞんする</button><a href="index.html">サイトへもどる</a></div>
   </div>
 </div>
