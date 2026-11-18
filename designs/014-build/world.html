@@ -1414,9 +1414,12 @@ body.demo #dHp{display:block}
 .card .ct{margin-top:auto; font-size:12px; line-height:1.45; color:var(--dim)}
 .card.drag{position:fixed; z-index:9999; margin:0; transform:rotate(-4deg); pointer-events:none; animation:none; border-color:var(--go)}
 #slime.tgt{filter:drop-shadow(0 0 0 var(--go)) brightness(1.35)}
-/* 014：**1戦目の敵は影から見えてくる**（2026-11-18、軸「並走しながら、何が問題かを一緒に見えるようにして、楽に解決する」）。
+/* 014：**分身の 2戦目の敵は影から見えてくる**（2026-11-18、軸「並走しながら、何が問題かを一緒に見えるようにして、楽に解決する」）。
    はじめは正体の分からない影。問いに答えるたびに輪郭がはっきりして、倒すときに正体が見える */
 #slime[data-seen]{transition:filter .6s ease, opacity .6s ease}
+canvas.bun{position:absolute; z-index:4; image-rendering:pixelated; pointer-events:none; filter:brightness(0) blur(3px); opacity:.75;
+  transition:opacity .5s ease, transform .5s ease}
+canvas.bun.gone{opacity:0; transform:scale(.4) translateY(40%)}
 #slime[data-seen="0"]{filter:brightness(0) blur(3px); opacity:.75}
 #slime[data-seen="1"]{filter:brightness(.25) blur(2px); opacity:.85}
 #slime[data-seen="2"]{filter:brightness(.6) blur(.8px)}
@@ -1880,6 +1883,7 @@ body.roll #dRoll{display:block}
 /* 014：ほんとうの問題は大きく、だれ・いつは小さく */
 #rWish .rpb{display:block; margin:.35em 0 .2em; font-size:1.35em; color:var(--go); letter-spacing:.04em}
 #rWish .rps{display:block; font-size:.92em}
+#rWish .rfk{margin-top:.3em; opacity:.7}
 #dRes.got #rIcon{display:block; width:calc(var(--px)*16); height:calc(var(--px)*16); margin:0 auto calc(var(--px)*2); animation:shock .1s steps(2) 4}
 #dRes.got .rt{text-align:center; font-size:clamp(16px,calc(2 * var(--fw)),calc(21px*var(--k))); letter-spacing:.1em; word-break:keep-all}   /* 折れるのは空きのところだけ */
 /* 見にくい（2026-11-17、本人：「書き方もうちょっと変えた方がいいかも、なんか見にくくなった」→（見出しの下を左ぞろえに戻す・選んだ三つを ◆ で並べる・やることをボタンに・見出しを一段下げる、と出して）「やってみて」）*/
@@ -3765,93 +3769,91 @@ document.addEventListener('keydown', function(e){
    本人：「**今回はデモだから推測済みの組み合わせでいい**」 */
 /* **手に入れたもの**（2026-11-17）。リザルトは「やること」ではなく、手に入れた道具一つ（n 名前、ic 12×12 の絵。d 縁・g 金・w 明るい）。
    名前と絵はゲームの中のもので、事実ではない */
-/* 014：**問いは、問題を見えるようにするための問い**（2026-11-18）。前は「方針・期間・ゴール」を決める問い（作戦に落ちる）だった。
-   一問目＝だれが困っているか（w）、二問目＝どこで止まっているか（p＝正体）、三問目＝いつ困るか（w）。
-   選んだものは正解・不正解で裁かない。リザルトで「〇〇の　ほんとうの　もんだいは　（二問目）」と、だれ・いつが返る。
-   task は、それを確かめる最初の一手（ゲームの中の文。事実ではない）。お題（t）は 013 のまま。前の問いは 013 の index.html に残っている */
 var TOPICS = [
   { t:'聞けば答えてくれるものを　社内につくりたい',
     q:[
-      { q:'いちばん　こまっているのは　だれ？', a:[
-        { t:'聞く人　（さがすのに　時間がかかる）', cmd:'聞く人を見る', w:'聞く人',
-          task:'一週間ぶん、答えをさがすのにかかった時間を書き留める' },
-        { t:'答える人　（おなじ質問に　何度も答える）', cmd:'答える人を見る', w:'答える人',
-          task:'一週間ぶん、聞かれた質問を書き出して、重なりを数える' },
-        { t:'新しく入った人　（だれに聞けばいいか　わからない）', cmd:'新しく入った人を見る', w:'新しく入った人',
-          task:'入って三か月の人に、最初に困ったことを五つ聞く' }
+      { q:'どんな方針でいく？', a:[
+        { t:'よく聞かれることから', cmd:'よく聞かれることを集める',
+          task:'問い合わせ履歴からよく聞かれる二十件を抜き出す' },
+        { t:'いまある資料を　そのまま読ませる', cmd:'いまある資料を集める',
+          task:'資料の置き場所を洗い出して、見せていい範囲を決める' },
+        { t:'ひとつの部署だけで　試す', cmd:'試す部署を決める',
+          task:'試す部署を一つ決めて、その部署の質問を二十件そろえる' }
       ]},
-      { q:'どこで　止まっている？', a:[
-        { t:'資料が　ばらばら', cmd:'資料の置き場を見る', p:'資料が　ばらばらなこと',
-          task:'資料の置き場所を洗い出して、一枚の地図にする' },
-        { t:'くわしい人が　ひとりだけ', cmd:'聞かれている人を見る', p:'くわしい人が　ひとりしかいないこと',
-          task:'その人に集まっている質問を十件拾って、答えを書き残してもらう' },
-        { t:'聞いていいか　ためらう', cmd:'聞きにくさを見る', p:'聞いていいか　ためらう空気',
-          task:'聞かずに済ませた質問を、名前なしで集める箱を置く' }
+      { q:'どのくらい　かける？', a:[
+        { t:'二週間で　とりあえず触れるものを', cmd:'二週間の区切りを引く',
+          task:'二十件だけ答えられるものをつくって、五人に触ってもらう' },
+        { t:'三か月で　使えるものに', cmd:'三か月の区切りを引く',
+          task:'答えの元になる資料を一か所に集めて、毎週新しくする' },
+        { t:'半年かけて　任せられるまで', cmd:'半年の区切りを引く',
+          task:'任せる範囲を決めて、範囲の外の質問は人に回す' }
       ]},
-      { q:'それが　いちばん　困るのは　いつ？', a:[
-        { t:'いそいでいるとき', cmd:'いそぐ場面を見る', w:'いそいでいるとき',
-          task:'急ぎで聞かれた質問だけ、先に答えを用意する' },
-        { t:'担当が　休みのとき', cmd:'休みの日を見る', w:'担当が　休みのとき',
-          task:'担当が休んだ日に止まった仕事を、ひと月ぶん書き出す' },
-        { t:'年に一度の　手続きのとき', cmd:'年に一度の手続きを見る', w:'年に一度の　手続きのとき',
-          task:'年に一度の手続きの手順を、去年やった人に聞いて残す' }
+      { q:'ゴールは　どこにする？', a:[
+        { t:'人に聞く前に　ここで済んでいる', cmd:'先に見る場所にする',
+          task:'窓口の案内文を「まずここで聞く」に書き換える' },
+        { t:'答えが　古くならない', cmd:'古くならない形にする',
+          task:'元の資料が変わったら知らせが来るようにして、見直す当番を一人決める' },
+        { t:'答えられなかった質問を　次に活かせる', cmd:'答えられない質問を拾う',
+          task:'答えられなかった質問がたまる場所をつくって、月に一度見る' }
       ]}
     ]},
 
   { t:'話すだけで　記録が残るようにしたい',
     q:[
-      { q:'いちばん　こまっているのは　だれ？', a:[
-        { t:'出ていない人　（あとから　中身がわからない）', cmd:'出ていない人を見る', w:'出ていない人',
-          task:'出ていない人に、前回の打ち合わせで知りたかったことを聞く' },
-        { t:'書く人　（記録に　時間をとられる）', cmd:'書く人を見る', w:'書く人',
-          task:'記録を書くのにかかった時間を、二週間ぶん測る' },
-        { t:'決めた人　（決めたことが　守られない）', cmd:'決めた人を見る', w:'決めた人',
-          task:'先月決めたことを書き出して、いまどうなっているかを確かめる' }
+      { q:'どんな方針でいく？', a:[
+        { t:'まずは　打ち合わせから', cmd:'拾う場面を決める',
+          task:'週に一度の打ち合わせを一つ選んで、次の回から録りはじめる' },
+        { t:'決まったことだけ　残す', cmd:'残す中身を決める',
+          task:'「決まったこと・次にやること・だれが」の三つだけを書く様式をつくる' },
+        { t:'いまの書き方に　合わせる', cmd:'いまの書き方を写す',
+          task:'いまの様式を写して、話から埋まる欄と埋まらない欄を分ける' }
       ]},
-      { q:'どこで　止まっている？', a:[
-        { t:'書くのが　あとまわしになる', cmd:'書くまでの間を見る', p:'書くのが　あとまわしになること',
-          task:'打ち合わせが終わってから記録が出るまでの日数を数える' },
-        { t:'決まったことが　どこにも残らない', cmd:'決まったことの行き先を見る', p:'決まったことが　残らない流れ',
-          task:'決まったことが最後にどこへ行ったかを、三件たどる' },
-        { t:'残っても　だれも読まない', cmd:'読まれ方を見る', p:'残っても　読まれない記録',
-          task:'記録を開いた人の数を、ひと月ぶん数える' }
+      { q:'どのくらい　かける？', a:[
+        { t:'二週間で　ひとつの会議だけ', cmd:'二週間の区切りを引く',
+          task:'一つの会議で二回ぶん試して、出ていない人に読んでもらう' },
+        { t:'三か月で　主な会議に', cmd:'三か月の区切りを引く',
+          task:'対象の会議を三つに広げて、人が書き足した行を毎回数える' },
+        { t:'半年かけて　書かなくて済むところまで', cmd:'半年の区切りを引く',
+          task:'記録にかけている時間を一週間ぶん測って、減らす目標を決める' }
       ]},
-      { q:'それが　いちばん　困るのは　いつ？', a:[
-        { t:'次の打ち合わせのとき', cmd:'次の回を見る', w:'次の打ち合わせのとき',
-          task:'次の打ち合わせの最初の五分で、前回の話をしている時間を測る' },
-        { t:'担当が　かわったとき', cmd:'引き継ぎを見る', w:'担当が　かわったとき',
-          task:'最近の引き継ぎで、記録から拾えなかったことを三つ聞く' },
-        { t:'半年たって　ふりかえるとき', cmd:'半年前を見る', w:'半年たって　ふりかえるとき',
-          task:'半年前の決めごとを一つ選んで、なぜそう決めたかをたどる' }
+      { q:'ゴールは　どこにする？', a:[
+        { t:'出ていない人が　あとから追える', cmd:'追える形にする',
+          task:'出ていない人向けに五行のまとめを記録の頭に付ける' },
+        { t:'決めたことが　うやむやにならない', cmd:'流れない形にする',
+          task:'担当と期限を必ず書くようにして、翌週の頭に一覧で配る' },
+        { t:'探さなくても　必要なときに出てくる', cmd:'出てくる形にする',
+          task:'議題の名前で前回の記録を引けるようにする' }
       ]}
     ]},
 
-  /* 三つ目は**ふざけたお題**（2026-09-15、本人：「3 でふざけるか」）。願いは冗談、答えは大真面目 */
+  /* 三つ目は**ふざけたお題**（2026-09-15、本人：「3 でふざけるか」）。
+     願いのほうは冗談だが、**答えは大真面目に返す。**
+     そこが可笑しいし、同時に「**どんな言い方で入れても形になる**」の証明にもなる */
   { t:'寝ているあいだに　仕事が終わっていてほしい',
     q:[
-      { q:'いちばん　こまっているのは　だれ？', a:[
-        { t:'朝の自分　（朝いちばんが　作業で埋まる）', cmd:'朝の自分を見る', w:'朝の自分',
-          task:'朝いちばんの一時間にやっていることを、一週間ぶん書き出す' },
-        { t:'まわりの人　（返事が　朝まで止まる）', cmd:'待っている人を見る', w:'まわりの人',
-          task:'夜のあいだに止まった返事を、一週間ぶん数える' },
-        { t:'夜の自分　（気になって　眠れない）', cmd:'夜の自分を見る', w:'夜の自分',
-          task:'寝る前に気になったことを、一週間ぶんメモする' }
-      ]},
-      { q:'どこで　止まっている？', a:[
-        { t:'毎日　おなじ手順を　くりかえしている', cmd:'くりかえしを見る', p:'毎日くりかえす　おなじ手順',
-          task:'毎日やっている手順を一つ選んで、ひと手ずつ書き出す' },
-        { t:'自分でなくていい仕事を　かかえている', cmd:'手放せる仕事を見る', p:'手放せていない仕事',
+      { q:'どんな方針でいく？', a:[
+        { t:'寝ているあいだに動かせるものを　探す', cmd:'夜に回せるものを探す',
+          task:'朝いちばんの一時間にやっていることを一週間ぶん書き出す' },
+        { t:'自分でなくていいことを　任せる', cmd:'手放せるものを選ぶ',
           task:'一週間ぶんの作業に「自分でなくていい」の印を付ける' },
-        { t:'終わったか　確かめないと落ち着かない', cmd:'確かめ方を見る', p:'確かめないと　落ち着かない仕組み',
-          task:'確かめに行っている画面を数えて、一つにまとめられるか見る' }
+        { t:'朝いちばんに　できあがっているようにする', cmd:'朝までに仕上がる形を決める',
+          task:'朝に見ている数字を三つに決める' }
       ]},
-      { q:'それが　いちばん　困るのは　いつ？', a:[
-        { t:'月曜の朝', cmd:'月曜の朝を見る', w:'月曜の朝',
-          task:'月曜の朝にたまっているものを、三週ぶん数える' },
-        { t:'締め切りの　前の日', cmd:'締め切り前を見る', w:'締め切りの　前の日',
-          task:'締め切りの前の日に夜までかかった作業を、ひと月ぶん書き出す' },
-        { t:'休み明け', cmd:'休み明けを見る', w:'休み明け',
-          task:'休み明けの一日目にやったことを、次の休み明けに書き留める' }
+      { q:'どのくらい　かける？', a:[
+        { t:'二週間で　ひと晩ぶん', cmd:'二週間の区切りを引く',
+          task:'夜に回すものを一本だけ選んで、二週間まわしてみる' },
+        { t:'三か月で　毎晩', cmd:'三か月の区切りを引く',
+          task:'毎晩動かすものを三本まで増やして、止まった夜を書き留める' },
+        { t:'半年かけて　起きたら終わっているところまで', cmd:'半年の区切りを引く',
+          task:'自分でなくてもできる作業を書き出して、渡す順番を決める' }
+      ]},
+      { q:'ゴールは　どこにする？', a:[
+        { t:'朝は　確かめるだけになっている', cmd:'確かめるだけにする',
+          task:'朝に見る画面を一つにまとめて、五分で見終わるようにする' },
+        { t:'止まったときだけ　起こされる', cmd:'起こされる条件を決める',
+          task:'止まったときだけ知らせる条件を決めて、宛先を一人にする' },
+        { t:'そもそも　夜にやることが無くなっている', cmd:'夜の仕事ごと減らす',
+          task:'やめられる夜の作業をやめる' }
       ]}
     ]}
 ];
@@ -3869,43 +3871,37 @@ var STAGES = [null, null,
   /* **見て押す**（2026-11-09）。二戦目・三戦目は字を読ませない——盤の上のおかしいところを押す。直すのは AI くん。
      a は一つだけ（押して見つけたもの）。t はリザルトの「見つけたもの」、cmd は打ち込みの帯、task はタスク。
      前の「読んで選ぶ」版の中身は 968e815 にある */
-  /* 二戦目：紙が舞う。AI くんが関係ない紙を吸い込んでいくなかで、一枚だけ色が違う（食い違い）→ それを押す */
-  { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', one:true, hand:true, deck:true, done:'きろくが　まとまった！',
+  /* 014：**二戦目は分身**（2026-11-18）。前の「むれ・手札」版は 013 の index.html にある。
+     一問目＝どこで止まっているか（p＝本物の影の正体。ほかの二つは消える見かけの影）、二問目＝だれが困るか（w）、三問目＝いつ困るか（w）。
+     選んだものは裁かない。中身はすべてこちらで書いた例（ゲームの中の文。事実ではない）*/
+  { t:'先週の打ち合わせを　一枚にまとめたい', name:'チラバリ', enemy:'paper', bunshin:true, done:'しょうたいが　みえた！',
     fill:['read(mail)', 'read(chat)', 'read(minutes)', 'extract(decisions)', 'merge(duplicates)',
           'detect(conflicts)', 'align(dates)', 'compose(card)'],
-    /* **分身を狙う**（2026-11-10、本人：「狙い付けるなら敵自体が分身でよくね？何選んでんのこれ」→「いいよ、両方作って見せて」）。
-       チラバリのむれが出る（2026-11-11 に分身から変えた）→ AI くんがむれを読んで、食い違っている二体に札を付けて残す → どちらを斬るか＝どちらに決めるか。
-       f は AI くんが見つけたこと（窓の一行）。a の二つが札の付いた分身：tag 頭の上の札、src どこに書いてあったか、
-       t リザルトの「決めたこと」、cmd 打ち込みの帯、task タスク。題材を差し替えるときは、ここだけ書き換える。
-       rec は AI くんのおすすめ（a の何番目か）、why はその理由（窓の一行）。どちらもこちらで書いた例（2026-11-11）*/
-    /* **三戦で一つのものを作る（A）**（2026-11-11、本人：「遊びながら働く要素が消えてるのが問題なのかな」「1問目はそれをカバーしてると思うんだよ」
-       →（仕事の手順がそのまま戦いの手順になっている、選んだものに正解・不正解がない、積み上がってリザルトで形になる、と出して）「そう　じゃあ2・3戦目どうする？」
-       →（A 三戦で一つのものを作る／B 3戦目は組み上がるのを見せる／C 二戦にまとめる）「Aで題材の表を見せて」→「それでやってみて」）。
-       むれは打ち合わせの切れ端。AI くんが三体に札を付ける。どれを斬ってもよく、斬った一体がまとめの一行（k の欄）になる。正解は無い。
-       k まとめの欄、f 窓の一行。a：tag 頭の上の札、src どこに書いてあったか、t まとめの一行・リザルト、cmd 打ち込みの帯、task タスク。
-       中身はすべてこちらで書いた例（2026-11-11）。前の「食い違いのどちらに決めるか＋おすすめ」版は 7960523 にある */
     q:[
-      { k:'決めたこと', f:'「決めたこと」の　てふだ',
-        a:[{ tag:'〆 金曜', src:'議事録', t:'しめきりは　金曜', cmd:'しめきりは金曜、と書く',
-             task:'しめきりを金曜で書きとめて、みんなに知らせる' },
-           { tag:'色 青', src:'チャット', t:'色は　青で　いく', cmd:'色は青、と書く',
-             task:'色は青でいくと書きとめて、デザインの人に伝える' },
-           { tag:'週一', src:'メール', t:'来月から　週一で　集まる', cmd:'週一の集まりを書く',
-             task:'来月からの週一の集まりを、予定に入れる' }]},
-      { k:'宿題', f:'「宿題」の　てふだ',
-        a:[{ tag:'見積もり', src:'メモ', t:'見積もりを　出す', cmd:'宿題に見積もりを書く',
-             task:'見積もりを出す人と日を決めて、まとめに書く' },
-           { tag:'資料', src:'メール', t:'先方に　資料を　送る', cmd:'宿題に資料送りを書く',
-             task:'先方に送る資料をそろえて、送る日を書く' },
-           { tag:'会議室', src:'チャット', t:'会議室を　取る', cmd:'宿題に会議室を書く',
-             task:'次の会議室を取って、まとめに書く' }]},
-      { k:'次に　話すこと', f:'「次に　話すこと」の　てふだ',
-        a:[{ tag:'予算', src:'議事録', t:'予算の　上限', cmd:'次は予算の上限、と書く',
-             task:'次の打ち合わせで、予算の上限を話す' },
-           { tag:'承認', src:'チャット', t:'誰が　承認するか', cmd:'次は承認する人、と書く',
-             task:'次の打ち合わせで、誰が承認するかを話す' },
-           { tag:'打ち上げ', src:'メモ', t:'打ち上げの　店', cmd:'次は打ち上げの店、と書く',
-             task:'次の打ち合わせで、打ち上げの店を決める' }]}
+      { q:'どこで　止まっている？', a:[
+        { t:'話が　あちこちに　散らばっている', cmd:'散らばり方を見る', p:'話が　あちこちに　散らばっていること',
+          task:'メール・チャット・議事録から、先週の話を一か所に並べる' },
+        { t:'けっきょく　何が決まったか　わからない', cmd:'決まったことを見る', p:'何が決まったのか　はっきりしないこと',
+          task:'「決まった」と言える話を三つまで書き出して、出た人に確かめる' },
+        { t:'だれに向けた一枚か　決まっていない', cmd:'読む人を見る', p:'だれに向けた一枚か　決まっていないこと',
+          task:'この一枚を最初に読む人を一人決めて、その人に要るものを聞く' }
+      ]},
+      { q:'いちばん　こまっているのは　だれ？', a:[
+        { t:'出ていない人　（何があったか　わからない）', cmd:'出ていない人を見る', w:'出ていない人',
+          task:'出ていない人に、先週の打ち合わせで知りたかったことを聞く' },
+        { t:'次に動く人　（何をすればいいか　わからない）', cmd:'次に動く人を見る', w:'次に動く人',
+          task:'次に動く人に、いま手が止まっていることを三つ聞く' },
+        { t:'まとめる人　（まとめるのに　半日かかる）', cmd:'まとめる人を見る', w:'まとめる人',
+          task:'先週の一枚をまとめるのにかかった時間を書き留める' }
+      ]},
+      { q:'それが　いちばん　困るのは　いつ？', a:[
+        { t:'次の打ち合わせの　前', cmd:'次の回の前を見る', w:'次の打ち合わせの　前',
+          task:'次の打ち合わせの前の日に、先週の一枚を読み返して足りないものを書く' },
+        { t:'上に　報告するとき', cmd:'報告の場面を見る', w:'上に　報告するとき',
+          task:'報告で聞き返されたことを、三回ぶん書き留める' },
+        { t:'一週間　たってから', cmd:'一週間後を見る', w:'一週間　たってから',
+          task:'一週間後に、先週の一枚だけで話がわかるか、出ていない人に読んでもらう' }
+      ]}
     ]},
   /* 三戦目：AI くんが流れ図を組んでいく（問いごとに箱が一つ増える）。玉が流れたところでボスが線を切る → 切れた線を押す */
   { t:'経費の申請を　しくみにしたい', name:'ミケツ', enemy:'boss', td:true, ground:true, done:'しくみが　くみあがった！',
@@ -4267,8 +4263,10 @@ function openDemo(st){
   if (!FILL0) FILL0 = FILL;
   FILL = (st > 1 && STAGES[st].fill) || FILL0;
   setEnemy(st > 1 ? STAGES[st].enemy : 'slime');
-  dWon.textContent = st > 1 ? STAGES[st].name + 'を　たおした！' : 'しょうたいが　みえた！';
-  if (st === 1) slimeEl.dataset.seen = '0'; else delete slimeEl.dataset.seen;   /* 014：1戦目は影から */
+  var BUN = st === 2 && STAGES[2].bunshin;   /* 014：2戦目は分身の影から（1戦目は 013 のまま。本人「1戦目はそもそもデフォルトの形で」）*/
+  dWon.textContent = BUN ? 'しょうたいが　みえた！' : (st > 1 ? STAGES[st].name : 'スライム') + 'を　たおした！';
+  if (BUN) slimeEl.dataset.seen = '0'; else delete slimeEl.dataset.seen;
+  bunshinOff();
   var hm = st > 1 ? STAGES[st].q.length : 3;
   D = { on:true, phase:'topic', topic:0, step:0, picks:[], sel:0, hp:hm, hpMax:hm, n:0, stage:st,
         tCome:null, tBang:null, tSlime:null };
@@ -4335,6 +4333,7 @@ function openDemo(st){
     setTimeout(function(){ slimeEl.classList.remove('come'); }, 860);
     /* 体力は**0 から満ちる。**出しっぱなしより、満ちるほうが「始まった」になる */
     setTimeout(paintHp, 60);
+    if (D.stage === 2 && curT().bunshin) bunshinOn();   /* 014：分身が二体、両脇に並ぶ */
   }, 260);
   /* 0.7 秒は待たせすぎだった（2026-09-16、本人：「ちょっと窓遅い」→「0.3」）。
      敵は 0.85 秒かけて歩いてくるので、**まだ歩きはじめたところ**で窓が開く。
@@ -4356,6 +4355,29 @@ function openDemo(st){
 /* ─ 014：**3戦目は「組む」**（2026-11-18、本人：（デモを分けたのか、と訊かれて、一つにまとめる形を出して）「前者」）。
    play.html を窓の中に開く（?embed=1）。届いたら知らせが来て、窓を閉じてボスが倒れる。リザルトは「しくみが　くみあがった！」と、何回目で届いたか。
    前の 3戦目（管の穴をふさぐ・td）は残っているが、通らない */
+/* ─ 014：**2戦目は分身**（2026-11-18、本人：「これ没にした分身に流用できそうだな」→「2戦目もそれにしてみて」）。
+   敵の両脇に、同じ形の影が二体。どれが本当の問題かは、まだ分からない。答えるたびに見かけの影が一体ずつ消え、残った本物の輪郭が見えてくる。
+   当てる遊びではない（前の分身は「二択に正解がないのが変」で外した）。答えていくうちに本物が見える。影は本物の絵を写している */
+var bunEl = [];
+function bunshinOn(){
+  bunshinOff();
+  [-1, 1].forEach(function(side){
+    var c = document.createElement('canvas'); c.className = 'bun'; c.dataset.side = side;
+    slimeEl.parentNode.insertBefore(c, slimeEl); bunEl.push(c);
+  });
+  bunCopy(); D.tBun = setInterval(bunCopy, 100);
+}
+function bunCopy(){
+  if (!bunEl.length || !slimeEl.width) return;
+  var r = slimeEl.getBoundingClientRect(), pr = slimeEl.parentNode.getBoundingClientRect();
+  bunEl.forEach(function(c){
+    if (c.width !== slimeEl.width || c.height !== slimeEl.height){ c.width = slimeEl.width; c.height = slimeEl.height; }
+    var x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); x.drawImage(slimeEl, 0, 0);
+    c.style.width = r.width + 'px'; c.style.height = r.height + 'px';
+    c.style.left = (r.left - pr.left + (+c.dataset.side) * r.width * 1.25) + 'px'; c.style.top = (r.top - pr.top) + 'px';
+  });
+}
+function bunshinOff(){ clearInterval(D.tBun); bunEl.forEach(function(c){ c.remove(); }); bunEl = []; }
 var kumuEl = null;
 function kumuOpen(){
   kumuClose();
@@ -4442,7 +4464,7 @@ function quitDemo(){
   clearTimeout(D.tCome); clearTimeout(D.tBang); clearTimeout(D.tSlime); clearTimeout(D.tAtk);
   D.tCome = D.tBang = D.tSlime = D.tAtk = null;
   heroEl.classList.remove('hurt', 'ail'); slimeEl.classList.remove('atk');
-  clClear(); fieldOff(); handOff(); tdOff(); kumuClose(); slimeEl.style.scale = '';
+  clClear(); fieldOff(); handOff(); tdOff(); kumuClose(); bunshinOff(); slimeEl.style.scale = '';
   heroItem(null);
   if (FILL0) FILL = FILL0;
   setEnemy('slime');
@@ -5322,7 +5344,7 @@ function fx3Step(pre){
 
 function askStep(pre){
   var T = curT(), s = T.q[D.step];
-  if (D.stage === 2){ cl2Step(pre); return; }
+  if (D.stage === 2 && !T.bunshin){ cl2Step(pre); return; }
   if (D.stage === 3){ fx3Step(pre); return; }
   if (s.atk && D.atkAt !== D.step){ D.atkAt = D.step; bossAtk(s.atk, askStep); return; }
   /* **「問診」とは書かない**（2026-09-15、本人：「てか問診って書かないで露骨だから」）。
@@ -5582,7 +5604,7 @@ function swing(done, k, how){
   /* 一撃で一目。いちど「勇者で半分・連れの唱えで半分（二人で一つの一撃）」にした → 本人：「AIはあくまでサポート感あってほしいな」。
      **倒すのは勇者**に戻した。連れは唱えた字を勇者へ送って支える（palShot）*/
   D.hp--; paintHp();
-  if (slimeEl.dataset.seen != null) slimeEl.dataset.seen = String(Math.min(3, (D.hpMax || 3) - D.hp));   /* 014：答えるたびに輪郭が見えてくる */
+  if (slimeEl.dataset.seen != null){ var sn = (D.hpMax || 3) - D.hp; slimeEl.dataset.seen = String(Math.min(3, sn)); if (bunEl[sn - 1]) bunEl[sn - 1].classList.add('gone'); }   /* 014：答えるたびに、見かけの影が一つ消えて、本物の輪郭が見えてくる */
   setTimeout(function(){
     heroEl.classList.remove('swing');
     if (D.hp > 0){ heroPose(null); halt(false, null, 250); }   /* また走り出す */
@@ -5726,7 +5748,7 @@ function choose(i){
   D.picks[D.step] = ai;
   D.phase = 'type';
   D.items = null;
-  if (D.stage === 2) cl2Fix(i);
+  if (D.stage === 2 && !curT().bunshin) cl2Fix(i);
   if (D.stage === 3) fx3Fix(i);
   /* **窓は消さない**——消すと画面の真ん中が空になって、
      何を選んだのか打ち終わるまで見えなくなる。選んだ一行だけ残す */
@@ -5753,7 +5775,7 @@ function choose(i){
   swing(function(){
     struck = true;
     /* 2・3戦目は、斬り終わったら次の場の動きを始める（窓はまだ選んだ行のまま）*/
-    if (D.hp > 0 && D.stage === 2) pre = cl2Pre(st + 1);
+    if (D.hp > 0 && D.stage === 2 && !curT().bunshin) pre = cl2Pre(st + 1);
     next();
   }, D.stage > 1 ? st % 3 : i, D.stage === 2 && curT().hand ? 'throw' : D.stage === 3 && curT().td ? 'counter' : null);
   /* 3戦目は、斬撃が当たった直後にミケツが打ち返す（2026-11-11、本人：「斬る途中で打ち返す」）*/
@@ -5766,14 +5788,14 @@ function choose(i){
 /* 提案内容（2026-09-16）。**選んだ三つが、そのまま三つのタスクになる。**
    **どの問いも、答えが必ずどこかに出る。**出ない問いがあると、選んだ意味が無い */
 function showResult(){
-  fieldOff(); handOff(); tdOff();
+  fieldOff(); handOff(); tdOff(); bunshinOff();
   var T = curT(),
       AS = D.kumu ? [] : T.q.map(function(q, j){ return q.a[D.picks[j]]; });   /* 014：組んだ 3戦目は、選んだものが無い */
   dRes.querySelector('.rt').textContent = D.stage > 1 ? T.done : 'さくせんが　きまった！';
   /* **1戦目は、手に入れた道具一つ**（2026-11-17、本人：「クリアした！→で、このゲームは何だったの？ってとこでしょう」→「リザルトの時」→（敵がばらけて AI くんに吸い込まれ、
      一つにまとまって「〇〇を　てにいれた！」。やることは外すか畳む、と出して）「やってみて」）。
      見出しは道具の名前と絵。言った願いと選んだ三つは小さくそのまま。やること三つは「やること　３つ」を押すと開く */
-  var IT = null, SEEN = D.stage === 1;   /* 014：1戦目は道具ではなく「ほんとうの　もんだい」 */
+  var IT = D.stage > 1 ? null : ITEM1, SEEN = D.stage === 2 && T.bunshin;   /* 014：分身の 2戦目は「ほんとうの　もんだい」 */
   dRes.classList.toggle('got', !!IT); dRes.classList.remove('open');
   if (IT){
     dRes.querySelector('.rt').textContent = IT.n + 'を　てにいれた！';
@@ -5792,14 +5814,18 @@ function showResult(){
   /* **言ったこと**（最初に持ち込んだ願い）と**選んだ三つ**を、そのまま上に置く。
      どちらも見たものなので、読み直す必要がない——**変わったことだけが目に入る** */
   document.getElementById('rWish').textContent = '「' + T.t + '」';
-  /* 014：1戦目のリザルト。「〇〇したい」の、ほんとうの問題は何だったか。二問目の答えが正体、一問目と三問目がだれ・いつ */
+  /* 014：分身の 2戦目のリザルト。「〇〇したい」の、ほんとうの問題は何だったか。一問目の答えが正体（本物の影）、二問目・三問目がだれ・いつ。
+     一問目のほかの二つが、消えた見かけの影 */
   if (SEEN){
     dRes.querySelector('.rt').textContent = 'しょうたいが　みえた！';
     var rw = document.getElementById('rWish');
     rw.innerHTML = '';
     rw.appendChild(document.createTextNode('「' + T.t + '」の　ほんとうの　もんだいは'));
-    var pb = document.createElement('b'); pb.className = 'rpb'; pb.textContent = AS[1].p; rw.appendChild(pb);
-    var ps = document.createElement('span'); ps.className = 'rps'; ps.textContent = AS[0].w + 'が　こまるのは、' + AS[2].w;   /* 「〇〇が　△△に」だと、△△の中の「が」と重なった */ rw.appendChild(ps);
+    var pb = document.createElement('b'); pb.className = 'rpb'; pb.textContent = AS[0].p; rw.appendChild(pb);
+    var ps = document.createElement('span'); ps.className = 'rps'; ps.textContent = AS[1].w + 'が　こまるのは、' + AS[2].w;   /* 「〇〇が　△△に」だと、△△の中の「が」と重なった */
+    var fk = document.createElement('span'); fk.className = 'rps rfk';
+    fk.textContent = T.q[0].a.filter(function(a, j){ return j !== D.picks[0]; }).map(function(a){ return '「' + a.t + '」'; }).join('　でも') + '　でもなかった';
+    rw.appendChild(fk); rw.appendChild(ps);
     dRes.querySelector('.rfold').textContent = 'こたえた　３つ';
   } else dRes.querySelector('.rfold').textContent = 'えらんだ　３つ';
   /* 014：組んだ 3戦目。言ったことの下に、何回目で届いたか。えらんだ三つは無いので畳みも出さない */
