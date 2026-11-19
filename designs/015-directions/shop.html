@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>15 みせ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+/* 色は 6 つだけ。D 暗 / M 中 / W 木 / A 差し / L 明 / S 肌 */
+:root{ --D:#241533; --M:#5a436b; --W:#4a2a17; --A:#fb851b; --L:#f1ece6; --S:#ffcb5e; }
+:root[data-p="logo"]{ --D:#22417d; --M:#5d2e77; --W:#5376ab; --A:#399ac5; --L:#f6f3fa; --S:#f6f3fa; }
+
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%}
+body{background:var(--D); color:var(--L); font-family:"DotGothic16",monospace; overflow:hidden}
+
+.game{position:fixed; inset:0 0 68px 0; overflow:hidden;
+  background:linear-gradient(transparent 84%,var(--D) 84%),repeating-linear-gradient(90deg,var(--M) 0 44px,color-mix(in srgb,var(--M) 82%,var(--D)) 44px 48px)}
+/* 一枚の幅は画面の 76%。両隣が 12% ずつ見える */
+.strip{position:absolute; top:0; bottom:0; left:12vw; width:228vw; display:grid; grid-template-columns:repeat(3,76vw);
+  transform:translateX(-76vw); transition:transform .45s cubic-bezier(.6,0,.3,1)}
+.panel{position:relative; overflow:hidden;
+  background:repeating-linear-gradient(90deg,var(--M) 0 44px,color-mix(in srgb,var(--M) 82%,var(--D)) 44px 48px)}
+.panel.side{cursor:pointer}
+.panel.here{cursor:default}
+.sprite{display:block; image-rendering:pixelated; shape-rendering:crispEdges}
+
+/* 床 */
+.floor{position:absolute; left:0; right:0; bottom:0; height:16%; background:var(--D); border-top:4px solid var(--W)}
+
+/* 真ん中：店主とカウンター（引いた絵） */
+.keeper{position:absolute; left:50%; bottom:calc(16% + 22%); transform:translateX(-50%); width:min(36vh,260px)}
+.counter{position:absolute; left:20%; right:20%; bottom:16%; height:23%;
+  background:var(--W); border-top:10px solid var(--A); box-shadow:inset 0 -8px 0 var(--D)}
+.counter::after{content:""; position:absolute; left:8%; right:8%; top:30%; height:3px; background:var(--D); opacity:.5}
+.sign{position:absolute; top:8%; left:50%; transform:translateX(-50%); padding:6px 16px; border:4px solid var(--W); background:var(--D); color:var(--A); font-size:clamp(12px,1.6vw,18px); letter-spacing:.15em; white-space:nowrap}
+
+/* もやもや */
+.moya{position:absolute; left:calc(50% + min(12vh,90px)); bottom:calc(16% + 22% + min(33vh,240px)); width:58px; cursor:pointer; display:none; animation:pop .25s steps(3); z-index:2}
+.moya.show{display:block}
+.moya:hover{translate:0 -2px}
+
+/* 棚：二段。パネルいっぱいに置いて、隣から端が見える */
+.shelf{position:absolute; left:6%; right:6%; top:12%; bottom:16%;
+  border:12px solid var(--W); border-bottom:0; background:var(--D);
+  display:grid; grid-template-rows:1fr 1fr}
+.tier{border-bottom:12px solid var(--W); display:flex; justify-content:space-between; align-items:flex-end; padding:0 5% 4px}
+.goods{width:22%; max-width:130px; cursor:pointer; position:relative; background:none; border:0; padding:0}
+.panel:not(.here) .goods{pointer-events:none}
+.goods .box{transition:translate .1s steps(2)}
+.goods:hover .box{translate:0 -6px}
+/* 品は箱。正面に名前が刷ってある */
+.box{--bc:var(--A); --bt:var(--D); position:relative; width:100%; aspect-ratio:3/4; background:var(--bc); color:var(--bt);
+  border:4px solid var(--D); box-shadow:6px 0 0 color-mix(in srgb,var(--bc) 55%,var(--D)), 6px 0 0 4px var(--D);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6%; padding:16% 6% 8%; font-family:"DotGothic16",monospace}
+.box::before{content:""; position:absolute; top:0; left:0; right:0; height:12%; background:color-mix(in srgb,var(--bc) 65%,var(--D))}
+.box .sprite{width:50%; height:auto; background:var(--D); padding:5%}
+.box span{font-size:clamp(10px,1.15vw,15px); line-height:1.35; text-align:center; white-space:pre-line}
+.box.c1{--bc:var(--L)} .box.c2{--bc:var(--S)} .box.c3{--bc:var(--M); --bt:var(--L)}
+.goods.empty{visibility:hidden}
+
+/* 左右（端に寄せたときだけ） */
+.turn{position:absolute; top:0; bottom:0; width:12vw; z-index:3; background:none; border:0; color:var(--A); font:inherit; font-size:30px; cursor:pointer; opacity:0; transition:opacity .15s}
+.turn:hover,.turn:focus-visible{opacity:1}
+.turn.l{left:0} .turn.r{right:0}
+.turn[hidden]{display:none}
+
+/* 品を大きく */
+.look{position:absolute; inset:0; z-index:5; display:none; place-items:center; background:color-mix(in srgb,var(--D) 78%,transparent)}
+.look.show{display:grid; animation:pop .18s steps(3)}
+.card{width:min(90%,620px); display:grid; grid-template-columns:minmax(120px,38%) 1fr; gap:24px; align-items:center;
+  background:var(--D); border:4px solid var(--L); box-shadow:0 0 0 4px var(--D); padding:24px; position:relative}
+.card .box span{font-size:clamp(14px,2vw,20px)}
+.card h2{font-size:18px; font-weight:400; color:var(--A); margin-bottom:8px; line-height:1.5}
+.card p{font-size:15px; line-height:1.8; white-space:pre-line}
+/* 店主に聞く：カードの横から出るもくもく */
+.askb{position:absolute; top:22%; width:96px; background:none; border:0; padding:0; cursor:pointer; color:var(--D); font:inherit; font-size:24px; line-height:1; animation:pop .25s steps(3)}
+.askb svg{width:100%; height:auto; display:block}
+.askb span{position:absolute; left:0; right:0; top:22%; text-align:center}
+/* 店主のいる側から出る：左の棚なら右から、右の棚なら左から */
+.look.kr .askb{right:3vw} .look.kr .askb svg{transform:scaleX(-1)}
+.look.kl .askb{left:3vw}
+.askb:hover{translate:0 -2px}
+.card .x{position:absolute; top:6px; right:10px; background:none; border:0; color:var(--L); font:inherit; font-size:18px; cursor:pointer}
+
+/* 会話のときだけ出るテキストウィンドウ */
+.talk{position:absolute; left:50%; bottom:14px; transform:translateX(-50%); width:min(92%,760px); z-index:6;
+  background:var(--D); border:4px solid var(--L); box-shadow:0 0 0 4px var(--D);
+  padding:12px 18px 18px; font-size:17px; line-height:1.75; cursor:pointer; display:none}
+.talk.show{display:block; animation:pop .15s steps(2)}
+.talk .who{color:var(--A); font-size:14px}
+.talk .txt{min-height:3.5em; white-space:pre-wrap}
+.talk .nx{position:absolute; right:14px; bottom:6px; color:var(--A); animation:blink .7s steps(1) infinite; display:none}
+.talk.done .nx{display:block}
+
+/* 質問バー：レトロにしないが、地の色に馴染ませる */
+.ask{position:fixed; left:0; right:0; bottom:0; height:68px; background:var(--D);
+  display:flex; align-items:center; gap:10px; padding:0 max(16px,calc(50% - 360px));
+  font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic UI",sans-serif}
+.ask input{flex:1; min-width:0; height:42px; border:1px solid color-mix(in srgb,var(--L) 22%,transparent); border-radius:21px;
+  background:color-mix(in srgb,var(--L) 8%,transparent); padding:0 18px; font:inherit; font-size:15px; color:var(--L); outline:none}
+.ask input::placeholder{color:color-mix(in srgb,var(--L) 45%,transparent)}
+.ask input:focus{border-color:var(--A); background:color-mix(in srgb,var(--L) 12%,transparent)}
+.ask button{height:42px; padding:0 20px; border:0; border-radius:21px; background:var(--A); color:var(--D); font:inherit; font-size:14px; font-weight:600; cursor:pointer}
+.ask button:disabled{opacity:.3; cursor:default}
+
+@keyframes blink{50%{opacity:0}}
+@keyframes pop{from{scale:.7}to{scale:1}}
+
+@media (max-height:460px){
+  .sign{display:none}
+  .shelf{top:6%; border-width:8px}
+  .tier{border-bottom-width:8px}
+  .card{padding:14px; gap:14px; grid-template-columns:110px 1fr}
+  .card p{font-size:13px; line-height:1.6}
+  .talk{font-size:14px; padding:8px 12px 12px; bottom:8px}
+  .talk .txt{min-height:2.6em}
+  .ask{height:54px} .game{bottom:54px}
+  .ask input,.ask button{height:36px}
+}
+@media (max-width:600px){
+  .counter{left:8%; right:8%}
+  .keeper{width:min(40vw,30vh)}
+  .moya{bottom:calc(16% + 22% + min(30vw,23vh))}
+  .moya{left:calc(50% + 18vw); width:46px}
+  .shelf{left:4%; right:4%; border-width:8px}
+  .tier{border-bottom-width:8px; padding:0 3% 4px}
+  .goods{width:40%}
+  .card{grid-template-columns:1fr; text-align:center; padding:18px}
+  .card #big{width:44%; margin:0 auto}
+  .askb{top:4%; width:72px; font-size:18px}
+  .talk{font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<div class="game" id="game">
+  <div class="strip" id="strip">
+    <section class="panel side" data-v="0"><div class="shelf" id="shelfL"></div><div class="floor"></div></section>
+    <section class="panel here" data-v="1">
+      <div class="sign">ALTER DESIGN CONSULTING</div>
+      <svg class="sprite keeper" id="keeper"></svg>
+      <div class="counter"></div>
+      <div class="floor"></div>
+      <svg class="sprite moya" id="moya" role="button" aria-label="店主に話しかける"></svg>
+    </section>
+    <section class="panel side" data-v="2"><div class="shelf" id="shelfR"></div><div class="floor"></div></section>
+  </div>
+  <button class="turn l" id="tl" aria-label="左の棚">◀</button>
+  <button class="turn r" id="tr" aria-label="右の棚">▶</button>
+
+  <div class="look" id="look">
+    <div class="card">
+      <button class="x" id="x" aria-label="閉じる">×</button>
+      <div id="big"></div>
+      <div><h2 id="bname"></h2><p id="bdesc"></p></div>
+    </div>
+    <button class="askb" id="askk" aria-label="店主に聞く"><svg class="sprite" id="askmoya"></svg><span>…</span></button>
+  </div>
+
+  <div class="talk" id="talk"><div class="who" id="who"></div><div class="txt" id="txt"></div><span class="nx">▼</span></div>
+</div>
+
+<form class="ask" id="ask" autocomplete="off">
+  <input id="q" type="text" placeholder="店主に聞く">
+  <button id="send" type="submit" disabled>送信</button>
+</form>
+
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get('p') === 'logo') document.documentElement.dataset.p = 'logo';
+const css = getComputedStyle(document.documentElement);
+const PAL = {}; for (const k of ['D','M','W','A','L','S']) PAL[k] = css.getPropertyValue('--'+k).trim();
+const MAP = {o:'D', m:'M', w:'W', a:'A', l:'L', s:'S'};
+
+function px(svg, rows){
+  const w = Math.max(...rows.map(r=>r.length)), h = rows.length;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  let out = '';
+  rows.forEach((r,y)=>{ [...r].forEach((ch,x)=>{ const c = MAP[ch]; if (c) out += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${PAL[c]}"/>`; }); });
+  svg.innerHTML = out;
+}
+
+/* 店主：リーゼント、丸いサングラス、ひげ、歯を見せて笑う。腕を組んでカウンターに乗り出す */
+const KEEPER = [
+  "............oooooooo......",
+  "..........oowwwwwwwwoo....",
+  "........oowwwwwwwwwwwwo...",
+  ".......owwwwwwwwwwwwwwwo..",
+  "......owwwwwwwwwwwwwwwwo..",
+  ".......owwwwwwwwwwwwwwo...",
+  "......oowwsssssssswwwo....",
+  "......osssssssssssssso....",
+  "......soooooossoooooos....",
+  "......solooooosolooooss...",
+  "......sssooosssssooosss...",
+  "......sssssssssssssssss...",
+  "......ssoooooooooooooss...",
+  "......sssollllllllosss....",
+  ".......sssooooooooosss....",
+  "........sssssssssssss.....",
+  ".......aaaaaaaaaaaaaaaa...",
+  "......aaaaaaaaaaaaaaaaaaa.",
+  "....ooooollllllllllooooo..",
+  "...oooooolllllllllloooooo.",
+  "..ooooooollllllllllooooooo",
+  "..oosssoooooooooooooosssoo",
+  "..oosssoooooooooooooosssoo",
+];
+const MOYA = [
+  "....lllll.llll....",
+  "..llllllllllllll..",
+  ".llllllllllllllll.",
+  "llllooolloolloolll",
+  "llllooolloolloolll",
+  ".llllllllllllllll.",
+  "..llllllllllllll..",
+  "....llll.llll.....",
+  "..ll..............",
+  ".l................",
+];
+const SPR = {
+  monitor:["oooooooooooo","oaaaaaaaaaao","oallllaaaaao","oaaaaaaaaaao","oallllllaaao","oaaaaaaaaaao","oooooooooooo",".....oo.....","...wwwwww...","..wwwwwwww.."],
+  chart:  ["oooooooooooo","ollllllllllo","olllllllaalo","olllllllaalo","ollllmmlaalo","ollllmmlaalo","olwwlmmlaalo","olwwlmmlaalo","ollllllllllo","oooooooooooo"],
+  people: ["..ss....ss..",".ssss..ssss.",".ssss..ssss.","..ss....ss..",".mmmm..aaaa.","mmmmmm.aaaaa","....ss......","...ssss.....","...wwww.....","..wwwwww...."],
+  pin:    ["....oooo....","...oaaaao...","..oaallaao..","..oallllao..","..oaallaao..","...oaaaao...","....oaao....",".....oo.....","..mmmmmmmm..",".mmmmmmmmmm."],
+  flag:   ["w...........","waaaaaaa....","waallaaaa...","waaaaaaaaa..","waaaaaaa....","w...........","w...........","w...........","w...........","ww.........."],
+  scroll: ["..wwwwwwww..",".wllllllllw.",".wlooooooolw".slice(0,12),".wllllllllw.",".wloooollllw".slice(0,12),".wllllllllw.",".wloooooolw.",".wllllllllw.","..wwwwwwww..","............"],
+  house:  [".....aa.....","....aaaa....","...aaaaaa...","..aaaaaaaa..",".oooooooooo.",".olllllllll.",".olmmlolmml.",".olmmlolmml.",".olllwwllll.",".oooooooooo."],
+};
+const SHELVES = {
+  L: [
+    [ {id:'s1', spr:'monitor', name:'人間中心の次世代業務システム開発',
+        desc:'業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します',
+        talk:'要は、使う人を真ん中にして業務システムを作り直すってこと。ノーコードとかローコードも使うよ。' },
+      {id:'s2', spr:'chart', name:'AI による意思決定支援と事業変革支援',
+        desc:'経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します',
+        talk:'会社にあるデータで AI を入れる手伝いだね。未来予測とか需要分析とか。決めるのが速くなるやつ。' } ],
+    [ {id:'s3', spr:'people', name:'自律型・共創型の組織設計支援',
+        desc:'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します',
+        talk:'分業と協業を組み直して、ひとりでも動けて、チームでも作れる組織にするの。' },
+      {id:'s4', spr:'pin', name:'地域格差の解消を目指したデジタル支援',
+        desc:'都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します',
+        talk:'都会に偏ってるデジタルを全国に、ってやつ。地方の会社とか自治体とか。人も育てるよ。' } ],
+  ],
+  R: [
+    [ {id:'r1', spr:'flag', name:'企業理念',
+        desc:'経営の力で「遊ぶように働く世界」をデザインする',
+        talk:'遊ぶようにってのは、楽するって意味じゃないよ。夢中になって、自分から作ってる状態で働くこと。' },
+      {id:'r2', spr:'scroll', name:'事業内容',
+        desc:'AI技術を活用した組織最適化に関するコンサルティング事業\nAIとローコードを組み合わせた次世代型のシステム開発事業',
+        talk:'ざっくり二本。組織のコンサルと、システム開発。どっちも AI を使う。' } ],
+    [ {id:'r3', spr:'house', name:'会社概要',
+        desc:'株式会社アルターデザインコンサルティング\n東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）\n設立 2025年6月',
+        talk:'うちは御成門駅から歩いて2分。まあ、来るならどうぞ。' },
+      {id:'r4', empty:true} ],
+  ],
+};
+const ALL = [...SHELVES.L.flat(), ...SHELVES.R.flat()].filter(x=>!x.empty);
+
+const keys = [
+  [/\b(hello|hi|hey|yo)\b|ハロー|やあ|こんにちは|こんちは|こんばんは|おはよう|どうも|ども|はじめまして|もしもし/i, ()=>{
+    const h = new Date().getHours();
+    return h < 11 ? 'おはよう。…朝から来るとはね。いらっしゃい。' : h < 18 ? 'どうも。いらっしゃい。' : 'こんばんは。いらっしゃい。';
+  }],
+  [/AI|ＡＩ|えーあい/i, 'AI × ローコードで、「上流工程中心のシステム開発」に革新を。…って看板には書いてあるね。'],
+  [/ローコード|ノーコード|システム/, 's1'], [/データ|予測|分析|意思決定/, 's2'],
+  [/組織|チーム|働き方/, 's3'], [/地方|地域|自治体/, 's4'],
+  [/理念|遊ぶ|遊び/, 'r1'], [/事業|何して|なにして|仕事/, 'r2'], [/どこ|場所|住所|駅|会社/, 'r3'],
+  [/問い合わせ|相談|料金|値段|費用|いくら|連絡/, 'そういうのは contact@alt-dsgn.co.jp に送ってみて。ちゃんと読む人がいるから。'],
+];
+const idle = [
+  'んー、それはわかんないな。棚のことなら答えるよ。',
+  '左右の棚、見てった？',
+  'AI とか、理念とか、場所とかなら話せるけど。',
+];
+const moyaLines = [
+  'いらっしゃい。…まあ、棚でも見てって。',
+  '左はうちでやってること。右は会社のこと。',
+  '気になるのがあったら、手に取ってみて。',
+];
+let idleN = 0, moyaN = 0;
+
+/* ---------- 組み立て ---------- */
+const $ = id => document.getElementById(id);
+px($('keeper'), KEEPER);
+px($('moya'), MOYA);
+px($('askmoya'), [
+  "......llllllll.llllll.......",
+  "...lllllllllllllllllllll....",
+  ".llllllllllllllllllllllllll.",
+  "llllllllllllllllllllllllllll",
+  "llllllllllllllllllllllllllll",
+  "llllllllllllllllllllllllllll",
+  ".llllllllllllllllllllllllll.",
+  "...lllllllllllllllllllll....",
+  "......llllll.lllllll........",
+  "..ll........................",
+  ".l..........................",
+]);
+const SHORT = {s1:'業務システム\n開発', s2:'AI\n意思決定支援', s3:'組織設計\n支援', s4:'地域デジタル\n支援', r1:'企業理念', r2:'事業内容', r3:'会社概要'};
+function boxOf(it){
+  const d = document.createElement('div'); d.className = 'box c' + (ALL.indexOf(it) % 4);
+  const s = document.createElementNS('http://www.w3.org/2000/svg','svg'); s.classList.add('sprite'); px(s, SPR[it.spr]);
+  const t = document.createElement('span'); t.textContent = SHORT[it.id];
+  d.append(s, t); return d;
+}
+for (const side of ['L','R']){
+  const shelf = $('shelf'+side);
+  SHELVES[side].forEach(row=>{
+    const tier = document.createElement('div'); tier.className = 'tier';
+    row.forEach(it=>{
+      const b = document.createElement('button');
+      b.className = 'goods' + (it.empty ? ' empty' : '');
+      if (!it.empty){
+        b.setAttribute('aria-label', it.name);
+        b.appendChild(boxOf(it));
+        b.onclick = e=>{ e.stopPropagation(); show(it.id); };
+      }
+      tier.appendChild(b);
+    });
+    shelf.appendChild(tier);
+  });
+}
+
+/* ---------- 視点 ---------- */
+let view = 1;
+function look(v){
+  view = Math.max(0, Math.min(2, v));
+  $('strip').style.transform = `translateX(${-76*view}vw)`;
+  document.querySelectorAll('.panel').forEach(p=>{ const here = +p.dataset.v === view; p.classList.toggle('here', here); p.classList.toggle('side', !here); });
+  $('tl').hidden = view === 0; $('tr').hidden = view === 2;
+  if (view !== 1) $('moya').classList.remove('show'); else armMoya();
+}
+document.querySelectorAll('.panel').forEach(p=>p.addEventListener('click', ()=>{ if (+p.dataset.v !== view) look(+p.dataset.v); }));
+$('tl').onclick = ()=>look(view-1);
+$('tr').onclick = ()=>look(view+1);
+document.addEventListener('keydown', e=>{
+  if (document.activeElement === $('q')) return;
+  if (e.key === 'Escape') { closeLook(); return; }
+  if ($('look').classList.contains('show')) return;
+  if (e.key === 'ArrowLeft') look(view-1);
+  if (e.key === 'ArrowRight') look(view+1);
+  if ((e.key === 'Enter' || e.key === ' ') && $('talk').classList.contains('show')){ e.preventDefault(); next(); }
+});
+let tx = null;
+$('game').addEventListener('touchstart', e=>{ tx = e.touches[0].clientX; }, {passive:true});
+$('game').addEventListener('touchend', e=>{
+  if (tx === null || $('look').classList.contains('show')) { tx = null; return; }
+  const d = e.changedTouches[0].clientX - tx; tx = null;
+  if (Math.abs(d) > 40) look(view + (d < 0 ? 1 : -1));
+});
+
+/* ---------- 品を大きく ---------- */
+let curItem = null;
+function show(id){
+  curItem = ALL.find(x=>x.id === id);
+  look(SHELVES.L.flat().includes(curItem) ? 0 : 2);
+  hideTalk();
+  $('big').replaceChildren(boxOf(curItem));
+  $('look').classList.toggle('kr', view === 0); $('look').classList.toggle('kl', view === 2);
+  $('bname').textContent = curItem.name;
+  $('bdesc').textContent = curItem.desc;
+  $('look').classList.add('show');
+}
+function closeLook(){ $('look').classList.remove('show'); hideTalk(); }
+$('x').onclick = closeLook;
+$('look').addEventListener('click', e=>{ if (e.target === $('look')) closeLook(); });
+$('askk').onclick = ()=>talk([{who:'店主', text:curItem.talk}]);
+
+/* ---------- 会話 ---------- */
+let pages = [], typeT = 0;
+function talk(list){ pages = list.slice(); next(); }
+function hideTalk(){ pages = []; clearInterval(typeT); $('talk').classList.remove('show','done'); }
+function next(){
+  clearInterval(typeT);
+  const el = $('talk');
+  if (!pages.length){ hideTalk(); armMoya(); return; }
+  const p = pages.shift();
+  $('who').textContent = p.who || '';
+  el.classList.add('show'); el.classList.remove('done');
+  const t = p.text; let k = 0; $('txt').textContent = '';
+  typeT = setInterval(()=>{ $('txt').textContent = t.slice(0, ++k); if (k >= t.length){ clearInterval(typeT); el.classList.add('done'); } }, 26);
+}
+$('talk').onclick = next;
+
+function armMoya(){ $('moya').classList.toggle('show', view === 1); }
+
+/* テキストボックスの外を押しても閉じる */
+document.addEventListener('click', e=>{
+  if (!$('talk').classList.contains('show')) return;
+  if ($('talk').contains(e.target) || e.target.closest('#askk,#moya,#ask')) return;
+  hideTalk();
+}, true);
+$('moya').onclick = e=>{ e.stopPropagation(); $('moya').classList.remove('show'); talk([{who:'店主', text:moyaLines[moyaN++ % moyaLines.length]}]); };
+
+/* ---------- 質問バー ---------- */
+$('q').addEventListener('input', ()=>{ $('send').disabled = !$('q').value.trim(); });
+$('ask').addEventListener('submit', e=>{
+  e.preventDefault();
+  const v = $('q').value.trim(); if (!v) return;
+  $('q').value = ''; $('send').disabled = true; $('q').blur();
+  const hit = keys.find(([re]) => re.test(v));
+  const ans = hit ? (typeof hit[1] === 'function' ? hit[1]() : hit[1]) : idle[idleN++ % idle.length];
+  const item = ALL.find(x=>x.id === ans);
+  if (item){ show(item.id); talk([{who:'店主', text:item.talk}]); }
+  else { closeLook(); look(1); talk([{who:'店主', text:ans}]); }
+});
+
+look(1);
+</script>
+</body>
+</html>
