@@ -15,75 +15,116 @@
 *{box-sizing:border-box; margin:0; padding:0}
 html,body{height:100%}
 body{background:var(--D); color:var(--L); font-family:"DotGothic16",monospace; overflow:hidden}
+button{font:inherit}
+.sprite{display:block; image-rendering:pixelated; shape-rendering:crispEdges}
+.wallbg{background:repeating-linear-gradient(90deg,var(--M) 0 44px,color-mix(in srgb,var(--M) 82%,var(--D)) 44px 48px)}
 
+/* ===== 店の中 ===== */
 .game{position:fixed; inset:0 0 68px 0; overflow:hidden;
   background:linear-gradient(transparent 84%,var(--D) 84%),repeating-linear-gradient(90deg,var(--M) 0 44px,color-mix(in srgb,var(--M) 82%,var(--D)) 44px 48px)}
 /* 一枚の幅は画面の 76%。両隣が 12% ずつ見える */
 .strip{position:absolute; top:0; bottom:0; left:12vw; width:228vw; display:grid; grid-template-columns:repeat(3,76vw);
   transform:translateX(-76vw); transition:transform .45s cubic-bezier(.6,0,.3,1)}
-.panel{position:relative; overflow:hidden;
-  background:repeating-linear-gradient(90deg,var(--M) 0 44px,color-mix(in srgb,var(--M) 82%,var(--D)) 44px 48px)}
+.panel{position:relative; overflow:hidden}
 .panel.side{cursor:pointer}
-.panel.here{cursor:default}
-.sprite{display:block; image-rendering:pixelated; shape-rendering:crispEdges}
-
-/* 床 */
 .floor{position:absolute; left:0; right:0; bottom:0; height:16%; background:var(--D); border-top:4px solid var(--W)}
 
-/* 真ん中：店主とカウンター（引いた絵） */
+/* 真ん中：店主とカウンター */
 .keeper{position:absolute; left:50%; bottom:calc(16% + 22%); transform:translateX(-50%); width:min(36vh,260px)}
-.counter{position:absolute; left:20%; right:20%; bottom:16%; height:23%;
+.counter{position:absolute; left:22%; right:22%; bottom:16%; height:23%;
   background:var(--W); border-top:10px solid var(--A); box-shadow:inset 0 -8px 0 var(--D)}
 .counter::after{content:""; position:absolute; left:8%; right:8%; top:30%; height:3px; background:var(--D); opacity:.5}
 .sign{position:absolute; top:8%; left:50%; transform:translateX(-50%); padding:6px 16px; border:4px solid var(--W); background:var(--D); color:var(--A); font-size:clamp(12px,1.6vw,18px); letter-spacing:.15em; white-space:nowrap}
-
-/* もやもや */
-.moya{position:absolute; left:calc(50% + min(12vh,90px)); bottom:calc(16% + 22% + min(33vh,240px)); width:58px; cursor:pointer; display:none; animation:pop .25s steps(3); z-index:2}
+.moya{position:absolute; left:calc(50% + min(12vh,90px)); bottom:calc(16% + 22% + min(33vh,240px)); width:58px; cursor:pointer; display:none; z-index:2}
 .moya.show{display:block}
 .moya:hover{translate:0 -2px}
 
-/* 棚：二段。パネルいっぱいに置いて、隣から端が見える */
-.shelf{position:absolute; left:6%; right:6%; top:12%; bottom:16%;
-  border:12px solid var(--W); border-bottom:0; background:var(--D);
-  display:grid; grid-template-rows:1fr 1fr}
-.tier{border-bottom:12px solid var(--W); display:flex; justify-content:space-between; align-items:flex-end; padding:0 5% 4px}
-.goods{width:22%; max-width:130px; cursor:pointer; position:relative; background:none; border:0; padding:0}
-.panel:not(.here) .goods{pointer-events:none}
-.goods .box{transition:translate .1s steps(2)}
-.goods:hover .box{translate:0 -6px}
-/* 品は箱。正面に名前が刷ってある */
+/* 扉（出口） */
+.door{position:absolute; right:4%; bottom:16%; width:min(11%,110px); aspect-ratio:1/2.1; background:var(--W); border:5px solid var(--D); cursor:pointer; padding:0}
+.door::before{content:""; position:absolute; left:18%; right:18%; top:12%; height:26%; background:var(--D); border:3px solid color-mix(in srgb,var(--W) 60%,var(--D))}
+.door::after{content:""; position:absolute; right:14%; top:54%; width:12%; aspect-ratio:1; background:var(--S)}
+.door .plate{position:absolute; left:50%; top:-34px; transform:translateX(-50%); background:var(--L); color:var(--D); font-size:12px; padding:1px 8px; border:3px solid var(--D); white-space:nowrap}
+.door .arrow{position:absolute; left:50%; top:-64px; transform:translateX(-50%); color:var(--A); font-size:20px; display:none; animation:bob .8s steps(2) infinite}
+.door.ready .arrow{display:block}
+.door:hover{filter:brightness(1.15)}
+
+/* 左：商品棚（二段）。同じ品を三つずつ積む */
+.shelf{position:absolute; right:3%; width:min(86%,560px); top:12%; bottom:16%;
+  border:12px solid var(--W); border-bottom:0; background:var(--D); display:grid; grid-template-rows:1fr 1fr}
+.tier{border-bottom:12px solid var(--W); display:flex; justify-content:space-evenly; align-items:flex-end; padding:0 2% 0}
+.grp{position:relative; height:88%; aspect-ratio:1.125/1; max-width:48%; background:none; border:0; padding:0; cursor:pointer}
+.panel:not(.here) .grp,.panel:not(.here) .poster{pointer-events:none}
+/* 下に三つ、上に二つ積む */
+.grp .box{position:absolute; width:33.34%}
+.grp .box:nth-child(1){left:0; bottom:0}
+.grp .box:nth-child(2){left:33.33%; bottom:0}
+.grp .box:nth-child(3){left:66.66%; bottom:0}
+.grp .box:nth-child(4){left:16.67%; bottom:50%}
+.grp .box:nth-child(5){left:50%; bottom:50%}
+.grp:hover .box{translate:0 -5px}
+.grp:hover .box:nth-child(n+4){translate:0 -9px}
+.grp .box span{display:none}
+.grp .box .sprite{width:60%}
+/* 値札：棚板から下げる */
+.ptag{position:absolute; left:50%; top:calc(100% + 1px); transform:translateX(-50%); z-index:1; background:var(--L); color:var(--D); border:2px solid var(--D);
+  font-size:clamp(10px,1vw,13px); line-height:1.3; padding:1px 8px; white-space:nowrap}
+.grp:hover .ptag{background:var(--S)}
+
+/* 品はパッケージ。正面に名前が刷ってある */
 .box{--bc:var(--A); --bt:var(--D); position:relative; width:100%; aspect-ratio:3/4; background:var(--bc); color:var(--bt);
-  border:4px solid var(--D); box-shadow:6px 0 0 color-mix(in srgb,var(--bc) 55%,var(--D)), 6px 0 0 4px var(--D);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6%; padding:16% 6% 8%; font-family:"DotGothic16",monospace}
+  border:3px solid var(--D); box-shadow:4px 0 0 color-mix(in srgb,var(--bc) 55%,var(--D)), 4px 0 0 3px var(--D);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5%; padding:16% 5% 6%; transition:translate .1s steps(2)}
 .box::before{content:""; position:absolute; top:0; left:0; right:0; height:12%; background:color-mix(in srgb,var(--bc) 65%,var(--D))}
-.box .sprite{width:50%; height:auto; background:var(--D); padding:5%}
-.box span{font-size:clamp(10px,1.15vw,15px); line-height:1.35; text-align:center; white-space:pre-line}
+.box .sprite{width:52%; height:auto; background:var(--D); padding:5%}
+.box span{font-size:clamp(8px,.9vw,12px); line-height:1.3; text-align:center; white-space:pre-line}
 .box.c1{--bc:var(--L)} .box.c2{--bc:var(--S)} .box.c3{--bc:var(--M); --bt:var(--L)}
-.goods.empty{visibility:hidden}
+
+/* 右：貼り紙と看板 */
+.wall{position:absolute; left:2%; width:min(94%,900px); top:8%; bottom:18%}
+.poster{position:absolute; background:none; border:0; padding:0; cursor:pointer; color:var(--D); text-align:center; transition:translate .1s steps(2)}
+.poster:hover{translate:0 -5px; z-index:4}
+.pp{position:relative; border:4px solid var(--D); padding:8% 8%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; line-height:1.4; width:100%; height:100%}
+.pin::before,.pin::after{content:""; position:absolute; top:5px; width:8px; height:8px; background:var(--A)}
+.pin::before{left:5px} .pin::after{right:5px}
+.tape::before{content:""; position:absolute; top:-10px; left:50%; width:44%; height:16px; translate:-50% 0; rotate:-4deg; background:color-mix(in srgb,var(--L) 70%,transparent); border:2px solid color-mix(in srgb,var(--D) 30%,transparent)}
+.pp small{font-size:clamp(9px,.9vw,12px); opacity:.85}
+.pp b{font-weight:400; font-size:clamp(10px,1.2vw,15px); white-space:pre-line}
+.pp .sprite{width:86%; height:auto}
+.p-rinen .pp{background:var(--L)}
+.p-jigyo .pp{background:var(--W); color:var(--L)}
+.p-jigyo .pp::before,.p-jigyo .pp::after{background:var(--S)}
+.p-gaiyo .pp{background:var(--S)}
+.p-map .pp{background:var(--L); padding:6%}
+.p-map .pp .sprite{width:100%}
+/* 飾りの紙（押せない） */
+.scrap{position:absolute; border:3px solid var(--D); pointer-events:none;
+  background:repeating-linear-gradient(transparent 0 9px,color-mix(in srgb,var(--D) 35%,transparent) 9px 11px),var(--bg,var(--L)); background-clip:padding-box}
+.scrap.dots{background:radial-gradient(color-mix(in srgb,var(--D) 40%,transparent) 2px,transparent 2.5px) 0 0/12px 12px,var(--bg,var(--L))}
 
 /* 左右（端に寄せたときだけ） */
-.turn{position:absolute; top:0; bottom:0; width:12vw; z-index:3; background:none; border:0; color:var(--A); font:inherit; font-size:30px; cursor:pointer; opacity:0; transition:opacity .15s}
+.turn{position:absolute; top:0; bottom:0; width:12vw; z-index:3; background:none; border:0; color:var(--A); font-size:30px; cursor:pointer; opacity:0; transition:opacity .15s}
 .turn:hover,.turn:focus-visible{opacity:1}
 .turn.l{left:0} .turn.r{right:0}
 .turn[hidden]{display:none}
 
-/* 品を大きく */
+/* 手に取る（裏面） */
 .look{position:absolute; inset:0; z-index:5; display:none; place-items:center; background:color-mix(in srgb,var(--D) 78%,transparent)}
 .look.show{display:grid; animation:pop .18s steps(3)}
-.card{width:min(90%,620px); display:grid; grid-template-columns:minmax(120px,38%) 1fr; gap:24px; align-items:center;
+.card{width:min(90%,640px); display:grid; grid-template-columns:minmax(120px,36%) 1fr; gap:24px; align-items:center;
   background:var(--D); border:4px solid var(--L); box-shadow:0 0 0 4px var(--D); padding:24px; position:relative}
-.card .box span{font-size:clamp(14px,2vw,20px)}
+.card .box span{font-size:clamp(13px,1.8vw,18px)}
+.card .poster{pointer-events:none; position:relative; width:100%; aspect-ratio:3/3.6}
+.card{max-height:calc(100% - 24px); overflow:auto}
+.card .pp small{font-size:12px} .card .pp b{font-size:16px}
 .card h2{font-size:18px; font-weight:400; color:var(--A); margin-bottom:8px; line-height:1.5}
 .card p{font-size:15px; line-height:1.8; white-space:pre-line}
-/* 店主に聞く：カードの横から出るもくもく */
-.askb{position:absolute; top:22%; width:96px; background:none; border:0; padding:0; cursor:pointer; color:var(--D); font:inherit; font-size:24px; line-height:1; animation:pop .25s steps(3)}
+.card .x{position:absolute; top:6px; right:10px; background:none; border:0; color:var(--L); font-size:18px; cursor:pointer}
+.askb{position:absolute; top:22%; width:96px; background:none; border:0; padding:0; cursor:pointer; color:var(--D); font-size:24px; line-height:1}
 .askb svg{width:100%; height:auto; display:block}
 .askb span{position:absolute; left:0; right:0; top:22%; text-align:center}
-/* 店主のいる側から出る：左の棚なら右から、右の棚なら左から */
 .look.kr .askb{right:3vw} .look.kr .askb svg{transform:scaleX(-1)}
 .look.kl .askb{left:3vw}
 .askb:hover{translate:0 -2px}
-.card .x{position:absolute; top:6px; right:10px; background:none; border:0; color:var(--L); font:inherit; font-size:18px; cursor:pointer}
 
 /* 会話のときだけ出るテキストウィンドウ */
 .talk{position:absolute; left:50%; bottom:14px; transform:translateX(-50%); width:min(92%,760px); z-index:6;
@@ -98,36 +139,79 @@ body{background:var(--D); color:var(--L); font-family:"DotGothic16",monospace; o
 /* 質問バー：レトロにしないが、地の色に馴染ませる */
 .ask{position:fixed; left:0; right:0; bottom:0; height:68px; background:var(--D);
   display:flex; align-items:center; gap:10px; padding:0 max(16px,calc(50% - 360px));
-  font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic UI",sans-serif}
+  font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic UI",sans-serif; transition:opacity .3s}
 .ask input{flex:1; min-width:0; height:42px; border:1px solid color-mix(in srgb,var(--L) 22%,transparent); border-radius:21px;
   background:color-mix(in srgb,var(--L) 8%,transparent); padding:0 18px; font:inherit; font-size:15px; color:var(--L); outline:none}
 .ask input::placeholder{color:color-mix(in srgb,var(--L) 45%,transparent)}
 .ask input:focus{border-color:var(--A); background:color-mix(in srgb,var(--L) 12%,transparent)}
-.ask button{height:42px; padding:0 20px; border:0; border-radius:21px; background:var(--A); color:var(--D); font:inherit; font-size:14px; font-weight:600; cursor:pointer}
+.ask button{height:42px; padding:0 20px; border:0; border-radius:21px; background:var(--A); color:var(--D); font-size:14px; font-weight:600; cursor:pointer}
 .ask button:disabled{opacity:.3; cursor:default}
+body.outside .ask{opacity:0; pointer-events:none}
+
+/* ===== 店の外（入口・出口） ===== */
+.front{position:fixed; inset:0; z-index:10; display:grid; place-items:center; transition:opacity .4s}
+.front[hidden]{display:none}
+.front.fade{opacity:0; pointer-events:none}
+.facade{position:relative; width:min(78vw,520px); aspect-ratio:1/1; display:grid; justify-items:center; align-content:end}
+.facade .roof{position:absolute; top:0; left:-6%; right:-6%; height:16%; background:var(--A); border:5px solid var(--D);
+  background-image:repeating-linear-gradient(90deg,var(--A) 0 40px,var(--S) 40px 80px)}
+.facade .board{position:absolute; top:20%; left:50%; transform:translateX(-50%); padding:6px 18px; border:4px solid var(--W); background:var(--D); color:var(--A); font-size:clamp(12px,2.4vw,18px); letter-spacing:.15em; white-space:nowrap}
+.facade .wallf{position:absolute; top:16%; left:0; right:0; bottom:0; background:var(--W); border:5px solid var(--D); border-top:0}
+.facade .win{position:absolute; bottom:12%; width:22%; aspect-ratio:1; background:var(--D); border:5px solid var(--S)}
+.facade .win.l{left:8%} .facade .win.r{right:8%}
+.fdoor{position:relative; z-index:1; width:26%; aspect-ratio:1/1.9; margin-bottom:0; background:var(--D); border:5px solid var(--D); border-bottom:0; cursor:pointer; padding:0; perspective:400px}
+.fdoor .leaf{position:absolute; inset:0; background:var(--M); transform-origin:left center; transition:transform .5s steps(5)}
+.fdoor .leaf::before{content:""; position:absolute; left:18%; right:18%; top:12%; height:26%; background:var(--D)}
+.fdoor .leaf::after{content:""; position:absolute; right:12%; top:54%; width:12%; aspect-ratio:1; background:var(--S)}
+.fdoor .tag{position:absolute; left:50%; top:46%; transform:translateX(-50%); background:var(--L); color:var(--D); font-size:12px; padding:1px 6px; border:2px solid var(--D); z-index:1; white-space:nowrap}
+.fdoor.open .leaf{transform:rotateY(-80deg)}
+.fdoor.open .tag{display:none}
+.fdoor:hover .leaf{filter:brightness(1.15)}
+.hint{position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%); color:var(--A); font-size:22px; animation:bob .8s steps(2) infinite}
+.bell{position:absolute; left:62%; top:30%; color:var(--L); font-size:clamp(14px,2.6vw,22px); display:none; animation:pop .2s steps(3); white-space:nowrap}
+.bell.show{display:block}
+.ground{position:fixed; left:0; right:0; bottom:0; height:calc(50% - min(39vw,260px) + 0px); background:var(--D)}
+
+/* 出口の外：フッターの役 */
+.bye{position:relative; z-index:1; width:min(92vw,560px); margin-top:20px; text-align:center; line-height:1.9}
+.bye h2{font-weight:400; font-size:20px; color:var(--A); margin-bottom:6px}
+.bye .co{font-size:14px; opacity:.9}
+.bye .msg{font-size:14px; margin:12px 0}
+.bye .btns{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+.bye a,.bye button{display:inline-block; padding:8px 18px; border:3px solid var(--L); color:var(--L); background:none; text-decoration:none; font-size:14px; cursor:pointer}
+.bye a.main{background:var(--A); border-color:var(--A); color:var(--D)}
+.bye a:hover,.bye button:hover{filter:brightness(1.15)}
+#exitF{align-content:center; overflow:auto; padding:24px 16px}
+#exitF .facade{width:min(52vw,300px)}
 
 @keyframes blink{50%{opacity:0}}
+@keyframes bob{50%{translate:0 -4px}}
 @keyframes pop{from{scale:.7}to{scale:1}}
 
 @media (max-height:460px){
   .sign{display:none}
   .shelf{top:6%; border-width:8px}
   .tier{border-bottom-width:8px}
+  .wall{top:4%; bottom:17%}
   .card{padding:14px; gap:14px; grid-template-columns:110px 1fr}
   .card p{font-size:13px; line-height:1.6}
   .talk{font-size:14px; padding:8px 12px 12px; bottom:8px}
   .talk .txt{min-height:2.6em}
   .ask{height:54px} .game{bottom:54px}
   .ask input,.ask button{height:36px}
+  .door .plate{top:-26px}
+  .facade{width:min(60vh,420px)}
+  #exitF .facade{width:min(30vh,200px)}
+  .bye{margin-top:8px; line-height:1.6}
 }
 @media (max-width:600px){
-  .counter{left:8%; right:8%}
+  .counter{left:20%; right:20%}
   .keeper{width:min(40vw,30vh)}
-  .moya{bottom:calc(16% + 22% + min(30vw,23vh))}
-  .moya{left:calc(50% + 18vw); width:46px}
-  .shelf{left:4%; right:4%; border-width:8px}
-  .tier{border-bottom-width:8px; padding:0 3% 4px}
-  .goods{width:40%}
+  .moya{bottom:calc(16% + 22% + min(30vw,23vh)); left:calc(50% + 18vw); width:46px}
+  .door{width:14%; right:2%}
+  .shelf{width:94%; border-width:8px}
+  .tier{border-bottom-width:8px}
+  .wall{width:98%; left:1%}
   .card{grid-template-columns:1fr; text-align:center; padding:18px}
   .card #big{width:44%; margin:0 auto}
   .askb{top:4%; width:72px; font-size:18px}
@@ -135,22 +219,23 @@ body{background:var(--D); color:var(--L); font-family:"DotGothic16",monospace; o
 }
 </style>
 </head>
-<body>
+<body class="outside">
 
 <div class="game" id="game">
   <div class="strip" id="strip">
-    <section class="panel side" data-v="0"><div class="shelf" id="shelfL"></div><div class="floor"></div></section>
-    <section class="panel here" data-v="1">
+    <section class="panel side wallbg" data-v="0"><div class="shelf" id="shelf"></div><div class="floor"></div></section>
+    <section class="panel here wallbg" data-v="1">
       <div class="sign">ALTER DESIGN CONSULTING</div>
       <svg class="sprite keeper" id="keeper"></svg>
       <div class="counter"></div>
       <div class="floor"></div>
+      <button class="door" id="door" aria-label="出口"><span class="arrow">▼</span><span class="plate">出口</span></button>
       <svg class="sprite moya" id="moya" role="button" aria-label="店主に話しかける"></svg>
     </section>
-    <section class="panel side" data-v="2"><div class="shelf" id="shelfR"></div><div class="floor"></div></section>
+    <section class="panel side wallbg" data-v="2"><div class="wall" id="wall"></div><div class="floor"></div></section>
   </div>
   <button class="turn l" id="tl" aria-label="左の棚">◀</button>
-  <button class="turn r" id="tr" aria-label="右の棚">▶</button>
+  <button class="turn r" id="tr" aria-label="右の壁">▶</button>
 
   <div class="look" id="look">
     <div class="card">
@@ -169,12 +254,43 @@ body{background:var(--D); color:var(--L); font-family:"DotGothic16",monospace; o
   <button id="send" type="submit" disabled>送信</button>
 </form>
 
+<!-- 入口 -->
+<div class="front wallbg" id="enterF">
+  <div class="ground"></div>
+  <div class="facade">
+    <div class="roof"></div><div class="wallf"></div>
+    <div class="board">ALTER DESIGN CONSULTING</div>
+    <div class="win l"></div><div class="win r"></div>
+    <button class="fdoor" id="fdoor" aria-label="店に入る"><span class="hint">▼</span><span class="leaf"></span><span class="tag">OPEN</span></button>
+    <div class="bell" id="bell">カラン、コロン</div>
+  </div>
+</div>
+
+<!-- 出口：フッターの役 -->
+<div class="front wallbg" id="exitF" hidden>
+  <div class="facade">
+    <div class="roof"></div><div class="wallf"></div>
+    <div class="win l"></div><div class="win r"></div>
+    <div class="fdoor" aria-hidden="true"><span class="leaf"></span></div>
+  </div>
+  <div class="bye">
+    <h2>またどうぞ。</h2>
+    <p class="co">株式会社アルターデザインコンサルティング<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
+    <p class="msg">サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+    <div class="btns">
+      <a class="main" href="mailto:contact@alt-dsgn.co.jp">お問い合わせ</a>
+      <button id="again">もう一度入る</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const params = new URLSearchParams(location.search);
 if (params.get('p') === 'logo') document.documentElement.dataset.p = 'logo';
 const css = getComputedStyle(document.documentElement);
 const PAL = {}; for (const k of ['D','M','W','A','L','S']) PAL[k] = css.getPropertyValue('--'+k).trim();
 const MAP = {o:'D', m:'M', w:'W', a:'A', l:'L', s:'S'};
+const $ = id => document.getElementById(id);
 
 function px(svg, rows){
   const w = Math.max(...rows.map(r=>r.length)), h = rows.length;
@@ -183,8 +299,8 @@ function px(svg, rows){
   rows.forEach((r,y)=>{ [...r].forEach((ch,x)=>{ const c = MAP[ch]; if (c) out += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${PAL[c]}"/>`; }); });
   svg.innerHTML = out;
 }
+function svgOf(rows){ const s = document.createElementNS('http://www.w3.org/2000/svg','svg'); s.classList.add('sprite'); px(s, rows); return s; }
 
-/* 店主：リーゼント、丸いサングラス、ひげ、歯を見せて笑う。腕を組んでカウンターに乗り出す */
 const KEEPER = [
   "............oooooooo......",
   "..........oowwwwwwwwoo....",
@@ -222,73 +338,7 @@ const MOYA = [
   "..ll..............",
   ".l................",
 ];
-const SPR = {
-  monitor:["oooooooooooo","oaaaaaaaaaao","oallllaaaaao","oaaaaaaaaaao","oallllllaaao","oaaaaaaaaaao","oooooooooooo",".....oo.....","...wwwwww...","..wwwwwwww.."],
-  chart:  ["oooooooooooo","ollllllllllo","olllllllaalo","olllllllaalo","ollllmmlaalo","ollllmmlaalo","olwwlmmlaalo","olwwlmmlaalo","ollllllllllo","oooooooooooo"],
-  people: ["..ss....ss..",".ssss..ssss.",".ssss..ssss.","..ss....ss..",".mmmm..aaaa.","mmmmmm.aaaaa","....ss......","...ssss.....","...wwww.....","..wwwwww...."],
-  pin:    ["....oooo....","...oaaaao...","..oaallaao..","..oallllao..","..oaallaao..","...oaaaao...","....oaao....",".....oo.....","..mmmmmmmm..",".mmmmmmmmmm."],
-  flag:   ["w...........","waaaaaaa....","waallaaaa...","waaaaaaaaa..","waaaaaaa....","w...........","w...........","w...........","w...........","ww.........."],
-  scroll: ["..wwwwwwww..",".wllllllllw.",".wlooooooolw".slice(0,12),".wllllllllw.",".wloooollllw".slice(0,12),".wllllllllw.",".wloooooolw.",".wllllllllw.","..wwwwwwww..","............"],
-  house:  [".....aa.....","....aaaa....","...aaaaaa...","..aaaaaaaa..",".oooooooooo.",".olllllllll.",".olmmlolmml.",".olmmlolmml.",".olllwwllll.",".oooooooooo."],
-};
-const SHELVES = {
-  L: [
-    [ {id:'s1', spr:'monitor', name:'人間中心の次世代業務システム開発',
-        desc:'業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します',
-        talk:'要は、使う人を真ん中にして業務システムを作り直すってこと。ノーコードとかローコードも使うよ。' },
-      {id:'s2', spr:'chart', name:'AI による意思決定支援と事業変革支援',
-        desc:'経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します',
-        talk:'会社にあるデータで AI を入れる手伝いだね。未来予測とか需要分析とか。決めるのが速くなるやつ。' } ],
-    [ {id:'s3', spr:'people', name:'自律型・共創型の組織設計支援',
-        desc:'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します',
-        talk:'分業と協業を組み直して、ひとりでも動けて、チームでも作れる組織にするの。' },
-      {id:'s4', spr:'pin', name:'地域格差の解消を目指したデジタル支援',
-        desc:'都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します',
-        talk:'都会に偏ってるデジタルを全国に、ってやつ。地方の会社とか自治体とか。人も育てるよ。' } ],
-  ],
-  R: [
-    [ {id:'r1', spr:'flag', name:'企業理念',
-        desc:'経営の力で「遊ぶように働く世界」をデザインする',
-        talk:'遊ぶようにってのは、楽するって意味じゃないよ。夢中になって、自分から作ってる状態で働くこと。' },
-      {id:'r2', spr:'scroll', name:'事業内容',
-        desc:'AI技術を活用した組織最適化に関するコンサルティング事業\nAIとローコードを組み合わせた次世代型のシステム開発事業',
-        talk:'ざっくり二本。組織のコンサルと、システム開発。どっちも AI を使う。' } ],
-    [ {id:'r3', spr:'house', name:'会社概要',
-        desc:'株式会社アルターデザインコンサルティング\n東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）\n設立 2025年6月',
-        talk:'うちは御成門駅から歩いて2分。まあ、来るならどうぞ。' },
-      {id:'r4', empty:true} ],
-  ],
-};
-const ALL = [...SHELVES.L.flat(), ...SHELVES.R.flat()].filter(x=>!x.empty);
-
-const keys = [
-  [/\b(hello|hi|hey|yo)\b|ハロー|やあ|こんにちは|こんちは|こんばんは|おはよう|どうも|ども|はじめまして|もしもし/i, ()=>{
-    const h = new Date().getHours();
-    return h < 11 ? 'おはよう。…朝から来るとはね。いらっしゃい。' : h < 18 ? 'どうも。いらっしゃい。' : 'こんばんは。いらっしゃい。';
-  }],
-  [/AI|ＡＩ|えーあい/i, 'AI × ローコードで、「上流工程中心のシステム開発」に革新を。…って看板には書いてあるね。'],
-  [/ローコード|ノーコード|システム/, 's1'], [/データ|予測|分析|意思決定/, 's2'],
-  [/組織|チーム|働き方/, 's3'], [/地方|地域|自治体/, 's4'],
-  [/理念|遊ぶ|遊び/, 'r1'], [/事業|何して|なにして|仕事/, 'r2'], [/どこ|場所|住所|駅|会社/, 'r3'],
-  [/問い合わせ|相談|料金|値段|費用|いくら|連絡/, 'そういうのは contact@alt-dsgn.co.jp に送ってみて。ちゃんと読む人がいるから。'],
-];
-const idle = [
-  'んー、それはわかんないな。棚のことなら答えるよ。',
-  '左右の棚、見てった？',
-  'AI とか、理念とか、場所とかなら話せるけど。',
-];
-const moyaLines = [
-  'いらっしゃい。…まあ、棚でも見てって。',
-  '左はうちでやってること。右は会社のこと。',
-  '気になるのがあったら、手に取ってみて。',
-];
-let idleN = 0, moyaN = 0;
-
-/* ---------- 組み立て ---------- */
-const $ = id => document.getElementById(id);
-px($('keeper'), KEEPER);
-px($('moya'), MOYA);
-px($('askmoya'), [
+const ASKMOYA = [
   "......llllllll.llllll.......",
   "...lllllllllllllllllllll....",
   ".llllllllllllllllllllllllll.",
@@ -300,31 +350,108 @@ px($('askmoya'), [
   "......llllll.lllllll........",
   "..ll........................",
   ".l..........................",
-]);
-const SHORT = {s1:'業務システム\n開発', s2:'AI\n意思決定支援', s3:'組織設計\n支援', s4:'地域デジタル\n支援', r1:'企業理念', r2:'事業内容', r3:'会社概要'};
-function boxOf(it){
-  const d = document.createElement('div'); d.className = 'box c' + (ALL.indexOf(it) % 4);
-  const s = document.createElementNS('http://www.w3.org/2000/svg','svg'); s.classList.add('sprite'); px(s, SPR[it.spr]);
-  const t = document.createElement('span'); t.textContent = SHORT[it.id];
-  d.append(s, t); return d;
+];
+const SPR = {
+  monitor:["oooooooooooo","oaaaaaaaaaao","oallllaaaaao","oaaaaaaaaaao","oallllllaaao","oaaaaaaaaaao","oooooooooooo",".....oo.....","...wwwwww...","..wwwwwwww.."],
+  chart:  ["oooooooooooo","ollllllllllo","olllllllaalo","olllllllaalo","ollllmmlaalo","ollllmmlaalo","olwwlmmlaalo","olwwlmmlaalo","ollllllllllo","oooooooooooo"],
+  people: ["..ss....ss..",".ssss..ssss.",".ssss..ssss.","..ss....ss..",".mmmm..aaaa.","mmmmmm.aaaaa","....ss......","...ssss.....","...wwww.....","..wwwwww...."],
+  pin:    ["....oooo....","...oaaaao...","..oaallaao..","..oallllao..","..oaallaao..","...oaaaao...","....oaao....",".....oo.....","..mmmmmmmm..",".mmmmmmmmmm."],
+};
+
+/* 左：商品 */
+const GOODS = [
+  {id:'s1', spr:'monitor', short:'業務システム\n開発', name:'人間中心の次世代業務システム開発',
+    desc:'業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供。ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します',
+    talk:'要は、使う人を真ん中にして業務システムを作り直すってこと。ノーコードとかローコードも使うよ。' },
+  {id:'s2', spr:'chart', short:'AI\n意思決定支援', name:'AI による意思決定支援と事業変革支援',
+    desc:'経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援。未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します',
+    talk:'会社にあるデータで AI を入れる手伝いだね。未来予測とか需要分析とか。決めるのが速くなるやつ。' },
+  {id:'s3', spr:'people', short:'組織設計\n支援', name:'自律型・共創型の組織設計支援',
+    desc:'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現。個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します',
+    talk:'分業と協業を組み直して、ひとりでも動けて、チームでも作れる組織にするの。' },
+  {id:'s4', spr:'pin', short:'地域デジタル\n支援', name:'地域格差の解消を目指したデジタル支援',
+    desc:'都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します',
+    talk:'都会に偏ってるデジタルを全国に、ってやつ。地方の会社とか自治体とか。人も育てるよ。' },
+];
+/* 右：貼り紙と看板 */
+const ART = {
+  rinen:["...oooooooo...","...owwwwwwo...","...owlwwlwo...","...owwwwwwo...","...owlwwlwo...","...owwwwwwo...","...owwoowwo...","ss.owwoowwo.ss","ss.oooooooo.ss","mm..........aa","mm....a.....aa","s.s..aaa...s.s"],
+  map:  ["mmmm.ww.mmmmmm.ww.mmm","mmmm.ww.mmmmmm.ww.mmm","wwwwwwwwwwwwwwwwwwwww","mmmm.ww.mmmaam.ww.mmm","mmmm.ww.mmaaaa.ww.mmm","mmmm.ww.mmmaam.ww.mmm","mmmm.ww.mmmoom.ww.mmm","wwwwwwwwwwwwwwwwwwwww","mm.ww.mmmmmmmmm.ww.mm","mm.ww.mmmmmmmmm.ww.mm","mm.ww.mmmmmmmmm.ww.mm"],
+};
+const POSTERS = [
+  {id:'r1', cls:'p-rinen pin', art:'rinen', label:'企業理念', face:'遊ぶように働く', name:'企業理念', pos:[0,6,27,46,-3],
+    desc:'経営の力で「遊ぶように働く世界」をデザインする\n\n「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと',
+    talk:'遊ぶようにってのは、楽するって意味じゃないよ。夢中になって、自分から作ってる状態で働くこと。' },
+  {id:'r2', cls:'p-jigyo pin', label:'事業内容', face:'コンサルティング\nシステム開発', name:'事業内容', pos:[30,0,36,22,1.5],
+    desc:'AI技術を活用した組織最適化に関するコンサルティング事業\nAIとローコードを組み合わせた次世代型のシステム開発事業',
+    talk:'ざっくり二本。組織のコンサルと、システム開発。どっちも AI を使う。' },
+  {id:'r3', cls:'p-gaiyo tape', label:'会社概要', face:'設立 2025.6', name:'会社概要', pos:[72,8,23,30,5],
+    desc:'株式会社アルターデザインコンサルティング\n代表者　藤田 靖広\n設立　2025年6月\n資本金　60百万円',
+    talk:'できたのは 2025 年の 6 月。まだ新しい店だよ。' },
+  {id:'r4', cls:'p-map pin', art:'map', label:'アクセス', face:'御成門駅 徒歩2分', name:'アクセス', pos:[34,34,34,44,-2],
+    desc:'東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）\n\n御成門駅 徒歩2分（都営地下鉄三田線）\n大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）\n神谷町駅 徒歩10分（東京メトロ日比谷線）\n汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）\n虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）\n虎ノ門駅 徒歩12分（東京メトロ銀座線）\n新橋駅 徒歩12分（JR山手線・京浜東北線）\n浜松町駅 徒歩14分（JR山手線・京浜東北線）',
+    talk:'御成門駅から歩いて2分。まあ、来るならどうぞ。' },
+];
+/* 飾りの紙：[left, top, width, height, 角度, 色, 模様] */
+const SCRAPS = [[22,52,13,20,7,'S',''],[2,58,15,24,-6,'A','dots'],[70,44,16,22,-5,'L',''],[84,40,13,18,9,'M','dots'],[66,74,12,14,3,'L',''],[25,80,10,12,-8,'L','dots']];
+const ALL = [...GOODS, ...POSTERS];
+
+const keys = [
+  [/\b(hello|hi|hey|yo)\b|ハロー|やあ|こんにちは|こんちは|こんばんは|おはよう|どうも|ども|はじめまして|もしもし/i, ()=>{
+    const h = new Date().getHours();
+    return h < 11 ? 'おはよう。…朝から来るとはね。いらっしゃい。' : h < 18 ? 'どうも。いらっしゃい。' : 'こんばんは。いらっしゃい。';
+  }],
+  [/AI|ＡＩ|えーあい/i, 'AI × ローコードで、「上流工程中心のシステム開発」に革新を。…って看板には書いてあるね。'],
+  [/ローコード|ノーコード|システム/, 's1'], [/データ|予測|分析|意思決定/, 's2'],
+  [/組織|チーム|働き方/, 's3'], [/地方|地域|自治体/, 's4'],
+  [/理念|遊ぶ|遊び/, 'r1'], [/事業|何して|なにして|仕事/, 'r2'], [/どこ|場所|住所|駅|アクセス|地図/, 'r4'], [/会社|設立|代表|概要/, 'r3'],
+  [/問い合わせ|相談|料金|値段|費用|いくら|連絡/, 'そういうのは、出口を出たところに書いてあるよ。'],
+  [/帰|出口|さよなら|バイバイ|またね/, ()=>{ $('door').classList.add('ready'); return '帰りはそこの扉から。'; }],
+];
+const idle = ['んー、それはわかんないな。棚のことなら答えるよ。', '左の棚と右の壁、見てった？', 'AI とか、理念とか、場所とかなら話せるけど。'];
+const moyaLines = ['…まあ、ゆっくり見てって。', '左は売り物。右は貼り紙。', '気になるのがあったら、手に取ってみて。'];
+let idleN = 0, moyaN = 0;
+
+/* ---------- 組み立て ---------- */
+px($('keeper'), KEEPER); px($('moya'), MOYA); px($('askmoya'), ASKMOYA);
+function boxOf(it, i){
+  const d = document.createElement('div'); d.className = 'box c' + i;
+  const t = document.createElement('span'); t.textContent = it.short;
+  d.append(svgOf(SPR[it.spr]), t); return d;
 }
-for (const side of ['L','R']){
-  const shelf = $('shelf'+side);
-  SHELVES[side].forEach(row=>{
-    const tier = document.createElement('div'); tier.className = 'tier';
-    row.forEach(it=>{
-      const b = document.createElement('button');
-      b.className = 'goods' + (it.empty ? ' empty' : '');
-      if (!it.empty){
-        b.setAttribute('aria-label', it.name);
-        b.appendChild(boxOf(it));
-        b.onclick = e=>{ e.stopPropagation(); show(it.id); };
-      }
-      tier.appendChild(b);
-    });
-    shelf.appendChild(tier);
+function posterOf(it){
+  const b = document.createElement('div'); b.className = 'poster ' + it.cls;
+  const pp = document.createElement('div'); pp.className = 'pp';
+  const sm = document.createElement('small'); sm.textContent = it.label;
+  const bb = document.createElement('b'); bb.textContent = it.face;
+  if (it.art) pp.append(sm, svgOf(ART[it.art]), bb); else pp.append(sm, bb);
+  b.append(pp); return b;
+}
+[[GOODS[0],GOODS[1]],[GOODS[2],GOODS[3]]].forEach(row=>{
+  const tier = document.createElement('div'); tier.className = 'tier';
+  row.forEach(it=>{
+    const g = document.createElement('button'); g.className = 'grp'; g.setAttribute('aria-label', it.name);
+    const i = GOODS.indexOf(it);
+    for (let k=0; k<5; k++) g.append(boxOf(it, i));
+    const tg = document.createElement('span'); tg.className = 'ptag'; tg.textContent = it.short.replace(/\n/g,''); g.append(tg);
+    g.onclick = e=>{ e.stopPropagation(); show(it.id); };
+    tier.append(g);
   });
-}
+  $('shelf').append(tier);
+});
+SCRAPS.forEach(([l,t,w,h,r,c,m])=>{
+  const d = document.createElement('div'); d.className = 'scrap ' + m;
+  Object.assign(d.style, {left:l+'%', top:t+'%', width:w+'%', height:h+'%', rotate:r+'deg', '--bg':`var(--${c})`});
+  d.style.setProperty('--bg', `var(--${c})`);
+  $('wall').append(d);
+});
+POSTERS.forEach(it=>{
+  const p = posterOf(it); p.setAttribute('role','button'); p.setAttribute('aria-label', it.name);
+  const [l,t,w,h,r] = it.pos;
+  Object.assign(p.style, {left:l+'%', top:t+'%', width:w+'%', height:h+'%', rotate:r+'deg'});
+  p.onclick = e=>{ e.stopPropagation(); show(it.id); };
+  $('wall').append(p);
+});
 
 /* ---------- 視点 ---------- */
 let view = 1;
@@ -333,13 +460,13 @@ function look(v){
   $('strip').style.transform = `translateX(${-76*view}vw)`;
   document.querySelectorAll('.panel').forEach(p=>{ const here = +p.dataset.v === view; p.classList.toggle('here', here); p.classList.toggle('side', !here); });
   $('tl').hidden = view === 0; $('tr').hidden = view === 2;
-  if (view !== 1) $('moya').classList.remove('show'); else armMoya();
+  $('moya').classList.toggle('show', view === 1);
 }
 document.querySelectorAll('.panel').forEach(p=>p.addEventListener('click', ()=>{ if (+p.dataset.v !== view) look(+p.dataset.v); }));
 $('tl').onclick = ()=>look(view-1);
 $('tr').onclick = ()=>look(view+1);
 document.addEventListener('keydown', e=>{
-  if (document.activeElement === $('q')) return;
+  if (document.activeElement === $('q') || document.body.classList.contains('outside')) return;
   if (e.key === 'Escape') { closeLook(); return; }
   if ($('look').classList.contains('show')) return;
   if (e.key === 'ArrowLeft') look(view-1);
@@ -354,19 +481,28 @@ $('game').addEventListener('touchend', e=>{
   if (Math.abs(d) > 40) look(view + (d < 0 ? 1 : -1));
 });
 
-/* ---------- 品を大きく ---------- */
+/* ---------- 手に取る ---------- */
 let curItem = null;
+const seen = new Set(); let allDone = false;
 function show(id){
   curItem = ALL.find(x=>x.id === id);
-  look(SHELVES.L.flat().includes(curItem) ? 0 : 2);
+  const isGoods = GOODS.includes(curItem);
+  look(isGoods ? 0 : 2);
   hideTalk();
-  $('big').replaceChildren(boxOf(curItem));
-  $('look').classList.toggle('kr', view === 0); $('look').classList.toggle('kl', view === 2);
+  $('big').replaceChildren(isGoods ? boxOf(curItem, GOODS.indexOf(curItem)) : posterOf(curItem));
   $('bname').textContent = curItem.name;
   $('bdesc').textContent = curItem.desc;
+  $('look').classList.toggle('kr', view === 0); $('look').classList.toggle('kl', view === 2);
   $('look').classList.add('show');
+  seen.add(id);
 }
-function closeLook(){ $('look').classList.remove('show'); hideTalk(); }
+function closeLook(){
+  $('look').classList.remove('show'); hideTalk();
+  if (!allDone && seen.size === ALL.length){
+    allDone = true; look(1); $('door').classList.add('ready');
+    setTimeout(()=>talk([{who:'店主', text:'…それで全部。見てくれて、どうも。'}, {who:'店主', text:'帰りはそこの扉から。'}]), 450);
+  }
+}
 $('x').onclick = closeLook;
 $('look').addEventListener('click', e=>{ if (e.target === $('look')) closeLook(); });
 $('askk').onclick = ()=>talk([{who:'店主', text:curItem.talk}]);
@@ -378,7 +514,7 @@ function hideTalk(){ pages = []; clearInterval(typeT); $('talk').classList.remov
 function next(){
   clearInterval(typeT);
   const el = $('talk');
-  if (!pages.length){ hideTalk(); armMoya(); return; }
+  if (!pages.length){ hideTalk(); return; }
   const p = pages.shift();
   $('who').textContent = p.who || '';
   el.classList.add('show'); el.classList.remove('done');
@@ -386,16 +522,12 @@ function next(){
   typeT = setInterval(()=>{ $('txt').textContent = t.slice(0, ++k); if (k >= t.length){ clearInterval(typeT); el.classList.add('done'); } }, 26);
 }
 $('talk').onclick = next;
-
-function armMoya(){ $('moya').classList.toggle('show', view === 1); }
-
-/* テキストボックスの外を押しても閉じる */
 document.addEventListener('click', e=>{
   if (!$('talk').classList.contains('show')) return;
   if ($('talk').contains(e.target) || e.target.closest('#askk,#moya,#ask')) return;
   hideTalk();
 }, true);
-$('moya').onclick = e=>{ e.stopPropagation(); $('moya').classList.remove('show'); talk([{who:'店主', text:moyaLines[moyaN++ % moyaLines.length]}]); };
+$('moya').onclick = e=>{ e.stopPropagation(); talk([{who:'店主', text:moyaLines[moyaN++ % moyaLines.length]}]); };
 
 /* ---------- 質問バー ---------- */
 $('q').addEventListener('input', ()=>{ $('send').disabled = !$('q').value.trim(); });
@@ -407,8 +539,32 @@ $('ask').addEventListener('submit', e=>{
   const ans = hit ? (typeof hit[1] === 'function' ? hit[1]() : hit[1]) : idle[idleN++ % idle.length];
   const item = ALL.find(x=>x.id === ans);
   if (item){ show(item.id); talk([{who:'店主', text:item.talk}]); }
-  else { closeLook(); look(1); talk([{who:'店主', text:ans}]); }
+  else { $('look').classList.remove('show'); look(1); talk([{who:'店主', text:ans}]); }
 });
+
+/* ---------- 入口と出口 ---------- */
+function enter(){
+  const d = $('fdoor'); if (d.classList.contains('open')) return;
+  d.classList.add('open'); $('bell').classList.add('show');
+  setTimeout(()=>{
+    $('enterF').classList.add('fade'); document.body.classList.remove('outside'); look(1);
+    setTimeout(()=>{
+      $('enterF').hidden = true;
+      talk([{who:'店主', text:'いらっしゃい。…左は売り物で、右は貼り紙。'}, {who:'店主', text:'気になるのがあったら、手に取って見てって。帰りはそこの扉から。'}]);
+    }, 400);
+  }, 700);
+}
+$('fdoor').onclick = enter;
+$('door').onclick = e=>{
+  e.stopPropagation(); hideTalk();
+  document.body.classList.add('outside');
+  const x = $('exitF'); x.hidden = false; x.classList.add('fade');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>x.classList.remove('fade')));
+};
+$('again').onclick = ()=>{
+  $('exitF').hidden = true; document.body.classList.remove('outside'); look(1);
+  talk([{who:'店主', text:'…おかえり。'}]);
+};
 
 look(1);
 </script>
