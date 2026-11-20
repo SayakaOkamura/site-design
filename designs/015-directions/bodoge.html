@@ -6,7 +6,8 @@
 <!-- 015 E ボドゲ（2026-11-20）。本人が選んだのは「見るボドゲ」（遊べる一局ではなく、めくる・手に取るまで）。
      メモ「みんなでデスクでボドゲしてるところからカードにフォーカスして」「拡張デッキ扱いする」。
      上から見た卓。三人が囲んで一席空いている。押すと寄って、横に中身。
-     箱＝会社概要／ルールブック＝企業理念／盤＝事業内容（題は公式の見出し）／拡張デッキ四つ＝サービス／空いている席＝お問い合わせ。文は公式のまま -->
+     箱＝会社概要／ルールブック＝企業理念／盤＝事業内容（題は公式の見出し）／基本デッキ四つ＝サービス／空いている席＝お問い合わせ。文は公式のまま。
+     押せるものには普通の言葉の名札（本人「盤が事業内容なのもわかんないよこれ」「空いている席：どうぞは普通に初見で意味わからん」） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
 <style>
@@ -20,8 +21,9 @@ b{font-weight:700}
 .serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
 
 #scene{display:block; width:100vw; height:100vh}
-.it{cursor:pointer; transition:transform .2s ease, filter .2s ease}
-.it:hover, .it:focus-visible{transform:translate(0,-5px); filter:drop-shadow(0 10px 8px rgba(0,0,0,.35))}
+.it{cursor:pointer; transition:filter .2s ease}
+/* 位置と傾きは transform 属性で持っているので、CSS の transform は使わない（上書きされて左上へ飛んでいた） */
+.it:hover, .it:focus-visible{filter:drop-shadow(0 10px 8px rgba(0,0,0,.4)) brightness(1.05)}
 .it:focus{outline:none}
 body.zoom .it{pointer-events:none}
 .lbl{font-size:13px; fill:#fff; font-weight:400}
@@ -65,6 +67,7 @@ body.zoom #hint{opacity:0}
   <!-- 人（上から）。三人と、空いている椅子 -->
   <g id="people"></g>
   <rect x="90" y="90" width="1020" height="620" rx="26" fill="url(#wood)" filter="url(#sh)"/>
+  <g id="hands"></g>
   <g id="table"></g>
 </svg>
 
@@ -78,22 +81,25 @@ var NS = 'http://www.w3.org/2000/svg';
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function el(p, tag, a){ var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; }
 function tx(p, x, y, s, a){ var t = el(p,'text',Object.assign({x:x,y:y,'text-anchor':'middle'}, a || {})); t.textContent = s; return t; }
-var svg = document.getElementById('scene'), T = document.getElementById('table'), Pp = document.getElementById('people');
+var svg = document.getElementById('scene'), T = document.getElementById('table'), Pp = document.getElementById('people'), HL = document.getElementById('hands');
 
 /* ── 人 ── */
 function person(x, y, rot, col){
   var g = el(Pp,'g',{transform:'translate('+ x +','+ y +') rotate('+ rot +')'});
   el(g,'ellipse',{cx:0,cy:0,rx:92,ry:46,fill:col});              // 肩
   el(g,'circle',{cx:0,cy:-6,r:34,fill:'#3a2a22'});                // 頭（髪）
-  var hands = el(g,'g',{});
+  var hands = el(HL,'g',{transform:'translate('+ x +','+ y +') rotate('+ rot +')'}).appendChild(document.createElementNS(NS,'g'));   /* 手は机より上に描く */
   el(hands,'circle',{cx:-50,cy:58,r:14,fill:'#e9c7a6'}); el(hands,'circle',{cx:50,cy:58,r:14,fill:'#e9c7a6'});
   return hands;
 }
-var H = [person(600, 46, 180, '#5b6f8f'), person(46, 400, 90, '#8f5b6f'), person(1154, 400, -90, '#5b8f78')];
+var H = [person(600, 46, 0, '#5b6f8f'), person(46, 400, -90, '#8f5b6f'), person(1154, 400, 90, '#5b8f78')];   /* 手が机の上に来る向き */
 /* 空いている椅子（手前） */
 var chair = el(Pp,'g',{transform:'translate(600,770)'});
 el(chair,'rect',{x:-80,y:-36,width:160,height:70,rx:16,fill:'#4a3a32',stroke:'#5e4a40','stroke-width':3});
 
+/* 名札：見立てを読み解かせないように、押せるものには普通の言葉を貼る */
+function tag(g, x, y, s, rot){ var t = el(g,'g',{transform:'translate('+ x +','+ y +') rotate('+ (rot || 0) +')'}); var w = s.length * 15 + 24;
+  el(t,'rect',{x:-w / 2,y:-15,width:w,height:30,rx:3,fill:'#fff6b8',stroke:'#e8d77a'}); tx(t, 0, 5, s, {'font-size':15,fill:'#2a0e3e','font-weight':700}); return t; }
 /* ── 盤：題は公式の見出し。まわりにマス、駒が進む ── */
 var board = el(T,'g',{'class':'it',tabindex:0,role:'button','aria-label':'盤（事業内容）','data-k':'board'});
 el(board,'rect',{x:390,y:220,width:420,height:300,rx:10,fill:'#fbf6ec',filter:'url(#sh)'});
@@ -107,6 +113,7 @@ cells.forEach(function(c, j){ el(board,'rect',{x:c[0]-17,y:c[1]-17,width:34,heig
 tx(board, 600, 340, 'AI × ローコードで、', {'class':'serif','font-size':22,fill:'#2a0e3e'});
 tx(board, 600, 374, '「上流工程中心のシステム開発」に革新を', {'class':'serif','font-size':22,fill:'#2a0e3e'});
 tx(board, 600, 410, 'Alter Design consulting', {'font-size':12,fill:'#715189','letter-spacing':'.12em'});
+tag(board, 600, 290, '事業内容', -2);
 var tokens = [0, 7, 15].map(function(at, j){ var t = el(board,'g',{}); el(t,'circle',{r:11,fill:['#5b6f8f','#8f5b6f','#5b8f78'][j],stroke:'#fff','stroke-width':2.5}); return { g:t, at:at, x:0, y:0 }; });
 function place(t){ var c = cells[t.at % cells.length]; t.x = c[0] + (tokens.indexOf(t) - 1) * 6; t.y = c[1]; t.g.setAttribute('transform','translate('+ t.x +','+ t.y +')'); }
 tokens.forEach(place);
@@ -130,6 +137,7 @@ el(box,'rect',{x:140,y:130,width:230,height:150,rx:8,fill:'#654087',filter:'url(
 el(box,'rect',{x:150,y:140,width:210,height:130,rx:4,fill:'none',stroke:'rgba(255,255,255,.35)'});
 el(box,'circle',{cx:200,cy:205,r:22,fill:'none',stroke:'#fff','stroke-width':6}); el(box,'circle',{cx:200,cy:205,r:15,fill:'none',stroke:'#bb7eea','stroke-width':2});
 tx(box, 290, 200, 'Alter Design', {'font-size':19,fill:'#fff'}); tx(box, 300, 220, 'consulting', {'font-size':11,fill:'#fff'});
+tag(box, 255, 258, '会社概要', 3);
 
 /* ── ルールブック＝企業理念 ── */
 var book = el(T,'g',{'class':'it',tabindex:0,role:'button','aria-label':'ルールブック（企業理念）','data-k':'book',transform:'rotate(6 930 210)'});
@@ -137,10 +145,11 @@ el(book,'rect',{x:860,y:120,width:150,height:190,rx:4,fill:'#fbf6ec',filter:'url
 el(book,'rect',{x:860,y:120,width:12,height:190,fill:'#e4d7ee'});
 tx(book, 940, 175, 'ルールブック', {'font-size':13,fill:'#715189','letter-spacing':'.1em'});
 tx(book, 940, 222, '遊ぶように', {'class':'serif','font-size':20,fill:'#2a0e3e'}); tx(book, 940, 250, '働く', {'class':'serif','font-size':20,fill:'#2a0e3e'});
+tag(book, 935, 300, '企業理念', -4);
 
-/* ── 拡張デッキ四つ＝サービス ── */
+/* ── 基本デッキ四つ＝サービス（いまある四つ。増えたら拡張デッキ） ── */
 var DECK = [
-  { k:'a', n:'業務システム', x:285, y:330, r:-8 },
+  { k:'a', n:'業務システム', x:285, y:372, r:-6 },
   { k:'b', n:'意思決定', x:300, y:570, r:5 },
   { k:'c', n:'組織設計', x:915, y:400, r:7 },
   { k:'d', n:'地域デジタル', x:900, y:590, r:-5 }
@@ -152,10 +161,10 @@ var ICON = {
   d:'M0 16 C-14 0 -14 -16 0 -16 C14 -16 14 0 0 16 Z M0 -10a4 4 0 1 0 .1 0'
 };
 DECK.forEach(function(d, j){
-  var c = CC[j], g = el(T,'g',{'class':'it',tabindex:0,role:'button','aria-label':'拡張デッキ（' + d.n + '）','data-k':d.k,transform:'translate('+ d.x +','+ d.y +') rotate('+ d.r +')'});
+  var c = CC[j], g = el(T,'g',{'class':'it',tabindex:0,role:'button','aria-label':'サービス（' + d.n + '）','data-k':d.k,transform:'translate('+ d.x +','+ d.y +') rotate('+ d.r +')'});
   for (var s = 3; s >= 0; s--) el(g,'rect',{x:-55 + s * 2,y:-75 + s * 3,width:110,height:150,rx:8,fill:s ? '#f3eee6' : '#fffdf8',stroke:s ? '#d8cfc2' : c,'stroke-width':s ? 1 : 3,filter:s === 3 ? 'url(#sh)' : null});
   el(g,'rect',{x:-55,y:-75,width:110,height:26,rx:8,fill:c}); el(g,'rect',{x:-55,y:-58,width:110,height:9,fill:c});
-  tx(g, 0, -57, '拡張', {'font-size':11,fill:'#fff','letter-spacing':'.2em'});
+  tx(g, 0, -57, 'サービス', {'font-size':11,fill:'#fff','letter-spacing':'.15em'});
   el(g,'path',{d:ICON[d.k],fill:'none',stroke:c,'stroke-width':2.6,'stroke-linecap':'round','stroke-linejoin':'round',transform:'translate(0,6)'});
   tx(g, 0, 58, d.n, {'font-size':13,fill:'#2a0e3e'});
 });
@@ -166,21 +175,19 @@ DECK.forEach(function(d, j){
 });
 
 /* ── 空いている席＝お問い合わせ ── */
-var seat = el(T,'g',{'class':'it',tabindex:0,role:'button','aria-label':'空いている席（お問い合わせ）','data-k':'seat'});
+var seat = el(T,'g',{'class':'it',tabindex:0,role:'button','aria-label':'お問い合わせ','data-k':'seat'});
 el(seat,'rect',{x:540,y:620,width:120,height:60,rx:6,fill:'#fffdf8',filter:'url(#sh)'});
-el(seat,'path',{d:'M540 650 h120',stroke:'#e6dccf','stroke-dasharray':'4 3'});
-tx(seat, 600, 643, '空いている席', {'font-size':13,fill:'#2a0e3e'});
-tx(seat, 600, 670, 'どうぞ', {'class':'serif','font-size':14,fill:'#654087'});
+tx(seat, 600, 656, 'お問い合わせ', {'font-size':15,fill:'#654087','font-weight':700});
 
 /* ── 中身（公式の文のまま） ── */
 var C = {
   board:{ c:'#654087', kind:'盤', n:'事業内容', h:'<h3>AI × ローコードで、「上流工程中心のシステム開発」に革新を</h3><p>コンサルティングによる業務設計からエンジニアリングまでを行います</p><p>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</p>' },
   book:{ c:'#654087', kind:'ルールブック', n:'企業理念', h:'<h3>経営の力で「遊ぶように働く世界」をデザインする</h3><p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
   box:{ c:'#654087', kind:'箱のうら', n:'会社概要', h:'<dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd><dt>代表者</dt><dd>藤田 靖広</dd><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）<p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd><dt>資本金</dt><dd>60百万円</dd><dt>設立年月日</dt><dd>2025年6月</dd><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>' },
-  a:{ c:CC[0], kind:'拡張デッキ', n:'人間中心の次世代業務システム開発', h:'<p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>' },
-  b:{ c:CC[1], kind:'拡張デッキ', n:'AI による意思決定支援と事業変革支援', h:'<p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' },
-  c:{ c:CC[2], kind:'拡張デッキ', n:'自律型・共創型の組織設計支援', h:'<p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' },
-  d:{ c:CC[3], kind:'拡張デッキ', n:'地域格差の解消を目指したデジタル支援', h:'<p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
+  a:{ c:CC[0], kind:'基本デッキ', n:'人間中心の次世代業務システム開発', h:'<p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>' },
+  b:{ c:CC[1], kind:'基本デッキ', n:'AI による意思決定支援と事業変革支援', h:'<p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' },
+  c:{ c:CC[2], kind:'基本デッキ', n:'自律型・共創型の組織設計支援', h:'<p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' },
+  d:{ c:CC[3], kind:'基本デッキ', n:'地域格差の解消を目指したデジタル支援', h:'<p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
   seat:{ c:'#654087', kind:'空いている席', n:'お問い合わせ', h:'<p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p><a class="mail" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>' }
 };
 
