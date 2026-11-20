@@ -95,9 +95,23 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 #info .play:hover{background:#4f3070}
 #info .ask{border:1px solid var(--btn); color:var(--btn); background:#fff}
 #info .ask:hover{background:#f3eef8}
-#play .wrap{flex-direction:column; gap:16px}
-#play .screen{max-width:min(100%, calc((100vh - 150px) * 425 / 268), 1100px)}
+#play .pw{width:100%; max-width:min(100%, calc((100vh - 170px) * 425 / 268), 1100px); display:flex; flex-direction:column; gap:10px}
+#play .screen{max-width:none; position:relative}
+#play .screen svg{touch-action:none; -webkit-user-select:none; user-select:none}
+#play .hud{display:flex; justify-content:space-between; align-items:center; font:700 13px Consolas,Menlo,monospace; color:var(--btn); letter-spacing:.08em}
+#play .hud i{display:block; width:min(30%,140px); height:8px; border:1px solid var(--lav)}
+#play .hud s{display:block; height:100%; width:100%; background:var(--btn)}
 #play .how{font-size:14px; color:var(--sub)}
+#play .res, #play .ready{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:16px}
+#play .res[hidden], #play .ready[hidden]{display:none}
+#play .res{background:rgba(255,255,255,.86); -webkit-user-select:none; user-select:none}
+#play .res .t, #play .ready{font:900 italic clamp(30px,6vw,56px)/1.1 "Arial Black",Arial,sans-serif; color:var(--btn); letter-spacing:.04em}
+#play .ready{pointer-events:none; text-shadow:0 0 6px #fff, 0 0 12px #fff}
+#play .res .m{margin-top:.6em; font-size:14px}
+#play .res button{margin-top:1.2em; height:48px; padding:0 2.6em; border:0; background:var(--btn); color:#fff; font:inherit; font-weight:400; cursor:pointer}
+#play .res button:hover{background:#4f3070}
+.popx{animation:rise .8s ease-out forwards}
+@keyframes rise{ from{opacity:1; transform:none} to{opacity:0; transform:translateY(-16px)} }
 
 /* ── 通知 ── */
 #note{position:fixed; right:clamp(12px,2.4vw,28px); bottom:clamp(12px,2.4vw,28px); z-index:30; width:min(340px, calc(100vw - 24px));
@@ -116,7 +130,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
   .overview dl{grid-template-columns:1fr; gap:4px}
 }
 @media (max-width:760px) and (orientation:portrait){ #info .wrap > div{grid-template-columns:1fr} }
-@media (max-height:480px){ .scr .wrap{padding-top:48px; padding-bottom:16px} #info .bt{margin-top:1em} #info .bt > *{height:44px} #info .how{margin-top:.8em; padding-top:.6em} }
+@media (max-height:480px){ .scr .wrap{padding-top:48px; padding-bottom:16px} #info .bt{margin-top:1em} #info .bt > *{height:44px} #info .how{margin-top:.8em; padding-top:.6em} #play .pw{max-width:min(100%, calc((100vh - 100px) * 425 / 268))} #play .how{display:none} }
 @media (prefers-reduced-motion:reduce){ .scr{animation:none} #note{transition:none} .game{transition:none} }
 </style>
 
@@ -210,8 +224,14 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 <div class="scr" id="play" role="dialog" aria-modal="true" aria-label="プレイ" hidden>
   <button class="back" type="button">‹ もどる</button>
   <div class="wrap">
-    <div class="screen"><svg viewBox="0 0 425 268" aria-hidden="true"></svg></div>
-    <p class="how"></p>
+    <div class="pw">
+      <div class="hud"><b>SCORE <span>000000</span></b><i><s></s></i></div>
+      <div class="screen"><svg viewBox="0 0 425 268" aria-label="ゲーム画面"></svg>
+        <p class="ready" hidden></p>
+        <div class="res" hidden><p class="t"></p><p class="m"></p><button type="button">もう一度</button></div>
+      </div>
+      <p class="how"></p>
+    </div>
   </div>
 </div>
 
@@ -261,7 +281,7 @@ function fadeAll(s, t){ s.setAttribute('opacity', 1 - seg(t, 9.4, 9.9)); }
 var GAMES = [
   { name:'人間中心の次世代業務システム開発',
     txt:'業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します',
-    how:'部品をはめて、書類が流れてくる前に道をつなぐ。合わない部品ははまらない',
+    how:'下の部品をドラッグして、隙間にはめる。幅の合う部品しかはまらない。書類が隙間に着く前に道をつなぐ（3 ラウンド）',
     build:function(s){
       var y = 140, gaps = [[100,140],[192,232],[284,324]];
       el(s,'rect',{x:20,y:y-26,width:26,height:30,fill:'none',stroke:C.lav});
@@ -296,7 +316,7 @@ var GAMES = [
     } },
   { name:'AI による意思決定支援と事業変革支援',
     txt:'経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します',
-    how:'並んだ点の流れを読んで、次の点が落ちる場所を三つから選ぶ。続けて当てると点が倍',
+    how:'並んだ点の流れを読んで、次の点が落ちる丸を押す（1・2・3 キーでも）。続けて当てると点が増える（8 問）',
     build:function(s){
       function py(i){ return 200 - i * 16 - Math.sin(i * 1.3) * 18; }
       el(s,'line',{x1:30,y1:236,x2:400,y2:236,stroke:C.lav}); el(s,'line',{x1:30,y1:36,x2:30,y2:236,stroke:C.lav});
@@ -323,7 +343,7 @@ var GAMES = [
     } },
   { name:'自律型・共創型の組織設計支援',
     txt:'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します',
-    how:'落ちてくる仕事を左右に振り分ける。誰かの MAX を超えたらアウト。全員ちょうどでクリア',
+    how:'落ちてくる仕事を、押した列へ動かす（← → キー、↓ で早く落とす）。MAX を超えたらアウト。全員ちょうどでクリア',
     build:function(s){
       var lx = [112,212,312], base = 196, U = 16;
       lx.forEach(function(x){ el(s,'circle',{cx:x,cy:216,r:10,fill:'none',stroke:C.ink}); el(s,'path',{d:'M'+(x-17)+' 246 q17 -20 34 0',fill:'none',stroke:C.ink}); el(s,'line',{x1:x-30,y1:base,x2:x+30,y2:base,stroke:C.lav}); });
@@ -355,7 +375,7 @@ var GAMES = [
     } },
   { name:'地域格差の解消を目指したデジタル支援',
     txt:'都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します',
-    how:'光っている町から線を引いて、全部の町に光を届ける。山は越えられないので回り道',
+    how:'光っている町から、まだの町へ線を引く（ドラッグ、または二つを順に押す）。届く長さまで、山は越えられない（30 秒）',
     build:function(s){
       var hub = [262,140], T = [[330,70],[360,185],[130,110],[205,70],[195,215],[70,175]];
       el(s,'path',{d:'M70 40 C150 20 260 40 340 60 C390 80 400 160 370 210 C340 250 230 258 160 236 C90 214 40 150 44 90 Z',fill:'#f7f3fb',stroke:C.pale});
@@ -389,6 +409,202 @@ var GAMES = [
     } }
 ];
 
+/* ── プレイ：四つのミニゲーム。play(svg, H) で始めて、止める関数を返す。
+   H.add(点)・H.time(0〜1 / null)・H.pop(x, y, 字)・H.done(見出し, 一行) ── */
+function pt(svg, e){ var p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+function loop(fn){ var on = true, last = performance.now(), id; function f(n){ if (!on) return; var dt = Math.min(.05, (n - last) / 1000); last = n; fn(dt); if (on) id = requestAnimationFrame(f); } id = requestAnimationFrame(f); return function(){ on = false; cancelAnimationFrame(id); }; }
+function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.random() * (i + 1) | 0, t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function pick(a){ return a[Math.random() * a.length | 0]; }
+function mark(s, x, y){ var e = el(s,'text',{x:x,y:y,'text-anchor':'middle','font-size':18,'font-weight':700,fill:C.warn,'class':'popx'}); e.textContent = '×'; setTimeout(function(){ e.remove(); }, 700); }
+
+/* 1 道をつなぐ：幅の合う部品を隙間へ。書類が隙間に着く前に。3 ラウンド */
+GAMES[0].play = function(s, H){
+  var y = 140, round = 0, stop = null, timer = 0, ended = false;
+  var SPD = [10, 8, 6.5], W = [24,40,56];
+  function setup(){
+    s.textContent = '';
+    var gaps = [120,212,304].map(function(c){ var w = pick(W); return { c:c, w:w, l:c - w / 2, r:c + w / 2, filled:false }; });
+    el(s,'rect',{x:20,y:y-26,width:26,height:30,fill:'none',stroke:C.lav});
+    var goal = el(s,'rect',{x:380,y:y-26,width:28,height:30,fill:C.pale,stroke:C.btn});
+    var ed = [46].concat(gaps.reduce(function(a, g){ return a.concat([g.l, g.r]); }, [])).concat([380]);
+    for (var i = 0; i < ed.length; i += 2) el(s,'line',{x1:ed[i],y1:y,x2:ed[i+1],y2:y,stroke:C.lav,'stroke-width':6,'stroke-linecap':'round'});
+    gaps.forEach(function(g){ g.box = el(s,'rect',{x:g.l,y:y-4,width:g.w,height:8,fill:'none',stroke:C.lav,'stroke-dasharray':'3 3'}); });
+    el(s,'rect',{x:40,y:204,width:345,height:42,fill:'#f7f3fb',stroke:C.pale});
+    var t = el(s,'text',{x:212,y:40,'text-anchor':'middle','font-size':12,'font-weight':700,'font-family':'Consolas,monospace',fill:C.btn}); t.textContent = 'ROUND ' + (round + 1) + ' / 3';
+    var ws = shuffle(gaps.map(function(g){ return g.w; }).concat([pick(W), pick(W)]));
+    var parts = ws.map(function(w, i){
+      var hx = 75 + i * 69, p = { w:w, hx:hx, hy:225, x:hx, y:225, placed:false };
+      p.r = el(s,'rect',{x:hx - w / 2,y:221,width:w,height:8,fill:C.btn,style:'cursor:grab'});
+      p.hit = el(s,'rect',{x:hx - 32,y:208,width:64,height:34,fill:'transparent',style:'cursor:grab'});
+      return p;
+    });
+    var doc = el(s,'g',{}); el(doc,'rect',{x:-9,y:-22,width:18,height:22,fill:'#fff',stroke:C.ink}); el(doc,'path',{d:'M-5 -15h10M-5 -10h10M-5 -5h6',stroke:C.lav});
+    var dx = 33, wait = 3, speed = 361 / SPD[round], fall = 0, drag = null;
+    function place(p){ p.r.setAttribute('x', p.x - p.w / 2); p.r.setAttribute('y', p.y - 4); p.hit.setAttribute('x', p.x - 32); p.hit.setAttribute('y', p.y - 17); }
+    parts.forEach(function(p){
+      p.hit.addEventListener('pointerdown', function(e){ if (p.placed || ended) return; drag = p; try { s.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
+    });
+    s.onpointermove = function(e){ if (!drag) return; var q = pt(s, e); drag.x = q.x; drag.y = q.y; place(drag); };
+    s.onpointerup = function(){
+      if (!drag) return; var p = drag; drag = null;
+      var g = gaps.filter(function(g){ return !g.filled && Math.abs(g.c - p.x) < 36 && Math.abs(y - p.y) < 34; })[0];
+      if (g && g.w === p.w){ p.placed = true; g.filled = true; p.x = g.c; p.y = y; place(p); p.hit.remove(); g.box.remove(); H.add(100); H.pop(g.c, y - 14, '+100'); }
+      else { if (g) mark(s, g.c, y - 12); p.x = p.hx; p.y = p.hy; place(p); }
+    };
+    stop = loop(function(dt){
+      if (fall){ fall += dt; doc.setAttribute('transform','translate('+ dx +','+ (y - 4 + fall * fall * 600) +')'); doc.setAttribute('opacity', 1 - fall * 1.6); if (fall > .6){ stop(); end('MISS', 'ROUND ' + (round + 1) + ' で書類が落ちた'); } return; }
+      if (wait > 0){ wait -= dt; H.time(1); }
+      else {
+        dx += speed * dt; H.time(1 - (dx - 33) / 361);
+        var hole = gaps.filter(function(g){ return !g.filled && dx >= g.l + 4 && dx <= g.r; })[0];
+        if (hole){ fall = .001; return; }
+        if (dx >= 394){ dx = 394; goal.setAttribute('fill', C.lav); stop(); H.add(300); H.pop(394, y - 34, '+300'); round++;
+          if (round === 3) timer = setTimeout(function(){ end('CLEAR!', '3 ラウンドとも届いた'); }, 600); else timer = setTimeout(setup, 900); }
+      }
+      doc.setAttribute('transform','translate('+ dx +','+ (y - 4) +')');
+    });
+  }
+  function end(a, b){ ended = true; H.done(a, b); }
+  setup();
+  return function(){ ended = true; if (stop) stop(); clearTimeout(timer); s.onpointermove = s.onpointerup = null; };
+};
+
+/* 2 次の点：三つの丸から、次の点が落ちる場所を選ぶ。8 問。続けて当てると点が増える */
+GAMES[1].play = function(s, H){
+  var w = .85 + Math.random() * .45, ph = Math.random() * 6, A = 58, mid = 136;
+  function py(i){ return mid - A * Math.sin(i * w + ph); }
+  el(s,'line',{x1:30,y1:236,x2:400,y2:236,stroke:C.lav}); el(s,'line',{x1:30,y1:36,x2:30,y2:236,stroke:C.lav});
+  var id = 'pc' + Math.random().toString(36).slice(2);
+  var clip = el(s,'clipPath',{id:id}); el(clip,'rect',{x:31,y:30,width:380,height:206});
+  var g = el(el(s,'g',{'clip-path':'url(#'+ id +')'}),'g',{});
+  var info = el(s,'text',{x:212,y:24,'text-anchor':'middle','font-size':12,'font-weight':700,'font-family':'Consolas,monospace',fill:C.btn});
+  var i; for (i = 0; i < 6; i++) el(g,'circle',{cx:60 + i * 44,cy:py(i),r:5,fill:C.blue});
+  var q = 6, N = 8, asked = 0, right = 0, streak = 0, left = 0, LIM = 5, rings = [], lock = true, stop, timer = 0, off = 0, offTo = 0;
+  function ask(){
+    lock = false; left = LIM; asked++;
+    info.textContent = 'Q ' + asked + ' / ' + N + (streak > 1 ? '   ×' + streak : '');
+    var tv = py(q), sets = [[-42,0,42],[0,42,84],[-84,-42,0]].filter(function(o){ return o.every(function(d){ return tv + d > 44 && tv + d < 228; }); });
+    var o = pick(sets);
+    rings = o.map(function(d){
+      var r = el(g,'circle',{cx:60 + q * 44,cy:tv + d,r:13,fill:'#fff','fill-opacity':.01,stroke:C.btn,'stroke-dasharray':'4 3','stroke-width':1.6,style:'cursor:pointer'});
+      r.ok = d === 0;
+      r.addEventListener('pointerdown', function(e){ e.preventDefault(); choose(r); });
+      return r;
+    });
+  }
+  function choose(r){
+    if (lock) return; lock = true;
+    var x = 60 + q * 44, tv = py(q), dot = el(g,'circle',{cx:x,cy:tv - 70,r:5,fill:C.btn});
+    var t0 = performance.now(); (function drop(){ var k = Math.min(1, (performance.now() - t0) / 300); dot.setAttribute('cy', tv - 70 * (1 - k * k)); if (k < 1) requestAnimationFrame(drop); })();
+    rings.forEach(function(x2){ if (x2 !== r && !x2.ok) x2.remove(); x2.setAttribute('stroke-dasharray','none'); });
+    if (r && r.ok){ streak++; right++; H.add(100 * streak); H.pop(x + off, tv - 20, '+' + 100 * streak); }
+    else { streak = 0; if (r){ r.setAttribute('stroke', C.warn); mark(s, x + off, tv - 18); } else mark(s, x + off, tv - 18); }
+    timer = setTimeout(function(){
+      rings.forEach(function(x2){ x2.remove(); }); el(g,'circle',{cx:x,cy:tv,r:5,fill:C.blue});
+      q++; offTo -= 44;
+      if (asked >= N){ stop(); H.done(right >= 6 ? 'CLEAR!' : 'FINISH', N + ' 問中 ' + right + ' 問当たり'); return; }
+      timer = setTimeout(ask, 380);
+    }, 700);
+  }
+  function key(e){ var k = '123'.indexOf(e.key); if (k < 0 || lock) return; var r = rings.slice().sort(function(a, b){ return a.getAttribute('cy') - b.getAttribute('cy'); })[k]; choose(r); }
+  document.addEventListener('keydown', key);
+  stop = loop(function(dt){
+    off += (offTo - off) * Math.min(1, dt * 10); g.setAttribute('transform','translate('+ off +',0)');
+    if (!lock){ left -= dt; H.time(left / LIM); if (left <= 0) choose(null); }
+  });
+  ask();
+  return function(){ stop(); clearTimeout(timer); document.removeEventListener('keydown', key); };
+};
+
+/* 3 振り分け：落ちてくる仕事を列へ（押した列・←→、↓で早く落とす）。MAX 4 を超えたらアウト */
+GAMES[2].play = function(s, H){
+  var lx = [112,212,312], base = 198, U = 14, MAX = 4, fill = [0,0,0], stop, ended = false;
+  lx.forEach(function(x){ el(s,'circle',{cx:x,cy:218,r:10,fill:'none',stroke:C.ink}); el(s,'path',{d:'M'+(x-17)+' 248 q17 -20 34 0',fill:'none',stroke:C.ink}); el(s,'line',{x1:x-30,y1:base,x2:x+30,y2:base,stroke:C.lav}); });
+  var mx = lx.map(function(x){ el(s,'text',{x:x+34,y:base-MAX*U+3,'font-size':8,'font-family':'Consolas,monospace',fill:C.lav}).textContent = 'MAX'; return el(s,'line',{x1:x-32,y1:base-MAX*U,x2:x+32,y2:base-MAX*U,stroke:C.lav,'stroke-dasharray':'3 3'}); });
+  el(s,'text',{x:395,y:40,'text-anchor':'middle','font-size':9,'font-family':'Consolas,monospace',fill:C.btn}).textContent = 'NEXT';
+  var nextR = el(s,'rect',{x:383,width:24,rx:2});
+  var hit = el(s,'rect',{x:0,y:0,width:425,height:268,fill:'transparent'}); s.insertBefore(hit, s.firstChild);
+  var Q = []; for (var l = 0; l < 3; l++) Q = Q.concat(pick([[3,1],[1,3],[2,2],[2,1,1],[1,2,1]])); shuffle(Q);
+  var n = 0, cur = null, speed = 26, fast = false;
+  function spawn(){
+    if (n >= Q.length){ ended = true; stop(); mx.forEach(function(m){ m.setAttribute('stroke', C.btn); m.setAttribute('stroke-dasharray','none'); }); H.add(600); setTimeout(function(){ H.done('BALANCE!', '全員ちょうど MAX'); }, 500); return; }
+    var w = Q[n++];
+    cur = { w:w, lane:1, x:212, y:22, r:el(s,'rect',{width:48,height:w*U-2,rx:2,fill:w > 1 ? (w > 2 ? C.ink : C.btn) : C.blue}) };
+    var nw = Q[n]; nextR.setAttribute('opacity', nw ? 1 : 0); if (nw){ nextR.setAttribute('y', 46); nextR.setAttribute('height', nw * 8); nextR.setAttribute('fill', nw > 1 ? (nw > 2 ? C.ink : C.btn) : C.blue); }
+    speed += 5; fast = false;
+  }
+  function lane(k){ if (cur) cur.lane = Math.max(0, Math.min(2, k)); }
+  s.onpointerdown = function(e){ var x = pt(s, e).x; lane(x < 162 ? 0 : x < 262 ? 1 : 2); };
+  function key(e){
+    if (!cur) return;
+    if (e.key === 'ArrowLeft'){ lane(cur.lane - 1); e.preventDefault(); }
+    else if (e.key === 'ArrowRight'){ lane(cur.lane + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowDown' || e.key === ' '){ fast = true; e.preventDefault(); }
+  }
+  document.addEventListener('keydown', key);
+  stop = loop(function(dt){
+    if (!cur || ended) return;
+    cur.x += (lx[cur.lane] - cur.x) * Math.min(1, dt * 14);
+    cur.y += (fast ? 260 : speed) * dt;
+    var top = base - (fill[cur.lane] + cur.w) * U;
+    if (cur.y >= top && Math.abs(cur.x - lx[cur.lane]) < 3){
+      cur.y = top; cur.x = lx[cur.lane]; fill[cur.lane] += cur.w;
+      cur.r.setAttribute('x', cur.x - 24); cur.r.setAttribute('y', cur.y);
+      if (fill[cur.lane] > MAX){ ended = true; stop(); cur.r.setAttribute('fill', C.warn); mx[cur.lane].setAttribute('stroke', C.warn); setTimeout(function(){ H.done('MISS', 'MAX を超えた'); }, 500); return; }
+      H.add(100); H.pop(cur.x, top - 6, '+100'); cur = null; spawn(); return;
+    }
+    if (cur.y >= top) cur.y = top;
+    cur.r.setAttribute('x', cur.x - 24); cur.r.setAttribute('y', cur.y);
+  });
+  spawn();
+  return function(){ ended = true; stop(); document.removeEventListener('keydown', key); s.onpointerdown = null; };
+};
+
+/* 4 線をつなぐ：光った町から、まだの町へ。届く長さまで、山は越えられない。30 秒 */
+GAMES[3].play = function(s, H){
+  var R = 125, LIM = 30, left = LIM, stop, ended = false;
+  var N = [[262,140],[340,72],[372,190],[300,232],[196,222],[205,70],[128,112],[60,178],[96,52]];
+  var M = [[[164,160],[192,108],[220,160]],[[298,180],[318,138],[338,180]]];
+  el(s,'path',{d:'M50 30 C150 14 270 30 350 48 C400 70 410 170 385 215 C350 255 230 262 150 245 C80 228 34 160 34 95 Z',fill:'#f7f3fb',stroke:C.pale});
+  M.forEach(function(m){ el(s,'path',{d:'M'+m.join('L')+'Z',fill:C.pale,stroke:C.lav}); });
+  var reach = el(s,'circle',{r:R,fill:C.blue,'fill-opacity':.08,stroke:C.blue,'stroke-dasharray':'4 4',opacity:0});
+  var lines = el(s,'g',{}), live = el(s,'line',{stroke:C.btn,'stroke-width':2,'stroke-dasharray':'5 4',opacity:0});
+  var lit = N.map(function(_, i){ return i === 0; });
+  var D = N.map(function(p, i){ return el(s,'circle',{cx:p[0],cy:p[1],r:i ? 8 : 10,fill:i ? '#fff' : C.btn,stroke:i ? C.lav : C.btn,'stroke-width':1.6,style:'cursor:pointer'}); });
+  var from = -1, dragging = false;
+  function near(q, r){ for (var i = 0; i < N.length; i++) if (Math.hypot(N[i][0] - q.x, N[i][1] - q.y) < r) return i; return -1; }
+  function ccw(a, b, c){ return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0]); }
+  function cross(a, b, c, d){ return ccw(a, c, d) !== ccw(b, c, d) && ccw(a, b, c) !== ccw(a, b, d); }
+  function blocked(a, b){ return M.some(function(m){ return cross(a, b, m[0], m[1]) || cross(a, b, m[1], m[2]) || cross(a, b, m[2], m[0]); }); }
+  function select(i){ from = i; reach.setAttribute('cx', N[i][0]); reach.setAttribute('cy', N[i][1]); reach.setAttribute('opacity', 1); D.forEach(function(d, j){ d.setAttribute('stroke-width', j === i ? 3 : 1.6); }); }
+  function unselect(){ from = -1; reach.setAttribute('opacity', 0); live.setAttribute('opacity', 0); D.forEach(function(d){ d.setAttribute('stroke-width', 1.6); }); }
+  function connect(i){
+    var a = N[from], b = N[i], mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    if (Math.hypot(a[0] - b[0], a[1] - b[1]) > R || blocked(a, b)){
+      var bad = el(lines,'line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:C.warn,'stroke-width':2,'stroke-dasharray':'4 3'});
+      setTimeout(function(){ bad.remove(); }, 500); mark(s, mid[0], mid[1] - 4); return;
+    }
+    el(lines,'line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:C.btn,'stroke-width':2,'stroke-linecap':'round'});
+    lit[i] = true; D[i].setAttribute('fill', C.blue); D[i].setAttribute('stroke', C.btn); H.add(100); H.pop(b[0], b[1] - 14, '+100');
+    if (lit.every(Boolean)){ ended = true; stop(); unselect(); var bonus = Math.ceil(left) * 20; H.add(bonus); setTimeout(function(){ H.done('CLEAR!', '残り ' + Math.ceil(left) + ' 秒（+' + bonus + '）'); }, 500); }
+  }
+  s.onpointerdown = function(e){
+    if (ended) return; var q = pt(s, e), i = near(q, 18);
+    if (i < 0){ unselect(); return; }
+    if (lit[i]){ select(i); dragging = true; try { s.setPointerCapture(e.pointerId); } catch (x) {} }
+    else if (from >= 0){ connect(i); unselect(); }
+    e.preventDefault();
+  };
+  s.onpointermove = function(e){ if (!dragging || from < 0) return; var q = pt(s, e); live.setAttribute('x1', N[from][0]); live.setAttribute('y1', N[from][1]); live.setAttribute('x2', q.x); live.setAttribute('y2', q.y); live.setAttribute('opacity', 1); };
+  s.onpointerup = function(e){
+    if (!dragging) return; dragging = false; live.setAttribute('opacity', 0);
+    var i = near(pt(s, e), 18);
+    if (i >= 0 && i !== from && !lit[i]){ connect(i); unselect(); }
+  };
+  stop = loop(function(dt){ if (ended) return; left -= dt; H.time(left / LIM); if (left <= 0){ ended = true; stop(); unselect(); H.done('TIME UP', lit.filter(Boolean).length - 1 + ' / ' + (N.length - 1) + ' の町に届いた'); } });
+  return function(){ ended = true; stop(); s.onpointerdown = s.onpointermove = s.onpointerup = null; };
+};
+
 /* デモを回す：見えているものだけ動かす */
 var live = [];
 function mount(svg, g){ svg.textContent = ''; var d = g.build(svg); var o = { svg:svg, draw:d, t0:performance.now(), on:true }; d(RM ? 8 : 0); return o; }
@@ -412,7 +628,7 @@ if ('IntersectionObserver' in window){
 requestAnimationFrame(tick);
 
 /* 説明画面とプレイ */
-var info = document.getElementById('info'), play = document.getElementById('play'), cur = -1, opener = null, iS = null, pS = null;
+var info = document.getElementById('info'), play = document.getElementById('play'), cur = -1, opener = null, iS = null;
 function setLock(){ document.body.classList.toggle('lock', !info.hidden || !play.hidden); }
 function openInfo(i, from){
   cur = i; if (from) opener = from;
@@ -429,11 +645,28 @@ function closeInfo(){ info.hidden = true; if (iS){ live.splice(live.indexOf(iS),
 function openPlay(){
   var g = GAMES[cur];
   play.querySelector('.how').textContent = g.how;
-  if (pS) live.splice(live.indexOf(pS), 1);
-  pS = mount(play.querySelector('svg'), g); live.push(pS);
+  startPlay();
   play.hidden = false; setLock(); play.querySelector('.back').focus();
 }
-function closePlay(){ play.hidden = true; if (pS){ live.splice(live.indexOf(pS), 1); pS = null; } setLock(); info.querySelector('.play').focus(); }
+function closePlay(){ play.hidden = true; endPlay(); setLock(); info.querySelector('.play').focus(); }
+/* プレイの枠：点数・時間・READY/GO・結果。ゲームは GAMES[i].play */
+var pStop = null, pSvg = null, pScore = 0, rdyT = 0;
+var hudS = play.querySelector('.hud span'), hudT = play.querySelector('.hud s'), res = play.querySelector('.res'), rdy = play.querySelector('.ready');
+var H = {
+  add: function(n){ pScore += n; hudS.textContent = ('00000' + pScore).slice(-6); },
+  time: function(f){ hudT.parentNode.style.visibility = f == null ? 'hidden' : ''; if (f != null) hudT.style.width = Math.max(0, Math.min(1, f)) * 100 + '%'; },
+  pop: function(x, y, t){ var e = el(pSvg,'text',{x:x,y:y,'text-anchor':'middle','font-size':12,'font-weight':700,'font-family':'Consolas,Menlo,monospace',fill:C.btn,'class':'popx'}); e.textContent = t; setTimeout(function(){ e.remove(); }, 800); },
+  done: function(a, b){ pStop = null; res.querySelector('.t').textContent = a; res.querySelector('.m').textContent = b + '　SCORE ' + pScore; res.hidden = false; res.querySelector('button').focus(); }
+};
+function endPlay(){ clearTimeout(rdyT); if (pStop){ pStop(); pStop = null; } }
+function startPlay(){
+  endPlay();
+  var old = play.querySelector('.screen svg'); pSvg = old.cloneNode(false); old.parentNode.replaceChild(pSvg, old);
+  pScore = 0; H.add(0); H.time(null); res.hidden = true;
+  rdy.textContent = 'READY'; rdy.hidden = false;
+  rdyT = setTimeout(function(){ rdy.textContent = 'GO!'; rdyT = setTimeout(function(){ rdy.hidden = true; pStop = GAMES[cur].play(pSvg, H); }, 450); }, 750);
+}
+res.querySelector('button').addEventListener('click', startPlay);
 info.querySelector('.back').addEventListener('click', closeInfo);
 info.querySelector('.play').addEventListener('click', openPlay);
 info.querySelector('.ask').addEventListener('click', function(){ closeInfo(); });
