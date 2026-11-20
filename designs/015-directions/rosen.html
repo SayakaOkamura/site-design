@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 H 箱庭：路線図（2026-11-20）。
+     本人「説明を読むと成長して、成長すると次の情報が出る、みたいなのでどうだろう」→（育つのは世界（町）、と勧めて）「路線図とかもいいな」→ 育つもの自体を路線図に。
+     駅を押すと駅名標の窓で公式の文。「発車する」で窓を閉じると、線が延びて次の駅が開業する -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
+<style>
+:root{ --ink:#2a0e3e; --sub:#715189; --line:#e4dcec; --btn:#654087 }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; background:#faf8fc; color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8; display:flex; flex-direction:column}
+h1,h2,h3,p,ul,dl,dd{margin:0}
+ul{padding:0; list-style:none}
+.serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
+
+header{flex:none; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px clamp(16px,3vw,36px); border-bottom:1px solid var(--line); background:#fff}
+.logo{display:flex; align-items:center; gap:10px; line-height:1.1}
+.logo i{width:32px; height:32px; border-radius:50%; border:5px solid var(--btn); box-shadow:inset 0 0 0 2px #bb7eea}
+.logo span{font-size:18px; font-weight:400}
+.logo small{display:block; font-size:11px; margin-left:4.4em}
+.count{font-size:13px; color:var(--sub); white-space:nowrap}
+.count b{font-weight:700; color:var(--ink); font-size:16px}
+
+main{flex:1; min-height:0; overflow:auto; position:relative}
+#map{display:block; width:100%; height:100%; min-width:720px; min-height:420px}
+.st{cursor:pointer}
+.st:focus{outline:none}
+.st:focus-visible .dot{stroke-width:7}
+.lbl{font-size:15px; font-weight:400; fill:var(--ink); paint-order:stroke; stroke:#faf8fc; stroke-width:5px; stroke-linejoin:round}
+.lbl.small{font-size:12px; fill:var(--sub)}
+.new{animation:pop .45s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes pop{ from{transform:scale(0)} to{transform:none} }
+.st{transform-box:fill-box; transform-origin:center}
+.hint{font-size:13px; fill:var(--btn); font-weight:700; animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{ 50%{opacity:.25} }
+
+/* 駅名標の窓 */
+#sign{position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(42,14,62,.3)}
+#sign[hidden]{display:none}
+#sign .box{width:min(100%,640px); max-height:calc(100vh - 32px); overflow:auto; background:#fff; box-shadow:0 24px 60px rgba(42,14,62,.25); animation:sin .25s ease-out both}
+@keyframes sin{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+.plate{padding:18px 24px 0; text-align:center}
+.plate .no{display:inline-flex; align-items:center; justify-content:center; min-width:44px; height:28px; padding:0 8px; border:3px solid; border-radius:6px; font:700 13px/1 Consolas,Menlo,monospace}
+.plate h2{margin-top:6px; font-size:clamp(24px,4vw,34px); line-height:1.4}
+.band{height:10px; margin-top:10px}
+.nb{display:flex; justify-content:space-between; padding:6px 24px 0; font-size:12px; color:var(--sub)}
+.body{padding:20px 28px 8px; font-size:15px}
+.body h3{font-size:17px; font-weight:400; margin-bottom:.6em; line-height:1.6}
+.body p + p{margin-top:.8em}
+.body b{font-weight:700}
+.body dl{display:grid; grid-template-columns:6.5em 1fr; gap:6px 12px; font-size:14px}
+.body dt{color:var(--sub)}
+.body .acc{margin-top:.6em; font-size:13px; color:var(--sub)}
+.body .lines li{display:flex; align-items:center; gap:10px; padding:4px 0}
+.body .lines i{flex:none; width:22px; height:8px; border-radius:4px}
+.body a.mail{display:inline-flex; margin-top:1em; padding:10px 28px; background:var(--btn); color:#fff; text-decoration:none; font-weight:400}
+.foot{display:flex; justify-content:flex-end; padding:16px 24px 22px}
+.foot button{height:46px; padding:0 28px; border:0; color:#fff; font:inherit; font-weight:400; cursor:pointer}
+
+/* 全線開通 */
+#open{position:fixed; left:50%; top:76px; z-index:10; transform:translateX(-50%); padding:12px 26px; background:#fff; box-shadow:0 10px 30px rgba(42,14,62,.18); border-top:4px solid var(--btn); text-align:center; white-space:nowrap}
+#open[hidden]{display:none}
+#open b{display:block; font-size:20px}
+#open small{font-size:12px; color:var(--sub)}
+
+@media (prefers-reduced-motion:reduce){ .new,#sign .box,.hint{animation:none} }
+</style>
+
+<header>
+  <div class="logo"><i></i><span>Alter Design<small>consulting</small></span></div>
+  <p class="count">開業 <b id="cnt">0</b> / <span id="all"></span> 駅</p>
+</header>
+
+<main>
+  <svg id="map" viewBox="0 0 1080 600" preserveAspectRatio="xMidYMid meet" role="img" aria-label="路線図">
+    <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#efe9f5"/></pattern></defs>
+    <rect width="1080" height="600" fill="url(#grid)"/>
+    <g id="rails"></g><g id="trains"></g><g id="stations"></g>
+  </svg>
+</main>
+
+<div id="sign" role="dialog" aria-modal="true" aria-labelledby="sign-h" hidden>
+  <div class="box">
+    <div class="plate"><span class="no"></span><h2 id="sign-h" class="serif"></h2></div>
+    <div class="band"></div>
+    <div class="nb"><span class="pv"></span><span class="nx"></span></div>
+    <div class="body"></div>
+    <div class="foot"><button type="button"></button></div>
+  </div>
+</div>
+
+<div id="open" role="status" hidden><b class="serif">全線開通</b><small>すべての駅を見ました</small></div>
+
+<script>
+(function(){
+var NS = 'http://www.w3.org/2000/svg';
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function el(p, tag, a){ var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; }
+
+/* 線 */
+var L = {
+  R:{ name:'理念線', c:'#654087' },
+  A:{ name:'業務システム線', c:'#2f8fa8' },
+  B:{ name:'意思決定線', c:'#d99a2b' },
+  C:{ name:'組織線', c:'#d0708a' },
+  D:{ name:'地域線', c:'#4a9d6a' },
+  K:{ name:'会社線', c:'#2a0e3e' }
+};
+/* 駅。文は公式（alt-dsgn.co.jp）のまま */
+var S = {
+  rinen:{ n:'企業理念', l:'R', no:'R01', x:120, y:300, lb:'b',
+    h:'<h3>経営の力で「遊ぶように働く世界」をデザインする</h3><p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
+  jigyo:{ n:'事業内容', l:'R', no:'R02', x:290, y:300, lb:'b',
+    h:'<h3>AI × ローコードで、「上流工程中心のシステム開発」に革新を</h3><p>コンサルティングによる業務設計からエンジニアリングまでを行います</p><p>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</p>' },
+  svc:{ n:'サービス', l:'R', no:'R03', x:460, y:300, lb:'bl', hub:true,
+    h:'<h3>私たちが提供するサービス</h3><ul class="lines"><li><i style="background:#2f8fa8"></i>人間中心の次世代業務システム開発</li><li><i style="background:#d99a2b"></i>AI による意思決定支援と事業変革支援</li><li><i style="background:#d0708a"></i>自律型・共創型の組織設計支援</li><li><i style="background:#4a9d6a"></i>地域格差の解消を目指したデジタル支援</li></ul>' },
+  a:{ n:'業務システム開発', l:'A', no:'A01', x:720, y:130, lb:'t',
+    h:'<h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>' },
+  b:{ n:'意思決定支援', l:'B', no:'B01', x:720, y:230, lb:'t',
+    h:'<h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' },
+  c:{ n:'組織設計支援', l:'C', no:'C01', x:720, y:390, lb:'b',
+    h:'<h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' },
+  d:{ n:'デジタル支援', l:'D', no:'D01', x:820, y:520, lb:'b',
+    h:'<h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
+  gaiyo:{ n:'会社概要', l:'K', no:'K01', x:880, y:300, lb:'b',
+    h:'<dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd><dt>代表者</dt><dd>藤田 靖広</dd><dt>資本金</dt><dd>60百万円</dd><dt>設立年月日</dt><dd>2025年6月</dd><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>' },
+  access:{ n:'アクセス', l:'K', no:'K02', x:980, y:200, lb:'t',
+    h:'<p>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p><p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p>' },
+  contact:{ n:'お問い合わせ', l:'K', no:'K03', x:980, y:420, lb:'b',
+    h:'<p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p><a class="mail" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>' }
+};
+/* 線路：[線, 道のり, 着く駅]。どの駅を読むと延びるか */
+var GROW = {
+  rinen:  [['R', [[120,300],[290,300]], 'jigyo']],
+  jigyo:  [['R', [[290,300],[460,300]], 'svc']],
+  svc:    [['A', [[460,300],[460,210],[540,130],[720,130]], 'a'],
+           ['B', [[460,300],[530,230],[720,230]], 'b'],
+           ['C', [[460,300],[550,390],[720,390]], 'c'],
+           ['D', [[460,300],[460,420],[560,520],[820,520]], 'd']],
+  services:[['K', [[460,300],[880,300]], 'gaiyo']],
+  gaiyo:  [['K', [[880,300],[980,200]], 'access']],
+  access: [['K', [[980,200],[1040,260],[1040,360],[980,420]], 'contact']]
+};
+var ORDER = ['rinen','jigyo','svc','a','b','c','d','gaiyo','access','contact'];
+var PREV = { jigyo:'rinen', svc:'jigyo', a:'svc', b:'svc', c:'svc', d:'svc', gaiyo:'svc', access:'gaiyo', contact:'access' };
+var NEXT = { rinen:'jigyo', jigyo:'svc', gaiyo:'access', access:'contact' };
+
+var rails = document.getElementById('rails'), trains = document.getElementById('trains'), stations = document.getElementById('stations');
+var opened = {}, read = {}, built = [], hint = null;
+document.getElementById('all').textContent = ORDER.length;
+
+function station(id, fresh){
+  var s = S[id], c = L[s.l].c, g = el(stations,'g',{'class':'st' + (fresh ? ' new' : ''),tabindex:0,role:'button','aria-label':s.n + '駅'});
+  if (s.hub) el(g,'rect',{'class':'dot',x:s.x-16,y:s.y-14,width:32,height:28,rx:14,fill:'#fff',stroke:'#2a0e3e','stroke-width':4});
+  else el(g,'circle',{'class':'dot',cx:s.x,cy:s.y,r:11,fill:'#fff',stroke:c,'stroke-width':5});
+  var t = el(g,'text',{'class':'lbl',x:s.lb === 'bl' ? s.x - 14 : s.x,y:s.lb === 't' ? s.y - 22 : s.y + 34,'text-anchor':s.lb === 'bl' ? 'end' : 'middle'}); t.textContent = s.n;
+  s.g = g; s.dot = g.firstChild; opened[id] = true;
+  g.addEventListener('click', function(){ openSign(id); });
+  g.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openSign(id); } });
+  count();
+}
+function count(){ document.getElementById('cnt').textContent = Object.keys(opened).length; }
+function markRead(id){ read[id] = true; var s = S[id]; if (!s.hub) s.dot.setAttribute('fill', L[s.l].c); }
+
+function rail(lk, pts, fresh){
+  var d = 'M' + pts.map(function(p){ return p.join(' '); }).join('L');
+  var p = el(rails,'path',{d:d,fill:'none',stroke:L[lk].c,'stroke-width':9,'stroke-linecap':'round','stroke-linejoin':'round'});
+  var len = p.getTotalLength();
+  if (fresh && !RM){ p.style.strokeDasharray = len; p.style.strokeDashoffset = len; p.getBoundingClientRect(); p.style.transition = 'stroke-dashoffset 1.1s ease-in-out'; p.style.strokeDashoffset = 0; }
+  built.push({ p:p, len:len, c:L[lk].c, t:Math.random(), v:(70 + Math.random() * 40) / len, dir:1, start:performance.now() + (fresh ? 1100 : 0) });
+}
+function grow(key){
+  var g = GROW[key]; if (!g) return;
+  g.forEach(function(r){ rail(r[0], r[1], true); });
+  setTimeout(function(){ g.forEach(function(r){ if (!opened[r[2]]) station(r[2], true); }); setHint(); }, RM ? 0 : 1000);
+}
+/* まだ読んでいない駅に「ここから」 */
+function setHint(){
+  if (hint){ hint.remove(); hint = null; }
+  var id = ORDER.filter(function(k){ return opened[k] && !read[k]; })[0]; if (!id) return;
+  var s = S[id]; hint = el(stations,'text',{'class':'hint',x:s.x,y:s.lb === 't' ? s.y + 34 : s.y - 22,'text-anchor':'middle'}); hint.textContent = '▼';
+  if (s.lb !== 't') hint.setAttribute('y', s.y - 22); else hint.setAttribute('y', s.y - 44);
+}
+
+/* 電車：できた線路の上を行ったり来たり */
+function tick(now){
+  built.forEach(function(b){
+    if (now < b.start) return;
+    if (!b.e){ b.e = el(trains,'rect',{width:22,height:10,rx:4,fill:'#fff',stroke:b.c,'stroke-width':2.5}); }
+    if (!RM){ b.t += b.dir * b.v / 60; if (b.t > 1){ b.t = 1; b.dir = -1; } if (b.t < 0){ b.t = 0; b.dir = 1; } }
+    var p = b.p.getPointAtLength(b.t * b.len), q = b.p.getPointAtLength(Math.min(b.len, Math.max(0, b.t * b.len + b.dir)));
+    var a = Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
+    b.e.setAttribute('transform','translate('+ p.x +','+ p.y +') rotate('+ a +') translate(-11,-5)');
+  });
+  requestAnimationFrame(tick);
+}
+
+/* 駅名標の窓 */
+var sign = document.getElementById('sign'), cur = null, back = null;
+function name(id){ return id && opened[id] ? S[id].n : id ? '？？？' : ''; }
+function openSign(id){
+  var s = S[id], c = L[s.l].c; cur = id; back = s.g;
+  sign.querySelector('.no').textContent = s.no; sign.querySelector('.no').style.borderColor = c; sign.querySelector('.no').style.color = c;
+  sign.querySelector('h2').textContent = s.n;
+  sign.querySelector('.band').style.background = s.hub ? 'linear-gradient(90deg,#2f8fa8 25%,#d99a2b 25% 50%,#d0708a 50% 75%,#4a9d6a 75%)' : c;
+  var pv = PREV[id], nx = NEXT[id];
+  sign.querySelector('.pv').textContent = pv ? '← ' + name(pv) : '';
+  sign.querySelector('.nx').textContent = nx ? name(nx) + ' →' : '';
+  sign.querySelector('.body').innerHTML = s.h;
+  var b = sign.querySelector('.foot button'), first = !read[id];
+  b.textContent = first && (GROW[id] || isLastService(id)) ? '発車する ›' : '閉じる';
+  b.style.background = c;
+  sign.hidden = false; b.focus();
+}
+function isLastService(id){ return 'abcd'.indexOf(id) >= 0 && ['a','b','c','d'].filter(function(k){ return k !== id && !read[k]; }).length === 0; }
+function closeSign(){
+  if (!cur) return;
+  var id = cur, first = !read[id]; cur = null; sign.hidden = true;
+  if (first){
+    var last = isLastService(id);
+    markRead(id); grow(id); if (last) grow('services');
+    if (!GROW[id] && !last) setHint();
+    if (ORDER.every(function(k){ return read[k]; })) setTimeout(function(){ document.getElementById('open').hidden = false; }, 400);
+  }
+  if (back) back.focus();
+}
+sign.querySelector('.foot button').addEventListener('click', closeSign);
+sign.addEventListener('click', function(e){ if (e.target === sign) closeSign(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !sign.hidden) closeSign(); });
+
+station('rinen', false); setHint();
+requestAnimationFrame(tick);
+})();
+</script>
