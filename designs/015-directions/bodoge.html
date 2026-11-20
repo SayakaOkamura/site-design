@@ -7,20 +7,30 @@
      メモ「みんなでデスクでボドゲしてるところからカードにフォーカスして」「拡張デッキ扱いする」。
      上から見た卓。三人が囲んで一席空いている。押すと寄って、横に中身。
      箱＝会社概要／ルールブック＝企業理念／盤＝事業内容（題は公式の見出し）／基本デッキ四つ＝サービス／空いている席＝お問い合わせ。文は公式のまま。
-     押せるものには普通の言葉の名札（本人「盤が事業内容なのもわかんないよこれ」「空いている席：どうぞは普通に初見で意味わからん」） -->
+     上に普通のメニュー。項目に乗ると卓の上の対応する物が光り、押すとそこへ寄る（本人「そもそも主に知りたい情報ってそっちじゃない？」）。付箋の名札は外した -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
 <style>
 :root{ --ink:#2a0e3e; --sub:#715189; --btn:#654087 }
 *{box-sizing:border-box}
 html,body{height:100%; margin:0}
-body{background:#2b2420; color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8; overflow:hidden}
+body{background:#2b2420; color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8; overflow:hidden; display:flex; flex-direction:column}
 h1,h2,h3,p,dl,dd,ul{margin:0}
 ul{padding:0; list-style:none}
 b{font-weight:700}
 .serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
 
-#scene{display:block; width:100vw; height:100vh}
+#scene{display:block; width:100%; flex:1; min-height:0}
+/* メニュー：主な情報はいつでもここから。項目に乗ると、卓の上の対応する物が光る */
+#menu{flex:none; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px clamp(14px,3vw,32px); background:#fffdf8; box-shadow:0 2px 10px rgba(0,0,0,.25); z-index:7; position:relative}
+.logo{display:flex; align-items:center; gap:10px; line-height:1.1; white-space:nowrap}
+.logo i{width:28px; height:28px; border-radius:50%; border:5px solid var(--btn); box-shadow:inset 0 0 0 2px #bb7eea}
+.logo span{font-size:16px; font-weight:400}
+.logo small{display:block; font-size:10px; margin-left:4.4em}
+#menu ul{display:flex; gap:clamp(4px,1.6vw,22px); overflow-x:auto}
+#menu button{border:0; background:none; padding:6px 8px; font:inherit; font-size:14px; font-weight:400; color:var(--ink); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent}
+#menu button:hover, #menu button:focus-visible, #menu button[aria-current="true"]{color:var(--btn); border-bottom-color:var(--btn); outline:none}
+.it.lit{filter:drop-shadow(0 0 6px #fff7c2) drop-shadow(0 0 14px #ffe98a) brightness(1.08)}
 .it{cursor:pointer; transition:filter .2s ease}
 /* 位置と傾きは transform 属性で持っているので、CSS の transform は使わない（上書きされて左上へ飛んでいた） */
 .it:hover, .it:focus-visible{filter:drop-shadow(0 10px 8px rgba(0,0,0,.4)) brightness(1.05)}
@@ -29,7 +39,7 @@ body.zoom .it{pointer-events:none}
 .lbl{font-size:13px; fill:#fff; font-weight:400}
 
 /* 中身の札 */
-#card{position:fixed; z-index:5; top:50%; right:clamp(16px,4vw,56px); width:min(440px, 44vw); max-height:calc(100vh - 48px); overflow:auto; transform:translateY(-50%) rotateY(90deg); opacity:0;
+#card{position:fixed; z-index:5; top:calc(50% + 28px); right:clamp(16px,4vw,56px); width:min(440px, 44vw); max-height:calc(100vh - 100px); overflow:auto; transform:translateY(-50%) rotateY(90deg); opacity:0;
   background:#fffdf8; border-radius:14px; box-shadow:0 30px 70px rgba(0,0,0,.45); transition:transform .45s cubic-bezier(.3,1.3,.5,1), opacity .2s; pointer-events:none}
 #card.on{transform:translateY(-50%) rotateY(0); opacity:1; pointer-events:auto}
 #card .band{height:12px; border-radius:14px 14px 0 0}
@@ -43,11 +53,13 @@ body.zoom .it{pointer-events:none}
 #card dt{color:var(--sub)}
 #card .acc{font-size:12.5px; color:var(--sub); margin-top:.4em}
 #card a.mail{display:inline-flex; margin-top:1.2em; padding:10px 26px; background:var(--btn); color:#fff; text-decoration:none; font-weight:400}
-#back{position:fixed; z-index:6; top:16px; left:16px; padding:8px 16px; border:0; border-radius:20px; background:rgba(255,253,248,.92); color:var(--ink); font:inherit; font-size:14px; cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s}
+#back{position:fixed; z-index:6; top:72px; left:16px; padding:8px 16px; border:0; border-radius:20px; background:rgba(255,253,248,.92); color:var(--ink); font:inherit; font-size:14px; cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s}
 body.zoom #back{opacity:1; pointer-events:auto}
 #hint{position:fixed; left:50%; bottom:14px; transform:translateX(-50%); color:rgba(255,255,255,.7); font-size:12px; letter-spacing:.1em; transition:opacity .3s}
 body.zoom #hint{opacity:0}
 
+@media (max-width:760px){ .logo small{display:none} .logo span{font-size:14px} #menu button{font-size:13px; padding:6px 4px} #menu{gap:8px} }
+@media (max-width:540px){ #menu{flex-wrap:wrap; row-gap:4px; padding-bottom:4px} #menu ul{width:100%; justify-content:space-between; scrollbar-width:none} #menu button{padding:6px 2px} #back{top:100px} }
 @media (max-aspect-ratio:1/1){
   #card{top:auto; bottom:12px; right:12px; left:12px; width:auto; max-height:52vh; transform:rotateX(90deg)}
   #card.on{transform:none}
@@ -55,6 +67,16 @@ body.zoom #hint{opacity:0}
 @media (prefers-reduced-motion:reduce){ #card,.it{transition:none} }
 </style>
 
+<nav id="menu" aria-label="メニュー">
+  <div class="logo"><i></i><span>Alter Design<small>consulting</small></span></div>
+  <ul>
+    <li><button type="button" data-k="board">事業内容</button></li>
+    <li><button type="button" data-k="svc">サービス</button></li>
+    <li><button type="button" data-k="book">企業理念</button></li>
+    <li><button type="button" data-k="box">会社概要</button></li>
+    <li><button type="button" data-k="seat">お問い合わせ</button></li>
+  </ul>
+</nav>
 <svg id="scene" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet" aria-label="打ち合わせの机でボードゲームをしているところ">
   <defs>
     <pattern id="wood" width="240" height="40" patternUnits="userSpaceOnUse">
@@ -97,9 +119,6 @@ var H = [person(600, 46, 0, '#5b6f8f'), person(46, 400, -90, '#8f5b6f'), person(
 var chair = el(Pp,'g',{transform:'translate(600,770)'});
 el(chair,'rect',{x:-80,y:-36,width:160,height:70,rx:16,fill:'#4a3a32',stroke:'#5e4a40','stroke-width':3});
 
-/* 名札：見立てを読み解かせないように、押せるものには普通の言葉を貼る */
-function tag(g, x, y, s, rot){ var t = el(g,'g',{transform:'translate('+ x +','+ y +') rotate('+ (rot || 0) +')'}); var w = s.length * 15 + 24;
-  el(t,'rect',{x:-w / 2,y:-15,width:w,height:30,rx:3,fill:'#fff6b8',stroke:'#e8d77a'}); tx(t, 0, 5, s, {'font-size':15,fill:'#2a0e3e','font-weight':700}); return t; }
 /* ── 盤：題は公式の見出し。まわりにマス、駒が進む ── */
 var board = el(T,'g',{'class':'it',tabindex:0,role:'button','aria-label':'盤（事業内容）','data-k':'board'});
 el(board,'rect',{x:390,y:220,width:420,height:300,rx:10,fill:'#fbf6ec',filter:'url(#sh)'});
@@ -113,7 +132,6 @@ cells.forEach(function(c, j){ el(board,'rect',{x:c[0]-17,y:c[1]-17,width:34,heig
 tx(board, 600, 340, 'AI × ローコードで、', {'class':'serif','font-size':22,fill:'#2a0e3e'});
 tx(board, 600, 374, '「上流工程中心のシステム開発」に革新を', {'class':'serif','font-size':22,fill:'#2a0e3e'});
 tx(board, 600, 410, 'Alter Design consulting', {'font-size':12,fill:'#715189','letter-spacing':'.12em'});
-tag(board, 600, 290, '事業内容', -2);
 var tokens = [0, 7, 15].map(function(at, j){ var t = el(board,'g',{}); el(t,'circle',{r:11,fill:['#5b6f8f','#8f5b6f','#5b8f78'][j],stroke:'#fff','stroke-width':2.5}); return { g:t, at:at, x:0, y:0 }; });
 function place(t){ var c = cells[t.at % cells.length]; t.x = c[0] + (tokens.indexOf(t) - 1) * 6; t.y = c[1]; t.g.setAttribute('transform','translate('+ t.x +','+ t.y +')'); }
 tokens.forEach(place);
@@ -137,7 +155,6 @@ el(box,'rect',{x:140,y:130,width:230,height:150,rx:8,fill:'#654087',filter:'url(
 el(box,'rect',{x:150,y:140,width:210,height:130,rx:4,fill:'none',stroke:'rgba(255,255,255,.35)'});
 el(box,'circle',{cx:200,cy:205,r:22,fill:'none',stroke:'#fff','stroke-width':6}); el(box,'circle',{cx:200,cy:205,r:15,fill:'none',stroke:'#bb7eea','stroke-width':2});
 tx(box, 290, 200, 'Alter Design', {'font-size':19,fill:'#fff'}); tx(box, 300, 220, 'consulting', {'font-size':11,fill:'#fff'});
-tag(box, 255, 258, '会社概要', 3);
 
 /* ── ルールブック＝企業理念 ── */
 var book = el(T,'g',{'class':'it',tabindex:0,role:'button','aria-label':'ルールブック（企業理念）','data-k':'book',transform:'rotate(6 930 210)'});
@@ -145,7 +162,6 @@ el(book,'rect',{x:860,y:120,width:150,height:190,rx:4,fill:'#fbf6ec',filter:'url
 el(book,'rect',{x:860,y:120,width:12,height:190,fill:'#e4d7ee'});
 tx(book, 940, 175, 'ルールブック', {'font-size':13,fill:'#715189','letter-spacing':'.1em'});
 tx(book, 940, 222, '遊ぶように', {'class':'serif','font-size':20,fill:'#2a0e3e'}); tx(book, 940, 250, '働く', {'class':'serif','font-size':20,fill:'#2a0e3e'});
-tag(book, 935, 300, '企業理念', -4);
 
 /* ── 基本デッキ四つ＝サービス（いまある四つ。増えたら拡張デッキ） ── */
 var DECK = [
@@ -188,9 +204,11 @@ var C = {
   b:{ c:CC[1], kind:'基本デッキ', n:'AI による意思決定支援と事業変革支援', h:'<p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' },
   c:{ c:CC[2], kind:'基本デッキ', n:'自律型・共創型の組織設計支援', h:'<p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' },
   d:{ c:CC[3], kind:'基本デッキ', n:'地域格差の解消を目指したデジタル支援', h:'<p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
+  svc:{ c:'linear-gradient(90deg,#2f8fa8 25%,#d99a2b 25% 50%,#d0708a 50% 75%,#4a9d6a 75%)', kind:'基本デッキ', n:'私たちが提供するサービス', h:'' },
   seat:{ c:'#654087', kind:'空いている席', n:'お問い合わせ', h:'<p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p><a class="mail" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>' }
 };
 
+C.svc.h = 'abcd'.split('').map(function(k){ return '<h3 style="border-left:4px solid ' + C[k].c + '; padding-left:10px">' + C[k].n + '</h3>' + C[k].h; }).join('<div style="height:14px"></div>');
 /* ── 寄る（viewBox を動かす）と札 ── */
 var VB0 = [0,0,1200,800], vb = VB0.slice(), anim = 0, card = document.getElementById('card'), opener = null;
 function setVB(v){ vb = v; svg.setAttribute('viewBox', v.join(' ')); }
@@ -210,23 +228,36 @@ function focusOn(g){
   if (portrait){ Hh = Math.max(Hh, h * 2.6); W = Hh * ar; cy += Hh * .22; } else cx += W * .22;   // 札の反対側に寄せる
   return [cx - W / 2, cy - Hh / 2, W, Hh];
 }
-function open(g){
-  var k = g.getAttribute('data-k'), c = C[k]; opener = g;
-  document.body.classList.add('zoom');
-  tween(focusOn(g), 700);
+function groups(k){ return [].slice.call(document.querySelectorAll(k === 'svc' ? '.it[data-k="a"],.it[data-k="b"],.it[data-k="c"],.it[data-k="d"]' : '.it[data-k="' + k + '"]')); }
+var menu = [].slice.call(document.querySelectorAll('#menu button'));
+function current(k){ menu.forEach(function(b){ b.setAttribute('aria-current', b.getAttribute('data-k') === k || (k && 'abcd'.indexOf(k) >= 0 && b.getAttribute('data-k') === 'svc') ? 'true' : 'false'); }); }
+function open(k, from){
+  var c = C[k]; opener = from || null;
+  document.body.classList.add('zoom'); current(k);
+  /* サービスは四つ全部なので寄らない（卓全体のまま） */
+  tween(k === 'svc' ? fitAll() : focusOn(groups(k)[0]), 700);
   card.querySelector('.band').style.background = c.c;
   card.querySelector('.kind').textContent = c.kind;
   card.querySelector('h2').textContent = c.n;
   card.querySelector('.body').innerHTML = c.h;
   card.classList.remove('on'); setTimeout(function(){ card.classList.add('on'); card.scrollTop = 0; }, RM ? 0 : 420);
 }
+/* 札の反対側に卓が寄るように、全体を少しずらす */
+function fitAll(){ var portrait = innerWidth <= innerHeight; return portrait ? [0, 200, 1200, 800] : [260, -60, 1500, 920]; }
 function close(){
-  card.classList.remove('on'); document.body.classList.remove('zoom');
+  card.classList.remove('on'); document.body.classList.remove('zoom'); current(null);
   tween(VB0, 600); if (opener) opener.focus({ preventScroll:true });
 }
 [].forEach.call(document.querySelectorAll('.it'), function(g){
-  g.addEventListener('click', function(){ open(g); });
-  g.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(g); } });
+  g.addEventListener('click', function(){ open(g.getAttribute('data-k'), g); });
+  g.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(g.getAttribute('data-k'), g); } });
+});
+menu.forEach(function(b){
+  var k = b.getAttribute('data-k');
+  function lit(on){ groups(k).forEach(function(g){ g.classList.toggle('lit', on); }); }
+  b.addEventListener('mouseenter', function(){ lit(true); }); b.addEventListener('mouseleave', function(){ lit(false); });
+  b.addEventListener('focus', function(){ lit(true); }); b.addEventListener('blur', function(){ lit(false); });
+  b.addEventListener('click', function(){ lit(false); open(k, b); });
 });
 document.getElementById('back').addEventListener('click', close);
 svg.addEventListener('click', function(e){ if (document.body.classList.contains('zoom') && !e.target.closest('.it')) close(); });
