@@ -235,77 +235,174 @@ function el(p, tag, a){ var e = document.createElementNS(NS, tag); for (var k in
 function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ez(v){ v = cl(v); return v * v * (3 - 2 * v); }
 function seg(t, a, b){ return ez((t - a) / (b - a)); }
-var C = { ink:'#2a0e3e', btn:'#654087', lav:'#b9a6d6', blue:'#9db4dc', pale:'#efe8f6' };
+var C = { ink:'#2a0e3e', btn:'#654087', lav:'#b9a6d6', blue:'#9db4dc', pale:'#efe8f6', warn:'#d0708a' };
+function lerp(a, b, k){ return a + (b - a) * k; }
 
-/* 四つのデモ。build(svg) が絵を組んで、draw(t) を返す（t は 0〜10 秒でループ） */
+/* ゲームの部品：点数・残り時間・カーソル・「CLEAR!」 */
+function kit(s, endT){
+  var scoreT = el(s,'text',{x:14,y:24,'font-size':11,'font-weight':700,'font-family':'Consolas,Menlo,monospace',fill:C.btn,'letter-spacing':'.08em'});
+  el(s,'rect',{x:300,y:15,width:110,height:7,fill:'none',stroke:C.lav});
+  var bar = el(s,'rect',{x:300,y:15,width:110,height:7,fill:C.btn});
+  var pops = el(s,'g',{});
+  var ban = el(s,'text',{x:212,y:128,'text-anchor':'middle','font-size':40,'font-weight':900,'font-style':'italic','font-family':'"Arial Black",Arial,sans-serif',fill:C.btn,stroke:'#fff','stroke-width':6,'paint-order':'stroke','letter-spacing':'.04em'});
+  var cur = el(s,'g',{});
+  var rip = el(cur,'circle',{r:0,fill:'none',stroke:C.btn,'stroke-width':1.5});
+  el(cur,'path',{d:'M0 0L0 17L4.5 13L7.5 20L10.5 18.6L7.6 12H13Z',fill:'#fff',stroke:C.ink,'stroke-width':1.2,'stroke-linejoin':'round'});
+  var popList = [];
+  return {
+    pop: function(x, y, txt, at){ var e = el(pops,'text',{x:x,y:y,'text-anchor':'middle','font-size':12,'font-weight':700,'font-family':'Consolas,Menlo,monospace',fill:C.btn}); e.textContent = txt; popList.push({e:e,y:y,at:at}); },
+    frame: function(t, score, keys, clicks, banner){
+      scoreT.textContent = 'SCORE ' + ('00000' + Math.round(score)).slice(-6);
+      bar.setAttribute('width', 110 * (1 - cl(t / endT)));
+      popList.forEach(function(p){ var k = (t - p.at) / .9; p.e.setAttribute('opacity', k > 0 && k < 1 ? 1 - k * k : 0); p.e.setAttribute('y', p.y - 18 * cl(k)); });
+      var i = 0; while (i < keys.length - 1 && keys[i + 1][0] <= t) i++;
+      var a = keys[i], b = keys[Math.min(i + 1, keys.length - 1)], k = b[0] > a[0] ? ez((t - a[0]) / (b[0] - a[0])) : 1;
+      var x = lerp(a[1], b[1], k), y = lerp(a[2], b[2], k);
+      cur.setAttribute('transform','translate('+ x +','+ y +')');
+      var r = 0; clicks.forEach(function(c){ var d = t - c; if (d > 0 && d < .35) r = 4 + d * 40; });
+      rip.setAttribute('r', r); rip.setAttribute('opacity', r ? 1 - (r - 4) / 14 : 0);
+      var on = banner && t > banner[0], bk = on ? cl((t - banner[0]) / .25) : 0;
+      ban.textContent = banner ? banner[1] : '';
+      ban.setAttribute('opacity', on ? 1 : 0);
+      ban.setAttribute('transform', 'translate(212,128) scale('+ (on ? 1.5 - .5 * bk : 1) +') translate(-212,-128)');
+      return { x:x, y:y };
+    }
+  };
+}
+function fadeAll(s, t){ s.setAttribute('opacity', 1 - seg(t, 9.4, 9.9)); }
+
 var GAMES = [
   { name:'人間中心の次世代業務システム開発',
     txt:'業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します',
-    how:'部品をはめて、書類が端まで流れる道をつくる',
+    how:'部品をはめて、書類が流れてくる前に道をつなぐ。合わない部品ははまらない',
     build:function(s){
-      var xs = [40,120,212,304,385], y = 150, parts = [], gaps = [[100,140],[192,232],[284,324]];
+      var y = 140, gaps = [[100,140],[192,232],[284,324]];
       el(s,'rect',{x:20,y:y-26,width:26,height:30,fill:'none',stroke:C.lav});
       var goal = el(s,'rect',{x:380,y:y-26,width:28,height:30,fill:C.pale,stroke:C.btn});
       [[46,100],[140,192],[232,284],[324,380]].forEach(function(r){ el(s,'line',{x1:r[0],y1:y,x2:r[1],y2:y,stroke:C.lav,'stroke-width':6,'stroke-linecap':'round'}); });
-      gaps.forEach(function(g){ el(s,'rect',{x:g[0],y:y-4,width:g[1]-g[0],height:8,fill:'none',stroke:C.lav,'stroke-dasharray':'3 3'}); parts.push(el(s,'rect',{x:g[0],y:y-4,width:g[1]-g[0],height:8,fill:C.btn})); });
+      gaps.forEach(function(g){ el(s,'rect',{x:g[0],y:y-4,width:g[1]-g[0],height:8,fill:'none',stroke:C.lav,'stroke-dasharray':'3 3'}); });
+      el(s,'rect',{x:60,y:206,width:305,height:38,fill:'#f7f3fb',stroke:C.pale});
+      var bad = el(s,'text',{x:304,y:y-14,'text-anchor':'middle','font-size':16,'font-weight':700,fill:C.warn}); bad.textContent = '×';
+      /* 部品：[置き場, 幅, 運ぶ始め, 運び終わり, はめた隙間(-1 ははまらず戻る)] */
+      var P = [[[110,225],40,.9,1.6,0],[[180,225],40,1.9,2.7,1],[[250,225],22,3.2,4.0,-1],[[330,225],40,4.95,5.7,2]];
+      var R = P.map(function(p){ return el(s,'rect',{height:8,width:p[1],fill:C.btn}); });
       var doc = el(s,'g',{}); el(doc,'rect',{x:-9,y:-22,width:18,height:22,fill:'#fff',stroke:C.ink}); el(doc,'path',{d:'M-5 -15h10M-5 -10h10M-5 -5h6',stroke:C.lav});
+      var K = kit(s, 7.4);
+      var keys = [[0,212,190],[.8,110,225],[1.6,120,y],[1.9,180,225],[2.7,212,y],[3.2,250,225],[4.0,304,y],[4.5,304,y],[4.95,330,225],[5.7,304,y],[6.4,330,200],[10,330,200]];
+      var clicks = [.85,1.6,1.95,2.7,3.25,4.0,5.0,5.7];
+      K.pop(120,y-16,'+100',1.6); K.pop(212,y-16,'+100',2.7); K.pop(304,y-16,'+300',5.75);
       return function(t){
-        parts.forEach(function(p, i){ var k = seg(t, 1 + i * .9, 1.6 + i * .9); p.setAttribute('transform','translate(0,'+ (-70 * (1 - k)) +')'); p.setAttribute('opacity', k); });
-        var m = seg(t, 4.4, 7.6); doc.setAttribute('transform','translate('+ (33 + m * 361) +','+ (y - 4) +')'); doc.setAttribute('opacity', 1 - seg(t, 9.2, 9.8));
-        goal.setAttribute('fill', t > 7.6 && t < 9.6 ? C.lav : C.pale);
+        fadeAll(s, t);
+        var c = K.frame(t, (t > 1.6 ? 100 : 0) + (t > 2.7 ? 100 : 0) + (t > 5.75 ? 300 : 0) + 700 * seg(t, 7.5, 8.3), keys, clicks, [7.5,'CLEAR!']);
+        P.forEach(function(p, i){
+          var x = p[0][0], yy = p[0][1];
+          if (t > p[2] && t <= p[3]){ x = c.x; yy = c.y; }
+          else if (t > p[3]){
+            if (p[4] >= 0){ var g = gaps[p[4]]; x = (g[0] + g[1]) / 2; yy = y; }
+            else { var k = seg(t, 4.5, 4.9); x = lerp(304, p[0][0], k) + (t < 4.5 ? Math.sin(t * 60) * 3 : 0); yy = lerp(y - 2, p[0][1], k); }
+          }
+          R[i].setAttribute('x', x - p[1] / 2); R[i].setAttribute('y', yy - 4);
+        });
+        bad.setAttribute('opacity', t > 4.0 && t < 4.6 ? 1 : 0);
+        var m = cl((t - 3.0) / 4.4); doc.setAttribute('transform','translate('+ (33 + m * 361) +','+ (y - 4) +')');
+        goal.setAttribute('fill', t > 7.4 ? C.lav : C.pale);
       };
     } },
   { name:'AI による意思決定支援と事業変革支援',
     txt:'経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します',
-    how:'並んだ点を見て、次の点がどこに来るか当てる',
+    how:'並んだ点の流れを読んで、次の点が落ちる場所を三つから選ぶ。続けて当てると点が倍',
     build:function(s){
-      function py(i){ return 210 - i * 18 - Math.sin(i * 1.3) * 16; }
-      el(s,'line',{x1:30,y1:236,x2:400,y2:236,stroke:C.lav}); el(s,'line',{x1:30,y1:30,x2:30,y2:236,stroke:C.lav});
+      function py(i){ return 200 - i * 16 - Math.sin(i * 1.3) * 18; }
+      el(s,'line',{x1:30,y1:236,x2:400,y2:236,stroke:C.lav}); el(s,'line',{x1:30,y1:36,x2:30,y2:236,stroke:C.lav});
+      var id = 'cp' + Math.random().toString(36).slice(2);
+      var clip = el(s,'clipPath',{id:id}); el(clip,'rect',{x:31,y:30,width:380,height:206});
+      var view = el(s,'g',{'clip-path':'url(#'+ id +')'}), g = el(view,'g',{});
       var pts = [], i;
-      for (i = 0; i < 7; i++) pts.push(el(s,'circle',{cx:60 + i * 44,cy:py(i),r:5,fill:C.blue}));
-      var nx = 60 + 7 * 44, ny = py(7);
-      var ring = el(s,'circle',{cx:nx,cy:ny,r:14,fill:'none',stroke:C.btn,'stroke-dasharray':'4 3','stroke-width':1.5});
-      var last = el(s,'circle',{cx:nx,cy:ny,r:6,fill:C.btn});
+      for (i = 0; i < 8; i++) pts.push(el(g,'circle',{cx:60 + i * 44,cy:py(i),r:5,fill:i < 6 ? C.blue : C.btn}));
+      function cands(i, order){ return order.map(function(d){ return el(g,'circle',{cx:60 + i * 44,cy:py(i) + d,r:12,fill:'none',stroke:C.btn,'stroke-dasharray':'4 3','stroke-width':1.5}); }); }
+      var r1 = cands(6, [-40,0,40]), r2 = cands(7, [0,-38,38]);
+      var K = kit(s, 7.0);
+      var x6 = 60 + 6 * 44, x7 = 60 + 7 * 44 - 44;
+      var keys = [[0,240,220],[1.8,240,220],[2.8,x6,py(6)],[3.6,x6,py(6)],[5.0,x7,py(7)-38],[5.4,x7,py(7)-38],[5.8,x7,py(7)],[6.6,x7+20,210],[10,x7+20,210]];
+      K.pop(x6,py(6)-18,'+100',3.4); K.pop(x7,py(7)-18,'+200 ×2',6.2);
       return function(t){
-        pts.forEach(function(p, i){ p.setAttribute('opacity', seg(t, .4 + i * .5, .7 + i * .5) * (1 - seg(t, 9.2, 9.8))); });
-        ring.setAttribute('opacity', seg(t, 4.4, 4.9) * (1 - seg(t, 9.2, 9.8)));
-        var k = seg(t, 6.2, 7.2); last.setAttribute('cy', ny - 90 * (1 - k)); last.setAttribute('opacity', k * (1 - seg(t, 9.2, 9.8)));
-        ring.setAttribute('stroke-dasharray', t > 7.2 ? 'none' : '4 3');
+        fadeAll(s, t);
+        K.frame(t, (t > 3.4 ? 100 : 0) + (t > 6.2 ? 200 : 0) + 700 * seg(t, 7.0, 7.8), keys, [2.85,5.85], [7.0,'CLEAR!']);
+        for (var i = 0; i < 6; i++) pts[i].setAttribute('opacity', seg(t, .2 + i * .25, .4 + i * .25));
+        var d6 = seg(t, 2.9, 3.4); pts[6].setAttribute('cy', py(6) - 80 * (1 - d6)); pts[6].setAttribute('opacity', t > 2.9 ? 1 : 0);
+        var d7 = seg(t, 5.85, 6.3); pts[7].setAttribute('cy', py(7) - 80 * (1 - d7)); pts[7].setAttribute('opacity', t > 5.85 ? 1 : 0);
+        r1.forEach(function(r, j){ r.setAttribute('opacity', t > 1.8 && t < 3.6 && (t < 2.9 || j === 1) ? 1 : 0); r.setAttribute('stroke-dasharray', t > 3.4 ? 'none' : '4 3'); });
+        r2.forEach(function(r, j){ r.setAttribute('opacity', t > 4.5 && t < 6.6 && (t < 5.85 || j === 0) ? 1 : 0); r.setAttribute('stroke', j === 1 && t > 4.9 && t < 5.5 ? C.warn : C.btn); r.setAttribute('stroke-dasharray', t > 6.2 ? 'none' : '4 3'); });
+        g.setAttribute('transform','translate('+ (-44 * seg(t, 3.8, 4.4)) +',0)');
       };
     } },
   { name:'自律型・共創型の組織設計支援',
     txt:'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します',
-    how:'落ちてくる仕事を人に振り分けて、偏らせない',
+    how:'落ちてくる仕事を左右に振り分ける。誰かの MAX を超えたらアウト。全員ちょうどでクリア',
     build:function(s){
-      var cols = [112,212,312], cards = [];
-      cols.forEach(function(x){ el(s,'circle',{cx:x,cy:222,r:11,fill:'none',stroke:C.ink}); el(s,'path',{d:'M'+(x-18)+' 250 q18 -20 36 0',fill:'none',stroke:C.ink}); el(s,'line',{x1:x-30,y1:200,x2:x+30,y2:200,stroke:C.lav}); });
-      for (var i = 0; i < 6; i++) cards.push(el(s,'rect',{width:44,height:16,fill:i % 2 ? C.blue : C.btn,opacity:0}));
+      var lx = [112,212,312], base = 196, U = 16;
+      lx.forEach(function(x){ el(s,'circle',{cx:x,cy:216,r:10,fill:'none',stroke:C.ink}); el(s,'path',{d:'M'+(x-17)+' 246 q17 -20 34 0',fill:'none',stroke:C.ink}); el(s,'line',{x1:x-30,y1:base,x2:x+30,y2:base,stroke:C.lav}); });
+      var mx = lx.map(function(x){ var l = el(s,'line',{x1:x-32,y1:base-3*U,x2:x+32,y2:base-3*U,stroke:C.lav,'stroke-dasharray':'3 3'}); var tx = el(s,'text',{x:x+34,y:base-3*U+3,'font-size':8,'font-family':'Consolas,monospace',fill:C.lav}); tx.textContent = 'MAX'; return l; });
+      var warn = el(s,'text',{x:212,y:base-3*U-8,'text-anchor':'middle','font-size':14,'font-weight':700,fill:C.warn}); warn.textContent = '!';
+      /* 仕事：[重さ, 出る, つかむ(null は触らずそのまま落ちる), 離す, 列] */
+      var J = [[2,.3,.8,1.3,0],[1,1.5,null,null,1],[2,2.4,2.9,3.4,2],[2,3.6,null,null,1],[1,4.6,5.2,5.7,2],[1,5.9,6.2,6.6,0]];
+      var fill = [0,0,0], at = J.map(function(j){ var h = fill[j[4]] += j[0]; return base - h * U; });
+      var R = J.map(function(j){ return el(s,'rect',{width:48,height:j[0]*U-2,rx:2,fill:j[0] > 1 ? C.btn : C.blue}); });
+      var K = kit(s, 7.2);
+      var keys = [[0,212,120],[.75,212,48],[1.3,112,60],[2.0,212,110],[2.85,212,58],[3.4,312,60],[4.6,250,90],[5.15,212,64],[5.7,312,60],[6.15,212,46],[6.6,112,60],[7.2,170,120],[10,170,120]];
+      var landT = [1.65,2.2,3.75,4.3,6.05,6.95], landL = [0,1,2,1,2,0];
+      landT.forEach(function(v, i){ K.pop(lx[landL[i]], base - 3 * U - 6, '+100', v); });
       return function(t){
-        cards.forEach(function(c, i){
-          var a = .6 + i * 1.05, x0 = 190, y0 = 20, x1 = cols[i % 3] - 22, y1 = 182 - Math.floor(i / 3) * 20;
-          var f = seg(t, a, a + .5), m = seg(t, a + .5, a + 1);
-          c.setAttribute('x', x0 + (x1 - x0) * m); c.setAttribute('y', y0 + 40 * f + (y1 - y0 - 40) * m);
-          c.setAttribute('opacity', (t > a ? 1 : 0) * (1 - seg(t, 9.2, 9.8)));
+        fadeAll(s, t);
+        K.frame(t, 100 * landT.filter(function(v){ return t > v; }).length + 600 * seg(t, 7.3, 8.1), keys, [.8,1.3,2.9,3.4,5.2,5.7,6.2,6.6], [7.3,'BALANCE!']);
+        J.forEach(function(j, i){
+          var x = 212, y;
+          if (t < j[1]){ R[i].setAttribute('opacity', 0); return; }
+          R[i].setAttribute('opacity', 1);
+          if (j[2] === null){ y = lerp(26, at[i], seg(t, j[1] + .2, j[1] + .7)); }
+          else if (t < j[2]){ y = 26 + (t - j[1]) * 40; }
+          else if (t < j[3]){ var k2 = ez((t - j[2]) / (j[3] - j[2])); x = lerp(212, lx[j[4]], k2); y = lerp(26 + (j[2] - j[1]) * 40, 50, k2); }
+          else { x = lx[j[4]]; y = lerp(50, at[i], seg(t, j[3], j[3] + .35)); }
+          R[i].setAttribute('x', x - 24); R[i].setAttribute('y', y);
         });
+        var hot = t > 4.7 && t < 5.4, full = t > 7.0;
+        warn.setAttribute('opacity', hot && Math.sin(t * 30) > 0 ? 1 : 0);
+        mx.forEach(function(m, i){ m.setAttribute('stroke-dasharray', full ? 'none' : '3 3'); m.setAttribute('stroke', hot && i === 1 ? C.warn : full ? C.btn : C.lav); });
       };
     } },
   { name:'地域格差の解消を目指したデジタル支援',
     txt:'都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します',
-    how:'線をつないで、町まで光を届ける',
+    how:'光っている町から線を引いて、全部の町に光を届ける。山は越えられないので回り道',
     build:function(s){
-      var hub = [262,140], towns = [[330,70],[360,180],[200,210],[150,110],[90,170],[60,70],[300,240]];
-      var from = [0,0,0,0,3,3,1];
+      var hub = [262,140], T = [[330,70],[360,185],[130,110],[205,70],[195,215],[70,175]];
       el(s,'path',{d:'M70 40 C150 20 260 40 340 60 C390 80 400 160 370 210 C340 250 230 258 160 236 C90 214 40 150 44 90 Z',fill:'#f7f3fb',stroke:C.pale});
-      var lines = towns.map(function(p, i){ var f = from[i] === 0 ? hub : towns[from[i]]; return el(s,'line',{x1:f[0],y1:f[1],x2:f[0],y2:f[1],stroke:C.btn,'stroke-width':2,'stroke-linecap':'round'}); });
-      var dots = towns.map(function(p){ return el(s,'circle',{cx:p[0],cy:p[1],r:6,fill:'#fff',stroke:C.lav,'stroke-width':1.5}); });
+      el(s,'path',{d:'M164 152 L190 104 L216 152 Z',fill:C.pale,stroke:C.lav}); el(s,'path',{d:'M182 119 L190 104 L198 119',fill:'none',stroke:C.lav});
+      /* 線：[から, まで(町の番号), 始め, 終わり, 山で止まる] */
+      var L = [[hub,0,.4,1.0],[hub,1,1.1,1.7],[hub,2,1.8,2.4,true],[hub,3,3.0,3.6],[T[3],2,3.7,4.3],[hub,4,4.4,5.0],[T[2],5,5.1,5.7]];
+      var stop = [196,124];
+      var lines = L.map(function(){ return el(s,'line',{stroke:C.btn,'stroke-width':2,'stroke-linecap':'round'}); });
+      var dots = T.map(function(p){ return el(s,'circle',{cx:p[0],cy:p[1],r:6,fill:'#fff',stroke:C.lav,'stroke-width':1.5}); });
       el(s,'circle',{cx:hub[0],cy:hub[1],r:9,fill:C.btn});
+      var bad = el(s,'text',{x:stop[0],y:stop[1]-8,'text-anchor':'middle','font-size':16,'font-weight':700,fill:C.warn}); bad.textContent = '×';
+      var K = kit(s, 5.9);
+      var keys = [[0,300,200]], clicks = [], lit = {};
+      L.forEach(function(l){ var to = l[4] ? stop : T[l[1]]; keys.push([l[2] - .25, l[0][0], l[0][1]]); keys.push([l[2], l[0][0], l[0][1]]); keys.push([l[3], to[0], to[1]]); clicks.push(l[2]); if (!l[4]){ lit[l[1]] = l[3]; K.pop(to[0], to[1] - 12, '+100', l[3]); } });
+      keys.push([6.6, 300, 230]); keys.push([10, 300, 230]);
       return function(t){
-        var out = 1 - seg(t, 9.2, 9.8);
-        towns.forEach(function(p, i){
-          var f = from[i] === 0 ? hub : towns[from[i]], a = .8 + i * .95, k = seg(t, a, a + .8);
-          lines[i].setAttribute('x2', f[0] + (p[0] - f[0]) * k); lines[i].setAttribute('y2', f[1] + (p[1] - f[1]) * k); lines[i].setAttribute('opacity', out);
-          dots[i].setAttribute('fill', k >= 1 && out > .5 ? C.blue : '#fff');
+        fadeAll(s, t);
+        var sc = 0; for (var k in lit) if (t > lit[k]) sc += 100;
+        K.frame(t, sc + 600 * seg(t, 6.1, 6.9), keys, clicks, [6.1,'CLEAR!']);
+        L.forEach(function(l, i){
+          var ln = lines[i], to = l[4] ? stop : T[l[1]];
+          ln.setAttribute('x1', l[0][0]); ln.setAttribute('y1', l[0][1]);
+          if (t < l[2]){ ln.setAttribute('opacity', 0); return; }
+          var k2 = ez((t - l[2]) / (l[3] - l[2]));
+          ln.setAttribute('x2', lerp(l[0][0], to[0], k2)); ln.setAttribute('y2', lerp(l[0][1], to[1], k2));
+          ln.setAttribute('opacity', l[4] ? 1 - seg(t, 2.6, 3.0) : 1);
+          ln.setAttribute('stroke', l[4] && t > l[3] ? C.warn : C.btn);
         });
+        bad.setAttribute('opacity', t > 2.4 && t < 3.0 ? 1 : 0);
+        dots.forEach(function(d, i){ var on = t > lit[i]; d.setAttribute('fill', on ? C.blue : '#fff'); d.setAttribute('r', on && t - lit[i] < .3 ? 6 + (t - lit[i]) * 12 : 6); });
       };
     } }
 ];
