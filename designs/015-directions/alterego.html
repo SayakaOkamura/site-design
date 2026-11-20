@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 alter ego（2026-11-20）。本人「全然概要ないけどちょっとやってみれる？」。
+     CM の型：1 もう一人の自分 → 2 文が薄いもう一枚とずれて二重に映る（崩れて見える）→ 3 そのもう一枚は、先回りして書く入力補完（AI）だった。
+     本物の文は一字ずつ打たれ、打たれるほどずれが重なる。薄い字はいつも先に出ている。Tab（または押す）で確定すると、その場で書き上がる。
+     土台は 013 の普通のサイト。文は公式のまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
+<style>
+:root{ --ink:#2a0e3e; --sub:#715189; --line:#e4dcec; --pale:#f6f3fa; --btn:#654087; --ghost:#b9a6d6 }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:88px}
+body{margin:0; background:#fff; color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8}
+h1,h2,h3,p,dl,dd,ul{margin:0}
+ul{padding:0; list-style:none}
+a{color:inherit}
+b{font-weight:700}
+.serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
+
+header{position:sticky; top:0; z-index:10; height:88px; background:rgba(255,255,255,.88); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:space-between; padding:0 clamp(16px,4vw,48px)}
+.logo{display:flex; align-items:center; gap:12px; text-decoration:none; line-height:1.1}
+.logo i{width:40px; height:40px; border-radius:50%; border:6px solid var(--btn); box-shadow:inset 0 0 0 3px #bb7eea}
+.logo span{font-size:22px; font-weight:400}
+.logo small{display:block; font-size:12px; margin-left:4.4em}
+nav ul{display:flex; gap:clamp(16px,3vw,44px)}
+nav a{text-decoration:none; font-size:15px; font-weight:400}
+
+.mv{position:relative; overflow:hidden; min-height:clamp(420px,72vh,760px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 16px}
+.mv svg{position:absolute; inset:0; width:100%; height:100%; z-index:-1}
+.mv h1{font-size:clamp(24px,3.4vw,40px); line-height:1.6; color:#301544}
+.mv p{margin-top:2.4em; font-size:clamp(13px,1.1vw,15px)}
+section{padding:clamp(64px,10vw,120px) clamp(16px,5vw,64px)}
+h2{text-align:center; font-size:clamp(24px,2.8vw,35px); margin-bottom:clamp(36px,5vw,60px); line-height:1.5}
+.in{max-width:1080px; margin:0 auto}
+.vision .in{max-width:760px}
+.vision h3{font-size:clamp(18px,1.8vw,24px); font-weight:400; line-height:1.6; margin-bottom:1em}
+.vision p{font-size:15px}
+.service{background:var(--pale)}
+.service ul{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(24px,4vw,56px) clamp(24px,4vw,48px)}
+.service h3{font-size:clamp(17px,1.6vw,21px); font-weight:400; line-height:1.6; margin-bottom:.6em}
+.service p{font-size:14px}
+.overview dl{display:grid; grid-template-columns:10em 1fr; border-top:1px solid var(--line); padding:22px 0}
+.overview dl:last-child{border-bottom:1px solid var(--line)}
+.overview dt{font-size:17px; font-weight:400}
+.overview dd{font-size:15px}
+.overview .acc{margin-top:.8em; font-size:14px; color:var(--sub)}
+.contact .card{max-width:880px; margin:0 auto; padding:clamp(40px,6vw,72px) 24px; text-align:center; background:linear-gradient(135deg,#f3eef8,#e3d6ef)}
+.contact h3{font-size:clamp(22px,2.4vw,30px); margin-bottom:.8em}
+.contact a.btn{display:flex; align-items:center; justify-content:center; max-width:500px; height:64px; margin:2em auto 0; background:var(--btn); color:#fff; text-decoration:none; font-weight:400}
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:36px clamp(16px,4vw,48px); font-size:13px; border-top:1px solid var(--line)}
+
+/* ── もう一人：先回りして書く薄い字 ── */
+.tw{position:relative}
+.tw .c{transition:color .12s}
+.tw .g{color:var(--ghost)}
+.tw b .g{color:var(--ghost)}
+.echo{position:absolute; inset:0; color:var(--ghost); pointer-events:none; user-select:none; mix-blend-mode:multiply;
+  transform:translate(var(--dx,6px), var(--dy,4px)); opacity:var(--o,.55); transition:transform .25s ease-out, opacity .25s}
+.echo b{font-weight:700}
+.caret{display:inline-block; width:2px; height:1.05em; margin:0 1px -.15em; background:var(--btn); animation:blink 1s steps(1) infinite}
+@keyframes blink{ 50%{opacity:0} }
+.tab{display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:0 6px; height:1.4em; border:1px solid var(--ghost); border-radius:4px; background:#fff; color:var(--sub);
+  font:500 11px/1 Consolas,Menlo,monospace; vertical-align:.15em; cursor:pointer; white-space:nowrap}
+.tab:hover{border-color:var(--btn); color:var(--btn)}
+
+@media (max-width:760px){
+  nav li{display:none}
+  .service ul{grid-template-columns:1fr}
+  .overview dl{grid-template-columns:1fr; gap:4px}
+}
+</style>
+
+<header>
+  <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy">企業理念</a></li>
+    <li><a href="#services">サービス</a></li>
+    <li><a href="#company">会社概要</a></li>
+    <li><a href="#contact">お問い合せ</a></li>
+  </ul></nav>
+</header>
+
+<main id="top">
+  <div class="mv">
+    <svg viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true" fill="none" stroke-width="1">
+      <g stroke="#b9a6d6" opacity=".55"><path d="M-50 80 C300 620 700 -60 1250 560"/><path d="M-50 110 C320 640 720 -40 1250 600"/><path d="M-50 140 C340 660 740 -20 1250 640"/></g>
+      <g stroke="#9db4dc" opacity=".45"><path d="M-50 640 C380 120 820 760 1250 140"/><path d="M-50 670 C400 150 840 780 1250 170"/></g>
+    </svg>
+    <h1 class="serif tw">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p class="tw">コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div>
+
+  <section class="vision" id="philosophy">
+    <h2 class="serif tw">アルターデザインコンサルティングの企業理念</h2>
+    <div class="in">
+      <h3 class="tw">経営の力で「遊ぶように働く世界」をデザインする</h3>
+      <p class="tw"><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+      子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+      このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+      それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+    </div>
+  </section>
+
+  <section class="service" id="services">
+    <h2 class="serif tw">私たちが提供するサービス</h2>
+    <ul class="in">
+      <li><h3 class="tw">人間中心の次世代業務システム開発</h3>
+        <p class="tw">業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3 class="tw">AI による意思決定支援と事業変革支援</h3>
+        <p class="tw">経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3 class="tw">自律型・共創型の組織設計支援</h3>
+        <p class="tw">テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3 class="tw">地域格差の解消を目指したデジタル支援</h3>
+        <p class="tw">都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section class="overview" id="company">
+    <h2 class="serif tw">会社概要</h2>
+    <div class="in">
+      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+        <p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+      <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+      <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+      <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="card">
+      <h3 class="serif tw">お問い合わせ</h3>
+      <p class="tw">サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>
+
+<script>
+(function(){
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* 文字を一字ずつ包む（<b>・<br> はそのまま） */
+function wrap(node, out){
+  [].slice.call(node.childNodes).forEach(function(n){
+    if (n.nodeType === 3){
+      var f = document.createDocumentFragment();
+      n.textContent.replace(/\s+/g, function(m){ return m.indexOf('\n') >= 0 ? '' : m; }).split('').forEach(function(ch){ var s = document.createElement('span'); s.className = 'c g'; s.textContent = ch; f.appendChild(s); out.push(s); });
+      n.parentNode.replaceChild(f, n);
+    } else if (n.nodeType === 1 && n.tagName !== 'BR') wrap(n, out);
+  });
+}
+var items = [].slice.call(document.querySelectorAll('.tw')).map(function(e){
+  var chars = []; wrap(e, chars);
+  /* もう一枚：同じ字を div に写す（要素ごと写すと p の余白まで付いてずれる） */
+  var echo = document.createElement('div'); echo.className = 'echo'; echo.setAttribute('aria-hidden','true'); echo.innerHTML = e.innerHTML;
+  var ec = [].slice.call(echo.querySelectorAll('.c')); ec.forEach(function(c){ c.className = ''; });
+  e.appendChild(echo);
+  var dx = (Math.random() < .5 ? -1 : 1) * (4 + Math.random() * 5), dy = 2 + Math.random() * 4;
+  echo.style.setProperty('--dx', dx + 'px'); echo.style.setProperty('--dy', dy + 'px');
+  return { e:e, chars:chars, echo:echo, ec:ec, dx:dx, dy:dy, n:0, state:0 };   /* state 0 待つ／1 打っている／2 書き上がった */
+});
+
+var caret = document.createElement('span'); caret.className = 'caret'; caret.setAttribute('aria-hidden','true');
+var tab = document.createElement('button'); tab.type = 'button'; tab.className = 'tab'; tab.innerHTML = 'Tab <span aria-hidden="true">⇥</span>'; tab.setAttribute('aria-label','残りを確定する');
+var cur = null, last = 0;
+
+function show(it){
+  var k = it.n / it.chars.length;
+  it.echo.style.transform = 'translate(' + (it.dx * (1 - k)) + 'px,' + (it.dy * (1 - k)) + 'px)';
+  it.echo.style.opacity = (.6 * (1 - k * .6)).toFixed(3);
+}
+function finish(it){
+  it.chars.forEach(function(c, i){ c.classList.remove('g'); it.ec[i].style.visibility = 'hidden'; }); it.n = it.chars.length; it.state = 2; show(it);
+  if (cur === it){ caret.remove(); tab.remove(); cur = null; }
+}
+/* Tab：いま打っているものと、同じ節で待っているものを、その場で書き上げる */
+function accept(){
+  if (!cur) return false;
+  var sec = cur.e.closest('section, .mv');
+  items.forEach(function(it){ if (it.state !== 2 && it.e.closest('section, .mv') === sec) finish(it); });
+  next(); return true;
+}
+tab.addEventListener('click', accept);
+document.addEventListener('keydown', function(e){ if (e.key === 'Tab' && !e.shiftKey && cur && !e.target.closest('a, button:not(.tab)')){ if (accept()) e.preventDefault(); } });
+
+function visible(it){ var r = it.e.getBoundingClientRect(); return r.top < innerHeight * .8 && r.bottom > 0; }
+function next(){
+  if (cur) return;
+  cur = items.filter(function(it){ return it.state === 0 && visible(it); })[0] || null;
+  if (cur){ cur.state = 1; place(); }
+}
+function place(){
+  var c = cur.chars[cur.n] || cur.chars[cur.chars.length - 1];
+  c.parentNode.insertBefore(caret, cur.n < cur.chars.length ? c : c.nextSibling);
+  var end = cur.chars[cur.chars.length - 1]; end.parentNode.insertBefore(tab, end.nextSibling);
+}
+function tick(now){
+  /* 見ている場所から外れたら、その節は書き上げて、見えている節へ移る */
+  if (cur && !visible(cur)){ var sec = cur.e.closest('section, .mv'); items.forEach(function(it){ if (it.state !== 2 && it.e.closest('section, .mv') === sec) finish(it); }); }
+  if (cur && now - last > (cur.e.tagName === 'P' ? 18 : 45)){
+    last = now;
+    var c = cur.chars[cur.n]; if (c){ c.classList.remove('g'); cur.ec[cur.n].style.visibility = 'hidden'; }   /* 打った字からもう一枚が消える */
+    cur.n++; show(cur);
+    if (cur.n >= cur.chars.length){ finish(cur); next(); } else place();
+  }
+  if (!cur) next();
+  requestAnimationFrame(tick);
+}
+if (RM) items.forEach(finish); else { items.forEach(show); requestAnimationFrame(tick); }
+})();
+</script>
