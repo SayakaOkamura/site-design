@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 現実に並走する側（2026-11-20）。013 の site.html が土台（スタイルの窓は外した）。
+     四角ごとにミニゲーム一つ、中でデモがループ。押すと説明画面 → プレイ。スクロールで通知。
+     本人「ミニゲームの中身まで一旦作りこまなくていいから、形だけ見たい」 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
+<style>
+:root{ --ink:#2a0e3e; --sub:#715189; --line:#e4dcec; --pale:#f6f3fa; --btn:#654087; --lav:#b9a6d6; --blue:#9db4dc }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:88px}
+body{margin:0; background:#fff; color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8}
+body.lock{overflow:hidden}
+h1,h2,h3,p,dl,dd,ul{margin:0}
+ul{padding:0; list-style:none}
+a{color:inherit}
+.serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
+
+header{position:sticky; top:0; z-index:10; height:88px; background:rgba(255,255,255,.85); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:space-between; padding:0 clamp(16px,4vw,48px)}
+.logo{display:flex; align-items:center; gap:12px; text-decoration:none; line-height:1.1}
+.logo i{width:40px; height:40px; border-radius:50%; border:6px solid var(--btn); box-shadow:inset 0 0 0 3px #bb7eea}
+.logo span{font-size:22px; font-weight:400; letter-spacing:.01em}
+.logo small{display:block; font-size:12px; margin-left:4.4em}
+nav ul{display:flex; gap:clamp(16px,3vw,44px)}
+nav a{text-decoration:none; font-size:15px; font-weight:400}
+nav a:hover{color:var(--sub)}
+
+.mv{position:relative; overflow:hidden; min-height:clamp(420px,72vh,760px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 16px}
+.mv svg{position:absolute; inset:0; width:100%; height:100%; z-index:-1}
+.mv h1{font-size:clamp(24px,3.4vw,40px); line-height:1.6; color:#301544}
+.mv p{margin-top:2.4em; font-size:clamp(13px,1.1vw,15px)}
+
+section{padding:clamp(64px,10vw,120px) clamp(16px,5vw,64px)}
+h2{text-align:center; font-size:clamp(24px,2.8vw,35px); margin-bottom:clamp(36px,5vw,60px); line-height:1.5}
+.in{max-width:1080px; margin:0 auto}
+
+.vision .in{display:grid; grid-template-columns:1fr 1.1fr; gap:clamp(24px,4vw,56px); align-items:center}
+.vision .ph{aspect-ratio:750/490; background:linear-gradient(135deg,#efe8f6,#dccdea)}
+.vision h3{font-size:clamp(18px,1.8vw,24px); font-weight:400; line-height:1.6; margin-bottom:1em}
+.vision p{font-size:15px}
+b{font-weight:700}
+
+.service{background:var(--pale)}
+.service ul{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(24px,4vw,56px) clamp(24px,4vw,48px)}
+.service h3{font-size:clamp(17px,1.6vw,21px); font-weight:400; line-height:1.6; margin-bottom:.6em}
+.service p{font-size:14px}
+
+/* 四角：中でデモがループ。押すと説明画面 */
+.game{position:relative; display:block; width:100%; aspect-ratio:425/268; margin-bottom:20px; padding:0; border:0; cursor:pointer;
+  background:linear-gradient(135deg,#fff,#e6dcf0); transition:box-shadow .2s, transform .2s}
+.game:hover, .game:focus-visible{box-shadow:0 10px 24px rgba(42,14,62,.14); transform:translateY(-2px); outline:none}
+.game svg{display:block; width:100%; height:100%}
+.game .go{position:absolute; right:12px; bottom:10px; font-size:12px; font-weight:400; color:var(--btn); background:rgba(255,255,255,.85); padding:2px 10px}
+
+.overview dl{display:grid; grid-template-columns:10em 1fr; border-top:1px solid var(--line); padding:22px 0}
+.overview dl:last-child{border-bottom:1px solid var(--line)}
+.overview dt{font-size:17px; font-weight:400}
+.overview dd{font-size:15px}
+.overview .acc{margin-top:.8em; font-size:14px; color:var(--sub)}
+
+.contact .card{max-width:880px; margin:0 auto; padding:clamp(40px,6vw,72px) 24px; text-align:center; background:linear-gradient(135deg,#f3eef8,#e3d6ef)}
+.contact h3{font-size:clamp(22px,2.4vw,30px); margin-bottom:.8em}
+a.btn{display:flex; align-items:center; justify-content:center; max-width:500px; height:64px; margin:2em auto 0; background:var(--btn); color:#fff; text-decoration:none; font-weight:400}
+a.btn:hover{background:#4f3070}
+
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:36px clamp(16px,4vw,48px); font-size:13px; border-top:1px solid var(--line)}
+
+/* 印：通知を押すと、元になった公式の文に付く */
+.src{transition:background-color .4s; background:linear-gradient(transparent 62%, transparent 62%)}
+.src.on{background:linear-gradient(transparent 62%, #e9dcf6 62%)}
+
+/* ── 説明画面・プレイ ── */
+.scr{position:fixed; inset:0; z-index:40; overflow:auto; background:linear-gradient(135deg,#f6f2fa,#e6daf1); animation:scrin .25s ease-out both}
+.scr[hidden]{display:none}
+@keyframes scrin{ from{opacity:0} to{opacity:1} }
+.back{position:fixed; z-index:1; top:12px; left:clamp(12px,3vw,32px); padding:4px 10px; border-radius:2px; background:rgba(246,242,250,.9); border:0; background:none; font:inherit; font-size:15px; font-weight:400; color:var(--sub); cursor:pointer}
+.back:hover{color:var(--ink)}
+.scr .wrap{min-height:100%; display:flex; align-items:center; justify-content:center; padding:64px clamp(16px,4vw,48px) 32px}
+#info .wrap > div{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:clamp(20px,3.5vw,48px); align-items:center; width:min(100%,1120px)}
+.screen{background:#fff; box-shadow:0 18px 48px rgba(42,14,62,.14); aspect-ratio:425/268; width:100%;
+  max-width:calc((100vh - 140px) * 425 / 268); margin:0 auto}
+.screen svg{display:block; width:100%; height:100%}
+#info .no{font-size:13px; color:var(--sub)}
+#info h2{text-align:left; margin:.1em 0 .7em; font-size:clamp(20px,2.2vw,28px)}
+#info .txt{font-size:14px}
+#info .how{margin-top:1.4em; padding-top:1em; border-top:1px solid #d6c7e6; font-size:14px}
+#info .how b{display:block; font-weight:400; font-size:13px; color:var(--sub)}
+#info .bt{display:flex; gap:12px; margin-top:1.8em}
+#info .bt > *{flex:1; display:flex; align-items:center; justify-content:center; height:56px; font:inherit; font-weight:400; text-decoration:none; cursor:pointer}
+#info .play{border:0; background:var(--btn); color:#fff}
+#info .play:hover{background:#4f3070}
+#info .ask{border:1px solid var(--btn); color:var(--btn); background:#fff}
+#info .ask:hover{background:#f3eef8}
+#play .wrap{flex-direction:column; gap:16px}
+#play .screen{max-width:min(100%, calc((100vh - 150px) * 425 / 268), 1100px)}
+#play .how{font-size:14px; color:var(--sub)}
+
+/* ── 通知 ── */
+#note{position:fixed; right:clamp(12px,2.4vw,28px); bottom:clamp(12px,2.4vw,28px); z-index:30; width:min(340px, calc(100vw - 24px));
+  display:flex; gap:12px; align-items:flex-start; padding:14px 16px; background:#fff; box-shadow:0 10px 32px rgba(42,14,62,.18);
+  border-left:3px solid var(--btn); cursor:pointer; text-align:left; font:inherit; color:inherit;
+  transform:translateY(16px); opacity:0; pointer-events:none; transition:transform .3s ease, opacity .3s ease}
+#note.show{transform:none; opacity:1; pointer-events:auto}
+#note .ic{flex:none; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--pale); color:var(--btn); font-size:15px}
+#note small{display:block; font-size:11px; color:var(--sub); line-height:1.4}
+#note span{display:block; font-size:14px; line-height:1.6; margin-top:2px}
+#note .x{position:absolute; top:4px; right:6px; width:24px; height:24px; border:0; background:none; color:var(--sub); font-size:16px; line-height:1; cursor:pointer}
+
+@media (max-width:760px){
+  nav li{display:none}
+  .vision .in, .service ul{grid-template-columns:1fr}
+  .overview dl{grid-template-columns:1fr; gap:4px}
+}
+@media (max-width:760px) and (orientation:portrait){ #info .wrap > div{grid-template-columns:1fr} }
+@media (max-height:480px){ .scr .wrap{padding-top:48px; padding-bottom:16px} #info .bt{margin-top:1em} #info .bt > *{height:44px} #info .how{margin-top:.8em; padding-top:.6em} }
+@media (prefers-reduced-motion:reduce){ .scr{animation:none} #note{transition:none} .game{transition:none} }
+</style>
+
+<header>
+  <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy">企業理念</a></li>
+    <li><a href="#services">サービス</a></li>
+    <li><a href="#company">会社概要</a></li>
+    <li><a href="#contact">お問い合せ</a></li>
+  </ul></nav>
+</header>
+
+<main id="top">
+  <div class="mv">
+    <svg viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true" fill="none" stroke-width="1">
+      <g stroke="#b9a6d6" opacity=".55">
+        <path d="M-50 80 C300 620 700 -60 1250 560"/><path d="M-50 110 C320 640 720 -40 1250 600"/>
+        <path d="M-50 140 C340 660 740 -20 1250 640"/><path d="M-50 170 C360 680 760 0 1250 680"/>
+      </g>
+      <g stroke="#9db4dc" opacity=".45">
+        <path d="M-50 640 C380 120 820 760 1250 140"/><path d="M-50 670 C400 150 840 780 1250 170"/>
+        <path d="M-50 700 C420 180 860 800 1250 200"/>
+      </g>
+    </svg>
+    <h1 class="serif">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div>
+
+  <section class="vision" id="philosophy" data-note="0">
+    <h2 class="serif">アルターデザインコンサルティングの企業理念</h2>
+    <div class="in">
+      <div class="ph" aria-hidden="true"></div>
+      <div>
+        <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+        <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b class="src" id="s0">人が夢中になり自発的に創造する状態で働く</b>こと<br>
+        子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+        <span class="src" id="s0b">このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく</span><br>
+        それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="service" id="services" data-note="1">
+    <h2 class="serif">私たちが提供するサービス</h2>
+    <ul class="in" id="games"></ul>
+  </section>
+
+  <section class="overview" id="company" data-note="2">
+    <h2 class="serif">会社概要</h2>
+    <div class="in">
+      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+        <p class="acc">【アクセス】<br><span class="src" id="s2b">御成門駅 徒歩2分（都営地下鉄三田線）</span><br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+      <dl><dt>事業内容</dt><dd><span class="src" id="s2">AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</span></dd></dl>
+      <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+      <dl><dt>設立年月日</dt><dd><span class="src" id="s2c">2025年6月</span></dd></dl>
+      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="card">
+      <h3 class="serif">お問い合わせ</h3>
+      <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    </div>
+  </section>
+</main>
+
+<!-- 説明画面：デモ・操作の説明・「プレイ」「お問い合わせ」。もどる → ホーム -->
+<div class="scr" id="info" role="dialog" aria-modal="true" aria-labelledby="info-h" hidden>
+  <button class="back" type="button">‹ もどる</button>
+  <div class="wrap"><div>
+    <div class="screen"><svg viewBox="0 0 425 268" aria-hidden="true"></svg></div>
+    <div>
+      <p class="no"></p>
+      <h2 id="info-h" class="serif"></h2>
+      <p class="txt"></p>
+      <p class="how"><b>あそびかた</b><span></span></p>
+      <div class="bt">
+        <button class="play" type="button">プレイ</button>
+        <a class="ask" href="#contact">お問い合わせ</a>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<!-- プレイ：もどる → 説明画面 -->
+<div class="scr" id="play" role="dialog" aria-modal="true" aria-label="プレイ" hidden>
+  <button class="back" type="button">‹ もどる</button>
+  <div class="wrap">
+    <div class="screen"><svg viewBox="0 0 425 268" aria-hidden="true"></svg></div>
+    <p class="how"></p>
+  </div>
+</div>
+
+<!-- 通知 -->
+<div id="note" role="status" tabindex="-1">
+  <i class="ic" aria-hidden="true">✦</i>
+  <div><small>要は</small><span></span></div>
+  <button class="x" type="button" aria-label="閉じる">×</button>
+</div>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>
+
+<script>
+(function(){
+var NS = 'http://www.w3.org/2000/svg';
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function el(p, tag, a){ var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; }
+function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+function ez(v){ v = cl(v); return v * v * (3 - 2 * v); }
+function seg(t, a, b){ return ez((t - a) / (b - a)); }
+var C = { ink:'#2a0e3e', btn:'#654087', lav:'#b9a6d6', blue:'#9db4dc', pale:'#efe8f6' };
+
+/* 四つのデモ。build(svg) が絵を組んで、draw(t) を返す（t は 0〜10 秒でループ） */
+var GAMES = [
+  { name:'人間中心の次世代業務システム開発',
+    txt:'業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します',
+    how:'部品をはめて、書類が端まで流れる道をつくる',
+    build:function(s){
+      var xs = [40,120,212,304,385], y = 150, parts = [], gaps = [[100,140],[192,232],[284,324]];
+      el(s,'rect',{x:20,y:y-26,width:26,height:30,fill:'none',stroke:C.lav});
+      var goal = el(s,'rect',{x:380,y:y-26,width:28,height:30,fill:C.pale,stroke:C.btn});
+      [[46,100],[140,192],[232,284],[324,380]].forEach(function(r){ el(s,'line',{x1:r[0],y1:y,x2:r[1],y2:y,stroke:C.lav,'stroke-width':6,'stroke-linecap':'round'}); });
+      gaps.forEach(function(g){ el(s,'rect',{x:g[0],y:y-4,width:g[1]-g[0],height:8,fill:'none',stroke:C.lav,'stroke-dasharray':'3 3'}); parts.push(el(s,'rect',{x:g[0],y:y-4,width:g[1]-g[0],height:8,fill:C.btn})); });
+      var doc = el(s,'g',{}); el(doc,'rect',{x:-9,y:-22,width:18,height:22,fill:'#fff',stroke:C.ink}); el(doc,'path',{d:'M-5 -15h10M-5 -10h10M-5 -5h6',stroke:C.lav});
+      return function(t){
+        parts.forEach(function(p, i){ var k = seg(t, 1 + i * .9, 1.6 + i * .9); p.setAttribute('transform','translate(0,'+ (-70 * (1 - k)) +')'); p.setAttribute('opacity', k); });
+        var m = seg(t, 4.4, 7.6); doc.setAttribute('transform','translate('+ (33 + m * 361) +','+ (y - 4) +')'); doc.setAttribute('opacity', 1 - seg(t, 9.2, 9.8));
+        goal.setAttribute('fill', t > 7.6 && t < 9.6 ? C.lav : C.pale);
+      };
+    } },
+  { name:'AI による意思決定支援と事業変革支援',
+    txt:'経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します',
+    how:'並んだ点を見て、次の点がどこに来るか当てる',
+    build:function(s){
+      function py(i){ return 210 - i * 18 - Math.sin(i * 1.3) * 16; }
+      el(s,'line',{x1:30,y1:236,x2:400,y2:236,stroke:C.lav}); el(s,'line',{x1:30,y1:30,x2:30,y2:236,stroke:C.lav});
+      var pts = [], i;
+      for (i = 0; i < 7; i++) pts.push(el(s,'circle',{cx:60 + i * 44,cy:py(i),r:5,fill:C.blue}));
+      var nx = 60 + 7 * 44, ny = py(7);
+      var ring = el(s,'circle',{cx:nx,cy:ny,r:14,fill:'none',stroke:C.btn,'stroke-dasharray':'4 3','stroke-width':1.5});
+      var last = el(s,'circle',{cx:nx,cy:ny,r:6,fill:C.btn});
+      return function(t){
+        pts.forEach(function(p, i){ p.setAttribute('opacity', seg(t, .4 + i * .5, .7 + i * .5) * (1 - seg(t, 9.2, 9.8))); });
+        ring.setAttribute('opacity', seg(t, 4.4, 4.9) * (1 - seg(t, 9.2, 9.8)));
+        var k = seg(t, 6.2, 7.2); last.setAttribute('cy', ny - 90 * (1 - k)); last.setAttribute('opacity', k * (1 - seg(t, 9.2, 9.8)));
+        ring.setAttribute('stroke-dasharray', t > 7.2 ? 'none' : '4 3');
+      };
+    } },
+  { name:'自律型・共創型の組織設計支援',
+    txt:'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します',
+    how:'落ちてくる仕事を人に振り分けて、偏らせない',
+    build:function(s){
+      var cols = [112,212,312], cards = [];
+      cols.forEach(function(x){ el(s,'circle',{cx:x,cy:222,r:11,fill:'none',stroke:C.ink}); el(s,'path',{d:'M'+(x-18)+' 250 q18 -20 36 0',fill:'none',stroke:C.ink}); el(s,'line',{x1:x-30,y1:200,x2:x+30,y2:200,stroke:C.lav}); });
+      for (var i = 0; i < 6; i++) cards.push(el(s,'rect',{width:44,height:16,fill:i % 2 ? C.blue : C.btn,opacity:0}));
+      return function(t){
+        cards.forEach(function(c, i){
+          var a = .6 + i * 1.05, x0 = 190, y0 = 20, x1 = cols[i % 3] - 22, y1 = 182 - Math.floor(i / 3) * 20;
+          var f = seg(t, a, a + .5), m = seg(t, a + .5, a + 1);
+          c.setAttribute('x', x0 + (x1 - x0) * m); c.setAttribute('y', y0 + 40 * f + (y1 - y0 - 40) * m);
+          c.setAttribute('opacity', (t > a ? 1 : 0) * (1 - seg(t, 9.2, 9.8)));
+        });
+      };
+    } },
+  { name:'地域格差の解消を目指したデジタル支援',
+    txt:'都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します',
+    how:'線をつないで、町まで光を届ける',
+    build:function(s){
+      var hub = [262,140], towns = [[330,70],[360,180],[200,210],[150,110],[90,170],[60,70],[300,240]];
+      var from = [0,0,0,0,3,3,1];
+      el(s,'path',{d:'M70 40 C150 20 260 40 340 60 C390 80 400 160 370 210 C340 250 230 258 160 236 C90 214 40 150 44 90 Z',fill:'#f7f3fb',stroke:C.pale});
+      var lines = towns.map(function(p, i){ var f = from[i] === 0 ? hub : towns[from[i]]; return el(s,'line',{x1:f[0],y1:f[1],x2:f[0],y2:f[1],stroke:C.btn,'stroke-width':2,'stroke-linecap':'round'}); });
+      var dots = towns.map(function(p){ return el(s,'circle',{cx:p[0],cy:p[1],r:6,fill:'#fff',stroke:C.lav,'stroke-width':1.5}); });
+      el(s,'circle',{cx:hub[0],cy:hub[1],r:9,fill:C.btn});
+      return function(t){
+        var out = 1 - seg(t, 9.2, 9.8);
+        towns.forEach(function(p, i){
+          var f = from[i] === 0 ? hub : towns[from[i]], a = .8 + i * .95, k = seg(t, a, a + .8);
+          lines[i].setAttribute('x2', f[0] + (p[0] - f[0]) * k); lines[i].setAttribute('y2', f[1] + (p[1] - f[1]) * k); lines[i].setAttribute('opacity', out);
+          dots[i].setAttribute('fill', k >= 1 && out > .5 ? C.blue : '#fff');
+        });
+      };
+    } }
+];
+
+/* デモを回す：見えているものだけ動かす */
+var live = [];
+function mount(svg, g){ svg.textContent = ''; var d = g.build(svg); var o = { svg:svg, draw:d, t0:performance.now(), on:true }; d(RM ? 8 : 0); return o; }
+function tick(now){
+  live.forEach(function(o){ if (o.on && !RM) o.draw(((now - o.t0) / 1000) % 10); });
+  requestAnimationFrame(tick);
+}
+
+var list = document.getElementById('games');
+GAMES.forEach(function(g, i){
+  var li = document.createElement('li');
+  li.innerHTML = '<button class="game" type="button" aria-label="'+ g.name +'のミニゲームを開く"><svg viewBox="0 0 425 268" aria-hidden="true"></svg><span class="go">▶ あそぶ</span></button><h3>'+ g.name +'</h3><p class="src" id="s1'+ i +'">'+ g.txt +'</p>';
+  list.appendChild(li);
+  var o = mount(li.querySelector('svg'), g); o.t0 -= i * 2500; live.push(o);
+  li.querySelector('.game').addEventListener('click', function(){ openInfo(i, this); });
+});
+if ('IntersectionObserver' in window){
+  var io = new IntersectionObserver(function(es){ es.forEach(function(e){ live.forEach(function(o){ if (o.svg === e.target) o.on = e.isIntersecting; }); }); });
+  live.forEach(function(o){ io.observe(o.svg); });
+}
+requestAnimationFrame(tick);
+
+/* 説明画面とプレイ */
+var info = document.getElementById('info'), play = document.getElementById('play'), cur = -1, opener = null, iS = null, pS = null;
+function setLock(){ document.body.classList.toggle('lock', !info.hidden || !play.hidden); }
+function openInfo(i, from){
+  cur = i; if (from) opener = from;
+  var g = GAMES[i];
+  info.querySelector('.no').textContent = (i + 1) + ' / ' + GAMES.length;
+  info.querySelector('h2').textContent = g.name;
+  info.querySelector('.txt').innerHTML = g.txt;
+  info.querySelector('.how span').textContent = g.how;
+  if (iS) live.splice(live.indexOf(iS), 1);
+  iS = mount(info.querySelector('svg'), g); live.push(iS);
+  info.hidden = false; setLock(); info.querySelector('.play').focus();
+}
+function closeInfo(){ info.hidden = true; if (iS){ live.splice(live.indexOf(iS), 1); iS = null; } setLock(); if (opener) opener.focus(); }
+function openPlay(){
+  var g = GAMES[cur];
+  play.querySelector('.how').textContent = g.how;
+  if (pS) live.splice(live.indexOf(pS), 1);
+  pS = mount(play.querySelector('svg'), g); live.push(pS);
+  play.hidden = false; setLock(); play.querySelector('.back').focus();
+}
+function closePlay(){ play.hidden = true; if (pS){ live.splice(live.indexOf(pS), 1); pS = null; } setLock(); info.querySelector('.play').focus(); }
+info.querySelector('.back').addEventListener('click', closeInfo);
+info.querySelector('.play').addEventListener('click', openPlay);
+info.querySelector('.ask').addEventListener('click', function(){ closeInfo(); });
+play.querySelector('.back').addEventListener('click', closePlay);
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape') return;
+  if (!play.hidden) closePlay(); else if (!info.hidden) closeInfo();
+});
+
+/* 通知：節に来たら一度だけ。押すと元の文に印 */
+var NOTES = [
+  { txt:'人が夢中になって働ける組織を、設計する会社です', src:['s0','s0b'] },
+  { txt:'AI とローコードで、業務・判断・組織・地域を支えます', src:['s10','s11','s12','s13'] },
+  { txt:'2025年6月にできた、御成門駅から徒歩2分の会社です', src:['s2','s2c','s2b'] }
+];
+var note = document.getElementById('note'), seen = {}, nowN = -1, hideT = 0;
+function showNote(n){
+  if (!info.hidden || !play.hidden) return;
+  nowN = n; note.querySelector('span').textContent = NOTES[n].txt; note.classList.add('show');
+  clearTimeout(hideT); hideT = setTimeout(hideNote, 8000);
+}
+function hideNote(){ note.classList.remove('show'); }
+note.addEventListener('click', function(e){
+  if (e.target.closest('.x')){ hideNote(); return; }
+  var ids = NOTES[nowN].src;
+  document.querySelectorAll('.src.on').forEach(function(x){ x.classList.remove('on'); });
+  ids.forEach(function(id){ document.getElementById(id).classList.add('on'); });
+  document.getElementById(ids[0]).scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block:'center' });
+  hideNote();
+});
+if ('IntersectionObserver' in window){
+  var no = new IntersectionObserver(function(es){ es.forEach(function(e){
+    var n = +e.target.dataset.note;
+    if (e.isIntersecting && !seen[n]){ seen[n] = 1; setTimeout(function(){ showNote(n); }, 600); }
+  }); }, { rootMargin:'0px 0px -45% 0px' });
+  document.querySelectorAll('[data-note]').forEach(function(x){ no.observe(x); });
+}
+})();
+</script>
