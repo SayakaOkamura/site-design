@@ -4,8 +4,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 A コーヒーのシミ（2026-11-20）。なぜコーヒーか：打ち合わせの机（本人が選んだ。NOTES「並走なら舞台は打ち合わせの場」）。
-     打ち合わせ資料の上にカップ。スクロールするとカップがどいて輪が残り、シミが滲んで広がって、そこに公式の文と図が出る。
-     最後にカップが戻ってくる（お問い合わせ＝次の打ち合わせ） -->
+     打ち合わせ資料の上にカップ。スクロールするとカップが倒れて、こぼれたコーヒー（液体）が紙の上を下へ垂れていく。
+     本人「コーヒーシミっていうか、コーヒーがこぼれて垂れていく液体の方のイメージだったな」→ 全部の節を液体に -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
 <style>
@@ -29,7 +29,7 @@ header{position:relative; display:flex; justify-content:space-between; align-ite
 
 section{position:relative; padding:clamp(56px,9vw,110px) 0}
 section > *{position:relative; z-index:1}
-.stain{position:absolute; top:0; bottom:0; left:calc(-1 * var(--pad)); width:calc(100% + 2 * var(--pad)); height:100%; z-index:0; overflow:visible; clip-path:inset(-3000px 0 -3000px 0); pointer-events:none}
+#liq{position:absolute; left:0; top:0; z-index:0; overflow:hidden; pointer-events:none}
 .rise{opacity:0; transform:translateY(8px); transition:opacity .7s ease, transform .7s ease}
 .rise.on{opacity:1; transform:none}
 
@@ -69,27 +69,13 @@ footer{position:relative; display:flex; justify-content:space-between; flex-wrap
 @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} .rise{transition:none} }
 </style>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <filter id="wet" x="-30%" y="-30%" width="160%" height="160%">
-      <feTurbulence type="fractalNoise" baseFrequency=".022" numOctaves="3" seed="7"/>
-      <feDisplacementMap in="SourceGraphic" scale="22"/>
-      <feGaussianBlur stdDeviation=".6"/>
-    </filter>
-    <filter id="wet2" x="-30%" y="-30%" width="160%" height="160%">
-      <feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="3"/>
-      <feDisplacementMap in="SourceGraphic" scale="9"/>
-    </filter>
-  </defs>
-</svg>
-
 <div class="paper">
+  <svg id="liq" aria-hidden="true"><defs></defs></svg>
   <header>
     <div class="logo"><i></i><span>Alter Design<small>consulting</small></span></div>
   </header>
 
   <section class="hero" id="hero">
-    <svg class="stain" aria-hidden="true"></svg>
     <h1 class="serif">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
     <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
     <p class="scroll">SCROLL ↓</p>
@@ -108,7 +94,6 @@ footer{position:relative; display:flex; justify-content:space-between; flex-wrap
   </section>
 
   <section class="vision" id="philosophy">
-    <svg class="stain" aria-hidden="true"></svg>
     <h2 class="serif rise">企業理念</h2>
     <h3 class="rise">経営の力で「遊ぶように働く世界」をデザインする</h3>
     <p class="rise"><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
@@ -118,7 +103,6 @@ footer{position:relative; display:flex; justify-content:space-between; flex-wrap
   </section>
 
   <section class="service" id="services">
-    <svg class="stain" aria-hidden="true"></svg>
     <h2 class="serif rise">私たちが提供するサービス</h2>
     <ul>
       <li class="rise"><h3>人間中心の次世代業務システム開発</h3>
@@ -133,7 +117,6 @@ footer{position:relative; display:flex; justify-content:space-between; flex-wrap
   </section>
 
   <section class="overview" id="company">
-    <svg class="stain" aria-hidden="true"></svg>
     <h2 class="serif rise">会社概要</h2>
     <div>
       <dl class="rise"><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
@@ -148,7 +131,6 @@ footer{position:relative; display:flex; justify-content:space-between; flex-wrap
   </section>
 
   <section class="contact" id="contact">
-    <svg class="stain" aria-hidden="true"></svg>
     <h2 class="serif rise">お問い合わせ</h2>
     <p class="rise">サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
     <a class="btn rise" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
@@ -161,109 +143,160 @@ footer{position:relative; display:flex; justify-content:space-between; flex-wrap
 </div>
 
 <script>
+/* こぼれたコーヒー（液体）。倒れたカップから、紙の上を一本の流れが下へ垂れていく。
+   先は丸い雫で、見ている位置（画面の 3/4 あたり）についてくる。戻っても乾かない（いちばん進んだところまで）。
+   理念で溜まり、サービスで四本に分かれ、会社概要は左の余白を伝い、お問い合わせの下で溜まる。文の下は通らない */
 (function(){
 var NS = 'http://www.w3.org/2000/svg';
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function el(p, tag, a){ var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; }
 function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ez(v){ v = cl(v); return 1 - Math.pow(1 - v, 3); }
-var F = 'rgba(150,98,52,', E = 'rgba(112,70,34,';
+var COL = '#3b2314', W0 = 13;
 
-/* シミ一つ：薄い面と、濃い縁。r を変えると滲んで広がる */
-function blot(svg, x, y, filt){
-  var g = el(svg,'g',{filter:'url(#' + (filt || 'wet') + ')'});
-  var f = el(g,'circle',{cx:x,cy:y,r:0,fill:F + '.13)'});
-  var e = el(g,'circle',{cx:x,cy:y,r:0,fill:'none',stroke:E + '.38)','stroke-width':3});
-  return { g:g, set:function(r, o){ f.setAttribute('r', r); e.setAttribute('r', r); g.setAttribute('opacity', o == null ? 1 : o); }, move:function(nx, ny){ f.setAttribute('cx', nx); f.setAttribute('cy', ny); e.setAttribute('cx', nx); e.setAttribute('cy', ny); } };
-}
-/* 垂れ：シミから伸びる筋 */
-function drip(svg, d){
-  var p = el(svg,'path',{d:d,fill:'none',stroke:F + '.28)','stroke-width':5,'stroke-linecap':'round',filter:'url(#wet2)'});
-  var len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
-  return { set:function(k){ p.style.strokeDashoffset = len * (1 - k); } };
-}
-function box(e, root){ var a = e.getBoundingClientRect(), b = root.getBoundingClientRect(); return { x:a.left - b.left, y:a.top - b.top, w:a.width, h:a.height }; }
+var paper = document.querySelector('.paper'), svg = document.getElementById('liq'), cup = document.getElementById('cup'), cf = cup.querySelector('.cf');
+var segs = [], pools = [], branches = [], puddle = null, head = 0, total = 0, headDot, P, parts = [];
 
-var parts = [];
-/* 進み具合：節の上端が画面の下から入って、画面の 35% まで来たら 1 */
-function prog(sec){ var r = sec.getBoundingClientRect(), vh = innerHeight; return cl((vh - r.top) / (vh * .65)); }
+function rel(e){ var a = e.getBoundingClientRect(), b = paper.getBoundingClientRect(); return { x:a.left - b.left, y:a.top - b.top, w:a.width, h:a.height, r:a.right - b.left, b:a.bottom - b.top }; }
+/* 液体の見た目：ぼかして閾値で丸める（くっつく）＋ 光沢。まとまりごとに範囲を決めたフィルタ */
+var fid = 0;
+function group(box){
+  var id = 'lq' + (fid++), m = 60;
+  var f = el(svg.querySelector('defs'),'filter',{id:id,filterUnits:'userSpaceOnUse',x:box[0]-m,y:box[1]-m,width:box[2]-box[0]+m*2,height:box[3]-box[1]+m*2,'color-interpolation-filters':'sRGB'});
+  el(f,'feGaussianBlur',{'in':'SourceGraphic',stdDeviation:5,result:'b'});
+  el(f,'feColorMatrix',{'in':'b',type:'matrix',values:'1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7',result:'g'});
+  el(f,'feGaussianBlur',{'in':'g',stdDeviation:2.4,result:'gb'});
+  var sp = el(f,'feSpecularLighting',{'in':'gb',surfaceScale:5,specularConstant:1,specularExponent:28,'lighting-color':'#fff',result:'s'});
+  el(sp,'feDistantLight',{azimuth:225,elevation:42});
+  el(f,'feComposite',{'in':'s',in2:'g',operator:'in',result:'si'});
+  var ct = el(f,'feComponentTransfer',{'in':'si',result:'so'}); el(ct,'feFuncA',{type:'linear',slope:.5});
+  var mg = el(f,'feMerge',{}); el(mg,'feMergeNode',{'in':'g'}); el(mg,'feMergeNode',{'in':'so'});
+  return el(svg,'g',{filter:'url(#' + id + ')',fill:COL,stroke:COL});
+}
+
+/* 流れを組み立てる。節ごとに一本の path（まとまりを分けると、描き直す範囲が小さくて済む） */
+var cur = null, pt = [0,0];
+function start(x, y){ cur = { d:'M' + x + ' ' + y, box:[x,y,x,y] }; segs.push(cur); pt = [x,y]; }
+function grow(x, y){ cur.box = [Math.min(cur.box[0],x),Math.min(cur.box[1],y),Math.max(cur.box[2],x),Math.max(cur.box[3],y)]; pt = [x,y]; }
+function L(x, y){ cur.d += ' L' + x + ' ' + y; grow(x, y); }
+function Q(a, b, x, y){ cur.d += ' Q' + a + ' ' + b + ' ' + x + ' ' + y; grow(a, b); grow(x, y); }
+function C(a, b, c, d, x, y){ cur.d += ' C' + a + ' ' + b + ' ' + c + ' ' + d + ' ' + x + ' ' + y; grow(a, b); grow(c, d); grow(x, y); }
+function next(){ var p = pt; start(p[0], p[1]); }
+/* 角を丸めて曲がる */
+function turn(x1, y1, x2, y2, r){ var p = pt, dx = Math.sign(x1 - p[0]), dy = Math.sign(y1 - p[1]), ex = Math.sign(x2 - x1), ey = Math.sign(y2 - y1);
+  L(x1 - dx * r, y1 - dy * r); Q(x1, y1, x1 + ex * r, y1 + ey * r); }
 
 function build(){
-  parts = [];
-  document.querySelectorAll('.stain').forEach(function(s){ s.textContent = ''; });
-  var hero = document.getElementById('hero'), cup = document.getElementById('cup');
-  /* カップが倒れて、こぼれる。こぼれたものが下の理念のシミへ流れていく
-     （本人「コーヒーどこ行くねんwwwこぼれるとかでいいんじゃない」。前はカップが画面の外へ去っていた） */
+  svg.querySelectorAll('g, filter').forEach(function(n){ n.remove(); });
+  segs = []; pools = []; branches = []; puddle = null; parts = []; fid = 0;
+  var W = paper.clientWidth, pad = parseFloat(getComputedStyle(paper).paddingLeft), narrow = W < 640;
+  svg.setAttribute('width', W); svg.setAttribute('height', paper.scrollHeight); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + paper.scrollHeight);
   cup.style.transform = '';
-  var hs = hero.querySelector('.stain'), cb = box(cup, hs), cf = cup.querySelector('.cf');
-  var cx = cb.x + cb.w * .5, cy = cb.y + cb.h * .5;
-  var vsv0 = document.querySelector('#philosophy .stain'), vr = vsv0.getBoundingClientRect(), hr = hs.getBoundingClientRect();
-  var tx = vr.left - hr.left + vr.width * .78, ty = vr.top - hr.top + vr.height * .38;
-  var sx = cx - 34, sy = cy + 46, my = (sy + ty) / 2;
-  var fd = 'M' + sx + ' ' + sy + ' C' + (sx - 90) + ' ' + (my - 30) + ' ' + (tx + 80) + ' ' + (my + 10) + ' ' + tx + ' ' + ty;
-  var fl = el(hs,'path',{d:fd,fill:'none',stroke:F + '.15)','stroke-width':cb.w * .16,'stroke-linecap':'round',filter:'url(#wet)'});
-  var fe = el(hs,'path',{d:fd,fill:'none',stroke:E + '.16)','stroke-width':2,'stroke-linecap':'round',filter:'url(#wet2)'});
-  var flen = fl.getTotalLength(); [fl, fe].forEach(function(p){ p.style.strokeDasharray = flen; p.style.strokeDashoffset = flen; });
-  var pool = blot(hs, sx, sy);
-  parts.push(function(){
-    var k = RM ? 1 : cl(scrollY / (innerHeight * .5)), tip = ez(k / .35);
-    cup.style.transform = 'translate(' + (tip * 26) + 'px, calc(-50% - ' + (tip * 14) + 'px)) rotate(' + (tip * 62) + 'deg)';
-    cf.setAttribute('transform', 'translate(110 110) scale(' + (1 - .75 * ez((k - .15) / .5)) + ') translate(-110 -110)');
-    pool.set(cb.w * .42 * ez((k - .15) / .4), .95);
-    var fk = ez((k - .3) / .6); fl.style.strokeDashoffset = flen * (1 - fk); fe.style.strokeDashoffset = flen * (1 - fk);
-  });
+  var cb = rel(cup), cx = cb.x + cb.w / 2, cy = cb.y + cb.h / 2;
+  var sx = cx - cb.w * .18, sy = cy + cb.h * .22;
+  pools.push({ x:sx, y:sy, r:cb.w * .2, at:-1, extra:[[-.6,.3,.6],[.5,.45,.5]] });
 
-  /* 理念：輪が大きく滲む */
-  var vs = document.getElementById('philosophy'), vsv = vs.querySelector('.stain'), vb = vsv.getBoundingClientRect();
-  var big = blot(vsv, vb.width * .78, vb.height * .38), small = blot(vsv, vb.width * .62, vb.height * .78, 'wet2');
-  var rv = Math.min(vb.width * .34, 280);
-  parts.push(function(){ var k = RM ? 1 : prog(vs); big.set(rv * ez(k), .9); small.set(rv * .22 * ez((k - .35) / .65), .9); });
+  var ph = rel(document.querySelector('#philosophy')), pp = rel(document.querySelector('#philosophy p'));
+  var sv = document.querySelector('#services'), h2 = rel(sv.querySelector('h2')), lis = [].slice.call(sv.querySelectorAll('li')).map(rel), ul = rel(sv.querySelector('ul'));
+  var dls = [].slice.call(document.querySelectorAll('#company dl')).map(rel);
+  var bt = rel(document.querySelector('#contact .btn')), cpx = W / 2, cpy = bt.b + 86;
 
-  /* サービス：真ん中のシミから四つへ垂れる */
-  var ss = document.getElementById('services'), ssv = ss.querySelector('.stain'), sb = ssv.getBoundingClientRect();
-  var hub = box(ss.querySelector('h2'), ssv), hx = sb.width / 2, hy = hub.y + hub.h + 26;
-  var mid = blot(ssv, hx, hy), drips = [], ends = [];
-  ss.querySelectorAll('li').forEach(function(li){
-    /* 文の上を通らないように、真ん中の隙間を下りて、見出しの上の余白を横へ */
-    var b = box(li, ssv), ex = b.x + 12, ey = b.y + 16, ly = ey - 12, dx = ex < hx ? 1 : -1;
-    if (b.x + b.w > hx - 20 && b.x < hx + 20){ ends.push(blot(ssv, ex, ey, 'wet2')); return; }   /* 一列のときは筋を引かない */
-    drips.push(drip(ssv, 'M' + hx + ' ' + hy + ' L' + hx + ' ' + (ly - 14) + ' Q' + hx + ' ' + ly + ' ' + (hx - dx * 14) + ' ' + ly + ' L' + (ex + dx * 10) + ' ' + ly + ' Q' + ex + ' ' + ly + ' ' + ex + ' ' + ey));
-    ends.push(blot(ssv, ex, ey, 'wet2'));
-  });
-  parts.push(function(){
-    var k = RM ? 1 : prog(ss);
-    mid.set(46 * ez(k / .3), .9);
-    drips.forEach(function(d, i){ d.set(ez((k - .25 - i * .08) / .45)); });
-    ends.forEach(function(e, i){ e.set(13 * ez((k - .6 - i * .08) / .2), .9); });
-  });
+  if (narrow){
+    var ex = W - pad * .45;
+    start(sx, sy); C(sx, sy + 60, ex, sy + 40, ex, sy + 140);
+    [ph, rel(sv), rel(document.querySelector('#company'))].forEach(function(r){ next(); L(ex, r.y + r.h * .5); pools.push({ x:ex + 6, y:r.y + r.h * .5, r:22, extra:[[-.5,.6,.5]] }); });
+    next(); L(ex, cpy - 40); Q(ex, cpy, ex - 40, cpy); L(cpx, cpy);
+  } else {
+    var tr = pp.r, pr = Math.max(34, Math.min(90, (W - tr - 50) / 2)), px = Math.min(W - pr * .55, tr + 44 + pr), py = ph.y + ph.h * .42;
+    var xl = pad * .5, xr = W - pad * .5, hx = (lis[0].r + lis[1].x) / 2, yb = (h2.b + ul.y) / 2;
+    start(sx, sy); C(sx - 10, sy + 90, px + 30, py - 200, px, py - pr * .4);
+    pools.push({ x:px, y:py, r:pr, extra:[[-.55,.35,.55],[.35,-.45,.6],[.15,.6,.45]] });
+    /* 右の余白を下りて、サービスの見出しの下で溜まり、横に広がる */
+    next(); C(px, py + pr, xr, py + pr + 60, xr, py + pr + 200); L(xr, yb);
+    puddle = { y:yb, c:[] };
+    var rm = Math.max(14, (ul.y - h2.b) / 2 - 12);   /* 見出しにも、下の見出しにも被らない大きさ */
+    for (var x = xr; x >= xl - 1; x -= Math.min(30, rm * 1.1)) puddle.c.push({ x:x, y:yb + (Math.random() - .5) * 6, r:rm * (.65 + Math.random() * .35), f:(xr - x) / (xr - xl) });
+    /* 溜まりから三本：左の余白（このまま会社概要へ）・列の間・右の余白。見出しの横で膨らむ */
+    (lis[1].x - lis[0].r >= 40 ? [hx, xr] : [xr]).forEach(function(x){   /* 列の間が狭いときは真ん中を垂らさない */ branches.push({ y0:yb, x:x, d:'M' + x + ' ' + yb + ' L' + x + ' ' + (ul.b + 6), end:[x, ul.b + 12], box:[x - 10, yb, x + 10, ul.b + 20], beads:lis.filter(function(r){ return Math.abs(r.x - x) < 80 || Math.abs(r.r - x) < 80; }).map(function(r){ return r.y + 22; }) }); });
+    var last = dls[dls.length - 1];
+    start(xl, yb); cur.gate = true; L(xl, last.b);
+    lis.forEach(function(r){ if (r.x - xl < 80) pools.push({ x:xl, y:r.y + 22, r:12 }); });
+    dls.forEach(function(r){ pools.push({ x:xl, y:r.y + 30, r:10 }); });
+    /* お問い合わせ：ボタンの下へ */
+    next(); C(xl, cpy - 20, cpx - 160, cpy, cpx, cpy);
+  }
+  pools.push({ x:cpx, y:cpy, r:Math.min(90, W * .14), extra:[[-.7,.15,.55],[.65,.2,.5],[0,.45,.5]] });
 
-  /* 会社概要：一行ごとに点々 */
-  var os = document.getElementById('company'), osv = os.querySelector('.stain'), dots = [];
-  os.querySelectorAll('dl').forEach(function(dl){ var b = box(dl, osv); dots.push(blot(osv, b.x + 10, b.y + 30, 'wet2')); });
-  parts.push(function(){ var k = RM ? 1 : prog(os); dots.forEach(function(d, i){ d.set(6 * ez((k - i * .09) / .3), .9); }); });
-
-  /* お問い合わせ：輪の跡にカップが戻ってくる */
-  var ks = document.getElementById('contact'), ksv = ks.querySelector('.stain'), kb = ksv.getBoundingClientRect();
-  var kr = Math.min(44, kb.width * .12), bt = box(ks.querySelector('.btn'), ksv), kx = kb.width / 2, ky = bt.y + bt.h + kr / .30 * .5 + 24;
-  var ring2 = blot(ksv, kx, ky, 'wet2');
-  var cup2 = cup.cloneNode(true); cup2.removeAttribute('id'); cup2.setAttribute('width', kr * 2 / .30 * .5); cup2.setAttribute('height', kr * 2 / .30 * .5);
-  var off = ks.getBoundingClientRect().left - kb.left;
-  cup2.style.cssText = 'position:absolute; left:' + (kx - off - kr / .30 * .5) + 'px; top:' + (ky - kr / .30 * .5) + 'px; z-index:2; pointer-events:none';
-  ks.appendChild(cup2);
-  parts.push(function(){
-    var k = RM ? 1 : prog(ks), m = ez((k - .5) / .5);
-    ring2.set(kr * .95, cl(k * 2) * .9);
-    cup2.style.transform = 'translate(' + ((1 - m) * 260) + 'px,' + ((1 - m) * -140) + 'px) rotate(' + ((1 - m) * 30) + 'deg)';
-    cup2.style.opacity = m;
+  /* 描く */
+  total = 0;
+  segs.forEach(function(s){
+    var g = group(s.box), p = el(g,'path',{d:s.d,fill:'none','stroke-width':W0,'stroke-linecap':'round','stroke-linejoin':'round'});
+    s.p = p; s.len = p.getTotalLength(); s.at = total; total += s.len; s.dot = el(g,'circle',{r:0});
+    p.style.strokeDasharray = s.len + ' ' + (s.len + 10); p.style.strokeDashoffset = s.len;
+    s.samples = []; for (var l = 0; l <= s.len; l += 6){ var q = p.getPointAtLength(l); s.samples.push([l, q.y]); }
+    /* 垂れの途中の膨らみ */
+    s.beads = []; for (var b = 70 + Math.random() * 60; b < s.len - 30; b += 90 + Math.random() * 110){ var q2 = p.getPointAtLength(b); s.beads.push({ l:b, r:W0 * (.6 + Math.random() * .35), c:el(g,'circle',{cx:q2.x,cy:q2.y,r:0}) }); }
   });
-  frame();
+  branches.forEach(function(b){
+    var g = group(b.box), p = el(g,'path',{d:b.d,fill:'none','stroke-width':W0 * .8,'stroke-linecap':'round'});
+    b.p = p; b.len = p.getTotalLength(); p.style.strokeDasharray = b.len + ' ' + (b.len + 10); p.style.strokeDashoffset = b.len;
+    b.dot = el(g,'circle',{cx:b.end[0],cy:b.end[1],r:0});
+    b.bc = (b.beads || []).map(function(y){ return { y:y, c:el(g,'circle',{cx:b.x,cy:y,r:0}) }; });
+  });
+  if (puddle){ var pg = group([0, puddle.y - 50, W, puddle.y + 50]); puddle.c.forEach(function(c){ c.e = el(pg,'circle',{cx:c.x,cy:c.y,r:0}); }); }
+  pools.forEach(function(o){
+    var g = group([o.x - o.r * 1.6, o.y - o.r * 1.6, o.x + o.r * 1.6, o.y + o.r * 1.6]);
+    o.c = [el(g,'circle',{cx:o.x,cy:o.y,r:0})];
+    (o.extra || []).forEach(function(e){ o.c.push(el(g,'circle',{cx:o.x + e[0] * o.r,cy:o.y + e[1] * o.r,r:0,'data-k':e[2]})); });
+  });
+  head = 0; frame();
+}
+
+/* 見ている位置まで流す */
+function frame(){
+  var pr0 = paper.getBoundingClientRect().top + scrollY;
+  var k = RM ? 1 : cl(scrollY / (innerHeight * .5)), tip = ez(k / .35);
+  cup.style.transform = 'translate(' + (tip * 26) + 'px, calc(-50% - ' + (tip * 14) + 'px)) rotate(' + (tip * 62) + 'deg)';
+  cf.setAttribute('transform','translate(110 110) scale(' + (1 - .75 * ez((k - .15) / .5)) + ') translate(-110 -110)');
+  var target = RM ? 1e9 : scrollY + innerHeight * .78 - pr0;
+  var want = 0;
+  if (k > .3 || RM){
+    for (var i = 0; i < segs.length; i++){ var s = segs[i], got = 0;
+      if (s.gate && (!puddle || !(puddle.max > .95))){ want = s.at; break; }   /* 溜まりが左まで広がってから左を垂れる */
+      for (var j = 0; j < s.samples.length; j++){ if (s.samples[j][1] <= target) got = s.samples[j][0]; else break; }
+      if (got < s.len - 1 && j < s.samples.length){ want = s.at + got; break; } want = s.at + s.len; }
+    if (!RM && k < 1) want = Math.min(want, segs[0].len * ez((k - .3) / .7));
+  }
+  if (want > head) head = RM ? want : head + Math.min(want - head, 140);
+  var hy = -1;
+  segs.forEach(function(s){
+    var l = cl((head - s.at) / s.len) * s.len;
+    s.p.style.strokeDashoffset = s.len - l;
+    s.beads.forEach(function(b){ b.c.setAttribute('r', l > b.l ? b.r * ez((l - b.l) / 40) : 0); });
+    var on = head > s.at && head < s.at + s.len;
+    if (on){ var q = s.p.getPointAtLength(l); s.dot.setAttribute('cx', q.x); s.dot.setAttribute('cy', q.y); s.dot.setAttribute('r', W0 * .72); hy = q.y; }
+    else s.dot.setAttribute('r', 0);
+    if (head >= s.at + s.len) hy = Math.max(hy, s.samples[s.samples.length - 1][1]);
+  });
+  var spread = puddle && hy >= puddle.y - 2 ? ez((target - puddle.y) / 260) : 0;
+  if (puddle){ if (spread > puddle.max || !puddle.max) puddle.max = Math.max(puddle.max || 0, spread);
+    puddle.c.forEach(function(c){ c.e.setAttribute('r', c.r * ez((puddle.max - c.f * .7) / .3)); }); }
+  branches.forEach(function(b){
+    var g = puddle && puddle.max > .5 ? ez(Math.max(b.g || 0, (target - b.y0 - 60) / b.len)) : 0; b.g = g;
+    b.p.style.strokeDashoffset = b.len * (1 - g); b.dot.setAttribute('r', W0 * .9 * ez((g - .9) / .1));
+    var yy = b.y0 + g * b.len; b.bc.forEach(function(c){ c.c.setAttribute('r', yy > c.y ? W0 * .95 * ez((yy - c.y) / 30) : 0); });
+  });
+  pools.forEach(function(o, i){
+    var g = i === 0 ? ez((k - .15) / .4) : ez((hy - o.y + o.r) / (o.r * 2 + 40));
+    o.c.forEach(function(c, n){ c.setAttribute('r', o.r * g * (n ? +c.getAttribute('data-k') : 1)); });
+  });
+  document.querySelectorAll('.rise:not(.on)').forEach(function(e){ if (RM || e.getBoundingClientRect().top < innerHeight * .82) e.classList.add('on'); });
+  if (want > head) requestAnimationFrame(frame);
 }
 var tk = false;
-function frame(){ tk = false; parts.forEach(function(f){ f(); });
-  document.querySelectorAll('.rise:not(.on)').forEach(function(e){ if (RM || e.getBoundingClientRect().top < innerHeight * .82) e.classList.add('on'); }); }
-addEventListener('scroll', function(){ if (!tk){ tk = true; requestAnimationFrame(frame); } }, { passive:true });
+addEventListener('scroll', function(){ if (!tk){ tk = true; requestAnimationFrame(function(){ tk = false; frame(); }); } }, { passive:true });
 var rt = 0; addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(build, 150); });
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(build); else build();
 build();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
 })();
 </script>
