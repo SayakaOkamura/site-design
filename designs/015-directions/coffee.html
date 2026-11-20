@@ -29,8 +29,7 @@ header{position:relative; display:flex; justify-content:space-between; align-ite
 
 section{position:relative; padding:clamp(56px,9vw,110px) 0}
 section > *{position:relative; z-index:1}
-.stain{position:absolute; top:0; bottom:0; left:calc(-1 * var(--pad)); width:calc(100% + 2 * var(--pad)); height:100%; z-index:0; overflow:hidden; pointer-events:none}
-.hero .stain{overflow:visible}
+.stain{position:absolute; top:0; bottom:0; left:calc(-1 * var(--pad)); width:calc(100% + 2 * var(--pad)); height:100%; z-index:0; overflow:visible; clip-path:inset(-3000px 0 -3000px 0); pointer-events:none}
 .rise{opacity:0; transform:translateY(8px); transition:opacity .7s ease, transform .7s ease}
 .rise.on{opacity:1; transform:none}
 
@@ -101,9 +100,9 @@ footer{position:relative; display:flex; justify-content:space-between; flex-wrap
       <path d="M182 92 q30 -6 30 18 q0 24 -30 18" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
       <path d="M182 92 q30 -6 30 18 q0 24 -30 18" fill="none" stroke="#e2d9ce" stroke-width="2"/>
       <circle cx="110" cy="110" r="66" fill="#fff" stroke="#e2d9ce" stroke-width="2"/>
-      <circle cx="110" cy="110" r="56" fill="#4a2e1a"/>
+      <g class="cf"><circle cx="110" cy="110" r="56" fill="#4a2e1a"/>
       <circle cx="110" cy="110" r="56" fill="url(#crema)"/>
-      <ellipse cx="92" cy="92" rx="16" ry="7" fill="rgba(255,255,255,.22)" transform="rotate(-35 92 92)"/>
+      <ellipse cx="92" cy="92" rx="16" ry="7" fill="rgba(255,255,255,.22)" transform="rotate(-35 92 92)"/></g>
       <defs><radialGradient id="crema"><stop offset="0" stop-color="#7a4f2e" stop-opacity=".0"/><stop offset=".8" stop-color="#7a4f2e" stop-opacity=".25"/><stop offset="1" stop-color="#a87a50" stop-opacity=".6"/></radialGradient></defs>
     </svg>
   </section>
@@ -193,15 +192,25 @@ function build(){
   parts = [];
   document.querySelectorAll('.stain').forEach(function(s){ s.textContent = ''; });
   var hero = document.getElementById('hero'), cup = document.getElementById('cup');
-  /* カップの下の輪 */
-  var hs = hero.querySelector('.stain'), cb = box(cup, hs);
-  var cx = cb.x + cb.w * .5, cy = cb.y + cb.h * .5, cr = cb.w * .30;
-  var ring = blot(hs, cx, cy, 'wet2');
+  /* カップが倒れて、こぼれる。こぼれたものが下の理念のシミへ流れていく
+     （本人「コーヒーどこ行くねんwwwこぼれるとかでいいんじゃない」。前はカップが画面の外へ去っていた） */
+  cup.style.transform = '';
+  var hs = hero.querySelector('.stain'), cb = box(cup, hs), cf = cup.querySelector('.cf');
+  var cx = cb.x + cb.w * .5, cy = cb.y + cb.h * .5;
+  var vsv0 = document.querySelector('#philosophy .stain'), vr = vsv0.getBoundingClientRect(), hr = hs.getBoundingClientRect();
+  var tx = vr.left - hr.left + vr.width * .78, ty = vr.top - hr.top + vr.height * .38;
+  var sx = cx - 34, sy = cy + 46, my = (sy + ty) / 2;
+  var fd = 'M' + sx + ' ' + sy + ' C' + (sx - 90) + ' ' + (my - 30) + ' ' + (tx + 80) + ' ' + (my + 10) + ' ' + tx + ' ' + ty;
+  var fl = el(hs,'path',{d:fd,fill:'none',stroke:F + '.15)','stroke-width':cb.w * .16,'stroke-linecap':'round',filter:'url(#wet)'});
+  var fe = el(hs,'path',{d:fd,fill:'none',stroke:E + '.16)','stroke-width':2,'stroke-linecap':'round',filter:'url(#wet2)'});
+  var flen = fl.getTotalLength(); [fl, fe].forEach(function(p){ p.style.strokeDasharray = flen; p.style.strokeDashoffset = flen; });
+  var pool = blot(hs, sx, sy);
   parts.push(function(){
-    var k = RM ? 1 : cl(scrollY / (innerHeight * .45));
-    cup.style.transform = 'translate(' + (ez(k) * cb.w * 1.4) + 'px, calc(-50% - ' + (ez(k) * cb.h * .9) + 'px)) rotate(' + (k * 24) + 'deg)';
-    cup.style.opacity = 1 - cl((k - .6) / .4);
-    ring.set(cr * (1 + k * .25), cl(k * 3));
+    var k = RM ? 1 : cl(scrollY / (innerHeight * .5)), tip = ez(k / .35);
+    cup.style.transform = 'translate(' + (tip * 26) + 'px, calc(-50% - ' + (tip * 14) + 'px)) rotate(' + (tip * 62) + 'deg)';
+    cf.setAttribute('transform', 'translate(110 110) scale(' + (1 - .75 * ez((k - .15) / .5)) + ') translate(-110 -110)');
+    pool.set(cb.w * .42 * ez((k - .15) / .4), .95);
+    var fk = ez((k - .3) / .6); fl.style.strokeDashoffset = flen * (1 - fk); fe.style.strokeDashoffset = flen * (1 - fk);
   });
 
   /* 理念：輪が大きく滲む */
