@@ -65,13 +65,20 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 /* 背景の景色：大きな面とロゴの輪。ふだんはピンぼけ。ピント枠の中だけ、くっきりした同じ景色が見える */
 #bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
 #bg .scene{position:absolute; inset:0}
-#bg .scene.soft{filter:blur(14px); opacity:.85}
-#bg .scene.sharp{clip-path:inset(var(--ct) var(--cr) var(--cb) var(--cl)); transition:clip-path .45s cubic-bezier(.2,.8,.2,1)}
-#bg .scene i{position:absolute; display:block}
-#bg .pl{background:#33154d}
-#bg .pl2{background:#2a1040}
-#bg .rg{border-radius:50%; border:solid #4a2470}
-#bg .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:3px solid rgba(187,126,234,.45)}
+/* ピント枠の中：同じ景色を 2 倍に拡大して見せる。拡大したときだけ細部（輪の刻み・細い線）が見える */
+#bg .zoom{position:absolute; inset:0; clip-path:inset(var(--ct) var(--cr) var(--cb) var(--cl)); transition:clip-path .45s cubic-bezier(.2,.8,.2,1)}
+#bg .zoom .scene{transform:scale(2); transform-origin:var(--ox) var(--oy); transition:transform-origin .45s cubic-bezier(.2,.8,.2,1)}
+#bg .det{display:none}
+#bg .zoom .det,.shot .det{display:block}
+#bg .zoom{background:#1d0a2c}
+.scene i{position:absolute; display:block}
+.scene .pl{background:#33154d}
+.scene .pl2{background:#2a1040}
+.scene .rg{border-radius:50%; border:solid #4a2470}
+.scene .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:3px solid rgba(187,126,234,.45)}
+/* 細部：輪の刻み（拡大したときだけ見える） */
+.scene .tks{position:absolute; border-radius:50%; background:repeating-conic-gradient(rgba(251,248,255,.55) 0 1deg, transparent 1deg 15deg); -webkit-mask:radial-gradient(circle, transparent 60%, #000 61%, #000 66%, transparent 67%); mask:radial-gradient(circle, transparent 60%, #000 61%, #000 66%, transparent 67%)}
+.scene .fine{position:absolute; border-radius:50%; border:1px solid rgba(215,255,58,.5)}
 /* ピント枠：四隅の鉤 */
 #bg .af{position:absolute; left:0; top:0; transform:translate(var(--ax),var(--ay)); transition:transform .45s cubic-bezier(.2,.8,.2,1);
   --c:rgba(251,248,255,.7);
@@ -108,8 +115,9 @@ body.open .vf,body.open .vfi{opacity:0; transition:opacity .3s}
 .flash.go{animation:fl2 .26s ease-out .08s}
 @keyframes fl2{0%{opacity:.28} 100%{opacity:0}}
 /* 撮った一枚：右下へ飛んで小さくなり、消える */
-.shot{position:fixed; z-index:10; border:3px solid #fbf8ff; background:rgba(187,126,234,.18); box-shadow:0 6px 18px rgba(0,0,0,.4); pointer-events:none;
-  transition:left .5s cubic-bezier(.5,0,.2,1), top .5s cubic-bezier(.5,0,.2,1), width .5s cubic-bezier(.5,0,.2,1), height .5s cubic-bezier(.5,0,.2,1), opacity .3s .7s}
+.shot{position:fixed; left:0; top:0; z-index:10; overflow:hidden; border:3px solid #fbf8ff; background:#1d0a2c; box-shadow:0 6px 18px rgba(0,0,0,.45); pointer-events:none;
+  transform-origin:0 0; transition:transform .55s cubic-bezier(.5,0,.2,1), opacity .4s}
+.shot .in{position:absolute; left:0; top:0}
 /* 手ぶれ：画面がほんの少しずれる */
 body.kick #bg{animation:kick .14s ease-out}
 @keyframes kick{40%{transform:translate(var(--kx),var(--ky))}}
@@ -329,9 +337,9 @@ document.getElementById('logo').addEventListener('click', function(){
 (function(){
   var bgEl = document.getElementById('bg');
   /* 景色は同じものを二枚：ぼけた一枚と、枠の中だけ見えるくっきりした一枚 */
-  var SCENE = '<i class="pl"></i><i class="pl2"></i><i class="rg"></i>';
-  bgEl.innerHTML = '<div class="scene soft">' + SCENE + '</div><div class="scene sharp">' + SCENE + '</div><div class="af"></div>';
-  var sharp = bgEl.querySelector('.sharp'), af = bgEl.querySelector('.af');
+  var SCENE = '<i class="pl"></i><i class="pl2"></i><i class="rg"></i><i class="tks det"></i><i class="fine det"></i>';
+  bgEl.innerHTML = '<div class="scene base">' + SCENE + '</div><div class="zoom"><div class="scene">' + SCENE + '</div></div><div class="af"></div>';
+  var zoom = bgEl.querySelector('.zoom'), af = bgEl.querySelector('.af'), shots = [];
   var S = 0, slot = 1, SL = [];
   function layout(){
     var W = innerWidth, H = innerHeight, m = Math.min(W, H);
@@ -340,6 +348,9 @@ document.getElementById('logo').addEventListener('click', function(){
       pl.style.cssText = 'left:' + (W * .56) + 'px; top:' + (-H * .08) + 'px; width:' + (W * .3) + 'px; height:' + (H * .56) + 'px';
       pl2.style.cssText = 'left:' + (W * .4) + 'px; top:' + (H * .58) + 'px; width:' + (W * .42) + 'px; height:' + (H * .5) + 'px';
       var R = m * .26; rg.style.cssText = 'left:' + (W * .7 - R) + 'px; top:' + (H * .46 - R) + 'px; width:' + (R * 2) + 'px; height:' + (R * 2) + 'px; border-width:' + (R * .26) + 'px';
+      var tk = sc.querySelector('.tks'), fn = sc.querySelector('.fine');
+      tk.style.cssText = 'left:' + (W * .7 - R) + 'px; top:' + (H * .46 - R) + 'px; width:' + (R * 2) + 'px; height:' + (R * 2) + 'px';
+      var r2 = R * .5; fn.style.cssText = 'left:' + (W * .7 - r2) + 'px; top:' + (H * .46 - r2) + 'px; width:' + (r2 * 2) + 'px; height:' + (r2 * 2) + 'px';
     });
     S = m * .3;
     var x0 = Math.max(W * .44, 420), x1 = W - S - 40, y0 = 48, y1 = Math.max(y0, Math.min(H - S - 60, H * .6 - S));   /* 右下の見出しにはかぶらない */
@@ -351,8 +362,9 @@ document.getElementById('logo').addEventListener('click', function(){
   function put(){
     var p = SL[slot];
     af.style.setProperty('--ax', p.x + 'px'); af.style.setProperty('--ay', p.y + 'px');
-    sharp.style.setProperty('--ct', p.y + 'px'); sharp.style.setProperty('--cl', p.x + 'px');
-    sharp.style.setProperty('--cr', (innerWidth - p.x - S) + 'px'); sharp.style.setProperty('--cb', (innerHeight - p.y - S) + 'px');
+    zoom.style.setProperty('--ct', p.y + 'px'); zoom.style.setProperty('--cl', p.x + 'px');
+    zoom.style.setProperty('--cr', (innerWidth - p.x - S) + 'px'); zoom.style.setProperty('--cb', (innerHeight - p.y - S) + 'px');
+    zoom.style.setProperty('--ox', (p.x + S / 2) + 'px'); zoom.style.setProperty('--oy', (p.y + S / 2) + 'px');
   }
   layout(); addEventListener('resize', layout);
   /* カーソルがピント枠の中にいるか */
@@ -366,11 +378,24 @@ document.getElementById('logo').addEventListener('click', function(){
     if (!RM){
       document.querySelectorAll('.shut').forEach(function(e){ e.classList.remove('go'); void e.offsetWidth; e.classList.add('go'); });
       var f = document.querySelector('.flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
-      var sh = document.createElement('i'); sh.className = 'shot';
-      sh.style.left = p.x + 'px'; sh.style.top = p.y + 'px'; sh.style.width = sh.style.height = S + 'px';
-      document.body.appendChild(sh); void sh.offsetWidth;
-      setTimeout(function(){ sh.style.left = (innerWidth - 96) + 'px'; sh.style.top = (innerHeight - 110) + 'px'; sh.style.width = sh.style.height = '60px'; sh.style.opacity = 0; }, 120);
-      setTimeout(function(){ sh.remove(); }, 1200);
+      /* 撮った一枚：枠の中の拡大された景色をそのまま写し、右上へ飛ばして重ねる（3 枚まで） */
+      var sh = document.createElement('div'); sh.className = 'shot';
+      sh.style.width = sh.style.height = S + 'px'; sh.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)';
+      var cp = zoom.querySelector('.scene').cloneNode(true); cp.className = 'scene in';
+      cp.style.width = innerWidth + 'px'; cp.style.height = innerHeight + 'px';
+      cp.style.transform = 'translate(' + (-p.x) + 'px,' + (-p.y) + 'px) scale(2)'; cp.style.transformOrigin = (p.x + S / 2) + 'px ' + (p.y + S / 2) + 'px';
+      sh.appendChild(cp); document.body.appendChild(sh); void sh.offsetWidth;
+      shots.push(sh);
+      var T = 72, n = shots.length;
+      setTimeout(function(){
+        shots.forEach(function(e, k){
+          var back = n - 1 - k;   /* 新しいほど手前 */
+          var tx = innerWidth - 40 - T - back * 10, ty = 40 + back * 10, rot = back ? (back % 2 ? -6 : 5) : -2;
+          e.style.transform = 'translate(' + tx + 'px,' + ty + 'px) rotate(' + rot + 'deg) scale(' + (T / S) + ')';
+          e.style.zIndex = 10 - back; e.style.opacity = back > 2 ? 0 : 1;
+        });
+        while (shots.length > 3){ var old = shots.shift(); setTimeout(function(e){ e.remove(); }, 500, old); }
+      }, 120);
       document.documentElement.style.setProperty('--kx', ((Math.random() - .5) * 6) + 'px'); document.documentElement.style.setProperty('--ky', '4px');
       document.body.classList.remove('kick'); void document.body.offsetWidth; document.body.classList.add('kick');
     }
