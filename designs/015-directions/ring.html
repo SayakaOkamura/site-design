@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 お洒落・輪がカーソル（2026-11-24）。dial.html（ダイヤル。遅れと揺れで気持ち悪い）の作り直し。
-     ロゴの輪がマウスについてくる。メニューの文字に近づくと輪が吸いついて文字を囲み、選ぶ。
+     ロゴの輪がマウスについてくる（どこでも。押せる物の上では中が塗られ、字の上では小さく薄く。押すと波紋）。メニューの文字に近づくと輪が吸いついて文字を囲み、選ぶ。
      押すと、右から板が滑り込んで中身。メニューと輪は左に残り、別の項目を押すと中身だけ入れ替わる。反応はすぐ、効果は一方向で一回。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
@@ -35,16 +35,25 @@ header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
 
 
 /* 輪：ロゴの形。マウスについてきて、文字に近づくと吸いついて囲む */
-.cur{position:fixed; left:0; top:0; z-index:5; pointer-events:none; width:var(--w,44px); height:var(--hh,44px); border-radius:999px;
+.cur{position:fixed; left:0; top:0; z-index:8; pointer-events:none; width:var(--w,44px); height:var(--hh,44px); border-radius:999px;
   border:6px solid var(--pu); box-shadow:inset 0 0 0 3px var(--li); transform:translate(var(--x),var(--y)) translate(-50%,-50%);
-  transition:width .14s cubic-bezier(.2,.8,.2,1), height .14s cubic-bezier(.2,.8,.2,1), border-color .14s, opacity .2s; opacity:0}
-.cur::after{content:""; position:absolute; left:50%; top:50%; width:4px; height:4px; margin:-2px; border-radius:50%; background:var(--ac); transition:opacity .1s}
+  transition:width .14s cubic-bezier(.2,.8,.2,1), height .14s cubic-bezier(.2,.8,.2,1), border-color .14s, background .14s, opacity .2s, scale .12s; opacity:0}
 .cur.snap{border-color:var(--li); box-shadow:none}
-.cur.snap::after{opacity:0}
+/* 字の上では小さく薄く（読む邪魔をしない） */
+.cur.dim{opacity:.55 !important}
+/* 押せる物の上では、輪の中を塗りつぶす */
+.cur.press{background:rgba(187,126,234,.45); border-color:var(--li)}
+/* 押すと一瞬縮む */
+.cur.tap{scale:.8; transition-duration:.06s}
 body.live .cur,body.keys .cur{opacity:1}
+/* 本当のマウスの位置：小さな点（楕円に吸いついても、ここにいると分かる） */
+.dot{position:fixed; left:0; top:0; z-index:9; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:var(--wh); pointer-events:none; opacity:0; transform:translate(var(--mx),var(--my))}
+body.live .dot{opacity:1}
+/* 押した所から一重の波紋 */
+.rip{position:fixed; z-index:8; width:80px; height:80px; margin:-40px 0 0 -40px; border-radius:50%; border:2px solid var(--li); pointer-events:none; animation:rip .42s ease-out forwards}
+@keyframes rip{from{transform:scale(.25); opacity:.9} to{transform:scale(1); opacity:0}}
 /* ブラウザのフォーカス枠は出さない。選んでいるのは輪で示す */
 .menu button:focus,.menu button:focus-visible{outline:none}
-.cur.off{opacity:0 !important}
 
 /* 右下：見出し */
 .hero{position:fixed; right:clamp(16px,5vw,72px); bottom:clamp(40px,9vh,90px); z-index:1; text-align:right; max-width:min(60vw,780px); transition:opacity .3s}
@@ -71,9 +80,7 @@ body.open .page{transform:none}
 .page dt{font-weight:700}
 .page .acc{font-size:13px; color:var(--li); margin-top:.4em}
 .page a.btn{display:inline-flex; align-items:center; justify-content:center; margin-top:1.8em; min-width:min(100%,380px); height:58px; border-radius:29px; background:var(--pu); color:var(--wh); text-decoration:none; letter-spacing:.1em; cursor:pointer}
-.page a.btn:hover{background:var(--li); color:var(--deep)}
-body.live .page, body.live .page *{cursor:auto !important}
-body.live .page a, body.live .page button{cursor:pointer !important}
+.page a.btn:hover{background:var(--pu)}
 
 .keys{position:fixed; left:clamp(16px,4vw,48px); bottom:16px; z-index:3; font-size:11px; letter-spacing:.15em; color:var(--li); opacity:.7}
 footer{position:fixed; right:16px; bottom:10px; z-index:3; font-size:11px; color:var(--li); opacity:.7}
@@ -87,7 +94,7 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   .keys{display:none}
   .page{width:100%; border-left:0}
 }
-@media (prefers-reduced-motion:reduce){ .page,.cur{transition:none} }
+@media (prefers-reduced-motion:reduce){ .page,.cur{transition:none} .rip{display:none} }
 </style>
 
 <header><i></i><span>Alter Design<small>consulting</small></span></header>
@@ -106,6 +113,7 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
 </nav>
 
 <div class="cur" id="cur" aria-hidden="true"></div>
+<div class="dot" id="dot" aria-hidden="true"></div>
 <section class="page" id="page" aria-live="polite"><button class="back" id="back" type="button">← もどる</button><div class="wrap" id="wrap"></div></section>
 
 <div class="keys" aria-hidden="true">↑↓ えらぶ　ENTER ひらく　ESC もどる</div>
@@ -131,7 +139,7 @@ var PAGES = [
 ];
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var btns = [].slice.call(document.querySelectorAll('.menu button')), cur = document.getElementById('cur');
-var page = document.getElementById('page'), wrap = document.getElementById('wrap');
+var dot = document.getElementById('dot'), page = document.getElementById('page'), wrap = document.getElementById('wrap');
 var mx = -100, my = -100, x = -100, y = -100, sel = -1, snapped = -1, opened = false;
 
 /* 選ぶ：輪が文字を囲む */
@@ -148,10 +156,21 @@ addEventListener('pointermove', function(e){
   btns.forEach(function(b, k){ var r = b.getBoundingClientRect(); if (mx > r.left - 18 && mx < r.right + 18 && my > r.top - 18 && my < r.bottom + 18) hit = k; });
   if (hit !== snapped) snapTo(hit);
 }, {passive:true});
+addEventListener('pointerdown', function(e){
+  if (e.pointerType !== 'mouse' || RM) return;
+  cur.classList.add('tap'); setTimeout(function(){ cur.classList.remove('tap'); }, 90);
+  var rp = document.createElement('i'); rp.className = 'rip'; rp.style.left = e.clientX + 'px'; rp.style.top = e.clientY + 'px';
+  document.body.appendChild(rp); setTimeout(function(){ rp.remove(); }, 450);
+});
 document.addEventListener('mouseleave', function(){ document.body.classList.remove('live'); });
 
 function frame(){
   var gx = mx, gy = my, w = 44, h = 44;
+  /* 輪の下にある物：押せる物なら塗る、板の字の上なら小さく薄く */
+  var under = snapped < 0 && document.elementFromPoint(mx, my), act = under && under.closest && under.closest('a, button:not(.menu button)');
+  var onText = !act && opened && mx > page.getBoundingClientRect().left;
+  cur.classList.toggle('press', !!act); cur.classList.toggle('dim', onText);
+  if (act){ w = h = 36; } else if (onText){ w = h = 26; }
   if (snapped >= 0){
     var r = btns[snapped].getBoundingClientRect();
     gx = r.left + r.width / 2; gy = r.top + r.height / 2; w = r.width + 28; h = r.height + 18;
@@ -160,8 +179,7 @@ function frame(){
   x += (gx - x) * (RM ? 1 : .45); y += (gy - y) * (RM ? 1 : .45);
   cur.style.setProperty('--x', x + 'px'); cur.style.setProperty('--y', y + 'px');
   cur.style.setProperty('--w', w + 'px'); cur.style.setProperty('--hh', h + 'px');
-  /* 板の上では輪を消して、普通のカーソル */
-  cur.classList.toggle('off', opened && mx > page.getBoundingClientRect().left);
+  dot.style.setProperty('--mx', mx + 'px'); dot.style.setProperty('--my', my + 'px');
   requestAnimationFrame(frame);
 }
 
