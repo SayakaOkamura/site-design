@@ -49,24 +49,14 @@ body.live .cur,body.keys .cur{opacity:1}
 /* 本当のマウスの位置：小さな点（楕円に吸いついても、ここにいると分かる） */
 .dot{position:fixed; left:0; top:0; z-index:9; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:var(--wh); pointer-events:none; opacity:0; transform:translate(var(--mx),var(--my))}
 body.live .dot{opacity:1}
+body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さない（輪は項目にいる） */
 /* 押した所から一重の波紋 */
 .rip{position:fixed; z-index:8; width:80px; height:80px; margin:-40px 0 0 -40px; border-radius:50%; border:2px solid var(--li); pointer-events:none; animation:rip .42s ease-out forwards}
 @keyframes rip{from{transform:scale(.25); opacity:.9} to{transform:scale(1); opacity:0}}
-/* 輪のキャラ：目。動く向きを見る。ときどきまばたき。文字を囲んでいるときは目を隠す */
-.cur .eye{position:absolute; top:50%; width:5px; height:8px; margin-top:-4px; border-radius:3px; background:var(--wh);
-  transform:translate(var(--ex,0px),var(--ey,0px)); transition:opacity .12s, height .06s, margin .06s}
-.cur .eye.l{left:calc(50% - 8px)} .cur .eye.r{left:calc(50% + 3px)}
-.cur.snap .eye,.cur.press .eye,.cur.dim .eye{opacity:0}
-.cur.blink .eye{height:2px; margin-top:-1px}
-.cur.joy .eye{background:none; height:5px; width:7px; margin-top:-3px; border:2px solid var(--wh); border-bottom:0; border-radius:6px 6px 0 0}
+/* 隠し：輪がくるっと回る */
 .cur.joy{animation:spin .7s cubic-bezier(.3,0,.2,1)}
 @property --rot{syntax:'<angle>'; inherits:false; initial-value:0deg}
 @keyframes spin{to{--rot:360deg}}
-/* 輪の持ち物：開いている節ごとに、輪が右下に小さな物を持つ */
-.cur .item{position:absolute; right:-20px; bottom:-16px; width:24px; height:24px; opacity:0; transform:scale(.3) rotate(-30deg); transition:opacity .15s, transform .25s cubic-bezier(.3,1.6,.5,1)}
-.cur .item svg{display:block; width:100%; height:100%}
-body.open .cur .item.has{opacity:1; transform:none}
-.cur.snap .item,.cur.press .item{opacity:0 !important}
 /* 押した所の近くの文字が、波紋に押されて少し揺れる */
 .menu button.bump{animation:bump .34s ease-out}
 @keyframes bump{30%{transform:translate(var(--bx),var(--by))}}
@@ -154,7 +144,7 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   <button data-k="4" style="--i:4">お問い合わせ<small>CONTACT</small></button>
 </nav>
 
-<div class="cur" id="cur" aria-hidden="true"><i class="eye l"></i><i class="eye r"></i><span class="item" id="item"></span></div>
+<div class="cur" id="cur" aria-hidden="true"></div>
 <div class="dot" id="dot" aria-hidden="true"></div>
 <section class="page" id="page" aria-live="polite"><button class="back" id="back" type="button">← もどる</button><div class="wrap" id="wrap"></div></section>
 
@@ -181,16 +171,8 @@ var PAGES = [
 ];
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var btns = [].slice.call(document.querySelectorAll('.menu button')), cur = document.getElementById('cur');
-var item = document.getElementById('item'), dot = document.getElementById('dot'), page = document.getElementById('page'), wrap = document.getElementById('wrap');
-var mx = -100, my = -100, x = -100, y = -100, sel = -1, snapped = -1, opened = false, vx = 0, vy = 0, lmx = 0, lmy = 0;
-/* 輪の持ち物（節ごと）：理念＝ボール（遊ぶ）、事業＝鞄、サービス＝スパナ、会社概要＝名刺、お問い合わせ＝封筒 */
-var ITEMS = [
-  '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fbf8ff" stroke="#2a0e3e" stroke-width="2"/><path d="M4 9c5 2 11 2 16 0M4 15c5-2 11-2 16 0" fill="none" stroke="#bb7eea" stroke-width="2"/></svg>',
-  '<svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2" fill="#bb7eea" stroke="#2a0e3e" stroke-width="2"/><path d="M9 8V5h6v3" fill="none" stroke="#2a0e3e" stroke-width="2"/><path d="M3 13h18" stroke="#2a0e3e" stroke-width="2"/></svg>',
-  '<svg viewBox="0 0 24 24"><path d="M14 3a5 5 0 0 0-4.6 6.9L3 16.3 7.7 21l6.4-6.4A5 5 0 0 0 21 10l-3 3-4-1-1-4 3-3a5 5 0 0 0-2-2z" fill="#fbf8ff" stroke="#2a0e3e" stroke-width="2" stroke-linejoin="round"/></svg>',
-  '<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2" fill="#fbf8ff" stroke="#2a0e3e" stroke-width="2"/><circle cx="7.5" cy="12.5" r="2.2" fill="none" stroke="#654087" stroke-width="2"/><path d="M12 11h7M12 15h5" stroke="#bb7eea" stroke-width="2"/></svg>',
-  '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" fill="#fbf8ff" stroke="#2a0e3e" stroke-width="2"/><path d="M3 6l9 7 9-7" fill="none" stroke="#654087" stroke-width="2" stroke-linejoin="round"/></svg>'
-];
+var dot = document.getElementById('dot'), page = document.getElementById('page'), wrap = document.getElementById('wrap');
+var mx = -100, my = -100, x = -100, y = -100, sel = -1, snapped = -1, opened = false;
 
 /* 選ぶ：輪が文字を囲む */
 function pick(i){
@@ -242,10 +224,6 @@ function frame(){
   cur.style.setProperty('--x', x + 'px'); cur.style.setProperty('--y', y + 'px');
   cur.style.setProperty('--w', w + 'px'); cur.style.setProperty('--hh', h + 'px');
   dot.style.setProperty('--mx', mx + 'px'); dot.style.setProperty('--my', my + 'px');
-  /* 目：動く向きを見る。止まると前を向く */
-  vx = vx * .8 + (mx - lmx) * .2; vy = vy * .8 + (my - lmy) * .2; lmx = mx; lmy = my;
-  cur.style.setProperty('--ex', Math.max(-4, Math.min(4, vx * .5)).toFixed(1) + 'px');
-  cur.style.setProperty('--ey', Math.max(-4, Math.min(4, vy * .5)).toFixed(1) + 'px');
   requestAnimationFrame(frame);
 }
 
@@ -257,9 +235,8 @@ function open(i){
   wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0;
   if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
   opened = true; document.body.classList.add('open');
-  item.innerHTML = ITEMS[i]; item.classList.remove('has'); void item.offsetWidth; item.classList.add('has');
 }
-function close(){ opened = false; document.body.classList.remove('open'); item.classList.remove('has'); }
+function close(){ opened = false; document.body.classList.remove('open'); }
 
 btns.forEach(function(b, i){
   b.addEventListener('click', function(){ open(i); });
@@ -272,10 +249,8 @@ addEventListener('keydown', function(e){
   if (e.key === 'Enter' && sel >= 0 && document.activeElement && document.activeElement.tagName !== 'A'){ e.preventDefault(); open(sel); }
 });
 
-/* まばたき */
-(function blink(){ setTimeout(function(){ cur.classList.add('blink'); setTimeout(function(){ cur.classList.remove('blink'); blink(); }, 110); }, 2600 + Math.random() * 2600); })();
 
-/* 隠し：左上のロゴを素早く 5 回押すと、輪がくるっと回って笑う */
+/* 隠し：左上のロゴを素早く 5 回押すと、輪がくるっと回る */
 var taps = [];
 document.getElementById('logo').addEventListener('click', function(){
   var now = performance.now(); taps = taps.filter(function(t){ return now - t < 1600; }); taps.push(now);
