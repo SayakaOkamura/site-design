@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 ステータス画面（2026-11-24）。会社をレトロ RPG のステータス画面に。
+     設立 2025 年 6 月で Lv.1。そうび＝AI × ローコード、スキル＝サービス四つ、しんじょう＝企業理念、うしろだて＝株主、そうだん＝お問い合わせ。
+     書いてあることは公式の文と会社概要だけ（数字は作らない） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
+<style>
+:root{ --bg:#1a0b26; --win:#12071c; --ink:#f4eefb; --sub:#b9a6d6; --acc:#bb7eea; --dim:#6f5a88 }
+*{box-sizing:border-box}
+html,body{margin:0; min-height:100%; background:var(--bg); color:var(--ink); font-family:"DotGothic16",monospace; font-size:16px; line-height:1.75; -webkit-font-smoothing:none}
+button{font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; text-align:left}
+a{color:inherit}
+button:focus,a:focus{outline:none}
+button:focus-visible,a:focus-visible{outline:1px dashed var(--dim); outline-offset:2px}
+
+.screen{max-width:960px; margin:0 auto; padding:clamp(16px,4vw,40px) 16px 24px; display:grid; gap:14px;
+  grid-template-columns:220px 1fr; grid-template-areas:"name name" "cmd main" "msg msg"}
+/* ウィンドウ：白い二重の枠 */
+.win{position:relative; background:var(--win); border:3px solid var(--ink); border-radius:8px; padding:14px 18px; box-shadow:0 0 0 3px var(--win), 0 0 0 5px var(--dim)}
+.win h2{margin:0 0 8px; font-size:13px; font-weight:400; color:var(--sub); letter-spacing:.1em}
+
+#name{grid-area:name; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+#name canvas{width:64px; height:64px; image-rendering:pixelated; flex:none}
+#name .who{flex:1; min-width:220px}
+#name .who b{display:block; font-weight:400; font-size:clamp(18px,2.4vw,24px); line-height:1.4}
+#name .who span{color:var(--sub); font-size:13px}
+#name .lv{font-size:clamp(20px,3vw,28px); white-space:nowrap}
+#name .lv small{font-size:13px; color:var(--sub); margin-right:.3em}
+
+#cmd{grid-area:cmd; align-self:start}
+#cmd li{list-style:none}
+#cmd ul{margin:0; padding:0}
+#cmd button{display:block; width:100%; padding:5px 0 5px 22px; position:relative}
+#cmd button[aria-current="true"]::before{content:"▶"; position:absolute; left:0; animation:blink 1s steps(1) infinite}
+#cmd button:hover{color:var(--acc)}
+@keyframes blink{ 50%{opacity:0} }
+
+#main{grid-area:main; min-height:340px}
+.rows{margin:0; display:grid; grid-template-columns:7.5em 1fr; gap:6px 14px}
+.rows dt{color:var(--sub)}
+.rows dd{margin:0}
+.list{margin:0; padding:0}
+.list li{list-style:none}
+.list button{display:block; width:100%; padding:6px 0 6px 22px; position:relative}
+.list button[aria-current="true"]::before{content:"▶"; position:absolute; left:0; animation:blink 1s steps(1) infinite}
+.list button:hover{color:var(--acc)}
+.desc{margin-top:14px; padding-top:12px; border-top:2px dashed var(--dim); font-size:14px; color:var(--sub); min-height:6.5em}
+.desc b{color:var(--ink); font-weight:400}
+.yn{display:flex; gap:28px; margin-top:16px}
+.yn button,.yn a{padding-left:22px; position:relative; text-decoration:none}
+.yn [aria-current="true"]::before{content:"▶"; position:absolute; left:0; animation:blink 1s steps(1) infinite}
+.more{margin-top:10px; font-size:13px; color:var(--sub)}
+.more summary{cursor:pointer; color:var(--ink)}
+
+#msg{grid-area:msg; min-height:6em; font-size:15px}
+#msg .nx{position:absolute; right:14px; bottom:8px; animation:blink 1s steps(1) infinite; color:var(--acc)}
+footer{max-width:960px; margin:0 auto; padding:0 16px 24px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:12px; color:var(--dim)}
+.keys{font-size:12px; color:var(--dim)}
+
+@media (max-width:640px){
+  .screen{grid-template-columns:1fr; grid-template-areas:"name" "cmd" "main" "msg"}
+  #cmd ul{display:grid; grid-template-columns:1fr 1fr}
+  #main{min-height:0}
+  #name{flex-wrap:nowrap; gap:12px}
+  #name canvas{width:44px; height:44px}
+  #name .who{min-width:0}
+  #name .who b{font-size:16px}
+  #name .who span{font-size:11px}
+  .rows{grid-template-columns:1fr; gap:0}
+  .rows dd{margin-bottom:8px}
+}
+</style>
+
+<div class="screen">
+  <section id="name" class="win" aria-label="なまえ">
+    <canvas id="face" width="16" height="16" aria-hidden="true"></canvas>
+    <div class="who"><b>アルターデザインコンサルティング</b><span>株式会社　Alter Design Consulting Co., Ltd.</span></div>
+    <div class="lv"><small>Lv.</small>1</div>
+  </section>
+
+  <nav id="cmd" class="win" aria-label="コマンド">
+    <ul>
+      <li><button type="button" data-p="tsuyosa">つよさ</button></li>
+      <li><button type="button" data-p="skill">スキル</button></li>
+      <li><button type="button" data-p="shinjo">しんじょう</button></li>
+      <li><button type="button" data-p="ushiro">うしろだて</button></li>
+      <li><button type="button" data-p="soudan">そうだん</button></li>
+    </ul>
+  </nav>
+
+  <section id="main" class="win" aria-live="polite"></section>
+
+  <section id="msg" class="win" aria-live="polite"><span class="t"></span><span class="nx" aria-hidden="true">▼</span></section>
+</div>
+<footer>
+  <span class="keys">↑↓ でえらぶ　Enter できめる　Esc でもどる</span>
+  <span><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>　© 2025 Alter Design Consulting Co., Ltd.</span>
+</footer>
+
+<script>
+(function(){
+/* 顔：ロゴの輪をドットで */
+(function(){
+  var c = document.getElementById('face').getContext('2d');
+  for (var y = 0; y < 16; y++) for (var x = 0; x < 16; x++){
+    var d = Math.hypot(x - 7.5, y - 7.5);
+    if (d > 4.2 && d <= 7.4){ c.fillStyle = d > 6 ? '#654087' : d > 5.1 ? '#7b4fa6' : '#bb7eea'; c.fillRect(x, y, 1, 1); }
+  }
+})();
+
+var SKILLS = [
+  ['人間中心の次世代業務システム開発', '業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します'],
+  ['AI による意思決定支援と事業変革支援', '経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します'],
+  ['自律型・共創型の組織設計支援', 'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します'],
+  ['地域格差の解消を目指したデジタル支援', '都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します']
+];
+var PAGES = {
+  tsuyosa: { msg:'AI × ローコードで、「上流工程中心のシステム開発」に革新を。コンサルティングによる業務設計からエンジニアリングまでを行います。',
+    html:'<h2>つよさ</h2><dl class="rows">' +
+      '<dt>しょくぎょう</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd>' +
+      '<dt>そうび</dt><dd>AI × ローコード</dd>' +
+      '<dt>リーダー</dt><dd>藤田 靖広</dd>' +
+      '<dt>しきん</dt><dd>60百万円</dd>' +
+      '<dt>せつりつ</dt><dd>2025年6月</dd>' +
+      '<dt>きょてん</dt><dd>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）' +
+        '<details class="more"><summary>アクセス</summary>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</details></dd>' +
+      '</dl>' },
+  skill: { msg:'スキルを えらんでください。', list:SKILLS.map(function(s){ return s[0]; }), desc:function(i){ return SKILLS[i][1]; } },
+  shinjo: { msg:'経営の力で「遊ぶように働く世界」をデザインする。',
+    html:'<h2>しんじょう</h2><p style="margin:0 0 12px">経営の力で「遊ぶように働く世界」をデザインする</p>' +
+      '<p class="desc" style="margin:0"><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
+  ushiro: { msg:'うしろだての 4社。',
+    html:'<h2>うしろだて（株主）</h2><ul class="list"><li style="padding:6px 0">株式会社ＢｌｕｅＭｅｍｅ</li><li style="padding:6px 0">株式会社ハイ・アベイラビリティ・システムズ</li><li style="padding:6px 0">株式会社サーバーワークス・キャピタル</li><li style="padding:6px 0">リックソフト株式会社</li></ul>' },
+  soudan: { msg:'サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたら お気軽にお問い合わせください。',
+    html:'<h2>そうだん</h2><p style="margin:0">お問い合わせフォームへ すすみますか？</p><div class="yn"><a href="mailto:contact@alt-dsgn.co.jp" data-yn>はい</a><button type="button" data-yn data-no>いいえ</button></div>' }
+};
+
+var cmds = [].slice.call(document.querySelectorAll('#cmd button')), main = document.getElementById('main'), msgT = document.querySelector('#msg .t');
+var ci = 0, focus = 'cmd', si = 0, yi = 0;
+
+/* メッセージは一字ずつ（押すと最後まで） */
+var full = '', shown = 0, timer = 0;
+function say(s){ full = s; shown = 0; clearInterval(timer); timer = setInterval(function(){ shown += 1; msgT.textContent = full.slice(0, shown); if (shown >= full.length) clearInterval(timer); }, 28); }
+document.getElementById('msg').addEventListener('click', function(){ clearInterval(timer); msgT.textContent = full; });
+
+function mark(list, i){ list.forEach(function(b, k){ b.setAttribute('aria-current', k === i ? 'true' : 'false'); }); }
+function open(i, into){
+  ci = i; mark(cmds, ci);
+  var p = PAGES[cmds[ci].dataset.p];
+  if (p.list){
+    main.innerHTML = '<h2>スキル</h2><ul class="list">' + p.list.map(function(n, k){ return '<li><button type="button" data-k="' + k + '">' + n + '</button></li>'; }).join('') + '</ul><div class="desc"></div>';
+    var bs = [].slice.call(main.querySelectorAll('.list button'));
+    bs.forEach(function(b, k){ b.addEventListener('mouseenter', function(){ pick(k); }); b.addEventListener('click', function(){ focus = 'sub'; pick(k); }); b.addEventListener('focus', function(){ pick(k); }); });
+    pick(into ? si : 0, !into);
+  } else main.innerHTML = p.html;
+  var yn = [].slice.call(main.querySelectorAll('[data-yn]'));
+  yn.forEach(function(b, k){ b.addEventListener('mouseenter', function(){ yi = k; mark(yn, yi); }); });
+  var no = main.querySelector('[data-no]'); if (no) no.addEventListener('click', function(){ focus = 'cmd'; open(0); });
+  if (yn.length){ yi = 0; mark(yn, into ? 0 : -1); }
+  focus = into && (p.list || yn.length) ? 'sub' : 'cmd';
+  say(p.msg);
+}
+function pick(k, quiet){
+  si = k; var bs = [].slice.call(main.querySelectorAll('.list button')); mark(bs, quiet ? -1 : si);
+  main.querySelector('.desc').innerHTML = SKILLS[si][1];
+}
+cmds.forEach(function(b, i){
+  b.addEventListener('click', function(){ open(i, true); });
+});
+
+addEventListener('keydown', function(e){
+  var k = e.key, p = PAGES[cmds[ci].dataset.p];
+  var up = k === 'ArrowUp' || k === 'ArrowLeft', dn = k === 'ArrowDown' || k === 'ArrowRight', ok = k === 'Enter' || k === 'z' || k === ' ', back = k === 'Escape' || k === 'x';
+  if (!(up || dn || ok || back)) return;
+  e.preventDefault();
+  if (focus === 'cmd'){
+    if (up || dn) open((ci + (dn ? 1 : cmds.length - 1)) % cmds.length);
+    else if (ok) open(ci, true);
+    return;
+  }
+  if (back){ focus = 'cmd'; open(ci); return; }
+  if (p.list){
+    if (up || dn) pick((si + (dn ? 1 : p.list.length - 1)) % p.list.length);
+    return;
+  }
+  var yn = [].slice.call(main.querySelectorAll('[data-yn]'));
+  if (yn.length){
+    if (up || dn){ yi = 1 - yi; mark(yn, yi); }
+    else if (ok) yn[yi].click();
+  }
+});
+
+open(0);
+})();
+</script>
