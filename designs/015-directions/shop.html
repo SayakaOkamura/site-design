@@ -17,75 +17,75 @@ html,body{height:100%}
 body{background:var(--D); color:var(--L); font-family:"DotGothic16",monospace; font-size:16px; line-height:1.75; overflow:hidden; -webkit-font-smoothing:none}
 button{font:inherit}
 .sprite{display:block; height:auto; image-rendering:pixelated; shape-rendering:crispEdges}
-.wallbg{background:repeating-linear-gradient(90deg,var(--M) 0 calc(var(--p)*11),var(--D) calc(var(--p)*11) calc(var(--p)*12))}
+.wallbg{background:repeating-linear-gradient(90deg,var(--M) 0 calc(var(--p)*5),var(--D) calc(var(--p)*5) calc(var(--p)*6))}
 
 /* ===== 店の中 ===== */
 .game{position:fixed; inset:0 0 68px 0; overflow:hidden;
-  background:linear-gradient(transparent 84%,var(--W) 84% calc(84% + var(--p)),var(--D) calc(84% + var(--p)) calc(84% + var(--p)*3),var(--M) calc(84% + var(--p)*3) calc(84% + var(--p)*4),var(--D) calc(84% + var(--p)*4)),repeating-linear-gradient(90deg,var(--M) 0 calc(var(--p)*11),var(--D) calc(var(--p)*11) calc(var(--p)*12))}
+  background:linear-gradient(transparent 84%,var(--W) 84% calc(84% + var(--p)),var(--D) calc(84% + var(--p)) calc(84% + var(--p)*2),var(--M) calc(84% + var(--p)*2) calc(84% + var(--p)*2),var(--D) calc(84% + var(--p)*2)),repeating-linear-gradient(90deg,var(--M) 0 calc(var(--p)*5),var(--D) calc(var(--p)*5) calc(var(--p)*6))}
 /* 一枚の幅は画面の 76%。両隣が 12% ずつ見える */
 .strip{position:absolute; top:0; bottom:0; left:12vw; width:228vw; display:grid; grid-template-columns:repeat(3,76vw);
   transform:translateX(-76vw); transition:transform .42s steps(7)}
 .panel{position:relative; overflow:hidden}
 .panel.side{cursor:pointer}
 .floor{position:absolute; left:0; right:0; bottom:0; height:16%; background:var(--D); border-top:var(--p) solid var(--W)}
-.floor::before{content:""; position:absolute; left:0; right:0; top:calc(var(--p)*3); height:var(--p); background:var(--M)}
+.floor{background:linear-gradient(90deg,var(--D) calc(var(--p)*5),transparent 0) 0 calc(var(--p)*2)/calc(var(--p)*6) calc(var(--p)*4),linear-gradient(var(--D) calc(var(--p)*3),var(--M) 0) 0 calc(var(--p)*2)/calc(var(--p)*6) calc(var(--p)*4),var(--D)}
+.floor::before{content:""; position:absolute; left:0; right:0; top:calc(var(--p)*2); height:var(--p); background:var(--M)}
 
 /* 真ん中：店主とカウンター */
-.keeper{position:absolute; left:50%; bottom:calc(16% + var(--p)*24); transform:translateX(-50%)}
-.counter{position:absolute; left:50%; transform:translateX(-50%); width:calc(var(--p)*96); bottom:16%; height:calc(var(--p)*26);
-  background:var(--W); border:var(--p) solid var(--D); border-top:calc(var(--p)*2) solid var(--A)}
-.counter::after{content:""; position:absolute; left:calc(var(--p)*6); right:calc(var(--p)*6); top:calc(var(--p)*7); height:var(--p); background:var(--D)}
-.sign{position:absolute; top:6%; left:50%; transform:translateX(-50%); padding:var(--p) calc(var(--p)*4); border:var(--p) solid var(--W); background:var(--D); color:var(--A); letter-spacing:.15em; white-space:nowrap}
-.moya{position:absolute; left:calc(50% + var(--p)*14); bottom:calc(16% + var(--p)*70); cursor:pointer; display:none; z-index:2}
+.keeper{position:absolute; left:50%; bottom:calc(16% + var(--p)*12); transform:translateX(-50%)}
+.counter{position:absolute; left:50%; transform:translateX(-50%); width:calc(var(--p)*48); bottom:16%; height:calc(var(--p)*13);
+  background:var(--W); border:var(--p) solid var(--D); border-top:calc(var(--p)) solid var(--A)}
+.counter{background:repeating-linear-gradient(90deg,var(--W) 0 calc(var(--p)*7),var(--D) calc(var(--p)*7) calc(var(--p)*8)); box-shadow:inset 0 calc(var(--p)*-1) 0 var(--D)}
+.counter::before{content:""; position:absolute; left:0; right:0; top:0; height:var(--p); background:var(--S)}
+.counter::after{content:""; position:absolute; left:calc(var(--p)*3); right:calc(var(--p)*3); top:calc(var(--p)*4); height:var(--p); background:var(--D)}
+.sign{position:absolute; top:6%; left:50%; transform:translateX(-50%); padding:var(--p) calc(var(--p)*2); border:var(--p) solid var(--W); background:var(--D); color:var(--A); letter-spacing:.15em; white-space:nowrap}
+.moya{position:absolute; left:calc(50% + var(--p)*7); bottom:calc(16% + var(--p)*35); cursor:pointer; display:none; z-index:2}
 .moya.show{display:block}
 .moya:hover{translate:0 calc(var(--p)*-1)}
 
 /* 扉（出口） */
-.door{position:absolute; right:4%; bottom:16%; width:calc(var(--p)*20); height:calc(var(--p)*42); background:var(--W); border:var(--p) solid var(--D); cursor:pointer; padding:0}
-.door::before{content:""; position:absolute; left:calc(var(--p)*3); right:calc(var(--p)*3); top:calc(var(--p)*4); height:calc(var(--p)*10); background:var(--D)}
-.door::after{content:""; position:absolute; right:calc(var(--p)*3); top:calc(var(--p)*22); width:calc(var(--p)*2); height:calc(var(--p)*2); background:var(--S)}
-.door .plate{position:absolute; left:50%; bottom:calc(100% + var(--p)*2); transform:translateX(-50%); background:var(--L); color:var(--D); padding:0 calc(var(--p)*2); border:var(--p) solid var(--D); white-space:nowrap; line-height:1.4}
-.door .arrow{position:absolute; left:50%; bottom:calc(100% + var(--p)*10); transform:translateX(-50%); color:var(--A); display:none; animation:bob .8s steps(2) infinite}
+.door{box-shadow:inset calc(var(--p)*-1) 0 0 var(--D); position:absolute; right:4%; bottom:16%; width:calc(var(--p)*10); height:calc(var(--p)*21); background:var(--W); border:var(--p) solid var(--D); cursor:pointer; padding:0}
+.door::before{content:""; position:absolute; left:calc(var(--p)*2); right:calc(var(--p)*2); top:calc(var(--p)*2); height:calc(var(--p)*5); background:var(--D)}
+.door::after{content:""; position:absolute; right:calc(var(--p)*2); top:calc(var(--p)*11); width:calc(var(--p)); height:calc(var(--p)); background:var(--S)}
+.door .plate{position:absolute; left:50%; bottom:calc(100% + var(--p)); transform:translateX(-50%); background:var(--L); color:var(--D); padding:0 calc(var(--p)); border:var(--p) solid var(--D); white-space:nowrap; line-height:1.4}
+.door .arrow{position:absolute; left:50%; bottom:calc(100% + var(--p)*5); transform:translateX(-50%); color:var(--A); display:none; animation:bob .8s steps(2) infinite}
 .door.ready .arrow{display:block}
 .door:hover{background:var(--M)}
 
-/* 左：商品棚（二段）。同じ品を五つ積む（下三・上二）。箱は 16×20 ドット */
-.shelf{position:absolute; right:4%; top:8%; border:calc(var(--p)*3) solid var(--W); border-bottom:0; background:var(--D); display:grid}
-.tier{border-bottom:calc(var(--p)*3) solid var(--W); display:flex; gap:calc(var(--p)*10); align-items:flex-end; padding:calc(var(--p)*9) calc(var(--p)*8) 0}
-.grp{position:relative; width:calc(var(--p)*48); height:calc(var(--p)*40); background:none; border:0; padding:0; cursor:pointer}
+/* 左：商品棚（二段）。同じ品を三つ並べる。箱は 10×12 ドット */
+.shelf{box-shadow:inset var(--p) var(--p) 0 var(--D); position:absolute; right:4%; bottom:16%; border:calc(var(--p)*2) solid var(--W); border-bottom:0; background:var(--D); display:grid}
+.tier{box-shadow:inset 0 calc(var(--p)*-1) 0 var(--D); border-bottom:calc(var(--p)*2) solid var(--W); display:flex; gap:calc(var(--p)*6); align-items:flex-end; padding:calc(var(--p)*6) calc(var(--p)*4) 0}
+.grp{position:relative; width:calc(var(--p)*31); height:calc(var(--p)*12); background:none; border:0; padding:0; cursor:pointer}
 .panel:not(.here) .grp,.panel:not(.here) .poster{pointer-events:none}
-.grp .box{position:absolute; width:calc(var(--p)*16); height:calc(var(--p)*20); padding:calc(var(--p)*4) 0 0}
-.grp .box:nth-child(1){left:0; bottom:0}
-.grp .box:nth-child(2){left:calc(var(--p)*16); bottom:0}
-.grp .box:nth-child(3){left:calc(var(--p)*32); bottom:0}
-.grp .box:nth-child(4){left:calc(var(--p)*8); bottom:calc(var(--p)*20)}
-.grp .box:nth-child(5){left:calc(var(--p)*24); bottom:calc(var(--p)*20)}
+.grp .box{position:absolute; bottom:0; width:calc(var(--p)*10); height:calc(var(--p)*12); padding:calc(var(--p)*3) 0 0}
+.grp .box:nth-child(1){left:0}
+.grp .box:nth-child(2){left:calc(var(--p)*10)}
+.grp .box:nth-child(3){left:calc(var(--p)*20)}
 .grp:hover .box{translate:0 calc(var(--p)*-1)}
-.grp:hover .box:nth-child(n+4){translate:0 calc(var(--p)*-2)}
 .grp .box span{display:none}
 .grp .box .sprite{background:none; padding:0}
 /* 値札：棚板から下げる */
-.ptag{position:absolute; left:50%; top:calc(100% + var(--p)*3); transform:translateX(-50%); z-index:1; background:var(--L); color:var(--D); border:var(--p) solid var(--D);
-  line-height:1.4; padding:0 calc(var(--p)*2); white-space:nowrap}
+.ptag{position:absolute; left:50%; top:calc(100% + var(--p)*2); transform:translateX(-50%); z-index:1; background:var(--L); color:var(--D); border:var(--p) solid var(--D);
+  line-height:1.4; padding:0 calc(var(--p)); white-space:nowrap}
 .grp:hover .ptag{background:var(--S)}
 
 /* 品はパッケージ。正面に名前が刷ってある */
 .box{--bc:var(--A); --bt:var(--D); position:relative; background:var(--bc); color:var(--bt);
   border:var(--p) solid var(--D); box-shadow:var(--p) 0 0 var(--D);
-  display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:calc(var(--p)*2); padding:calc(var(--p)*7) calc(var(--p)*2) calc(var(--p)*2); transition:translate .1s steps(2)}
-.box::before{content:""; position:absolute; top:calc(var(--p)*2); left:0; right:0; height:var(--p); background:var(--D)}
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:calc(var(--p)); padding:calc(var(--p)*4) calc(var(--p)) calc(var(--p)); transition:translate .1s steps(2)}
+.box::before{content:""; position:absolute; top:calc(var(--p)); left:0; right:0; height:var(--p); background:var(--D)}
 .box .sprite{background:var(--D); padding:var(--p); box-sizing:content-box}
 .box span{line-height:1.4; text-align:center; white-space:pre-line}
 .box.c1{--bc:var(--L)} .box.c2{--bc:var(--S)} .box.c3{--bc:var(--M); --bt:var(--L)}
 
 /* 右：貼り紙と看板（傾けずに重ねる） */
-.wall{position:absolute; left:4%; top:6%; width:calc(var(--p)*190); height:calc(var(--p)*96)}
+.wall{position:absolute; left:4%; top:6%; width:calc(var(--p)*95); height:calc(var(--p)*48)}
 .poster{position:absolute; background:none; border:0; padding:0; cursor:pointer; color:var(--D); text-align:center; transition:translate .1s steps(2)}
 .poster:hover{translate:0 calc(var(--p)*-1); z-index:4}
-.pp{position:relative; border:var(--p) solid var(--D); box-shadow:var(--p) var(--p) 0 var(--D); padding:calc(var(--p)*3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--p); line-height:1.4; width:100%; height:100%}
-.pin::before,.pin::after{content:""; position:absolute; top:var(--p); width:calc(var(--p)*2); height:calc(var(--p)*2); background:var(--A)}
+.pp{outline:0; position:relative; border:var(--p) solid var(--D); box-shadow:var(--p) var(--p) 0 var(--D); padding:calc(var(--p)*2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--p); line-height:1.4; width:100%; height:100%}
+.pin::before,.pin::after{content:""; position:absolute; top:var(--p); width:calc(var(--p)); height:calc(var(--p)); background:var(--A)}
 .pin::before{left:var(--p)} .pin::after{right:var(--p)}
-.tape::before{content:""; position:absolute; top:calc(var(--p)*-3); left:50%; width:calc(var(--p)*12); height:calc(var(--p)*4); translate:-50% 0; background:var(--L); border:var(--p) solid var(--M)}
+.tape::before{content:""; position:absolute; top:calc(var(--p)*-2); left:50%; width:calc(var(--p)*6); height:calc(var(--p)*2); translate:-50% 0; background:var(--L); border:var(--p) solid var(--M)}
 .pp small{font-size:16px}
 .pp b{font-weight:400; white-space:pre-line}
 .p-rinen .pp{background:var(--L)}
@@ -95,11 +95,8 @@ button{font:inherit}
 .p-map .pp{background:var(--L)}
 /* 飾りの紙（押せない） */
 .scrap{position:absolute; border:var(--p) solid var(--D); pointer-events:none;
-  background:repeating-linear-gradient(var(--bg,var(--L)) 0 calc(var(--p)*3),var(--M) calc(var(--p)*3) calc(var(--p)*4))}
-.scrap.dots{background:var(--bg,var(--L)) radial-gradient(var(--D) 0 0) 0 0/calc(var(--p)*4) calc(var(--p)*4)}
-.scrap.dots{background:
-  linear-gradient(90deg,var(--bg,var(--L)) calc(var(--p)*3),transparent 0) 0 0/calc(var(--p)*4) calc(var(--p)*4),
-  linear-gradient(var(--bg,var(--L)) calc(var(--p)*3),var(--D) 0) 0 0/calc(var(--p)*4) calc(var(--p)*4)}
+  background:repeating-linear-gradient(var(--bg,var(--L)) 0 calc(var(--p)*2),var(--M) calc(var(--p)*2) calc(var(--p)*3))}
+.scrap.dots{background:linear-gradient(90deg,var(--bg,var(--L)) calc(var(--p)*2),transparent 0) 0 0/calc(var(--p)*3) calc(var(--p)*3),linear-gradient(var(--bg,var(--L)) calc(var(--p)*2),var(--D) 0) 0 0/calc(var(--p)*3) calc(var(--p)*3)}
 
 /* 左右（端に寄せたときだけ） */
 .turn{position:absolute; top:0; bottom:0; width:12vw; z-index:3; background:none; border:0; color:var(--A); font-size:32px; cursor:pointer; opacity:0; transition:opacity .15s steps(2)}
@@ -108,15 +105,15 @@ button{font:inherit}
 .turn[hidden]{display:none}
 
 /* 手に取る（裏面） */
-.look{position:absolute; inset:0; z-index:5; display:none; place-items:center; background:repeating-linear-gradient(0deg,var(--D) 0 var(--p),transparent var(--p) calc(var(--p)*2))}
+.look{position:absolute; inset:0; z-index:5; display:none; place-items:center; background:repeating-linear-gradient(0deg,var(--D) 0 var(--p),transparent var(--p) calc(var(--p)))}
 .look.show{display:grid; animation:pop .18s steps(3)}
-.card{width:min(90%,680px); display:grid; grid-template-columns:auto 1fr; gap:calc(var(--p)*6); align-items:center;
-  background:var(--D); border:var(--p) solid var(--L); box-shadow:0 0 0 var(--p) var(--D); padding:calc(var(--p)*6); position:relative; max-height:calc(100% - 24px); overflow:auto}
-.card #big .box{width:calc(var(--p)*32)}
+.card{width:min(90%,680px); display:grid; grid-template-columns:auto 1fr; gap:calc(var(--p)*3); align-items:center;
+  background:var(--D); border:var(--p) solid var(--L); box-shadow:0 0 0 var(--p) var(--D); padding:calc(var(--p)*3); position:relative; max-height:calc(100% - 24px); overflow:auto}
+.card #big .box{width:calc(var(--p)*18)}
 .card #big .poster{pointer-events:none; position:relative}
 .card h2{font-size:16px; font-weight:400; color:var(--A); margin-bottom:var(--p); line-height:1.6}
 .card p{white-space:pre-line}
-.card .x{position:absolute; top:var(--p); right:calc(var(--p)*2); background:none; border:0; color:var(--L); cursor:pointer}
+.card .x{position:absolute; top:var(--p); right:calc(var(--p)); background:none; border:0; color:var(--L); cursor:pointer}
 .askb{position:absolute; top:22%; background:none; border:0; padding:0; cursor:pointer; color:var(--D); font-size:32px; line-height:1}
 .askb span{position:absolute; left:0; right:0; top:14%; text-align:center}
 .look.kr .askb{right:3vw} .look.kr .askb svg{transform:scaleX(-1)}
@@ -124,13 +121,13 @@ button{font:inherit}
 .askb:hover{translate:0 calc(var(--p)*-1)}
 
 /* 会話のときだけ出るテキストウィンドウ */
-.talk{position:absolute; left:50%; bottom:calc(var(--p)*3); transform:translateX(-50%); width:min(92%,760px); z-index:6;
+.talk{position:absolute; left:50%; bottom:calc(var(--p)*2); transform:translateX(-50%); width:min(92%,760px); z-index:6;
   background:var(--D); border:var(--p) solid var(--L); box-shadow:0 0 0 var(--p) var(--D);
-  padding:calc(var(--p)*3) calc(var(--p)*5) calc(var(--p)*4); cursor:pointer; display:none}
+  padding:calc(var(--p)*2) calc(var(--p)*3) calc(var(--p)*2); cursor:pointer; display:none}
 .talk.show{display:block; animation:pop .15s steps(2)}
 .talk .who{color:var(--A)}
 .talk .txt{min-height:3.5em; white-space:pre-wrap}
-.talk .nx{position:absolute; right:calc(var(--p)*3); bottom:var(--p); color:var(--A); animation:blink .7s steps(1) infinite; display:none}
+.talk .nx{position:absolute; right:calc(var(--p)*2); bottom:var(--p); color:var(--A); animation:blink .7s steps(1) infinite; display:none}
 .talk.done .nx{display:block}
 
 /* 質問バー：レトロにしないが、地の色に馴染ませる */
@@ -149,40 +146,40 @@ body.outside .ask{opacity:0; pointer-events:none}
 .front{position:fixed; inset:0; z-index:10; display:grid; place-items:center; transition:opacity .4s steps(4)}
 .front[hidden]{display:none}
 .front.fade{opacity:0; pointer-events:none}
-.facade{position:relative; width:calc(var(--p)*130); height:calc(var(--p)*120); display:grid; justify-items:center; align-content:end}
-.facade .roof{position:absolute; top:0; left:calc(var(--p)*-8); right:calc(var(--p)*-8); height:calc(var(--p)*18); border:var(--p) solid var(--D);
-  background:repeating-linear-gradient(90deg,var(--A) 0 calc(var(--p)*10),var(--S) calc(var(--p)*10) calc(var(--p)*20))}
-.facade .board{position:absolute; top:calc(var(--p)*24); left:50%; transform:translateX(-50%); padding:var(--p) calc(var(--p)*4); border:var(--p) solid var(--D); background:var(--D); color:var(--A); letter-spacing:.15em; white-space:nowrap; z-index:1}
-.facade .wallf{position:absolute; top:calc(var(--p)*18); left:0; right:0; bottom:0; background:var(--W); border:var(--p) solid var(--D); border-top:0}
-.facade .win{position:absolute; bottom:calc(var(--p)*14); width:calc(var(--p)*28); height:calc(var(--p)*28); background:var(--D); border:var(--p) solid var(--S)}
+.facade{position:relative; width:calc(var(--p)*65); height:calc(var(--p)*60); display:grid; justify-items:center; align-content:end}
+.facade .roof{box-shadow:0 var(--p) 0 var(--D); position:absolute; top:0; left:calc(var(--p)*-4); right:calc(var(--p)*-4); height:calc(var(--p)*9); border:var(--p) solid var(--D);
+  background:repeating-linear-gradient(90deg,var(--A) 0 calc(var(--p)*5),var(--S) calc(var(--p)*5) calc(var(--p)*10))}
+.facade .board{position:absolute; top:calc(var(--p)*12); left:50%; transform:translateX(-50%); padding:var(--p) calc(var(--p)*2); border:var(--p) solid var(--D); background:var(--D); color:var(--A); letter-spacing:.15em; white-space:nowrap; z-index:1}
+.facade .wallf{background:repeating-linear-gradient(var(--W) 0 calc(var(--p)*4),var(--D) calc(var(--p)*4) calc(var(--p)*5)) !important; position:absolute; top:calc(var(--p)*9); left:0; right:0; bottom:0; background:var(--W); border:var(--p) solid var(--D); border-top:0}
+.facade .win{position:absolute; bottom:calc(var(--p)*7); width:calc(var(--p)*14); height:calc(var(--p)*14); background:var(--D); border:var(--p) solid var(--S)}
 .facade .win::after{content:""; position:absolute; left:calc(50% - var(--p)/2); top:0; bottom:0; width:var(--p); background:var(--S)}
-.facade .win.l{left:calc(var(--p)*10)} .facade .win.r{right:calc(var(--p)*10)}
-.fdoor{position:relative; z-index:1; width:calc(var(--p)*32); height:calc(var(--p)*60); background:var(--D); border:var(--p) solid var(--D); border-bottom:0; cursor:pointer; padding:0}
-.fdoor .leaf{position:absolute; inset:0; background:var(--M); transform-origin:left center; transition:transform .5s steps(5)}
-.fdoor .leaf::before{content:""; position:absolute; left:calc(var(--p)*5); right:calc(var(--p)*5); top:calc(var(--p)*6); height:calc(var(--p)*14); background:var(--D)}
-.fdoor .leaf::after{content:""; position:absolute; right:calc(var(--p)*4); top:calc(var(--p)*32); width:calc(var(--p)*3); height:calc(var(--p)*3); background:var(--S)}
-.fdoor .tag{position:absolute; left:50%; top:calc(var(--p)*24); transform:translateX(-50%); background:var(--L); color:var(--D); padding:0 calc(var(--p)*2); border:var(--p) solid var(--D); z-index:1; white-space:nowrap; line-height:1.4}
+.facade .win.l{left:calc(var(--p)*5)} .facade .win.r{right:calc(var(--p)*5)}
+.fdoor{position:relative; z-index:1; width:calc(var(--p)*16); height:calc(var(--p)*30); background:var(--D); border:var(--p) solid var(--D); border-bottom:0; cursor:pointer; padding:0}
+.fdoor .leaf{position:absolute; inset:0; background:var(--M); box-shadow:inset calc(var(--p)*-1) 0 0 var(--D); transform-origin:left center; transition:transform .5s steps(5)}
+.fdoor .leaf::before{content:""; position:absolute; left:calc(var(--p)*3); right:calc(var(--p)*3); top:calc(var(--p)*3); height:calc(var(--p)*7); background:var(--D)}
+.fdoor .leaf::after{content:""; position:absolute; right:calc(var(--p)*2); top:calc(var(--p)*16); width:calc(var(--p)*2); height:calc(var(--p)*2); background:var(--S)}
+.fdoor .tag{position:absolute; left:50%; top:calc(var(--p)*12); transform:translateX(-50%); background:var(--L); color:var(--D); padding:0 calc(var(--p)); border:var(--p) solid var(--D); z-index:1; white-space:nowrap; line-height:1.4}
 .fdoor.open .leaf{transform:scaleX(.15)}
 .fdoor.open .tag{display:none}
 .fdoor:hover .leaf{background:var(--W)}
-.hint{position:absolute; left:50%; bottom:calc(100% + var(--p)*2); transform:translateX(-50%); color:var(--A); animation:bob .8s steps(2) infinite}
+.hint{position:absolute; left:50%; bottom:calc(100% + var(--p)); transform:translateX(-50%); color:var(--A); animation:bob .8s steps(2) infinite}
 .bell{position:absolute; left:62%; top:30%; color:var(--L); display:none; animation:pop .2s steps(3); white-space:nowrap; z-index:2}
 .bell.show{display:block}
-.ground{position:fixed; left:0; right:0; bottom:0; height:calc(50% - var(--p)*60); background:var(--D); border-top:var(--p) solid var(--W)}
+.ground{position:fixed; left:0; right:0; bottom:0; height:calc(50% - var(--p)*30); background:var(--D); border-top:var(--p) solid var(--W)}
 
 /* 出口の外：フッターの役 */
-.bye{position:relative; z-index:1; width:min(92vw,560px); margin-top:calc(var(--p)*5); text-align:center}
+.bye{position:relative; z-index:1; width:min(92vw,560px); margin-top:calc(var(--p)*3); text-align:center}
 .bye h2{font-weight:400; font-size:16px; color:var(--A); margin-bottom:var(--p)}
-.bye .msg{margin:calc(var(--p)*3) 0}
-.bye .btns{display:flex; gap:calc(var(--p)*3); justify-content:center; flex-wrap:wrap}
-.bye a,.bye button{display:inline-block; padding:var(--p) calc(var(--p)*4); border:var(--p) solid var(--L); color:var(--L); background:var(--D); text-decoration:none; cursor:pointer}
+.bye .msg{margin:calc(var(--p)*2) 0}
+.bye .btns{display:flex; gap:calc(var(--p)*2); justify-content:center; flex-wrap:wrap}
+.bye a,.bye button{display:inline-block; padding:var(--p) calc(var(--p)*2); border:var(--p) solid var(--L); color:var(--L); background:var(--D); text-decoration:none; cursor:pointer}
 .bye a.main{background:var(--A); border-color:var(--A); color:var(--D)}
 .bye a:hover,.bye button:hover{background:var(--M)}
 #exitF{align-content:center; overflow:auto; padding:24px 16px}
-#exitF .facade{width:calc(var(--p)*80); height:calc(var(--p)*76)}
-#exitF .facade .win{width:calc(var(--p)*16); height:calc(var(--p)*16); bottom:calc(var(--p)*10)}
-#exitF .facade .win.l{left:calc(var(--p)*5)} #exitF .facade .win.r{right:calc(var(--p)*5)}
-#exitF .fdoor{width:calc(var(--p)*22); height:calc(var(--p)*42)}
+#exitF .facade{width:calc(var(--p)*40); height:calc(var(--p)*38)}
+#exitF .facade .win{width:calc(var(--p)*8); height:calc(var(--p)*8); bottom:calc(var(--p)*5)}
+#exitF .facade .win.l{left:calc(var(--p)*3)} #exitF .facade .win.r{right:calc(var(--p)*3)}
+#exitF .fdoor{width:calc(var(--p)*11); height:calc(var(--p)*21)}
 
 @keyframes blink{50%{opacity:0}}
 @keyframes bob{50%{translate:0 -4px}}
@@ -285,7 +282,7 @@ function px(svg, rows){
 let P = 4;
 function fitDot(){
   const g = innerHeight - (innerHeight <= 460 ? 54 : 68);
-  P = Math.max(2, Math.min(6, Math.floor(Math.min(innerWidth * 0.76 / 200, g / 130))));
+  P = Math.max(2, Math.min(12, Math.floor(Math.min(innerWidth * 0.76 / 100, g / 65))));
   document.documentElement.style.setProperty('--p', P + 'px');
   document.querySelectorAll('svg.sprite').forEach(sizeOf);
 }
@@ -318,35 +315,27 @@ const KEEPER = [
   "..oosssoooooooooooooosssoo",
 ];
 const MOYA = [
-  "....lllll.llll....",
-  "..llllllllllllll..",
-  ".llllllllllllllll.",
-  "llllooolloolloolll",
-  "llllooolloolloolll",
-  ".llllllllllllllll.",
-  "..llllllllllllll..",
-  "....llll.llll.....",
-  "..ll..............",
-  ".l................",
+  ".lll.lll.",
+  "lllllllll",
+  "llolololl",
+  "lllllllll",
+  ".lll.lll.",
+  "l........",
 ];
 const ASKMOYA = [
-  "......llllllll.llllll.......",
-  "...lllllllllllllllllllll....",
-  ".llllllllllllllllllllllllll.",
-  "llllllllllllllllllllllllllll",
-  "llllllllllllllllllllllllllll",
-  "llllllllllllllllllllllllllll",
-  ".llllllllllllllllllllllllll.",
-  "...lllllllllllllllllllll....",
-  "......llllll.lllllll........",
-  "..ll........................",
-  ".l..........................",
+  "...llll.lll...",
+  ".llllllllllll.",
+  "llllllllllllll",
+  "llllllllllllll",
+  ".llllllllllll.",
+  "...lll.llll...",
+  "l.............",
 ];
 const SPR = {
-  monitor:["oooooooooooo","oaaaaaaaaaao","oallllaaaaao","oaaaaaaaaaao","oallllllaaao","oaaaaaaaaaao","oooooooooooo",".....oo.....","...wwwwww...","..wwwwwwww.."],
-  chart:  ["oooooooooooo","ollllllllllo","olllllllaalo","olllllllaalo","ollllmmlaalo","ollllmmlaalo","olwwlmmlaalo","olwwlmmlaalo","ollllllllllo","oooooooooooo"],
-  people: ["..ss....ss..",".ssss..ssss.",".ssss..ssss.","..ss....ss..",".mmmm..aaaa.","mmmmmm.aaaaa","....ss......","...ssss.....","...wwww.....","..wwwwww...."],
-  pin:    ["....oooo....","...oaaaao...","..oaallaao..","..oallllao..","..oaallaao..","...oaaaao...","....oaao....",".....oo.....","..mmmmmmmm..",".mmmmmmmmmm."],
+  monitor:["oooooo","oallao","oaaaao","oooooo","..ww..",".wwww."],
+  chart:  ["oooooo","olllao","ollmao","owlmao","owlmao","oooooo"],
+  people: [".s..s.","sss.ss",".s..s.","mmm.aa","mmm.aa","......"],
+  pin:    ["..aa..",".alla.",".alla.","..aa..","...a..","mmmmmm"],
 };
 
 /* 左：商品 */
@@ -370,21 +359,21 @@ const ART = {
   map:  ["mmmm.ww.mmmmmm.ww.mmm","mmmm.ww.mmmmmm.ww.mmm","wwwwwwwwwwwwwwwwwwwww","mmmm.ww.mmmaam.ww.mmm","mmmm.ww.mmaaaa.ww.mmm","mmmm.ww.mmmaam.ww.mmm","mmmm.ww.mmmoom.ww.mmm","wwwwwwwwwwwwwwwwwwwww","mm.ww.mmmmmmmmm.ww.mm","mm.ww.mmmmmmmmm.ww.mm","mm.ww.mmmmmmmmm.ww.mm"],
 };
 const POSTERS = [
-  {id:'r1', cls:'p-rinen pin', art:'rinen', label:'企業理念', face:'遊ぶように働く', name:'企業理念', pos:[0,6,46,52], k:2,
+  {id:'r1', cls:'p-rinen pin', art:'rinen', label:'企業理念', face:'遊ぶように働く', name:'企業理念', pos:[0,3,23,26],
     desc:'経営の力で「遊ぶように働く世界」をデザインする\n\n「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと',
     talk:'遊ぶようにってのは、楽するって意味じゃないよ。夢中になって、自分から作ってる状態で働くこと。' },
-  {id:'r2', cls:'p-jigyo pin', label:'事業内容', face:'コンサルティング\nシステム開発', name:'事業内容', pos:[50,0,62,24],
+  {id:'r2', cls:'p-jigyo pin', label:'事業内容', face:'コンサルティング\nシステム開発', name:'事業内容', pos:[25,0,31,12],
     desc:'AI技術を活用した組織最適化に関するコンサルティング事業\nAIとローコードを組み合わせた次世代型のシステム開発事業',
     talk:'ざっくり二本。組織のコンサルと、システム開発。どっちも AI を使う。' },
-  {id:'r3', cls:'p-gaiyo tape', label:'会社概要', face:'設立 2025.6', name:'会社概要', pos:[140,10,44,30],
+  {id:'r3', cls:'p-gaiyo tape', label:'会社概要', face:'設立 2025.6', name:'会社概要', pos:[70,5,22,15],
     desc:'株式会社アルターデザインコンサルティング\n代表者　藤田 靖広\n設立　2025年6月\n資本金　60百万円',
     talk:'できたのは 2025 年の 6 月。まだ新しい店だよ。' },
-  {id:'r4', cls:'p-map pin', art:'map', label:'アクセス', face:'御成門駅 徒歩2分', name:'アクセス', pos:[60,34,58,54], k:2,
+  {id:'r4', cls:'p-map pin', art:'map', label:'アクセス', face:'御成門駅 徒歩2分', name:'アクセス', pos:[30,17,29,27],
     desc:'東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）\n\n御成門駅 徒歩2分（都営地下鉄三田線）\n大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）\n神谷町駅 徒歩10分（東京メトロ日比谷線）\n汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）\n虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）\n虎ノ門駅 徒歩12分（東京メトロ銀座線）\n新橋駅 徒歩12分（JR山手線・京浜東北線）\n浜松町駅 徒歩14分（JR山手線・京浜東北線）',
     talk:'御成門駅から歩いて2分。まあ、来るならどうぞ。' },
 ];
 /* 飾りの紙：[left, top, width, height, 角度, 色, 模様] */
-const SCRAPS = [[38,50,24,30,'S',''],[4,62,30,30,'A','dots'],[118,40,30,36,'L',''],[150,46,26,26,'M','dots'],[116,78,26,16,'L',''],[30,84,22,12,'L','dots'],[110,0,26,20,'L','dots']];
+const SCRAPS = [[19,25,12,15,'S',''],[2,31,15,15,'A','dots'],[59,20,15,18,'L',''],[75,23,13,13,'M','dots'],[58,39,13,8,'L',''],[15,42,11,6,'L','dots'],[55,0,13,10,'L','dots']];
 const ALL = [...GOODS, ...POSTERS];
 
 const keys = [
@@ -404,7 +393,7 @@ const moyaLines = ['…まあ、ゆっくり見てって。', '左は売り物�
 let idleN = 0, moyaN = 0;
 
 /* ---------- 組み立て ---------- */
-px($('keeper'), KEEPER); $('keeper').dataset.k = 2; px($('moya'), MOYA); px($('askmoya'), ASKMOYA); fitDot(); addEventListener('resize', fitDot);
+px($('keeper'), KEEPER); $('keeper').dataset.k = 1; px($('moya'), MOYA); px($('askmoya'), ASKMOYA); fitDot(); addEventListener('resize', fitDot);
 function boxOf(it, i, k){
   const d = document.createElement('div'); d.className = 'box c' + i;
   const t = document.createElement('span'); t.textContent = it.short;
@@ -423,7 +412,7 @@ function posterOf(it){
   row.forEach(it=>{
     const g = document.createElement('button'); g.className = 'grp'; g.setAttribute('aria-label', it.name);
     const i = GOODS.indexOf(it);
-    for (let k=0; k<5; k++) g.append(boxOf(it, i));
+    for (let k=0; k<3; k++) g.append(boxOf(it, i));
     const tg = document.createElement('span'); tg.className = 'ptag'; tg.textContent = it.short.replace(/\n/g,''); g.append(tg);
     g.onclick = e=>{ e.stopPropagation(); show(it.id); };
     tier.append(g);
