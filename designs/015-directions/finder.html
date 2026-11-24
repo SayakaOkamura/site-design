@@ -105,9 +105,13 @@ body.af #bg .af{animation:lock .18s ease-out}
 body.kick #bg{animation:kick .14s ease-out}
 @keyframes kick{40%{transform:translate(var(--kx),var(--ky))}}
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
-/* 押した項目は、右（板の方）へすっと滑って、なめらかに戻る。中身を板へ送り出すように */
-.menu button.bump{animation:bump .37s linear}
-@keyframes bump{0%{transform:none; animation-timing-function:cubic-bezier(.2,.8,.3,1)} 32%{transform:translateX(10px); animation-timing-function:cubic-bezier(.4,0,.2,1)} 100%{transform:none}}
+/* 押した項目は、右（板の方）へすっと滑って、なめらかに戻る。日本語は 12px、下の英字はさらに 12px（二段）。中身を板へ送り出すように */
+.menu button.bump,.menu button.bump small{animation:bump .4s linear}
+@keyframes bump{0%{transform:none; animation-timing-function:cubic-bezier(.2,.8,.3,1)} 30%{transform:translateX(12px); animation-timing-function:cubic-bezier(.4,0,.2,1)} 100%{transform:none}}
+.menu button.bump small{animation-delay:.02s}
+/* 押した項目から、右の板の端まで、黄緑の細い線が一本走って消える */
+.send{position:fixed; z-index:5; height:2px; background:#d7ff3a; pointer-events:none; transform-origin:0 50%; animation:send .42s cubic-bezier(.3,.7,.2,1) forwards}
+@keyframes send{0%{transform:scaleX(0); opacity:1} 45%{transform:scaleX(1); opacity:1; transform-origin:0 50%} 46%{transform-origin:100% 50%} 100%{transform:scaleX(0); transform-origin:100% 50%; opacity:.6}}
 
 /* OP：ロゴの輪が描かれ、社名が出て、メニューが順に出る */
 .op{position:fixed; inset:0; z-index:30; background:var(--bg); display:grid; place-items:center; transition:opacity .35s}
@@ -289,6 +293,13 @@ function frame(){
 /* 開く：右から板。開いたまま別の項目を押すと、中身だけ入れ替わる */
 function bump(b){
   if (RM) return;
+  /* 板の端まで線を走らせる（板がまだ出ていなくても、出たときの端まで） */
+  var br = b.getBoundingClientRect(), pw = Math.min(innerWidth * .58, 820), x1 = innerWidth - pw, x0 = br.left + br.width - 6;
+  if (x1 > x0 + 20){
+    var ln = document.createElement('i'); ln.className = 'send';
+    ln.style.left = x0 + 'px'; ln.style.top = (br.top + br.height * .42) + 'px'; ln.style.width = (x1 - x0) + 'px';
+    document.body.appendChild(ln); setTimeout(function(){ ln.remove(); }, 460);
+  }
   b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
 }
 function open(i){
