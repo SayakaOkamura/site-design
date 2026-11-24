@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 お洒落・ペルソナ型のメニュー（2026-11-24）。斜めの大きな文字と色面、押すたびにカットイン。
+     見た目は写さず、型（操作そのものが気持ちいい）だけ。色は 013 の紫に差し色一つ。文は公式のまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<style>
+:root{ --bg:#1d0a2c; --deep:#2a0e3e; --pu:#654087; --li:#bb7eea; --wh:#fbf8ff; --ac:#d7ff3a; }
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%; overflow:hidden}
+body{background:var(--bg); color:var(--wh); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9}
+.h{font-family:"Dela Gothic One",sans-serif; font-weight:400; letter-spacing:.02em}
+button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
+
+/* 地：斜めの色面 */
+.bg{position:fixed; inset:0; overflow:hidden; pointer-events:none}
+.bg i{position:absolute; display:block; transform:skewX(-18deg); transition:transform .5s cubic-bezier(.7,0,.2,1), background .3s}
+.bg .a{left:-10%; top:0; bottom:0; width:46%; background:var(--deep)}
+.bg .b{left:30%; top:0; bottom:0; width:6%; background:var(--pu); opacity:.55}
+.bg .c{left:38%; top:0; bottom:0; width:1.2%; background:var(--ac)}
+body.open .bg .a{transform:skewX(-18deg) translateX(-8%)}
+body.open .bg .c{transform:skewX(-18deg) translateX(-3vw)}
+
+header{position:fixed; top:20px; left:clamp(16px,4vw,48px); z-index:5; display:flex; align-items:center; gap:10px; line-height:1.1}
+header i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
+header span{font-size:17px}
+header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
+
+/* メニュー：斜めに積んだ大きな文字 */
+.menu{position:fixed; left:clamp(16px,5vw,72px); top:50%; transform:translateY(-46%); z-index:3; display:grid; gap:clamp(2px,1vh,10px)}
+.menu button{position:relative; display:block; text-align:left; font-size:clamp(26px,5.2vh,52px); line-height:1.15; padding:.08em .3em .12em .2em;
+  transform:rotate(-6deg) translateX(calc(var(--i) * 1.1em)); transform-origin:left center; color:var(--li); transition:color .12s, transform .25s cubic-bezier(.3,1.6,.5,1)}
+.menu button span{position:relative; z-index:1}
+.menu button::before{content:""; position:absolute; inset:0 -.2em; background:var(--wh); transform:scaleX(0) skewX(-14deg); transform-origin:left; transition:transform .18s cubic-bezier(.7,0,.2,1)}
+.menu button::after{content:""; position:absolute; inset:.18em -.5em -.12em .3em; background:var(--ac); transform:scaleX(0) skewX(-14deg); transform-origin:left; z-index:-1; transition:transform .22s .04s cubic-bezier(.7,0,.2,1)}
+.menu button.on{color:var(--bg); transform:rotate(-6deg) translateX(calc(var(--i) * 1.1em + .4em)) scale(1.06)}
+.menu button.on::before,.menu button.on::after{transform:scaleX(1) skewX(-14deg)}
+.menu button small{display:block; font-family:"Zen Kaku Gothic New",sans-serif; font-size:.28em; font-weight:700; letter-spacing:.2em; opacity:.8; margin-top:.1em}
+
+/* 中身：斜めの板が滑り込む */
+.panel{position:fixed; z-index:2; right:0; top:0; bottom:0; width:min(58vw,820px); padding:clamp(80px,12vh,140px) clamp(20px,5vw,72px) 40px clamp(48px,8vw,120px);
+  background:var(--wh); color:var(--deep); clip-path:polygon(14% 0,100% 0,100% 100%,0 100%);
+  transform:translateX(105%); transition:transform .42s cubic-bezier(.7,0,.2,1); overflow:auto}
+body.open .panel{transform:none}
+.panel .no{position:absolute; right:clamp(16px,3vw,40px); top:clamp(56px,8vh,90px); font-size:clamp(80px,18vh,180px); line-height:1; color:var(--pu); opacity:.12}
+.panel h2{font-size:clamp(24px,3.4vw,40px); line-height:1.35; margin-bottom:.6em; position:relative}
+.panel h2::after{content:""; display:block; width:3em; height:.28em; background:var(--ac); margin-top:.3em; transform:skewX(-18deg)}
+.panel h3{font-size:clamp(16px,1.6vw,20px); font-weight:700; line-height:1.6; margin:1.4em 0 .4em}
+.panel p,.panel dd{font-size:15px}
+.panel b{font-weight:700; background:linear-gradient(transparent 62%, var(--ac) 62%)}
+.panel dl{display:grid; grid-template-columns:7em 1fr; border-top:2px solid var(--deep); padding:10px 0; font-size:14px}
+.panel dt{font-weight:700}
+.panel .acc{font-size:13px; color:var(--pu); margin-top:.4em}
+.panel a.btn{display:inline-block; margin-top:1.6em; padding:.7em 2.4em; background:var(--deep); color:var(--wh); text-decoration:none; font-weight:700; transform:skewX(-14deg); transition:background .15s}
+.panel a.btn span{display:inline-block; transform:skewX(14deg)}
+.panel a.btn:hover{background:var(--pu)}
+.panel .x{position:absolute; left:clamp(56px,9vw,130px); top:clamp(24px,4vh,40px); font-size:13px; font-weight:700; letter-spacing:.2em; color:var(--pu)}
+.panel .x:hover{color:var(--deep)}
+
+/* トップの見出し */
+.hero{position:fixed; right:clamp(16px,5vw,72px); bottom:clamp(24px,8vh,80px); z-index:1; text-align:right; max-width:min(56vw,760px); transition:opacity .3s, transform .4s}
+.hero h1{font-size:clamp(22px,3.6vw,48px); line-height:1.35}
+.hero h1 em{font-style:normal; color:var(--ac)}
+.hero p{margin-top:.8em; font-size:clamp(12px,1.1vw,15px); color:var(--li)}
+body.open .hero{opacity:0; transform:translateX(40px)}
+
+/* カットイン */
+.cut{position:fixed; inset:0; z-index:8; pointer-events:none; display:grid; place-items:center; overflow:hidden}
+.cut .band{position:absolute; left:-20%; right:-20%; top:38%; height:24%; background:var(--ac); transform:skewY(-8deg) translateX(-120%)}
+.cut .band2{position:absolute; left:-20%; right:-20%; top:44%; height:12%; background:var(--bg); transform:skewY(-8deg) translateX(120%)}
+.cut .word{position:relative; font-size:clamp(40px,11vw,150px); color:var(--wh); transform:skewY(-8deg) translateX(60vw); opacity:0; white-space:nowrap; -webkit-text-stroke:2px var(--bg)}
+.cut.go .band{animation:band .62s cubic-bezier(.7,0,.2,1) forwards}
+.cut.go .band2{animation:band2 .62s .03s cubic-bezier(.7,0,.2,1) forwards}
+.cut.go .word{animation:word .62s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes band{0%{transform:skewY(-8deg) translateX(-120%)} 35%,62%{transform:skewY(-8deg) translateX(0)} 100%{transform:skewY(-8deg) translateX(120%)}}
+@keyframes band2{0%{transform:skewY(-8deg) translateX(120%)} 35%,62%{transform:skewY(-8deg) translateX(0)} 100%{transform:skewY(-8deg) translateX(-120%)}}
+@keyframes word{0%{opacity:0; transform:skewY(-8deg) translateX(60vw)} 30%{opacity:1; transform:skewY(-8deg) translateX(0)} 62%{opacity:1; transform:skewY(-8deg) translateX(-2vw)} 100%{opacity:0; transform:skewY(-8deg) translateX(-60vw)}}
+
+.keys{position:fixed; left:clamp(16px,4vw,48px); bottom:16px; z-index:4; font-size:11px; letter-spacing:.15em; color:var(--li); opacity:.7}
+footer{position:fixed; right:16px; bottom:10px; z-index:1; font-size:11px; color:var(--li); opacity:.7}
+footer a{color:inherit}
+body.open footer{opacity:0}
+
+@media (max-width:760px){
+  .menu{top:auto; bottom:56px; transform:none; gap:0}
+  .menu button{font-size:clamp(22px,7vw,32px)}
+  .panel{width:100%; clip-path:polygon(0 6%,100% 0,100% 100%,0 100%); padding:72px 20px 40px}
+  .panel .x{left:20px; top:40px}
+  .hero{top:84px; bottom:auto; right:16px; left:16px; max-width:none}
+  .keys{display:none}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none !important; animation:none !important} }
+</style>
+
+<div class="bg" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
+
+<header><i></i><span>Alter Design<small>consulting</small></span></header>
+
+<div class="hero">
+  <h1 class="h">AI × ローコードで、<br>「<em>上流工程中心のシステム開発</em>」に革新を</h1>
+  <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+</div>
+
+<nav class="menu h" aria-label="メニュー">
+  <button style="--i:0" data-k="0"><span>企業理念<small>PHILOSOPHY</small></span></button>
+  <button style="--i:1" data-k="1"><span>事業内容<small>BUSINESS</small></span></button>
+  <button style="--i:2" data-k="2"><span>サービス<small>SERVICE</small></span></button>
+  <button style="--i:3" data-k="3"><span>会社概要<small>COMPANY</small></span></button>
+  <button style="--i:4" data-k="4"><span>お問い合わせ<small>CONTACT</small></span></button>
+</nav>
+
+<section class="panel" aria-live="polite"><button class="x" type="button">← BACK</button><span class="no h" aria-hidden="true"></span><div class="in"></div></section>
+
+<div class="cut" aria-hidden="true"><i class="band"></i><i class="band2"></i><span class="word h"></span></div>
+
+<div class="keys" aria-hidden="true">↑↓ SELECT　ENTER OPEN　ESC BACK</div>
+<footer><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>　© 2025 Alter Design Consulting Co., Ltd.</footer>
+
+<script>
+(function(){
+var PAGES = [
+  { w:'PHILOSOPHY', html:'<h2 class="h">アルターデザインコンサルティングの企業理念</h2><h3>経営の力で「遊ぶように働く世界」をデザインする</h3><p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
+  { w:'BUSINESS', html:'<h2 class="h">事業内容</h2><p>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</p><h3>AI × ローコードで、「上流工程中心のシステム開発」に革新を</h3><p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>' },
+  { w:'SERVICE', html:'<h2 class="h">私たちが提供するサービス</h2>' +
+    '<h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>' +
+    '<h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' +
+    '<h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' +
+    '<h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
+  { w:'COMPANY', html:'<h2 class="h">会社概要</h2>' +
+    '<dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl><dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>' +
+    '<dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）<p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>' +
+    '<dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>' +
+    '<dl><dt>資本金</dt><dd>60百万円</dd></dl><dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>' +
+    '<dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>' },
+  { w:'CONTACT', html:'<h2 class="h">お問い合わせ</h2><p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p><a class="btn" href="mailto:contact@alt-dsgn.co.jp"><span>お問い合わせフォームへ</span></a>' }
+];
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var btns = [].slice.call(document.querySelectorAll('.menu button')), panel = document.querySelector('.panel'), inner = panel.querySelector('.in'), no = panel.querySelector('.no');
+var cut = document.querySelector('.cut'), word = cut.querySelector('.word');
+var sel = -1, opened = -1, busy = false;
+
+function pick(k){ sel = (k + btns.length) % btns.length; btns.forEach(function(b, i){ b.classList.toggle('on', i === sel); }); }
+function open(k){
+  if (busy) return; pick(k);
+  if (opened === k) return;
+  busy = true; opened = k;
+  var go = function(){
+    inner.innerHTML = PAGES[k].html; no.textContent = '0' + (k + 1); panel.scrollTop = 0;
+    document.body.classList.add('open'); busy = false;
+  };
+  if (RM){ go(); return; }
+  word.textContent = PAGES[k].w; cut.classList.remove('go'); void cut.offsetWidth; cut.classList.add('go');
+  setTimeout(go, 300);
+}
+function close(){ opened = -1; document.body.classList.remove('open'); }
+
+btns.forEach(function(b, i){
+  b.addEventListener('mouseenter', function(){ pick(i); });
+  b.addEventListener('focus', function(){ pick(i); });
+  b.addEventListener('click', function(){ open(i); });
+});
+panel.querySelector('.x').addEventListener('click', close);
+addEventListener('keydown', function(e){
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); pick(sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1)); if (opened >= 0) open(sel); }
+  else if (e.key === 'Enter' && sel >= 0 && document.activeElement.tagName !== 'A'){ e.preventDefault(); open(sel); }
+  else if (e.key === 'Escape') close();
+});
+})();
+</script>

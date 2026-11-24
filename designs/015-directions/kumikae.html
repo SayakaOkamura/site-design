@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 お洒落・文字が組み替わる（2026-11-24）。大きな英字の見出しが、節に入るたびに組み替わる。
+     ALTER → PHILOSOPHY → SERVICE → COMPANY → CONTACT。同じ文字は持ち越して動き、足りない文字は入れ替わりながら現れる。
+     社名の Alter（変える）が動きの理由。文は公式のまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
+<style>
+:root{ --bg:#f6f3fa; --ink:#2a0e3e; --sub:#715189; --pu:#654087; --li:#bb7eea; --line:#e0d6ea; }
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.95}
+a{color:inherit}
+.min{font-family:"Zen Old Mincho",serif; font-weight:700}
+
+header{position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,48px)}
+.logo{display:flex; align-items:center; gap:10px; text-decoration:none; line-height:1.1}
+.logo i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
+.logo span{font-size:17px}
+.logo small{display:block; font-size:10px; margin-left:4.4em; color:var(--sub)}
+nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
+nav a{text-decoration:none; font-size:13px; letter-spacing:.08em; color:var(--sub); transition:color .2s}
+nav a.on{color:var(--ink)}
+
+/* 組み替わる見出し：画面の上の帯に貼りつく */
+.stage{position:sticky; top:0; z-index:2; height:46vh; min-height:220px; pointer-events:none;
+  background:linear-gradient(var(--bg) 82%, rgba(246,243,250,0))}
+.word{position:absolute; left:0; right:0; top:56%; height:0}
+.ch{position:absolute; top:0; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:1; transform:translate(var(--x),-50%) rotate(var(--r,0deg));
+  transition:transform .9s cubic-bezier(.65,0,.2,1), opacity .5s, color .3s; will-change:transform; white-space:pre}
+.ch.new{color:var(--li)}
+.cap{position:absolute; left:0; right:0; top:calc(56% + var(--fs) * .62); text-align:center; font-size:13px; letter-spacing:.3em; color:var(--sub); transition:opacity .4s}
+
+main{position:relative; z-index:1}
+section{min-height:90vh; padding:6vh clamp(16px,6vw,80px) 14vh; display:grid; align-content:start; justify-items:center}
+.in{width:min(100%,760px)}
+.lead{text-align:center}
+.lead h1{font-size:clamp(22px,3.2vw,38px); line-height:1.6}
+.lead p{margin-top:1.6em; color:var(--sub); font-size:15px}
+h2{font-size:clamp(22px,2.6vw,32px); line-height:1.5; margin-bottom:1.2em; text-align:center}
+h3{font-size:clamp(17px,1.6vw,21px); line-height:1.6; margin-bottom:.6em}
+p{font-size:15px}
+b{font-weight:700}
+.svc{display:grid; grid-template-columns:1fr 1fr; gap:40px 48px; width:min(100%,1000px)}
+.svc li{list-style:none; border-top:2px solid var(--ink); padding-top:14px}
+.svc p{font-size:14px; color:var(--sub)}
+dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:16px 0; font-size:15px}
+dl:last-child{border-bottom:1px solid var(--line)}
+dt{font-weight:700}
+.acc{font-size:13px; color:var(--sub); margin-top:.6em}
+.contact{text-align:center}
+.btn{display:inline-flex; align-items:center; justify-content:center; min-width:min(100%,420px); height:60px; margin-top:2em; background:var(--ink); color:#fff; text-decoration:none; letter-spacing:.1em; transition:background .2s}
+.btn:hover{background:var(--pu)}
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:28px clamp(16px,4vw,48px); font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
+
+@media (max-width:760px){
+  nav{display:none}
+  .stage{height:34vh}
+  .svc{grid-template-columns:1fr}
+  dl{grid-template-columns:1fr; gap:2px}
+}
+@media (prefers-reduced-motion:reduce){ .ch{transition:none} html{scroll-behavior:auto} }
+</style>
+
+<header>
+  <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy">企業理念</a></li>
+    <li><a href="#services">サービス</a></li>
+    <li><a href="#company">会社概要</a></li>
+    <li><a href="#contact">お問い合わせ</a></li>
+  </ul></nav>
+</header>
+
+<div class="stage" aria-hidden="true"><div class="word" id="word"></div><div class="cap" id="cap"></div></div>
+
+<main>
+  <section id="top" data-w="ALTER" data-c="ALTER DESIGN CONSULTING">
+    <div class="in lead">
+      <h1 class="min">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+      <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+    </div>
+  </section>
+
+  <section id="philosophy" data-w="PHILOSOPHY" data-c="企業理念">
+    <div class="in">
+      <h2 class="min">アルターデザインコンサルティングの企業理念</h2>
+      <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+      <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+      子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+      このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+      それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+    </div>
+  </section>
+
+  <section id="services" data-w="SERVICE" data-c="サービス">
+    <h2 class="min">私たちが提供するサービス</h2>
+    <ul class="svc">
+      <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section id="company" data-w="COMPANY" data-c="会社概要">
+    <div class="in">
+      <h2 class="min">会社概要</h2>
+      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+        <p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+      <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+      <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+      <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+    </div>
+  </section>
+
+  <section id="contact" class="contact" data-w="CONTACT" data-c="お問い合わせ">
+    <div class="in">
+      <h2 class="min">お問い合わせ</h2>
+      <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>
+
+<script>
+(function(){
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var wordEl = document.getElementById('word'), capEl = document.getElementById('cap');
+var secs = [].slice.call(document.querySelectorAll('main section')), navs = [].slice.call(document.querySelectorAll('nav a'));
+var AZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+var ctx = document.createElement('canvas').getContext('2d');
+var fs = 0, cur = [], now = '';
+
+function size(){
+  /* いちばん長い語（PHILOSOPHY）が窓の幅に収まる大きさ */
+  fs = Math.max(36, Math.min(200, innerWidth * 0.86 / 7.6, innerHeight * 0.2));
+  document.documentElement.style.setProperty('--fs', fs + 'px');
+  ctx.font = fs + 'px "Archivo Black"';
+}
+function layout(w){
+  var ws = w.split('').map(function(c){ return ctx.measureText(c).width; });
+  var total = ws.reduce(function(a, b){ return a + b; }, 0), x = (innerWidth - total) / 2, out = [];
+  ws.forEach(function(wd){ out.push(x); x += wd; });
+  return out;
+}
+function place(span, x, r){ span.style.setProperty('--x', x + 'px'); span.style.setProperty('--r', (r || 0) + 'deg'); }
+function scramble(span, to, ms){
+  var t0 = performance.now();
+  (function step(){
+    var t = performance.now() - t0;
+    if (t >= ms || RM){ span.textContent = to; span.classList.remove('new'); return; }
+    span.textContent = AZ[Math.floor(Math.random() * 26)];
+    setTimeout(step, 50);
+  })();
+}
+
+/* いまの語から次の語へ：同じ文字は持ち越して動かし、余った文字は散り、足りない文字は入れ替わりながら現れる */
+function morph(w, cap){
+  if (w === now) return; now = w;
+  capEl.style.opacity = 0; setTimeout(function(){ capEl.textContent = cap; capEl.style.opacity = 1; }, 450);
+  var xs = layout(w), used = new Array(cur.length).fill(false), next = [];
+  w.split('').forEach(function(c, i){
+    var k = -1;
+    for (var j = 0; j < cur.length; j++) if (!used[j] && cur[j].c === c){ k = j; break; }
+    if (k >= 0){ used[k] = true; next.push(cur[k]); place(cur[k].el, xs[i]); cur[k].el.style.opacity = 1; return; }
+    next.push(null);
+  });
+  /* 足りない分：余った文字を先に使い回し、それでも足りなければ外から呼ぶ */
+  var spare = cur.filter(function(_, j){ return !used[j]; });
+  w.split('').forEach(function(c, i){
+    if (next[i]) return;
+    var it = spare.shift();
+    if (!it){
+      var el = document.createElement('span'); el.className = 'ch'; wordEl.appendChild(el);
+      it = { el:el, c:'' };
+      place(el, Math.random() < .5 ? -fs : innerWidth + fs, (Math.random() - .5) * 90); el.style.opacity = 0;
+      void el.offsetWidth;
+    }
+    it.c = c; it.el.classList.add('new'); it.el.style.opacity = 1;
+    place(it.el, xs[i]); scramble(it.el, c, 650 + Math.random() * 300);
+    next[i] = it;
+  });
+  /* 余ったまま：散って消える */
+  spare.forEach(function(it){
+    place(it.el, Math.random() < .5 ? -fs * 2 : innerWidth + fs, (Math.random() - .5) * 120); it.el.style.opacity = 0;
+    setTimeout(function(){ it.el.remove(); }, 900);
+  });
+  cur = next;
+}
+
+function active(){
+  var mid = innerHeight * .55, hit = secs[0];
+  secs.forEach(function(s){ if (s.getBoundingClientRect().top < mid) hit = s; });
+  morph(hit.dataset.w, hit.dataset.c);
+  navs.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + hit.id); });
+}
+addEventListener('scroll', active, {passive:true});
+addEventListener('resize', function(){ size(); var w = now; now = ''; var xs = layout(w); cur.forEach(function(it, i){ place(it.el, xs[i]); }); now = w; });
+
+(document.fonts ? document.fonts.load('100px "Archivo Black"') : Promise.resolve()).catch(function(){}).then(function(){ size(); active(); });
+})();
+</script>
