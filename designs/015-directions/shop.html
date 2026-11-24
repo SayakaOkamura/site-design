@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <style>
 /* 質感の決まり：ドット一つ = --p（窓から整数で決める）。枠・線・絵は全部その倍数。色は 6 つだけ。字は 16px */
-:root{ --D:#241533; --M:#5a436b; --W:#4a2a17; --A:#fb851b; --L:#f1ece6; --S:#ffcb5e; --p:4px; }
+:root{ --D:#1c1026; --M:#4e3a63; --W:#33224a; --A:#fb851b; --L:#f1ecf7; --S:#b9a6d6; --p:4px; }   /* 紫の一系統（D・W・M・S・L）＋差し色の橙（A）。橙は押せる物・光る物だけ */
 :root[data-p="logo"]{ --D:#22417d; --M:#5d2e77; --W:#5376ab; --A:#399ac5; --L:#f6f3fa; --S:#f6f3fa; }
 
 *{box-sizing:border-box; margin:0; padding:0}
@@ -34,7 +34,7 @@ button{font:inherit}
 /* 真ん中：店主とカウンター */
 .keeper{position:absolute; left:50%; bottom:calc(16% + var(--p)*12); transform:translateX(-50%)}
 .counter{position:absolute; left:50%; transform:translateX(-50%); width:calc(var(--p)*48); bottom:16%; height:calc(var(--p)*13);
-  background:var(--W); border:var(--p) solid var(--D); border-top:calc(var(--p)) solid var(--A)}
+  background:var(--W); border:var(--p) solid var(--D); border-top:calc(var(--p)) solid var(--S)}
 .counter{background:repeating-linear-gradient(90deg,var(--W) 0 calc(var(--p)*7),var(--D) calc(var(--p)*7) calc(var(--p)*8)); box-shadow:inset 0 calc(var(--p)*-1) 0 var(--D)}
 .counter::before{content:""; position:absolute; left:0; right:0; top:0; height:var(--p); background:var(--S)}
 .counter::after{content:""; position:absolute; left:calc(var(--p)*3); right:calc(var(--p)*3); top:calc(var(--p)*4); height:var(--p); background:var(--D)}
@@ -67,16 +67,16 @@ button{font:inherit}
 /* 値札：棚板から下げる */
 .ptag{position:absolute; left:50%; top:calc(100% + var(--p)*2); transform:translateX(-50%); z-index:1; background:var(--L); color:var(--D); border:var(--p) solid var(--D);
   line-height:1.4; padding:0 calc(var(--p)); white-space:nowrap}
-.grp:hover .ptag{background:var(--S)}
+.grp:hover .ptag{background:var(--A)}
 
 /* 品はパッケージ。正面に名前が刷ってある */
-.box{--bc:var(--A); --bt:var(--D); position:relative; background:var(--bc); color:var(--bt);
+.box{--bc:var(--S); --bt:var(--D); position:relative; background:var(--bc); color:var(--bt);
   border:var(--p) solid var(--D); box-shadow:var(--p) 0 0 var(--D);
   display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:calc(var(--p)); padding:calc(var(--p)*4) calc(var(--p)) calc(var(--p)); transition:translate .1s steps(2)}
 .box::before{content:""; position:absolute; top:calc(var(--p)); left:0; right:0; height:var(--p); background:var(--D)}
 .box .sprite{background:var(--D); padding:var(--p); box-sizing:content-box}
 .box span{line-height:1.4; text-align:center; white-space:pre-line}
-.box.c1{--bc:var(--L)} .box.c2{--bc:var(--S)} .box.c3{--bc:var(--M); --bt:var(--L)}
+.box.c1{--bc:var(--L)} .box.c2{--bc:var(--L)} .box.c3{--bc:var(--S)}
 
 /* 右：貼り紙と看板（傾けずに重ねる） */
 .wall{position:absolute; left:4%; right:4%; top:6%; height:calc(var(--p)*48)}
@@ -148,7 +148,7 @@ body.outside .ask{opacity:0; pointer-events:none}
 .front.fade{opacity:0; pointer-events:none}
 .facade{position:relative; width:calc(100vw - var(--p)*36); max-width:calc(var(--p)*150); height:calc(100vh - var(--p)*14); margin-bottom:calc(var(--p)*6); display:grid; justify-items:center; align-content:end}
 .facade .roof{box-shadow:0 var(--p) 0 var(--D); position:absolute; top:0; left:calc(var(--p)*-4); right:calc(var(--p)*-4); height:calc(var(--p)*9); border:var(--p) solid var(--D);
-  background:repeating-linear-gradient(90deg,var(--A) 0 calc(var(--p)*5),var(--S) calc(var(--p)*5) calc(var(--p)*10))}
+  background:repeating-linear-gradient(90deg,var(--W) 0 calc(var(--p)*5),var(--S) calc(var(--p)*5) calc(var(--p)*10))}
 .facade .board{position:absolute; top:calc(var(--p)*12); left:50%; transform:translateX(-50%); padding:var(--p) calc(var(--p)*2); border:var(--p) solid var(--D); background:var(--D); color:var(--A); letter-spacing:.15em; white-space:nowrap; z-index:1}
 .facade .wallf{background:repeating-linear-gradient(var(--W) 0 calc(var(--p)*4),var(--D) calc(var(--p)*4) calc(var(--p)*5)) !important; position:absolute; top:calc(var(--p)*9); left:0; right:0; bottom:0; background:var(--W); border:var(--p) solid var(--D); border-top:0}
 .facade .win{position:absolute; bottom:calc(var(--p)*7); width:calc(var(--p)*14); height:calc(var(--p)*14); background:var(--D); border:var(--p) solid var(--S)}
@@ -157,7 +157,7 @@ body.outside .ask{opacity:0; pointer-events:none}
 /* 店の前の物（飾り。押しても何も起きない） */
 .deco{position:absolute; bottom:0; z-index:1; pointer-events:none}
 .post{position:absolute; right:calc(var(--p)*4); bottom:calc(var(--p)*6); width:calc(var(--p)*10); display:grid; justify-items:center; pointer-events:none}
-.post b{display:block; width:100%; height:calc(var(--p)*12); background:var(--A); border:var(--p) solid var(--D); box-shadow:inset calc(var(--p)*-1) 0 0 var(--D); position:relative}
+.post b{display:block; width:100%; height:calc(var(--p)*12); background:var(--M); border:var(--p) solid var(--D); box-shadow:inset calc(var(--p)*-1) 0 0 var(--D); position:relative}
 .post b::before{content:""; position:absolute; left:calc(var(--p)*2); right:calc(var(--p)*2); top:calc(var(--p)*3); height:var(--p); background:var(--D)}
 .post i{display:block; width:calc(var(--p)*2); height:calc(var(--p)*8); background:var(--D)}
 
@@ -303,23 +303,23 @@ const KEEPER = [
   ".......owwwwwwwwwwwwwwwo..",
   "......owwwwwwwwwwwwwwwwo..",
   ".......owwwwwwwwwwwwwwo...",
-  "......oowwsssssssswwwo....",
-  "......osssssssssssssso....",
-  "......soooooossoooooos....",
-  "......solooooosolooooss...",
-  "......sssooosssssooosss...",
-  "......sssssssssssssssss...",
-  "......ssoooooooooooooss...",
-  "......sssollllllllosss....",
-  ".......sssooooooooosss....",
-  "........sssssssssssss.....",
-  ".......aaaaaaaaaaaaaaaa...",
-  "......aaaaaaaaaaaaaaaaaaa.",
+  "......oowwllllllllwwwo....",
+  "......ollllllllllllllo....",
+  "......loooooollooooool....",
+  "......lolooooololooooll...",
+  "......lllooolllllooolll...",
+  "......lllllllllllllllll...",
+  "......lloooooooooooooll...",
+  "......lllollllllllolll....",
+  ".......lllooooooooolll....",
+  "........lllllllllllll.....",
+  ".......ssssssssssssssss...",
+  "......sssssssssssssssssss.",
   "....ooooollllllllllooooo..",
   "...oooooolllllllllloooooo.",
   "..ooooooollllllllllooooooo",
-  "..oosssoooooooooooooosssoo",
-  "..oosssoooooooooooooosssoo",
+  "..oollloooooooooooooollloo",
+  "..oollloooooooooooooollloo",
 ];
 const MOYA = [
   ".lll.lll.",
@@ -347,10 +347,10 @@ const SPR = {
 
 /* 店の前の物 */
 const DECO = {
-  plant:[".a...a.","aas.saa",".amsma.","..mmm..",".mmmmm.","..mmm..","wwwwwww",".wwwww.",".wwwww."],
+  plant:[".l...l.","lls.sll",".lmsml.","..mmm..",".mmmmm.","..mmm..","wwwwwww",".wwwww.",".wwwww."],
   bench:["wwwwwwwwwwwwwwww","oooooooooooooooo","wwwwwwwwwwwwwwww","oooooooooooooooo",".o............o.",".o............o."],
   board:["oooooooo","ollllllo","olmmmllo","ollllllo","olmmmmlo","ollllllo","olmmlllo","oooooooo",".o....o.","o......o"],
-  lamp: [".ooooo.","ossssso","ossssso",".ooooo.","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","..ooo..",".ooooo."],
+  lamp: [".ooooo.","oaaaaao","oaaaaao",".ooooo.","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","..ooo..",".ooooo."],
 };
 /* 左：商品 */
 const GOODS = [
@@ -387,7 +387,7 @@ const POSTERS = [
     talk:'御成門駅から歩いて2分。まあ、来るならどうぞ。' },
 ];
 /* 飾りの紙：[left, top, width, height, 角度, 色, 模様] */
-const SCRAPS = [[19,25,12,15,'S',''],[2,31,15,15,'A','dots'],[59,20,15,18,'L',''],[75,23,13,13,'M','dots'],[58,39,13,8,'L',''],[15,42,11,6,'L','dots'],[55,0,13,10,'L','dots']];
+const SCRAPS = [[19,25,12,15,'S',''],[2,31,15,15,'S','dots'],[59,20,15,18,'L',''],[75,23,13,13,'M','dots'],[58,39,13,8,'L',''],[15,42,11,6,'L','dots'],[55,0,13,10,'L','dots']];
 const ALL = [...GOODS, ...POSTERS];
 
 const keys = [
