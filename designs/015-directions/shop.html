@@ -11,6 +11,18 @@
 /* 質感の決まり：ドット一つ = --p（窓から整数で決める）。枠・線・絵は全部その倍数。色は 6 つだけ。字は 16px */
 :root{ --D:#24132b; --M:#8a5a92; --W:#62396b; --A:#fb851b; --L:#f8eef6; --S:#dcb6df; --p:4px; }   /* 紫の一系統（D・W・M・S・L）＋差し色の橙（A）。橙は押せる物・光る物だけ */
 :root[data-p="logo"]{ --D:#22417d; --M:#5d2e77; --W:#5376ab; --A:#399ac5; --L:#f6f3fa; --S:#f6f3fa; }
+/* ?p=98：PC-98 っぽい色。くすんだ中間色で色相はばらばら（壁は青灰、木は茶）。影と色の段差は網点（ドットの市松） */
+:root[data-p="98"]{ --D:#101020; --M:#5a6e8c; --W:#7a5038; --A:#e0603a; --L:#f0ece0; --S:#d8c08a;
+  --dz:repeating-conic-gradient(var(--D) 0 25%,transparent 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2); }
+:root[data-p="98"] .panel::before{content:""; position:absolute; left:0; right:0; top:0; height:calc(var(--p)*4); background:var(--dz); z-index:0; pointer-events:none}
+:root[data-p="98"] .panel::after{content:""; position:absolute; left:0; right:0; bottom:16%; height:calc(var(--p)*4); background:var(--dz); pointer-events:none}
+:root[data-p="98"] .floor{background:linear-gradient(var(--D),var(--D)) 0 calc(var(--p)*4)/100% 100% no-repeat,repeating-conic-gradient(var(--M) 0 25%,var(--D) 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2)}
+:root[data-p="98"] .floor::before{display:none}
+:root[data-p="98"] .counter::after{top:auto; bottom:0; left:0; right:0; height:calc(var(--p)*6); background:var(--dz)}
+:root[data-p="98"] .facade .wallf::after{content:""; position:absolute; left:0; right:0; top:0; height:calc(var(--p)*4); background:var(--dz)}
+:root[data-p="98"] .facade .wallf::before{content:""; position:absolute; left:0; right:0; bottom:0; height:calc(var(--p)*4); background:var(--dz)}
+:root[data-p="98"] .shelf{background:repeating-conic-gradient(var(--D) 0 25%,var(--W) 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2)}
+:root[data-p="98"] .front .ground{background:linear-gradient(var(--D),var(--D)) 0 calc(var(--p)*2)/100% 100% no-repeat,repeating-conic-gradient(var(--M) 0 25%,var(--D) 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2)}
 
 *{box-sizing:border-box; margin:0; padding:0}
 html,body{height:100%}
@@ -271,7 +283,7 @@ body.outside .ask{opacity:0; pointer-events:none}
 
 <script>
 const params = new URLSearchParams(location.search);
-if (params.get('p') === 'logo') document.documentElement.dataset.p = 'logo';
+if (['logo','98'].includes(params.get('p'))) document.documentElement.dataset.p = params.get('p');
 const css = getComputedStyle(document.documentElement);
 const PAL = {}; for (const k of ['D','M','W','A','L','S']) PAL[k] = css.getPropertyValue('--'+k).trim();
 const MAP = {o:'D', m:'M', w:'W', a:'A', l:'L', s:'S'};
