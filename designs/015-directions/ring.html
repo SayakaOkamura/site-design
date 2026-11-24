@@ -58,9 +58,6 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 @property --rot{syntax:'<angle>'; inherits:false; initial-value:0deg}
 @keyframes spin{to{--rot:360deg}}
 
-/* 背景：大小の薄い輪が漂う。カーソルの輪が近づくと押しのけられる */
-#float{position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none}
-
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
 .menu button.bump{animation:bump .32s cubic-bezier(.3,1.6,.5,1)}
 @keyframes bump{35%{transform:translate(var(--bx,6px),var(--by,0px))}}
@@ -129,7 +126,6 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
 @media (prefers-reduced-motion:reduce){ .page,.cur{transition:none} .rip,.op{display:none} .cur.joy{animation:none} }
 </style>
 
-<canvas id="float" aria-hidden="true"></canvas>
 <div class="op" id="op" aria-hidden="true"><div class="in">
   <svg viewBox="0 0 88 88"><circle class="c1" cx="44" cy="44" r="38" transform="rotate(-90 44 44)"/><circle class="c2" cx="44" cy="44" r="30" transform="rotate(-90 44 44)"/></svg>
   <div class="nm">Alter Design<small>CONSULTING</small></div>
@@ -261,40 +257,6 @@ document.getElementById('logo').addEventListener('click', function(){
   var now = performance.now(); taps = taps.filter(function(t){ return now - t < 1600; }); taps.push(now);
   if (taps.length >= 5){ taps = []; cur.classList.remove('joy'); void cur.offsetWidth; cur.classList.add('joy'); setTimeout(function(){ cur.classList.remove('joy'); }, 1600); }
 });
-
-/* 背景の輪 */
-var fc = document.getElementById('float'), fx = fc.getContext('2d'), FW = 0, FH = 0, DPR = 1, rings = [];
-function fsize(){
-  DPR = Math.min(2, devicePixelRatio || 1); FW = innerWidth; FH = innerHeight;
-  fc.width = FW * DPR; fc.height = FH * DPR;
-  var n = Math.round(Math.min(18, Math.max(8, FW * FH / 70000)));
-  while (rings.length < n){
-    var rr = 10 + Math.pow(Math.random(), 1.8) * 70;
-    rings.push({ x:Math.random() * FW, y:Math.random() * FH, r:rr, dx:(Math.random() - .5) * .25, dy:(Math.random() - .5) * .25 - .08, vx:0, vy:0, a:.18 + Math.random() * .22 });
-  }
-  rings.length = n;
-}
-function drift(){
-  fx.setTransform(DPR, 0, 0, DPR, 0, 0); fx.clearRect(0, 0, FW, FH);
-  rings.forEach(function(g){
-    /* カーソルの輪から押しのけられる（近いほど強く） */
-    var ddx = g.x - x, ddy = g.y - y, d = Math.hypot(ddx, ddy), reach = g.r + 90;
-    if (d < reach && d > .1 && document.body.classList.contains('live')){ var f = (1 - d / reach) * 1.4; g.vx += ddx / d * f; g.vy += ddy / d * f; }
-    g.vx *= .9; g.vy *= .9;
-    g.x += g.dx + g.vx; g.y += g.dy + g.vy;
-    /* 画面の外へ出たら反対側から */
-    if (g.x < -g.r) g.x = FW + g.r; if (g.x > FW + g.r) g.x = -g.r;
-    if (g.y < -g.r) g.y = FH + g.r; if (g.y > FH + g.r) g.y = -g.r;
-    fx.globalAlpha = g.a;
-    fx.lineWidth = Math.max(2, g.r * .22); fx.strokeStyle = '#654087';
-    fx.beginPath(); fx.arc(g.x, g.y, g.r, 0, Math.PI * 2); fx.stroke();
-    fx.lineWidth = Math.max(1, g.r * .06); fx.strokeStyle = '#bb7eea';
-    fx.beginPath(); fx.arc(g.x, g.y, g.r - g.r * .16, 0, Math.PI * 2); fx.stroke();
-  });
-  fx.globalAlpha = 1;
-}
-fsize(); addEventListener('resize', fsize);
-(function loop(){ drift(); if (!RM) requestAnimationFrame(loop); })();
 
 /* OP：輪が描かれて社名 → メニューが順に出る。押すかキーで飛ばせる */
 var op = document.getElementById('op');
