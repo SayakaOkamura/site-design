@@ -5,7 +5,7 @@
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 お洒落・輪がカーソル（2026-11-24）。dial.html（ダイヤル。遅れと揺れで気持ち悪い）の作り直し。
      ロゴの輪がマウスについてくる。メニューの文字に近づくと輪が吸いついて文字を囲み、選ぶ。
-     押すと、その文字から輪が広がって画面を覆い、中身（暗い地のまま）。反応はすぐ、効果は一方向で一回。文は公式のまま -->
+     押すと、右から板が滑り込んで中身。メニューと輪は左に残り、別の項目を押すと中身だけ入れ替わる。反応はすぐ、効果は一方向で一回。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
 <style>
@@ -22,7 +22,6 @@ header{position:fixed; top:20px; left:clamp(16px,4vw,48px); z-index:6; display:f
 header i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
 header span{font-size:17px}
 header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
-body.open header{color:var(--wh)}
 
 /* メニュー：大きな文字をまっすぐ並べる */
 .menu{position:fixed; left:clamp(20px,7vw,110px); top:50%; transform:translateY(-50%); z-index:3; display:grid; gap:clamp(4px,1.6vh,18px); justify-items:start}
@@ -44,7 +43,7 @@ body.open header{color:var(--wh)}
 body.live .cur,body.keys .cur{opacity:1}
 /* ブラウザのフォーカス枠は出さない。選んでいるのは輪で示す */
 .menu button:focus,.menu button:focus-visible{outline:none}
-body.open .cur{opacity:0}
+.cur.off{opacity:0 !important}
 
 /* 右下：見出し */
 .hero{position:fixed; right:clamp(16px,5vw,72px); bottom:clamp(40px,9vh,90px); z-index:1; text-align:right; max-width:min(60vw,780px); transition:opacity .3s}
@@ -52,21 +51,14 @@ body.open .cur{opacity:0}
 .hero p{margin-top:.8em; font-size:clamp(12px,1.1vw,15px); color:var(--li)}
 body.open .hero{opacity:0}
 
-/* 開く：押した文字から輪が広がって画面を覆う */
-.wipe{position:fixed; inset:0; z-index:4; background:var(--deep); clip-path:circle(0 at var(--ox) var(--oy)); pointer-events:none;
-  transition:clip-path .42s cubic-bezier(.75,0,.2,1)}
-body.open .wipe{clip-path:circle(150vmax at var(--ox) var(--oy))}
-.wipe::before{content:""; position:absolute; inset:0; border:0; pointer-events:none}
-/* 英字が一度、左から右へ横切る */
-.pass{position:fixed; left:0; top:50%; z-index:5; font-size:clamp(60px,14vw,200px); line-height:1; color:var(--ac); white-space:nowrap; pointer-events:none;
-  transform:translate(-100%,-50%); opacity:0}
-.pass.go{animation:pass .62s cubic-bezier(.3,0,.2,1) forwards}
-@keyframes pass{0%{transform:translate(-100%,-50%); opacity:1} 100%{transform:translate(100vw,-50%); opacity:1}}
-
-.page{position:fixed; inset:0; z-index:6; overflow:auto; color:var(--wh); opacity:0; pointer-events:none; transition:opacity .25s}
-body.open .page.in{opacity:1; pointer-events:auto}
-.page .wrap{width:min(100% - 32px,800px); margin:0 auto; padding:clamp(80px,12vh,120px) 0 60px}
-.page .back{position:fixed; top:20px; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
+/* 開く：右から板が滑り込んで中身。メニューと輪は左に残る */
+.page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow:auto; color:var(--wh); background:var(--deep);
+  border-left:2px solid var(--pu); transform:translateX(102%); transition:transform .34s cubic-bezier(.7,0,.2,1)}
+body.open .page{transform:none}
+.page .wrap.swap{animation:swap .22s ease-out}
+@keyframes swap{from{opacity:0; transform:translateX(16px)}}
+.page .wrap{padding:clamp(72px,11vh,110px) clamp(24px,4vw,64px) 60px}
+.page .back{position:sticky; float:right; top:20px; margin:20px clamp(16px,3vw,40px) 0 0; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
 .page .back:hover{color:var(--wh)}
 .page .k{font-size:12px; letter-spacing:.35em; color:var(--li)}
 .page h2{font-size:clamp(26px,3.4vw,44px); line-height:1.35; margin:.2em 0 1em}
@@ -92,8 +84,9 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   .menu button{font-size:clamp(26px,9vw,40px)}
   .hero{top:84px; bottom:auto; left:16px; right:16px; text-align:left; max-width:none}
   .keys{display:none}
+  .page{width:100%; border-left:0}
 }
-@media (prefers-reduced-motion:reduce){ .wipe,.cur{transition:none} .pass{display:none} }
+@media (prefers-reduced-motion:reduce){ .page,.cur{transition:none} }
 </style>
 
 <header><i></i><span>Alter Design<small>consulting</small></span></header>
@@ -112,8 +105,6 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
 </nav>
 
 <div class="cur" id="cur" aria-hidden="true"></div>
-<div class="wipe" id="wipe" aria-hidden="true"></div>
-<div class="pass h" id="pass" aria-hidden="true"></div>
 <section class="page" id="page" aria-live="polite"><button class="back" id="back" type="button">← もどる</button><div class="wrap" id="wrap"></div></section>
 
 <div class="keys" aria-hidden="true">↑↓ えらぶ　ENTER ひらく　ESC もどる</div>
@@ -139,7 +130,7 @@ var PAGES = [
 ];
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var btns = [].slice.call(document.querySelectorAll('.menu button')), cur = document.getElementById('cur');
-var wipe = document.getElementById('wipe'), pass = document.getElementById('pass'), page = document.getElementById('page'), wrap = document.getElementById('wrap');
+var page = document.getElementById('page'), wrap = document.getElementById('wrap');
 var mx = -100, my = -100, x = -100, y = -100, sel = -1, snapped = -1, opened = false;
 
 /* 選ぶ：輪が文字を囲む */
@@ -151,7 +142,6 @@ function snapTo(i){ snapped = i; cur.classList.toggle('snap', i >= 0); if (i >= 
 
 addEventListener('pointermove', function(e){
   mx = e.clientX; my = e.clientY; document.body.classList.add('live'); document.body.classList.remove('keys');
-  if (opened) return;
   /* 文字の近く（上下左右に 18px のゆとり）に入ったら吸いつく */
   var hit = -1;
   btns.forEach(function(b, k){ var r = b.getBoundingClientRect(); if (mx > r.left - 18 && mx < r.right + 18 && my > r.top - 18 && my < r.bottom + 18) hit = k; });
@@ -161,7 +151,7 @@ document.addEventListener('mouseleave', function(){ document.body.classList.remo
 
 function frame(){
   var gx = mx, gy = my, w = 44, h = 44;
-  if (snapped >= 0 && !opened){
+  if (snapped >= 0){
     var r = btns[snapped].getBoundingClientRect();
     gx = r.left + r.width / 2; gy = r.top + r.height / 2; w = r.width + 28; h = r.height + 18;
   }
@@ -169,24 +159,19 @@ function frame(){
   x += (gx - x) * (RM ? 1 : .45); y += (gy - y) * (RM ? 1 : .45);
   cur.style.setProperty('--x', x + 'px'); cur.style.setProperty('--y', y + 'px');
   cur.style.setProperty('--w', w + 'px'); cur.style.setProperty('--hh', h + 'px');
+  /* 板の上では輪を消して、普通のカーソル */
+  cur.classList.toggle('off', opened && mx > page.getBoundingClientRect().left);
   requestAnimationFrame(frame);
 }
 
-/* 開く：押した文字から輪が広がり、英字が一度横切ってから中身 */
+/* 開く：右から板。開いたまま別の項目を押すと、中身だけ入れ替わる */
 function open(i){
-  if (opened) return; pick(i); opened = true;
-  var r = btns[i].getBoundingClientRect();
-  document.documentElement.style.setProperty('--ox', (r.left + r.width / 2) + 'px');
-  document.documentElement.style.setProperty('--oy', (r.top + r.height / 2) + 'px');
+  pick(i);
   wrap.innerHTML = '<span class="k">' + PAGES[i].e + '</span>' + PAGES[i].html; page.scrollTop = 0;
-  document.body.classList.add('open');
-  setTimeout(function(){ page.classList.add('in'); }, RM ? 0 : 300);
+  if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
+  opened = true; document.body.classList.add('open');
 }
-function close(){
-  if (!opened) return;
-  page.classList.remove('in'); document.body.classList.remove('open');
-  setTimeout(function(){ opened = false; }, 300);
-}
+function close(){ opened = false; document.body.classList.remove('open'); }
 
 btns.forEach(function(b, i){
   b.addEventListener('click', function(){ open(i); });
@@ -195,8 +180,7 @@ btns.forEach(function(b, i){
 document.getElementById('back').addEventListener('click', close);
 addEventListener('keydown', function(e){
   if (e.key === 'Escape'){ close(); return; }
-  if (opened) return;
-  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); var n = sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1); snapTo((n + btns.length) % btns.length); btns[sel].focus({preventScroll:true}); document.body.classList.add('keys'); }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); var n = sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1); snapTo((n + btns.length) % btns.length); btns[sel].focus({preventScroll:true}); document.body.classList.add('keys'); if (opened) open(sel); }
   if (e.key === 'Enter' && sel >= 0 && document.activeElement && document.activeElement.tagName !== 'A'){ e.preventDefault(); open(sel); }
 });
 
