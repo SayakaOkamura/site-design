@@ -30,21 +30,23 @@ header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
 .menu button small{display:block; font-family:"Zen Kaku Gothic New",sans-serif; font-size:max(11px,.17em); letter-spacing:.35em; color:var(--pu); margin-top:.15em; transition:color .12s}
 .menu button.on{color:var(--wh)}
 .menu button.on small{color:var(--ac)}
+/* 開いている節：名前の左に小さな輪（ロゴの形） */
+.menu button.opened::before{content:""; position:absolute; left:-.5em; top:.52em; width:.32em; height:.32em; border-radius:50%; border:.07em solid var(--li); box-shadow:inset 0 0 0 .03em var(--wh)}
 /* 選んだ文字の下に、左から伸びる線 */
 
 
 
 /* 輪：ロゴの形。マウスについてきて、文字に近づくと吸いついて囲む */
 .cur{position:fixed; left:0; top:0; z-index:8; pointer-events:none; width:var(--w,44px); height:var(--hh,44px); border-radius:999px;
-  border:6px solid var(--pu); box-shadow:inset 0 0 0 3px var(--li); transform:translate(var(--x),var(--y)) translate(-50%,-50%);
-  transition:width .14s cubic-bezier(.2,.8,.2,1), height .14s cubic-bezier(.2,.8,.2,1), border-color .14s, background .14s, opacity .2s, scale .12s; opacity:0}
+  border:6px solid var(--pu); box-shadow:inset 0 0 0 3px var(--li); transform:translate(var(--x),var(--y)) translate(-50%,-50%) scale(var(--s,1));
+  transition:width .14s cubic-bezier(.2,.8,.2,1), height .14s cubic-bezier(.2,.8,.2,1), border-color .14s, background .14s, opacity .2s; opacity:0}
 .cur.snap{border-color:var(--li); box-shadow:none}
 /* 字の上では小さく薄く（読む邪魔をしない） */
 .cur.dim{opacity:.55 !important}
 /* 押せる物の上では、輪の中を塗りつぶす */
-.cur.press{background:rgba(187,126,234,.45); border-color:var(--li)}
+.cur.press{border-color:var(--li); box-shadow:none}
 /* 押すと一瞬縮む */
-.cur.tap{scale:.8; transition-duration:.06s}
+.cur.tap{--s:.8}
 body.live .cur,body.keys .cur{opacity:1}
 /* 本当のマウスの位置：小さな点（楕円に吸いついても、ここにいると分かる） */
 .dot{position:fixed; left:0; top:0; z-index:9; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:var(--wh); pointer-events:none; opacity:0; transform:translate(var(--mx),var(--my))}
@@ -166,11 +168,12 @@ document.addEventListener('mouseleave', function(){ document.body.classList.remo
 
 function frame(){
   var gx = mx, gy = my, w = 44, h = 44;
-  /* 輪の下にある物：押せる物なら塗る、板の字の上なら小さく薄く */
+  /* 輪の下にある物：押せる物なら吸いついて囲む、板の字の上なら小さく薄く */
   var under = snapped < 0 && document.elementFromPoint(mx, my), act = under && under.closest && under.closest('a, button:not(.menu button)');
   var onText = !act && opened && mx > page.getBoundingClientRect().left;
   cur.classList.toggle('press', !!act); cur.classList.toggle('dim', onText);
-  if (act){ w = h = 36; } else if (onText){ w = h = 26; }
+  if (act){ var ar = act.getBoundingClientRect(); gx = ar.left + ar.width / 2; gy = ar.top + ar.height / 2; w = ar.width + 22; h = ar.height + 14; }
+  else if (onText){ w = h = 26; }
   if (snapped >= 0){
     var r = btns[snapped].getBoundingClientRect();
     gx = r.left + r.width / 2; gy = r.top + r.height / 2; w = r.width + 28; h = r.height + 18;
@@ -189,8 +192,9 @@ function open(i){
   wrap.innerHTML = '<span class="k">' + PAGES[i].e + '</span>' + PAGES[i].html; page.scrollTop = 0;
   if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
   opened = true; document.body.classList.add('open');
+  btns.forEach(function(b, k){ b.classList.toggle('opened', k === i); });
 }
-function close(){ opened = false; document.body.classList.remove('open'); }
+function close(){ opened = false; document.body.classList.remove('open'); btns.forEach(function(b){ b.classList.remove('opened'); }); }
 
 btns.forEach(function(b, i){
   b.addEventListener('click', function(){ open(i); });
