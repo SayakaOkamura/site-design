@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 ステータス画面（2026-11-24）。会社をレトロ RPG のステータス画面に。
-     設立 2025 年 6 月で Lv.1。そうび＝AI × ローコード、スキル＝サービス四つ、しんじょう＝企業理念、うしろだて＝株主、そうだん＝お問い合わせ。
+     設立 2025 年 6 月で Lv.1。そうび＝AI × ローコード、スキル＝サービス四つ、しんじょう＝企業理念、そうだん＝お問い合わせ。株主は、つよさの一行。
      書いてあることは公式の文と会社概要だけ（数字は作らない） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
@@ -87,7 +87,6 @@ footer{max-width:960px; margin:0 auto; padding:0 16px 24px; display:flex; justif
       <li><button type="button" data-p="tsuyosa">つよさ</button></li>
       <li><button type="button" data-p="skill">スキル</button></li>
       <li><button type="button" data-p="shinjo">しんじょう</button></li>
-      <li><button type="button" data-p="ushiro">うしろだて</button></li>
       <li><button type="button" data-p="soudan">そうだん</button></li>
     </ul>
   </nav>
@@ -126,6 +125,7 @@ var PAGES = {
       '<dt>リーダー</dt><dd>藤田 靖広</dd>' +
       '<dt>しきん</dt><dd>60百万円</dd>' +
       '<dt>せつりつ</dt><dd>2025年6月</dd>' +
+      '<dt>かぶぬし</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd>' +
       '<dt>きょてん</dt><dd>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）' +
         '<details class="more"><summary>アクセス</summary>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</details></dd>' +
       '</dl>' },
@@ -133,8 +133,6 @@ var PAGES = {
   shinjo: { msg:'経営の力で「遊ぶように働く世界」をデザインする。',
     html:'<h2>しんじょう</h2><p style="margin:0 0 12px">経営の力で「遊ぶように働く世界」をデザインする</p>' +
       '<p class="desc" style="margin:0"><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
-  ushiro: { msg:'うしろだての 4社。',
-    html:'<h2>うしろだて（株主）</h2><ul class="list"><li style="padding:6px 0">株式会社ＢｌｕｅＭｅｍｅ</li><li style="padding:6px 0">株式会社ハイ・アベイラビリティ・システムズ</li><li style="padding:6px 0">株式会社サーバーワークス・キャピタル</li><li style="padding:6px 0">リックソフト株式会社</li></ul>' },
   soudan: { msg:'サービスに関するご相談や、掲載のご依頼、その他ご質問などがございましたら お気軽にお問い合わせください。',
     html:'<h2>そうだん</h2><p style="margin:0">お問い合わせフォームへ すすみますか？</p><div class="yn"><a href="mailto:contact@alt-dsgn.co.jp" data-yn>はい</a><button type="button" data-yn data-no>いいえ</button></div>' }
 };
