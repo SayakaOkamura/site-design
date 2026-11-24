@@ -93,9 +93,6 @@ body.af #bg .af{--c:#d7ff3a}
 body.af #bg .af{animation:lock .18s ease-out}
 @keyframes lock{0%{scale:1.06} 100%{scale:1}}
 
-/* 画面ごと動くカメラ：背景・メニュー・見出しを一つの入れ物に入れて、節を開くと左を軸に引いて傾く。節ごとに傾きと上下が変わる */
-#world{position:fixed; inset:0; z-index:1; transform:var(--wcam,none); transform-origin:0% 50%; transition:transform .8s cubic-bezier(.45,0,.2,1)}
-
 /* シャッター：上下の幕が一瞬閉じて開き、白く光る */
 .shut{position:fixed; left:0; right:0; z-index:12; height:0; background:#0b0410; pointer-events:none}
 .shut.t{top:0} .shut.b{bottom:0}
@@ -294,9 +291,8 @@ function open(i){
   wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0;
   if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
   opened = true; document.body.classList.add('open');
-  if (window.__wcam) window.__wcam(i);
 }
-function close(){ opened = false; document.body.classList.remove('open'); if (window.__wcam) window.__wcam(-1); }
+function close(){ opened = false; document.body.classList.remove('open'); }
 
 btns.forEach(function(b, i){
   b.addEventListener('click', function(e){ if (e.detail) bump(b, e.clientX, e.clientY); else bump(b); open(i); });
@@ -371,21 +367,6 @@ document.getElementById('logo').addEventListener('click', function(){
     slot = next;
     setTimeout(put, RM ? 0 : 220);
     return true;
-  };
-})();
-
-/* 画面ごと動くカメラ */
-(function(){
-  var w = document.createElement('div'); w.id = 'world';
-  ['bg'].forEach(function(id){ w.appendChild(document.getElementById(id)); });
-  w.appendChild(document.querySelector('.hero')); w.appendChild(document.querySelector('.menu'));
-  document.body.insertBefore(w, document.body.firstChild);
-  /* 節ごとの [上下（vh）, 傾き（度）] */
-  var WC = [[-4, -2], [3, 1.5], [-2, -1], [4, 2], [0, -2.5]];
-  window.__wcam = function(i){
-    if (i < 0 || RM){ document.documentElement.style.setProperty('--wcam', 'none'); return; }
-    var c = WC[i];
-    document.documentElement.style.setProperty('--wcam', 'translate(-1vw,' + c[0] + 'vh) scale(.84) rotate(' + c[1] + 'deg)');
   };
 })();
 
