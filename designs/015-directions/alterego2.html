@@ -4,8 +4,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 alter ego 考え直し（2026-11-24）。見ている人の分身。
-     CM の型：1 もう一人の自分 → 2 カーソルが二つになる（不具合ではありません）→ 3 もう一つは、行こうとした先へ一歩先に着いて開けて待つ AI。
-     決めて押すのは本人。文には手を付けない。土台は 013 の普通のサイト。文は公式のまま -->
+     CM の型：1 もう一人の自分 → 2 迷うとカーソルが二つに分かれる（不具合ではありません）→ 3 もう一つは探しに行って、一覧を開けて待つ AI。
+     選ぶのは本人。選ぶと戻って重なる。文には手を付けない。土台は 013 の普通のサイト。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
 <style>
@@ -58,16 +58,17 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 #twin .tag{position:absolute; left:20px; top:22px; white-space:nowrap; padding:2px 7px; border-radius:3px; background:var(--btn); color:#fff; font-size:11px; line-height:1.6; font-weight:400;
   opacity:0; transform:translateY(-3px); transition:opacity .25s, transform .25s}
 #twin .tag.show{opacity:1; transform:none}
+#twin.l .tag{left:auto; right:20px}
 #twin .tag.note{background:#fff; color:var(--sub); border:1px solid var(--line)}
-/* 先に着いた先：開けて待っている */
-.ahead{outline:2px solid var(--ghost); outline-offset:6px; border-radius:2px; transition:outline-color .2s}
-.peek{position:fixed; z-index:40; width:min(320px,calc(100vw - 32px)); padding:14px 16px; background:#fff; border:1px solid var(--line); box-shadow:0 8px 24px rgba(42,14,62,.12);
-  font-size:13px; line-height:1.7; pointer-events:none; opacity:0; transform:translateY(-4px); transition:opacity .2s, transform .2s}
-.peek.show{opacity:1; transform:none}
-.peek .k{display:block; font-size:11px; color:var(--sub); margin-bottom:4px}
-.peek ul li{padding-left:1em; text-indent:-1em}
-.peek ul li::before{content:"・"}
-@media (pointer:coarse){ #twin, .peek{display:none} }
+/* 探してきた一覧：開けて待っている */
+.peek{position:fixed; z-index:40; right:clamp(16px,4vw,48px); top:96px; width:min(360px,calc(100vw - 32px)); max-height:calc(100vh - 112px); overflow:auto; padding:16px 18px 10px; background:#fff; border:1px solid var(--line); box-shadow:0 8px 24px rgba(42,14,62,.12);
+  font-size:13px; line-height:1.7; opacity:0; visibility:hidden; transform:translateY(-6px); transition:opacity .25s, transform .25s, visibility 0s .25s}
+.peek.show{opacity:1; visibility:visible; transform:none; transition:opacity .25s, transform .25s}
+.peek .k{display:block; font-size:11px; color:var(--sub); margin-bottom:6px}
+.peek a{display:block; padding:8px 0; border-top:1px solid var(--line); text-decoration:none}
+.peek a:hover b{color:var(--btn); text-decoration:underline}
+.peek a b{display:block; font-weight:400; font-size:14px}
+.peek a span{display:block; color:var(--sub); font-size:12px}
 
 @media (max-width:760px){
   nav li{display:none}
@@ -153,96 +154,77 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
   <svg viewBox="0 0 22 30"><path d="M2 2 L2 24 L8 18.5 L12 27.5 L15.5 26 L11.6 17.2 L19 17.2 Z" fill="#b9a6d6" stroke="#654087" stroke-width="1.5" stroke-linejoin="round"/></svg>
   <span class="tag"></span>
 </div>
-<div class="peek" aria-hidden="true"></div>
+<div class="peek" role="dialog" aria-label="探してきた一覧"></div>
 
 <script>
 (function(){
-if (matchMedia('(pointer:coarse)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 var twin = document.getElementById('twin'), tag = twin.querySelector('.tag'), peek = document.querySelector('.peek');
 
-/* 先回りして開けておく中身（公式の文から） */
+/* 探してきた一覧（公式の文から） */
 function txt(sel){ var e = document.querySelector(sel); return e ? e.textContent.trim() : ''; }
-var PEEK = {
-  '#philosophy': function(){ return '<span class="k">企業理念</span>' + txt('.vision h3'); },
-  '#services':   function(){ return '<span class="k">サービス</span><ul>' + [].map.call(document.querySelectorAll('.service h3'), function(h){ return '<li>' + h.textContent + '</li>'; }).join('') + '</ul>'; },
-  '#company':    function(){ return '<span class="k">会社概要</span>株式会社アルターデザインコンサルティング<br>東京都港区西新橋3-23-5／2025年6月設立'; },
-  '#contact':    function(){ return '<span class="k">お問い合わせ</span>' + txt('.contact p'); }
-};
-var targets = [].slice.call(document.querySelectorAll('nav a, .contact a.btn'));
+peek.innerHTML = '<span class="k">探してきました</span>' + [
+  ['#philosophy', '企業理念', txt('.vision h3')],
+  ['#services',   'サービス', [].map.call(document.querySelectorAll('.service h3'), function(h){ return h.textContent; }).join('／')],
+  ['#company',    '会社概要', '株式会社アルターデザインコンサルティング／東京都港区西新橋／2025年6月設立'],
+  ['#contact',    'お問い合わせ', 'サービスに関するご相談や、その他ご質問など']
+].map(function(r){ return '<a href="' + r[0] + '"><b>' + r[1] + '</b><span>' + r[2] + '</span></a>'; }).join('');
 
-var mx = -100, my = -100, vx = 0, vy = 0, lx = 0, ly = 0, lt = 0;   /* 本人のカーソル */
-var tx = -100, ty = -100;                                            /* もう一人 */
-var aim = null, cand = null, candT = 0, met = false, led = 0, tagT = 0;
+var mx = innerWidth / 2, my = innerHeight / 2;   /* 本人のカーソル（タッチなら最後に触れた所） */
+var tx = 0, ty = 0;                              /* もう一人 */
+var state = 0, stT = 0, splits = 0, tagT = 0;    /* 0 重なっている／1 分かれた／2 探しに行く／3 開けて待つ／4 戻る */
+var rest = 0;                                    /* 戻ってから次に分かれられるまで */
 
 function say(s, note, ms){
   tag.textContent = s; tag.classList.toggle('note', !!note); tag.classList.add('show');
   clearTimeout(tagT); if (ms) tagT = setTimeout(function(){ tag.classList.remove('show'); }, ms);
 }
+function go(s){ state = s; stT = performance.now(); }
 
-addEventListener('mousemove', function(e){
-  var now = performance.now(), dt = Math.max(8, now - lt);
-  if (lt){ vx = vx * .7 + (e.clientX - lx) / dt * .3 * 16; vy = vy * .7 + (e.clientY - ly) / dt * .3 * 16; }
-  lx = mx = e.clientX; ly = my = e.clientY; lt = now;
-  if (!met){
-    met = true; tx = mx + 14; ty = my + 10; twin.classList.add('on');
-    setTimeout(function(){ if (!led) say('※演出です。不具合ではありません', true, 3600); }, 900);
-  }
+addEventListener('pointermove', function(e){ mx = e.clientX; my = e.clientY; }, {passive:true});
+addEventListener('pointerdown', function(e){ mx = e.clientX; my = e.clientY; }, {passive:true});
+
+/* 迷いを見る：メニューの上を行ったり来たり／スクロールを上下 */
+var hops = [], turns = [], lastY = scrollY, dir = 0, run = 0;
+[].forEach.call(document.querySelectorAll('nav a'), function(a){
+  a.addEventListener('mouseenter', function(){ hops.push(performance.now()); lost(hops, 4, 3500); });
 });
-document.addEventListener('mouseleave', function(){ twin.classList.remove('on'); });
-document.addEventListener('mouseenter', function(){ if (met) twin.classList.add('on'); });
+addEventListener('scroll', function(){
+  var y = scrollY, d = y > lastY ? 1 : y < lastY ? -1 : 0;
+  if (d && d !== dir){ if (dir && run > 80) { turns.push(performance.now()); lost(turns, 3, 6000); } dir = d; run = 0; }
+  run += Math.abs(y - lastY); lastY = y;
+}, {passive:true});
+function lost(list, n, ms){
+  var now = performance.now(); while (list.length && now - list[0] > ms) list.shift();
+  if (list.length >= n && state === 0 && now > rest){ list.length = 0; split(); }
+}
 
-/* 本人の向かっている先を当てる */
-function guess(){
-  var sp = Math.hypot(vx, vy); if (sp < 2.2) return null;
-  var best = null, bs = 0;
-  targets.forEach(function(t){
-    var r = t.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
-    var cx = r.left + r.width / 2, cy = r.top + r.height / 2, dx = cx - mx, dy = cy - my, d = Math.hypot(dx, dy);
-    if (d < 30 || d > 900) return;
-    var cos = (dx * vx + dy * vy) / (d * sp); if (cos < .93) return;
-    var s = cos * cos / (1 + d / 600); if (s > bs){ bs = s; best = t; }
-  });
-  return best;
+function split(){
+  splits++; tx = mx; ty = my; twin.classList.add('on'); go(1);
+  if (splits === 1) say('※演出です。不具合ではありません', true, 1800);
+  setTimeout(function(){ if (state === 1){ say('探してきます', false); go(2); } }, splits === 1 ? 1900 : 500);
 }
-function open(t){
-  if (aim === t) return;
-  close(); aim = t; t.classList.add('ahead');
-  var f = PEEK[t.getAttribute('href')];
-  if (f){
-    peek.innerHTML = f();
-    var r = t.getBoundingClientRect(), w = peek.offsetWidth;
-    peek.style.left = Math.max(16, Math.min(innerWidth - w - 16, r.right - w)) + 'px';
-    peek.style.top = (r.bottom + 14) + 'px';
-    if (r.bottom + 14 + peek.offsetHeight > innerHeight) peek.style.top = (r.top - 14 - peek.offsetHeight) + 'px';
-    peek.classList.add('show');
-  }
-  led++;
-  if (led === 1) say('先に行って、開けておきました', false, 2600);
-  else if (led === 3) say('押すのは、あなたです', false, 2400);
+function merge(){
+  if (state === 0 || state === 4) return;
+  peek.classList.remove('show'); go(4);
+  say(splits === 1 ? '選ぶのは、あなたです' : 'もどります', false, 1400);
 }
-function close(){
-  if (aim) aim.classList.remove('ahead'); aim = null; peek.classList.remove('show');
-}
-document.addEventListener('click', function(e){ if (aim && e.target.closest('a') === aim) setTimeout(close, 60); });
-addEventListener('scroll', function(){ if (aim && !aim.closest('header')) close(); }, {passive:true});
+peek.addEventListener('click', function(e){ if (e.target.closest('a')) setTimeout(merge, 450); });
+document.addEventListener('pointerdown', function(e){ if (state === 3 && !e.target.closest('.peek')) merge(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') merge(); });
 
-function tick(){
-  var now = performance.now();
-  if (now - lt > 120){ vx *= .8; vy *= .8; }
-  var g = guess();
-  if (g !== cand){ cand = g; candT = now; }
-  if (cand && now - candT > 90) open(cand);
-  /* 本人が着いた、または逸れたら、そばに戻る */
-  if (aim){
-    var r = aim.getBoundingClientRect(), on = mx > r.left - 8 && mx < r.right + 8 && my > r.top - 8 && my < r.bottom + 8;
-    var cx = r.left + r.width / 2, cy = r.top + r.height / 2, d = Math.hypot(cx - mx, cy - my);
-    var away = !on && Math.hypot(vx, vy) > 2 && ((cx - mx) * vx + (cy - my) * vy) / (d * Math.hypot(vx, vy)) < .5;
-    if (away || (!on && now - lt > 2500)) close();
+function tick(now){
+  var gx = mx, gy = my, k = .12;
+  if (state === 1){ gx = mx + 22; gy = my + 14; k = .08; }                                   /* そばで、ずれて分かれる */
+  else if (state === 2 || state === 3){
+    var r = peek.getBoundingClientRect(); k = .09;                                               /* 一覧の角へ（狭い窓では下の角） */
+    if (r.left > 40){ gx = r.left - 22; gy = r.top + 8; } else { gx = r.left + 12; gy = r.bottom + 4; }
+    if (state === 2 && Math.hypot(gx - tx, gy - ty) < 6){ peek.classList.add('show'); tag.classList.remove('show'); go(3); }
   }
-  var gx, gy, k;
-  if (aim){ var a = aim.getBoundingClientRect(); gx = a.left - 16; gy = a.bottom - 4; k = .2; }   /* 先に着いて、入口で待つ */
-  else { gx = mx + 14; gy = my + 10; k = .14; }                                                 /* そばで、少しずれてついてくる */
+  else if (state === 4){ k = .16; if (Math.hypot(mx - tx, my - ty) < 4){ twin.classList.remove('on'); go(0); rest = now + 4000; } }
+  twin.classList.toggle('l', (state === 2 || state === 3) && peek.getBoundingClientRect().left > 40);
   tx += (gx - tx) * k; ty += (gy - ty) * k;
+  if (state === 0){ tx = mx; ty = my; }
   twin.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px)';
   requestAnimationFrame(tick);
 }
