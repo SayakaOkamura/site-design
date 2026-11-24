@@ -11,6 +11,13 @@
 /* 質感の決まり：ドット一つ = --p（窓から整数で決める）。枠・線・絵は全部その倍数。色は 6 つだけ。字は 16px */
 :root{ --D:#24132b; --M:#8a5a92; --W:#62396b; --A:#fb851b; --L:#f8eef6; --S:#dcb6df; --p:4px; }   /* 紫の一系統（D・W・M・S・L）＋差し色の橙（A）。橙は押せる物・光る物だけ */
 :root[data-p="logo"]{ --D:#22417d; --M:#5d2e77; --W:#5376ab; --A:#399ac5; --L:#f6f3fa; --S:#f6f3fa; }
+/* ?p=fc：ファミコンっぽい色。黒い地に、少しずれた原色 */
+:root[data-p="fc"]{ --D:#000000; --M:#0000bc; --W:#ac7c00; --A:#f83800; --L:#fcfcfc; --S:#fca044; }
+/* ?p=gb：ゲームボーイっぽい色。緑がかった一色の濃淡 4 段 */
+:root[data-p="gb"]{ --D:#0f380f; --W:#306230; --M:#8bac0f; --S:#9bbc0f; --L:#9bbc0f; --A:#0f380f; }
+:root[data-p="gb"] .sign,:root[data-p="gb"] .facade .board,:root[data-p="gb"] .talk .who,:root[data-p="gb"] .talk .nx,:root[data-p="gb"] .card h2,:root[data-p="gb"] .bye h2{color:var(--L)}
+/* ?p=cli：端末っぽい色。黒い地に琥珀色の濃淡だけ */
+:root[data-p="cli"]{ --D:#000000; --M:#1a1000; --W:#4a3000; --A:#ffcc33; --L:#ffb000; --S:#a87400; }
 /* ?p=98：PC-98 っぽい色。くすんだ中間色で色相はばらばら（壁は青灰、木は茶）。影と色の段差は網点（ドットの市松） */
 :root[data-p="98"]{ --D:#101020; --M:#5a6e8c; --W:#7a5038; --A:#e0603a; --L:#f0ece0; --S:#d8c08a;
   --dz:repeating-conic-gradient(var(--D) 0 25%,transparent 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2); }
@@ -283,7 +290,7 @@ body.outside .ask{opacity:0; pointer-events:none}
 
 <script>
 const params = new URLSearchParams(location.search);
-if (['logo','98'].includes(params.get('p'))) document.documentElement.dataset.p = params.get('p');
+if (['logo','98','fc','gb','cli'].includes(params.get('p'))) document.documentElement.dataset.p = params.get('p');
 const css = getComputedStyle(document.documentElement);
 const PAL = {}; for (const k of ['D','M','W','A','L','S']) PAL[k] = css.getPropertyValue('--'+k).trim();
 const MAP = {o:'D', m:'M', w:'W', a:'A', l:'L', s:'S'};
