@@ -60,9 +60,9 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 
 /* 背景：余白を埋める主役。大きな色面の構図が、数秒おきにカチッと組み変わる */
 /* 背景：ロゴの輪の照準。十字の線は画面を貫通する（メニューの後ろも）。照準本体は画面の中の決まった 6 か所に置く
-   撃つと、撃った向きにある場所へ速く跳ぶ。当たった瞬間にヒットマーク・火花・光・押し・連続の数 */
+   撃つと、撃った向きにある場所へ跳ぶ（0.58 秒、一瞬溜めてなめらかに止まる）。当たった瞬間にヒットマーク・火花・光・押し・連続の数 */
 #bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
-#bg .ret{position:absolute; left:0; top:0; width:0; height:0; transform:translate(var(--sx),var(--sy)); transition:transform .2s cubic-bezier(.2,1.5,.4,1)}
+#bg .ret{position:absolute; left:0; top:0; width:0; height:0; transform:translate(var(--sx),var(--sy)); transition:transform .58s cubic-bezier(.55,-.22,.2,1)}   /* 一瞬溜めて出て、なめらかに止まる */
 #bg .ret .core{position:absolute; left:0; top:0; width:0; height:0}
 #bg .ret .rg{position:absolute; border-radius:50%; border:solid #3a1b58; transition:border-color .25s}
 #bg .ret .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:2px solid rgba(187,126,234,.22); transition:border-color .25s}
@@ -73,8 +73,8 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 #bg .ret.hit .rg{border-color:#d7ff3a; transition:none}
 #bg .ret.hit .rg::after{border-color:rgba(215,255,58,.7); transition:none}
 #bg .ret.hit .hx,#bg .ret.hit .vy{background:rgba(215,255,58,.55); transition:none}
-#bg .ret.pop .core{animation:pop2 .28s cubic-bezier(.2,1.8,.4,1)}
-@keyframes pop2{0%{transform:scale(1.18)} 100%{transform:scale(1)}}
+#bg .ret.pop .core{animation:pop2 .32s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop2{0%{transform:scale(1.1)} 100%{transform:scale(1)}}
 /* ヒットマーク（×）・火花・連続の数 */
 .hm{position:fixed; z-index:9; width:34px; height:34px; margin:-17px 0 0 -17px; pointer-events:none; animation:hm .32s ease-out forwards}
 .hm::before,.hm::after{content:""; position:absolute; left:50%; top:50%; width:34px; height:3px; margin:-1.5px 0 0 -17px; background:linear-gradient(90deg,#fbf8ff 0 11px,transparent 11px 23px,#fbf8ff 23px)}
@@ -120,7 +120,7 @@ body.open .hero{opacity:0}
 
 /* 開く：右から板が滑り込んで中身。メニューと輪は左に残る */
 .page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow-x:hidden; overflow-y:auto; color:var(--wh); background:var(--deep);
-  border-left:2px solid var(--pu); transform:translateX(102%); transition:transform .34s cubic-bezier(.7,0,.2,1)}
+  border-left:2px solid var(--pu); transform:translateX(102%); transition:transform .52s cubic-bezier(.55,0,.2,1)}
 body.open .page{transform:none}
 .page .wrap.swap{animation:swap .22s ease-out}
 @keyframes swap{from{opacity:0; transform:translateX(16px)}}
@@ -333,7 +333,9 @@ document.getElementById('logo').addEventListener('click', function(){
     if (combo > 1){ var cb = fx('cb', x, y - 10); cb.textContent = '×' + combo; }
     document.documentElement.style.setProperty('--kx', (ux * 6) + 'px'); document.documentElement.style.setProperty('--ky', (uy * 6) + 'px');
     document.body.classList.remove('kick'); void document.body.offsetWidth; document.body.classList.add('kick');
-    setTimeout(function(){ put(); ret.classList.remove('pop'); void ret.offsetWidth; ret.classList.add('pop'); }, 40);
+    put();
+    /* 着いた瞬間に膨らんで戻る */
+    setTimeout(function(){ ret.classList.remove('pop'); void ret.offsetWidth; ret.classList.add('pop'); }, 560);
     return true;
   };
 })();
