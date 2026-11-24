@@ -166,20 +166,34 @@ function layout(){
 }
 addEventListener('resize', layout); layout();
 
-/* スクロール → カメラ（止まる区間と、引いて回って寄る区間） */
+/* スクロール → カメラ。止まる区間と、引く → 渡る → 寄る（少し行き過ぎて戻る）区間 */
 function ease(t){ return t * t * t * (t * (t * 6 - 15) + 10); }
+function cl(t){ return Math.max(0, Math.min(1, t)); }
 function cam(p){
   var seg = HOLD + MOVE, i = Math.min(N - 1, Math.floor(p / seg)), f = p - i * seg;
   var a = stops[i];
-  if (i >= N - 1 || f <= HOLD) return { x:a.x, y:a.y, r:a.r, s:1, i:i };
-  var b = stops[i + 1], t = (f - HOLD) / MOVE, e = ease(t);
-  var d = Math.hypot(b.x - a.x, b.y - a.y), far = Math.min(.6, Math.min(W, H) / (d + Math.min(W, H)) * 1.1);
-  var dip = RM ? 0 : Math.pow(Math.sin(Math.PI * t), .8);
-  var dr = b.r - a.r;
-  return { x:a.x + (b.x - a.x) * e, y:a.y + (b.y - a.y) * e, r:a.r + dr * (RM ? e : ease(Math.min(1, Math.max(0, t * 1.3 - .15)))), s:Math.exp(Math.log(far) * dip), i:t < .5 ? i : i + 1 };
+  if (i >= N - 1 || f <= HOLD) return { x:a.x, y:a.y, r:a.r, ls:0, i:i };
+  var b = stops[i + 1], t = (f - HOLD) / MOVE;
+  var d = Math.hypot(b.x - a.x, b.y - a.y), far = Math.min(.5, Math.min(W, H) / (d + Math.min(W, H)));
+  var go = ease(cl((t - .22) / .56));                               /* 渡る */
+  var ls;
+  if (RM) ls = 0;
+  else if (t < .5) ls = Math.log(far) * ease(cl(t / .28));          /* 引く */
+  else { var u = cl((t - .7) / .3); ls = Math.log(far) * (1 - ease(u)) + .07 * Math.sin(Math.PI * cl((u - .45) / .55)); }   /* 寄る */
+  return { x:a.x + (b.x - a.x) * go, y:a.y + (b.y - a.y) * go, r:a.r + (b.r - a.r) * go, ls:ls, i:t < .5 ? i : i + 1 };
 }
 
-var sy = scrollY, mx = 0, my = 0, smx = 0, smy = 0;
+/* カメラはばねでついてくる（止めると少し揺れて落ち着く） */
+var C = null, V = { x:0, y:0, r:0, ls:0 }, prev = 0;
+function follow(g, now){
+  if (!C || RM){ C = { x:g.x, y:g.y, r:g.r, ls:g.ls, s:Math.exp(g.ls), i:g.i }; prev = now; return C; }
+  var dt = Math.min(1 / 30, (now - prev) / 1000 || 0); prev = now;
+  var K = 90, D = 2 * Math.sqrt(K) * .6;
+  ['x', 'y', 'r', 'ls'].forEach(function(k){ V[k] += ((g[k] - C[k]) * K - V[k] * D) * dt; C[k] += V[k] * dt; });
+  C.s = Math.exp(C.ls); C.i = g.i; return C;
+}
+
+var mx = 0, my = 0, smx = 0, smy = 0;
 addEventListener('pointermove', function(e){ mx = e.clientX / W - .5; my = e.clientY / H - .5; }, {passive:true});
 navs.forEach(function(a){
   a.addEventListener('click', function(e){ e.preventDefault(); scrollTo({ top:+a.dataset.i * (HOLD + MOVE) + (+a.dataset.i ? HOLD / 2 : 0), behavior:'smooth' }); });
@@ -227,9 +241,8 @@ function draw(c, now){
 
 var last = -1;
 function frame(now){
-  sy += (scrollY - sy) * (RM ? 1 : .1);
   smx += (mx - smx) * .05; smy += (my - smy) * .05;
-  var c = cam(sy);
+  var c = follow(cam(scrollY), now);
   world.style.transform = 'translate(' + (W / 2 + smx * 30) + 'px,' + (H / 2 + smy * 30) + 'px) scale(' + c.s + ') rotate(' + (-c.r) + 'rad) translate(' + (-c.x) + 'px,' + (-c.y) + 'px)';
   draw(c, now);
   if (c.i !== last){
