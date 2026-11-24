@@ -105,11 +105,11 @@ body.af #bg .af{animation:lock .18s ease-out}
 body.kick #bg{animation:kick .14s ease-out}
 @keyframes kick{40%{transform:translate(var(--kx),var(--ky))}}
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
-/* 押した項目は、右（板の方）へ大きく滑って、なめらかに戻る。日本語は 28px、下の英字はさらに 20px（二段）。目の端でも動いたとわかる大きさ */
-.menu button.bump{animation:bump .4s linear}
-.menu button.bump small{animation:bump2 .4s linear .015s}
-@keyframes bump{0%{transform:none; animation-timing-function:cubic-bezier(.2,.8,.3,1)} 25%{transform:translateX(28px); animation-timing-function:cubic-bezier(.4,0,.2,1)} 100%{transform:none}}
-@keyframes bump2{0%{transform:none; animation-timing-function:cubic-bezier(.2,.8,.3,1)} 25%{transform:translateX(20px); animation-timing-function:cubic-bezier(.4,0,.2,1)} 100%{transform:none}}
+/* 開いている項目は、右（板の方）へ一歩出たまま止まる。別の項目を開くと入れ替わり、閉じると列にそろう */
+.menu button.opened{transform:translateX(26px)}
+.menu button.opened small{transform:translateX(14px)}
+.menu button small{display:block; transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+body.ready .menu button{transition:color .12s, opacity .35s, transform .3s cubic-bezier(.2,.8,.2,1)}
 
 /* OP：ロゴの輪が描かれ、社名が出て、メニューが順に出る */
 .op{position:fixed; inset:0; z-index:30; background:var(--bg); display:grid; place-items:center; transition:opacity .35s}
@@ -289,10 +289,6 @@ function frame(){
 }
 
 /* 開く：右から板。開いたまま別の項目を押すと、中身だけ入れ替わる */
-function bump(b){
-  if (RM) return;
-  b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
-}
 function open(i){
   pick(i);
   /* 見出し（英字と題）は板の上に残る */
@@ -307,21 +303,21 @@ function open(i){
     wrap.classList.remove('enter'); void wrap.offsetWidth; wrap.classList.add('enter');
   }
   opened = true; document.body.classList.add('open');
+  btns.forEach(function(b, k){ b.classList.toggle('opened', k === i); });
 }
-function close(){ opened = false; page.classList.remove('flat'); document.body.classList.remove('open'); }
+function close(){ opened = false; page.classList.remove('flat'); document.body.classList.remove('open'); btns.forEach(function(b){ b.classList.remove('opened'); }); }
 /* 振り込み終わったら、3D の変形を外して字をくっきりさせる */
 page.addEventListener('transitionend', function(e){ if (e.target === page && e.propertyName === 'transform') page.classList.toggle('flat', document.body.classList.contains('open')); });
 
 btns.forEach(function(b, i){
-  b.addEventListener('click', function(){ bump(b); open(i); });
-  b.addEventListener('animationend', function(){ b.classList.remove('bump'); });
+  b.addEventListener('click', function(){ open(i); });
   b.addEventListener('focus', function(){ pick(i); snapTo(i); });
 });
 document.getElementById('back').addEventListener('click', close);
 addEventListener('keydown', function(e){
   if (e.key === 'Escape'){ close(); return; }
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); var n = sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1); snapTo((n + btns.length) % btns.length); btns[sel].focus({preventScroll:true}); if (!document.body.classList.contains('keys')){ kx = mx; ky = my; } document.body.classList.add('keys'); if (opened) open(sel); }
-  if (e.key === 'Enter' && sel >= 0 && document.activeElement && document.activeElement.tagName !== 'A'){ e.preventDefault(); bump(btns[sel]); open(sel); }
+  if (e.key === 'Enter' && sel >= 0 && document.activeElement && document.activeElement.tagName !== 'A'){ e.preventDefault(); open(sel); }
 });
 
 
@@ -390,8 +386,8 @@ document.getElementById('logo').addEventListener('click', function(){
 
 /* OP：輪が描かれて社名 → メニューが順に出る。押すかキーで飛ばせる */
 var op = document.getElementById('op');
-function endOp(){ if (!op || op.classList.contains('out')) return; op.classList.add('out'); document.body.classList.remove('pre'); setTimeout(function(){ if (op){ op.remove(); op = null; } }, 400); }
-if (RM){ op.remove(); op = null; }
+function endOp(){ if (!op || op.classList.contains('out')) return; op.classList.add('out'); document.body.classList.remove('pre'); setTimeout(function(){ document.body.classList.add('ready'); }, 700); setTimeout(function(){ if (op){ op.remove(); op = null; } }, 400); }
+if (RM){ op.remove(); op = null; document.body.classList.add('ready'); }
 else { document.body.classList.add('pre'); setTimeout(endOp, 1500); op.addEventListener('pointerdown', endOp); addEventListener('keydown', endOp, {once:true}); }
 
 requestAnimationFrame(frame);
