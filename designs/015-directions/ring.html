@@ -41,7 +41,9 @@ body.open header{color:var(--deep)}
 .cur::after{content:""; position:absolute; left:50%; top:50%; width:4px; height:4px; margin:-2px; border-radius:50%; background:var(--ac); transition:opacity .1s}
 .cur.snap{border-color:var(--wh); box-shadow:inset 0 0 0 3px var(--ac)}
 .cur.snap::after{opacity:0}
-body.live .cur{opacity:1}
+body.live .cur,body.keys .cur{opacity:1}
+/* ブラウザのフォーカス枠は出さない。選んでいるのは輪で示す */
+.menu button:focus,.menu button:focus-visible{outline:none}
 body.open .cur{opacity:0}
 
 /* 右下：見出し */
@@ -148,7 +150,7 @@ function pick(i){
 function snapTo(i){ snapped = i; cur.classList.toggle('snap', i >= 0); if (i >= 0) pick(i); }
 
 addEventListener('pointermove', function(e){
-  mx = e.clientX; my = e.clientY; document.body.classList.add('live');
+  mx = e.clientX; my = e.clientY; document.body.classList.add('live'); document.body.classList.remove('keys');
   if (opened) return;
   /* 文字の近く（上下左右に 18px のゆとり）に入ったら吸いつく */
   var hit = -1;
@@ -195,7 +197,7 @@ document.getElementById('back').addEventListener('click', close);
 addEventListener('keydown', function(e){
   if (e.key === 'Escape'){ close(); return; }
   if (opened) return;
-  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); var n = sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1); snapTo((n + btns.length) % btns.length); btns[sel].focus({preventScroll:true}); }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); var n = sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1); snapTo((n + btns.length) % btns.length); btns[sel].focus({preventScroll:true}); document.body.classList.add('keys'); }
   if (e.key === 'Enter' && sel >= 0 && document.activeElement && document.activeElement.tagName !== 'A'){ e.preventDefault(); open(sel); }
 });
 
