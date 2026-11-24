@@ -39,6 +39,11 @@ header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
   border:6px solid var(--pu); box-shadow:inset 0 0 0 3px var(--li); transform:translate(var(--x),var(--y)) translate(-50%,-50%) scale(var(--s,1)) rotate(var(--rot));
   transition:width .14s cubic-bezier(.2,.8,.2,1), height .14s cubic-bezier(.2,.8,.2,1), border-color .14s, background .14s, opacity .2s; opacity:0}
 .cur.snap{border-color:var(--li); box-shadow:none}
+/* 照準：輪の外に十字の目盛り */
+.cur::before,.cur::after{content:""; position:absolute; pointer-events:none; transition:opacity .12s}
+.cur::before{left:-17px; right:-17px; top:50%; height:2px; margin-top:-1px; background:linear-gradient(90deg,var(--li) 0 9px,transparent 9px calc(100% - 9px),var(--li) calc(100% - 9px))}
+.cur::after{top:-17px; bottom:-17px; left:50%; width:2px; margin-left:-1px; background:linear-gradient(var(--li) 0 9px,transparent 9px calc(100% - 9px),var(--li) calc(100% - 9px))}
+.cur.snap::before,.cur.snap::after,.cur.press::before,.cur.press::after,.cur.dim::before,.cur.dim::after{opacity:0}
 /* 字の上では小さく薄く（読む邪魔をしない） */
 .cur.dim{opacity:.55 !important}
 /* 押せる物の上では、輪の中を塗りつぶす */
@@ -60,11 +65,12 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 
 /* 背景：余白を埋める主役。大きな色面の構図が、数秒おきにカチッと組み変わる */
 #bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
-#bg .sh{position:absolute; transition:left .55s cubic-bezier(.8,0,.1,1), top .55s cubic-bezier(.8,0,.1,1), width .55s cubic-bezier(.8,0,.1,1), height .55s cubic-bezier(.8,0,.1,1); transition-delay:var(--d,0s)}
-#bg .p1{background:#2a1040} #bg .p2{background:#33154d} #bg .p3{background:#24103a}
-#bg .ln{background:rgba(187,126,234,.28)}
-#bg .rg{border-radius:50%; border:solid #3d1d5c; box-shadow:inset 0 0 0 0 transparent}
+/* 背景：大きな面一つとロゴの輪一つ。メニューの後ろには入れず、端からはみ出させる。撃たれると弾き飛ばされて、別の位置にカチッと収まる */
+#bg .sh{position:absolute; left:0; top:0; transform:translate(var(--sx),var(--sy)); transition:transform .42s cubic-bezier(.15,.9,.2,1), background .15s, border-color .15s}
+#bg .pl{background:#2c1243}
+#bg .rg{border-radius:50%; border:solid #3a1b58}
 #bg .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:2px solid rgba(187,126,234,.22)}
+#bg .pl.hit{background:#3d1a5c} #bg .rg.hit{border-color:#5a2f84}
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
 .menu button.bump{animation:bump .32s cubic-bezier(.3,1.6,.5,1)}
 @keyframes bump{35%{transform:translate(var(--bx,6px),var(--by,0px))}}
@@ -201,6 +207,7 @@ addEventListener('pointermove', function(e){
   if (hit !== snapped) snapTo(hit);
 }, {passive:true});
 addEventListener('pointerdown', function(e){
+  if (!(e.target.closest && e.target.closest('a, button, .page')) && window.__shoot) window.__shoot(e.clientX, e.clientY);
   if (e.pointerType !== 'mouse' || RM) return;
   cur.classList.add('tap'); setTimeout(function(){ cur.classList.remove('tap'); }, 90);
   var rp = document.createElement('i'); rp.className = 'rip'; rp.style.left = e.clientX + 'px'; rp.style.top = e.clientY + 'px';
@@ -266,30 +273,49 @@ document.getElementById('logo').addEventListener('click', function(){
   if (taps.length >= 5){ taps = []; cur.classList.remove('joy'); void cur.offsetWidth; cur.classList.add('joy'); setTimeout(function(){ cur.classList.remove('joy'); }, 1600); }
 });
 
-/* 背景 */
-var bgEl = document.getElementById('bg');
+/* 背景：面と輪。撃つ（押す）と、当たった物だけが弾き飛ばされる */
+var bgEl = document.getElementById('bg'), BG = [];
 (function(){
-  /* 色面の構図。[left, top, width, height]（%）。輪は幅だけ（高さは幅に合わせる） */
-  var SH = [
-    { c:'p3', k:[[34,0,30,100],[0,62,100,38],[58,8,42,52],[40,40,60,60],[0,0,48,46]] },
-    { c:'p1', k:[[64,10,36,58],[44,0,28,62],[30,60,40,40],[70,0,30,100],[52,52,48,48]] },
-    { c:'p2', k:[[40,70,44,30],[72,36,28,64],[34,0,22,40],[34,6,30,30],[78,10,22,40]] },
-    { c:'ln', k:[[34,46,66,0.5],[60,0,0.3,100],[34,22,66,0.5],[56,0,0.3,100],[34,72,66,0.5]] },
-    { c:'rg', k:[[56,14,30],[62,30,26],[40,18,34],[48,10,30],[66,24,24]] }
+  var pl = document.createElement('i'); pl.className = 'sh pl'; bgEl.appendChild(pl);
+  var rg = document.createElement('i'); rg.className = 'sh rg'; bgEl.appendChild(rg);
+  BG = [
+    { el:pl, kind:'pl', fx:.6, fy:-.12 },   /* 位置は窓に対する割合（左上の角） */
+    { el:rg, kind:'rg', fx:.52, fy:.46 }
   ];
-  var els = SH.map(function(o, n){ var d = document.createElement('i'); d.className = 'sh ' + o.c; d.style.setProperty('--d', (n * .05) + 's'); bgEl.appendChild(d); return d; });
-  var ci = 0;
-  var place = function(){
-    SH.forEach(function(o, n){
-      var k = o.k[ci % o.k.length], d = els[n];
-      d.style.left = k[0] + '%'; d.style.top = k[1] + '%';
-      if (o.c === 'rg'){ var w = Math.min(innerWidth, innerHeight) * k[2] / 100 * 1.6; d.style.width = d.style.height = w + 'px'; d.style.borderWidth = (w * .13) + 'px'; }
-      else { d.style.width = k[2] + '%'; d.style.height = k[3] + '%'; }
+  function size(){
+    var m = Math.min(innerWidth, innerHeight);
+    BG.forEach(function(o){
+      if (o.kind === 'pl'){ o.w = innerWidth * .42; o.h = innerHeight * .62; }
+      else { o.w = o.h = m * .5; o.el.style.borderWidth = (o.w * .13) + 'px'; }
+      o.el.style.width = o.w + 'px'; o.el.style.height = o.h + 'px';
     });
+    BG.forEach(put);
+  }
+  function put(o){ o.el.style.setProperty('--sx', (o.fx * innerWidth) + 'px'); o.el.style.setProperty('--sy', (o.fy * innerHeight) + 'px'); }
+  size(); addEventListener('resize', size);
+  /* 当たり判定：面は四角、輪は輪の太さの部分だけ */
+  function hit(o, x, y){
+    var l = o.fx * innerWidth, t = o.fy * innerHeight;
+    if (o.kind === 'pl') return x >= l && x <= l + o.w && y >= t && y <= t + o.h;
+    var cx = l + o.w / 2, cy = t + o.h / 2, d = Math.hypot(x - cx, y - cy), R = o.w / 2;
+    return d <= R && d >= R - o.w * .13 - 2;
+  }
+  window.__shoot = function(x, y){
+    /* 上に重なっている物から先に当たる */
+    for (var n = BG.length - 1; n >= 0; n--){
+      var o = BG[n]; if (!hit(o, x, y)) continue;
+      var cx = o.fx * innerWidth + o.w / 2, cy = o.fy * innerHeight + o.h / 2, dx = cx - x, dy = cy - y, d = Math.hypot(dx, dy) || 1;
+      var push = Math.min(innerWidth, innerHeight) * (.28 + Math.random() * .12);
+      var nx = (cx + dx / d * push - o.w / 2) / innerWidth, ny = (cy + dy / d * push - o.h / 2) / innerHeight;
+      /* メニューの後ろ（左 36%）には入れない。端からはみ出すのは半分まで */
+      o.fx = Math.max(.36, Math.min(1 - o.w / innerWidth * .5, nx));
+      o.fy = Math.max(-o.h / innerHeight * .5, Math.min(1 - o.h / innerHeight * .5, ny));
+      o.el.classList.add('hit'); setTimeout(function(e){ e.classList.remove('hit'); }, 140, o.el);
+      put(o);
+      return true;
+    }
+    return false;
   };
-  place();
-  if (!RM) setInterval(function(){ ci++; place(); }, 3600);
-  addEventListener('resize', place);
 })();
 
 /* OP：輪が描かれて社名 → メニューが順に出る。押すかキーで飛ばせる */
