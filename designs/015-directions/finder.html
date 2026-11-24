@@ -29,8 +29,8 @@ header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
 .menu{position:fixed; left:clamp(20px,7vw,110px); top:50%; transform:translateY(-50%); z-index:3; display:grid; gap:clamp(4px,1.6vh,18px); justify-items:start}
 .menu button{position:relative; text-align:left; padding:.06em .35em; font-size:clamp(30px,min(6.2vw,8vh),78px); line-height:1.1; color:var(--li); transition:color .12s}
 .menu button small{display:block; font-family:"Zen Kaku Gothic New",sans-serif; font-size:max(11px,.17em); letter-spacing:.35em; color:var(--pu); margin-top:.15em; transition:color .12s}
-.menu button.on{color:var(--wh)}
-.menu button.on small{color:var(--ac)}
+.menu button.on,.menu button.opened{color:var(--wh)}
+.menu button.on small,.menu button.opened small{color:var(--ac)}
 /* 選んだ文字の下に、左から伸びる線 */
 
 
