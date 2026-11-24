@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 ファインダー（2026-11-24）。ring.html の世界を「カメラのファインダーの中」にしたもの。
+     背景の景色はふだんピンぼけで、ピント枠の中だけがくっきり。カーソルが枠に乗るとピントが合う（枠が黄緑）。
+     押すとシャッター：上下の幕が一瞬閉じて開き、白く光り、撮った一枚が右下へ飛ぶ。枠は次の場所へ。
+     意味：ピントを合わせる＝何が問題かを見えるようにする。撃つ＝shoot＝撮る。文は公式のまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
+<style>
+:root{ --bg:#1d0a2c; --deep:#2a0e3e; --pu:#654087; --li:#bb7eea; --pale:#ece2f6; --wh:#fbf8ff; --ac:#d7ff3a; --ox:50vw; --oy:50vh; }
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%; overflow:hidden}
+body{background:var(--bg); color:var(--wh); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9}
+@media (pointer:fine){ body.live, body.live *{cursor:none !important} }
+button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
+.h{font-family:"Dela Gothic One",sans-serif; font-weight:400}
+.min{font-family:"Zen Old Mincho",serif; font-weight:700}
+.g{font-family:"Zen Kaku Gothic New",sans-serif; font-weight:700; letter-spacing:.02em}
+
+header{position:fixed; top:20px; left:clamp(16px,4vw,48px); z-index:6; display:flex; align-items:center; gap:10px; line-height:1.1; transition:color .2s}
+header i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
+header span{font-size:17px}
+header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
+
+/* メニュー：大きな文字をまっすぐ並べる */
+.menu{position:fixed; left:clamp(20px,7vw,110px); top:50%; transform:translateY(-50%); z-index:3; display:grid; gap:clamp(4px,1.6vh,18px); justify-items:start}
+.menu button{position:relative; text-align:left; padding:.06em .35em; font-size:clamp(30px,min(6.2vw,8vh),78px); line-height:1.1; color:var(--li); transition:color .12s}
+.menu button small{display:block; font-family:"Zen Kaku Gothic New",sans-serif; font-size:max(11px,.17em); letter-spacing:.35em; color:var(--pu); margin-top:.15em; transition:color .12s}
+.menu button.on{color:var(--wh)}
+.menu button.on small{color:var(--ac)}
+/* 選んだ文字の下に、左から伸びる線 */
+
+
+
+/* 輪：ロゴの形。マウスについてきて、文字に近づくと吸いついて囲む */
+.cur{position:fixed; left:0; top:0; z-index:8; pointer-events:none; width:var(--w,44px); height:var(--hh,44px); border-radius:999px;
+  border:6px solid var(--pu); box-shadow:inset 0 0 0 3px var(--li); transform:translate(var(--x),var(--y)) translate(-50%,-50%) scale(var(--s,1)) rotate(var(--rot));
+  transition:width .14s cubic-bezier(.2,.8,.2,1), height .14s cubic-bezier(.2,.8,.2,1), border-color .14s, background .14s, opacity .2s; opacity:0}
+.cur.snap{border-color:var(--li); box-shadow:none}
+/* ピント枠の上：ピントが合う（輪が黄緑） */
+.cur.aim{border-color:#d7ff3a; box-shadow:inset 0 0 0 2px rgba(215,255,58,.45)}
+/* 字の上では小さく薄く（読む邪魔をしない） */
+.cur.dim{opacity:.55 !important}
+/* 押せる物の上では、輪の中を塗りつぶす */
+.cur.press{border-color:var(--li); box-shadow:none}
+/* 押すと一瞬縮む */
+.cur.tap{--s:.8}
+body.live .cur,body.keys .cur{opacity:1}
+/* 本当のマウスの位置：小さな点（楕円に吸いついても、ここにいると分かる） */
+.dot{position:fixed; left:0; top:0; z-index:9; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:var(--wh); pointer-events:none; opacity:0; transform:translate(var(--mx),var(--my))}
+body.live .dot{opacity:1}
+body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さない（輪は項目にいる） */
+/* 押した所から一重の波紋 */
+.rip{position:fixed; z-index:8; width:80px; height:80px; margin:-40px 0 0 -40px; border-radius:50%; border:2px solid var(--li); pointer-events:none; animation:rip .42s ease-out forwards}
+@keyframes rip{from{transform:scale(.25); opacity:.9} to{transform:scale(1); opacity:0}}
+/* 隠し：輪がくるっと回る */
+.cur.joy{animation:spin .7s cubic-bezier(.3,0,.2,1)}
+@property --rot{syntax:'<angle>'; inherits:false; initial-value:0deg}
+@keyframes spin{to{--rot:360deg}}
+
+/* 背景：余白を埋める主役。大きな色面の構図が、数秒おきにカチッと組み変わる */
+/* 背景の景色：大きな面とロゴの輪。ふだんはピンぼけ。ピント枠の中だけ、くっきりした同じ景色が見える */
+#bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+#bg .scene{position:absolute; inset:0}
+#bg .scene.soft{filter:blur(14px); opacity:.85}
+#bg .scene.sharp{clip-path:inset(var(--ct) var(--cr) var(--cb) var(--cl)); transition:clip-path .45s cubic-bezier(.2,.8,.2,1)}
+#bg .scene i{position:absolute; display:block}
+#bg .pl{background:#33154d}
+#bg .pl2{background:#2a1040}
+#bg .rg{border-radius:50%; border:solid #4a2470}
+#bg .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:3px solid rgba(187,126,234,.45)}
+/* ピント枠：四隅の鉤 */
+#bg .af{position:absolute; left:0; top:0; transform:translate(var(--ax),var(--ay)); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  --c:rgba(251,248,255,.7);
+  background:
+    linear-gradient(var(--c),var(--c)) 0 0/22px 2px, linear-gradient(var(--c),var(--c)) 0 0/2px 22px,
+    linear-gradient(var(--c),var(--c)) 100% 0/22px 2px, linear-gradient(var(--c),var(--c)) 100% 0/2px 22px,
+    linear-gradient(var(--c),var(--c)) 0 100%/22px 2px, linear-gradient(var(--c),var(--c)) 0 100%/2px 22px,
+    linear-gradient(var(--c),var(--c)) 100% 100%/22px 2px, linear-gradient(var(--c),var(--c)) 100% 100%/2px 22px;
+  background-repeat:no-repeat}
+body.af #bg .af{--c:#d7ff3a}
+body.af #bg .af{animation:lock .18s ease-out}
+@keyframes lock{0%{scale:1.06} 100%{scale:1}}
+
+/* ファインダーの枠：画面の四隅と、下の小さな表示 */
+.vf{position:fixed; inset:18px; z-index:2; pointer-events:none;
+  --c:rgba(187,126,234,.5);
+  background:
+    linear-gradient(var(--c),var(--c)) 0 0/34px 1.5px, linear-gradient(var(--c),var(--c)) 0 0/1.5px 34px,
+    linear-gradient(var(--c),var(--c)) 100% 0/34px 1.5px, linear-gradient(var(--c),var(--c)) 100% 0/1.5px 34px,
+    linear-gradient(var(--c),var(--c)) 0 100%/34px 1.5px, linear-gradient(var(--c),var(--c)) 0 100%/1.5px 34px,
+    linear-gradient(var(--c),var(--c)) 100% 100%/34px 1.5px, linear-gradient(var(--c),var(--c)) 100% 100%/1.5px 34px;
+  background-repeat:no-repeat}
+.vfi{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:3; display:flex; align-items:center; gap:10px; font:400 11px/1 Consolas,Menlo,monospace; letter-spacing:.2em; color:var(--li); opacity:.8; pointer-events:none}
+.vfi b{width:8px; height:8px; border-radius:50%; border:1.5px solid var(--li); transition:background .1s, border-color .1s}
+body.af .vfi b{background:#d7ff3a; border-color:#d7ff3a}
+body.open .vf,body.open .vfi{opacity:0; transition:opacity .3s}
+
+/* シャッター：上下の幕が一瞬閉じて開き、白く光る */
+.shut{position:fixed; left:0; right:0; z-index:12; height:0; background:#0b0410; pointer-events:none}
+.shut.t{top:0} .shut.b{bottom:0}
+.shut.go{animation:shut .2s cubic-bezier(.6,0,.4,1)}
+@keyframes shut{50%{height:50%}}
+.flash{position:fixed; inset:0; z-index:11; background:#fbf8ff; opacity:0; pointer-events:none}
+.flash.go{animation:fl2 .26s ease-out .08s}
+@keyframes fl2{0%{opacity:.28} 100%{opacity:0}}
+/* 撮った一枚：右下へ飛んで小さくなり、消える */
+.shot{position:fixed; z-index:10; border:3px solid #fbf8ff; background:rgba(187,126,234,.18); box-shadow:0 6px 18px rgba(0,0,0,.4); pointer-events:none;
+  transition:left .5s cubic-bezier(.5,0,.2,1), top .5s cubic-bezier(.5,0,.2,1), width .5s cubic-bezier(.5,0,.2,1), height .5s cubic-bezier(.5,0,.2,1), opacity .3s .7s}
+/* 手ぶれ：画面がほんの少しずれる */
+body.kick #bg{animation:kick .14s ease-out}
+@keyframes kick{40%{transform:translate(var(--kx),var(--ky))}}
+/* 押した項目だけ、押された向きへ少し跳ねて戻る */
+.menu button.bump{animation:bump .32s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bump{35%{transform:translate(var(--bx,6px),var(--by,0px))}}
+
+/* OP：ロゴの輪が描かれ、社名が出て、メニューが順に出る */
+.op{position:fixed; inset:0; z-index:30; background:var(--bg); display:grid; place-items:center; transition:opacity .35s}
+.op.out{opacity:0; pointer-events:none}
+.op .in{display:grid; justify-items:center; gap:18px}
+.op svg{width:88px; height:88px; overflow:visible}
+.op circle{fill:none; stroke-linecap:round}
+.op .c1{stroke:var(--pu); stroke-width:12; stroke-dasharray:240; stroke-dashoffset:240; animation:draw .7s cubic-bezier(.6,0,.2,1) forwards}
+.op .c2{stroke:var(--li); stroke-width:4; stroke-dasharray:190; stroke-dashoffset:190; animation:draw .6s .25s cubic-bezier(.6,0,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.op .nm{font-size:20px; line-height:1.1; opacity:0; transform:translateY(6px); animation:nm .4s .65s ease-out forwards; text-align:center}
+.op .nm small{display:block; font-size:11px; letter-spacing:.3em; color:var(--li); margin-top:4px}
+@keyframes nm{to{opacity:1; transform:none}}
+.menu button{transition:color .12s, opacity .35s calc(var(--i,0) * 60ms), transform .35s calc(var(--i,0) * 60ms)}
+body.pre .menu button{opacity:0; transform:translateX(-24px)}
+body.pre .hero,body.pre .keys,body.pre footer{opacity:0}
+.hero,.keys,footer{transition:opacity .4s .3s}
+header{cursor:pointer}
+
+/* ブラウザのフォーカス枠は出さない。選んでいるのは輪で示す */
+.menu button:focus,.menu button:focus-visible{outline:none}
+
+/* 右下：見出し */
+.hero{position:fixed; right:clamp(16px,5vw,72px); bottom:clamp(40px,9vh,90px); z-index:1; text-align:right; max-width:min(60vw,780px); transition:opacity .3s}
+.hero h1{font-size:clamp(20px,2.6vw,38px); line-height:1.45}
+.hero p{margin-top:.8em; font-size:clamp(12px,1.1vw,15px); color:var(--li)}
+body.open .hero{opacity:0}
+
+/* 開く：右から板が滑り込んで中身。メニューと輪は左に残る */
+.page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow-x:hidden; overflow-y:auto; color:var(--wh); background:var(--deep);
+  border-left:2px solid var(--pu); transform:translateX(102%); transition:transform .52s cubic-bezier(.55,0,.2,1)}
+body.open .page{transform:none}
+.page .wrap.swap{animation:swap .22s ease-out}
+@keyframes swap{from{opacity:0; transform:translateX(16px)}}
+.page .wrap{padding:0 clamp(24px,4vw,64px) 60px}
+.page .back{position:sticky; float:right; top:20px; margin:20px clamp(16px,3vw,40px) 0 0; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
+.page .back:hover{color:var(--wh)}
+.page .ph{position:sticky; top:0; z-index:1; background:var(--deep); padding:clamp(72px,11vh,110px) 0 4px; box-shadow:0 14px 14px -10px var(--deep)}   /* 最初の位置のまま動かない */
+.page .k{font-size:12px; letter-spacing:.35em; color:var(--li)}
+.page h2{font-size:clamp(24px,2.8vw,38px); line-height:1.3; margin:.2em 0 1em}
+.page h2::after{content:""; display:block; width:1.6em; height:.1em; background:var(--li); margin-top:.3em}
+.page h3{font-size:clamp(16px,1.6vw,20px); line-height:1.6; margin:1.6em 0 .4em}
+.page p,.page dd{font-size:15px}
+.page b{font-weight:700}
+.page dl{display:grid; grid-template-columns:8em 1fr; border-top:1px solid rgba(187,126,234,.3); padding:12px 0; font-size:15px}
+.page dt{font-weight:700}
+.page .acc{font-size:13px; color:var(--li); margin-top:.4em}
+.page a.btn{display:inline-flex; align-items:center; justify-content:center; margin-top:1.8em; min-width:min(100%,380px); height:58px; border-radius:29px; background:var(--pu); color:var(--wh); text-decoration:none; letter-spacing:.1em; cursor:pointer}
+.page a.btn:hover{background:var(--pu)}
+
+.keys{position:fixed; left:clamp(16px,4vw,48px); bottom:16px; z-index:3; font-size:11px; letter-spacing:.15em; color:var(--li); opacity:.7}
+footer{position:fixed; right:16px; bottom:10px; z-index:3; font-size:11px; color:var(--li); opacity:.7}
+footer a{color:inherit}
+body.open footer,body.open .keys{opacity:0; pointer-events:none}
+
+@media (max-width:760px){
+  .menu{top:auto; bottom:48px; transform:none}
+  .menu button{font-size:clamp(26px,9vw,40px)}
+  .hero{top:84px; bottom:auto; left:16px; right:16px; text-align:left; max-width:none}
+  .keys{display:none}
+  .page{width:100%; border-left:0}
+}
+@media (prefers-reduced-motion:reduce){ .page,.cur{transition:none} .rip,.op{display:none} .cur.joy{animation:none} }
+</style>
+
+<div id="bg" aria-hidden="true"></div>
+<div class="vf" aria-hidden="true"></div>
+<div class="vfi" aria-hidden="true"><b></b><span>AF</span></div>
+<i class="shut t" aria-hidden="true"></i><i class="shut b" aria-hidden="true"></i><div class="flash" aria-hidden="true"></div>
+<div class="op" id="op" aria-hidden="true"><div class="in">
+  <svg viewBox="0 0 88 88"><circle class="c1" cx="44" cy="44" r="38" transform="rotate(-90 44 44)"/><circle class="c2" cx="44" cy="44" r="30" transform="rotate(-90 44 44)"/></svg>
+  <div class="nm">Alter Design<small>CONSULTING</small></div>
+</div></div>
+<header id="logo"><i></i><span>Alter Design<small>consulting</small></span></header>
+
+<div class="hero">
+  <h1 class="g">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+  <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+</div>
+
+<nav class="menu h" aria-label="メニュー">
+  <button data-k="0" style="--i:0">企業理念<small>PHILOSOPHY</small></button>
+  <button data-k="1" style="--i:1">事業内容<small>BUSINESS</small></button>
+  <button data-k="2" style="--i:2">サービス<small>SERVICE</small></button>
+  <button data-k="3" style="--i:3">会社概要<small>COMPANY</small></button>
+  <button data-k="4" style="--i:4">お問い合わせ<small>CONTACT</small></button>
+</nav>
+
+<div class="cur" id="cur" aria-hidden="true"></div>
+<div class="dot" id="dot" aria-hidden="true"></div>
+<section class="page" id="page" aria-live="polite"><button class="back" id="back" type="button">← もどる</button><div class="wrap" id="wrap"></div></section>
+
+<div class="keys" aria-hidden="true">↑↓ えらぶ　ENTER ひらく　ESC もどる</div>
+<footer><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>　© 2025 Alter Design Consulting Co., Ltd.</footer>
+
+<script>
+(function(){
+var PAGES = [
+  { e:'PHILOSOPHY', html:'<h2 class="g">アルターデザインコンサルティングの企業理念</h2><h3>経営の力で「遊ぶように働く世界」をデザインする</h3><p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
+  { e:'BUSINESS', html:'<h2 class="g">事業内容</h2><p>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</p><h3>AI × ローコードで、「上流工程中心のシステム開発」に革新を</h3><p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>' },
+  { e:'SERVICE', html:'<h2 class="g">私たちが提供するサービス</h2>' +
+    '<h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>' +
+    '<h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' +
+    '<h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' +
+    '<h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
+  { e:'COMPANY', html:'<h2 class="g">会社概要</h2>' +
+    '<dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl><dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>' +
+    '<dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）<p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>' +
+    '<dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>' +
+    '<dl><dt>資本金</dt><dd>60百万円</dd></dl><dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>' +
+    '<dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>' },
+  { e:'CONTACT', html:'<h2 class="g">お問い合わせ</h2><p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p><a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>' }
+];
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var btns = [].slice.call(document.querySelectorAll('.menu button')), cur = document.getElementById('cur');
+var dot = document.getElementById('dot'), page = document.getElementById('page'), wrap = document.getElementById('wrap');
+var mx = -100, my = -100, x = -100, y = -100, sel = -1, snapped = -1, opened = false, rec = 0;
+
+/* 選ぶ：輪が文字を囲む */
+function pick(i){
+  sel = (i + btns.length) % btns.length;
+  btns.forEach(function(b, k){ b.classList.toggle('on', k === sel); });
+}
+function snapTo(i){ snapped = i; cur.classList.toggle('snap', i >= 0); if (i >= 0) pick(i); }
+
+var kx = 0, ky = 0;   /* キーで選び始めたときのマウスの位置 */
+addEventListener('pointermove', function(e){
+  mx = e.clientX; my = e.clientY; document.body.classList.add('live');
+  /* キーで選んでいるあいだは、マウスをはっきり動かすまで（24px）輪を項目に吸いつけたまま */
+  if (document.body.classList.contains('keys')){ if (Math.hypot(mx - kx, my - ky) < 24) return; document.body.classList.remove('keys'); }
+  /* 文字の近く（上下左右に 18px のゆとり）に入ったら吸いつく */
+  var hit = -1;
+  btns.forEach(function(b, k){ var r = b.getBoundingClientRect(); if (mx > r.left - 18 && mx < r.right + 18 && my > r.top - 18 && my < r.bottom + 18) hit = k; });
+  if (hit !== snapped) snapTo(hit);
+}, {passive:true});
+addEventListener('pointerdown', function(e){
+  if (!(e.target.closest && e.target.closest('a, button, .page')) && window.__shoot) window.__shoot(e.clientX, e.clientY);
+  if (e.pointerType !== 'mouse' || RM) return;
+  cur.classList.add('tap'); setTimeout(function(){ cur.classList.remove('tap'); }, 90);
+  rec = -16;   /* 反動：上へ跳ねる */
+  var rp = document.createElement('i'); rp.className = 'rip'; rp.style.left = e.clientX + 'px'; rp.style.top = e.clientY + 'px';
+  document.body.appendChild(rp); setTimeout(function(){ rp.remove(); }, 450);
+});
+document.addEventListener('mouseleave', function(){ document.body.classList.remove('live'); });
+
+function frame(){
+  var gx = mx, gy = my, w = 44, h = 44;
+  /* 輪の下にある物：押せる物なら吸いついて囲む、板の字の上なら小さく薄く */
+  var under = snapped < 0 && document.elementFromPoint(mx, my), act = under && under.closest && under.closest('a, button:not(.menu button)');
+  var onText = !act && opened && snapped < 0 && mx > page.getBoundingClientRect().left;
+  cur.classList.toggle('press', !!act); cur.classList.toggle('dim', onText);
+  if (act){ var ar = act.getBoundingClientRect(); gx = ar.left + ar.width / 2; gy = ar.top + ar.height / 2; w = ar.width + 22; h = ar.height + 14; }
+  else if (onText){ w = h = 26; }
+  /* ピント枠の上：ピントが合う */
+  var aim = snapped < 0 && !act && !onText && !document.body.classList.contains('keys') && window.__onTarget && window.__onTarget(mx, my);
+  cur.classList.toggle('aim', !!aim);
+  if (!aim) document.body.classList.remove('af');
+  if (aim){ w = h = 34; }
+  if (snapped >= 0){
+    var r = btns[snapped].getBoundingClientRect();
+    gx = r.left + r.width / 2; gy = r.top + r.height / 2; w = r.width + 28; h = r.height + 18;
+  }
+  /* ほぼすぐ追いつく（遅れて揺れない） */
+  x += (gx - x) * (RM ? 1 : .45); y += (gy - y) * (RM ? 1 : .45);
+  rec *= .78;   /* 反動はすぐ戻る */
+  cur.style.setProperty('--x', x + 'px'); cur.style.setProperty('--y', (y + rec) + 'px');
+  cur.style.setProperty('--w', w + 'px'); cur.style.setProperty('--hh', h + 'px');
+  dot.style.setProperty('--mx', mx + 'px'); dot.style.setProperty('--my', my + 'px');
+  requestAnimationFrame(frame);
+}
+
+/* 開く：右から板。開いたまま別の項目を押すと、中身だけ入れ替わる */
+function bump(b, x, y){
+  if (RM) return;
+  var r = b.getBoundingClientRect(), dx = r.left + r.width / 2 - x, dy = r.top + r.height / 2 - y, d = Math.hypot(dx, dy) || 1;
+  if (x == null){ dx = 1; dy = 0; d = 1; }   /* キーで押したときは右へ */
+  b.style.setProperty('--bx', (dx / d * 7).toFixed(1) + 'px'); b.style.setProperty('--by', (dy / d * 7).toFixed(1) + 'px');
+  b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
+}
+function open(i){
+  pick(i);
+  /* 見出し（英字と題）は板の上に残る */
+  var h = PAGES[i].html, cut = h.indexOf('</h2>') + 5;
+  wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0;
+  if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
+  opened = true; document.body.classList.add('open');
+}
+function close(){ opened = false; document.body.classList.remove('open'); }
+
+btns.forEach(function(b, i){
+  b.addEventListener('click', function(e){ if (e.detail) bump(b, e.clientX, e.clientY); else bump(b); open(i); });
+  b.addEventListener('animationend', function(){ b.classList.remove('bump'); });
+  b.addEventListener('focus', function(){ pick(i); snapTo(i); });
+});
+document.getElementById('back').addEventListener('click', close);
+addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){ close(); return; }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); var n = sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1); snapTo((n + btns.length) % btns.length); btns[sel].focus({preventScroll:true}); if (!document.body.classList.contains('keys')){ kx = mx; ky = my; } document.body.classList.add('keys'); if (opened) open(sel); }
+  if (e.key === 'Enter' && sel >= 0 && document.activeElement && document.activeElement.tagName !== 'A'){ e.preventDefault(); bump(btns[sel]); open(sel); }
+});
+
+
+/* 隠し：左上のロゴを素早く 5 回押すと、輪がくるっと回る */
+var taps = [];
+document.getElementById('logo').addEventListener('click', function(){
+  var now = performance.now(); taps = taps.filter(function(t){ return now - t < 1600; }); taps.push(now);
+  if (taps.length >= 5){ taps = []; cur.classList.remove('joy'); void cur.offsetWidth; cur.classList.add('joy'); setTimeout(function(){ cur.classList.remove('joy'); }, 1600); }
+});
+
+/* 背景：ピンぼけの景色と、ピント枠。枠は決まった 6 か所のどこかにいて、撮るたびに次へ移る */
+(function(){
+  var bgEl = document.getElementById('bg');
+  /* 景色は同じものを二枚：ぼけた一枚と、枠の中だけ見えるくっきりした一枚 */
+  var SCENE = '<i class="pl"></i><i class="pl2"></i><i class="rg"></i>';
+  bgEl.innerHTML = '<div class="scene soft">' + SCENE + '</div><div class="scene sharp">' + SCENE + '</div><div class="af"></div>';
+  var sharp = bgEl.querySelector('.sharp'), af = bgEl.querySelector('.af');
+  var S = 0, slot = 1, SL = [];
+  function layout(){
+    var W = innerWidth, H = innerHeight, m = Math.min(W, H);
+    bgEl.querySelectorAll('.scene').forEach(function(sc){
+      var pl = sc.querySelector('.pl'), pl2 = sc.querySelector('.pl2'), rg = sc.querySelector('.rg');
+      pl.style.cssText = 'left:' + (W * .56) + 'px; top:' + (-H * .08) + 'px; width:' + (W * .3) + 'px; height:' + (H * .56) + 'px';
+      pl2.style.cssText = 'left:' + (W * .4) + 'px; top:' + (H * .58) + 'px; width:' + (W * .42) + 'px; height:' + (H * .5) + 'px';
+      var R = m * .26; rg.style.cssText = 'left:' + (W * .7 - R) + 'px; top:' + (H * .46 - R) + 'px; width:' + (R * 2) + 'px; height:' + (R * 2) + 'px; border-width:' + (R * .26) + 'px';
+    });
+    S = m * .3;
+    var x0 = Math.max(W * .44, 420), x1 = W - S - 40, y0 = 48, y1 = Math.max(y0, Math.min(H - S - 60, H * .6 - S));   /* 右下の見出しにはかぶらない */
+    SL = [];
+    for (var row = 0; row < 2; row++) for (var col = 0; col < 3; col++) SL.push({ x:x0 + (x1 - x0) * col / 2, y:y0 + (y1 - y0) * row });
+    af.style.width = af.style.height = S + 'px';
+    put();
+  }
+  function put(){
+    var p = SL[slot];
+    af.style.setProperty('--ax', p.x + 'px'); af.style.setProperty('--ay', p.y + 'px');
+    sharp.style.setProperty('--ct', p.y + 'px'); sharp.style.setProperty('--cl', p.x + 'px');
+    sharp.style.setProperty('--cr', (innerWidth - p.x - S) + 'px'); sharp.style.setProperty('--cb', (innerHeight - p.y - S) + 'px');
+  }
+  layout(); addEventListener('resize', layout);
+  /* カーソルがピント枠の中にいるか */
+  window.__onTarget = function(x, y){ var p = SL[slot]; var on = x >= p.x && x <= p.x + S && y >= p.y && y <= p.y + S; document.body.classList.toggle('af', on); return on; };
+  /* 撮る：幕・光・一枚が飛ぶ・手ぶれ。枠は次の場所へ（撮った所から遠いほうの向き） */
+  var busy = false;
+  window.__shoot = function(x, y){
+    var p = SL[slot];
+    if (!(x >= p.x && x <= p.x + S && y >= p.y && y <= p.y + S) || busy) return false;
+    busy = true; setTimeout(function(){ busy = false; }, 450);
+    if (!RM){
+      document.querySelectorAll('.shut').forEach(function(e){ e.classList.remove('go'); void e.offsetWidth; e.classList.add('go'); });
+      var f = document.querySelector('.flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+      var sh = document.createElement('i'); sh.className = 'shot';
+      sh.style.left = p.x + 'px'; sh.style.top = p.y + 'px'; sh.style.width = sh.style.height = S + 'px';
+      document.body.appendChild(sh); void sh.offsetWidth;
+      setTimeout(function(){ sh.style.left = (innerWidth - 96) + 'px'; sh.style.top = (innerHeight - 110) + 'px'; sh.style.width = sh.style.height = '60px'; sh.style.opacity = 0; }, 120);
+      setTimeout(function(){ sh.remove(); }, 1200);
+      document.documentElement.style.setProperty('--kx', ((Math.random() - .5) * 6) + 'px'); document.documentElement.style.setProperty('--ky', '4px');
+      document.body.classList.remove('kick'); void document.body.offsetWidth; document.body.classList.add('kick');
+    }
+    /* 次の場所：いまと違う場所から一つ（同じ場所が続かないように） */
+    var next = slot; while (next === slot) next = Math.floor(Math.random() * SL.length);
+    slot = next;
+    setTimeout(put, RM ? 0 : 220);
+    return true;
+  };
+})();
+
+/* OP：輪が描かれて社名 → メニューが順に出る。押すかキーで飛ばせる */
+var op = document.getElementById('op');
+function endOp(){ if (!op || op.classList.contains('out')) return; op.classList.add('out'); document.body.classList.remove('pre'); setTimeout(function(){ if (op){ op.remove(); op = null; } }, 400); }
+if (RM){ op.remove(); op = null; }
+else { document.body.classList.add('pre'); setTimeout(endOp, 1500); op.addEventListener('pointerdown', endOp); addEventListener('keydown', endOp, {once:true}); }
+
+requestAnimationFrame(frame);
+})();
+</script>
