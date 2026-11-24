@@ -57,9 +57,6 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 .cur.joy{animation:spin .7s cubic-bezier(.3,0,.2,1)}
 @property --rot{syntax:'<angle>'; inherits:false; initial-value:0deg}
 @keyframes spin{to{--rot:360deg}}
-/* 押した所の近くの文字が、波紋に押されて少し揺れる */
-.menu button.bump{animation:bump .34s ease-out}
-@keyframes bump{30%{transform:translate(var(--bx),var(--by))}}
 
 /* OP：ロゴの輪が描かれ、社名が出て、メニューが順に出る */
 .op{position:fixed; inset:0; z-index:30; background:var(--bg); display:grid; place-items:center; transition:opacity .35s}
@@ -196,14 +193,6 @@ addEventListener('pointerdown', function(e){
   cur.classList.add('tap'); setTimeout(function(){ cur.classList.remove('tap'); }, 90);
   var rp = document.createElement('i'); rp.className = 'rip'; rp.style.left = e.clientX + 'px'; rp.style.top = e.clientY + 'px';
   document.body.appendChild(rp); setTimeout(function(){ rp.remove(); }, 450);
-  /* 近くの文字は、波紋に押されて少し揺れる（遠いほど遅く弱く） */
-  btns.forEach(function(b){
-    var br = b.getBoundingClientRect(), cx = br.left + br.width / 2, cy = br.top + br.height / 2, dx = cx - e.clientX, dy = cy - e.clientY, d = Math.hypot(dx, dy);
-    if (d > 260 || d < 1) return;
-    var f = (1 - d / 260) * 9;
-    b.style.setProperty('--bx', (dx / d * f).toFixed(1) + 'px'); b.style.setProperty('--by', (dy / d * f).toFixed(1) + 'px');
-    setTimeout(function(){ b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); setTimeout(function(){ b.classList.remove('bump'); }, 360); }, d * 1.1);
-  });
 });
 document.addEventListener('mouseleave', function(){ document.body.classList.remove('live'); });
 
