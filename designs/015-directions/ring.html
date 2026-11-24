@@ -5,7 +5,7 @@
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 お洒落・輪がカーソル（2026-11-24）。dial.html（ダイヤル。遅れと揺れで気持ち悪い）の作り直し。
      ロゴの輪がマウスについてくる。メニューの文字に近づくと輪が吸いついて文字を囲み、選ぶ。
-     押すと、その文字から輪が広がって画面を覆い、英字が一度横切って中身。反応はすぐ、効果は一方向で一回。文は公式のまま -->
+     押すと、その文字から輪が広がって画面を覆い、中身（暗い地のまま）。反応はすぐ、効果は一方向で一回。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
 <style>
@@ -22,7 +22,7 @@ header{position:fixed; top:20px; left:clamp(16px,4vw,48px); z-index:6; display:f
 header i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
 header span{font-size:17px}
 header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
-body.open header{color:var(--deep)}
+body.open header{color:var(--wh)}
 
 /* メニュー：大きな文字をまっすぐ並べる */
 .menu{position:fixed; left:clamp(20px,7vw,110px); top:50%; transform:translateY(-50%); z-index:3; display:grid; gap:clamp(4px,1.6vh,18px); justify-items:start}
@@ -31,15 +31,15 @@ body.open header{color:var(--deep)}
 .menu button.on{color:var(--wh)}
 .menu button.on small{color:var(--ac)}
 /* 選んだ文字の下に、左から伸びる線 */
-.menu button::after{content:""; position:absolute; left:.35em; bottom:-.05em; height:.08em; width:0; background:var(--ac); transition:width .2s cubic-bezier(.2,.8,.2,1)}
-.menu button.on::after{width:1.4em}
+
+
 
 /* 輪：ロゴの形。マウスについてきて、文字に近づくと吸いついて囲む */
 .cur{position:fixed; left:0; top:0; z-index:5; pointer-events:none; width:var(--w,44px); height:var(--hh,44px); border-radius:999px;
   border:6px solid var(--pu); box-shadow:inset 0 0 0 3px var(--li); transform:translate(var(--x),var(--y)) translate(-50%,-50%);
   transition:width .14s cubic-bezier(.2,.8,.2,1), height .14s cubic-bezier(.2,.8,.2,1), border-color .14s, opacity .2s; opacity:0}
 .cur::after{content:""; position:absolute; left:50%; top:50%; width:4px; height:4px; margin:-2px; border-radius:50%; background:var(--ac); transition:opacity .1s}
-.cur.snap{border-color:var(--wh); box-shadow:inset 0 0 0 3px var(--ac)}
+.cur.snap{border-color:var(--li); box-shadow:none}
 .cur.snap::after{opacity:0}
 body.live .cur,body.keys .cur{opacity:1}
 /* ブラウザのフォーカス枠は出さない。選んでいるのは輪で示す */
@@ -53,7 +53,7 @@ body.open .cur{opacity:0}
 body.open .hero{opacity:0}
 
 /* 開く：押した文字から輪が広がって画面を覆う */
-.wipe{position:fixed; inset:0; z-index:4; background:var(--pale); clip-path:circle(0 at var(--ox) var(--oy)); pointer-events:none;
+.wipe{position:fixed; inset:0; z-index:4; background:var(--deep); clip-path:circle(0 at var(--ox) var(--oy)); pointer-events:none;
   transition:clip-path .42s cubic-bezier(.75,0,.2,1)}
 body.open .wipe{clip-path:circle(150vmax at var(--ox) var(--oy))}
 .wipe::before{content:""; position:absolute; inset:0; border:0; pointer-events:none}
@@ -63,22 +63,22 @@ body.open .wipe{clip-path:circle(150vmax at var(--ox) var(--oy))}
 .pass.go{animation:pass .62s cubic-bezier(.3,0,.2,1) forwards}
 @keyframes pass{0%{transform:translate(-100%,-50%); opacity:1} 100%{transform:translate(100vw,-50%); opacity:1}}
 
-.page{position:fixed; inset:0; z-index:6; overflow:auto; color:var(--deep); opacity:0; pointer-events:none; transition:opacity .25s}
+.page{position:fixed; inset:0; z-index:6; overflow:auto; color:var(--wh); opacity:0; pointer-events:none; transition:opacity .25s}
 body.open .page.in{opacity:1; pointer-events:auto}
 .page .wrap{width:min(100% - 32px,800px); margin:0 auto; padding:clamp(80px,12vh,120px) 0 60px}
-.page .back{position:fixed; top:20px; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--pu); z-index:7; cursor:pointer}
-.page .back:hover{color:var(--deep)}
-.page .k{font-size:12px; letter-spacing:.35em; color:var(--pu)}
+.page .back{position:fixed; top:20px; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
+.page .back:hover{color:var(--wh)}
+.page .k{font-size:12px; letter-spacing:.35em; color:var(--li)}
 .page h2{font-size:clamp(26px,3.4vw,44px); line-height:1.35; margin:.2em 0 1em}
-.page h2::after{content:""; display:block; width:1.6em; height:.12em; background:var(--deep); margin-top:.3em}
+.page h2::after{content:""; display:block; width:1.6em; height:.1em; background:var(--li); margin-top:.3em}
 .page h3{font-size:clamp(16px,1.6vw,20px); line-height:1.6; margin:1.6em 0 .4em}
 .page p,.page dd{font-size:15px}
 .page b{font-weight:700}
-.page dl{display:grid; grid-template-columns:8em 1fr; border-top:1px solid #cdb8e0; padding:12px 0; font-size:15px}
+.page dl{display:grid; grid-template-columns:8em 1fr; border-top:1px solid rgba(187,126,234,.3); padding:12px 0; font-size:15px}
 .page dt{font-weight:700}
-.page .acc{font-size:13px; color:var(--pu); margin-top:.4em}
-.page a.btn{display:inline-flex; align-items:center; justify-content:center; margin-top:1.8em; min-width:min(100%,380px); height:58px; border-radius:29px; background:var(--deep); color:var(--wh); text-decoration:none; letter-spacing:.1em; cursor:pointer}
-.page a.btn:hover{background:var(--pu)}
+.page .acc{font-size:13px; color:var(--li); margin-top:.4em}
+.page a.btn{display:inline-flex; align-items:center; justify-content:center; margin-top:1.8em; min-width:min(100%,380px); height:58px; border-radius:29px; background:var(--pu); color:var(--wh); text-decoration:none; letter-spacing:.1em; cursor:pointer}
+.page a.btn:hover{background:var(--li); color:var(--deep)}
 body.live .page, body.live .page *{cursor:auto !important}
 body.live .page a, body.live .page button{cursor:pointer !important}
 
@@ -180,8 +180,7 @@ function open(i){
   document.documentElement.style.setProperty('--oy', (r.top + r.height / 2) + 'px');
   wrap.innerHTML = '<span class="k">' + PAGES[i].e + '</span>' + PAGES[i].html; page.scrollTop = 0;
   document.body.classList.add('open');
-  if (!RM){ pass.textContent = PAGES[i].e; pass.classList.remove('go'); void pass.offsetWidth; pass.classList.add('go'); }
-  setTimeout(function(){ page.classList.add('in'); }, RM ? 0 : 520);
+  setTimeout(function(){ page.classList.add('in'); }, RM ? 0 : 300);
 }
 function close(){
   if (!opened) return;
