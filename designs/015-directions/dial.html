@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 お洒落・ロゴの輪のダイヤル（2026-11-24）。stylish.html（露骨にペルソナ）の作り直し。
+     ロゴの輪の周りに五つの節。ホイール・ドラッグ・矢印キーで回すとカチッと止まり、右に来た節が選ばれる。
+     押すと輪が広がって画面を覆い、その中に中身。形の出どころはロゴ。文は公式のまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
+<style>
+:root{ --bg:#1d0a2c; --deep:#2a0e3e; --pu:#654087; --li:#bb7eea; --pale:#e9dcf5; --wh:#fbf8ff; --R:min(34vh,30vw,300px); }
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%; overflow:hidden}
+body{background:var(--bg); color:var(--wh); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9; user-select:none}
+button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
+.min{font-family:"Zen Old Mincho",serif; font-weight:700}
+
+header{position:fixed; top:20px; left:clamp(16px,4vw,48px); z-index:6; display:flex; align-items:center; gap:10px; line-height:1.1}
+header i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
+header span{font-size:17px}
+header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
+header{transition:color .3s .3s} body.open header{color:var(--deep)} body.open header small{color:var(--pu)}
+
+/* ダイヤル：中心は画面の左寄り */
+.dial{position:fixed; left:30%; top:52%; width:0; height:0; z-index:2}
+.ring{position:absolute; left:calc(var(--R) * -1); top:calc(var(--R) * -1); width:calc(var(--R) * 2); height:calc(var(--R) * 2); border-radius:50%;
+  border:calc(var(--R) * .16) solid var(--pu); box-shadow:inset 0 0 0 calc(var(--R) * .05) var(--li), 0 0 0 1px rgba(187,126,234,.25);
+  cursor:grab; touch-action:none; transition:transform .7s cubic-bezier(.7,0,.2,1), background .5s, border-color .5s}
+.ring:active{cursor:grabbing}
+.rot{position:absolute; left:0; top:0; width:0; height:0}
+.tick{position:absolute; left:0; top:0; width:calc(var(--R) * .05); height:2px; background:var(--li); opacity:.45; transform-origin:0 50%}
+.tick.big{width:calc(var(--R) * .1); opacity:.9}
+.lab{position:absolute; left:0; top:0; width:0; height:0}
+.lab button{position:absolute; transform:translate(0,-50%); white-space:nowrap; padding:.2em .4em; font-size:clamp(15px,2vh,20px); color:var(--li); transition:color .2s, font-size .2s; pointer-events:auto}
+.lab button small{display:block; font-size:.55em; letter-spacing:.25em; opacity:.7}
+.lab.on button{color:var(--wh); font-size:clamp(20px,3vh,30px)}
+/* 右の指し示し */
+.needle{position:absolute; left:calc(var(--R) * 1.02); top:-1px; width:calc(var(--R) * .14); height:2px; background:var(--wh)}
+.needle::after{content:""; position:absolute; right:-5px; top:-4px; width:10px; height:10px; border-radius:50%; background:var(--wh)}
+/* 中心：選んでいる節の短い文 */
+.hub{position:absolute; left:calc(var(--R) * -.7); top:calc(var(--R) * -.5); width:calc(var(--R) * 1.4); height:calc(var(--R) * 1); display:grid; place-content:center; text-align:center; pointer-events:none}
+.hub b{font-size:clamp(11px,1.4vh,13px); letter-spacing:.3em; color:var(--li); font-weight:400}
+.hub p{font-size:clamp(13px,1.8vh,16px); line-height:1.7; margin-top:.4em}
+.hub .go{margin-top:.8em; font-size:12px; letter-spacing:.2em; color:var(--li)}
+
+/* 右：見出し */
+.hero{position:fixed; right:clamp(16px,5vw,72px); top:50%; transform:translateY(-50%); z-index:1; width:min(32vw,460px); transition:opacity .4s}
+.hero h1{font-size:clamp(20px,2.6vw,36px); line-height:1.5}
+.hero p{margin-top:1em; font-size:clamp(12px,1.1vw,15px); color:var(--li)}
+
+/* 開く：輪が広がって画面を覆う */
+body.open .ring{transform:scale(var(--cover)); background:var(--pale); border-color:var(--pale); box-shadow:none; cursor:default}
+body.open .lab,body.open .tick,body.open .needle,body.open .hub,body.open .hero{opacity:0; pointer-events:none; transition:opacity .2s}
+.page{position:fixed; inset:0; z-index:4; overflow:auto; color:var(--deep); opacity:0; pointer-events:none; transition:opacity .35s .35s}
+body.open .page{opacity:1; pointer-events:auto}
+.page .in{width:min(100% - 32px,780px); margin:0 auto; padding:clamp(80px,12vh,120px) 0 60px; user-select:text}
+.page .back{position:fixed; top:20px; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--pu); z-index:5}
+.page .back:hover{color:var(--deep)}
+.page .k{font-size:12px; letter-spacing:.3em; color:var(--pu)}
+.page h2{font-size:clamp(24px,3vw,38px); line-height:1.4; margin:.3em 0 1em}
+.page h3{font-size:clamp(16px,1.6vw,20px); line-height:1.6; margin:1.6em 0 .4em}
+.page p,.page dd{font-size:15px}
+.page b{font-weight:700}
+.page dl{display:grid; grid-template-columns:8em 1fr; border-top:1px solid #cdb8e0; padding:12px 0; font-size:15px}
+.page dt{font-weight:700}
+.page .acc{font-size:13px; color:var(--pu); margin-top:.4em}
+.page a.btn{display:inline-flex; align-items:center; justify-content:center; margin-top:1.8em; min-width:min(100%,380px); height:58px; border-radius:29px; background:var(--deep); color:var(--wh); text-decoration:none; letter-spacing:.1em}
+.page a.btn:hover{background:var(--pu)}
+
+.keys{position:fixed; left:clamp(16px,4vw,48px); bottom:16px; z-index:3; font-size:11px; letter-spacing:.15em; color:var(--li); opacity:.7}
+footer{position:fixed; right:16px; bottom:10px; z-index:3; font-size:11px; color:var(--li); opacity:.7}
+footer a{color:inherit}
+body.open footer,body.open .keys{opacity:0; pointer-events:none}
+
+@media (max-width:760px){
+  :root{ --R:min(30vw,26vh,200px) }
+  .dial{left:42%; top:60%}
+  .hero{top:84px; transform:none; left:16px; right:16px; width:auto}
+  .keys{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .ring,.page{transition:none} }
+</style>
+
+<header><i></i><span>Alter Design<small>consulting</small></span></header>
+
+<div class="hero">
+  <h1 class="min">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+  <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+</div>
+
+<div class="dial" id="dial">
+  <div class="ring" id="ring" aria-hidden="true"></div>
+  <div class="rot" id="rot"></div>
+  <div class="needle" aria-hidden="true"></div>
+  <div class="hub" aria-live="polite"><b id="hk"></b><p id="hp"></p><span class="go">CLICK / ENTER</span></div>
+</div>
+
+<section class="page" id="page" aria-live="polite"><button class="back" id="back" type="button">← もどる</button><div class="in" id="in"></div></section>
+
+<div class="keys" aria-hidden="true">WHEEL / DRAG / ↑↓ まわす　ENTER ひらく　ESC もどる</div>
+<footer><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>　© 2025 Alter Design Consulting Co., Ltd.</footer>
+
+<script>
+(function(){
+var PAGES = [
+  { n:'企業理念', e:'PHILOSOPHY', s:'経営の力で「遊ぶように働く世界」をデザインする',
+    html:'<h2 class="min">アルターデザインコンサルティングの企業理念</h2><h3>経営の力で「遊ぶように働く世界」をデザインする</h3><p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
+  { n:'事業内容', e:'BUSINESS', s:'AI技術を活用した組織最適化に関するコンサルティング事業／AIとローコードを組み合わせた次世代型のシステム開発事業',
+    html:'<h2 class="min">事業内容</h2><p>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</p><h3>AI × ローコードで、「上流工程中心のシステム開発」に革新を</h3><p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>' },
+  { n:'サービス', e:'SERVICE', s:'人間中心の次世代業務システム開発 ほか 4 つ',
+    html:'<h2 class="min">私たちが提供するサービス</h2>' +
+    '<h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>' +
+    '<h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' +
+    '<h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' +
+    '<h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
+  { n:'会社概要', e:'COMPANY', s:'株式会社アルターデザインコンサルティング／2025年6月設立',
+    html:'<h2 class="min">会社概要</h2>' +
+    '<dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl><dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>' +
+    '<dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）<p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>' +
+    '<dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>' +
+    '<dl><dt>資本金</dt><dd>60百万円</dd></dl><dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>' +
+    '<dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>' },
+  { n:'お問い合わせ', e:'CONTACT', s:'サービスに関するご相談や、その他ご質問など',
+    html:'<h2 class="min">お問い合わせ</h2><p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p><a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>' }
+];
+var N = PAGES.length, STEP = 360 / N, RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var rot = document.getElementById('rot'), ring = document.getElementById('ring');
+
+/* 目盛りと名前を輪の周りに */
+var R = 0, labs = [];
+function build(){
+  rot.innerHTML = ''; labs = [];
+  R = ring.offsetWidth / 2;
+  for (var t = 0; t < 60; t++){
+    var d = document.createElement('i'); d.className = 'tick' + (t % 12 === 0 ? ' big' : '');
+    d.dataset.a = t * 6; rot.appendChild(d);
+  }
+  PAGES.forEach(function(p, i){
+    var l = document.createElement('div'); l.className = 'lab'; l.dataset.a = i * STEP;
+    var b = document.createElement('button'); b.type = 'button'; b.innerHTML = p.n + '<small>' + p.e + '</small>';
+    b.addEventListener('click', function(e){ e.stopPropagation(); if (sel === i) open(); else go(i); });
+    l.appendChild(b); rot.appendChild(l); labs.push(l);
+  });
+}
+/* 角度 ang（度、右が 0、時計回り）で並べる。名前は傾けない */
+var ang = 0, vel = 0, target = 0, sel = 0;
+function draw(){
+  [].forEach.call(rot.children, function(el){
+    var a = (+el.dataset.a + ang) * Math.PI / 180;
+    if (el.classList.contains('tick')){
+      var r0 = R * .9;
+      el.style.transform = 'translate(' + (Math.cos(a) * r0) + 'px,' + (Math.sin(a) * r0 - 1) + 'px) rotate(' + (+el.dataset.a + ang) + 'deg)';
+    } else {
+      var r1 = R * 1.2, x = Math.cos(a) * r1, y = Math.sin(a) * r1, b = el.firstChild;
+      el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+      b.style.transform = 'translate(' + (Math.cos(a) < -.2 ? '-100%' : Math.cos(a) < .2 ? '-50%' : '0') + ',-50%)';
+      b.style.opacity = (.35 + .65 * Math.max(0, Math.cos(a))).toFixed(2);
+    }
+  });
+}
+function go(i){
+  /* いちばん近い回り方で i を右へ */
+  var cur = Math.round(-target / STEP), d = ((i - cur) % N + N) % N; if (d > N / 2) d -= N;
+  target -= d * STEP; pick(i);
+}
+function pick(i){
+  sel = (i % N + N) % N;
+  labs.forEach(function(l, k){ l.classList.toggle('on', k === sel); });
+  document.getElementById('hk').textContent = PAGES[sel].e;
+  document.getElementById('hp').textContent = PAGES[sel].s;
+}
+function step(d){ target -= d * STEP; pick(Math.round(-target / STEP)); }
+
+/* ばね：止まるときに少し行き過ぎてカチッと戻る */
+var last = performance.now();
+function tick(now){
+  var dt = Math.min(.04, (now - last) / 1000); last = now;
+  if (!drag){
+    if (RM){ ang = target; vel = 0; }
+    else { vel += ((target - ang) * 220 - vel * 18) * dt; ang += vel * dt; }
+  }
+  draw(); requestAnimationFrame(tick);
+}
+
+/* ホイール・ドラッグ・キー */
+var acc = 0, lastW = 0;
+addEventListener('wheel', function(e){
+  if (document.body.classList.contains('open')) return;
+  e.preventDefault(); acc += e.deltaY;
+  var now = performance.now();
+  if (Math.abs(acc) > 60 && now - lastW > 140){ step(acc > 0 ? 1 : -1); acc = 0; lastW = now; }
+}, {passive:false});
+var drag = false, a0 = 0, g0 = 0;
+function angAt(e){ var r = document.getElementById('dial').getBoundingClientRect(); return Math.atan2(e.clientY - r.top, e.clientX - r.left) * 180 / Math.PI; }
+ring.addEventListener('pointerdown', function(e){ if (document.body.classList.contains('open')) return; drag = true; a0 = angAt(e); g0 = ang; ring.setPointerCapture(e.pointerId); });
+ring.addEventListener('pointermove', function(e){
+  if (!drag) return;
+  var d = angAt(e) - a0; if (d > 180) d -= 360; if (d < -180) d += 360;
+  ang = g0 + d; pick(Math.round(-ang / STEP));
+});
+ring.addEventListener('pointerup', function(){ if (!drag) return; drag = false; if (Math.abs(ang - g0) < 3){ ang = g0; open(); return; } vel = 0; target = Math.round(ang / STEP) * STEP; pick(Math.round(-target / STEP)); });
+addEventListener('keydown', function(e){
+  var open_ = document.body.classList.contains('open');
+  if (e.key === 'Escape'){ close(); return; }
+  if (open_) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); step(1); }
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); step(-1); }
+  if (e.key === 'Enter' && !(e.target.closest && e.target.closest('a'))){ e.preventDefault(); open(); }
+});
+
+/* 開く：輪が広がって画面を覆う */
+function open(){
+  var r = document.getElementById('dial').getBoundingClientRect();
+  var far = Math.hypot(Math.max(r.left, innerWidth - r.left), Math.max(r.top, innerHeight - r.top));
+  document.body.style.setProperty('--cover', (far / R * 1.05).toFixed(2));
+  var p = PAGES[sel];
+  document.getElementById('in').innerHTML = '<span class="k">' + p.e + '</span>' + p.html;
+  document.getElementById('page').scrollTop = 0;
+  document.body.classList.add('open');
+}
+function close(){ document.body.classList.remove('open'); }
+document.getElementById('back').addEventListener('click', close);
+
+build(); pick(0); requestAnimationFrame(tick);
+addEventListener('resize', function(){ build(); pick(sel); });
+})();
+</script>
