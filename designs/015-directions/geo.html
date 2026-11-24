@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 近未来・幾何学（2026-11-24）。本人「普通に近未来、幾何学系の模様っぽいサイト」「ズームの動きとか画面移動とかぐわーって」。
+     大きな平面に節が離れて置いてある。スクロールすると、カメラが一度引いて回りながら次の節へ寄る。並びと文は 013 の普通のサイトのまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
+<style>
+:root{ --bg:#0d0817; --ink:#efe9f7; --sub:#b4a3cc; --line:rgba(185,166,214,.28); --acc:#bb7eea; --btn:#7b4fa6 }
+*{box-sizing:border-box}
+html,body{margin:0; background:var(--bg); color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8}
+h1,h2,h3,p,dl,dd,ul{margin:0}
+ul{padding:0; list-style:none}
+a{color:inherit}
+b{font-weight:700}
+.serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
+
+header{position:fixed; top:0; left:0; right:0; z-index:10; height:72px; display:flex; align-items:center; justify-content:space-between; padding:0 clamp(16px,4vw,48px);
+  background:linear-gradient(var(--bg) 30%, rgba(13,8,23,0))}
+.logo{display:flex; align-items:center; gap:12px; text-decoration:none; line-height:1.1}
+.logo i{width:36px; height:36px; border-radius:50%; border:5px solid var(--btn); box-shadow:inset 0 0 0 3px var(--acc)}
+.logo span{font-size:20px; font-weight:400}
+.logo small{display:block; font-size:11px; margin-left:4.4em; color:var(--sub)}
+nav ul{display:flex; gap:clamp(14px,2.6vw,40px)}
+nav a{text-decoration:none; font-size:14px; font-weight:400; color:var(--sub); transition:color .2s}
+nav a.on{color:var(--ink)}
+
+#bg{position:fixed; inset:0; width:100%; height:100%; display:block}
+#world{position:fixed; left:0; top:0; width:0; height:0; transform-origin:0 0; will-change:transform}
+.card{position:absolute; left:0; top:0; transform-origin:0 0; width:var(--w,640px); max-height:calc(100vh - 120px); overflow-x:hidden; overflow-y:auto; padding:clamp(24px,4vw,44px);
+  background:rgba(13,8,23,.82); border:1px solid var(--line); scrollbar-width:thin}
+/* 四隅の目盛り */
+.card::before,.card::after{content:""; position:absolute; width:14px; height:14px; border:solid var(--acc); pointer-events:none}
+.card::before{left:-1px; top:-1px; border-width:2px 0 0 2px}
+.card::after{right:-1px; bottom:-1px; border-width:0 2px 2px 0}
+.card .no{display:block; font:400 11px/1 Consolas,Menlo,monospace; letter-spacing:.2em; color:var(--acc); margin-bottom:18px}
+.card h2{font-size:clamp(22px,2.6vw,32px); line-height:1.5; margin-bottom:28px}
+
+.mv{text-align:center; background:none; border-color:transparent}
+.mv::before,.mv::after{display:none}
+.mv h1{font-size:clamp(24px,3.4vw,42px); line-height:1.6}
+.mv p{margin-top:2em; font-size:clamp(13px,1.1vw,15px); color:var(--sub)}
+.mv .hint{display:block; margin-top:3em; font:400 11px/1 Consolas,Menlo,monospace; letter-spacing:.3em; color:var(--acc); animation:hint 2s ease-in-out infinite}
+@keyframes hint{ 50%{opacity:.3; transform:translateY(4px)} }
+
+.vision h3{font-size:clamp(17px,1.8vw,22px); font-weight:400; line-height:1.6; margin-bottom:1em}
+.vision p{font-size:14px; color:var(--sub)}
+.vision p b{color:var(--ink)}
+.service ul{display:grid; grid-template-columns:repeat(2,1fr); gap:28px 36px}
+.service h3{font-size:16px; font-weight:400; line-height:1.6; margin-bottom:.5em; padding-left:12px; border-left:2px solid var(--acc)}
+.service p{font-size:13px; color:var(--sub)}
+.overview dl{display:grid; grid-template-columns:8em 1fr; border-top:1px solid var(--line); padding:12px 0; font-size:14px}
+.overview dl:last-child{border-bottom:1px solid var(--line)}
+.overview dt{font-weight:400}
+.overview .acc{margin-top:.6em; font-size:12px; color:var(--sub)}
+.contact{text-align:center}
+.contact p{font-size:14px; color:var(--sub)}
+.contact a.btn{display:flex; align-items:center; justify-content:center; max-width:420px; height:58px; margin:2em auto 0; background:var(--btn); color:#fff; text-decoration:none; font-weight:400; border:1px solid var(--acc)}
+.contact footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--sub)}
+
+#hud{position:fixed; left:clamp(16px,4vw,48px); bottom:20px; z-index:10; font:400 11px/1 Consolas,Menlo,monospace; letter-spacing:.2em; color:var(--sub)}
+#hud b{color:var(--ink); font-weight:400}
+#runway{height:100vh}
+
+@media (max-width:760px){
+  nav li{display:none}
+  .service ul{grid-template-columns:1fr}
+  .overview dl{grid-template-columns:1fr; gap:2px}
+}
+</style>
+
+<header>
+  <a class="logo" href="#" data-i="0"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy" data-i="1">企業理念</a></li>
+    <li><a href="#services" data-i="2">サービス</a></li>
+    <li><a href="#company" data-i="3">会社概要</a></li>
+    <li><a href="#contact" data-i="4">お問い合せ</a></li>
+  </ul></nav>
+</header>
+
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<main id="world">
+  <div class="card mv" data-x="0" data-y="0" data-r="0" data-w="980">
+    <h1 class="serif">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+    <span class="hint" aria-hidden="true">SCROLL ↓</span>
+  </div>
+
+  <section class="card vision" id="philosophy" data-x="2600" data-y="-1500" data-r="-24">
+    <span class="no">01 / PHILOSOPHY</span>
+    <h2 class="serif">アルターデザインコンサルティングの企業理念</h2>
+    <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+    <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+    子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+    このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+    それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+  </section>
+
+  <section class="card service" id="services" data-x="5600" data-y="1100" data-r="18" data-w="900">
+    <span class="no">02 / SERVICE</span>
+    <h2 class="serif">私たちが提供するサービス</h2>
+    <ul>
+      <li><h3>人間中心の次世代業務システム開発</h3>
+        <p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3>AI による意思決定支援と事業変革支援</h3>
+        <p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3>自律型・共創型の組織設計支援</h3>
+        <p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3>地域格差の解消を目指したデジタル支援</h3>
+        <p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section class="card overview" id="company" data-x="2900" data-y="4000" data-r="-40" data-w="720">
+    <span class="no">03 / COMPANY</span>
+    <h2 class="serif">会社概要</h2>
+    <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+    <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+    <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+      <p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+    <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+    <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+    <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+    <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+  </section>
+
+  <section class="card contact" id="contact" data-x="-500" data-y="3000" data-r="0" data-w="680">
+    <span class="no">04 / CONTACT</span>
+    <h2 class="serif">お問い合わせ</h2>
+    <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+    <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    <footer>
+      <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+      <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+    </footer>
+  </section>
+</main>
+
+<div id="hud" aria-hidden="true"><b>00</b> / 04</div>
+<div id="runway"></div>
+
+<script>
+(function(){
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var world = document.getElementById('world'), cv = document.getElementById('bg'), ctx = cv.getContext('2d');
+var hud = document.querySelector('#hud b'), runway = document.getElementById('runway');
+var navs = [].slice.call(document.querySelectorAll('[data-i]'));
+var stops = [].slice.call(document.querySelectorAll('.card')).map(function(c){
+  return { el:c, x:+c.dataset.x, y:+c.dataset.y, r:(+c.dataset.r || 0) * Math.PI / 180, w:+c.dataset.w || 640 };
+});
+var N = stops.length, W, H, DPR, HOLD, MOVE;
+
+function layout(){
+  W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1);
+  cv.width = W * DPR; cv.height = H * DPR;
+  HOLD = H * .5; MOVE = H * 1.3;
+  runway.style.height = ((N - 1) * (HOLD + MOVE) + HOLD + H) + 'px';
+  stops.forEach(function(s){
+    s.el.style.setProperty('--w', Math.min(s.w, W - 32) + 'px');
+    s.el.style.transform = 'translate(' + s.x + 'px,' + s.y + 'px) rotate(' + s.r + 'rad) translate(-50%,-50%)';
+  });
+}
+addEventListener('resize', layout); layout();
+
+/* スクロール → カメラ（止まる区間と、引いて回って寄る区間） */
+function ease(t){ return t * t * t * (t * (t * 6 - 15) + 10); }
+function cam(p){
+  var seg = HOLD + MOVE, i = Math.min(N - 1, Math.floor(p / seg)), f = p - i * seg;
+  var a = stops[i];
+  if (i >= N - 1 || f <= HOLD) return { x:a.x, y:a.y, r:a.r, s:1, i:i };
+  var b = stops[i + 1], t = (f - HOLD) / MOVE, e = ease(t);
+  var d = Math.hypot(b.x - a.x, b.y - a.y), far = Math.min(.6, Math.min(W, H) / (d + Math.min(W, H)) * 1.1);
+  var dip = RM ? 0 : Math.pow(Math.sin(Math.PI * t), .8);
+  var dr = b.r - a.r;
+  return { x:a.x + (b.x - a.x) * e, y:a.y + (b.y - a.y) * e, r:a.r + dr * (RM ? e : ease(Math.min(1, Math.max(0, t * 1.3 - .15)))), s:Math.exp(Math.log(far) * dip), i:t < .5 ? i : i + 1 };
+}
+
+var sy = scrollY, mx = 0, my = 0, smx = 0, smy = 0;
+addEventListener('pointermove', function(e){ mx = e.clientX / W - .5; my = e.clientY / H - .5; }, {passive:true});
+navs.forEach(function(a){
+  a.addEventListener('click', function(e){ e.preventDefault(); scrollTo({ top:+a.dataset.i * (HOLD + MOVE) + (+a.dataset.i ? HOLD / 2 : 0), behavior:'smooth' }); });
+});
+
+/* 背景：平面に描いた格子・節を囲む多角形・節どうしを結ぶ線 */
+function grid(c, step, alpha, x0, y0, x1, y1){
+  if (alpha <= .01) return;
+  ctx.strokeStyle = 'rgba(185,166,214,' + alpha + ')'; ctx.lineWidth = 1 / c.s;
+  ctx.beginPath();
+  for (var x = Math.floor(x0 / step) * step; x <= x1; x += step){ ctx.moveTo(x, y0); ctx.lineTo(x, y1); }
+  for (var y = Math.floor(y0 / step) * step; y <= y1; y += step){ ctx.moveTo(x0, y); ctx.lineTo(x1, y); }
+  ctx.stroke();
+}
+function poly(x, y, n, rad, rot){
+  ctx.beginPath();
+  for (var k = 0; k <= n; k++){ var a = rot + k * 2 * Math.PI / n; ctx[k ? 'lineTo' : 'moveTo'](x + rad * Math.cos(a), y + rad * Math.sin(a)); }
+  ctx.stroke();
+}
+function draw(c, now){
+  var T = RM ? 0 : now / 1000;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#0d0817'; ctx.fillRect(0, 0, W, H);
+  ctx.translate(W / 2 + smx * 30, H / 2 + smy * 30); ctx.scale(c.s, c.s); ctx.rotate(-c.r); ctx.translate(-c.x, -c.y);
+  var R = Math.hypot(W, H) / 2 / c.s, x0 = c.x - R, x1 = c.x + R, y0 = c.y - R, y1 = c.y + R;
+  /* 格子：引くほど粗い目に切り替わる */
+  [60, 300, 1500].forEach(function(st){
+    var px = st * c.s, a = px < 8 ? 0 : Math.min(1, (px - 8) / 40) * (px > 900 ? Math.max(0, 1 - (px - 900) / 900) : 1);
+    grid(c, st, .16 * a, x0, y0, x1, y1);
+  });
+  /* 節を結ぶ線 */
+  ctx.strokeStyle = 'rgba(187,126,234,.45)'; ctx.lineWidth = 1.5 / c.s; ctx.setLineDash([12 / c.s, 10 / c.s]); ctx.lineDashOffset = -T * 40 / c.s;
+  ctx.beginPath(); stops.forEach(function(s, i){ ctx[i ? 'lineTo' : 'moveTo'](s.x, s.y); }); ctx.stroke(); ctx.setLineDash([]);
+  /* 節を囲む多角形：回り続ける */
+  stops.forEach(function(s, i){
+    var base = Math.max(s.w, 640) * .75, sides = [6, 3, 4, 5, 8][i % 5];
+    for (var k = 0; k < 4; k++){
+      ctx.strokeStyle = 'rgba(' + (k % 2 ? '157,180,220' : '187,126,234') + ',' + (.38 - k * .07) + ')'; ctx.lineWidth = (k ? 1 : 1.6) / c.s;
+      poly(s.x, s.y, sides, base * (1 + k * .45), s.r + T * (k % 2 ? -.06 : .04) * (k + 1));
+    }
+    ctx.fillStyle = 'rgba(187,126,234,.9)';
+    for (var k2 = 0; k2 < sides; k2++){ var a = s.r + T * .04 + k2 * 2 * Math.PI / sides; ctx.fillRect(s.x + base * Math.cos(a) - 3 / c.s, s.y + base * Math.sin(a) - 3 / c.s, 6 / c.s, 6 / c.s); }
+  });
+}
+
+var last = -1;
+function frame(now){
+  sy += (scrollY - sy) * (RM ? 1 : .1);
+  smx += (mx - smx) * .05; smy += (my - smy) * .05;
+  var c = cam(sy);
+  world.style.transform = 'translate(' + (W / 2 + smx * 30) + 'px,' + (H / 2 + smy * 30) + 'px) scale(' + c.s + ') rotate(' + (-c.r) + 'rad) translate(' + (-c.x) + 'px,' + (-c.y) + 'px)';
+  draw(c, now);
+  if (c.i !== last){
+    last = c.i; hud.textContent = ('0' + c.i).slice(-2);
+    navs.forEach(function(a){ a.classList.toggle('on', +a.dataset.i === c.i && c.i > 0); });
+    stops.forEach(function(s, i){ s.el.inert = i !== c.i; });
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
