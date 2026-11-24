@@ -22,13 +22,17 @@
 :root[data-p="98"]{ --D:#101020; --M:#5a6e8c; --W:#7a5038; --A:#e0603a; --L:#f0ece0; --S:#d8c08a;
   --dz:repeating-conic-gradient(var(--D) 0 25%,transparent 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2); }
 :root[data-p="98"] .panel::before{content:""; position:absolute; left:0; right:0; top:0; height:calc(var(--p)*4); background:var(--dz); z-index:0; pointer-events:none}
-:root[data-p="98"] .panel::after{content:""; position:absolute; left:0; right:0; bottom:16%; height:calc(var(--p)*4); background:var(--dz); pointer-events:none}
 :root[data-p="98"] .floor{background:linear-gradient(var(--D),var(--D)) 0 calc(var(--p)*4)/100% 100% no-repeat,repeating-conic-gradient(var(--M) 0 25%,var(--D) 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2)}
 :root[data-p="98"] .floor::before{display:none}
-:root[data-p="98"] .counter::after{top:auto; bottom:0; left:0; right:0; height:calc(var(--p)*6); background:var(--dz)}
 :root[data-p="98"] .facade .wallf::after{content:""; position:absolute; left:0; right:0; top:0; height:calc(var(--p)*4); background:var(--dz)}
 :root[data-p="98"] .facade .wallf::before{content:""; position:absolute; left:0; right:0; bottom:0; height:calc(var(--p)*4); background:var(--dz)}
-:root[data-p="98"] .shelf{background:repeating-conic-gradient(var(--D) 0 25%,var(--W) 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2)}
+/* 店の中の壁も外と同じ茶の横板。青灰は扉・小物だけ */
+:root[data-p="98"] .game .wallbg,:root[data-p="98"] .game{background:repeating-linear-gradient(var(--W) 0 calc(var(--p)*4),var(--D) calc(var(--p)*4) calc(var(--p)*5))}
+:root[data-p="98"] .door{background:var(--M)}
+:root[data-p="98"] .counter{background:repeating-linear-gradient(90deg,var(--M) 0 calc(var(--p)*7),var(--D) calc(var(--p)*7) calc(var(--p)*8))}
+:root[data-p="98"] .shelf,:root[data-p="98"] .counter{border-color:var(--D)}
+:root[data-p="98"] .shelf{border:calc(var(--p)*2) solid var(--D); border-bottom:0}
+:root[data-p="98"] .tier{border-bottom-color:var(--D)}
 :root[data-p="98"] .front .ground{background:linear-gradient(var(--D),var(--D)) 0 calc(var(--p)*2)/100% 100% no-repeat,repeating-conic-gradient(var(--M) 0 25%,var(--D) 0 50%) 0 0/calc(var(--p)*2) calc(var(--p)*2)}
 
 *{box-sizing:border-box; margin:0; padding:0}
