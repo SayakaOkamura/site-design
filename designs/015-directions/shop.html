@@ -154,15 +154,13 @@ body.outside .ask{opacity:0; pointer-events:none}
 .facade .win{position:absolute; bottom:calc(var(--p)*7); width:calc(var(--p)*14); height:calc(var(--p)*14); background:var(--D); border:var(--p) solid var(--S)}
 .facade .win::after{content:""; position:absolute; left:calc(50% - var(--p)/2); top:0; bottom:0; width:var(--p); background:var(--S)}
 .facade .win.l{left:calc(25% - var(--p)*10)} .facade .win.r{right:calc(25% - var(--p)*10)}
-/* 駅の案内板と郵便受け（公式のアクセスとお問い合わせ） */
-.stn{position:absolute; left:calc(var(--p)*3); bottom:calc(var(--p)*6); width:calc(var(--p)*14); display:grid; justify-items:center}
-.stn b{font-weight:400; display:block; width:100%; background:var(--L); color:var(--D); border:var(--p) solid var(--D); box-shadow:var(--p) var(--p) 0 var(--D); text-align:center; line-height:1.4; padding:var(--p) 0}
-.stn i{display:block; width:var(--p); height:calc(var(--p)*16); background:var(--D)}
-.post{position:absolute; right:calc(var(--p)*4); bottom:calc(var(--p)*6); width:calc(var(--p)*10); display:grid; justify-items:center; text-decoration:none}
+/* 店の前の物（飾り。押しても何も起きない） */
+.deco{position:absolute; bottom:0; z-index:1; pointer-events:none}
+.post{position:absolute; right:calc(var(--p)*4); bottom:calc(var(--p)*6); width:calc(var(--p)*10); display:grid; justify-items:center; pointer-events:none}
 .post b{display:block; width:100%; height:calc(var(--p)*12); background:var(--A); border:var(--p) solid var(--D); box-shadow:inset calc(var(--p)*-1) 0 0 var(--D); position:relative}
 .post b::before{content:""; position:absolute; left:calc(var(--p)*2); right:calc(var(--p)*2); top:calc(var(--p)*3); height:var(--p); background:var(--D)}
 .post i{display:block; width:calc(var(--p)*2); height:calc(var(--p)*8); background:var(--D)}
-.post:hover b{background:var(--S)}
+
 .fdoor{position:relative; z-index:1; width:calc(var(--p)*16); height:calc(var(--p)*30); background:var(--D); border:var(--p) solid var(--D); border-bottom:0; cursor:pointer; padding:0}
 .fdoor .leaf{position:absolute; inset:0; background:var(--M); box-shadow:inset calc(var(--p)*-1) 0 0 var(--D); transform-origin:left center; transition:transform .5s steps(5)}
 .fdoor .leaf::before{content:""; position:absolute; left:calc(var(--p)*3); right:calc(var(--p)*3); top:calc(var(--p)*3); height:calc(var(--p)*7); background:var(--D)}
@@ -184,12 +182,8 @@ body.outside .ask{opacity:0; pointer-events:none}
 .bye a,.bye button{display:inline-block; padding:var(--p) calc(var(--p)*2); border:var(--p) solid var(--L); color:var(--L); background:var(--D); text-decoration:none; cursor:pointer}
 .bye a.main{background:var(--A); border-color:var(--A); color:var(--D)}
 .bye a:hover,.bye button:hover{background:var(--M)}
-#exitF{align-content:center; overflow:auto; padding:24px 16px}
-#exitF .facade{margin-bottom:0}
-#exitF .facade{width:calc(var(--p)*40); height:calc(var(--p)*38)}
-#exitF .facade .win{width:calc(var(--p)*8); height:calc(var(--p)*8); bottom:calc(var(--p)*5)}
-#exitF .facade .win.l{left:calc(var(--p)*3)} #exitF .facade .win.r{right:calc(var(--p)*3)}
-#exitF .fdoor{width:calc(var(--p)*11); height:calc(var(--p)*21)}
+#exitF .bye{position:absolute; left:50%; bottom:calc(var(--p)*3); transform:translateX(-50%); width:min(92%,760px); margin:0; z-index:3;
+  background:var(--D); border:var(--p) solid var(--L); box-shadow:0 0 0 var(--p) var(--D); padding:calc(var(--p)*2) calc(var(--p)*4) calc(var(--p)*3); max-height:calc(100% - var(--p)*4); overflow:auto}
 
 @keyframes blink{50%{opacity:0}}
 @keyframes bob{50%{translate:0 -4px}}
@@ -252,17 +246,18 @@ body.outside .ask{opacity:0; pointer-events:none}
     <button class="fdoor" id="fdoor" aria-label="店に入る"><span class="hint">▼</span><span class="leaf"></span><span class="tag">OPEN</span></button>
     <div class="bell" id="bell">カラン、コロン</div>
   </div>
-  <div class="stn" aria-hidden="true"><b>御成門駅<br>徒歩2分</b><i></i></div>
-  <a class="post" href="mailto:contact@alt-dsgn.co.jp" aria-label="お問い合わせ（メール）" title="お問い合わせ"><b></b><i></i></a>
+  <div class="post" aria-hidden="true"><b></b><i></i></div>
 </div>
 
 <!-- 出口：フッターの役 -->
 <div class="front wallbg" id="exitF" hidden>
+  <div class="ground"></div>
   <div class="facade">
     <div class="roof"></div><div class="wallf"></div>
     <div class="win l"></div><div class="win r"></div>
     <div class="fdoor" aria-hidden="true"><span class="leaf"></span></div>
   </div>
+  <div class="post" aria-hidden="true"><b></b><i></i></div>
   <div class="bye">
     <h2>またどうぞ。</h2>
     <p class="co">株式会社アルターデザインコンサルティング<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
@@ -350,6 +345,13 @@ const SPR = {
   pin:    ["..aa..",".alla.",".alla.","..aa..","...a..","mmmmmm"],
 };
 
+/* 店の前の物 */
+const DECO = {
+  plant:[".a...a.","aas.saa",".amsma.","..mmm..",".mmmmm.","..mmm..","wwwwwww",".wwwww.",".wwwww."],
+  bench:["wwwwwwwwwwwwwwww","oooooooooooooooo","wwwwwwwwwwwwwwww","oooooooooooooooo",".o............o.",".o............o."],
+  board:["oooooooo","ollllllo","olmmmllo","ollllllo","olmmmmlo","ollllllo","olmmlllo","oooooooo",".o....o.","o......o"],
+  lamp: [".ooooo.","ossssso","ossssso",".ooooo.","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","...o...","..ooo..",".ooooo."],
+};
 /* 左：商品 */
 const GOODS = [
   {id:'s1', spr:'monitor', short:'業務システム\n開発', name:'人間中心の次世代業務システム開発',
@@ -445,6 +447,18 @@ POSTERS.forEach(it=>{
   p.onclick = e=>{ e.stopPropagation(); show(it.id); };
   $('wall').append(p);
 });
+
+/* 店の前に置く：[絵, 置き場所（店構えの中の left）] */
+(function(){
+  document.querySelectorAll('.front').forEach(fr=>{
+  const fa = fr.querySelector('.facade');
+  [['plant','calc(50% - var(--p)*17)'],['plant','calc(50% + var(--p)*10)'],['bench','calc(25% - var(--p)*8)'],['board','calc(75% - var(--p)*4)']].forEach(([k,l])=>{
+    const sv = svgOf(DECO[k]); sv.classList.add('deco'); sv.style.left = l; sv.setAttribute('aria-hidden','true'); fa.append(sv);
+  });
+  const lp = svgOf(DECO.lamp); lp.classList.add('deco'); lp.style.left = 'calc(var(--p)*5)'; lp.style.bottom = 'calc(var(--p)*6)'; lp.setAttribute('aria-hidden','true');
+  fr.append(lp);
+  });
+})();
 
 /* ---------- 視点 ---------- */
 let view = 1;
