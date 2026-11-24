@@ -99,7 +99,7 @@ header{cursor:pointer}
 body.open .hero{opacity:0}
 
 /* 開く：右から板が滑り込んで中身。メニューと輪は左に残る */
-.page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow:auto; color:var(--wh); background:var(--deep);
+.page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow-x:hidden; overflow-y:auto; color:var(--wh); background:var(--deep);
   border-left:2px solid var(--pu); transform:translateX(102%); transition:transform .34s cubic-bezier(.7,0,.2,1)}
 body.open .page{transform:none}
 .page .wrap.swap{animation:swap .22s ease-out}
@@ -199,8 +199,11 @@ function pick(i){
 }
 function snapTo(i){ snapped = i; cur.classList.toggle('snap', i >= 0); if (i >= 0) pick(i); }
 
+var kx = 0, ky = 0;   /* キーで選び始めたときのマウスの位置 */
 addEventListener('pointermove', function(e){
-  mx = e.clientX; my = e.clientY; document.body.classList.add('live'); document.body.classList.remove('keys');
+  mx = e.clientX; my = e.clientY; document.body.classList.add('live');
+  /* キーで選んでいるあいだは、マウスをはっきり動かすまで（24px）輪を項目に吸いつけたまま */
+  if (document.body.classList.contains('keys')){ if (Math.hypot(mx - kx, my - ky) < 24) return; document.body.classList.remove('keys'); }
   /* 文字の近く（上下左右に 18px のゆとり）に入ったら吸いつく */
   var hit = -1;
   btns.forEach(function(b, k){ var r = b.getBoundingClientRect(); if (mx > r.left - 18 && mx < r.right + 18 && my > r.top - 18 && my < r.bottom + 18) hit = k; });
@@ -226,7 +229,7 @@ function frame(){
   var gx = mx, gy = my, w = 44, h = 44;
   /* 輪の下にある物：押せる物なら吸いついて囲む、板の字の上なら小さく薄く */
   var under = snapped < 0 && document.elementFromPoint(mx, my), act = under && under.closest && under.closest('a, button:not(.menu button)');
-  var onText = !act && opened && mx > page.getBoundingClientRect().left;
+  var onText = !act && opened && snapped < 0 && mx > page.getBoundingClientRect().left;
   cur.classList.toggle('press', !!act); cur.classList.toggle('dim', onText);
   if (act){ var ar = act.getBoundingClientRect(); gx = ar.left + ar.width / 2; gy = ar.top + ar.height / 2; w = ar.width + 22; h = ar.height + 14; }
   else if (onText){ w = h = 26; }
@@ -265,7 +268,7 @@ btns.forEach(function(b, i){
 document.getElementById('back').addEventListener('click', close);
 addEventListener('keydown', function(e){
   if (e.key === 'Escape'){ close(); return; }
-  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); var n = sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1); snapTo((n + btns.length) % btns.length); btns[sel].focus({preventScroll:true}); document.body.classList.add('keys'); if (opened) open(sel); }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); var n = sel < 0 ? 0 : sel + (e.key === 'ArrowDown' ? 1 : -1); snapTo((n + btns.length) % btns.length); btns[sel].focus({preventScroll:true}); if (!document.body.classList.contains('keys')){ kx = mx; ky = my; } document.body.classList.add('keys'); if (opened) open(sel); }
   if (e.key === 'Enter' && sel >= 0 && document.activeElement && document.activeElement.tagName !== 'A'){ e.preventDefault(); open(sel); }
 });
 
