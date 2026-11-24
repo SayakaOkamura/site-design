@@ -58,8 +58,17 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 @property --rot{syntax:'<angle>'; inherits:false; initial-value:0deg}
 @keyframes spin{to{--rot:360deg}}
 
-/* 背景：平行な直線の一本が、ときどきカクッとずれて戻る */
-#flow{position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none}
+/* 背景：余白を埋める主役。数秒おきにカチッと組み変わる
+   1（既定）大きな色面の構図 ／ 2（?bg=type）巨大な文字の帯 */
+#bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+#bg .sh{position:absolute; transition:left .55s cubic-bezier(.8,0,.1,1), top .55s cubic-bezier(.8,0,.1,1), width .55s cubic-bezier(.8,0,.1,1), height .55s cubic-bezier(.8,0,.1,1); transition-delay:var(--d,0s)}
+#bg .p1{background:#2a1040} #bg .p2{background:#33154d} #bg .p3{background:#24103a}
+#bg .ln{background:rgba(187,126,234,.28)}
+#bg .rg{border-radius:50%; border:solid #3d1d5c; box-shadow:inset 0 0 0 0 transparent}
+#bg .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:2px solid rgba(187,126,234,.22)}
+/* 2：輪郭だけの巨大な文字が、横から滑り込んで止まり、また抜ける */
+#bg .band{position:absolute; left:0; white-space:nowrap; font-family:"Dela Gothic One",sans-serif; line-height:1; color:transparent;
+  -webkit-text-stroke:1.5px rgba(187,126,234,.32); transition:transform 1.6s cubic-bezier(.15,.85,.2,1), opacity .35s}
 
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
 .menu button.bump{animation:bump .32s cubic-bezier(.3,1.6,.5,1)}
@@ -129,7 +138,7 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
 @media (prefers-reduced-motion:reduce){ .page,.cur{transition:none} .rip,.op{display:none} .cur.joy{animation:none} }
 </style>
 
-<canvas id="flow" aria-hidden="true"></canvas>
+<div id="bg" aria-hidden="true"></div>
 <div class="op" id="op" aria-hidden="true"><div class="in">
   <svg viewBox="0 0 88 88"><circle class="c1" cx="44" cy="44" r="38" transform="rotate(-90 44 44)"/><circle class="c2" cx="44" cy="44" r="30" transform="rotate(-90 44 44)"/></svg>
   <div class="nm">Alter Design<small>CONSULTING</small></div>
@@ -262,50 +271,50 @@ document.getElementById('logo').addEventListener('click', function(){
   if (taps.length >= 5){ taps = []; cur.classList.remove('joy'); void cur.offsetWidth; cur.classList.add('joy'); setTimeout(function(){ cur.classList.remove('joy'); }, 1600); }
 });
 
-/* 背景：平行な直線が 6 本。ふだんは止まっている。2 秒ほどおきに 1 本だけ、途中が切れてカクッとずれ、
-   少し止まって、カクッと戻る。戻った瞬間、つなぎ目に短い印が光る。意味は「ずれたものを組み直す」 */
-var fl = document.getElementById('flow'), fg = fl.getContext('2d'), VW = 0, VH = 0, PR = 1, N = 6, ev = null, nextAt = performance.now() + 900;
-function fsz(){ PR = Math.min(2, devicePixelRatio || 1); VW = innerWidth; VH = innerHeight; fl.width = VW * PR; fl.height = VH * PR; }
-function out(t){ return 1 - Math.pow(1 - t, 4); }   /* 速く出て、ぴたっと止まる */
-function newEv(now){
-  var a = .15 + Math.random() * .3, b = a + .2 + Math.random() * .3;
-  ev = { i:Math.floor(Math.random() * N), a:a, b:Math.min(.92, b), dy:(Math.random() < .5 ? -1 : 1) * (.35 + Math.random() * .3), t:now };
+/* 背景 */
+var bgEl = document.getElementById('bg'), BGT = new URLSearchParams(location.search).get('bg') === 'type' ? 'type' : 'shape';
+if (BGT === 'shape'){
+  /* 1：色面の構図。[left, top, width, height]（%）。輪は幅だけ（高さは幅に合わせる） */
+  var SH = [
+    { c:'p3', k:[[34,0,30,100],[0,62,100,38],[58,8,42,52],[40,40,60,60],[0,0,48,46]] },
+    { c:'p1', k:[[64,10,36,58],[44,0,28,62],[30,60,40,40],[70,0,30,100],[52,52,48,48]] },
+    { c:'p2', k:[[40,70,44,30],[72,36,28,64],[34,0,22,40],[34,6,30,30],[78,10,22,40]] },
+    { c:'ln', k:[[34,46,66,0.5],[60,0,0.3,100],[34,22,66,0.5],[56,0,0.3,100],[34,72,66,0.5]] },
+    { c:'rg', k:[[56,14,30],[62,30,26],[40,18,34],[48,10,30],[66,24,24]] }
+  ];
+  var els = SH.map(function(o, n){ var d = document.createElement('i'); d.className = 'sh ' + o.c; d.style.setProperty('--d', (n * .05) + 's'); bgEl.appendChild(d); return d; });
+  var ci = 0;
+  var place = function(){
+    SH.forEach(function(o, n){
+      var k = o.k[ci % o.k.length], d = els[n];
+      d.style.left = k[0] + '%'; d.style.top = k[1] + '%';
+      if (o.c === 'rg'){ var w = Math.min(innerWidth, innerHeight) * k[2] / 100 * 1.6; d.style.width = d.style.height = w + 'px'; d.style.borderWidth = (w * .13) + 'px'; }
+      else { d.style.width = k[2] + '%'; d.style.height = k[3] + '%'; }
+    });
+  };
+  place();
+  if (!RM) setInterval(function(){ ci++; place(); }, 3600);
+  addEventListener('resize', place);
+} else {
+  /* 2：公式の言葉を、輪郭だけの巨大な文字の帯に */
+  var WORDS = ['遊ぶように働く', 'AI × ローコード', '上流工程中心のシステム開発', '業務設計からエンジニアリングまで'];
+  var wi = 0, dir = 1;
+  var band = document.createElement('div'); band.className = 'band'; bgEl.appendChild(band);
+  var run = function(){
+    band.style.transition = 'none'; band.style.opacity = 0;
+    band.textContent = WORDS[wi % WORDS.length]; wi++;
+    band.style.fontSize = Math.round(innerHeight * .34) + 'px';
+    band.style.top = (innerHeight * (dir > 0 ? .12 : .36)) + 'px';
+    var bw = band.offsetWidth, from = dir > 0 ? innerWidth : -bw, to = dir > 0 ? innerWidth * .3 : innerWidth * .3 - bw * .45;
+    band.style.transform = 'translateX(' + from + 'px)';
+    void band.offsetWidth;
+    band.style.transition = ''; band.style.opacity = 1; band.style.transform = 'translateX(' + to + 'px)';
+    /* 止まって少し見せてから、進んできた向きのまま抜ける */
+    setTimeout(function(){ band.style.transition = 'transform .5s cubic-bezier(.8,0,.9,.3), opacity .5s'; band.style.transform = 'translateX(' + (dir > 0 ? -bw : innerWidth) + 'px)'; band.style.opacity = 0; }, 3400);
+    setTimeout(function(){ dir = -dir; run(); }, 4000);
+  };
+  if (document.fonts){ document.fonts.load('100px "Dela Gothic One"').then(run, run); } else run();
 }
-function snapLines(now){
-  if (!ev && now >= nextAt && !RM) newEv(now);
-  var X0 = VW * .34, X1 = VW * .96, Y0 = VH * .2, Y1 = VH * .74, gap = (Y1 - Y0) / (N - 1), W = X1 - X0;
-  var off = 0, tick = 0;
-  if (ev){
-    var t = (now - ev.t) / 1000;
-    /* 0〜0.14 秒：ずれる ／ 〜0.9：止まる ／ 〜1.04：戻る ／ 〜1.4：印が消える */
-    if (t < .14) off = out(t / .14);
-    else if (t < .9) off = 1;
-    else if (t < 1.04) off = 1 - out((t - .9) / .14);
-    else { off = 0; tick = Math.max(0, 1 - (t - 1.04) / .36); }
-    if (t > 1.4){ ev = null; nextAt = now + 1000 + Math.random() * 900; }
-  }
-  fg.setTransform(PR, 0, 0, PR, 0, 0); fg.clearRect(0, 0, VW, VH);
-  fg.strokeStyle = '#bb7eea'; fg.lineWidth = 1.6; fg.lineCap = 'butt';
-  for (var i = 0; i < N; i++){
-    var y = Y0 + gap * i;
-    fg.globalAlpha = .22;
-    if (ev && i === ev.i && off > 0){
-      var xa = X0 + W * ev.a, xb = X0 + W * ev.b, d = ev.dy * gap * off, g = 6 * off;
-      fg.beginPath(); fg.moveTo(X0, y); fg.lineTo(xa - g, y); fg.moveTo(xa + g, y + d); fg.lineTo(xb - g, y + d); fg.moveTo(xb + g, y); fg.lineTo(X1, y); fg.stroke();
-    } else {
-      fg.beginPath(); fg.moveTo(X0, y); fg.lineTo(X1, y); fg.stroke();
-    }
-  }
-  /* 戻った瞬間、つなぎ目に短い縦の印 */
-  if (ev && tick > 0){
-    var yy = Y0 + gap * ev.i;
-    fg.globalAlpha = .55 * tick; fg.strokeStyle = '#d7ff3a';
-    [ev.a, ev.b].forEach(function(u){ var x = X0 + W * u; fg.beginPath(); fg.moveTo(x, yy - 7); fg.lineTo(x, yy + 7); fg.stroke(); });
-  }
-  fg.globalAlpha = 1;
-}
-fsz(); addEventListener('resize', fsz);
-(function loop(now){ snapLines(now || performance.now()); requestAnimationFrame(loop); })();
 
 /* OP：輪が描かれて社名 → メニューが順に出る。押すかキーで飛ばせる */
 var op = document.getElementById('op');
