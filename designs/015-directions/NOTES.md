@@ -701,6 +701,7 @@ iconic LLC のサイトを本人も触って：「**単純にめっちゃ面白�
        右下にトップの見出し（AI × ローコードで…）。↑↓ で選ぶ・Enter で開く・Esc で戻る。開いたまま ↑↓ で次の節へ
        色は 013 の紫に差し色の黄緑一つ。見た目は写さず、型（操作そのものが気持ちいい）だけ
 ```
+本人：「**結構露骨にペルソナでまずいなこれ好きだけど**」
 
 ### 3 文字が組み替わる：kumikae.html
 公開：https://sayakaokamura.github.io/site-design/designs/015-directions/kumikae.html
