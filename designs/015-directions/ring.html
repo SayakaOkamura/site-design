@@ -39,6 +39,12 @@ header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
   border:6px solid var(--pu); box-shadow:inset 0 0 0 3px var(--li); transform:translate(var(--x),var(--y)) translate(-50%,-50%) scale(var(--s,1)) rotate(var(--rot));
   transition:width .14s cubic-bezier(.2,.8,.2,1), height .14s cubic-bezier(.2,.8,.2,1), border-color .14s, background .14s, opacity .2s; opacity:0}
 .cur.snap{border-color:var(--li); box-shadow:none}
+/* 照準の上にいるときだけ「撃てる」形：黄緑の輪に、外へ十字の目盛り */
+.cur.aim{border-color:#d7ff3a; box-shadow:inset 0 0 0 2px rgba(215,255,58,.45)}
+.cur::before,.cur::after{content:""; position:absolute; pointer-events:none; opacity:0; transition:opacity .1s}
+.cur::before{left:-15px; right:-15px; top:50%; height:2px; margin-top:-1px; background:linear-gradient(90deg,#d7ff3a 0 8px,transparent 8px calc(100% - 8px),#d7ff3a calc(100% - 8px))}
+.cur::after{top:-15px; bottom:-15px; left:50%; width:2px; margin-left:-1px; background:linear-gradient(#d7ff3a 0 8px,transparent 8px calc(100% - 8px),#d7ff3a calc(100% - 8px))}
+.cur.aim::before,.cur.aim::after{opacity:1}
 /* 字の上では小さく薄く（読む邪魔をしない） */
 .cur.dim{opacity:.55 !important}
 /* 押せる物の上では、輪の中を塗りつぶす */
@@ -250,6 +256,10 @@ function frame(){
   cur.classList.toggle('press', !!act); cur.classList.toggle('dim', onText);
   if (act){ var ar = act.getBoundingClientRect(); gx = ar.left + ar.width / 2; gy = ar.top + ar.height / 2; w = ar.width + 22; h = ar.height + 14; }
   else if (onText){ w = h = 26; }
+  /* 照準の上：撃てる形 */
+  var aim = snapped < 0 && !act && !onText && !document.body.classList.contains('keys') && window.__onTarget && window.__onTarget(mx, my);
+  cur.classList.toggle('aim', !!aim);
+  if (aim){ w = h = 34; }
   if (snapped >= 0){
     var r = btns[snapped].getBoundingClientRect();
     gx = r.left + r.width / 2; gy = r.top + r.height / 2; w = r.width + 28; h = r.height + 18;
@@ -329,6 +339,8 @@ document.getElementById('logo').addEventListener('click', function(){
   function put(){ ret.style.setProperty('--sx', SL[slot].x + 'px'); ret.style.setProperty('--sy', SL[slot].y + 'px'); }
   size(); addEventListener('resize', size);
   function fx(cls, x, y){ var e = document.createElement('i'); e.className = cls; e.style.left = x + 'px'; e.style.top = y + 'px'; document.body.appendChild(e); setTimeout(function(){ e.remove(); }, 650); return e; }
+  /* カーソルが照準の上にいるか（輪の中） */
+  window.__onTarget = function(x, y){ var c = SL[slot]; return !ret.classList.contains('gone') && Math.hypot(x - c.x, y - c.y) <= R; };
   window.__shoot = function(x, y){
     var c = SL[slot], dx = c.x - x, dy = c.y - y, d = Math.hypot(dx, dy);
     if (d > R) return false;   /* 輪の中だけが当たり */
