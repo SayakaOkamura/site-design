@@ -58,18 +58,13 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 @property --rot{syntax:'<angle>'; inherits:false; initial-value:0deg}
 @keyframes spin{to{--rot:360deg}}
 
-/* 背景：余白を埋める主役。数秒おきにカチッと組み変わる
-   1（既定）大きな色面の構図 ／ 2（?bg=type）巨大な文字の帯 */
+/* 背景：余白を埋める主役。大きな色面の構図が、数秒おきにカチッと組み変わる */
 #bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
 #bg .sh{position:absolute; transition:left .55s cubic-bezier(.8,0,.1,1), top .55s cubic-bezier(.8,0,.1,1), width .55s cubic-bezier(.8,0,.1,1), height .55s cubic-bezier(.8,0,.1,1); transition-delay:var(--d,0s)}
 #bg .p1{background:#2a1040} #bg .p2{background:#33154d} #bg .p3{background:#24103a}
 #bg .ln{background:rgba(187,126,234,.28)}
 #bg .rg{border-radius:50%; border:solid #3d1d5c; box-shadow:inset 0 0 0 0 transparent}
 #bg .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:2px solid rgba(187,126,234,.22)}
-/* 2：輪郭だけの巨大な文字が、横から滑り込んで止まり、また抜ける */
-#bg .band{position:absolute; left:0; white-space:nowrap; font-family:"Dela Gothic One",sans-serif; line-height:1; color:transparent;
-  -webkit-text-stroke:1.5px rgba(187,126,234,.32); transition:transform 1.6s cubic-bezier(.15,.85,.2,1), opacity .35s}
-
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
 .menu button.bump{animation:bump .32s cubic-bezier(.3,1.6,.5,1)}
 @keyframes bump{35%{transform:translate(var(--bx,6px),var(--by,0px))}}
@@ -272,9 +267,9 @@ document.getElementById('logo').addEventListener('click', function(){
 });
 
 /* 背景 */
-var bgEl = document.getElementById('bg'), BGT = new URLSearchParams(location.search).get('bg') === 'type' ? 'type' : 'shape';
-if (BGT === 'shape'){
-  /* 1：色面の構図。[left, top, width, height]（%）。輪は幅だけ（高さは幅に合わせる） */
+var bgEl = document.getElementById('bg');
+(function(){
+  /* 色面の構図。[left, top, width, height]（%）。輪は幅だけ（高さは幅に合わせる） */
   var SH = [
     { c:'p3', k:[[34,0,30,100],[0,62,100,38],[58,8,42,52],[40,40,60,60],[0,0,48,46]] },
     { c:'p1', k:[[64,10,36,58],[44,0,28,62],[30,60,40,40],[70,0,30,100],[52,52,48,48]] },
@@ -295,26 +290,7 @@ if (BGT === 'shape'){
   place();
   if (!RM) setInterval(function(){ ci++; place(); }, 3600);
   addEventListener('resize', place);
-} else {
-  /* 2：公式の言葉を、輪郭だけの巨大な文字の帯に */
-  var WORDS = ['遊ぶように働く', 'AI × ローコード', '上流工程中心のシステム開発', '業務設計からエンジニアリングまで'];
-  var wi = 0, dir = 1;
-  var band = document.createElement('div'); band.className = 'band'; bgEl.appendChild(band);
-  var run = function(){
-    band.style.transition = 'none'; band.style.opacity = 0;
-    band.textContent = WORDS[wi % WORDS.length]; wi++;
-    band.style.fontSize = Math.round(innerHeight * .34) + 'px';
-    band.style.top = (innerHeight * (dir > 0 ? .12 : .36)) + 'px';
-    var bw = band.offsetWidth, from = dir > 0 ? innerWidth : -bw, to = dir > 0 ? innerWidth * .3 : innerWidth * .3 - bw * .45;
-    band.style.transform = 'translateX(' + from + 'px)';
-    void band.offsetWidth;
-    band.style.transition = ''; band.style.opacity = 1; band.style.transform = 'translateX(' + to + 'px)';
-    /* 止まって少し見せてから、進んできた向きのまま抜ける */
-    setTimeout(function(){ band.style.transition = 'transform .5s cubic-bezier(.8,0,.9,.3), opacity .5s'; band.style.transform = 'translateX(' + (dir > 0 ? -bw : innerWidth) + 'px)'; band.style.opacity = 0; }, 3400);
-    setTimeout(function(){ dir = -dir; run(); }, 4000);
-  };
-  if (document.fonts){ document.fonts.load('100px "Dela Gothic One"').then(run, run); } else run();
-}
+})();
 
 /* OP：輪が描かれて社名 → メニューが順に出る。押すかキーで飛ばせる */
 var op = document.getElementById('op');
