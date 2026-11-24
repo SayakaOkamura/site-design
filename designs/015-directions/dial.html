@@ -7,9 +7,10 @@
      ロゴの輪の周りに五つの節。ホイール・ドラッグ・矢印キーで回すとカチッと止まり、右に来た節が選ばれる。
      押すと輪が広がって画面を覆い、その中に中身。形の出どころはロゴ。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
 <style>
-:root{ --bg:#1d0a2c; --deep:#2a0e3e; --pu:#654087; --li:#bb7eea; --pale:#e9dcf5; --wh:#fbf8ff; --R:min(34vh,30vw,300px); }
+:root{ --bg:#1d0a2c; --deep:#2a0e3e; --pu:#654087; --li:#bb7eea; --pale:#e9dcf5; --wh:#fbf8ff; --ac:#d7ff3a; --R:min(72vh,52vw); }
+.h{font-family:"Dela Gothic One",sans-serif; font-weight:400}
 *{box-sizing:border-box; margin:0; padding:0}
 html,body{height:100%; overflow:hidden}
 body{background:var(--bg); color:var(--wh); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9; user-select:none}
@@ -23,35 +24,53 @@ header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
 header{transition:color .3s .3s} body.open header{color:var(--deep)} body.open header small{color:var(--pu)}
 
 /* ダイヤル：中心は画面の左寄り */
-.dial{position:fixed; left:30%; top:52%; width:0; height:0; z-index:2}
+.dial{position:fixed; left:calc(var(--R) * -.32); top:50%; width:0; height:0; z-index:2}
 .ring{position:absolute; left:calc(var(--R) * -1); top:calc(var(--R) * -1); width:calc(var(--R) * 2); height:calc(var(--R) * 2); border-radius:50%;
   border:calc(var(--R) * .16) solid var(--pu); box-shadow:inset 0 0 0 calc(var(--R) * .05) var(--li), 0 0 0 1px rgba(187,126,234,.25);
-  cursor:grab; touch-action:none; transition:transform .7s cubic-bezier(.7,0,.2,1), background .5s, border-color .5s}
+  cursor:grab; touch-action:none; transition:transform .5s cubic-bezier(.8,0,.1,1), background .3s, border-color .3s}
 .ring:active{cursor:grabbing}
 .rot{position:absolute; left:0; top:0; width:0; height:0}
 .tick{position:absolute; left:0; top:0; width:calc(var(--R) * .05); height:2px; background:var(--li); opacity:.45; transform-origin:0 50%}
 .tick.big{width:calc(var(--R) * .1); opacity:.9}
+.rot.flash .tick{background:var(--ac); opacity:1; transition:none}
+.tick{transition:background .25s, opacity .25s}
 .lab{position:absolute; left:0; top:0; width:0; height:0}
 .lab button{position:absolute; transform:translate(0,-50%); white-space:nowrap; padding:.2em .4em; font-size:clamp(15px,2vh,20px); color:var(--li); transition:color .2s, font-size .2s; pointer-events:auto}
 .lab button small{display:block; font-size:.55em; letter-spacing:.25em; opacity:.7}
-.lab.on button{color:var(--wh); font-size:clamp(20px,3vh,30px)}
+.lab.on button{opacity:0 !important}
 /* 右の指し示し */
-.needle{position:absolute; left:calc(var(--R) * 1.02); top:-1px; width:calc(var(--R) * .14); height:2px; background:var(--wh)}
-.needle::after{content:""; position:absolute; right:-5px; top:-4px; width:10px; height:10px; border-radius:50%; background:var(--wh)}
-/* 中心：選んでいる節の短い文 */
-.hub{position:absolute; left:calc(var(--R) * -.7); top:calc(var(--R) * -.5); width:calc(var(--R) * 1.4); height:calc(var(--R) * 1); display:grid; place-content:center; text-align:center; pointer-events:none}
-.hub b{font-size:clamp(11px,1.4vh,13px); letter-spacing:.3em; color:var(--li); font-weight:400}
-.hub p{font-size:clamp(13px,1.8vh,16px); line-height:1.7; margin-top:.4em}
-.hub .go{margin-top:.8em; font-size:12px; letter-spacing:.2em; color:var(--li)}
+.needle{position:absolute; left:calc(var(--R) * .9); top:-2px; width:calc(var(--R) * .2); height:4px; background:var(--ac)}
+.needle::after{content:""; position:absolute; right:-7px; top:-5px; width:14px; height:14px; border-radius:50%; background:var(--ac)}
+/* 針の先：選んだ節の名前を極太で巨大に */
+.big{position:fixed; left:calc(var(--R) * .86 + 24px); right:clamp(16px,4vw,48px); top:50%; transform:translateY(-50%); z-index:3; pointer-events:none}
+.big b{display:block; font-size:12px; letter-spacing:.35em; color:var(--ac); font-weight:400}
+.big h2{font-size:clamp(40px,min(9vw,15vh),150px); line-height:1.05; margin:.12em 0 .18em; white-space:nowrap; letter-spacing:-.01em}
+.big h2::after{content:""; display:block; width:1.6em; height:.12em; background:var(--ac); margin-top:.18em}
+.big p{font-size:clamp(13px,1.2vw,16px); color:var(--pale); max-width:32em; line-height:1.8}
+.big .go{display:inline-block; margin-top:1.2em; font-size:12px; letter-spacing:.3em; color:var(--li)}
+.big.glitch h2{animation:glitch .22s steps(3)}
+.big.glitch p,.big.glitch b{animation:fadein .3s}
+@keyframes glitch{0%{transform:translateX(18px) skewX(-8deg); opacity:.2} 34%{transform:translateX(-10px) skewX(6deg); opacity:1; color:var(--ac)} 67%{transform:translateX(4px)} 100%{transform:none}}
+@keyframes fadein{from{opacity:0}}
+/* 手応え：止まると輪が跳ね、針の先から火花。開くと画面が光って揺れる */
+.ring.kick{animation:kick .18s cubic-bezier(.3,1.8,.5,1)}
+@keyframes kick{50%{scale:1.025}}
+.spark{position:fixed; z-index:3; width:6px; height:6px; background:var(--ac); pointer-events:none; animation:spark .45s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) rotate(180deg) scale(.2); opacity:0}}
+.flash{position:fixed; inset:0; z-index:7; background:var(--wh); opacity:0; pointer-events:none}
+.flash.go{animation:fl .32s ease-out}
+@keyframes fl{0%{opacity:.75} 100%{opacity:0}}
+body.shake{animation:shake .22s steps(4)}
+@keyframes shake{25%{transform:translate(6px,-4px)} 50%{transform:translate(-5px,3px)} 75%{transform:translate(3px,2px)}}
 
-/* 右：見出し */
-.hero{position:fixed; right:clamp(16px,5vw,72px); top:50%; transform:translateY(-50%); z-index:1; width:min(32vw,460px); transition:opacity .4s}
-.hero h1{font-size:clamp(20px,2.6vw,36px); line-height:1.5}
-.hero p{margin-top:1em; font-size:clamp(12px,1.1vw,15px); color:var(--li)}
+/* 右下：見出し */
+.hero{position:fixed; right:clamp(16px,4vw,48px); bottom:clamp(40px,7vh,64px); z-index:1; text-align:right; transition:opacity .4s}
+.hero h1{font-size:clamp(14px,1.3vw,18px); line-height:1.6}
+.hero p{margin-top:.4em; font-size:12px; color:var(--li)}
 
 /* 開く：輪が広がって画面を覆う */
 body.open .ring{transform:scale(var(--cover)); background:var(--pale); border-color:var(--pale); box-shadow:none; cursor:default}
-body.open .lab,body.open .tick,body.open .needle,body.open .hub,body.open .hero{opacity:0; pointer-events:none; transition:opacity .2s}
+body.open .lab,body.open .tick,body.open .needle,body.open .big,body.open .hero{opacity:0; pointer-events:none; transition:opacity .2s}
 .page{position:fixed; inset:0; z-index:4; overflow:auto; color:var(--deep); opacity:0; pointer-events:none; transition:opacity .35s .35s}
 body.open .page{opacity:1; pointer-events:auto}
 .page .in{width:min(100% - 32px,780px); margin:0 auto; padding:clamp(80px,12vh,120px) 0 60px; user-select:text}
@@ -74,9 +93,11 @@ footer a{color:inherit}
 body.open footer,body.open .keys{opacity:0; pointer-events:none}
 
 @media (max-width:760px){
-  :root{ --R:min(30vw,26vh,200px) }
-  .dial{left:42%; top:60%}
-  .hero{top:84px; transform:none; left:16px; right:16px; width:auto}
+  :root{ --R:min(70vw,44vh) }
+  .dial{left:calc(var(--R) * -.45); top:62%}
+  .big{left:16px; right:16px; top:84px; transform:none}
+  .big h2{font-size:clamp(34px,11vw,56px)}
+  .hero{display:none}
   .keys{display:none}
 }
 @media (prefers-reduced-motion:reduce){ .ring,.page{transition:none} }
@@ -93,9 +114,10 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   <div class="ring" id="ring" aria-hidden="true"></div>
   <div class="rot" id="rot"></div>
   <div class="needle" aria-hidden="true"></div>
-  <div class="hub" aria-live="polite"><b id="hk"></b><p id="hp"></p><span class="go">CLICK / ENTER</span></div>
 </div>
+<div class="big" id="big" aria-live="polite"><b id="hk"></b><h2 class="h" id="hn"></h2><p id="hp"></p><span class="go">CLICK / ENTER</span></div>
 
+<div class="flash" id="flash" aria-hidden="true"></div>
 <section class="page" id="page" aria-live="polite"><button class="back" id="back" type="button">← もどる</button><div class="in" id="in"></div></section>
 
 <div class="keys" aria-hidden="true">WHEEL / DRAG / ↑↓ まわす　ENTER ひらく　ESC もどる</div>
@@ -144,7 +166,7 @@ function build(){
   });
 }
 /* 角度 ang（度、右が 0、時計回り）で並べる。名前は傾けない */
-var ang = 0, vel = 0, target = 0, sel = 0;
+var ang = 0, vel = 0, target = 0, sel = 0, shown = -1, moving = false;
 function draw(){
   [].forEach.call(rot.children, function(el){
     var a = (+el.dataset.a + ang) * Math.PI / 180;
@@ -167,8 +189,11 @@ function go(i){
 function pick(i){
   sel = (i % N + N) % N;
   labs.forEach(function(l, k){ l.classList.toggle('on', k === sel); });
+  if (shown === sel) return; shown = sel;
   document.getElementById('hk').textContent = PAGES[sel].e;
+  document.getElementById('hn').textContent = PAGES[sel].n;
   document.getElementById('hp').textContent = PAGES[sel].s;
+  var bg = document.getElementById('big'); bg.classList.remove('glitch'); void bg.offsetWidth; bg.classList.add('glitch');
 }
 function step(d){ target -= d * STEP; pick(Math.round(-target / STEP)); }
 
@@ -178,11 +203,26 @@ function tick(now){
   var dt = Math.min(.04, (now - last) / 1000); last = now;
   if (!drag){
     if (RM){ ang = target; vel = 0; }
-    else { vel += ((target - ang) * 220 - vel * 18) * dt; ang += vel * dt; }
+    else { vel += ((target - ang) * 520 - vel * 30) * dt; ang += vel * dt; }
+    /* 止まった瞬間に目盛りが光る */
+    var still = Math.abs(target - ang) < .3 && Math.abs(vel) < 4;
+    if (moving && still){ rot.classList.add('flash'); setTimeout(function(){ rot.classList.remove('flash'); }, 120); kick(); }
+    moving = !still;
   }
   draw(); requestAnimationFrame(tick);
 }
 
+function kick(){
+  ring.classList.remove('kick'); void ring.offsetWidth; ring.classList.add('kick');
+  var n = document.querySelector('.needle').getBoundingClientRect(), x = n.right, y = n.top + n.height / 2;
+  for (var k = 0; k < 12; k++){
+    var sp = document.createElement('i'); sp.className = 'spark';
+    var a = (Math.random() - .5) * Math.PI * 1.2, d = 40 + Math.random() * 70;
+    sp.style.left = x + 'px'; sp.style.top = y + 'px';
+    sp.style.setProperty('--dx', Math.cos(a) * d + 'px'); sp.style.setProperty('--dy', Math.sin(a) * d + 'px');
+    document.body.appendChild(sp); setTimeout(function(e){ e.remove(); }, 500, sp);
+  }
+}
 /* ホイール・ドラッグ・キー */
 var acc = 0, lastW = 0;
 addEventListener('wheel', function(e){
@@ -218,6 +258,10 @@ function open(){
   document.getElementById('in').innerHTML = '<span class="k">' + p.e + '</span>' + p.html;
   document.getElementById('page').scrollTop = 0;
   document.body.classList.add('open');
+  if (!RM){
+    var f = document.getElementById('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+    document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake');
+  }
 }
 function close(){ document.body.classList.remove('open'); }
 document.getElementById('back').addEventListener('click', close);
