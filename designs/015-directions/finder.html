@@ -64,7 +64,7 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 /* 背景：余白を埋める主役。大きな色面の構図が、数秒おきにカチッと組み変わる */
 /* 背景の景色：大きな面とロゴの輪。ふだんはピンぼけ。ピント枠の中だけ、くっきりした同じ景色が見える */
 #bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
-#bg .scene{position:absolute; inset:0; transform:var(--cam,none); transform-origin:50% 50%; transition:transform .8s cubic-bezier(.45,0,.2,1)}   /* 選んだ節ごとの構図（カメラ） */
+#bg .scene{position:absolute; inset:0}
 /* ピント枠の中：同じ景色を 2 倍に拡大して見せる。拡大したときだけ細部（輪の刻み・細い線）が見える */
 #bg .zoom{position:absolute; inset:0; clip-path:inset(var(--ct) var(--cr) var(--cb) var(--cl)); transition:clip-path .45s cubic-bezier(.2,.8,.2,1)}
 /* 拡大は、カーソルが枠に乗っているあいだ（ピントが合ったとき）だけ */
@@ -92,6 +92,9 @@ body.af #bg .zoom .det{display:block}
 body.af #bg .af{--c:#d7ff3a}
 body.af #bg .af{animation:lock .18s ease-out}
 @keyframes lock{0%{scale:1.06} 100%{scale:1}}
+
+/* 画面ごと動くカメラ：背景・メニュー・見出しを一つの入れ物に入れて、節を開くと左を軸に引いて傾く。節ごとに傾きと上下が変わる */
+#world{position:fixed; inset:0; z-index:1; transform:var(--wcam,none); transform-origin:0% 50%; transition:transform .8s cubic-bezier(.45,0,.2,1)}
 
 /* シャッター：上下の幕が一瞬閉じて開き、白く光る */
 .shut{position:fixed; left:0; right:0; z-index:12; height:0; background:#0b0410; pointer-events:none}
@@ -226,7 +229,6 @@ var mx = -100, my = -100, x = -100, y = -100, sel = -1, snapped = -1, opened = f
 /* 選ぶ：輪が文字を囲む */
 function pick(i){
   sel = (i + btns.length) % btns.length;
-  if (window.__cam) window.__cam(sel);   /* 選ぶと、背景の構図が動く */
   btns.forEach(function(b, k){ b.classList.toggle('on', k === sel); });
 }
 function snapTo(i){ snapped = i; cur.classList.toggle('snap', i >= 0); if (i >= 0) pick(i); }
@@ -292,8 +294,9 @@ function open(i){
   wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0;
   if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
   opened = true; document.body.classList.add('open');
+  if (window.__wcam) window.__wcam(i);
 }
-function close(){ opened = false; document.body.classList.remove('open'); }
+function close(){ opened = false; document.body.classList.remove('open'); if (window.__wcam) window.__wcam(-1); }
 
 btns.forEach(function(b, i){
   b.addEventListener('click', function(e){ if (e.detail) bump(b, e.clientX, e.clientY); else bump(b); open(i); });
@@ -348,30 +351,14 @@ document.getElementById('logo').addEventListener('click', function(){
     zoom.style.setProperty('--ox', (p.x + S / 2) + 'px'); zoom.style.setProperty('--oy', (p.y + S / 2) + 'px');
   }
   layout(); addEventListener('resize', layout);
-  /* 選んだ節ごとの構図：[見せたい点 x, y（窓に対する割合）, それを置く位置 x, y, 倍率, 回転] */
-  var CAM = [
-    [.70, .46, .66, .42, 1.5, 0],     /* 企業理念：輪に寄る */
-    [.62, .45, .64, .48, .85, -3],    /* 事業内容：引いて全体 */
-    [.71, .20, .68, .36, 1.15, 2],    /* サービス：上の面へ */
-    [.61, .83, .66, .62, 1.3, -2],    /* 会社概要：下の面へ */
-    [.70, .46, .62, .50, 1.8, 6]      /* お問い合わせ：輪にぐっと寄る */
-  ], cam = -1;
-  window.__cam = function(i){
-    if (i === cam) return; cam = i;
-    var W = innerWidth, H = innerHeight, c = CAM[i];
-    if (!c){ bgEl.style.setProperty('--cam', 'none'); return; }
-    /* 中心まわりに倍率 s をかけたとき、点 p が q に来るように動かす */
-    var s = c[4], tx = c[2] * W - W / 2 - s * (c[0] * W - W / 2), ty = c[3] * H - H / 2 - s * (c[1] * H - H / 2);
-    bgEl.style.setProperty('--cam', 'translate(' + tx + 'px,' + ty + 'px) scale(' + s + ') rotate(' + c[5] + 'deg)');
-  };
-  addEventListener('resize', function(){ var k = cam; cam = -2; window.__cam(k); });
   /* カーソルがピント枠の中にいるか */
-  window.__onTarget = function(x, y){ var p = SL[slot]; var on = x >= p.x && x <= p.x + S && y >= p.y && y <= p.y + S; document.body.classList.toggle('af', on); return on; };
+  /* 板を開いているあいだ（画面ごと引いている）は撮らない */
+  window.__onTarget = function(x, y){ if (document.body.classList.contains('open')){ document.body.classList.remove('af'); return false; } var p = SL[slot]; var on = x >= p.x && x <= p.x + S && y >= p.y && y <= p.y + S; document.body.classList.toggle('af', on); return on; };
   /* 撮る：幕・光・一枚が飛ぶ・手ぶれ。枠は次の場所へ（撮った所から遠いほうの向き） */
   var busy = false;
   window.__shoot = function(x, y){
     var p = SL[slot];
-    if (!(x >= p.x && x <= p.x + S && y >= p.y && y <= p.y + S) || busy) return false;
+    if (document.body.classList.contains('open') || !(x >= p.x && x <= p.x + S && y >= p.y && y <= p.y + S) || busy) return false;
     busy = true; setTimeout(function(){ busy = false; }, 450);
     if (!RM){
       document.querySelectorAll('.shut').forEach(function(e){ e.classList.remove('go'); void e.offsetWidth; e.classList.add('go'); });
@@ -384,6 +371,21 @@ document.getElementById('logo').addEventListener('click', function(){
     slot = next;
     setTimeout(put, RM ? 0 : 220);
     return true;
+  };
+})();
+
+/* 画面ごと動くカメラ */
+(function(){
+  var w = document.createElement('div'); w.id = 'world';
+  ['bg'].forEach(function(id){ w.appendChild(document.getElementById(id)); });
+  w.appendChild(document.querySelector('.hero')); w.appendChild(document.querySelector('.menu'));
+  document.body.insertBefore(w, document.body.firstChild);
+  /* 節ごとの [上下（vh）, 傾き（度）] */
+  var WC = [[-4, -2], [3, 1.5], [-2, -1], [4, 2], [0, -2.5]];
+  window.__wcam = function(i){
+    if (i < 0 || RM){ document.documentElement.style.setProperty('--wcam', 'none'); return; }
+    var c = WC[i];
+    document.documentElement.style.setProperty('--wcam', 'translate(-1vw,' + c[0] + 'vh) scale(.84) rotate(' + c[1] + 'deg)');
   };
 })();
 
