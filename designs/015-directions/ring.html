@@ -30,8 +30,6 @@ header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
 .menu button small{display:block; font-family:"Zen Kaku Gothic New",sans-serif; font-size:max(11px,.17em); letter-spacing:.35em; color:var(--pu); margin-top:.15em; transition:color .12s}
 .menu button.on{color:var(--wh)}
 .menu button.on small{color:var(--ac)}
-/* 開いている節：名前の左に小さな輪（ロゴの形） */
-.menu button.opened::before{content:""; position:absolute; left:-.5em; top:.52em; width:.32em; height:.32em; border-radius:50%; border:.07em solid var(--li); box-shadow:inset 0 0 0 .03em var(--wh)}
 /* 選んだ文字の下に、左から伸びる線 */
 
 
@@ -72,6 +70,7 @@ body.open .page{transform:none}
 .page .wrap{padding:clamp(72px,11vh,110px) clamp(24px,4vw,64px) 60px}
 .page .back{position:sticky; float:right; top:20px; margin:20px clamp(16px,3vw,40px) 0 0; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
 .page .back:hover{color:var(--wh)}
+.page .ph{position:sticky; top:0; z-index:1; background:var(--deep); padding:18px 0 4px; margin-top:-18px; box-shadow:0 14px 14px -10px var(--deep)}
 .page .k{font-size:12px; letter-spacing:.35em; color:var(--li)}
 .page h2{font-size:clamp(24px,2.8vw,38px); line-height:1.3; margin:.2em 0 1em}
 .page h2::after{content:""; display:block; width:1.6em; height:.1em; background:var(--li); margin-top:.3em}
@@ -189,12 +188,13 @@ function frame(){
 /* 開く：右から板。開いたまま別の項目を押すと、中身だけ入れ替わる */
 function open(i){
   pick(i);
-  wrap.innerHTML = '<span class="k">' + PAGES[i].e + '</span>' + PAGES[i].html; page.scrollTop = 0;
+  /* 見出し（英字と題）は板の上に残る */
+  var h = PAGES[i].html, cut = h.indexOf('</h2>') + 5;
+  wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0;
   if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
   opened = true; document.body.classList.add('open');
-  btns.forEach(function(b, k){ b.classList.toggle('opened', k === i); });
 }
-function close(){ opened = false; document.body.classList.remove('open'); btns.forEach(function(b){ b.classList.remove('opened'); }); }
+function close(){ opened = false; document.body.classList.remove('open'); }
 
 btns.forEach(function(b, i){
   b.addEventListener('click', function(){ open(i); });
