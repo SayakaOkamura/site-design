@@ -53,8 +53,8 @@ button{font:inherit}
 .door:hover{background:var(--M)}
 
 /* 左：商品棚（二段）。同じ品を三つ並べる。箱は 10×12 ドット */
-.shelf{box-shadow:inset var(--p) var(--p) 0 var(--D); position:absolute; right:4%; bottom:16%; border:calc(var(--p)*2) solid var(--W); border-bottom:0; background:var(--D); display:grid}
-.tier{box-shadow:inset 0 calc(var(--p)*-1) 0 var(--D); border-bottom:calc(var(--p)*2) solid var(--W); display:flex; gap:calc(var(--p)*6); align-items:flex-end; padding:calc(var(--p)*6) calc(var(--p)*4) 0}
+.shelf{box-shadow:inset var(--p) var(--p) 0 var(--D); position:absolute; left:4%; right:4%; bottom:16%; border:calc(var(--p)*2) solid var(--W); border-bottom:0; background:var(--D); display:grid}
+.tier{box-shadow:inset 0 calc(var(--p)*-1) 0 var(--D); border-bottom:calc(var(--p)*2) solid var(--W); display:flex; justify-content:space-evenly; align-items:flex-end; padding:calc(var(--p)*6) calc(var(--p)*2) 0}
 .grp{position:relative; width:calc(var(--p)*31); height:calc(var(--p)*12); background:none; border:0; padding:0; cursor:pointer}
 .panel:not(.here) .grp,.panel:not(.here) .poster{pointer-events:none}
 .grp .box{position:absolute; bottom:0; width:calc(var(--p)*10); height:calc(var(--p)*12); padding:calc(var(--p)*3) 0 0}
@@ -79,7 +79,7 @@ button{font:inherit}
 .box.c1{--bc:var(--L)} .box.c2{--bc:var(--S)} .box.c3{--bc:var(--M); --bt:var(--L)}
 
 /* 右：貼り紙と看板（傾けずに重ねる） */
-.wall{position:absolute; left:4%; top:6%; width:calc(var(--p)*95); height:calc(var(--p)*48)}
+.wall{position:absolute; left:4%; right:4%; top:6%; height:calc(var(--p)*48)}
 .poster{position:absolute; background:none; border:0; padding:0; cursor:pointer; color:var(--D); text-align:center; transition:translate .1s steps(2)}
 .poster:hover{translate:0 calc(var(--p)*-1); z-index:4}
 .pp{outline:0; position:relative; border:var(--p) solid var(--D); box-shadow:var(--p) var(--p) 0 var(--D); padding:calc(var(--p)*2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--p); line-height:1.4; width:100%; height:100%}
@@ -143,17 +143,26 @@ button{font:inherit}
 body.outside .ask{opacity:0; pointer-events:none}
 
 /* ===== 店の外（入口・出口） ===== */
-.front{position:fixed; inset:0; z-index:10; display:grid; place-items:center; transition:opacity .4s steps(4)}
+.front{position:fixed; inset:0; z-index:10; display:grid; justify-items:center; align-content:end; transition:opacity .4s steps(4)}
 .front[hidden]{display:none}
 .front.fade{opacity:0; pointer-events:none}
-.facade{position:relative; width:calc(var(--p)*65); height:calc(var(--p)*60); display:grid; justify-items:center; align-content:end}
+.facade{position:relative; width:calc(100vw - var(--p)*36); max-width:calc(var(--p)*150); height:calc(100vh - var(--p)*14); margin-bottom:calc(var(--p)*6); display:grid; justify-items:center; align-content:end}
 .facade .roof{box-shadow:0 var(--p) 0 var(--D); position:absolute; top:0; left:calc(var(--p)*-4); right:calc(var(--p)*-4); height:calc(var(--p)*9); border:var(--p) solid var(--D);
   background:repeating-linear-gradient(90deg,var(--A) 0 calc(var(--p)*5),var(--S) calc(var(--p)*5) calc(var(--p)*10))}
 .facade .board{position:absolute; top:calc(var(--p)*12); left:50%; transform:translateX(-50%); padding:var(--p) calc(var(--p)*2); border:var(--p) solid var(--D); background:var(--D); color:var(--A); letter-spacing:.15em; white-space:nowrap; z-index:1}
 .facade .wallf{background:repeating-linear-gradient(var(--W) 0 calc(var(--p)*4),var(--D) calc(var(--p)*4) calc(var(--p)*5)) !important; position:absolute; top:calc(var(--p)*9); left:0; right:0; bottom:0; background:var(--W); border:var(--p) solid var(--D); border-top:0}
 .facade .win{position:absolute; bottom:calc(var(--p)*7); width:calc(var(--p)*14); height:calc(var(--p)*14); background:var(--D); border:var(--p) solid var(--S)}
 .facade .win::after{content:""; position:absolute; left:calc(50% - var(--p)/2); top:0; bottom:0; width:var(--p); background:var(--S)}
-.facade .win.l{left:calc(var(--p)*5)} .facade .win.r{right:calc(var(--p)*5)}
+.facade .win.l{left:calc(25% - var(--p)*10)} .facade .win.r{right:calc(25% - var(--p)*10)}
+/* 駅の案内板と郵便受け（公式のアクセスとお問い合わせ） */
+.stn{position:absolute; left:calc(var(--p)*3); bottom:calc(var(--p)*6); width:calc(var(--p)*14); display:grid; justify-items:center}
+.stn b{font-weight:400; display:block; width:100%; background:var(--L); color:var(--D); border:var(--p) solid var(--D); box-shadow:var(--p) var(--p) 0 var(--D); text-align:center; line-height:1.4; padding:var(--p) 0}
+.stn i{display:block; width:var(--p); height:calc(var(--p)*16); background:var(--D)}
+.post{position:absolute; right:calc(var(--p)*4); bottom:calc(var(--p)*6); width:calc(var(--p)*10); display:grid; justify-items:center; text-decoration:none}
+.post b{display:block; width:100%; height:calc(var(--p)*12); background:var(--A); border:var(--p) solid var(--D); box-shadow:inset calc(var(--p)*-1) 0 0 var(--D); position:relative}
+.post b::before{content:""; position:absolute; left:calc(var(--p)*2); right:calc(var(--p)*2); top:calc(var(--p)*3); height:var(--p); background:var(--D)}
+.post i{display:block; width:calc(var(--p)*2); height:calc(var(--p)*8); background:var(--D)}
+.post:hover b{background:var(--S)}
 .fdoor{position:relative; z-index:1; width:calc(var(--p)*16); height:calc(var(--p)*30); background:var(--D); border:var(--p) solid var(--D); border-bottom:0; cursor:pointer; padding:0}
 .fdoor .leaf{position:absolute; inset:0; background:var(--M); box-shadow:inset calc(var(--p)*-1) 0 0 var(--D); transform-origin:left center; transition:transform .5s steps(5)}
 .fdoor .leaf::before{content:""; position:absolute; left:calc(var(--p)*3); right:calc(var(--p)*3); top:calc(var(--p)*3); height:calc(var(--p)*7); background:var(--D)}
@@ -165,7 +174,7 @@ body.outside .ask{opacity:0; pointer-events:none}
 .hint{position:absolute; left:50%; bottom:calc(100% + var(--p)); transform:translateX(-50%); color:var(--A); animation:bob .8s steps(2) infinite}
 .bell{position:absolute; left:62%; top:30%; color:var(--L); display:none; animation:pop .2s steps(3); white-space:nowrap; z-index:2}
 .bell.show{display:block}
-.ground{position:fixed; left:0; right:0; bottom:0; height:calc(50% - var(--p)*30); background:var(--D); border-top:var(--p) solid var(--W)}
+.ground{position:fixed; left:0; right:0; bottom:0; height:calc(var(--p)*6); background:var(--D); border-top:var(--p) solid var(--W)}
 
 /* 出口の外：フッターの役 */
 .bye{position:relative; z-index:1; width:min(92vw,560px); margin-top:calc(var(--p)*3); text-align:center}
@@ -176,6 +185,7 @@ body.outside .ask{opacity:0; pointer-events:none}
 .bye a.main{background:var(--A); border-color:var(--A); color:var(--D)}
 .bye a:hover,.bye button:hover{background:var(--M)}
 #exitF{align-content:center; overflow:auto; padding:24px 16px}
+#exitF .facade{margin-bottom:0}
 #exitF .facade{width:calc(var(--p)*40); height:calc(var(--p)*38)}
 #exitF .facade .win{width:calc(var(--p)*8); height:calc(var(--p)*8); bottom:calc(var(--p)*5)}
 #exitF .facade .win.l{left:calc(var(--p)*3)} #exitF .facade .win.r{right:calc(var(--p)*3)}
@@ -242,6 +252,8 @@ body.outside .ask{opacity:0; pointer-events:none}
     <button class="fdoor" id="fdoor" aria-label="店に入る"><span class="hint">▼</span><span class="leaf"></span><span class="tag">OPEN</span></button>
     <div class="bell" id="bell">カラン、コロン</div>
   </div>
+  <div class="stn" aria-hidden="true"><b>御成門駅<br>徒歩2分</b><i></i></div>
+  <a class="post" href="mailto:contact@alt-dsgn.co.jp" aria-label="お問い合わせ（メール）" title="お問い合わせ"><b></b><i></i></a>
 </div>
 
 <!-- 出口：フッターの役 -->
@@ -422,14 +434,14 @@ function posterOf(it){
 const dot = n => 'calc(var(--p)*' + n + ')';
 SCRAPS.forEach(([l,t,w,h,c,m])=>{
   const d = document.createElement('div'); d.className = 'scrap ' + m;
-  Object.assign(d.style, {left:dot(l), top:dot(t), width:dot(w), height:dot(h)});
+  Object.assign(d.style, {left:(l / 95 * 100) + '%', top:dot(t), width:dot(w), height:dot(h)});
   d.style.setProperty('--bg', `var(--${c})`);
   $('wall').append(d);
 });
 POSTERS.forEach(it=>{
   const p = posterOf(it); p.setAttribute('role','button'); p.setAttribute('aria-label', it.name);
   const [l,t,w,h] = it.pos;
-  Object.assign(p.style, {left:dot(l), top:dot(t), width:dot(w), height:dot(h)});
+  Object.assign(p.style, {left:(l / 95 * 100) + '%', top:dot(t), width:dot(w), height:dot(h)});
   p.onclick = e=>{ e.stopPropagation(); show(it.id); };
   $('wall').append(p);
 });
@@ -438,7 +450,7 @@ POSTERS.forEach(it=>{
 let view = 1;
 function look(v){
   view = Math.max(0, Math.min(2, v));
-  $('strip').style.transform = `translateX(${-76*view}vw)`;
+  $('strip').style.transform = `translateX(${[-12, -76, -140][view]}vw)`;   /* 端では帯の外を見せない */
   document.querySelectorAll('.panel').forEach(p=>{ const here = +p.dataset.v === view; p.classList.toggle('here', here); p.classList.toggle('side', !here); });
   $('tl').hidden = view === 0; $('tr').hidden = view === 2;
   $('moya').classList.toggle('show', view === 1);
