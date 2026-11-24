@@ -59,16 +59,34 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 @keyframes spin{to{--rot:360deg}}
 
 /* 背景：余白を埋める主役。大きな色面の構図が、数秒おきにカチッと組み変わる */
-/* 背景：ロゴの輪を大きな照準に。十字の線は画面の端まで（メニューの側には入れない）。撃つと弾き飛ばされて、別の位置にカチッと収まる */
-#bg{position:fixed; top:0; bottom:0; right:0; left:34%; z-index:0; pointer-events:none; overflow:hidden}
-#bg .ret{position:absolute; left:0; top:0; width:0; height:0; transform:translate(var(--sx),var(--sy)); transition:transform .42s cubic-bezier(.15,.9,.2,1)}
-#bg .ret .rg{position:absolute; border-radius:50%; border:solid #3a1b58; transition:border-color .15s}
-#bg .ret .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:2px solid rgba(187,126,234,.22)}
-#bg .ret .hx{position:absolute; left:-300vw; width:600vw; top:-1px; height:2px; background:rgba(187,126,234,.2)}
-#bg .ret .vy{position:absolute; top:-300vh; height:600vh; left:-1px; width:2px; background:rgba(187,126,234,.2)}
-/* 内側の目盛り（上下左右） */
+/* 背景：ロゴの輪の照準。十字の線は画面を貫通する（メニューの後ろも）。照準本体は画面の中の決まった 6 か所に置く
+   撃つと、撃った向きにある場所へ速く跳ぶ。当たった瞬間にヒットマーク・火花・光・押し・連続の数 */
+#bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+#bg .ret{position:absolute; left:0; top:0; width:0; height:0; transform:translate(var(--sx),var(--sy)); transition:transform .2s cubic-bezier(.2,1.5,.4,1)}
+#bg .ret .core{position:absolute; left:0; top:0; width:0; height:0}
+#bg .ret .rg{position:absolute; border-radius:50%; border:solid #3a1b58; transition:border-color .25s}
+#bg .ret .rg::after{content:""; position:absolute; inset:18%; border-radius:50%; border:2px solid rgba(187,126,234,.22); transition:border-color .25s}
+#bg .ret .hx{position:absolute; left:-300vw; width:600vw; top:-1px; height:2px; background:rgba(187,126,234,.16); transition:background .25s}
+#bg .ret .vy{position:absolute; top:-300vh; height:600vh; left:-1px; width:2px; background:rgba(187,126,234,.16); transition:background .25s}
 #bg .ret .tk{position:absolute; background:rgba(187,126,234,.45)}
-#bg .ret.hit .rg{border-color:#5a2f84}
+/* 当たった瞬間：黄緑に光って、ぐっと跳ねる */
+#bg .ret.hit .rg{border-color:#d7ff3a; transition:none}
+#bg .ret.hit .rg::after{border-color:rgba(215,255,58,.7); transition:none}
+#bg .ret.hit .hx,#bg .ret.hit .vy{background:rgba(215,255,58,.55); transition:none}
+#bg .ret.pop .core{animation:pop2 .28s cubic-bezier(.2,1.8,.4,1)}
+@keyframes pop2{0%{transform:scale(1.18)} 100%{transform:scale(1)}}
+/* ヒットマーク（×）・火花・連続の数 */
+.hm{position:fixed; z-index:9; width:34px; height:34px; margin:-17px 0 0 -17px; pointer-events:none; animation:hm .32s ease-out forwards}
+.hm::before,.hm::after{content:""; position:absolute; left:50%; top:50%; width:34px; height:3px; margin:-1.5px 0 0 -17px; background:linear-gradient(90deg,#fbf8ff 0 11px,transparent 11px 23px,#fbf8ff 23px)}
+.hm::before{transform:rotate(45deg)} .hm::after{transform:rotate(-45deg)}
+@keyframes hm{0%{transform:scale(1.5); opacity:1} 60%{transform:scale(1); opacity:1} 100%{transform:scale(1); opacity:0}}
+.sp{position:fixed; z-index:9; width:16px; height:3px; margin:-1.5px 0 0 0; background:#d7ff3a; pointer-events:none; transform-origin:0 50%; animation:sp .3s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes sp{from{transform:rotate(var(--a)) translateX(0) scaleX(1); opacity:1} to{transform:rotate(var(--a)) translateX(var(--d)) scaleX(.2); opacity:0}}
+.cb{position:fixed; z-index:9; font-family:"Dela Gothic One",sans-serif; font-size:26px; color:#d7ff3a; pointer-events:none; animation:cb .6s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes cb{0%{transform:translate(-50%,-50%) scale(.4); opacity:0} 25%{transform:translate(-50%,-90%) scale(1.15); opacity:1} 100%{transform:translate(-50%,-140%) scale(1); opacity:0}}
+/* 画面が撃った向きへ一瞬だけ押される */
+body.kick #bg{animation:kick .14s ease-out}
+@keyframes kick{40%{transform:translate(var(--kx),var(--ky))}}
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
 .menu button.bump{animation:bump .32s cubic-bezier(.3,1.6,.5,1)}
 @keyframes bump{35%{transform:translate(var(--bx,6px),var(--by,0px))}}
@@ -271,38 +289,51 @@ document.getElementById('logo').addEventListener('click', function(){
   if (taps.length >= 5){ taps = []; cur.classList.remove('joy'); void cur.offsetWidth; cur.classList.add('joy'); setTimeout(function(){ cur.classList.remove('joy'); }, 1600); }
 });
 
-/* 背景：照準。撃つ（押す）と、当たった所から離れる向きへ弾き飛ばされる */
+/* 背景：照準。決まった 6 か所（3 列×2 段）のどこかにいる。撃つと、撃った向きにある場所へ跳ぶ */
 (function(){
   var bgEl = document.getElementById('bg');
   var ret = document.createElement('div'); ret.className = 'ret';
-  ret.innerHTML = '<i class="hx"></i><i class="vy"></i><i class="rg"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i>';
+  ret.innerHTML = '<i class="hx"></i><i class="vy"></i><div class="core"><i class="rg"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></div>';
   bgEl.appendChild(ret);
-  var o = { fx:.5, fy:.42, R:0 };   /* 中心の位置（背景の枠に対する割合） */
-  function box(){ return bgEl.getBoundingClientRect(); }
+  var R = 0, slot = 1, SL = [], combo = 0, lastHit = 0;
+  function slots(){
+    /* 照準が画面に収まり、メニュー（左）とは重ならない位置 */
+    var W = innerWidth, H = innerHeight, x0 = Math.max(W * .46, 420 + R), x1 = W - R - 24, y0 = R + 24, y1 = H - R - 24;
+    SL = [];
+    for (var row = 0; row < 2; row++) for (var col = 0; col < 3; col++) SL.push({ x:x0 + (x1 - x0) * col / 2, y:y0 + (y1 - y0) * row });
+  }
   function size(){
-    var b = box(); o.R = Math.min(b.width, b.height) * .3;
-    var rg = ret.querySelector('.rg'), bw = o.R * .26;
-    rg.style.left = rg.style.top = (-o.R) + 'px'; rg.style.width = rg.style.height = (o.R * 2) + 'px'; rg.style.borderWidth = bw + 'px';
-    var t = ret.querySelectorAll('.tk'), L = o.R * .16, w = 2, c = o.R - bw - 6 - L / 2;
-    /* 中心からの位置 [x, y, 幅, 高さ]。輪の内側の縁に沿って上下左右 */
+    R = Math.min(innerWidth * .2, innerHeight * .22);
+    var rg = ret.querySelector('.rg'), bw = R * .26;
+    rg.style.left = rg.style.top = (-R) + 'px'; rg.style.width = rg.style.height = (R * 2) + 'px'; rg.style.borderWidth = bw + 'px';
+    var t = ret.querySelectorAll('.tk'), L = R * .16, w = 2, c = R - bw - 6 - L / 2;
     [[0, -c, w, L], [0, c, w, L], [-c, 0, L, w], [c, 0, L, w]].forEach(function(k, n){
       var e = t[n]; e.style.width = k[2] + 'px'; e.style.height = k[3] + 'px'; e.style.left = (k[0] - k[2] / 2) + 'px'; e.style.top = (k[1] - k[3] / 2) + 'px';
     });
-    put();
+    slots(); put();
   }
-  function put(){ var b = box(); ret.style.setProperty('--sx', (o.fx * b.width) + 'px'); ret.style.setProperty('--sy', (o.fy * b.height) + 'px'); }
+  function put(){ ret.style.setProperty('--sx', SL[slot].x + 'px'); ret.style.setProperty('--sy', SL[slot].y + 'px'); }
   size(); addEventListener('resize', size);
+  function fx(cls, x, y){ var e = document.createElement('i'); e.className = cls; e.style.left = x + 'px'; e.style.top = y + 'px'; document.body.appendChild(e); setTimeout(function(){ e.remove(); }, 650); return e; }
   window.__shoot = function(x, y){
-    var b = box(), cx = b.left + o.fx * b.width, cy = b.top + o.fy * b.height, dx = cx - x, dy = cy - y, d = Math.hypot(dx, dy);
-    if (d > o.R) return false;   /* 輪の中だけが当たり */
+    var c = SL[slot], dx = c.x - x, dy = c.y - y, d = Math.hypot(dx, dy);
+    if (d > R) return false;   /* 輪の中だけが当たり */
     if (d < 1){ dx = 1; dy = 0; d = 1; }
-    var push = Math.min(b.width, b.height) * (.3 + Math.random() * .15);
-    var nx = cx + dx / d * push, ny = cy + dy / d * push;
-    /* 中心は枠の中（輪の半分まではみ出してよい） */
-    o.fx = Math.max(0, Math.min(1, (nx - b.left) / b.width));
-    o.fy = Math.max(0, Math.min(1, (ny - b.top) / b.height));
-    ret.classList.add('hit'); setTimeout(function(){ ret.classList.remove('hit'); }, 140);
-    put();
+    var ux = dx / d, uy = dy / d;
+    /* 撃った向き（当たった所から中心へ）にある場所のうち、いちばん向きが合うところへ。なければいちばん遠いところ */
+    var best = -1, bs = -1e9;
+    SL.forEach(function(p, n){ if (n === slot) return; var vx = p.x - c.x, vy = p.y - c.y, l = Math.hypot(vx, vy), sc = (vx * ux + vy * uy) / l; if (sc > bs){ bs = sc; best = n; } });
+    slot = best;
+    if (RM){ put(); return true; }
+    /* 当たった瞬間 */
+    ret.classList.add('hit'); setTimeout(function(){ ret.classList.remove('hit'); }, 110);
+    fx('hm', x, y);
+    for (var k = 0; k < 7; k++){ var sp = fx('sp', x, y), a = Math.atan2(uy, ux) + (Math.random() - .5) * .9; sp.style.setProperty('--a', a + 'rad'); sp.style.setProperty('--d', (60 + Math.random() * 70) + 'px'); }
+    var now = performance.now(); combo = now - lastHit < 1400 ? combo + 1 : 1; lastHit = now;
+    if (combo > 1){ var cb = fx('cb', x, y - 10); cb.textContent = '×' + combo; }
+    document.documentElement.style.setProperty('--kx', (ux * 6) + 'px'); document.documentElement.style.setProperty('--ky', (uy * 6) + 'px');
+    document.body.classList.remove('kick'); void document.body.offsetWidth; document.body.classList.add('kick');
+    setTimeout(function(){ put(); ret.classList.remove('pop'); void ret.offsetWidth; ret.classList.add('pop'); }, 40);
     return true;
   };
 })();
