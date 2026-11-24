@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 ステータス画面（2026-11-24）。会社をレトロ RPG のステータス画面に。
-     設立 2025 年 6 月で Lv.1。そうび＝AI × ローコード、スキル＝サービス四つ、しんじょう＝企業理念、そうだん＝お問い合わせ。株主は、つよさの一行。
+     設立 2025 年 6 月で Lv.1。そうび＝AI × ローコード、スキル＝サービス四つ、しんじょう＝企業理念、ちず＝アクセス、そうだん＝お問い合わせ。つよさの 2 ページ目に会社概要の表（株主も）。
      書いてあることは公式の文と会社概要だけ（数字は作らない） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
@@ -53,6 +53,20 @@ button:focus-visible,a:focus-visible{outline:1px dashed var(--dim); outline-offs
 .yn{display:flex; gap:28px; margin-top:16px}
 .yn button,.yn a{padding-left:22px; position:relative; text-decoration:none}
 .yn [aria-current="true"]::before{content:"▶"; position:absolute; left:0; animation:blink 1s steps(1) infinite}
+.pg{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+.pg h2{margin:0}
+.pg button{font-size:13px; color:var(--sub); padding:2px 4px}
+.pg button:hover{color:var(--acc)}
+.pg button[disabled]{visibility:hidden}
+.map{display:block; width:100%; max-width:520px; height:auto; background:#0c0414; border:2px solid var(--dim)}
+.map line{stroke:#24133a; stroke-width:1}
+.map .ring{fill:none; stroke:var(--dim); stroke-dasharray:4 4}
+.map .rl{fill:var(--dim); font-size:10px}
+.map .st{fill:var(--acc)}
+.map .home{fill:var(--ink)}
+.map text{fill:var(--ink); font-size:12px; font-family:inherit}
+.map .m{fill:var(--sub); font-size:10px}
+.map .hl{fill:var(--ink); font-size:11px}
 .more{margin-top:10px; font-size:13px; color:var(--sub)}
 .more summary{cursor:pointer; color:var(--ink)}
 
@@ -87,6 +101,7 @@ footer{max-width:960px; margin:0 auto; padding:0 16px 24px; display:flex; justif
       <li><button type="button" data-p="tsuyosa">つよさ</button></li>
       <li><button type="button" data-p="skill">スキル</button></li>
       <li><button type="button" data-p="shinjo">しんじょう</button></li>
+      <li><button type="button" data-p="chizu">ちず</button></li>
       <li><button type="button" data-p="soudan">そうだん</button></li>
     </ul>
   </nav>
@@ -96,7 +111,7 @@ footer{max-width:960px; margin:0 auto; padding:0 16px 24px; display:flex; justif
   <section id="msg" class="win" aria-live="polite"><span class="t"></span><span class="nx" aria-hidden="true">▼</span></section>
 </div>
 <footer>
-  <span class="keys">↑↓ でえらぶ　Enter できめる　Esc でもどる</span>
+  <span class="keys">↑↓ でえらぶ　←→ でめくる　Enter できめる　Esc でもどる</span>
   <span><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>　© 2025 Alter Design Consulting Co., Ltd.</span>
 </footer>
 
@@ -117,18 +132,45 @@ var SKILLS = [
   ['自律型・共創型の組織設計支援', 'テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します'],
   ['地域格差の解消を目指したデジタル支援', '都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します']
 ];
+/* ちず：駅は、徒歩の分数を半径に、おおよその方角に置く */
+function MAP(){
+  var ST = [['御成門', 2, .36, -.93], ['大門', 10, .48, -.88], ['浜松町', 14, .58, -.82], ['汐留', 12, 1, 0], ['新橋', 12, .89, .45],
+            ['虎ノ門', 12, -.06, 1], ['虎ノ門ヒルズ', 12, -.32, .95], ['神谷町', 10, -1, 0]];
+  var K = 9, cx = 200, cy = 150, o = '<svg class="map" viewBox="0 0 400 300" role="img" aria-label="きょてんと駅のちず">';
+  for (var x = 0; x <= 400; x += 20) o += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="300"/>';
+  for (var y = 0; y <= 300; y += 20) o += '<line x1="0" y1="' + y + '" x2="400" y2="' + y + '"/>';
+  [5, 10, 15].forEach(function(m){ o += '<circle class="ring" cx="' + cx + '" cy="' + cy + '" r="' + m * K + '"/><text class="rl" x="' + (cx + 3) + '" y="' + (cy - m * K - 3) + '">' + m + '分</text>'; });
+  ST.forEach(function(s){
+    var x = cx + s[2] * s[1] * K, y = cy - s[3] * s[1] * K, left = s[2] < -.2;
+    o += '<rect class="st" x="' + (x - 4) + '" y="' + (y - 4) + '" width="8" height="8"/>' +
+         '<text x="' + (left ? x - 8 : x + 8) + '" y="' + (y + 4) + '" text-anchor="' + (left ? 'end' : 'start') + '">' + s[0] + '<tspan class="m"> ' + s[1] + '分</tspan></text>';
+  });
+  o += '<rect class="home" x="' + (cx - 7) + '" y="' + (cy - 7) + '" width="14" height="14"/><text class="hl" x="' + cx + '" y="' + (cy - 12) + '" text-anchor="middle">きょてん</text>';
+  return o + '</svg>';
+}
 var PAGES = {
   tsuyosa: { msg:'AI × ローコードで、「上流工程中心のシステム開発」に革新を。コンサルティングによる業務設計からエンジニアリングまでを行います。',
-    html:'<h2>つよさ</h2><dl class="rows">' +
+    pages:[
+      '<dl class="rows">' +
       '<dt>しょくぎょう</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd>' +
       '<dt>そうび</dt><dd>AI × ローコード</dd>' +
       '<dt>リーダー</dt><dd>藤田 靖広</dd>' +
       '<dt>しきん</dt><dd>60百万円</dd>' +
       '<dt>せつりつ</dt><dd>2025年6月</dd>' +
-      '<dt>かぶぬし</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd>' +
-      '<dt>きょてん</dt><dd>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）' +
-        '<details class="more"><summary>アクセス</summary>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</details></dd>' +
-      '</dl>' },
+      '<dt>きょてん</dt><dd>東京都港区西新橋</dd>' +
+      '</dl>',
+      '<dl class="rows">' +
+      '<dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd>' +
+      '<dt>代表者</dt><dd>藤田 靖広</dd>' +
+      '<dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd>' +
+      '<dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd>' +
+      '<dt>資本金</dt><dd>60百万円</dd>' +
+      '<dt>設立年月日</dt><dd>2025年6月</dd>' +
+      '<dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd>' +
+      '</dl>'
+    ], titles:['つよさ', 'くわしく'] },
+  chizu: { msg:'きょてんは 東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）。',
+    html:'<h2>ちず</h2>' + MAP() + '<p class="desc" style="margin-top:10px; min-height:0">本社　東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p>' },
   skill: { msg:'スキルを えらんでください。', list:SKILLS.map(function(s){ return s[0]; }), desc:function(i){ return SKILLS[i][1]; } },
   shinjo: { msg:'経営の力で「遊ぶように働く世界」をデザインする。',
     html:'<h2>しんじょう</h2><p style="margin:0 0 12px">経営の力で「遊ぶように働く世界」をデザインする</p>' +
@@ -138,7 +180,8 @@ var PAGES = {
 };
 
 var cmds = [].slice.call(document.querySelectorAll('#cmd button')), main = document.getElementById('main'), msgT = document.querySelector('#msg .t');
-var ci = 0, focus = 'cmd', si = 0, yi = 0;
+var ci = 0, focus = 'cmd', si = 0, yi = 0, pi = 0;
+function flip(d){ var p = PAGES[cmds[ci].dataset.p]; if (!p.pages) return; var n = pi + d; if (n < 0 || n >= p.pages.length) return; pi = n; var f = focus; open(ci, true); focus = f; }
 
 /* メッセージは一字ずつ（押すと最後まで） */
 var full = '', shown = 0, timer = 0;
@@ -147,6 +190,7 @@ document.getElementById('msg').addEventListener('click', function(){ clearInterv
 
 function mark(list, i){ list.forEach(function(b, k){ b.setAttribute('aria-current', k === i ? 'true' : 'false'); }); }
 function open(i, into){
+  if (i !== ci) pi = 0;
   ci = i; mark(cmds, ci);
   var p = PAGES[cmds[ci].dataset.p];
   if (p.list){
@@ -154,6 +198,9 @@ function open(i, into){
     var bs = [].slice.call(main.querySelectorAll('.list button'));
     bs.forEach(function(b, k){ b.addEventListener('mouseenter', function(){ pick(k); }); b.addEventListener('click', function(){ focus = 'sub'; pick(k); }); b.addEventListener('focus', function(){ pick(k); }); });
     pick(into ? si : 0, !into);
+  } else if (p.pages){
+    main.innerHTML = '<div class="pg"><h2>' + p.titles[pi] + '　' + (pi + 1) + '/' + p.pages.length + '</h2><span><button type="button" data-d="-1"' + (pi ? '' : ' disabled') + '>◀ ' + p.titles[pi - 1 < 0 ? 0 : pi - 1] + '</button> <button type="button" data-d="1"' + (pi < p.pages.length - 1 ? '' : ' disabled') + '>' + p.titles[Math.min(pi + 1, p.pages.length - 1)] + ' ▶</button></span></div>' + p.pages[pi];
+    [].forEach.call(main.querySelectorAll('[data-d]'), function(b){ b.addEventListener('click', function(){ flip(+b.dataset.d); }); });
   } else main.innerHTML = p.html;
   var yn = [].slice.call(main.querySelectorAll('[data-yn]'));
   yn.forEach(function(b, k){ b.addEventListener('mouseenter', function(){ yi = k; mark(yn, yi); }); });
@@ -172,7 +219,8 @@ cmds.forEach(function(b, i){
 
 addEventListener('keydown', function(e){
   var k = e.key, p = PAGES[cmds[ci].dataset.p];
-  var up = k === 'ArrowUp' || k === 'ArrowLeft', dn = k === 'ArrowDown' || k === 'ArrowRight', ok = k === 'Enter' || k === 'z' || k === ' ', back = k === 'Escape' || k === 'x';
+  if ((k === 'ArrowLeft' || k === 'ArrowRight') && p.pages){ e.preventDefault(); flip(k === 'ArrowRight' ? 1 : -1); return; }
+  var up = k === 'ArrowUp' || (k === 'ArrowLeft' && !p.pages), dn = k === 'ArrowDown' || (k === 'ArrowRight' && !p.pages), ok = k === 'Enter' || k === 'z' || k === ' ', back = k === 'Escape' || k === 'x';
   if (!(up || dn || ok || back)) return;
   e.preventDefault();
   if (focus === 'cmd'){
