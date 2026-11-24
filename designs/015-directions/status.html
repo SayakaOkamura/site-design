@@ -139,7 +139,7 @@ function MAP(){
   var K = 9, cx = 200, cy = 150, o = '<svg class="map" viewBox="0 0 400 300" role="img" aria-label="きょてんと駅のちず">';
   for (var x = 0; x <= 400; x += 20) o += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="300"/>';
   for (var y = 0; y <= 300; y += 20) o += '<line x1="0" y1="' + y + '" x2="400" y2="' + y + '"/>';
-  [5, 10, 15].forEach(function(m){ o += '<circle class="ring" cx="' + cx + '" cy="' + cy + '" r="' + m * K + '"/><text class="rl" x="' + (cx + 3) + '" y="' + (cy - m * K - 3) + '">' + m + '分</text>'; });
+  [5, 10, 15].forEach(function(m){ o += '<circle class="ring" cx="' + cx + '" cy="' + cy + '" r="' + m * K + '"/><text class="rl" text-anchor="end" x="' + (cx - m * K * .71 - 2) + '" y="' + (cy + m * K * .71 + 10) + '">' + m + '分</text>'; });
   ST.forEach(function(s){
     var x = cx + s[2] * s[1] * K, y = cy - s[3] * s[1] * K, left = s[2] < -.2;
     o += '<rect class="st" x="' + (x - 4) + '" y="' + (y - 4) + '" width="8" height="8"/>' +
