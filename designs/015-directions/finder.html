@@ -105,9 +105,9 @@ body.af #bg .af{animation:lock .18s ease-out}
 body.kick #bg{animation:kick .14s ease-out}
 @keyframes kick{40%{transform:translate(var(--kx),var(--ky))}}
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
-/* 押した項目は、押す場所に関係なく、いつも一瞬ぐっと沈んで戻る */
-.menu button.bump{animation:bump .26s ease-out; transform-origin:0 50%}
-@keyframes bump{30%{transform:scale(.93) translateY(2px)} 100%{transform:none}}
+/* 押した項目は、右（板の方）へすっと滑って、なめらかに戻る。中身を板へ送り出すように */
+.menu button.bump{animation:bump .37s linear}
+@keyframes bump{0%{transform:none; animation-timing-function:cubic-bezier(.2,.8,.3,1)} 32%{transform:translateX(10px); animation-timing-function:cubic-bezier(.4,0,.2,1)} 100%{transform:none}}
 
 /* OP：ロゴの輪が描かれ、社名が出て、メニューが順に出る */
 .op{position:fixed; inset:0; z-index:30; background:var(--bg); display:grid; place-items:center; transition:opacity .35s}
