@@ -144,8 +144,11 @@ body.open .hero{opacity:0}
 body.open .page{transform:perspective(1400px) translateX(0) translateZ(0) rotateY(0deg); opacity:1; visibility:visible; pointer-events:auto;
   transition:transform .62s cubic-bezier(.2,.8,.2,1), opacity .25s, visibility 0s}
 body.open .page.flat{transform:none}
-.page .wrap.swap{animation:swap .22s ease-out}
-@keyframes swap{from{opacity:0; transform:translateX(16px)}}
+.page .wrap.swap{animation:swap .26s ease-out}
+@keyframes swap{from{opacity:0; transform:translateX(18px)}}
+/* 項目を替えたとき：板が一度、奥へ少し振れて戻る（めくるように）。振れているあいだに中身が入れ替わる */
+body.open .page.turn{animation:turn .46s cubic-bezier(.3,0,.2,1)}
+@keyframes turn{0%{transform:perspective(1400px) rotateY(0)} 38%{transform:perspective(1400px) translateZ(-90px) rotateY(-16deg)} 100%{transform:perspective(1400px) rotateY(0)}}
 .page .wrap{padding:0 clamp(24px,4vw,64px) 60px}
 .page .back{position:sticky; float:right; top:20px; margin:20px clamp(16px,3vw,40px) 0 0; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
 .page .back:hover{color:var(--wh)}
@@ -293,8 +296,13 @@ function open(i){
   pick(i);
   /* 見出し（英字と題）は板の上に残る */
   var h = PAGES[i].html, cut = h.indexOf('</h2>') + 5;
-  wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0;
-  if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
+  var fill = function(){ wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0; };
+  if (opened && !RM){
+    /* 開いたまま替えるとき：板が振れ、いちばん奥へ振れたところで中身が替わる */
+    page.classList.remove('turn'); void page.offsetWidth; page.classList.add('turn');
+    clearTimeout(page._t); page._t = setTimeout(function(){ fill(); wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }, 170);
+    setTimeout(function(){ page.classList.remove('turn'); }, 480);
+  } else fill();
   opened = true; document.body.classList.add('open');
 }
 function close(){ opened = false; page.classList.remove('flat'); document.body.classList.remove('open'); }
