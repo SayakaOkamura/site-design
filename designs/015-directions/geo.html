@@ -33,8 +33,8 @@ nav a.on{color:var(--ink)}
   background:rgba(13,8,23,.82); border:1px solid var(--line); scrollbar-width:thin}
 /* 四隅の目盛り */
 .card::before,.card::after{content:""; position:absolute; width:14px; height:14px; border:solid var(--acc); pointer-events:none}
-.card::before{left:-1px; top:-1px; border-width:2px 0 0 2px}
-.card::after{right:-1px; bottom:-1px; border-width:0 2px 2px 0}
+.card::before{left:0; top:0; border-width:2px 0 0 2px}
+.card::after{right:0; bottom:0; border-width:0 2px 2px 0}
 .card .no{display:block; font:400 11px/1 Consolas,Menlo,monospace; letter-spacing:.2em; color:var(--acc); margin-bottom:18px}
 .card h2{font-size:clamp(22px,2.6vw,32px); line-height:1.5; margin-bottom:28px}
 
@@ -42,8 +42,6 @@ nav a.on{color:var(--ink)}
 .mv::before,.mv::after{display:none}
 .mv h1{font-size:clamp(24px,3.4vw,42px); line-height:1.6}
 .mv p{margin-top:2em; font-size:clamp(13px,1.1vw,15px); color:var(--sub)}
-.mv .hint{display:block; margin-top:3em; font:400 11px/1 Consolas,Menlo,monospace; letter-spacing:.3em; color:var(--acc); animation:hint 2s ease-in-out infinite}
-@keyframes hint{ 50%{opacity:.3; transform:translateY(4px)} }
 
 .vision h3{font-size:clamp(17px,1.8vw,22px); font-weight:400; line-height:1.6; margin-bottom:1em}
 .vision p{font-size:14px; color:var(--sub)}
@@ -62,7 +60,14 @@ nav a.on{color:var(--ink)}
 
 #hud{position:fixed; left:clamp(16px,4vw,48px); bottom:20px; z-index:10; font:400 11px/1 Consolas,Menlo,monospace; letter-spacing:.2em; color:var(--sub)}
 #hud b{color:var(--ink); font-weight:400}
-#runway{height:100vh}
+html,body{overflow:hidden; height:100%}
+#pad{position:fixed; right:clamp(16px,4vw,48px); bottom:12px; z-index:10; display:flex; gap:8px}
+#pad button{height:40px; padding:0 16px; background:rgba(13,8,23,.82); color:var(--ink); border:1px solid var(--line); font:400 13px/1 inherit; font-family:inherit; cursor:pointer; transition:border-color .2s, opacity .2s}
+#pad button:hover{border-color:var(--acc)}
+#pad button:disabled{opacity:.3; cursor:default}
+#pad .next{border-color:var(--acc); animation:call 2s ease-in-out infinite}
+#pad .next span{color:var(--sub); font-size:11px; margin-right:.6em}
+@keyframes call{ 50%{box-shadow:0 0 0 4px rgba(187,126,234,.18)} }
 
 @media (max-width:760px){
   nav li{display:none}
@@ -87,7 +92,6 @@ nav a.on{color:var(--ink)}
   <div class="card mv" data-x="0" data-y="0" data-r="0" data-w="980">
     <h1 class="serif">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
     <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
-    <span class="hint" aria-hidden="true">SCROLL ↓</span>
   </div>
 
   <section class="card vision" id="philosophy" data-x="2600" data-y="-1500" data-r="-24">
@@ -141,24 +145,23 @@ nav a.on{color:var(--ink)}
 </main>
 
 <div id="hud" aria-hidden="true"><b>00</b> / 04</div>
-<div id="runway"></div>
+<div id="pad"><button type="button" class="prev" aria-label="前の節へ">‹</button><button type="button" class="next"><span></span>次へ ›</button></div>
 
 <script>
 (function(){
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var world = document.getElementById('world'), cv = document.getElementById('bg'), ctx = cv.getContext('2d');
-var hud = document.querySelector('#hud b'), runway = document.getElementById('runway');
+var hud = document.querySelector('#hud b'), prevB = document.querySelector('#pad .prev'), nextB = document.querySelector('#pad .next');
 var navs = [].slice.call(document.querySelectorAll('[data-i]'));
 var stops = [].slice.call(document.querySelectorAll('.card')).map(function(c){
   return { el:c, x:+c.dataset.x, y:+c.dataset.y, r:(+c.dataset.r || 0) * Math.PI / 180, w:+c.dataset.w || 640 };
 });
-var N = stops.length, W, H, DPR, HOLD, MOVE;
+var N = stops.length, W, H, DPR;
+var NAMES = ['トップ', '企業理念', 'サービス', '会社概要', 'お問い合わせ'];
 
 function layout(){
   W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1);
   cv.width = W * DPR; cv.height = H * DPR;
-  HOLD = H * .5; MOVE = H * 1.3;
-  runway.style.height = ((N - 1) * (HOLD + MOVE) + HOLD + H) + 'px';
   stops.forEach(function(s){
     s.el.style.setProperty('--w', Math.min(s.w, W - 32) + 'px');
     s.el.style.transform = 'translate(' + s.x + 'px,' + s.y + 'px) rotate(' + s.r + 'rad) translate(-50%,-50%)';
@@ -166,37 +169,54 @@ function layout(){
 }
 addEventListener('resize', layout); layout();
 
-/* スクロール → カメラ。止まる区間と、引く → 渡る → 寄る（少し行き過ぎて戻る）区間 */
+/* 押すと飛ぶ。引く → 渡る → 寄る（少し行き過ぎて戻る） */
 function ease(t){ return t * t * t * (t * (t * 6 - 15) + 10); }
 function cl(t){ return Math.max(0, Math.min(1, t)); }
-function cam(p){
-  var seg = HOLD + MOVE, i = Math.min(N - 1, Math.floor(p / seg)), f = p - i * seg;
-  var a = stops[i];
-  if (i >= N - 1 || f <= HOLD) return { x:a.x, y:a.y, r:a.r, ls:0, i:i };
-  var b = stops[i + 1], t = (f - HOLD) / MOVE;
+function cam(a, b, t){
+  if (t >= 1 || a === b) return { x:b.x, y:b.y, r:b.r, ls:0 };
   var d = Math.hypot(b.x - a.x, b.y - a.y), far = Math.min(.5, Math.min(W, H) / (d + Math.min(W, H)));
   var go = ease(cl((t - .22) / .56));                               /* 渡る */
   var ls;
   if (RM) ls = 0;
   else if (t < .5) ls = Math.log(far) * ease(cl(t / .28));          /* 引く */
   else { var u = cl((t - .7) / .3); ls = Math.log(far) * (1 - ease(u)) + .07 * Math.sin(Math.PI * cl((u - .45) / .55)); }   /* 寄る */
-  return { x:a.x + (b.x - a.x) * go, y:a.y + (b.y - a.y) * go, r:a.r + (b.r - a.r) * go, ls:ls, i:t < .5 ? i : i + 1 };
+  return { x:a.x + (b.x - a.x) * go, y:a.y + (b.y - a.y) * go, r:a.r + (b.r - a.r) * go, ls:ls };
 }
+var cur = 0, from = 0, t0 = -1e9, DUR = 1900;
+function fly(n){
+  n = Math.max(0, Math.min(N - 1, n)); if (n === cur && performance.now() - t0 > DUR) return;
+  from = cur; cur = n; t0 = performance.now(); mark();
+}
+function mark(){
+  hud.textContent = ('0' + cur).slice(-2);
+  navs.forEach(function(a){ a.classList.toggle('on', +a.dataset.i === cur && cur > 0); });
+  stops.forEach(function(s, i){ s.el.inert = i !== cur; });
+  prevB.disabled = cur === 0; nextB.disabled = cur === N - 1;
+  nextB.firstChild.textContent = cur < N - 1 ? NAMES[cur + 1] : '';
+}
+prevB.addEventListener('click', function(){ fly(cur - 1); });
+nextB.addEventListener('click', function(){ fly(cur + 1); });
+addEventListener('keydown', function(e){
+  if (e.target.closest && e.target.closest('input,textarea')) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' && !scrollable()){ e.preventDefault(); fly(cur + 1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' && !scrollable()){ e.preventDefault(); fly(cur - 1); }
+});
+function scrollable(){ var el = stops[cur].el; return el.scrollHeight > el.clientHeight + 2; }
 
 /* カメラはばねでついてくる（止めると少し揺れて落ち着く） */
 var C = null, V = { x:0, y:0, r:0, ls:0 }, prev = 0;
 function follow(g, now){
-  if (!C || RM){ C = { x:g.x, y:g.y, r:g.r, ls:g.ls, s:Math.exp(g.ls), i:g.i }; prev = now; return C; }
+  if (!C || RM){ C = { x:g.x, y:g.y, r:g.r, ls:g.ls, s:Math.exp(g.ls) }; prev = now; return C; }
   var dt = Math.min(1 / 30, (now - prev) / 1000 || 0); prev = now;
   var K = 90, D = 2 * Math.sqrt(K) * .6;
   ['x', 'y', 'r', 'ls'].forEach(function(k){ V[k] += ((g[k] - C[k]) * K - V[k] * D) * dt; C[k] += V[k] * dt; });
-  C.s = Math.exp(C.ls); C.i = g.i; return C;
+  C.s = Math.exp(C.ls); return C;
 }
 
 var mx = 0, my = 0, smx = 0, smy = 0;
 addEventListener('pointermove', function(e){ mx = e.clientX / W - .5; my = e.clientY / H - .5; }, {passive:true});
 navs.forEach(function(a){
-  a.addEventListener('click', function(e){ e.preventDefault(); scrollTo({ top:+a.dataset.i * (HOLD + MOVE) + (+a.dataset.i ? HOLD / 2 : 0), behavior:'smooth' }); });
+  a.addEventListener('click', function(e){ e.preventDefault(); fly(+a.dataset.i); });
 });
 
 /* 背景：平面に描いた格子・節を囲む多角形・節どうしを結ぶ線 */
@@ -239,17 +259,12 @@ function draw(c, now){
   });
 }
 
-var last = -1;
+mark();
 function frame(now){
   smx += (mx - smx) * .05; smy += (my - smy) * .05;
-  var c = follow(cam(scrollY), now);
+  var c = follow(cam(stops[from], stops[cur], (now - t0) / DUR), now);
   world.style.transform = 'translate(' + (W / 2 + smx * 30) + 'px,' + (H / 2 + smy * 30) + 'px) scale(' + c.s + ') rotate(' + (-c.r) + 'rad) translate(' + (-c.x) + 'px,' + (-c.y) + 'px)';
   draw(c, now);
-  if (c.i !== last){
-    last = c.i; hud.textContent = ('0' + c.i).slice(-2);
-    navs.forEach(function(a){ a.classList.toggle('on', +a.dataset.i === c.i && c.i > 0); });
-    stops.forEach(function(s, i){ s.el.inert = i !== c.i; });
-  }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
