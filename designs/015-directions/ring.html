@@ -26,7 +26,7 @@ header small{display:block; font-size:10px; margin-left:4.4em; color:var(--li)}
 
 /* メニュー：大きな文字をまっすぐ並べる */
 .menu{position:fixed; left:clamp(20px,7vw,110px); top:50%; transform:translateY(-50%); z-index:3; display:grid; gap:clamp(4px,1.6vh,18px); justify-items:start}
-.menu button{position:relative; padding:.06em .35em; font-size:clamp(30px,min(6.2vw,8vh),78px); line-height:1.1; color:var(--li); transition:color .12s}
+.menu button{position:relative; text-align:left; padding:.06em .35em; font-size:clamp(30px,min(6.2vw,8vh),78px); line-height:1.1; color:var(--li); transition:color .12s}
 .menu button small{display:block; font-family:"Zen Kaku Gothic New",sans-serif; font-size:max(11px,.17em); letter-spacing:.35em; color:var(--pu); margin-top:.15em; transition:color .12s}
 .menu button.on{color:var(--wh)}
 .menu button.on small{color:var(--ac)}
@@ -57,6 +57,9 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 .cur.joy{animation:spin .7s cubic-bezier(.3,0,.2,1)}
 @property --rot{syntax:'<angle>'; inherits:false; initial-value:0deg}
 @keyframes spin{to{--rot:360deg}}
+
+/* 背景：業務の図がひとりでに描かれ、描き終わると整った形に組み直され、消えて、また別の図 */
+#flow{position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none}
 
 /* 押した項目だけ、押された向きへ少し跳ねて戻る */
 .menu button.bump{animation:bump .32s cubic-bezier(.3,1.6,.5,1)}
@@ -126,6 +129,7 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
 @media (prefers-reduced-motion:reduce){ .page,.cur{transition:none} .rip,.op{display:none} .cur.joy{animation:none} }
 </style>
 
+<canvas id="flow" aria-hidden="true"></canvas>
 <div class="op" id="op" aria-hidden="true"><div class="in">
   <svg viewBox="0 0 88 88"><circle class="c1" cx="44" cy="44" r="38" transform="rotate(-90 44 44)"/><circle class="c2" cx="44" cy="44" r="30" transform="rotate(-90 44 44)"/></svg>
   <div class="nm">Alter Design<small>CONSULTING</small></div>
@@ -257,6 +261,85 @@ document.getElementById('logo').addEventListener('click', function(){
   var now = performance.now(); taps = taps.filter(function(t){ return now - t < 1600; }); taps.push(now);
   if (taps.length >= 5){ taps = []; cur.classList.remove('joy'); void cur.offsetWidth; cur.classList.add('joy'); setTimeout(function(){ cur.classList.remove('joy'); }, 1600); }
 });
+
+/* 背景の業務の図
+   描く（雑な位置・まっすぐな矢印）→ 組み直す（列にそろい、矢印は直角に）→ 少し止まる → 消える → 別の図 */
+var fl = document.getElementById('flow'), fg = fl.getContext('2d'), VW = 0, VH = 0, PR = 1, G = null, t0 = 0;
+function fsz(){ PR = Math.min(2, devicePixelRatio || 1); VW = innerWidth; VH = innerHeight; fl.width = VW * PR; fl.height = VH * PR; G = null; }
+function ease(t){ return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+function rnd(a, b){ return a + Math.random() * (b - a); }
+function make(){
+  /* 置き場所：メニューの右から画面の右端まで。大きさは窓に合わせる */
+  var cols = Math.random() < .5 ? 4 : 5, X0 = VW * .34, X1 = VW * .94, Y0 = VH * .14, Y1 = VH * .78;
+  var dx = (X1 - X0) / cols, bw = Math.min(130, dx * .62), bh = bw * .5, nodes = [], edges = [], byCol = [];
+  for (var c = 0; c < cols; c++){
+    var k = c === 0 || c === cols - 1 ? 1 : (Math.random() < .55 ? 2 : 1), col = [];
+    for (var j = 0; j < k; j++){
+      var ty = k === 1 ? (Y0 + Y1) / 2 : Y0 + (Y1 - Y0) * (j === 0 ? .3 : .7);
+      var tx = X0 + dx * (c + .5);
+      var n = { tx:tx, ty:ty, mx:tx + rnd(-.35, .35) * dx, my:ty + rnd(-.22, .22) * (Y1 - Y0), c:c, at:0 };
+      nodes.push(n); col.push(n);
+    }
+    byCol.push(col);
+  }
+  for (c = 0; c < cols - 1; c++){
+    byCol[c].forEach(function(a){ byCol[c + 1].forEach(function(b){ if (byCol[c].length === 1 || byCol[c + 1].length === 1 || byCol[c].indexOf(a) === byCol[c + 1].indexOf(b)) edges.push({ a:a, b:b }); }); });
+  }
+  /* 描く順：列の順に、四角 → そこから出る矢印 */
+  var T = 0, step = .42;
+  nodes.forEach(function(n){ n.at = T; T += step; edges.forEach(function(e){ if (e.a === n){ e.at = T - step * .3; } }); });
+  return { nodes:nodes, edges:edges, bw:bw, bh:bh, drawEnd:T + .5, tidy:1.3, hold:2.4, fade:.9 };
+}
+function pos(n, k){ return { x:n.mx + (n.tx - n.mx) * k, y:n.my + (n.ty - n.my) * k }; }
+function partial(pts, p){
+  /* 折れ線を p（0〜1）まで描く */
+  var L = 0, seg = []; for (var i = 1; i < pts.length; i++){ var l = Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y); seg.push(l); L += l; }
+  var want = L * p; fg.beginPath(); fg.moveTo(pts[0].x, pts[0].y);
+  for (i = 1; i < pts.length; i++){
+    if (want <= 0) break;
+    var f = Math.min(1, want / seg[i-1]); fg.lineTo(pts[i-1].x + (pts[i].x - pts[i-1].x) * f, pts[i-1].y + (pts[i].y - pts[i-1].y) * f); want -= seg[i-1];
+  }
+  fg.stroke();
+  return p >= 1;
+}
+function box(c, w, h, p){
+  var x = c.x - w / 2, y = c.y - h / 2, r = 8;
+  var pts = [{x:x + r, y:y}, {x:x + w, y:y}, {x:x + w, y:y + h}, {x:x, y:y + h}, {x:x, y:y}, {x:x + r, y:y}];
+  partial(pts, p);
+  if (p >= 1){
+    /* 中の字の代わりに線（中身は作らない） */
+    fg.beginPath(); fg.moveTo(x + w * .18, y + h * .4); fg.lineTo(x + w * .72, y + h * .4); fg.moveTo(x + w * .18, y + h * .64); fg.lineTo(x + w * .52, y + h * .64); fg.stroke();
+  }
+}
+function draw(now){
+  if (!G){ G = make(); t0 = now; }
+  var t = (now - t0) / 1000, k = 0, alpha = 1;
+  var tTidy = G.drawEnd, tHold = tTidy + G.tidy, tFade = tHold + G.hold, tEnd = tFade + G.fade;
+  if (RM){ t = tHold; }
+  if (t > tTidy) k = ease(Math.min(1, (t - tTidy) / G.tidy));
+  if (t > tFade) alpha = 1 - (t - tFade) / G.fade;
+  fg.setTransform(PR, 0, 0, PR, 0, 0); fg.clearRect(0, 0, VW, VH);
+  fg.globalAlpha = .26 * Math.max(0, alpha) + (k >= 1 ? .06 * Math.max(0, alpha) : 0);
+  fg.strokeStyle = '#bb7eea'; fg.lineWidth = 1.6; fg.lineCap = 'round'; fg.lineJoin = 'round';
+  G.edges.forEach(function(e){
+    var p = Math.max(0, Math.min(1, (t - e.at) / .45)); if (p <= 0) return;
+    var A = pos(e.a, k), B = pos(e.b, k);
+    var a = { x:A.x + G.bw / 2, y:A.y }, b = { x:B.x - G.bw / 2 - 6, y:B.y }, mid = { x:(a.x + b.x) / 2, y:(a.y + b.y) / 2 };
+    /* 雑なうちはまっすぐ、組み直すと直角に折れる */
+    var p1 = { x:mid.x, y:mid.y + (a.y - mid.y) * k }, p2 = { x:mid.x, y:mid.y + (b.y - mid.y) * k };
+    if (partial([a, p1, p2, b], p)){
+      var ang = Math.atan2(b.y - p2.y, b.x - p2.x) || 0;
+      fg.beginPath(); fg.moveTo(b.x + Math.cos(ang) * 6, b.y + Math.sin(ang) * 6);
+      fg.lineTo(b.x + Math.cos(ang + 2.5) * 7, b.y + Math.sin(ang + 2.5) * 7); fg.moveTo(b.x + Math.cos(ang) * 6, b.y + Math.sin(ang) * 6);
+      fg.lineTo(b.x + Math.cos(ang - 2.5) * 7, b.y + Math.sin(ang - 2.5) * 7); fg.stroke();
+    }
+  });
+  G.nodes.forEach(function(n){ var p = Math.max(0, Math.min(1, (t - n.at) / .5)); if (p > 0) box(pos(n, k), G.bw, G.bh, p); });
+  fg.globalAlpha = 1;
+  if (t > tEnd && !RM) G = null;
+}
+fsz(); addEventListener('resize', fsz);
+(function loop(now){ draw(now || performance.now()); if (!RM) requestAnimationFrame(loop); })();
 
 /* OP：輪が描かれて社名 → メニューが順に出る。押すかキーで飛ばせる */
 var op = document.getElementById('op');
