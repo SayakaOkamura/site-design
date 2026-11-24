@@ -137,8 +137,13 @@ body.open .hero{opacity:0}
 
 /* 開く：右から板が滑り込んで中身。メニューと輪は左に残る */
 .page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow-x:hidden; overflow-y:auto; color:var(--wh); background:var(--deep);
-  border-left:2px solid var(--pu); transform:translateX(102%); transition:transform .52s cubic-bezier(.55,0,.2,1)}
-body.open .page{transform:none}
+  border-left:2px solid var(--pu);
+  /* 奥から振り込む：右端を軸に、ドアが開くように斜め奥から回り込んで、正面を向いて止まる */
+  transform-origin:100% 50%; transform:perspective(1400px) translateX(30%) translateZ(-260px) rotateY(-38deg); opacity:0; visibility:hidden; pointer-events:none;
+  transition:transform .62s cubic-bezier(.2,.8,.2,1), opacity .3s, visibility 0s .62s}
+body.open .page{transform:perspective(1400px) translateX(0) translateZ(0) rotateY(0deg); opacity:1; visibility:visible; pointer-events:auto;
+  transition:transform .62s cubic-bezier(.2,.8,.2,1), opacity .25s, visibility 0s}
+body.open .page.flat{transform:none}
 .page .wrap.swap{animation:swap .22s ease-out}
 @keyframes swap{from{opacity:0; transform:translateX(16px)}}
 .page .wrap{padding:0 clamp(24px,4vw,64px) 60px}
@@ -292,7 +297,9 @@ function open(i){
   if (opened && !RM){ wrap.classList.remove('swap'); void wrap.offsetWidth; wrap.classList.add('swap'); }
   opened = true; document.body.classList.add('open');
 }
-function close(){ opened = false; document.body.classList.remove('open'); }
+function close(){ opened = false; page.classList.remove('flat'); document.body.classList.remove('open'); }
+/* 振り込み終わったら、3D の変形を外して字をくっきりさせる */
+page.addEventListener('transitionend', function(e){ if (e.target === page && e.propertyName === 'transform') page.classList.toggle('flat', document.body.classList.contains('open')); });
 
 btns.forEach(function(b, i){
   b.addEventListener('click', function(e){ if (e.detail) bump(b, e.clientX, e.clientY); else bump(b); open(i); });
