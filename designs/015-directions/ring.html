@@ -67,10 +67,10 @@ body.open .hero{opacity:0}
 body.open .page{transform:none}
 .page .wrap.swap{animation:swap .22s ease-out}
 @keyframes swap{from{opacity:0; transform:translateX(16px)}}
-.page .wrap{padding:clamp(72px,11vh,110px) clamp(24px,4vw,64px) 60px}
+.page .wrap{padding:0 clamp(24px,4vw,64px) 60px}
 .page .back{position:sticky; float:right; top:20px; margin:20px clamp(16px,3vw,40px) 0 0; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
 .page .back:hover{color:var(--wh)}
-.page .ph{position:sticky; top:0; z-index:1; background:var(--deep); padding:18px 0 4px; margin-top:-18px; box-shadow:0 14px 14px -10px var(--deep)}
+.page .ph{position:sticky; top:0; z-index:1; background:var(--deep); padding:clamp(72px,11vh,110px) 0 4px; box-shadow:0 14px 14px -10px var(--deep)}   /* 最初の位置のまま動かない */
 .page .k{font-size:12px; letter-spacing:.35em; color:var(--li)}
 .page h2{font-size:clamp(24px,2.8vw,38px); line-height:1.3; margin:.2em 0 1em}
 .page h2::after{content:""; display:block; width:1.6em; height:.1em; background:var(--li); margin-top:.3em}
