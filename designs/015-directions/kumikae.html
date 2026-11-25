@@ -94,7 +94,6 @@ b{font-weight:700}
 .idxnum b.new{color:color-mix(in srgb, var(--li) 40%, var(--bg))}
 .idxline,.idx{position:relative; z-index:1}
 .idxnum b{display:inline-block; width:.62em; text-align:center; font-weight:400}
-.idxnum b.flip{animation:flip .035s linear}
 /* 左と右をつなぐ線：読んでいるサービスの番号の下の線と同じ高さで、左の本文の端から右の番号の下まで、左から右へ引かれる */
 .idxline{position:relative; height:1px; margin:clamp(14px,2.4vh,24px) 0 clamp(28px,5vh,52px)}
 .idxline i{position:absolute; top:0; height:1px; right:0; left:var(--from,0px); background:var(--ink); transform:scaleX(0); transform-origin:left center}
@@ -418,8 +417,9 @@ function follow(){
   /* 右の番号：回って決まる */
   var to = ('0' + (best + 1)).split('');
   digits.forEach(function(d, k){
-    var tk = d.tk = (d.tk || 0) + 1, t0 = performance.now(), lock = RM ? 0 : 160 + k * 120;
-    (function step(){ if (tk !== d.tk) return; var done = performance.now() - t0 >= lock; d.textContent = done ? to[k] : String(Math.floor(Math.random() * 10)); d.classList.toggle('new', !done); if (!RM){ d.classList.remove('flip'); void d.offsetWidth; d.classList.add('flip'); } if (!done) setTimeout(step, 40); })();
+    /* 大きいので控えめに：倒れる動きはなし、2 回ほど替わってすぐ決まる */
+    var tk = d.tk = (d.tk || 0) + 1, t0 = performance.now(), lock = RM ? 0 : 110 + k * 70;
+    (function step(){ if (tk !== d.tk) return; var done = performance.now() - t0 >= lock; d.textContent = done ? to[k] : String(Math.floor(Math.random() * 10)); d.classList.toggle('new', !done); if (!done) setTimeout(step, 60); })();
   });
   /* つなぐ線：左の本文の端から、右の番号の下まで引き直す */
   var lr = items[best].getBoundingClientRect(), br = box.getBoundingClientRect();
