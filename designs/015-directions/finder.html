@@ -144,14 +144,14 @@ body.open .hero{opacity:0}
 /* 開く：右から板が滑り込んで中身。メニューと輪は左に残る */
 .page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow-x:hidden; overflow-y:auto; color:var(--wh); background:var(--deep);
   border-left:2px solid var(--pu);
-  /* 奥から振り込む：右端を軸に、ドアが開くように斜め奥から回り込んで、正面を向いて止まる */
-  transform-origin:100% 50%; transform:perspective(1400px) translateX(15%) translateZ(-130px) rotateY(-19deg); opacity:0; visibility:hidden; pointer-events:none;
+  /* 右から横に滑り込んで止まる */
+  transform-origin:100% 50%; transform:translateX(15%); opacity:0; visibility:hidden; pointer-events:none;
   transition:transform .62s cubic-bezier(.2,.8,.2,1), opacity .3s, visibility 0s .62s}
-body.open .page{transform:perspective(1400px) translateX(0) translateZ(0) rotateY(0deg); opacity:1; visibility:visible; pointer-events:auto;
+body.open .page{transform:translateX(0); opacity:1; visibility:visible; pointer-events:auto;
   transition:transform .62s cubic-bezier(.2,.8,.2,1), opacity .25s, visibility 0s}
 body.open .page.flat{transform:none}
-/* 開いたまま替えるとき：板を一瞬で奥へ戻し、そこから振り込み直す */
-body.open .page.reset{transform:perspective(1400px) translateX(15%) translateZ(-130px) rotateY(-19deg); opacity:0; transition:none}
+/* 開いたまま替えるとき：板を一瞬で右へ戻し、そこから滑り込み直す */
+body.open .page.reset{transform:translateX(15%); opacity:0; transition:none}
 /* 中身：見出しは右からシュッと入り、本文は上から一段ずつ少し遅れて流れ込む */
 .page .wrap.enter .ph .k,.page .wrap.enter .ph h2{animation:hin .36s cubic-bezier(.2,.8,.2,1) both}
 .page .wrap.enter .ph h2{animation-delay:.04s}
@@ -300,10 +300,10 @@ function open(i){
   var h = PAGES[i].html, cut = h.indexOf('</h2>') + 5;
   var fill = function(){ wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0; };
   if (!RM){
-    /* 開いたまま替えるときも最初と同じ：板を一度奥へ戻して、振り込み直す */
+    /* 開いたまま替えるときも最初と同じ：板を一度右へ戻して、滑り込み直す */
     if (opened){ page.classList.remove('flat'); page.classList.add('reset'); void page.offsetWidth; page.classList.remove('reset'); }
     fill();
-    /* 本文の段ごとに少しずつ遅らせる。板が振り込むのを待ってから */
+    /* 本文の段ごとに少しずつ遅らせる。板が滑り込むのを待ってから */
     [].forEach.call(wrap.children, function(el, k){ el.style.setProperty('--d', (.3 + k * .045).toFixed(3) + 's'); });
     wrap.querySelectorAll('.ph .k, .ph h2').forEach(function(el){ el.style.animationDelay = .26 + (el.tagName === 'H2' ? .04 : 0) + 's'; });
     wrap.classList.remove('enter'); void wrap.offsetWidth; wrap.classList.add('enter');
@@ -313,7 +313,7 @@ function open(i){
   if (!RM){ var cb = btns[i]; cb.classList.remove('confirm'); void cb.offsetWidth; cb.classList.add('confirm'); setTimeout(function(){ cb.classList.remove('confirm'); }, 470); }
 }
 function close(){ opened = false; page.classList.remove('flat'); document.body.classList.remove('open'); btns.forEach(function(b){ b.classList.remove('opened'); }); }
-/* 振り込み終わったら、3D の変形を外して字をくっきりさせる */
+/* 滑り込み終わったら、変形を外して字をくっきりさせる */
 page.addEventListener('transitionend', function(e){ if (e.target === page && e.propertyName === 'transform') page.classList.toggle('flat', document.body.classList.contains('open')); });
 
 btns.forEach(function(b, i){
