@@ -49,6 +49,13 @@ section > *{grid-column:1 / -1}
 .pin{position:sticky; top:var(--top); height:var(--ph); opacity:0; transition:opacity .25s}
 .pin .ch{position:absolute; left:0; bottom:0; text-align:center; font-family:"Archivo Black",sans-serif; line-height:.78; color:var(--ink); white-space:pre; will-change:transform}
 
+/* 見出しと本文：画面に入ってくるまでは隠しておき、入ったらちらついて決まる */
+.rv{opacity:0}
+.rv.on{opacity:1; transition:opacity .15s}
+@media (prefers-reduced-motion:reduce){ .rv{opacity:1} }
+/* 地の色は余白を通るあいだに移り変わる（JS で --bg・--ink・--sub を混ぜる） */
+body{transition:none}
+
 /* 節の番号と名前：小さく、誌面のノンブルのように */
 .side{display:flex; align-items:center; gap:16px; margin-bottom:clamp(40px,8vh,90px); font-family:"Archivo",sans-serif; font-weight:600; font-size:12.5px; letter-spacing:.35em; color:var(--sub)}
 .side .n{color:var(--ink)}
@@ -308,8 +315,59 @@ function render(g, p, tick){
     }
   });
 }
+
+/* 地の色：節の前の余白を通るあいだに、前の節の色から次の節の色へ移り変わる（変わる途中）
+   生成り → 薄紫 → 濃い紫 → 黒 → 生成り。地が暗くなると文字は明るくなる */
+var PAL = [
+  { bg:[242,238,230], ink:[27,16,34],   sub:[111,102,118] },   /* ALTER */
+  { bg:[228,218,238], ink:[27,16,34],   sub:[95,83,112] },     /* PHILOSOPHY */
+  { bg:[58,31,85],    ink:[244,238,250], sub:[199,182,220] },  /* SERVICE */
+  { bg:[22,16,28],    ink:[242,238,230], sub:[157,147,166] },  /* COMPANY */
+  { bg:[242,238,230], ink:[27,16,34],   sub:[111,102,118] }    /* CONTACT */
+];
+function mix(a, b, t){ return 'rgb(' + a.map(function(v, i){ return Math.round(v + (b[i] - v) * t); }).join(',') + ')'; }
+function tint(){
+  var vh = innerHeight, k = 0, t = 0;
+  gaps.forEach(function(g, i){
+    var r = g.gap.getBoundingClientRect(), c = clamp((vh * .6 - r.top) / (vh * .8));
+    if (c > 0){ k = i; t = c; }
+  });
+  var a = PAL[k], b = PAL[k + 1], root = document.documentElement.style;
+  if (t >= 1){ a = b; t = 0; }
+  root.setProperty('--bg', mix(a.bg, b.bg, t)); root.setProperty('--ink', mix(a.ink, b.ink, t)); root.setProperty('--sub', mix(a.sub, b.sub, t));
+  root.setProperty('--line', 'rgba(' + (t < .5 ? a : b).ink.join(',') + ',.18)');
+}
+
+/* 現れ方を一つにそろえる：見出しも本文も、画面に入ってくるときに一瞬ちらついて、左から決まる（英字と同じ手触りで、小さく） */
+var KANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン', LAT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+function texts(el){ var out = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); while (w.nextNode()) if (w.currentNode.nodeValue.trim()) out.push(w.currentNode); return out; }
+function flick(el){
+  el.classList.add('on');
+  if (RM) return;
+  var nodes = texts(el).map(function(n){ return { n:n, s:n.nodeValue }; }), total = nodes.reduce(function(t, o){ return t + o.s.length; }, 0);
+  var dur = Math.min(700, 260 + total * 6), t0 = performance.now();
+  (function step(){
+    var done = clamp((performance.now() - t0) / dur), edge = done * total, seen = 0;
+    nodes.forEach(function(o){
+      var out = '';
+      for (var i = 0; i < o.s.length; i++){
+        var c = o.s[i];
+        if (seen + i < edge || /[\s、。・「」（）()【】,.\-–]/.test(c)) out += c;
+        else out += /[\x00-\x7f]/.test(c) ? LAT[Math.floor(Math.random() * LAT.length)] : KANA[Math.floor(Math.random() * KANA.length)];
+      }
+      seen += o.s.length; o.n.nodeValue = out;
+    });
+    if (done < 1) setTimeout(step, 40); else nodes.forEach(function(o){ o.n.nodeValue = o.s; });
+  })();
+}
+var RV = '.lead h1, .lead p, .side, main h2, main h3, main p, .svc li, dl, .btn';
+var rvs = [].slice.call(document.querySelectorAll(RV)).filter(function(el){ return !el.parentNode.closest || !el.parentNode.closest('.svc li, dl'); });
+rvs.forEach(function(el){ el.classList.add('rv'); });
+var rio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ rio.unobserve(e.target); flick(e.target); } }); }, { threshold:.25 });
+rvs.forEach(function(el){ rio.observe(el); });
+
 var queued = false;
-function frame(){ queued = false; gaps.forEach(draw); active(); }
+function frame(){ queued = false; gaps.forEach(draw); tint(); active(); }
 function onScroll(){ if (!queued){ queued = true; requestAnimationFrame(frame); } }
 
 /* メニューで飛んだときは、組み上がった英字のところに着く */
