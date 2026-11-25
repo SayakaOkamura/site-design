@@ -440,14 +440,14 @@ var ripSec = document.getElementById('company'), rips = [];
   w.appendChild(b); ripSec.insertBefore(w, ripSec.firstChild);
 })();
 /* 波紋：「会社概要」の見出しの横を中心に、見出しが画面の 8 割の高さに来たら始まる。広がるのはスクロールに合わせて
-   直径はスクロールした量の 1.2 倍（半径はスクロールの半分の速さ）なので、円は画面に貼りつかず、始まった場所に残ったまま広がる
+   直径はスクロールした量の 1.7 倍（半径はスクロールの 85% の速さ）。円の下の端は読んでいる所の近くに残りつつ、ゆっくり上へ遅れていく（同じ速さだと画面に貼りつく）
    薄れるのはゆっくり。節の下の端が画面の下を過ぎてから消えていく */
 function ripple(){
   if (!rips.length) return;
   var c = rips[0], r = ripSec.getBoundingClientRect(), h = ripSec.querySelector('h2');
   var cy = h ? h.getBoundingClientRect().top + h.offsetHeight / 2 : r.top;
   c.style.top = (cy - r.top) + 'px';
-  var sd = Math.max(0, innerHeight * .8 - cy), d = RM ? innerHeight : sd * 1.2, max = Math.hypot(innerWidth, innerHeight) * 4;
+  var sd = Math.max(0, innerHeight * .8 - cy), d = RM ? innerHeight : sd * 1.7, max = Math.hypot(innerWidth, innerHeight) * 4;
   var o = sd <= 0 ? 0 : .85 * (1 - .5 * clamp(d / max)) * clamp(r.bottom / innerHeight);
   c.style.width = c.style.height = d + 'px'; c.style.opacity = o;
 }
