@@ -340,7 +340,7 @@ document.addEventListener('mouseleave', function(){ document.body.classList.remo
 function frame(){
   var gx = mx, gy = my, w = 44, h = 44;
   /* 輪の下にある物：押せる物なら吸いついて囲む、板の字の上なら小さく薄く */
-  var under = snapped < 0 && document.elementFromPoint(mx, my), act = under && under.closest && under.closest('a, button:not(.menu button), #bg .hit');
+  var under = snapped < 0 && document.elementFromPoint(mx, my), act = under && under.closest && under.closest('a, button:not(.menu button)');
   var onText = !act && opened && snapped < 0 && mx > page.getBoundingClientRect().left;
   cur.classList.toggle('press', !!act); cur.classList.toggle('dim', onText);
   if (act){ var ar = act.getBoundingClientRect(); gx = ar.left + ar.width / 2; gy = ar.top + ar.height / 2; w = ar.width + 22; h = ar.height + 14; }
