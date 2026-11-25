@@ -145,13 +145,13 @@ body.open .hero{opacity:0}
 .page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow-x:hidden; overflow-y:auto; color:var(--wh); background:var(--deep);
   border-left:2px solid var(--pu);
   /* 奥から振り込む：右端を軸に、ドアが開くように斜め奥から回り込んで、正面を向いて止まる */
-  transform-origin:100% 50%; transform:perspective(1400px) translateX(30%) translateZ(-260px) rotateY(-38deg); opacity:0; visibility:hidden; pointer-events:none;
+  transform-origin:100% 50%; transform:perspective(1400px) translateX(15%) translateZ(-130px) rotateY(-19deg); opacity:0; visibility:hidden; pointer-events:none;
   transition:transform .62s cubic-bezier(.2,.8,.2,1), opacity .3s, visibility 0s .62s}
 body.open .page{transform:perspective(1400px) translateX(0) translateZ(0) rotateY(0deg); opacity:1; visibility:visible; pointer-events:auto;
   transition:transform .62s cubic-bezier(.2,.8,.2,1), opacity .25s, visibility 0s}
 body.open .page.flat{transform:none}
 /* 開いたまま替えるとき：板を一瞬で奥へ戻し、そこから振り込み直す */
-body.open .page.reset{transform:perspective(1400px) translateX(30%) translateZ(-260px) rotateY(-38deg); opacity:0; transition:none}
+body.open .page.reset{transform:perspective(1400px) translateX(15%) translateZ(-130px) rotateY(-19deg); opacity:0; transition:none}
 /* 中身：見出しは右からシュッと入り、本文は上から一段ずつ少し遅れて流れ込む */
 .page .wrap.enter .ph .k,.page .wrap.enter .ph h2{animation:hin .36s cubic-bezier(.2,.8,.2,1) both}
 .page .wrap.enter .ph h2{animation-delay:.04s}
