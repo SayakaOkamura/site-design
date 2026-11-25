@@ -46,7 +46,7 @@ section > *{grid-column:1 / -1}
 
 /* 節の前の余白＝組み替わりの通り道。英字は余白のあいだ画面に留まり（sticky）、留まる位置に着くと前の語から次の語へ勝手に組み替わる */
 .gap{position:relative; height:clamp(900px,180vh,2100px); margin:0 calc(-1 * var(--pad)) clamp(80px,18vh,200px)}
-.pin{position:sticky; top:var(--top); height:var(--ph)}
+.pin{position:sticky; top:var(--top); height:var(--ph); opacity:0; transition:opacity .25s}
 .pin .ch{position:absolute; left:0; bottom:0; text-align:center; font-family:"Archivo Black",sans-serif; line-height:.78; color:var(--ink); white-space:pre; will-change:transform}
 
 /* 節の番号と名前：小さく、誌面のノンブルのように */
@@ -266,17 +266,19 @@ function build(g){
   keep.forEach(function(p){ g.items.push({ t:'keep', el:mk(), c:g.to[p[1]], a:A.xs[p[0]], b:B.xs[p[1]], fa:A.f, fb:B.f }); });
   /* 現れる文字：その場で回り、左から順に決まる */
   var n = g.to.length;
-  g.to.split('').forEach(function(c, i){ if (i in kt) return; g.items.push({ t:'new', el:mk(), c:c, b:B.xs[i], f:B.f, lock:.48 + .44 * (n > 1 ? i / (n - 1) : 0), i:i }); });
+  g.to.split('').forEach(function(c, i){ if (i in kt) return; g.items.push({ t:'new', el:mk(), c:c, b:B.xs[i], f:B.f, lock:.52 + .42 * (n > 1 ? i / (n - 1) : 0), i:i }); });
   g.p = -1;
 }
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
 function put(el, x, f, w){ el.style.transform = 'translateX(' + x + 'px)'; el.style.fontSize = f + 'px'; el.style.width = w + 'px'; }
-/* 英字が画面の留まる位置に着いたら、勝手に組み上がる（1.2 秒）。上へ戻って余白の手前まで出たら元に戻り、次に来たときにまた組み上がる */
-var DUR = 1200;
+/* 英字が画面の留まる位置に着いたら、勝手に組み上がる（1.3 秒）。上へ戻って余白の手前まで出たら元に戻り、次に来たときにまた組み上がる */
+var DUR = 1300;
 function draw(g){
   var r = g.gap.getBoundingClientRect(), top = Math.max(84, innerHeight * TOPS[g.k]);
-  if (RM){ render(g, 1, 0); return; }
+  if (RM){ g.pin.style.opacity = 1; render(g, 1, 0); return; }
+  /* 留まる位置に着くまでは何も出さない（前の本文に被らないように）。着いたら薄く現れて、組み替わり始める */
+  g.pin.style.opacity = r.top <= top + 1 || g.t0 ? 1 : 0;
   if (r.top <= top + 1){
     if (!g.t0){ g.t0 = performance.now(); (function loop(){ if (!g.t0) return; var t = performance.now() - g.t0; render(g, clamp(t / DUR), Math.floor(t / 45)); if (t < DUR) requestAnimationFrame(loop); })(); }
   } else if (g.t0 && r.top > top + 40){ g.t0 = 0; render(g, 0, 0); }
@@ -288,14 +290,14 @@ function render(g, p, tick){
     var el = it.el;
     if (it.t === 'out'){
       /* 変わる前の文字は薄く残っていて、組み替わり始めると消える */
-      var o = .14 * (1 - clamp(p / .22));
+      var o = .14 * (1 - clamp((p - .08) / .22));
       put(el, it.a.x, it.f, it.a.w); el.textContent = it.c; el.style.opacity = o; el.style.color = '';
     } else if (it.t === 'keep'){
-      var e = ease(clamp(p / .36)), f = it.fa + (it.fb - it.fa) * e;   /* 持ち越す文字が先に着いてから、新しい文字が出る（重ならないように） */
+      var e = ease(clamp((p - .08) / .34)), f = it.fa + (it.fb - it.fa) * e;   /* 持ち越す文字が先に着いてから、新しい文字が出る（重ならないように） */
       /* 持ち越す文字は、薄いところから、滑りながら濃くなる */
       put(el, it.a.x + (it.b.x - it.a.x) * e, f, it.a.w + (it.b.w - it.a.w) * e); el.textContent = it.c; el.style.opacity = .14 + .86 * e; el.style.color = '';
     } else {
-      var on = clamp((p - .3) / .12), done = p >= it.lock;
+      var on = clamp((p - .36) / .12), done = p >= it.lock;
       put(el, it.b.x, it.f, it.b.w); el.style.opacity = on;
       if (done){ el.textContent = it.c; el.style.color = ''; }
       else {
