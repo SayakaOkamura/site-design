@@ -27,15 +27,15 @@ nav a.on{color:var(--ink)}
 
 /* 組み方：ポスター・雑誌の誌面。12 列のグリッドに左右非対称に置く。英字は画面の幅を超えるほど大きく、本文は小さく、余白は思い切り取る */
 main{position:relative; z-index:1}
-section{--pad:clamp(16px,4vw,56px); display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:clamp(12px,2vw,28px); padding:clamp(220px,55vh,560px) var(--pad) 0; align-items:start}   /* 節と節の間を大きく空けて、大きな英字が続けて来ないように */
+section{--pad:clamp(16px,4vw,56px); display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:clamp(12px,2vw,28px); padding:clamp(420px,100vh,1100px) var(--pad) 0; align-items:start; scroll-margin-top:calc(90px - clamp(420px,100vh,1100px))}   /* メニューで飛んだときは、上の余白ではなく英字のところに着く */   /* 節と節の間を大きく空けて、大きな英字が続けて来ないように */
 section > *{grid-column:1 / -1}
 .in{display:grid; grid-template-columns:subgrid; align-items:start}
 .in > *{grid-column:1 / -1}
-#top{min-height:100vh; padding-top:clamp(90px,14vh,140px); align-content:space-between}
+#top{min-height:100vh; padding-top:clamp(90px,14vh,140px); align-content:space-between; scroll-margin-top:0}
 #contact{padding-bottom:clamp(200px,40vh,420px)}
 
 /* 大きな英字：語ごとに画面の幅の 1.06 倍。奇数の節は左の端、偶数の節は右の端で切れる。画面に入ってきたときに一回回って、左から順に止まる */
-.big{margin:0 calc(-1 * var(--pad)) clamp(56px,12vh,140px)}
+.big{margin:0 calc(-1 * var(--pad)) clamp(80px,20vh,220px)}
 .big .ws{display:flex; justify-content:flex-start; perspective:900px}   /* 左右どちらの端で切るかは、はみ出す幅を測って決める */
 .big .ch{display:inline-block; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:.78; color:var(--ink); transition:color .2s; backface-visibility:hidden; white-space:pre}
 .big .ch.new{color:var(--li)}
