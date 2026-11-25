@@ -7,7 +7,7 @@
      ALTER → PHILOSOPHY → SERVICE → COMPANY → CONTACT。全部の文字が一斉に回り出し、左から一文字ずつ止まる。同じ文字は順番のまま横へ滑り、要らない文字はその場で消える。
      社名の Alter（変える）が動きの理由。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
 <style>
 :root{ --bg:#f6f3fa; --ink:#2a0e3e; --sub:#715189; --pu:#654087; --li:#bb7eea; --line:#e0d6ea; }
 *{box-sizing:border-box; margin:0; padding:0}
@@ -15,9 +15,8 @@ html{scroll-behavior:smooth; overflow-x:clip}
 body{overflow-x:clip}
 body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.95}
 a{color:inherit}
-.min{font-family:"Zen Old Mincho",serif; font-weight:700}
 
-header{position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,48px); background:rgba(246,243,250,.92)}   /* 本文と見出しが下を流れるので地を敷く */
+header{position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,48px); background:var(--bg)}   /* 本文と見出しが下を流れるので地を敷く */
 .logo{display:flex; align-items:center; gap:10px; text-decoration:none; line-height:1.1}
 .logo i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
 .logo span{font-size:17px}
@@ -26,40 +25,64 @@ nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
 nav a{text-decoration:none; font-size:13px; letter-spacing:.08em; color:var(--sub); transition:color .2s}
 nav a.on{color:var(--ink)}
 
-/* 大きな英字の見出し：各節の頭に置き、本文と一緒に流れる。画面に入ってきたときに一回回って、左から順に止まる */
-.big{width:100%; text-align:center; margin:clamp(32px,8vh,90px) 0 clamp(24px,5vh,56px)}
-.big .ws{display:flex; justify-content:center; perspective:800px}
-.big .ch{display:inline-block; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:1; color:var(--ink); transition:color .2s; backface-visibility:hidden; white-space:pre}
+/* 組み方：左ぞろえのグリッド。左の細い列に番号と名前、右の広い列に本文。余白は広く */
+main{position:relative; z-index:1}
+section{display:grid; grid-template-columns:minmax(0,2fr) minmax(0,7fr); column-gap:clamp(24px,5vw,96px); max-width:1320px; margin:0 auto; padding:clamp(80px,15vh,180px) clamp(16px,5vw,72px) 0; align-content:start}
+section > *{grid-column:2}
+section > .big{grid-column:1 / -1}
+section > .side{grid-column:1; grid-row:2 / span 20; align-self:start; position:sticky; top:104px}
+#top{min-height:100vh; padding-top:clamp(110px,22vh,220px)}
+#top > .in{grid-column:1 / -1}
+#contact{padding-bottom:clamp(110px,18vh,200px)}
+
+/* 大きな英字の見出し：各節の頭に置き、本文と一緒に流れる。左に寄せて端から少しはみ出す。画面に入ってきたときに一回回って、左から順に止まる */
+.big{margin-bottom:clamp(40px,8vh,100px)}
+.big .ws{display:flex; justify-content:flex-start; margin-left:-.06em; perspective:800px}
+.big .ch{display:inline-block; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:.9; color:var(--ink); transition:color .2s; backface-visibility:hidden; white-space:pre}
 .big .ch.new{color:var(--li)}
 /* 回っている文字：替わるたびに縦にパタッと */
 .big .ch.flip{animation:flip .035s linear}
 @keyframes flip{from{transform:rotateX(-80deg)} to{transform:none}}
-.big .cap{margin-top:.9em; font-size:13px; letter-spacing:.3em; color:var(--sub)}
+.big .cap{margin-top:1.6em; font-family:"Archivo",sans-serif; font-weight:600; font-size:12px; letter-spacing:.45em; color:var(--sub)}
 
-main{position:relative; z-index:1}
-section{padding:6vh clamp(16px,6vw,80px) 10vh; display:grid; align-content:start; justify-items:center}
-.in{width:min(100%,760px)}
-.lead{text-align:center}
-.lead h1{font-size:clamp(22px,3.2vw,38px); line-height:1.6}
-.lead p{margin-top:1.6em; color:var(--sub); font-size:15px}
-h2{font-size:clamp(22px,2.6vw,32px); line-height:1.5; margin-bottom:1.2em; text-align:center}
-h3{font-size:clamp(17px,1.6vw,21px); line-height:1.6; margin-bottom:.6em}
-p{font-size:15px}
+/* 左の細い列：番号と、縦書きの名前。読んでいるあいだ残る */
+.side{display:flex; flex-direction:column; align-items:flex-start; gap:18px}
+.side .n{font-family:"Archivo",sans-serif; font-weight:600; font-size:13px; letter-spacing:.3em; color:var(--pu)}
+.side .n::after{content:""; display:block; width:32px; height:1px; background:var(--ink); margin-top:18px}
+.side .j{writing-mode:vertical-rl; font-size:13px; letter-spacing:.5em; color:var(--sub)}
+
+/* 文字：見出しは太いゴシックで英字と調子をそろえる。本文は行を短めに */
+.min,h1,h2{font-family:"Zen Kaku Gothic New",sans-serif; font-weight:900; letter-spacing:.02em}
+.lead h1{font-size:clamp(26px,3.9vw,54px); line-height:1.45}
+.lead p{margin-top:2.2em; color:var(--sub); font-size:15px; letter-spacing:.06em}
+h2{font-size:clamp(24px,2.9vw,40px); line-height:1.4; margin-bottom:clamp(32px,6vh,64px)}
+h3{font-size:clamp(17px,1.7vw,22px); line-height:1.6; margin-bottom:.8em}
+p{font-size:15px; line-height:2.05; max-width:52em}
 b{font-weight:700}
-.svc{display:grid; grid-template-columns:1fr 1fr; gap:40px 48px; width:min(100%,1000px)}
-.svc li{list-style:none; border-top:2px solid var(--ink); padding-top:14px}
+#philosophy h3{font-size:clamp(20px,2.4vw,30px); font-weight:900; line-height:1.5; margin-bottom:1.4em}
+/* サービス：番号つきで 2×2 */
+.svc{display:grid; grid-template-columns:1fr 1fr; gap:clamp(44px,8vh,80px) clamp(28px,4vw,60px); counter-reset:s}
+.svc li{list-style:none; counter-increment:s; border-top:1px solid var(--ink); padding-top:20px}
+.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(28px,3vw,42px); line-height:1; color:var(--li); margin-bottom:20px}
+.svc h3{font-size:clamp(16px,1.45vw,20px)}
 .svc p{font-size:14px; color:var(--sub)}
-dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:16px 0; font-size:15px}
+/* 会社概要：細い罫線の表 */
+dl{display:grid; grid-template-columns:10em 1fr; border-top:1px solid var(--line); padding:22px 0; font-size:15px}
 dl:last-child{border-bottom:1px solid var(--line)}
-dt{font-weight:700}
+dt{font-weight:700; font-size:13px; letter-spacing:.14em; color:var(--sub); padding-top:.15em}
 .acc{font-size:13px; color:var(--sub); margin-top:.6em}
-.contact{text-align:center}
-.btn{display:inline-flex; align-items:center; justify-content:center; min-width:min(100%,420px); height:60px; margin-top:2em; background:var(--ink); color:#fff; text-decoration:none; letter-spacing:.1em; transition:background .2s}
+.btn{display:inline-flex; align-items:center; justify-content:space-between; gap:24px; min-width:min(100%,380px); height:64px; padding:0 28px; margin-top:2.4em; background:var(--ink); color:#fff; text-decoration:none; letter-spacing:.12em; transition:background .2s}
+.btn::after{content:"→"; font-family:"Archivo",sans-serif}
 .btn:hover{background:var(--pu)}
-footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:28px clamp(16px,4vw,48px); font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; max-width:1320px; margin:0 auto; padding:28px clamp(16px,5vw,72px); font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
 
 @media (max-width:760px){
   nav{display:none}
+  section{grid-template-columns:1fr}
+  section > *,section > .big{grid-column:1}
+  section > .side{grid-column:1; grid-row:auto; position:static; flex-direction:row; align-items:center; margin-bottom:28px}
+  .side .n::after{display:none}
+  .side .j{writing-mode:horizontal-tb; letter-spacing:.3em}
   .svc{grid-template-columns:1fr}
   dl{grid-template-columns:1fr; gap:2px}
 }
@@ -85,7 +108,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </div>
   </section>
 
-  <section id="philosophy" data-w="PHILOSOPHY">
+  <section id="philosophy" data-n="01" data-j="企業理念" data-w="PHILOSOPHY">
     <div class="in">
       <h2 class="min">アルターデザインコンサルティングの企業理念</h2>
       <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
@@ -96,7 +119,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </div>
   </section>
 
-  <section id="services" data-w="SERVICE">
+  <section id="services" data-n="02" data-j="サービス" data-w="SERVICE">
     <h2 class="min">私たちが提供するサービス</h2>
     <ul class="svc">
       <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
@@ -106,7 +129,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </ul>
   </section>
 
-  <section id="company" data-w="COMPANY">
+  <section id="company" data-n="03" data-j="会社概要" data-w="COMPANY">
     <div class="in">
       <h2 class="min">会社概要</h2>
       <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
@@ -120,7 +143,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </div>
   </section>
 
-  <section id="contact" class="contact" data-w="CONTACT">
+  <section id="contact" data-n="04" data-j="お問い合わせ" class="contact" data-w="CONTACT">
     <div class="in">
       <h2 class="min">お問い合わせ</h2>
       <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
@@ -180,6 +203,8 @@ secs.forEach(function(sec){
   var chs = w.split('').map(function(c){ var el = document.createElement('span'); el.className = 'ch'; el.textContent = c; ws.appendChild(el); return el; });
   if (sec.dataset.c){ var cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = sec.dataset.c; box.appendChild(cap); }
   sec.insertBefore(box, sec.firstChild);
+  /* 左の細い列：番号と名前 */
+  if (sec.dataset.n){ var sd = document.createElement('div'); sd.className = 'side'; sd.setAttribute('aria-hidden', 'true'); sd.innerHTML = '<span class="n">' + sec.dataset.n + '</span><span class="j">' + sec.dataset.j + '</span>'; box.after(sd); }
   bigs.push({ w:w, chs:chs, box:box });
 });
 
