@@ -150,7 +150,12 @@ body.open .hero{opacity:0}
 body.open .page{transform:perspective(1400px) translateX(0) translateZ(0) rotateY(0deg); opacity:1; visibility:visible; pointer-events:auto;
   transition:transform .62s cubic-bezier(.2,.8,.2,1), opacity .25s, visibility 0s}
 body.open .page.flat{transform:none}
-/* 中身が替わるとき：板は動かさない。見出しは右からシュッと入り、本文は上から一段ずつ少し遅れて流れ込む */
+/* 開いたまま替えるとき：中身が一枚ごと左へ抜けて、次の節が右から入る */
+.page .wrap.out{animation:wout .17s cubic-bezier(.55,0,.9,.45) forwards}
+@keyframes wout{to{transform:translateX(-100%)}}
+.page .wrap.slide{animation:win .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes win{from{transform:translateX(100%)}}
+/* 開いた最初：見出しは右からシュッと入り、本文は上から一段ずつ少し遅れて流れ込む */
 .page .wrap.enter .ph .k,.page .wrap.enter .ph h2{animation:hin .36s cubic-bezier(.2,.8,.2,1) both}
 .page .wrap.enter .ph h2{animation-delay:.04s}
 @keyframes hin{from{transform:translateX(44px); opacity:0}}
@@ -292,24 +297,32 @@ function frame(){
 }
 
 /* 開く：右から板。開いたまま別の項目を押すと、中身だけ入れ替わる */
+var swapTk = 0;
 function open(i){
   pick(i);
   /* 見出し（英字と題）は板の上に残る */
   var h = PAGES[i].html, cut = h.indexOf('</h2>') + 5;
   var fill = function(){ wrap.innerHTML = '<div class="ph"><span class="k">' + PAGES[i].e + '</span>' + h.slice(0, cut) + '</div>' + h.slice(cut); page.scrollTop = 0; };
-  fill();
-  if (!RM){
+  var tk = ++swapTk;
+  if (opened && !RM){
+    /* 開いたまま替える：中身が一枚ごと左へ抜けて、次の節が右から入る */
+    wrap.classList.remove('enter', 'slide'); wrap.classList.add('out');
+    setTimeout(function(){
+      if (tk !== swapTk) return;
+      fill(); wrap.classList.remove('out'); void wrap.offsetWidth; wrap.classList.add('slide');
+    }, 170);
+  } else if (!RM){
+    fill(); wrap.classList.remove('out', 'slide');
     /* 本文の段ごとに少しずつ遅らせる。開いたばかりのときは、板が振り込むのを待ってから */
-    var base = opened ? .08 : .3;
-    [].forEach.call(wrap.children, function(el, k){ el.style.setProperty('--d', (base + k * .045).toFixed(3) + 's'); });
-    wrap.querySelectorAll('.ph .k, .ph h2').forEach(function(el){ el.style.animationDelay = (opened ? 0 : .26) + (el.tagName === 'H2' ? .04 : 0) + 's'; });
+    [].forEach.call(wrap.children, function(el, k){ el.style.setProperty('--d', (.3 + k * .045).toFixed(3) + 's'); });
+    wrap.querySelectorAll('.ph .k, .ph h2').forEach(function(el){ el.style.animationDelay = .26 + (el.tagName === 'H2' ? .04 : 0) + 's'; });
     wrap.classList.remove('enter'); void wrap.offsetWidth; wrap.classList.add('enter');
-  }
+  } else fill();
   opened = true; document.body.classList.add('open');
   btns.forEach(function(b, k){ b.classList.toggle('opened', k === i); });
   if (!RM){ var cb = btns[i]; cb.classList.remove('confirm'); void cb.offsetWidth; cb.classList.add('confirm'); setTimeout(function(){ cb.classList.remove('confirm'); }, 470); }
 }
-function close(){ opened = false; page.classList.remove('flat'); document.body.classList.remove('open'); btns.forEach(function(b){ b.classList.remove('opened'); }); }
+function close(){ swapTk++; wrap.classList.remove('out', 'slide'); opened = false; page.classList.remove('flat'); document.body.classList.remove('open'); btns.forEach(function(b){ b.classList.remove('opened'); }); }
 /* 振り込み終わったら、3D の変形を外して字をくっきりさせる */
 page.addEventListener('transitionend', function(e){ if (e.target === page && e.propertyName === 'transform') page.classList.toggle('flat', document.body.classList.contains('open')); });
 
