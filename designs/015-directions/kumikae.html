@@ -35,7 +35,10 @@ section > *{grid-column:1 / -1}
 #contact{padding-bottom:clamp(200px,40vh,420px)}
 
 /* 大きな英字：語ごとに画面の幅の 1.06 倍。奇数の節は左の端、偶数の節は右の端で切れる。画面に入ってきたときに一回回って、左から順に止まる */
-.big{margin:0 calc(-1 * var(--pad)) clamp(80px,20vh,220px)}
+.big{margin:0 calc(-1 * var(--pad)) clamp(80px,20vh,220px); pointer-events:none}
+/* 英字は背景の層：透かさずに、色の明度を地に近づけて奥に下げる。手前の日本語の見出しと本文が主役 */
+.big .ch,.pin .ch{color:color-mix(in srgb, var(--ink) 12%, var(--bg)) !important}
+.big .ch.new,.pin .ch.new{color:color-mix(in srgb, var(--li) 40%, var(--bg)) !important}
 .big .ws{display:flex; justify-content:flex-start; perspective:900px}   /* 左右どちらの端で切るかは、はみ出す幅を測って決める */
 .big .ch{display:inline-block; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:.78; color:var(--ink); transition:color .2s; backface-visibility:hidden; white-space:pre}
 .big .ch.new{color:var(--li)}
@@ -45,7 +48,8 @@ section > *{grid-column:1 / -1}
 .big .cap{margin-top:2.2em; padding:0 var(--pad); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.5em; color:var(--sub)}
 
 /* 節の前の余白＝組み替わりの通り道。英字は余白のあいだ画面に留まり（sticky）、留まる位置に着くと前の語から次の語へ勝手に組み替わる */
-.gap{position:relative; margin:clamp(200px,40vh,440px) calc(-1 * var(--pad)) clamp(80px,16vh,180px)}   /* 止めない。英字は本文と一緒に流れ、上の余白で地の色が移り変わる */
+.gap{position:relative; z-index:0; pointer-events:none; margin:clamp(200px,40vh,440px) calc(-1 * var(--pad)) calc(-.5 * var(--ph))}   /* 止めない。英字は本文と一緒に流れ、上の余白で地の色が移り変わる。下半分は次の見出しの後ろに潜る */
+section > :not(.gap):not(.big){position:relative; z-index:1}
 .pin{position:relative; height:var(--ph); opacity:0; transition:opacity .25s}
 .pin .ch{position:absolute; left:0; bottom:0; text-align:center; font-family:"Archivo Black",sans-serif; line-height:.78; color:var(--ink); white-space:pre; will-change:transform}
 
@@ -64,23 +68,25 @@ section.r .side{justify-content:flex-end}
 
 /* 文字：大きさの差を極端に。見出しは太いゴシック、本文は小さく */
 .min,h1,h2{font-family:"Zen Kaku Gothic New",sans-serif; font-weight:900}
-h2{font-size:15px; letter-spacing:.22em; margin-bottom:32px}
+h1,h2,h3{text-wrap:balance}   /* 見出しは行の長さをそろえて、最後の一字だけ落ちないように */
+h2{font-size:clamp(26px,3.2vw,46px); line-height:1.35; letter-spacing:.04em; margin-bottom:clamp(36px,6vh,64px)}
+#philosophy h2{font-size:15px; letter-spacing:.22em; margin-bottom:32px}
 h3{font-size:17px; line-height:1.7; margin-bottom:.8em}
 p{font-size:14.5px; line-height:2.1; letter-spacing:.04em}
 b{font-weight:700}
-.lead{grid-column:7 / -1; padding-bottom:clamp(40px,8vh,80px)}
-.lead h1{font-size:clamp(20px,2.2vw,30px); line-height:1.7; letter-spacing:.04em}
+.lead{grid-column:5 / -1; padding-bottom:clamp(40px,8vh,80px)}
+.lead h1{font-size:clamp(26px,3.6vw,52px); line-height:1.5; letter-spacing:.03em}
 .lead p{margin-top:1.8em; color:var(--sub)}
 
 /* 01 企業理念：日本語の一行を大きく、本文は右の半分 */
 #philosophy h2,#philosophy p{grid-column:5 / -1}
-#philosophy h3{grid-column:1 / 12; order:-1; font-size:clamp(30px,5.2vw,80px); font-weight:900; line-height:1.3; letter-spacing:.01em; margin:clamp(60px,14vh,160px) 0 clamp(220px,55vh,560px)}   /* 一言は一画面に一つ */
+#philosophy h3{grid-column:1 / 12; order:-1; font-size:clamp(28px,4vw,60px); font-weight:900; line-height:1.4; letter-spacing:.01em; margin:0 0 clamp(200px,45vh,480px)}   /* 一言は一画面に一つ */
 /* 02 サービス：左の 8 列に、小さな番号つきで 2×2 */
 #services h2{grid-column:1 / 7}
 .svc{grid-column:1 / -1; display:grid; grid-template-columns:1fr; gap:0; counter-reset:s; margin-top:clamp(40px,8vh,90px)}   /* サービスは一つずつ一画面に。左右交互 */
 .svc li{list-style:none; counter-increment:s; width:min(100%,560px); min-height:clamp(420px,80vh,820px); display:flex; flex-direction:column; justify-content:center}
 .svc li:nth-child(even){justify-self:end}
-.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(90px,14vw,210px); line-height:.8; letter-spacing:-.02em; color:var(--li); margin-bottom:clamp(24px,4vh,44px); border-bottom:1px solid var(--ink); padding-bottom:clamp(16px,3vh,28px)}
+.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(44px,5vw,72px); line-height:.8; letter-spacing:-.01em; color:var(--li); margin-bottom:clamp(24px,4vh,44px); border-bottom:1px solid var(--ink); padding-bottom:clamp(16px,3vh,28px)}
 .svc p{font-size:13.5px; color:var(--sub)}
 /* 03 会社概要：右の半分に、細い罫線の表 */
 #company h2,#company dl{grid-column:7 / -1}
@@ -264,7 +270,7 @@ function build(g){
   var A = lay(g.from, g.fromR), B = lay(g.to, g.r), keep = lcs(g.from, g.to), kf = {}, kt = {};
   keep.forEach(function(p){ kf[p[0]] = p[1]; kt[p[1]] = p[0]; });
   g.pin.innerHTML = ''; g.items = []; g.fB = B.f;
-  g.pin.style.setProperty('--ph', B.f * .78 + 'px');
+  g.gap.style.setProperty('--ph', B.f * .78 + 'px');
   function mk(){ var el = document.createElement('span'); el.className = 'ch'; g.pin.appendChild(el); return el; }
   /* 消える文字：前の語にあって、次の語にない */
   g.from.split('').forEach(function(c, i){ if (i in kf) return; g.items.push({ t:'out', el:mk(), c:c, a:A.xs[i], f:A.f }); });
@@ -305,11 +311,11 @@ function render(g, p, tick){
     } else {
       var on = clamp((p - .36) / .12), done = p >= it.lock;
       put(el, it.b.x, it.f, it.b.w); el.style.opacity = on;
-      if (done){ el.textContent = it.c; el.style.color = ''; }
+      if (done){ el.textContent = it.c; el.classList.remove('new'); }
       else {
         ctx.font = it.f + 'px "Archivo Black"';
         var fit = AZ.split('').filter(function(a){ return ctx.measureText(a).width <= it.b.w * 1.04; });
-        el.textContent = fit[(tick * 7 + it.i * 13) % fit.length]; el.style.color = 'var(--li)';
+        el.textContent = fit[(tick * 7 + it.i * 13) % fit.length]; el.classList.add('new');
       }
     }
   });
@@ -343,6 +349,7 @@ function texts(el){ var out = [], w = document.createTreeWalker(el, NodeFilter.S
 function flick(el){
   el.classList.add('on');
   if (RM) return;
+  el.classList.add('fx');
   var nodes = texts(el).map(function(n){ return { n:n, s:n.nodeValue }; }), total = nodes.reduce(function(t, o){ return t + o.s.length; }, 0);
   var dur = Math.min(700, 260 + total * 6), t0 = performance.now();
   (function step(){
@@ -356,7 +363,7 @@ function flick(el){
       }
       seen += o.s.length; o.n.nodeValue = out;
     });
-    if (done < 1) setTimeout(step, 40); else nodes.forEach(function(o){ o.n.nodeValue = o.s; });
+    if (done < 1) setTimeout(step, 40); else { nodes.forEach(function(o){ o.n.nodeValue = o.s; }); el.classList.remove('fx'); }
   })();
 }
 var RV = '.lead h1, .lead p, .side, main h2, main h3, main p, .svc li, dl, .btn';
