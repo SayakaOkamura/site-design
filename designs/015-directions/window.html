@@ -189,6 +189,8 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   .hero{top:84px; bottom:auto; left:16px; right:16px; text-align:left; max-width:none}
   .keys{display:none}
   .page{width:100%; border-left:0}
+  /* スマホ幅：部屋の絵は見出しとメニューのあいだに収める（メニューの後ろに小物が来ないように） */
+  #bg svg{top:clamp(160px,22vh,200px); bottom:auto; height:45vh; overflow:visible}   /* 机の前板は下まで続く */
 }
 @media (prefers-reduced-motion:reduce){ .page,.cur{transition:none} .rip,.op{display:none} .cur.joy{animation:none} }
 </style>
@@ -227,7 +229,7 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   <path class="curt r" id="curtR" d="M1394 96 L1490 96 L1490 586 L1394 586 Z"/>
   <!-- 机 -->
   <polygon class="desk" points="520,595 1600,595 1600,640 470,640"/>
-  <rect class="deskf" x="470" y="640" width="1130" height="260"/>
+  <rect class="deskf" x="470" y="640" width="1130" height="1400"/>
   <polygon class="sunp" points="830,595 1250,595 1120,640 660,640"/>
   <!-- 鉢 -->
   <g>
