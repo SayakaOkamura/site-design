@@ -445,10 +445,10 @@ function ripple(){
   /* 円の上の端は「会社概要」の見出しと同じ高さ（節の上の方）に固定。読み始める所で開き、読み進めるにつれて下へ膨らむ */
   var h = ripSec.querySelector('h2'), cy = h ? h.getBoundingClientRect().top + h.offsetHeight / 2 : r.top;
   c.style.top = (cy - r.top) + 'px';
-  /* 見出しが画面の 8 割の高さに来たら開き始め、節の下の端が画面の下に着いたときに広がり終わる。円の下の端もそのとき節の下の端に届く（勝手に先に終わらない） */
+  /* 見出しが画面の 8 割の高さに来たら開き始め、節の下の端が画面の下に着いたときに終わる（勝手に先に終わらない） */
   var off = r.bottom - cy, q = clamp((innerHeight * .8 - cy) / Math.max(1, off - innerHeight * .2));
   if (RM) q = .5;
-  c.style.width = c.style.height = q * off + 'px';
+  c.style.width = c.style.height = q * off * 2.4 + 'px';   /* 節の下の端を越えて、ずっと大きくなり続ける */
   c.style.opacity = q <= 0 ? 0 : q < .9 ? .85 : (1 - q) / .1 * .85;   /* 最後の 1 割で薄れる */
 }
 var queued = false;
