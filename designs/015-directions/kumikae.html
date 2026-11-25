@@ -27,11 +27,11 @@ nav a.on{color:var(--ink)}
 
 /* 組み方：ポスター・雑誌の誌面。12 列のグリッドに左右非対称に置く。英字は画面の幅を超えるほど大きく、本文は小さく、余白は思い切り取る */
 main{position:relative; z-index:1}
-section{--pad:clamp(16px,4vw,56px); display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:clamp(12px,2vw,28px); padding:clamp(420px,100vh,1100px) var(--pad) 0; align-items:start; scroll-margin-top:calc(90px - clamp(420px,100vh,1100px))}   /* メニューで飛んだときは、上の余白ではなく英字のところに着く */   /* 節と節の間を大きく空けて、大きな英字が続けて来ないように */
+section{--pad:clamp(16px,4vw,56px); display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:clamp(12px,2vw,28px); padding:0 var(--pad); align-items:start}   /* 節と節の間を大きく空けて、大きな英字が続けて来ないように */
 section > *{grid-column:1 / -1}
 .in{display:grid; grid-template-columns:subgrid; align-items:start}
 .in > *{grid-column:1 / -1}
-#top{min-height:100vh; padding-top:clamp(90px,14vh,140px); align-content:space-between; scroll-margin-top:0}
+#top{min-height:100vh; padding-top:clamp(90px,14vh,140px); align-content:space-between}
 #contact{padding-bottom:clamp(200px,40vh,420px)}
 
 /* 大きな英字：語ごとに画面の幅の 1.06 倍。奇数の節は左の端、偶数の節は右の端で切れる。画面に入ってきたときに一回回って、左から順に止まる */
@@ -43,6 +43,11 @@ section > *{grid-column:1 / -1}
 .big .ch.flip{animation:flip .035s linear}
 @keyframes flip{from{transform:rotateX(-80deg)} to{transform:none}}
 .big .cap{margin-top:2.2em; padding:0 var(--pad); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.5em; color:var(--sub)}
+
+/* 節の前の余白＝組み替わりの通り道。英字は余白のあいだ画面に留まり（sticky）、スクロールした量に合わせて前の語から次の語へ組み替わる */
+.gap{position:relative; height:clamp(900px,190vh,2200px); margin:0 calc(-1 * var(--pad)) clamp(80px,18vh,200px)}
+.pin{position:sticky; top:var(--top); height:var(--ph)}
+.pin .ch{position:absolute; left:0; bottom:0; text-align:center; font-family:"Archivo Black",sans-serif; line-height:.78; color:var(--ink); white-space:pre; will-change:transform}
 
 /* 節の番号と名前：小さく、誌面のノンブルのように */
 .side{display:flex; align-items:center; gap:16px; margin-bottom:clamp(40px,8vh,90px); font-family:"Archivo",sans-serif; font-weight:600; font-size:12.5px; letter-spacing:.35em; color:var(--sub)}
@@ -208,37 +213,118 @@ function spin(b){
   b.chs.forEach(function(el, i){ roll(el, b.w[i], 140 + i * gap); });
 }
 
-/* 各節の頭に見出しを置く */
-secs.forEach(function(sec){
-  var w = sec.dataset.w, box = document.createElement('div'); box.className = 'big'; box.setAttribute('aria-hidden', 'true');
+/* 最初の節：ALTER は本文と同じ流れに置き、開いたときに一回回って止まる */
+var top0 = secs[0];
+(function(){
+  var w = top0.dataset.w, box = document.createElement('div'); box.className = 'big'; box.setAttribute('aria-hidden', 'true');
   var ws = document.createElement('div'); ws.className = 'ws'; box.appendChild(ws);
   var chs = w.split('').map(function(c){ var el = document.createElement('span'); el.className = 'ch'; el.textContent = c; ws.appendChild(el); return el; });
-  if (sec.dataset.c){ var cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = sec.dataset.c; box.appendChild(cap); }
-  sec.insertBefore(box, sec.firstChild);
-  /* 左の細い列：番号と名前 */
-  if (sec.dataset.n){ var sd = document.createElement('div'); sd.className = 'side'; sd.setAttribute('aria-hidden', 'true'); sd.innerHTML = '<span class="n">' + sec.dataset.n + '</span><span class="j">' + sec.dataset.j + '</span>'; box.after(sd); }
+  if (top0.dataset.c){ var cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = top0.dataset.c; box.appendChild(cap); }
+  top0.insertBefore(box, top0.firstChild);
   bigs.push({ w:w, chs:chs, box:box });
+})();
+
+/* ほかの節：画面はいつも「変わる途中」。節の前の余白は、前の語が次の語へ組み替わる通り道
+   余白に入ると英字が画面に留まり、スクロールした量に合わせて組み替わる。止めればその途中で止まる。組み上がったら本文と一緒に流れ出す */
+var TOPS = [.2, .34, .14, .28];   /* 留まる高さ（画面の上から）。節ごとに違う所に置き、同じ位置に二度は置かない */
+var gaps = [];
+secs.slice(1).forEach(function(sec, k){
+  var gap = document.createElement('div'); gap.className = 'gap'; gap.setAttribute('aria-hidden', 'true');
+  var pin = document.createElement('div'); pin.className = 'pin'; gap.appendChild(pin);
+  sec.insertBefore(gap, sec.firstChild);
+  if (sec.dataset.n){ var sd = document.createElement('div'); sd.className = 'side'; sd.setAttribute('aria-hidden', 'true'); sd.innerHTML = '<span class="n">' + sec.dataset.n + '</span><span class="j">' + sec.dataset.j + '</span>'; gap.after(sd); }
+  gaps.push({ sec:sec, gap:gap, pin:pin, from:secs[k].dataset.w, to:sec.dataset.w, r:sec.classList.contains('r'), fromR:secs[k].classList.contains('r'), k:k, p:-1 });
 });
 
-/* 画面に入ってきたら一回回る。いったん画面の外へ出たら、次に入ってきたときにまた回る */
-var io = new IntersectionObserver(function(es){
-  es.forEach(function(e){
-    var b = bigs.filter(function(x){ return x.box === e.target; })[0];
-    if (e.intersectionRatio >= .6 && !b.shown){ b.shown = true; spin(b); }
-    else if (!e.isIntersecting) b.shown = false;
+/* 語の置き方：画面の幅の 1.06 倍。.r の節は左にそろって右の端で切れ、それ以外は左の端で切れて右にそろう */
+function lay(w, r){
+  var W = document.documentElement.clientWidth;
+  ctx.font = '100px "Archivo Black"';
+  var ws = w.split('').map(function(c){ return ctx.measureText(c).width; }), w100 = ws.reduce(function(a, b){ return a + b; }, 0);
+  var f = Math.min(innerWidth * 1.06 * 100 / w100, innerHeight * .6), x = r ? 0 : W - w100 * f / 100;
+  return { f:f, xs:ws.map(function(wd){ var o = { x:x, w:wd * f / 100 }; x += o.w; return o; }) };
+}
+/* いちばん長い共通の並び：順番を崩さずに持ち越す文字の組 */
+function lcs(a, b){
+  var m = a.length, n = b.length, t = [];
+  for (var i = 0; i <= m; i++) t.push(new Array(n + 1).fill(0));
+  for (i = m - 1; i >= 0; i--) for (var j = n - 1; j >= 0; j--) t[i][j] = a[i] === b[j] ? t[i + 1][j + 1] + 1 : Math.max(t[i + 1][j], t[i][j + 1]);
+  var out = []; i = 0; j = 0;
+  while (i < m && j < n){ if (a[i] === b[j]){ out.push([i, j]); i++; j++; } else if (t[i + 1][j] >= t[i][j + 1]) i++; else j++; }
+  return out;
+}
+function build(g){
+  var A = lay(g.from, g.fromR), B = lay(g.to, g.r), keep = lcs(g.from, g.to), kf = {}, kt = {};
+  keep.forEach(function(p){ kf[p[0]] = p[1]; kt[p[1]] = p[0]; });
+  g.pin.innerHTML = ''; g.items = []; g.fB = B.f;
+  g.pin.style.setProperty('--ph', B.f * .78 + 'px');
+  g.pin.style.setProperty('--top', Math.max(84, innerHeight * TOPS[g.k]) + 'px');
+  function mk(){ var el = document.createElement('span'); el.className = 'ch'; g.pin.appendChild(el); return el; }
+  /* 消える文字：前の語にあって、次の語にない */
+  g.from.split('').forEach(function(c, i){ if (i in kf) return; g.items.push({ t:'out', el:mk(), c:c, a:A.xs[i], f:A.f }); });
+  /* 持ち越す文字：前の位置・大きさから、次の位置・大きさへ滑る */
+  keep.forEach(function(p){ g.items.push({ t:'keep', el:mk(), c:g.to[p[1]], a:A.xs[p[0]], b:B.xs[p[1]], fa:A.f, fb:B.f }); });
+  /* 現れる文字：その場で回り、左から順に決まる */
+  var n = g.to.length;
+  g.to.split('').forEach(function(c, i){ if (i in kt) return; g.items.push({ t:'new', el:mk(), c:c, b:B.xs[i], f:B.f, lock:.48 + .44 * (n > 1 ? i / (n - 1) : 0), i:i }); });
+  g.p = -1;
+}
+function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+function ease(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
+function put(el, x, f, w){ el.style.transform = 'translateX(' + x + 'px)'; el.style.fontSize = f + 'px'; el.style.width = w + 'px'; }
+function draw(g){
+  var r = g.gap.getBoundingClientRect(), ph = g.fB * .78, top = Math.max(84, innerHeight * TOPS[g.k]);
+  var p = RM ? 1 : clamp((top - r.top) / Math.max(1, r.height - ph));
+  if (Math.abs(p - g.p) < .002) return; g.p = p;
+  var tick = Math.floor(p * 40);   /* 回る文字は、スクロールしたぶんだけ替わる（止めると止まる） */
+  g.items.forEach(function(it){
+    var el = it.el;
+    if (it.t === 'out'){
+      /* 変わる前の文字は薄く残っていて、組み替わり始めると消える */
+      var o = .14 * (1 - clamp(p / .22));
+      put(el, it.a.x, it.f, it.a.w); el.textContent = it.c; el.style.opacity = o; el.style.color = '';
+    } else if (it.t === 'keep'){
+      var e = ease(clamp(p / .36)), f = it.fa + (it.fb - it.fa) * e;   /* 持ち越す文字が先に着いてから、新しい文字が出る（重ならないように） */
+      /* 持ち越す文字は、薄いところから、滑りながら濃くなる */
+      put(el, it.a.x + (it.b.x - it.a.x) * e, f, it.a.w + (it.b.w - it.a.w) * e); el.textContent = it.c; el.style.opacity = .14 + .86 * e; el.style.color = '';
+    } else {
+      var on = clamp((p - .3) / .12), done = p >= it.lock;
+      put(el, it.b.x, it.f, it.b.w); el.style.opacity = on;
+      if (done){ el.textContent = it.c; el.style.color = ''; }
+      else {
+        ctx.font = it.f + 'px "Archivo Black"';
+        var fit = AZ.split('').filter(function(a){ return ctx.measureText(a).width <= it.b.w * 1.04; });
+        el.textContent = fit[(tick * 7 + it.i * 13) % fit.length]; el.style.color = 'var(--li)';
+      }
+    }
   });
-}, { threshold:[0, .6] });
+}
+var queued = false;
+function frame(){ queued = false; gaps.forEach(draw); active(); }
+function onScroll(){ if (!queued){ queued = true; requestAnimationFrame(frame); } }
+
+/* メニューで飛んだときは、組み上がった英字のところに着く */
+navs.concat([].slice.call(document.querySelectorAll('.logo'))).forEach(function(a){
+  a.addEventListener('click', function(e){
+    var id = a.getAttribute('href').slice(1), g = gaps.filter(function(x){ return x.sec.id === id; })[0];
+    if (!g) return;
+    e.preventDefault();
+    var top = Math.max(84, innerHeight * TOPS[g.k]), y = g.gap.getBoundingClientRect().top + scrollY + g.gap.offsetHeight - g.fB * .78 - top;
+    scrollTo({ top:y, behavior:RM ? 'auto' : 'smooth' });
+    history.replaceState(null, '', '#' + id);
+  });
+});
 
 function active(){
   var mid = innerHeight * .4, hit = secs[0];
-  secs.forEach(function(s){ if (s.getBoundingClientRect().top < mid) hit = s; });
+  secs.forEach(function(s){ var c = s.querySelector('.side') || s; if (c.getBoundingClientRect().top < mid) hit = s; });
   navs.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + hit.id); });
 }
-addEventListener('scroll', active, {passive:true});
-addEventListener('resize', size);
+addEventListener('scroll', onScroll, {passive:true});
+addEventListener('resize', function(){ size(); gaps.forEach(build); frame(); });
 
 (document.fonts ? document.fonts.load('100px "Archivo Black"') : Promise.resolve()).catch(function(){}).then(function(){
-  size(); active(); bigs.forEach(function(b){ io.observe(b.box); });
+  size(); gaps.forEach(build); frame(); spin(bigs[0]);
 });
 })();
 </script>
