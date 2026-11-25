@@ -94,6 +94,10 @@ b{font-weight:700}
 .idx li span{font-family:"Archivo",sans-serif; font-weight:600; letter-spacing:.2em; font-size:12px; padding-top:.15em}
 .idx li.on{opacity:1; color:var(--ink); padding-left:12px}
 .idx li.on span{color:var(--li)}
+/* 一覧の横線：濃くなった項目の下に、左から右へ線が引かれる。離れるときは右へ抜けて消える */
+.idx li{position:relative}
+.idx li::after{content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--li); transform:scaleX(0); transform-origin:right center; transition:transform .5s cubic-bezier(.6,0,.2,1)}
+.idx li.on::after{transform:scaleX(1); transform-origin:left center; transition:transform .7s cubic-bezier(.2,.8,.2,1)}
 .svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(44px,5vw,72px); line-height:.8; letter-spacing:-.01em; color:var(--li); margin-bottom:clamp(24px,4vh,44px); padding-bottom:clamp(16px,3vh,28px); background:linear-gradient(var(--ink),var(--ink)) left bottom / 0% 1px no-repeat; transition:background-size 1.1s cubic-bezier(.2,.8,.2,1) .15s}
 /* 番号の下の横線：サービスが画面に入ってくると、左から右へ引かれる */
 .svc li.on::before{background-size:100% 1px}
