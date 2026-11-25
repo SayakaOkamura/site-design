@@ -88,7 +88,16 @@ b{font-weight:700}
 /* サービスの横：4 つの一覧を画面に留め、いま読んでいるものだけ濃くする */
 .svcwrap{display:grid; grid-template-columns:subgrid; align-items:start}
 .svcwrap .svc{grid-column:1 / 8}
-.idx{grid-column:9 / -1; position:sticky; top:42vh; list-style:none; margin-top:clamp(40px,8vh,90px)}
+.idxbox{grid-column:9 / -1; position:sticky; top:24vh; margin-top:clamp(40px,8vh,90px)}
+/* 右の大きな番号：いま読んでいるサービスの番号。替わるときに英字と同じように回って決まる */
+.idxnum{display:flex; font-family:"Archivo Black",sans-serif; font-size:clamp(110px,13vw,210px); line-height:.8; letter-spacing:-.02em; color:var(--li); perspective:600px}
+.idxnum b{display:inline-block; width:.62em; text-align:center; font-weight:400}
+.idxnum b.flip{animation:flip .035s linear}
+/* 左と右をつなぐ線：読んでいるサービスの番号の下の線と同じ高さで、左の本文の端から右の番号の下まで、左から右へ引かれる */
+.idxline{position:relative; height:1px; margin:clamp(14px,2.4vh,24px) 0 clamp(28px,5vh,52px)}
+.idxline i{position:absolute; top:0; height:1px; right:0; left:var(--from,0px); background:var(--ink); transform:scaleX(0); transform-origin:left center}
+.idxline i.go{transform:scaleX(1); transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.idx{list-style:none}
 .idx li{display:grid; grid-template-columns:3.2em 1fr; gap:4px; padding:12px 0; border-top:1px solid var(--line); font-size:13.5px; line-height:1.6; color:var(--sub); opacity:.45; transition:opacity .3s, color .3s, padding-left .3s cubic-bezier(.2,.8,.2,1)}
 .idx li:last-child{border-bottom:1px solid var(--line)}
 .idx li span{font-family:"Archivo",sans-serif; font-weight:600; letter-spacing:.2em; font-size:12px; padding-top:.15em}
@@ -120,7 +129,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
   nav{display:none}
   section > *,.in > *,#philosophy h3,.lead,.svc{grid-column:1 / -1 !important}
   .svc{grid-template-columns:1fr}
-  .idx{display:none}
+  .idx,.idxbox{display:none}
   dl{grid-template-columns:1fr; gap:2px}
   section.r .side{justify-content:flex-start}
 }
@@ -389,16 +398,30 @@ var rio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.i
 rvs.forEach(function(el){ rio.observe(el); });
 
 /* サービスの一覧：4 つの見出しを公式の文のまま並べ、いま画面の真ん中にあるものを濃くする */
-var svc = document.querySelector('.svc'), wrap = document.createElement('div'), idx = document.createElement('ol');
-wrap.className = 'svcwrap'; idx.className = 'idx'; idx.setAttribute('aria-hidden', 'true');
-svc.parentNode.insertBefore(wrap, svc); wrap.appendChild(svc); wrap.appendChild(idx);
+var svc = document.querySelector('.svc'), wrap = document.createElement('div'), box = document.createElement('div'), idx = document.createElement('ol');
+wrap.className = 'svcwrap'; box.className = 'idxbox'; box.setAttribute('aria-hidden', 'true'); idx.className = 'idx';
+box.innerHTML = '<div class="idxnum"><b>0</b><b>1</b></div><div class="idxline"><i></i></div>'; box.appendChild(idx);
+svc.parentNode.insertBefore(wrap, svc); wrap.appendChild(svc); wrap.appendChild(box);
+var digits = [].slice.call(box.querySelectorAll('.idxnum b')), conn = box.querySelector('.idxline i'), cur = -1;
 var items = [].slice.call(svc.children);
 items.forEach(function(li, i){ var o = document.createElement('li'); o.innerHTML = '<span>' + ('0' + (i + 1)) + '</span>' + li.querySelector('h3').textContent; idx.appendChild(o); });
 var marks = [].slice.call(idx.children);
+/* 替わるサービスは、その番号の下の線が、右の線の高さまで上がってきたとき */
 function follow(){
-  var mid = innerHeight / 2, best = 0, d = 1e9;
-  items.forEach(function(li, i){ var r = li.getBoundingClientRect(), c = Math.abs(r.top + r.height / 2 - mid); if (c < d){ d = c; best = i; } });
+  var y = conn.getBoundingClientRect().top, best = 0;
+  items.forEach(function(li, i){ var h = li.querySelector('h3'), mb = parseFloat(getComputedStyle(li, '::before').marginBottom) || 0; if (h.getBoundingClientRect().top - mb <= y + 2) best = i; });
+  if (best === cur) return; cur = best;
   marks.forEach(function(m, i){ m.classList.toggle('on', i === best); });
+  /* 右の番号：回って決まる */
+  var to = ('0' + (best + 1)).split('');
+  digits.forEach(function(d, k){
+    var tk = d.tk = (d.tk || 0) + 1, t0 = performance.now(), lock = RM ? 0 : 160 + k * 120;
+    (function step(){ if (tk !== d.tk) return; var done = performance.now() - t0 >= lock; d.textContent = done ? to[k] : String(Math.floor(Math.random() * 10)); if (!RM){ d.classList.remove('flip'); void d.offsetWidth; d.classList.add('flip'); } if (!done) setTimeout(step, 40); })();
+  });
+  /* つなぐ線：左の本文の端から、右の番号の下まで引き直す */
+  var lr = items[best].getBoundingClientRect(), br = box.getBoundingClientRect();
+  conn.style.setProperty('--from', (Math.min(lr.left + Math.min(lr.width, 560), lr.right) - br.left) + 'px');
+  conn.classList.remove('go'); void conn.offsetWidth; if (!RM) conn.classList.add('go'); else conn.style.transform = 'scaleX(1)';
 }
 var queued = false;
 function frame(){ queued = false; gaps.forEach(draw); tint(); follow(); active(); }
