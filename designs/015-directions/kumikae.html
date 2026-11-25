@@ -4,14 +4,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 お洒落・文字が組み替わる（2026-11-24）。大きな英字の見出しが、節に入るたびに組み替わる。
-     ALTER → PHILOSOPHY → SERVICE → COMPANY → CONTACT。同じ文字は持ち越して動き、足りない文字は入れ替わりながら現れる。
+     ALTER → PHILOSOPHY → SERVICE → COMPANY → CONTACT。同じ文字は順番のまま横へ滑り、要らない文字はその場で消え、足りない文字はその場でパタッと現れる。
      社名の Alter（変える）が動きの理由。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@700&display=swap">
 <style>
 :root{ --bg:#f6f3fa; --ink:#2a0e3e; --sub:#715189; --pu:#654087; --li:#bb7eea; --line:#e0d6ea; }
 *{box-sizing:border-box; margin:0; padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth; overflow-x:clip}
+body{overflow-x:clip}
 body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.95}
 a{color:inherit}
 .min{font-family:"Zen Old Mincho",serif; font-weight:700}
@@ -29,9 +30,15 @@ nav a.on{color:var(--ink)}
 .stage{position:sticky; top:0; z-index:2; height:46vh; min-height:220px; pointer-events:none;
   background:linear-gradient(var(--bg) 82%, rgba(246,243,250,0))}
 .word{position:absolute; left:0; right:0; top:56%; height:0}
-.ch{position:absolute; top:0; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:1; transform:translate(var(--x),-50%) rotate(var(--r,0deg));
-  transition:transform .9s cubic-bezier(.65,0,.2,1), opacity .5s, color .3s; will-change:transform; white-space:pre}
+.word{perspective:800px}
+.ch{position:absolute; top:0; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:1; transform:translate(var(--x),-50%) rotateX(var(--rx,0deg));
+  transition:transform .45s cubic-bezier(.3,0,.1,1), opacity .18s, color .3s; will-change:transform; white-space:pre; backface-visibility:hidden}
 .ch.new{color:var(--li)}
+/* 消える文字：その場で上へ倒れて消える（遠くへ飛ばない） */
+.ch.out{--rx:90deg; opacity:0; transition:transform .18s ease-in, opacity .18s}
+/* 現れる文字：その場で縦にパタッと替わる（発車標のように） */
+.ch.flip{animation:flip .07s linear}
+@keyframes flip{from{transform:translate(var(--x),-50%) rotateX(-80deg)} to{transform:translate(var(--x),-50%) rotateX(0deg)}}
 .cap{position:absolute; left:0; right:0; top:calc(56% + var(--fs) * .62); text-align:center; font-size:13px; letter-spacing:.3em; color:var(--sub); transition:opacity .4s}
 
 main{position:relative; z-index:1}
@@ -155,47 +162,50 @@ function layout(w){
   ws.forEach(function(wd){ out.push(x); x += wd; });
   return out;
 }
-function place(span, x, r){ span.style.setProperty('--x', x + 'px'); span.style.setProperty('--r', (r || 0) + 'deg'); }
-function scramble(span, to, ms){
-  var t0 = performance.now();
-  (function step(){
-    var t = performance.now() - t0;
-    if (t >= ms || RM){ span.textContent = to; span.classList.remove('new'); return; }
-    span.textContent = AZ[Math.floor(Math.random() * 26)];
-    setTimeout(step, 50);
-  })();
+function place(el, x){ el.style.setProperty('--x', x + 'px'); }
+/* 順番を崩さずに持ち越せる文字の組（いちばん長い共通の並び）。持ち越す文字同士が交差しない */
+function lcs(a, b){
+  var m = a.length, n = b.length, t = [];
+  for (var i = 0; i <= m; i++){ t.push(new Array(n + 1).fill(0)); }
+  for (i = m - 1; i >= 0; i--) for (var j = n - 1; j >= 0; j--) t[i][j] = a[i] === b[j] ? t[i + 1][j + 1] + 1 : Math.max(t[i + 1][j], t[i][j + 1]);
+  var out = []; i = 0; j = 0;
+  while (i < m && j < n){ if (a[i] === b[j]){ out.push([i, j]); i++; j++; } else if (t[i + 1][j] >= t[i][j + 1]) i++; else j++; }
+  return out;
+}
+/* その場で縦にパタッと 3 回替わって、決まる */
+function flipIn(it, to, delay){
+  var tk = ++it.tk, k = 0, n = RM ? 0 : 3;
+  setTimeout(function step(){
+    if (tk !== it.tk) return;
+    it.el.style.opacity = 1;
+    it.el.textContent = k < n ? AZ[Math.floor(Math.random() * 26)] : to;
+    if (!RM){ it.el.classList.remove('flip'); void it.el.offsetWidth; it.el.classList.add('flip'); }
+    if (k++ < n) setTimeout(step, 70);
+    else setTimeout(function(){ if (tk === it.tk) it.el.classList.remove('new'); }, 140);
+  }, RM ? 0 : delay);
 }
 
-/* いまの語から次の語へ：同じ文字は持ち越して動かし、余った文字は散り、足りない文字は入れ替わりながら現れる */
+/* いまの語から次の語へ：持ち越す文字は順番のまま横へ滑り、要らない文字はその場で倒れて消え、足りない文字はその場でパタッと現れる */
 function morph(w, cap){
   if (w === now) return; now = w;
-  capEl.style.opacity = 0; setTimeout(function(){ capEl.textContent = cap; capEl.style.opacity = 1; }, 450);
-  var xs = layout(w), used = new Array(cur.length).fill(false), next = [];
-  w.split('').forEach(function(c, i){
-    var k = -1;
-    for (var j = 0; j < cur.length; j++) if (!used[j] && cur[j].c === c){ k = j; break; }
-    if (k >= 0){ used[k] = true; next.push(cur[k]); place(cur[k].el, xs[i]); cur[k].el.style.opacity = 1; return; }
-    next.push(null);
+  capEl.style.opacity = 0; setTimeout(function(){ capEl.textContent = cap; capEl.style.opacity = 1; }, 300);
+  var xs = layout(w), next = new Array(w.length).fill(null), kept = new Array(cur.length).fill(false);
+  lcs(cur.map(function(it){ return it.c; }).join(''), w).forEach(function(p){
+    var it = cur[p[0]]; kept[p[0]] = true; next[p[1]] = it;
+    it.tk++; it.el.textContent = it.c; it.el.classList.remove('new', 'out', 'flip'); it.el.style.opacity = 1;
+    place(it.el, xs[p[1]]);
   });
-  /* 足りない分：余った文字を先に使い回し、それでも足りなければ外から呼ぶ */
-  var spare = cur.filter(function(_, j){ return !used[j]; });
+  cur.forEach(function(it, j){
+    if (kept[j]) return;
+    it.tk++; it.el.classList.remove('flip'); it.el.classList.add('out');
+    setTimeout(function(){ it.el.remove(); }, 220);
+  });
+  var order = 0;
   w.split('').forEach(function(c, i){
     if (next[i]) return;
-    var it = spare.shift();
-    if (!it){
-      var el = document.createElement('span'); el.className = 'ch'; wordEl.appendChild(el);
-      it = { el:el, c:'' };
-      place(el, Math.random() < .5 ? -fs : innerWidth + fs, (Math.random() - .5) * 90); el.style.opacity = 0;
-      void el.offsetWidth;
-    }
-    it.c = c; it.el.classList.add('new'); it.el.style.opacity = 1;
-    place(it.el, xs[i]); scramble(it.el, c, 650 + Math.random() * 300);
-    next[i] = it;
-  });
-  /* 余ったまま：散って消える */
-  spare.forEach(function(it){
-    place(it.el, Math.random() < .5 ? -fs * 2 : innerWidth + fs, (Math.random() - .5) * 120); it.el.style.opacity = 0;
-    setTimeout(function(){ it.el.remove(); }, 900);
+    var el = document.createElement('span'); el.className = 'ch new'; el.style.opacity = 0; place(el, xs[i]); wordEl.appendChild(el);
+    var it = { el:el, c:c, tk:0 }; next[i] = it;
+    flipIn(it, c, 260 + order++ * 40);   /* 滑る文字が着いてから */
   });
   cur = next;
 }
