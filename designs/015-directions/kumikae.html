@@ -45,8 +45,8 @@ section > *{grid-column:1 / -1}
 .big .cap{margin-top:2.2em; padding:0 var(--pad); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.5em; color:var(--sub)}
 
 /* 節の前の余白＝組み替わりの通り道。英字は余白のあいだ画面に留まり（sticky）、留まる位置に着くと前の語から次の語へ勝手に組み替わる */
-.gap{position:relative; height:clamp(900px,180vh,2100px); margin:0 calc(-1 * var(--pad)) clamp(80px,18vh,200px)}
-.pin{position:sticky; top:var(--top); height:var(--ph); opacity:0; transition:opacity .25s}
+.gap{position:relative; margin:clamp(200px,40vh,440px) calc(-1 * var(--pad)) clamp(80px,16vh,180px)}   /* 止めない。英字は本文と一緒に流れ、上の余白で地の色が移り変わる */
+.pin{position:relative; height:var(--ph); opacity:0; transition:opacity .25s}
 .pin .ch{position:absolute; left:0; bottom:0; text-align:center; font-family:"Archivo Black",sans-serif; line-height:.78; color:var(--ink); white-space:pre; will-change:transform}
 
 /* 見出しと本文：画面に入ってくるまでは隠しておき、入ったらちらついて決まる */
@@ -74,16 +74,17 @@ b{font-weight:700}
 
 /* 01 企業理念：日本語の一行を大きく、本文は右の半分 */
 #philosophy h2,#philosophy p{grid-column:5 / -1}
-#philosophy h3{grid-column:1 / 12; order:-1; font-size:clamp(28px,4.6vw,70px); font-weight:900; line-height:1.3; letter-spacing:.01em; margin-bottom:clamp(48px,10vh,120px)}
+#philosophy h3{grid-column:1 / 12; order:-1; font-size:clamp(30px,5.2vw,80px); font-weight:900; line-height:1.3; letter-spacing:.01em; margin:clamp(60px,14vh,160px) 0 clamp(220px,55vh,560px)}   /* 一言は一画面に一つ */
 /* 02 サービス：左の 8 列に、小さな番号つきで 2×2 */
 #services h2{grid-column:1 / 7}
-.svc{grid-column:1 / 9; display:grid; grid-template-columns:1fr 1fr; gap:clamp(48px,9vh,88px) clamp(24px,3vw,48px); counter-reset:s}
-.svc li{list-style:none; counter-increment:s; border-top:1px solid var(--ink); padding-top:16px}
-.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo",sans-serif; font-weight:600; font-size:12.5px; letter-spacing:.3em; color:var(--li); margin-bottom:22px}
+.svc{grid-column:1 / -1; display:grid; grid-template-columns:1fr; gap:0; counter-reset:s; margin-top:clamp(40px,8vh,90px)}   /* サービスは一つずつ一画面に。左右交互 */
+.svc li{list-style:none; counter-increment:s; width:min(100%,560px); min-height:clamp(420px,80vh,820px); display:flex; flex-direction:column; justify-content:center}
+.svc li:nth-child(even){justify-self:end}
+.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(90px,14vw,210px); line-height:.8; letter-spacing:-.02em; color:var(--li); margin-bottom:clamp(24px,4vh,44px); border-bottom:1px solid var(--ink); padding-bottom:clamp(16px,3vh,28px)}
 .svc p{font-size:13.5px; color:var(--sub)}
 /* 03 会社概要：右の半分に、細い罫線の表 */
 #company h2,#company dl{grid-column:7 / -1}
-dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:16px 0; font-size:14.5px; line-height:2}
+dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:clamp(28px,6vh,56px) 0; font-size:14.5px; line-height:2}   /* 行の間を広く、ゆっくり流れる */
 dl:last-child{border-bottom:1px solid var(--line)}
 dt{font-weight:700; font-size:12.5px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
 .acc{font-size:13px; color:var(--sub); margin-top:.6em}
@@ -233,7 +234,6 @@ var top0 = secs[0];
 
 /* ほかの節：画面はいつも「変わる途中」。節の前の余白は、前の語が次の語へ組み替わる通り道
    余白に入ると英字が画面に留まり、勝手に組み替わる。組み上がったら本文と一緒に流れ出す */
-var TOPS = [.2, .34, .14, .28];   /* 留まる高さ（画面の上から）。節ごとに違う所に置き、同じ位置に二度は置かない */
 var gaps = [];
 secs.slice(1).forEach(function(sec, k){
   var gap = document.createElement('div'); gap.className = 'gap'; gap.setAttribute('aria-hidden', 'true');
@@ -265,7 +265,6 @@ function build(g){
   keep.forEach(function(p){ kf[p[0]] = p[1]; kt[p[1]] = p[0]; });
   g.pin.innerHTML = ''; g.items = []; g.fB = B.f;
   g.pin.style.setProperty('--ph', B.f * .78 + 'px');
-  g.pin.style.setProperty('--top', Math.max(84, innerHeight * TOPS[g.k]) + 'px');
   function mk(){ var el = document.createElement('span'); el.className = 'ch'; g.pin.appendChild(el); return el; }
   /* 消える文字：前の語にあって、次の語にない */
   g.from.split('').forEach(function(c, i){ if (i in kf) return; g.items.push({ t:'out', el:mk(), c:c, a:A.xs[i], f:A.f }); });
@@ -279,16 +278,16 @@ function build(g){
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
 function put(el, x, f, w){ el.style.transform = 'translateX(' + x + 'px)'; el.style.fontSize = f + 'px'; el.style.width = w + 'px'; }
-/* 英字が画面の留まる位置に着いたら、勝手に組み上がる（1.3 秒）。上へ戻って余白の手前まで出たら元に戻り、次に来たときにまた組み上がる */
+/* 英字が流れてきて画面の 6 割の高さまで来たら、勝手に組み上がる（1.3 秒）。止めない。下へ戻って画面の外へ出たら元に戻り、次に来たときにまた組み上がる */
 var DUR = 1300;
 function draw(g){
-  var r = g.gap.getBoundingClientRect(), top = Math.max(84, innerHeight * TOPS[g.k]);
+  var r = g.gap.getBoundingClientRect(), top = innerHeight * .62;   /* 英字が画面の下から 4 割ほど上がってきたら */
   if (RM){ g.pin.style.opacity = 1; render(g, 1, 0); return; }
-  /* 留まる位置に着くまでは何も出さない（前の本文に被らないように）。着いたら薄く現れて、組み替わり始める */
+  /* そこまでは何も出さない（前の本文に被らないように）。来たら薄く現れて、組み替わり始める */
   g.pin.style.opacity = r.top <= top + 1 || g.t0 ? 1 : 0;
   if (r.top <= top + 1){
     if (!g.t0){ g.t0 = performance.now(); (function loop(){ if (!g.t0) return; var t = performance.now() - g.t0; render(g, clamp(t / DUR), Math.floor(t / 45)); if (t < DUR) requestAnimationFrame(loop); })(); }
-  } else if (g.t0 && r.top > top + 40){ g.t0 = 0; render(g, 0, 0); }
+  } else if (g.t0 && r.top > innerHeight + 20){ g.t0 = 0; render(g, 0, 0); }   /* 画面の下へ出たら元に戻る */
   else if (!g.t0 && g.p !== 0) render(g, 0, 0);
 }
 function render(g, p, tick){
@@ -376,7 +375,7 @@ navs.concat([].slice.call(document.querySelectorAll('.logo'))).forEach(function(
     var id = a.getAttribute('href').slice(1), g = gaps.filter(function(x){ return x.sec.id === id; })[0];
     if (!g) return;
     e.preventDefault();
-    var top = Math.max(84, innerHeight * TOPS[g.k]), y = g.gap.getBoundingClientRect().top + scrollY + g.gap.offsetHeight - g.fB * .78 - top;
+    var y = g.gap.getBoundingClientRect().top + scrollY - innerHeight * .22;
     scrollTo({ top:y, behavior:RM ? 'auto' : 'smooth' });
     history.replaceState(null, '', '#' + id);
   });
