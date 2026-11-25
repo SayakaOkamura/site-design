@@ -442,13 +442,14 @@ var ripSec = document.getElementById('company'), rips = [];
 function ripple(){
   if (!rips.length) return;
   var c = rips[0], r = ripSec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight){ c.style.opacity = 0; return; }
-  /* 一回だけ広がって薄れる（繰り返さない） */
   /* 円の上の端は「会社概要」の見出しと同じ高さ（節の上の方）に固定。読み始める所で開き、読み進めるにつれて下へ膨らむ */
   var h = ripSec.querySelector('h2'), cy = h ? h.getBoundingClientRect().top + h.offsetHeight / 2 : r.top;
   c.style.top = (cy - r.top) + 'px';
-  var q = clamp((innerHeight * .8 - cy) / (innerHeight * 1.2)), max = Math.hypot(innerWidth, innerHeight) * 1.1;
-  if (RM) q = .4;
-  c.style.width = c.style.height = q * max + 'px'; c.style.opacity = q <= 0 ? 0 : (1 - q) * .85;
+  /* 見出しが画面の 8 割の高さに来たら開き始め、節の下の端が画面の下に着いたときに広がり終わる。円の下の端もそのとき節の下の端に届く（勝手に先に終わらない） */
+  var off = r.bottom - cy, q = clamp((innerHeight * .8 - cy) / Math.max(1, off - innerHeight * .2));
+  if (RM) q = .5;
+  c.style.width = c.style.height = q * off + 'px';
+  c.style.opacity = q <= 0 ? 0 : q < .9 ? .85 : (1 - q) / .1 * .85;   /* 最後の 1 割で薄れる */
 }
 var queued = false;
 function frame(){ queued = false; gaps.forEach(draw); tint(); follow(); ripple(); active(); }
