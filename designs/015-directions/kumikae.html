@@ -49,7 +49,7 @@ section > *{grid-column:1 / -1}
 
 /* 節の前の余白＝組み替わりの通り道。英字は余白のあいだ画面に留まり（sticky）、留まる位置に着くと前の語から次の語へ勝手に組み替わる */
 .gap{position:relative; z-index:0; pointer-events:none; margin:clamp(200px,40vh,440px) calc(-1 * var(--pad)) calc(-.5 * var(--ph))}   /* 止めない。英字は本文と一緒に流れ、上の余白で地の色が移り変わる。下半分は次の見出しの後ろに潜る */
-section > :not(.gap):not(.big){position:relative; z-index:1}
+section > :not(.gap):not(.big):not(.ripwrap){position:relative; z-index:1}
 .pin{position:relative; height:var(--ph); opacity:0; transition:opacity .25s}
 .pin .ch{position:absolute; left:0; bottom:0; text-align:center; font-family:"Archivo Black",sans-serif; line-height:.78; color:var(--ink); white-space:pre; will-change:transform}
 
@@ -115,6 +115,11 @@ b{font-weight:700}
 .svc p{font-size:13.5px; color:var(--sub)}
 /* 03 会社概要：右の半分に、細い罫線の表 */
 #company h2,#company dl{grid-column:7 / -1}
+/* 会社概要の後ろ：スクロールにつれて、左の方から薄い色の円が波紋のように広がる（止めると止まる） */
+#company{position:relative}
+.ripwrap{position:absolute; inset:0 calc(-1 * var(--pad)); z-index:0; pointer-events:none; overflow:clip; -webkit-mask:linear-gradient(transparent, #000 18%, #000 88%, transparent); mask:linear-gradient(transparent, #000 18%, #000 88%, transparent)}
+.ripbox{position:sticky; top:0; height:100vh}
+.ripbox i{position:absolute; left:22%; top:56%; width:0; height:0; border-radius:50%; border:1px solid color-mix(in srgb, var(--li) 45%, var(--bg)); transform:translate(-50%,-50%); will-change:width,height,opacity}
 dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:clamp(28px,6vh,56px) 0; font-size:14.5px; line-height:2}   /* 行の間を広く、ゆっくり流れる */
 dl:last-child{border-bottom:1px solid var(--line)}
 dt{font-weight:700; font-size:12.5px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
@@ -426,8 +431,25 @@ function follow(){
   conn.style.setProperty('--from', (Math.min(lr.left + Math.min(lr.width, 560), lr.right) - br.left) + 'px');
   conn.classList.remove('go'); void conn.offsetWidth; if (!RM) conn.classList.add('go'); else conn.style.transform = 'scaleX(1)';
 }
+/* 会社概要の波紋 */
+var ripSec = document.getElementById('company'), rips = [];
+(function(){
+  if (!ripSec) return;
+  var w = document.createElement('div'), b = document.createElement('div'); w.className = 'ripwrap'; b.className = 'ripbox'; w.setAttribute('aria-hidden', 'true');
+  for (var i = 0; i < 6; i++){ var c = document.createElement('i'); b.appendChild(c); rips.push(c); }
+  w.appendChild(b); ripSec.insertBefore(w, ripSec.firstChild);
+})();
+function ripple(){
+  if (!rips.length) return;
+  var r = ripSec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+  var p = -r.top / innerHeight, max = Math.hypot(innerWidth, innerHeight) * .9;
+  rips.forEach(function(c, i){
+    var ph = ((p * .9 + i / rips.length) % 1 + 1) % 1, d = ph * max;
+    c.style.width = c.style.height = d + 'px'; c.style.opacity = RM ? .4 : (1 - ph) * .8;
+  });
+}
 var queued = false;
-function frame(){ queued = false; gaps.forEach(draw); tint(); follow(); active(); }
+function frame(){ queued = false; gaps.forEach(draw); tint(); follow(); ripple(); active(); }
 function onScroll(){ if (!queued){ queued = true; requestAnimationFrame(frame); } }
 
 /* メニューで飛んだときは、組み上がった英字のところに着く */
