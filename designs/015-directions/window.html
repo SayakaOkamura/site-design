@@ -61,24 +61,23 @@ body.keys .dot{opacity:0}   /* キーで選んでいるあいだは点を出さ�
 /* 背景：作業部屋の窓辺。時間は見ている人の時計に合わせる（朝・昼・夕・夜） */
 #bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; background:var(--wall)}
 #bg svg{position:absolute; inset:0; width:100%; height:100%; display:block}
-body{--wall:#3a2a50; --skyT:#a9c3e0; --skyB:#f6c9a8; --orb:#fff4d6; --cloud:#ffffff; --cloudA:.75; --bld:#6f6c92; --lit:0; --star:0;
-  --frame:#54406c; --curt:#b893cc; --desk:#5a4166; --deskf:#2b1c37; --sun:#fff1c9; --sunA:.14; --leaf:#7fa088; --pot:#a8707a; --mug:#efe6f3;
-  --paper:#efe6dc; --lap:#3b3350; --scr:#a9bedd; --glow:0; --steam:rgba(255,255,255,.55)}
-body[data-t="day"]{--wall:#43305a; --skyT:#7fb6e6; --skyB:#cfe6f5; --orb:#fffbe8; --cloudA:.85; --bld:#7d89a9; --sunA:.18; --frame:#5c4775; --curt:#c2a2d4; --desk:#634a70; --scr:#b9cbe6}
-body[data-t="evening"]{--wall:#3b2246; --skyT:#5c4486; --skyB:#f29070; --orb:#ffd2a0; --cloud:#ffc6b0; --cloudA:.6; --bld:#4b3a63; --lit:.6; --sun:#ffb48a; --sunA:.2;
-  --frame:#4c3360; --curt:#a97cb8; --desk:#573a5e; --leaf:#6d8a72; --scr:#c9b6e0}
-body[data-t="night"]{--wall:#1f1030; --skyT:#0e0f2e; --skyB:#2b2457; --orb:#f2efe0; --cloud:#8a86b8; --cloudA:.18; --bld:#211a3d; --lit:1; --star:1; --sunA:0;
-  --frame:#2f1e45; --curt:#4f3768; --desk:#33213f; --deskf:#1a0f24; --leaf:#3f5a4a; --pot:#5e3f4c; --mug:#a99cb6; --paper:#8f8698; --lap:#241d36; --scr:#c7d3ff; --glow:.45; --steam:rgba(255,255,255,.3)}
-.sky1{stop-color:var(--skyT)} .sky2{stop-color:var(--skyB)}
+/* 色は 013 の紫の段と差し色の黄緑だけ。平らな面で、空だけが明るい */
+body{--wall:#1d0a2c; --sky:#d9c4ef; --orb:#fbf8ff; --cloud:#fbf8ff; --cloudA:1; --bld:#8a63b0; --lit:0; --star:0;
+  --frame:#654087; --curt:#3a1757; --desk:#654087; --deskf:#2a0e3e; --sun:#fbf8ff; --sunA:.1; --leaf:#bb7eea; --pot:#3a1757; --mug:#fbf8ff;
+  --paper:#ece2f6; --lap:#2a0e3e; --scr:#bb7eea; --glow:0; --steam:rgba(251,248,255,.6)}
+body[data-t="day"]{--sky:#ece2f6; --orb:#d7ff3a; --bld:#bb7eea; --sunA:.14}
+body[data-t="evening"]{--sky:#bb7eea; --orb:#d7ff3a; --cloud:#ece2f6; --bld:#654087; --lit:1; --sunA:.08}
+body[data-t="night"]{--wall:#140720; --sky:#2a0e3e; --orb:#ece2f6; --cloud:#654087; --cloudA:.5; --bld:#1d0a2c; --lit:1; --star:1; --sunA:0;
+  --frame:#3a1757; --curt:#2a0e3e; --desk:#3a1757; --deskf:#1d0a2c; --leaf:#654087; --mug:#bb7eea; --paper:#8a63b0; --lap:#1d0a2c; --scr:#d7ff3a; --glow:.35; --steam:rgba(251,248,255,.35)}
+.skyf{fill:var(--sky)}
 .wall{fill:var(--wall)} .orb{fill:var(--orb)} .star{fill:#fff; opacity:var(--star)}
-.cl{fill:var(--cloud); opacity:var(--cloudA)} .bld{fill:var(--bld)} .lw{fill:#ffd98a; opacity:calc(var(--lit) * .85); transition:opacity 1.2s}
+.cl{fill:var(--cloud); opacity:var(--cloudA)} .bld{fill:var(--bld)} .lw{fill:#d7ff3a; opacity:calc(var(--lit) * .85); transition:opacity 1.2s}
 .lw.off{opacity:0}
 .frame{fill:none; stroke:var(--frame)} .sill{fill:var(--frame)} .curt{fill:var(--curt)}
 .desk{fill:var(--desk)} .deskf{fill:var(--deskf)} .sunp{fill:var(--sun); opacity:var(--sunA)}
 .leaf{fill:var(--leaf)} .pot{fill:var(--pot)} .mug{fill:var(--mug)} .mugh{fill:none; stroke:var(--mug); stroke-width:6}
-.paper{fill:var(--paper)} .ln{stroke:rgba(60,40,70,.25); stroke-width:1.5} .lap{fill:var(--lap)} .scr{fill:var(--scr)} .glow{opacity:var(--glow)}
+.paper{fill:var(--paper)} .ln{stroke:rgba(42,14,62,.35); stroke-width:1.5} .lap{fill:var(--lap)} .scr{fill:var(--scr)} .glow{opacity:var(--glow)}
 .steam{fill:none; stroke:var(--steam); stroke-width:3; stroke-linecap:round}
-.grain{opacity:.07; mix-blend-mode:overlay}
 
 /* ずっと続く低い動き：雲が流れる・湯気・カーテンと葉がわずかに揺れる */
 .drift{animation:drift var(--dur,150s) linear infinite; animation-delay:var(--dl,0s)}
@@ -140,11 +139,12 @@ header{cursor:pointer}
 /* 右下：見出し */
 .hero{position:fixed; right:clamp(16px,5vw,72px); bottom:clamp(40px,9vh,90px); z-index:1; text-align:right; max-width:min(60vw,780px); transition:opacity .3s}
 .hero h1{font-size:clamp(20px,2.6vw,38px); line-height:1.45}
+.hero{text-shadow:0 0 3px #1d0a2c, 0 2px 14px #1d0a2c, 0 0 28px rgba(29,10,44,.8)}   /* 机の上の物に重なっても読める */
 .hero p{margin-top:.8em; font-size:clamp(12px,1.1vw,15px); color:var(--li)}
 body.open .hero{opacity:0}
 
 /* 開く：右から板が滑り込んで中身。メニューと輪は左に残る */
-.page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow-x:hidden; overflow-y:auto; color:var(--wh); background:var(--deep);
+.page{position:fixed; top:0; bottom:0; right:0; width:min(58vw,820px); z-index:4; overflow-x:hidden; overflow-y:auto; color:var(--wh); background:rgba(42,14,62,.74); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
   border-left:2px solid var(--pu);
   /* 右から横に滑り込んで止まる */
   transform-origin:100% 50%; transform:translateX(40px); opacity:0; visibility:hidden; pointer-events:none;
@@ -163,7 +163,7 @@ body.open .page.reset{transform:translateX(40px); opacity:0; transition:none}
 .page .wrap{padding:0 clamp(24px,4vw,64px) 60px}
 .page .back{position:sticky; float:right; top:20px; margin:20px clamp(16px,3vw,40px) 0 0; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
 .page .back:hover{color:var(--wh)}
-.page .ph{position:sticky; top:0; z-index:1; background:var(--deep); padding:clamp(72px,11vh,110px) 0 4px; box-shadow:0 14px 14px -10px var(--deep)}   /* 最初の位置のまま動かない */
+.page .ph{position:sticky; top:0; z-index:1; background:rgba(42,14,62,.6); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); margin:0 calc(-1 * clamp(24px,4vw,64px)); padding:clamp(72px,11vh,110px) clamp(24px,4vw,64px) 4px}   /* 最初の位置のまま動かない */
 .page .k{font-size:12px; letter-spacing:.35em; color:var(--li)}
 .page h2{font-size:clamp(24px,2.8vw,38px); line-height:1.3; margin:.2em 0 1em}
 .page h2::after{content:""; display:block; width:1.6em; height:.1em; background:var(--li); margin-top:.3em}
@@ -193,21 +193,19 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
 
 <div id="bg" aria-hidden="true"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMaxYMid slice">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sky1"/><stop offset="1" class="sky2"/></linearGradient>
-    <radialGradient id="gl"><stop offset="0" stop-color="#c7d3ff" stop-opacity=".55"/><stop offset="1" stop-color="#c7d3ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gl"><stop offset="0" stop-color="#d7ff3a" stop-opacity=".4"/><stop offset="1" stop-color="#d7ff3a" stop-opacity="0"/></radialGradient>
     <clipPath id="win"><rect x="780" y="110" width="660" height="450"/></clipPath>
-    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
   </defs>
   <rect class="wall" width="1600" height="900"/>
   <!-- 窓の外 -->
   <g clip-path="url(#win)">
-    <rect x="780" y="110" width="660" height="450" fill="url(#sky)"/>
+    <rect class="skyf" x="780" y="110" width="660" height="450"/>
     <circle class="star" cx="840" cy="150" r="1.6"/><circle class="star" cx="930" cy="210" r="1.2"/><circle class="star" cx="1060" cy="140" r="1.8"/>
     <circle class="star" cx="1180" cy="230" r="1.2"/><circle class="star" cx="1290" cy="150" r="1.5"/><circle class="star" cx="1390" cy="250" r="1.2"/><circle class="star" cx="1230" cy="300" r="1"/>
     <circle class="orb" id="orb" cx="1280" cy="180" r="34"/>
     <g class="drift" style="--dur:170s; --dl:-60s"><ellipse class="cl" cx="900" cy="200" rx="70" ry="18"/><ellipse class="cl" cx="940" cy="188" rx="40" ry="18"/></g>
     <g class="drift" style="--dur:230s; --dl:-150s"><ellipse class="cl" cx="1000" cy="290" rx="90" ry="16"/><ellipse class="cl" cx="1040" cy="278" rx="46" ry="16"/></g>
-    <g class="bird" id="bird"><path d="M0 0 q7 -7 14 0 q7 -7 14 0" fill="none" stroke="rgba(40,30,60,.7)" stroke-width="2.5" stroke-linecap="round"/></g>
+    <g class="bird" id="bird"><path d="M0 0 q7 -7 14 0 q7 -7 14 0" fill="none" stroke="#1d0a2c" stroke-width="2.5" stroke-linecap="round"/></g>
     <rect class="bld" x="790" y="410" width="90" height="160"/><rect class="bld" x="885" y="370" width="70" height="200"/><rect class="bld" x="960" y="440" width="110" height="130"/>
     <rect class="bld" x="1075" y="390" width="80" height="180"/><rect class="bld" x="1160" y="430" width="120" height="140"/><rect class="bld" x="1285" y="360" width="70" height="210"/><rect class="bld" x="1360" y="420" width="90" height="150"/>
     <g id="lws">
@@ -223,8 +221,8 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   <line class="frame" x1="1110" y1="110" x2="1110" y2="560" stroke-width="10"/><line class="frame" x1="780" y1="335" x2="1440" y2="335" stroke-width="10"/>
   <rect class="sill" x="755" y="556" width="710" height="22" rx="3"/>
   <line class="frame" x1="715" y1="94" x2="1505" y2="94" stroke-width="6" stroke-linecap="round"/>
-  <path class="curt" id="curtL" d="M730 96 L830 96 C818 250 848 420 818 586 L730 586 Z"/>
-  <path class="curt r" id="curtR" d="M1390 96 L1490 96 L1490 586 L1402 586 C1432 420 1380 250 1390 96 Z"/>
+  <path class="curt" id="curtL" d="M730 96 L826 96 L826 586 L730 586 Z"/>
+  <path class="curt r" id="curtR" d="M1394 96 L1490 96 L1490 586 L1394 586 Z"/>
   <!-- 机 -->
   <polygon class="desk" points="520,595 1600,595 1600,640 470,640"/>
   <rect class="deskf" x="470" y="640" width="1130" height="260"/>
@@ -246,9 +244,7 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   <ellipse class="glow" cx="1295" cy="560" rx="230" ry="140" fill="url(#gl)"/>
   <rect class="lap" x="1210" y="495" width="170" height="112" rx="6"/><rect class="scr" x="1218" y="503" width="154" height="96" rx="3"/>
   <polygon class="lap" points="1190,619 1400,619 1385,607 1205,607"/>
-  <g class="notif" id="notif"><rect x="1296" y="511" width="68" height="20" rx="4" fill="#fbf8ff" opacity=".92"/><circle cx="1307" cy="521" r="4" fill="#bb7eea"/><rect x="1316" y="518" width="38" height="3" rx="1.5" fill="#c9bdd6"/><rect x="1316" y="524" width="24" height="3" rx="1.5" fill="#c9bdd6"/></g>
-  <!-- 質感 -->
-  <rect class="grain" width="1600" height="900" filter="url(#grain)"/>
+  <g class="notif" id="notif"><rect x="1296" y="511" width="68" height="20" rx="4" fill="#fbf8ff"/><circle cx="1307" cy="521" r="4" fill="#d7ff3a"/><rect x="1316" y="518" width="38" height="3" rx="1.5" fill="#c9bdd6"/><rect x="1316" y="524" width="24" height="3" rx="1.5" fill="#c9bdd6"/></g>
 </svg></div>
 <div class="op" id="op" aria-hidden="true"><div class="in">
   <svg viewBox="0 0 88 88"><circle class="c1" cx="44" cy="44" r="38" transform="rotate(-90 44 44)"/><circle class="c2" cx="44" cy="44" r="30" transform="rotate(-90 44 44)"/></svg>
