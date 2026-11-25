@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
-<!-- 015 お洒落・文字が組み替わる（2026-11-24）。大きな英字の見出しが、節に入るたびに組み替わる。
+<!-- 015 お洒落・文字が組み替わる（2026-11-24）。大きな英字の見出しが各節の頭にあり、画面に入るたびに回って左から止まる。
      ALTER → PHILOSOPHY → SERVICE → COMPANY → CONTACT。全部の文字が一斉に回り出し、左から一文字ずつ止まる。同じ文字は順番のまま横へ滑り、要らない文字はその場で消える。
      社名の Alter（変える）が動きの理由。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,7 @@ body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",s
 a{color:inherit}
 .min{font-family:"Zen Old Mincho",serif; font-weight:700}
 
-header{position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,48px)}
+header{position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,48px); background:rgba(246,243,250,.92)}   /* 本文と見出しが下を流れるので地を敷く */
 .logo{display:flex; align-items:center; gap:10px; text-decoration:none; line-height:1.1}
 .logo i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
 .logo span{font-size:17px}
@@ -26,23 +26,18 @@ nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
 nav a{text-decoration:none; font-size:13px; letter-spacing:.08em; color:var(--sub); transition:color .2s}
 nav a.on{color:var(--ink)}
 
-/* 組み替わる見出し：画面の上の帯に貼りつく */
-.stage{position:sticky; top:0; z-index:2; height:46vh; min-height:220px; pointer-events:none;
-  background:linear-gradient(var(--bg) 82%, rgba(246,243,250,0))}
-.word{position:absolute; left:0; right:0; top:56%; height:0}
-.word{perspective:800px}
-.ch{position:absolute; top:0; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:1; transform:translate(var(--x),-50%) rotateX(var(--rx,0deg));
-  transition:transform .22s cubic-bezier(.3,0,.1,1), opacity .1s, color .2s; will-change:transform; white-space:pre; backface-visibility:hidden}
-.ch.new{color:var(--li)}
-/* 消える文字：その場で上へ倒れて消える（遠くへ飛ばない） */
-.ch.out{--rx:90deg; opacity:0; transition:transform .1s ease-in, opacity .1s}
+/* 大きな英字の見出し：各節の頭に置き、本文と一緒に流れる。画面に入ってきたときに一回回って、左から順に止まる */
+.big{width:100%; text-align:center; margin:clamp(32px,8vh,90px) 0 clamp(24px,5vh,56px)}
+.big .ws{display:flex; justify-content:center; perspective:800px}
+.big .ch{display:inline-block; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:1; color:var(--ink); transition:color .2s; backface-visibility:hidden; white-space:pre}
+.big .ch.new{color:var(--li)}
 /* 回っている文字：替わるたびに縦にパタッと */
-.ch.flip{animation:flip .035s linear}
-@keyframes flip{from{transform:translate(var(--x),-50%) rotateX(-80deg)} to{transform:translate(var(--x),-50%) rotateX(0deg)}}
-.cap{position:absolute; left:0; right:0; top:calc(56% + var(--fs) * .62); text-align:center; font-size:13px; letter-spacing:.3em; color:var(--sub); transition:opacity .4s}
+.big .ch.flip{animation:flip .035s linear}
+@keyframes flip{from{transform:rotateX(-80deg)} to{transform:none}}
+.big .cap{margin-top:.9em; font-size:13px; letter-spacing:.3em; color:var(--sub)}
 
 main{position:relative; z-index:1}
-section{min-height:90vh; padding:6vh clamp(16px,6vw,80px) 14vh; display:grid; align-content:start; justify-items:center}
+section{padding:6vh clamp(16px,6vw,80px) 10vh; display:grid; align-content:start; justify-items:center}
 .in{width:min(100%,760px)}
 .lead{text-align:center}
 .lead h1{font-size:clamp(22px,3.2vw,38px); line-height:1.6}
@@ -65,7 +60,6 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 
 @media (max-width:760px){
   nav{display:none}
-  .stage{height:34vh}
   .svc{grid-template-columns:1fr}
   dl{grid-template-columns:1fr; gap:2px}
 }
@@ -82,7 +76,6 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
   </ul></nav>
 </header>
 
-<div class="stage" aria-hidden="true"><div class="word" id="word"></div><div class="cap" id="cap"></div></div>
 
 <main>
   <section id="top" data-w="ALTER" data-c="ALTER DESIGN CONSULTING">
@@ -92,7 +85,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </div>
   </section>
 
-  <section id="philosophy" data-w="PHILOSOPHY" data-c="企業理念">
+  <section id="philosophy" data-w="PHILOSOPHY">
     <div class="in">
       <h2 class="min">アルターデザインコンサルティングの企業理念</h2>
       <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
@@ -103,7 +96,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </div>
   </section>
 
-  <section id="services" data-w="SERVICE" data-c="サービス">
+  <section id="services" data-w="SERVICE">
     <h2 class="min">私たちが提供するサービス</h2>
     <ul class="svc">
       <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
@@ -113,7 +106,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </ul>
   </section>
 
-  <section id="company" data-w="COMPANY" data-c="会社概要">
+  <section id="company" data-w="COMPANY">
     <div class="in">
       <h2 class="min">会社概要</h2>
       <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
@@ -127,7 +120,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </div>
   </section>
 
-  <section id="contact" class="contact" data-w="CONTACT" data-c="お問い合わせ">
+  <section id="contact" class="contact" data-w="CONTACT">
     <div class="in">
       <h2 class="min">お問い合わせ</h2>
       <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
@@ -144,89 +137,71 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 <script>
 (function(){
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
-var wordEl = document.getElementById('word'), capEl = document.getElementById('cap');
 var secs = [].slice.call(document.querySelectorAll('main section')), navs = [].slice.call(document.querySelectorAll('nav a'));
 var AZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 var ctx = document.createElement('canvas').getContext('2d');
-var fs = 0, cur = [], now = '';
+var fs = 0, bigs = [];
 
 function size(){
   /* いちばん長い語（PHILOSOPHY）が窓の幅に収まる大きさ */
   fs = Math.max(36, Math.min(200, innerWidth * 0.86 / 7.6, innerHeight * 0.2));
   document.documentElement.style.setProperty('--fs', fs + 'px');
   ctx.font = fs + 'px "Archivo Black"';
+  /* 文字は自分の枠（決まる文字の幅）の真ん中にそろえる */
+  bigs.forEach(function(b){ b.chs.forEach(function(el, i){ el.sw = ctx.measureText(b.w[i]).width; el.style.setProperty('--sw', el.sw + 'px'); }); });
 }
-function layout(w){
-  var ws = w.split('').map(function(c){ return ctx.measureText(c).width; });
-  var total = ws.reduce(function(a, b){ return a + b; }, 0), x = (innerWidth - total) / 2, out = [];
-  ws.forEach(function(wd){ out.push({ x:x, w:wd }); x += wd; });
-  return out;
-}
-/* 文字は自分の枠（決まる文字の幅）の真ん中にそろえる */
-function place(el, s){ el.style.setProperty('--x', s.x + 'px'); el.style.setProperty('--sw', s.w + 'px'); el.sw = s.w; }
-/* 順番を崩さずに持ち越せる文字の組（いちばん長い共通の並び）。持ち越す文字同士が交差しない */
-function lcs(a, b){
-  var m = a.length, n = b.length, t = [];
-  for (var i = 0; i <= m; i++){ t.push(new Array(n + 1).fill(0)); }
-  for (i = m - 1; i >= 0; i--) for (var j = n - 1; j >= 0; j--) t[i][j] = a[i] === b[j] ? t[i + 1][j + 1] + 1 : Math.max(t[i + 1][j], t[i][j + 1]);
-  var out = []; i = 0; j = 0;
-  while (i < m && j < n){ if (a[i] === b[j]){ out.push([i, j]); i++; j++; } else if (t[i + 1][j] >= t[i][j + 1]) i++; else j++; }
-  return out;
-}
+
 /* 回る：ちらちらと別の文字に替わり続け、lockAt（ms）で決まった文字にカチッと止まる */
-function roll(it, to, lockAt){
-  var tk = ++it.tk, t0 = performance.now();
-  it.el.style.opacity = 1;
-  if (RM){ it.el.textContent = to; it.el.classList.remove('new'); return; }
-  it.el.classList.add('new');
+function roll(el, to, lockAt){
+  var tk = el.tk = (el.tk || 0) + 1, t0 = performance.now();
+  if (RM){ el.textContent = to; return; }
+  el.classList.add('new');
   (function step(){
-    if (tk !== it.tk) return;
+    if (tk !== el.tk) return;
     var done = performance.now() - t0 >= lockAt;
     /* 回っているあいだは、枠に収まる幅の文字だけ（隣と重ならない） */
-    var fit = AZ.split('').filter(function(a){ return ctx.measureText(a).width <= (it.el.sw || fs) * 1.04 && a !== it.el.textContent; });
-    var c = done || !fit.length ? to : fit[Math.floor(Math.random() * fit.length)];
-    it.el.textContent = c;
-    it.el.classList.remove('flip'); void it.el.offsetWidth; it.el.classList.add('flip');
+    var fit = AZ.split('').filter(function(a){ return ctx.measureText(a).width <= (el.sw || fs) * 1.04 && a !== el.textContent; });
+    el.textContent = done || !fit.length ? to : fit[Math.floor(Math.random() * fit.length)];
+    el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip');
     if (!done) setTimeout(step, 38);
-    else setTimeout(function(){ if (tk === it.tk) it.el.classList.remove('new'); }, 90);
+    else setTimeout(function(){ if (tk === el.tk) el.classList.remove('new'); }, 90);
   })();
 }
-
-/* いまの語から次の語へ：全部の文字が一斉に回り出し、左から一文字ずつカチッと止まる
-   持ち越す文字は回りながら順番のまま横へ滑り、要らない文字はその場で倒れて消える */
-function morph(w, cap){
-  if (w === now) return; now = w;
-  capEl.textContent = cap;   /* 日本語の名前は待たずにすぐ替える（英字が動いている途中でも、どこにいるか読める） */
-  var xs = layout(w), next = new Array(w.length).fill(null), kept = new Array(cur.length).fill(false);
-  lcs(cur.map(function(it){ return it.c; }).join(''), w).forEach(function(p){
-    var it = cur[p[0]]; kept[p[0]] = true; next[p[1]] = it;
-    it.el.classList.remove('out'); place(it.el, xs[p[1]]);
-  });
-  cur.forEach(function(it, j){
-    if (kept[j]) return;
-    it.tk++; it.el.classList.remove('flip'); it.el.classList.add('out');
-    setTimeout(function(){ it.el.remove(); }, 120);
-  });
-  w.split('').forEach(function(c, i){
-    if (next[i]) return;
-    var el = document.createElement('span'); el.className = 'ch new'; el.style.opacity = 0; place(el, xs[i]); wordEl.appendChild(el);
-    next[i] = { el:el, c:c, tk:0 };
-  });
-  /* 左から順に止まる：最初の文字は 0.14 秒、最後の文字は 0.46 秒 */
-  var n = w.length, gap = n > 1 ? Math.min(50, 320 / (n - 1)) : 0;
-  next.forEach(function(it, i){ it.c = w[i]; roll(it, w[i], 140 + i * gap); });
-  cur = next;
+/* 一語ぶん：全部の文字が一斉に回り出し、左から一文字ずつ止まる（最初 0.14 秒、最後 0.46 秒） */
+function spin(b){
+  var n = b.w.length, gap = n > 1 ? Math.min(50, 320 / (n - 1)) : 0;
+  b.chs.forEach(function(el, i){ roll(el, b.w[i], 140 + i * gap); });
 }
 
+/* 各節の頭に見出しを置く */
+secs.forEach(function(sec){
+  var w = sec.dataset.w, box = document.createElement('div'); box.className = 'big'; box.setAttribute('aria-hidden', 'true');
+  var ws = document.createElement('div'); ws.className = 'ws'; box.appendChild(ws);
+  var chs = w.split('').map(function(c){ var el = document.createElement('span'); el.className = 'ch'; el.textContent = c; ws.appendChild(el); return el; });
+  if (sec.dataset.c){ var cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = sec.dataset.c; box.appendChild(cap); }
+  sec.insertBefore(box, sec.firstChild);
+  bigs.push({ w:w, chs:chs, box:box });
+});
+
+/* 画面に入ってきたら一回回る。いったん画面の外へ出たら、次に入ってきたときにまた回る */
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    var b = bigs.filter(function(x){ return x.box === e.target; })[0];
+    if (e.intersectionRatio >= .6 && !b.shown){ b.shown = true; spin(b); }
+    else if (!e.isIntersecting) b.shown = false;
+  });
+}, { threshold:[0, .6] });
+
 function active(){
-  var mid = innerHeight * .55, hit = secs[0];
+  var mid = innerHeight * .4, hit = secs[0];
   secs.forEach(function(s){ if (s.getBoundingClientRect().top < mid) hit = s; });
-  morph(hit.dataset.w, hit.dataset.c);
   navs.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + hit.id); });
 }
 addEventListener('scroll', active, {passive:true});
-addEventListener('resize', function(){ size(); var w = now; now = ''; var xs = layout(w); cur.forEach(function(it, i){ place(it.el, xs[i]); }); now = w; });
+addEventListener('resize', size);
 
-(document.fonts ? document.fonts.load('100px "Archivo Black"') : Promise.resolve()).catch(function(){}).then(function(){ size(); active(); });
+(document.fonts ? document.fonts.load('100px "Archivo Black"') : Promise.resolve()).catch(function(){}).then(function(){
+  size(); active(); bigs.forEach(function(b){ io.observe(b.box); });
+});
 })();
 </script>
