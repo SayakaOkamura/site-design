@@ -119,7 +119,7 @@ b{font-weight:700}
 #company{position:relative}
 .ripwrap{position:absolute; inset:0 calc(-1 * var(--pad)); z-index:0; pointer-events:none; overflow:clip; -webkit-mask:linear-gradient(transparent, #000 18%, #000 88%, transparent); mask:linear-gradient(transparent, #000 18%, #000 88%, transparent)}
 .ripbox{position:absolute; inset:0}   /* 画面に留めない。本文と一緒に流れる */
-.ripbox i{position:absolute; left:22%; top:0; width:0; height:0; border-radius:50%; border:4px solid color-mix(in srgb, var(--li) 40%, var(--bg)); transform:translate(-50%,0);   /* 円の上の端を固定して、下へ膨らむ */ will-change:width,height,opacity}
+.ripbox i{position:absolute; left:22%; top:0; width:0; height:0; border-radius:50%; border:4px solid color-mix(in srgb, var(--li) 40%, var(--bg)); transform:translate(-50%,-50%);   /* 始まった場所を中心に、四方へ広がる */ will-change:width,height,opacity}
 dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:clamp(28px,6vh,56px) 0; font-size:14.5px; line-height:2}   /* 行の間を広く、ゆっくり流れる */
 dl:last-child{border-bottom:1px solid var(--line)}
 dt{font-weight:700; font-size:12.5px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
@@ -439,17 +439,25 @@ var ripSec = document.getElementById('company'), rips = [];
   var c = document.createElement('i'); b.appendChild(c); rips.push(c);   /* 円は一つ */
   w.appendChild(b); ripSec.insertBefore(w, ripSec.firstChild);
 })();
+/* 波紋：「会社概要」の見出しの横を中心に、見出しが画面の 8 割の高さに来たら始まり、あとは時間で勝手に広がり続ける（スクロールとは切り離す）
+   上へ戻って見出しが下へ出たら元に戻り、次に来たときにまた始まる */
+var ripT0 = 0;
 function ripple(){
   if (!rips.length) return;
-  var c = rips[0], r = ripSec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight){ c.style.opacity = 0; return; }
-  /* 円の上の端は「会社概要」の見出しと同じ高さ（節の上の方）に固定。読み始める所で開き、読み進めるにつれて下へ膨らむ */
-  var h = ripSec.querySelector('h2'), cy = h ? h.getBoundingClientRect().top + h.offsetHeight / 2 : r.top;
+  var c = rips[0], r = ripSec.getBoundingClientRect(), h = ripSec.querySelector('h2');
+  var cy = h ? h.getBoundingClientRect().top + h.offsetHeight / 2 : r.top;
   c.style.top = (cy - r.top) + 'px';
-  /* 見出しが画面の 8 割の高さに来たら開き始め、節の下の端が画面の下に着いたときに終わる（勝手に先に終わらない） */
-  var off = r.bottom - cy, q = clamp((innerHeight * .8 - cy) / Math.max(1, off - innerHeight * .2));
-  if (RM) q = .5;
-  c.style.width = c.style.height = q * off * 2.4 + 'px';   /* 節の下の端を越えて、ずっと大きくなり続ける */
-  c.style.opacity = q <= 0 ? 0 : q < .9 ? .85 : (1 - q) / .1 * .85;   /* 最後の 1 割で薄れる */
+  if (cy <= innerHeight * .8){
+    if (!ripT0){
+      ripT0 = performance.now();
+      (function grow(){
+        if (!ripT0) return;
+        var t = (performance.now() - ripT0) / 1000, max = Math.hypot(innerWidth, innerHeight) * 3, d = Math.min(max, t * 260);   /* 直径が 1 秒に 260px：ゆっくり、ずっと広がる */
+        c.style.width = c.style.height = d + 'px'; c.style.opacity = .85 * (1 - d / max);
+        if (d < max) requestAnimationFrame(grow);
+      })();
+    }
+  } else if (ripT0 && cy > innerHeight){ ripT0 = 0; c.style.width = c.style.height = '0px'; c.style.opacity = 0; }
 }
 var queued = false;
 function frame(){ queued = false; gaps.forEach(draw); tint(); follow(); ripple(); active(); }
