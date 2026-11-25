@@ -104,14 +104,8 @@ body[data-t="night"]{--wall:#140720; --sky:#2a0e3e; --orb:#ece2f6; --cloud:#6540
 @keyframes bird{0%{opacity:1; transform:translate(760px,250px)} 100%{opacity:1; transform:translate(1480px,170px)}}
 .bird path{animation:flap .5s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:50% 100%}
 @keyframes flap{to{transform:scaleY(.4)}}
-/* 押せる小物 */
+/* 押せる小物：PC だけ */
 #bg .hit{pointer-events:auto; cursor:pointer}
-#bg .area{fill:transparent}   /* 小物のすき間も押せるように */
-.leaves.rustle{animation:rustle .9s ease-out}
-@keyframes rustle{0%,100%{transform:skewX(0)} 15%{transform:skewX(-9deg)} 35%{transform:skewX(7deg)} 55%{transform:skewX(-4deg)} 75%{transform:skewX(2deg)}}
-.steam{transform-box:fill-box; transform-origin:50% 100%}
-.steam.puff{animation:puff 1.3s ease-out}
-@keyframes puff{0%{transform:none} 30%{transform:scale(1.5,1.9)} 100%{transform:none}}
 @media (prefers-reduced-motion:reduce){ #bg *{animation:none !important} }
 
 /* 決定の光：開いた瞬間、その項目が一瞬だけ黄緑に明るく光って、すっと白に戻る（消す点滅はしない） */
@@ -229,14 +223,14 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   <line class="frame" x1="1110" y1="110" x2="1110" y2="560" stroke-width="16"/><line class="frame" x1="780" y1="335" x2="1440" y2="335" stroke-width="16"/>
   <rect class="sill" x="750" y="552" width="720" height="30"/>
   <line class="frame" x1="715" y1="94" x2="1505" y2="94" stroke-width="10"/>
-  <path class="curt hit" data-ev="gust" id="curtL" d="M730 96 L826 96 L826 586 L730 586 Z"/>
-  <path class="curt r hit" data-ev="gust" id="curtR" d="M1394 96 L1490 96 L1490 586 L1394 586 Z"/>
+  <path class="curt" id="curtL" d="M730 96 L826 96 L826 586 L730 586 Z"/>
+  <path class="curt r" id="curtR" d="M1394 96 L1490 96 L1490 586 L1394 586 Z"/>
   <!-- 机 -->
   <polygon class="desk" points="520,595 1600,595 1600,640 470,640"/>
   <rect class="deskf" x="470" y="640" width="1130" height="260"/>
   <polygon class="sunp" points="830,595 1250,595 1120,640 660,640"/>
   <!-- 鉢 -->
-  <g class="hit" data-ev="leaf"><rect class="area" x="785" y="480" width="92" height="140"/>
+  <g>
   <g class="leaves">
     <polygon class="leaf" points="815,513 826,540 815,567 804,540" transform="rotate(-25 815 540)"/><polygon class="leaf" points="847,509 858,536 847,563 836,536" transform="rotate(22 847 536)"/>
     <polygon class="leaf" points="831,488 842,522 831,556 820,522" transform="rotate(0 831 522)"/><polygon class="leaf" points="803,536 813,557 803,578 793,557" transform="rotate(-58 803 557)"/><polygon class="leaf" points="860,533 870,554 860,575 850,554" transform="rotate(55 860 554)"/>
@@ -244,12 +238,12 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   <polygon class="pot" points="798,566 864,566 856,616 806,616"/>
   </g>
   <!-- マグと湯気 -->
-  <g class="hit" data-ev="steam"><rect class="area" x="920" y="522" width="80" height="98"/>
+  <g>
   <g class="steam"><path d="M944 562 l-6 -8 l6 -8 l-6 -8 l6 -8"/><path d="M956 560 l-6 -8 l6 -8 l-6 -8 l6 -8"/><path d="M968 562 l-6 -8 l6 -8 l-6 -8"/></g>
   <rect class="mug" x="932" y="572" width="46" height="44" rx="2"/><path class="mugh" d="M978 582 h12 v22 h-12"/>
   </g>
   <!-- 開いた本 -->
-  <g class="hit" data-ev="flip"><rect class="area" x="990" y="590" width="150" height="40"/>
+  <g>
   <polygon class="paper" points="995,607 1065,599 1065,617 995,625"/><polygon class="paper" points="1065,599 1135,607 1135,625 1065,617"/>
   <line class="ln" x1="1005" y1="609" x2="1055" y2="603"/><line class="ln" x1="1005" y1="615" x2="1055" y2="609"/><line class="ln" x1="1075" y1="603" x2="1125" y2="609"/><line class="ln" x1="1075" y1="609" x2="1125" y2="615"/>
   <polygon class="paper flip" id="flip" points="1065,599 1135,607 1135,625 1065,617"/>
@@ -416,11 +410,9 @@ document.getElementById('logo').addEventListener('click', function(){
     notif: function(){ play(document.getElementById('notif'), 'go', 3050); },
     gust:  function(){ ['curtL', 'curtR'].forEach(function(id, k){ var c = document.getElementById(id); setTimeout(function(){ play(c, 'gust', 2650); }, k * 180); }); },
     bird:  function(){ play(document.getElementById('bird'), 'go', 5050); },
-    light: function(){ var w = lws[Math.floor(Math.random() * lws.length)]; w.classList.toggle('off'); },
-    leaf:  function(){ play(document.querySelector('#bg .leaves'), 'rustle', 900); },
-    steam: function(){ play(document.querySelector('#bg .steam'), 'puff', 1300); }
+    light: function(){ var w = lws[Math.floor(Math.random() * lws.length)]; w.classList.toggle('off'); }
   };
-  /* 押した小物が反応する（遊び。押さなくても数秒おきに起きる） */
+  /* PC を押すと通知が来る（遊び。押さなくても数秒おきに起きる） */
   document.querySelectorAll('#bg .hit').forEach(function(el){ el.addEventListener('click', function(){ EV[el.dataset.ev](); }); });
   var last = '';
   function next(){
