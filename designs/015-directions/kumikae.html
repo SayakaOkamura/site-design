@@ -9,82 +9,85 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
 <style>
-:root{ --bg:#f6f3fa; --ink:#2a0e3e; --sub:#715189; --pu:#654087; --li:#bb7eea; --line:#e0d6ea; }
+:root{ --bg:#f2eee6; --ink:#1b1022; --sub:#6f6676; --pu:#654087; --li:#bb7eea; --line:rgba(27,16,34,.16); }   /* 生成りの地に黒い文字、差し色は薄紫だけ */
 *{box-sizing:border-box; margin:0; padding:0}
 html{scroll-behavior:smooth; overflow-x:clip}
 body{overflow-x:clip}
 body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.95}
 a{color:inherit}
 
-header{position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,48px); background:var(--bg)}   /* 本文と見出しが下を流れるので地を敷く */
+header{position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,56px); background:var(--bg)}   /* 本文と見出しが下を流れるので地を敷く */
 .logo{display:flex; align-items:center; gap:10px; text-decoration:none; line-height:1.1}
 .logo i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
 .logo span{font-size:17px}
 .logo small{display:block; font-size:10px; margin-left:4.4em; color:var(--sub)}
 nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
-nav a{text-decoration:none; font-size:13px; letter-spacing:.08em; color:var(--sub); transition:color .2s}
+nav a{text-decoration:none; font-size:11px; letter-spacing:.24em; color:var(--sub); transition:color .2s}
 nav a.on{color:var(--ink)}
 
-/* 組み方：左ぞろえのグリッド。左の細い列に番号と名前、右の広い列に本文。余白は広く */
+/* 組み方：ポスター・雑誌の誌面。12 列のグリッドに左右非対称に置く。英字は画面の幅を超えるほど大きく、本文は小さく、余白は思い切り取る */
 main{position:relative; z-index:1}
-section{display:grid; grid-template-columns:minmax(0,2fr) minmax(0,7fr); column-gap:clamp(24px,5vw,96px); max-width:1320px; margin:0 auto; padding:clamp(80px,15vh,180px) clamp(16px,5vw,72px) 0; align-content:start}
-section > *{grid-column:2}
-section > .big{grid-column:1 / -1}
-section > .side{grid-column:1; grid-row:2 / span 20; align-self:start; position:sticky; top:104px}
-#top{min-height:100vh; padding-top:clamp(110px,22vh,220px)}
-#top > .in{grid-column:1 / -1}
-#contact{padding-bottom:clamp(110px,18vh,200px)}
+section{--pad:clamp(16px,4vw,56px); display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:clamp(12px,2vw,28px); padding:clamp(120px,26vh,280px) var(--pad) 0; align-items:start}
+section > *{grid-column:1 / -1}
+.in{display:grid; grid-template-columns:subgrid; align-items:start}
+.in > *{grid-column:1 / -1}
+#top{min-height:100vh; padding-top:clamp(90px,14vh,140px); align-content:space-between}
+#contact{padding-bottom:clamp(140px,28vh,300px)}
 
-/* 大きな英字の見出し：各節の頭に置き、本文と一緒に流れる。左に寄せて端から少しはみ出す。画面に入ってきたときに一回回って、左から順に止まる */
-.big{margin-bottom:clamp(40px,8vh,100px)}
-.big .ws{display:flex; justify-content:flex-start; margin-left:-.06em; perspective:800px}
-.big .ch{display:inline-block; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:.9; color:var(--ink); transition:color .2s; backface-visibility:hidden; white-space:pre}
+/* 大きな英字：語ごとに画面の幅の 1.06 倍。奇数の節は左の端、偶数の節は右の端で切れる。画面に入ってきたときに一回回って、左から順に止まる */
+.big{margin:0 calc(-1 * var(--pad)) clamp(56px,12vh,140px)}
+.big .ws{display:flex; justify-content:flex-start; perspective:900px}   /* 左右どちらの端で切るかは、はみ出す幅を測って決める */
+.big .ch{display:inline-block; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:.78; color:var(--ink); transition:color .2s; backface-visibility:hidden; white-space:pre}
 .big .ch.new{color:var(--li)}
 /* 回っている文字：替わるたびに縦にパタッと */
 .big .ch.flip{animation:flip .035s linear}
 @keyframes flip{from{transform:rotateX(-80deg)} to{transform:none}}
-.big .cap{margin-top:1.6em; font-family:"Archivo",sans-serif; font-weight:600; font-size:12px; letter-spacing:.45em; color:var(--sub)}
+.big .cap{margin-top:2.2em; padding:0 var(--pad); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.5em; color:var(--sub)}
 
-/* 左の細い列：番号と、縦書きの名前。読んでいるあいだ残る */
-.side{display:flex; flex-direction:column; align-items:flex-start; gap:18px}
-.side .n{font-family:"Archivo",sans-serif; font-weight:600; font-size:13px; letter-spacing:.3em; color:var(--pu)}
-.side .n::after{content:""; display:block; width:32px; height:1px; background:var(--ink); margin-top:18px}
-.side .j{writing-mode:vertical-rl; font-size:13px; letter-spacing:.5em; color:var(--sub)}
+/* 節の番号と名前：小さく、誌面のノンブルのように */
+.side{display:flex; align-items:center; gap:16px; margin-bottom:clamp(40px,8vh,90px); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.35em; color:var(--sub)}
+.side .n{color:var(--ink)}
+.side .n::after{content:""; display:inline-block; width:48px; height:1px; background:var(--ink); vertical-align:middle; margin-left:16px}
+section.r .side{justify-content:flex-end}
 
-/* 文字：見出しは太いゴシックで英字と調子をそろえる。本文は行を短めに */
-.min,h1,h2{font-family:"Zen Kaku Gothic New",sans-serif; font-weight:900; letter-spacing:.02em}
-.lead h1{font-size:clamp(26px,3.9vw,54px); line-height:1.45}
-.lead p{margin-top:2.2em; color:var(--sub); font-size:15px; letter-spacing:.06em}
-h2{font-size:clamp(24px,2.9vw,40px); line-height:1.4; margin-bottom:clamp(32px,6vh,64px)}
-h3{font-size:clamp(17px,1.7vw,22px); line-height:1.6; margin-bottom:.8em}
-p{font-size:15px; line-height:2.05; max-width:52em}
+/* 文字：大きさの差を極端に。見出しは太いゴシック、本文は小さく */
+.min,h1,h2{font-family:"Zen Kaku Gothic New",sans-serif; font-weight:900}
+h2{font-size:13px; letter-spacing:.24em; margin-bottom:28px}
+h3{font-size:15px; line-height:1.7; margin-bottom:.8em}
+p{font-size:12.5px; line-height:2.15; letter-spacing:.04em}
 b{font-weight:700}
-#philosophy h3{font-size:clamp(20px,2.4vw,30px); font-weight:900; line-height:1.5; margin-bottom:1.4em}
-/* サービス：番号つきで 2×2 */
-.svc{display:grid; grid-template-columns:1fr 1fr; gap:clamp(44px,8vh,80px) clamp(28px,4vw,60px); counter-reset:s}
-.svc li{list-style:none; counter-increment:s; border-top:1px solid var(--ink); padding-top:20px}
-.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(28px,3vw,42px); line-height:1; color:var(--li); margin-bottom:20px}
-.svc h3{font-size:clamp(16px,1.45vw,20px)}
-.svc p{font-size:14px; color:var(--sub)}
-/* 会社概要：細い罫線の表 */
-dl{display:grid; grid-template-columns:10em 1fr; border-top:1px solid var(--line); padding:22px 0; font-size:15px}
+.lead{grid-column:7 / -1; padding-bottom:clamp(40px,8vh,80px)}
+.lead h1{font-size:clamp(18px,1.9vw,26px); line-height:1.7; letter-spacing:.04em}
+.lead p{margin-top:1.8em; color:var(--sub)}
+
+/* 01 企業理念：日本語の一行を大きく、本文は右の半分 */
+#philosophy h2,#philosophy p{grid-column:5 / -1}
+#philosophy h3{grid-column:1 / 12; order:-1; font-size:clamp(28px,4.6vw,70px); font-weight:900; line-height:1.3; letter-spacing:.01em; margin-bottom:clamp(48px,10vh,120px)}
+/* 02 サービス：左の 8 列に、小さな番号つきで 2×2 */
+#services h2{grid-column:1 / 7}
+.svc{grid-column:1 / 9; display:grid; grid-template-columns:1fr 1fr; gap:clamp(48px,9vh,88px) clamp(24px,3vw,48px); counter-reset:s}
+.svc li{list-style:none; counter-increment:s; border-top:1px solid var(--ink); padding-top:16px}
+.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.3em; color:var(--li); margin-bottom:22px}
+.svc p{font-size:12px; color:var(--sub)}
+/* 03 会社概要：右の半分に、細い罫線の表 */
+#company h2,#company dl{grid-column:7 / -1}
+dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:14px 0; font-size:12.5px; line-height:2}
 dl:last-child{border-bottom:1px solid var(--line)}
-dt{font-weight:700; font-size:13px; letter-spacing:.14em; color:var(--sub); padding-top:.15em}
-.acc{font-size:13px; color:var(--sub); margin-top:.6em}
-.btn{display:inline-flex; align-items:center; justify-content:space-between; gap:24px; min-width:min(100%,380px); height:64px; padding:0 28px; margin-top:2.4em; background:var(--ink); color:#fff; text-decoration:none; letter-spacing:.12em; transition:background .2s}
+dt{font-weight:700; font-size:11px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
+.acc{font-size:11.5px; color:var(--sub); margin-top:.6em}
+/* 04 お問い合わせ：左に寄せ、ボタンは下線の文字 */
+#contact h2,#contact p,#contact .btn{grid-column:1 / 7; justify-self:start}
+.btn{display:inline-flex; align-items:center; gap:40px; margin-top:2.6em; padding:12px 0; border-bottom:1px solid var(--ink); color:var(--ink); text-decoration:none; font-size:13px; letter-spacing:.24em; transition:color .2s, border-color .2s}
 .btn::after{content:"→"; font-family:"Archivo",sans-serif}
-.btn:hover{background:var(--pu)}
-footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; max-width:1320px; margin:0 auto; padding:28px clamp(16px,5vw,72px); font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
+.btn:hover{color:var(--pu); border-color:var(--pu)}
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:28px clamp(16px,4vw,56px); font-size:11px; letter-spacing:.08em; color:var(--sub); border-top:1px solid var(--line)}
 
 @media (max-width:760px){
   nav{display:none}
-  section{grid-template-columns:1fr}
-  section > *,section > .big{grid-column:1}
-  section > .side{grid-column:1; grid-row:auto; position:static; flex-direction:row; align-items:center; margin-bottom:28px}
-  .side .n::after{display:none}
-  .side .j{writing-mode:horizontal-tb; letter-spacing:.3em}
+  section > *,.in > *,#philosophy h3,.lead,.svc{grid-column:1 / -1 !important}
   .svc{grid-template-columns:1fr}
   dl{grid-template-columns:1fr; gap:2px}
+  section.r .side{justify-content:flex-start}
 }
 @media (prefers-reduced-motion:reduce){ .ch{transition:none} html{scroll-behavior:auto} }
 </style>
@@ -119,7 +122,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; max
     </div>
   </section>
 
-  <section id="services" data-n="02" data-j="サービス" data-w="SERVICE">
+  <section id="services" class="r" data-n="02" data-j="サービス" data-w="SERVICE">
     <h2 class="min">私たちが提供するサービス</h2>
     <ul class="svc">
       <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
@@ -143,7 +146,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; max
     </div>
   </section>
 
-  <section id="contact" data-n="04" data-j="お問い合わせ" class="contact" data-w="CONTACT">
+  <section id="contact" data-n="04" data-j="お問い合わせ" class="contact r" data-w="CONTACT">
     <div class="in">
       <h2 class="min">お問い合わせ</h2>
       <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
@@ -166,12 +169,20 @@ var ctx = document.createElement('canvas').getContext('2d');
 var fs = 0, bigs = [];
 
 function size(){
-  /* いちばん長い語（PHILOSOPHY）が窓の幅に収まる大きさ */
   fs = Math.max(36, Math.min(200, innerWidth * 0.86 / 7.6, innerHeight * 0.2));
-  document.documentElement.style.setProperty('--fs', fs + 'px');
-  ctx.font = fs + 'px "Archivo Black"';
-  /* 文字は自分の枠（決まる文字の幅）の真ん中にそろえる */
-  bigs.forEach(function(b){ b.chs.forEach(function(el, i){ el.sw = ctx.measureText(b.w[i]).width; el.style.setProperty('--sw', el.sw + 'px'); }); });
+  /* 英字は語ごとに、画面の幅の 1.06 倍（端で少し切れる）。高すぎるときは画面の高さの 6 割まで */
+  bigs.forEach(function(b){
+    ctx.font = '100px "Archivo Black"';
+    var w100 = b.w.split('').reduce(function(t, c){ return t + ctx.measureText(c).width; }, 0);
+    b.fs = Math.min(innerWidth * 1.06 * 100 / w100, innerHeight * .6);
+    b.box.style.setProperty('--fs', b.fs + 'px');
+    ctx.font = b.fs + 'px "Archivo Black"';
+    /* 文字は自分の枠（決まる文字の幅）の真ん中にそろえる */
+    b.chs.forEach(function(el, i){ el.fz = b.fs; el.sw = ctx.measureText(b.w[i]).width; el.style.setProperty('--sw', el.sw + 'px'); });
+    /* 奇数の節は左の端で切れて右にそろう、偶数の節（.r）は左にそろって右の端で切れる */
+    var over = w100 * b.fs / 100 - b.box.clientWidth;
+    b.box.firstChild.style.marginLeft = (b.box.parentNode.classList.contains('r') ? 0 : -over) + 'px';
+  });
 }
 
 /* 回る：ちらちらと別の文字に替わり続け、lockAt（ms）で決まった文字にカチッと止まる */
@@ -183,6 +194,7 @@ function roll(el, to, lockAt){
     if (tk !== el.tk) return;
     var done = performance.now() - t0 >= lockAt;
     /* 回っているあいだは、枠に収まる幅の文字だけ（隣と重ならない） */
+    ctx.font = (el.fz || fs) + 'px "Archivo Black"';
     var fit = AZ.split('').filter(function(a){ return ctx.measureText(a).width <= (el.sw || fs) * 1.04 && a !== el.textContent; });
     el.textContent = done || !fit.length ? to : fit[Math.floor(Math.random() * fit.length)];
     el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip');
