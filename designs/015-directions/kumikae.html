@@ -85,7 +85,15 @@ b{font-weight:700}
 #services h2{grid-column:1 / 7}
 .svc{grid-column:1 / -1; display:grid; grid-template-columns:1fr; gap:0; counter-reset:s; margin-top:clamp(40px,8vh,90px)}   /* サービスは一つずつ一画面に。左右交互 */
 .svc li{list-style:none; counter-increment:s; width:min(100%,560px); min-height:clamp(420px,80vh,820px); display:flex; flex-direction:column; justify-content:center}
-.svc li:nth-child(even){justify-self:end}
+/* サービスの横：4 つの一覧を画面に留め、いま読んでいるものだけ濃くする */
+.svcwrap{display:grid; grid-template-columns:subgrid; align-items:start}
+.svcwrap .svc{grid-column:1 / 8}
+.idx{grid-column:9 / -1; position:sticky; top:42vh; list-style:none; margin-top:clamp(40px,8vh,90px)}
+.idx li{display:grid; grid-template-columns:3.2em 1fr; gap:4px; padding:12px 0; border-top:1px solid var(--line); font-size:13.5px; line-height:1.6; color:var(--sub); opacity:.45; transition:opacity .3s, color .3s, padding-left .3s cubic-bezier(.2,.8,.2,1)}
+.idx li:last-child{border-bottom:1px solid var(--line)}
+.idx li span{font-family:"Archivo",sans-serif; font-weight:600; letter-spacing:.2em; font-size:12px; padding-top:.15em}
+.idx li.on{opacity:1; color:var(--ink); padding-left:12px}
+.idx li.on span{color:var(--li)}
 .svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(44px,5vw,72px); line-height:.8; letter-spacing:-.01em; color:var(--li); margin-bottom:clamp(24px,4vh,44px); border-bottom:1px solid var(--ink); padding-bottom:clamp(16px,3vh,28px)}
 .svc p{font-size:13.5px; color:var(--sub)}
 /* 03 会社概要：右の半分に、細い罫線の表 */
@@ -105,6 +113,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
   nav{display:none}
   section > *,.in > *,#philosophy h3,.lead,.svc{grid-column:1 / -1 !important}
   .svc{grid-template-columns:1fr}
+  .idx{display:none}
   dl{grid-template-columns:1fr; gap:2px}
   section.r .side{justify-content:flex-start}
 }
@@ -372,8 +381,20 @@ rvs.forEach(function(el){ el.classList.add('rv'); });
 var rio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ rio.unobserve(e.target); flick(e.target); } }); }, { threshold:.25 });
 rvs.forEach(function(el){ rio.observe(el); });
 
+/* サービスの一覧：4 つの見出しを公式の文のまま並べ、いま画面の真ん中にあるものを濃くする */
+var svc = document.querySelector('.svc'), wrap = document.createElement('div'), idx = document.createElement('ol');
+wrap.className = 'svcwrap'; idx.className = 'idx'; idx.setAttribute('aria-hidden', 'true');
+svc.parentNode.insertBefore(wrap, svc); wrap.appendChild(svc); wrap.appendChild(idx);
+var items = [].slice.call(svc.children);
+items.forEach(function(li, i){ var o = document.createElement('li'); o.innerHTML = '<span>' + ('0' + (i + 1)) + '</span>' + li.querySelector('h3').textContent; idx.appendChild(o); });
+var marks = [].slice.call(idx.children);
+function follow(){
+  var mid = innerHeight / 2, best = 0, d = 1e9;
+  items.forEach(function(li, i){ var r = li.getBoundingClientRect(), c = Math.abs(r.top + r.height / 2 - mid); if (c < d){ d = c; best = i; } });
+  marks.forEach(function(m, i){ m.classList.toggle('on', i === best); });
+}
 var queued = false;
-function frame(){ queued = false; gaps.forEach(draw); tint(); active(); }
+function frame(){ queued = false; gaps.forEach(draw); tint(); follow(); active(); }
 function onScroll(){ if (!queued){ queued = true; requestAnimationFrame(frame); } }
 
 /* メニューで飛んだときは、組み上がった英字のところに着く */
