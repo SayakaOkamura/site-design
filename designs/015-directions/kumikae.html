@@ -119,7 +119,7 @@ b{font-weight:700}
 #company{position:relative}
 .ripwrap{position:absolute; inset:0 calc(-1 * var(--pad)); z-index:0; pointer-events:none; overflow:clip; -webkit-mask:linear-gradient(transparent, #000 18%, #000 88%, transparent); mask:linear-gradient(transparent, #000 18%, #000 88%, transparent)}
 .ripbox{position:absolute; inset:0}   /* 画面に留めない。本文と一緒に流れる */
-.ripbox i{position:absolute; left:22%; top:0; width:0; height:0; border-radius:50%; border:4px solid color-mix(in srgb, var(--li) 40%, var(--bg)); transform:translate(-50%,-50%); will-change:width,height,opacity}
+.ripbox i{position:absolute; left:22%; top:0; width:0; height:0; border-radius:50%; border:4px solid color-mix(in srgb, var(--li) 40%, var(--bg)); transform:translate(-50%,0);   /* 円の上の端を固定して、下へ膨らむ */ will-change:width,height,opacity}
 dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:clamp(28px,6vh,56px) 0; font-size:14.5px; line-height:2}   /* 行の間を広く、ゆっくり流れる */
 dl:last-child{border-bottom:1px solid var(--line)}
 dt{font-weight:700; font-size:12.5px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
@@ -443,7 +443,7 @@ function ripple(){
   if (!rips.length) return;
   var c = rips[0], r = ripSec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight){ c.style.opacity = 0; return; }
   /* 一回だけ広がって薄れる（繰り返さない） */
-  /* 中心は「会社概要」の見出しと同じ高さ（節の上の方）。読み始める所で開き、読み進めるにつれて下へ広がる */
+  /* 円の上の端は「会社概要」の見出しと同じ高さ（節の上の方）に固定。読み始める所で開き、読み進めるにつれて下へ膨らむ */
   var h = ripSec.querySelector('h2'), cy = h ? h.getBoundingClientRect().top + h.offsetHeight / 2 : r.top;
   c.style.top = (cy - r.top) + 'px';
   var q = clamp((innerHeight * .8 - cy) / (innerHeight * 1.2)), max = Math.hypot(innerWidth, innerHeight) * 1.1;
