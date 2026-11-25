@@ -441,12 +441,11 @@ var ripSec = document.getElementById('company'), rips = [];
 })();
 function ripple(){
   if (!rips.length) return;
-  var r = ripSec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
-  var p = -r.top / innerHeight, max = Math.hypot(innerWidth, innerHeight) * .9;
-  rips.forEach(function(c, i){
-    var ph = ((p * .9 + i / rips.length) % 1 + 1) % 1, d = ph * max;
-    c.style.width = c.style.height = d + 'px'; c.style.opacity = RM ? .4 : (1 - ph) * .8;
-  });
+  var c = rips[0], r = ripSec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight){ c.style.opacity = 0; return; }
+  /* 円の中心が画面に入ってきたところで大きさ 0 から開き始め、スクロールにつれて一回だけ広がって薄れる（繰り返さない） */
+  var cy = r.top + r.height * .58, q = clamp((innerHeight - cy) / (innerHeight * 1.3)), max = Math.hypot(innerWidth, innerHeight) * .9;
+  if (RM) q = .4;
+  c.style.width = c.style.height = q * max + 'px'; c.style.opacity = q <= 0 ? 0 : (1 - q) * .85;
 }
 var queued = false;
 function frame(){ queued = false; gaps.forEach(draw); tint(); follow(); ripple(); active(); }
