@@ -44,8 +44,8 @@ section > *{grid-column:1 / -1}
 @keyframes flip{from{transform:rotateX(-80deg)} to{transform:none}}
 .big .cap{margin-top:2.2em; padding:0 var(--pad); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.5em; color:var(--sub)}
 
-/* 節の前の余白＝組み替わりの通り道。英字は余白のあいだ画面に留まり（sticky）、スクロールした量に合わせて前の語から次の語へ組み替わる */
-.gap{position:relative; height:clamp(900px,190vh,2200px); margin:0 calc(-1 * var(--pad)) clamp(80px,18vh,200px)}
+/* 節の前の余白＝組み替わりの通り道。英字は余白のあいだ画面に留まり（sticky）、留まる位置に着くと前の語から次の語へ勝手に組み替わる */
+.gap{position:relative; height:clamp(560px,115vh,1300px); margin:0 calc(-1 * var(--pad)) clamp(80px,18vh,200px)}
 .pin{position:sticky; top:var(--top); height:var(--ph)}
 .pin .ch{position:absolute; left:0; bottom:0; text-align:center; font-family:"Archivo Black",sans-serif; line-height:.78; color:var(--ink); white-space:pre; will-change:transform}
 
@@ -225,7 +225,7 @@ var top0 = secs[0];
 })();
 
 /* ほかの節：画面はいつも「変わる途中」。節の前の余白は、前の語が次の語へ組み替わる通り道
-   余白に入ると英字が画面に留まり、スクロールした量に合わせて組み替わる。止めればその途中で止まる。組み上がったら本文と一緒に流れ出す */
+   余白に入ると英字が画面に留まり、勝手に組み替わる。組み上がったら本文と一緒に流れ出す */
 var TOPS = [.2, .34, .14, .28];   /* 留まる高さ（画面の上から）。節ごとに違う所に置き、同じ位置に二度は置かない */
 var gaps = [];
 secs.slice(1).forEach(function(sec, k){
@@ -272,11 +272,18 @@ function build(g){
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
 function put(el, x, f, w){ el.style.transform = 'translateX(' + x + 'px)'; el.style.fontSize = f + 'px'; el.style.width = w + 'px'; }
+/* 英字が画面の留まる位置に着いたら、勝手に組み上がる（1.2 秒）。上へ戻って余白の手前まで出たら元に戻り、次に来たときにまた組み上がる */
+var DUR = 1200;
 function draw(g){
-  var r = g.gap.getBoundingClientRect(), ph = g.fB * .78, top = Math.max(84, innerHeight * TOPS[g.k]);
-  var p = RM ? 1 : clamp((top - r.top) / Math.max(1, r.height - ph));
-  if (Math.abs(p - g.p) < .002) return; g.p = p;
-  var tick = Math.floor(p * 40);   /* 回る文字は、スクロールしたぶんだけ替わる（止めると止まる） */
+  var r = g.gap.getBoundingClientRect(), top = Math.max(84, innerHeight * TOPS[g.k]);
+  if (RM){ render(g, 1, 0); return; }
+  if (r.top <= top + 1){
+    if (!g.t0){ g.t0 = performance.now(); (function loop(){ if (!g.t0) return; var t = performance.now() - g.t0; render(g, clamp(t / DUR), Math.floor(t / 45)); if (t < DUR) requestAnimationFrame(loop); })(); }
+  } else if (g.t0 && r.top > top + 40){ g.t0 = 0; render(g, 0, 0); }
+  else if (!g.t0 && g.p !== 0) render(g, 0, 0);
+}
+function render(g, p, tick){
+  if (p === g.p && p !== 0 && p !== 1 && tick === g.tick) return; g.p = p; g.tick = tick;
   g.items.forEach(function(it){
     var el = it.el;
     if (it.t === 'out'){
