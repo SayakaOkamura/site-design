@@ -75,9 +75,9 @@ body[data-t="night"]{--wall:#140720; --sky:#2a0e3e; --orb:#ece2f6; --cloud:#6540
 .lw.off{opacity:0}
 .frame{fill:none; stroke:var(--frame)} .sill{fill:var(--frame)} .curt{fill:var(--curt)}
 .desk{fill:var(--desk)} .deskf{fill:var(--deskf)} .sunp{fill:var(--sun); opacity:var(--sunA)}
-.leaf{fill:var(--leaf)} .pot{fill:var(--pot)} .mug{fill:var(--mug)} .mugh{fill:none; stroke:var(--mug); stroke-width:6}
+.leaf{fill:var(--leaf)} .pot{fill:var(--pot)} .mug{fill:var(--mug)} .mugh{fill:none; stroke:var(--mug); stroke-width:7; stroke-linejoin:miter}
 .paper{fill:var(--paper)} .ln{stroke:rgba(42,14,62,.35); stroke-width:1.5} .lap{fill:var(--lap)} .scr{fill:var(--scr)} .glow{opacity:var(--glow)}
-.steam{fill:none; stroke:var(--steam); stroke-width:3; stroke-linecap:round}
+.steam{fill:none; stroke:var(--steam); stroke-width:4; stroke-linejoin:miter}
 
 /* ずっと続く低い動き：雲が流れる・湯気・カーテンと葉がわずかに揺れる */
 .drift{animation:drift var(--dur,150s) linear infinite; animation-delay:var(--dl,0s)}
@@ -203,9 +203,9 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
     <circle class="star" cx="840" cy="150" r="1.6"/><circle class="star" cx="930" cy="210" r="1.2"/><circle class="star" cx="1060" cy="140" r="1.8"/>
     <circle class="star" cx="1180" cy="230" r="1.2"/><circle class="star" cx="1290" cy="150" r="1.5"/><circle class="star" cx="1390" cy="250" r="1.2"/><circle class="star" cx="1230" cy="300" r="1"/>
     <circle class="orb" id="orb" cx="1280" cy="180" r="34"/>
-    <g class="drift" style="--dur:170s; --dl:-60s"><ellipse class="cl" cx="900" cy="200" rx="70" ry="18"/><ellipse class="cl" cx="940" cy="188" rx="40" ry="18"/></g>
-    <g class="drift" style="--dur:230s; --dl:-150s"><ellipse class="cl" cx="1000" cy="290" rx="90" ry="16"/><ellipse class="cl" cx="1040" cy="278" rx="46" ry="16"/></g>
-    <g class="bird" id="bird"><path d="M0 0 q7 -7 14 0 q7 -7 14 0" fill="none" stroke="#1d0a2c" stroke-width="2.5" stroke-linecap="round"/></g>
+    <g class="drift" style="--dur:170s; --dl:-60s"><rect class="cl" x="830" y="190" width="140" height="20" rx="3"/><rect class="cl" x="884" y="172" width="70" height="20" rx="3"/></g>
+    <g class="drift" style="--dur:230s; --dl:-150s"><rect class="cl" x="910" y="282" width="180" height="18" rx="3"/><rect class="cl" x="966" y="266" width="80" height="18" rx="3"/></g>
+    <g class="bird" id="bird"><path d="M0 0 L7 -7 L14 0 L21 -7 L28 0" fill="none" stroke="#1d0a2c" stroke-width="3.5" stroke-linejoin="miter"/></g>
     <rect class="bld" x="790" y="410" width="90" height="160"/><rect class="bld" x="885" y="370" width="70" height="200"/><rect class="bld" x="960" y="440" width="110" height="130"/>
     <rect class="bld" x="1075" y="390" width="80" height="180"/><rect class="bld" x="1160" y="430" width="120" height="140"/><rect class="bld" x="1285" y="360" width="70" height="210"/><rect class="bld" x="1360" y="420" width="90" height="150"/>
     <g id="lws">
@@ -217,10 +217,10 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
     </g>
   </g>
   <!-- 窓枠・カーテン -->
-  <rect class="frame" x="780" y="110" width="660" height="450" stroke-width="16"/>
-  <line class="frame" x1="1110" y1="110" x2="1110" y2="560" stroke-width="10"/><line class="frame" x1="780" y1="335" x2="1440" y2="335" stroke-width="10"/>
-  <rect class="sill" x="755" y="556" width="710" height="22" rx="3"/>
-  <line class="frame" x1="715" y1="94" x2="1505" y2="94" stroke-width="6" stroke-linecap="round"/>
+  <rect class="frame" x="780" y="110" width="660" height="450" stroke-width="26"/>
+  <line class="frame" x1="1110" y1="110" x2="1110" y2="560" stroke-width="16"/><line class="frame" x1="780" y1="335" x2="1440" y2="335" stroke-width="16"/>
+  <rect class="sill" x="750" y="552" width="720" height="30"/>
+  <line class="frame" x1="715" y1="94" x2="1505" y2="94" stroke-width="10"/>
   <path class="curt" id="curtL" d="M730 96 L826 96 L826 586 L730 586 Z"/>
   <path class="curt r" id="curtR" d="M1394 96 L1490 96 L1490 586 L1394 586 Z"/>
   <!-- 机 -->
@@ -229,20 +229,20 @@ body.open footer,body.open .keys{opacity:0; pointer-events:none}
   <polygon class="sunp" points="830,595 1250,595 1120,640 660,640"/>
   <!-- 鉢 -->
   <g class="leaves">
-    <ellipse class="leaf" cx="815" cy="540" rx="9" ry="26" transform="rotate(-25 815 540)"/><ellipse class="leaf" cx="847" cy="536" rx="9" ry="26" transform="rotate(22 847 536)"/>
-    <ellipse class="leaf" cx="831" cy="524" rx="9" ry="32"/><ellipse class="leaf" cx="804" cy="556" rx="8" ry="20" transform="rotate(-58 804 556)"/><ellipse class="leaf" cx="859" cy="553" rx="8" ry="20" transform="rotate(55 859 553)"/>
+    <polygon class="leaf" points="815,513 826,540 815,567 804,540" transform="rotate(-25 815 540)"/><polygon class="leaf" points="847,509 858,536 847,563 836,536" transform="rotate(22 847 536)"/>
+    <polygon class="leaf" points="831,488 842,522 831,556 820,522" transform="rotate(0 831 522)"/><polygon class="leaf" points="803,536 813,557 803,578 793,557" transform="rotate(-58 803 557)"/><polygon class="leaf" points="860,533 870,554 860,575 850,554" transform="rotate(55 860 554)"/>
   </g>
   <polygon class="pot" points="798,566 864,566 856,616 806,616"/>
   <!-- マグと湯気 -->
-  <g class="steam"><path d="M944 562 c-8 -10 8 -20 0 -32"/><path d="M956 560 c-8 -10 8 -20 0 -34"/><path d="M968 562 c-8 -10 8 -20 0 -30"/></g>
-  <rect class="mug" x="932" y="572" width="46" height="44" rx="6"/><path class="mugh" d="M978 582 c16 0 16 22 0 22"/>
+  <g class="steam"><path d="M944 562 l-6 -8 l6 -8 l-6 -8 l6 -8"/><path d="M956 560 l-6 -8 l6 -8 l-6 -8 l6 -8"/><path d="M968 562 l-6 -8 l6 -8 l-6 -8"/></g>
+  <rect class="mug" x="932" y="572" width="46" height="44" rx="2"/><path class="mugh" d="M978 582 h12 v22 h-12"/>
   <!-- 開いた本 -->
   <polygon class="paper" points="995,607 1065,599 1065,617 995,625"/><polygon class="paper" points="1065,599 1135,607 1135,625 1065,617"/>
   <line class="ln" x1="1005" y1="609" x2="1055" y2="603"/><line class="ln" x1="1005" y1="615" x2="1055" y2="609"/><line class="ln" x1="1075" y1="603" x2="1125" y2="609"/><line class="ln" x1="1075" y1="609" x2="1125" y2="615"/>
   <polygon class="paper flip" id="flip" points="1065,599 1135,607 1135,625 1065,617"/>
   <!-- ノート PC -->
   <ellipse class="glow" cx="1295" cy="560" rx="230" ry="140" fill="url(#gl)"/>
-  <rect class="lap" x="1210" y="495" width="170" height="112" rx="6"/><rect class="scr" x="1218" y="503" width="154" height="96" rx="3"/>
+  <rect class="lap" x="1206" y="491" width="178" height="120" rx="2"/><rect class="scr" x="1218" y="503" width="154" height="96"/>
   <polygon class="lap" points="1190,619 1400,619 1385,607 1205,607"/>
   <g class="notif" id="notif"><rect x="1296" y="511" width="68" height="20" rx="4" fill="#fbf8ff"/><circle cx="1307" cy="521" r="4" fill="#d7ff3a"/><rect x="1316" y="518" width="38" height="3" rx="1.5" fill="#c9bdd6"/><rect x="1316" y="524" width="24" height="3" rx="1.5" fill="#c9bdd6"/></g>
 </svg></div>
