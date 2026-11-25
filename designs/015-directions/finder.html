@@ -153,10 +153,10 @@ body.open .page.flat{transform:none}
 /* 開いたまま替えるとき：板を一瞬で右へ戻し、そこから滑り込み直す */
 body.open .page.reset{transform:translateX(40px); opacity:0; transition:none}
 /* 中身：見出しは右からシュッと入り、本文は上から一段ずつ少し遅れて流れ込む */
-.page .wrap.enter .ph .k,.page .wrap.enter .ph h2{animation:hin .5s cubic-bezier(.2,.8,.2,1) both}
+.page .wrap.enter .ph .k,.page .wrap.enter .ph h2{animation:hin .43s cubic-bezier(.2,.8,.2,1) both}
 .page .wrap.enter .ph h2{animation-delay:.04s}
 @keyframes hin{from{transform:translateX(44px); opacity:0}}
-.page .wrap.enter > :not(.ph){animation:lin .48s cubic-bezier(.2,.8,.2,1) both; animation-delay:var(--d,0s)}
+.page .wrap.enter > :not(.ph){animation:lin .41s cubic-bezier(.2,.8,.2,1) both; animation-delay:var(--d,0s)}
 @keyframes lin{from{transform:translateY(-10px); opacity:0}}
 .page .wrap{padding:0 clamp(24px,4vw,64px) 60px}
 .page .back{position:sticky; float:right; top:20px; margin:20px clamp(16px,3vw,40px) 0 0; right:clamp(16px,4vw,48px); font-size:13px; letter-spacing:.2em; color:var(--li); z-index:7; cursor:pointer}
@@ -304,7 +304,7 @@ function open(i){
     if (opened){ page.classList.remove('flat'); page.classList.add('reset'); void page.offsetWidth; page.classList.remove('reset'); }
     fill();
     /* 本文の段ごとに少しずつ遅らせる。板が滑り込むのを待ってから */
-    [].forEach.call(wrap.children, function(el, k){ el.style.setProperty('--d', (.3 + k * .08).toFixed(3) + 's'); });
+    [].forEach.call(wrap.children, function(el, k){ el.style.setProperty('--d', (.3 + k * .062).toFixed(3) + 's'); });
     wrap.querySelectorAll('.ph .k, .ph h2').forEach(function(el){ el.style.animationDelay = .26 + (el.tagName === 'H2' ? .04 : 0) + 's'; });
     wrap.classList.remove('enter'); void wrap.offsetWidth; wrap.classList.add('enter');
   } else fill();
