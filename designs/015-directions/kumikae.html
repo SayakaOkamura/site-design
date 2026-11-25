@@ -361,7 +361,8 @@ function mix(a, b, t){ return 'rgb(' + a.map(function(v, i){ return Math.round(v
 function tint(){
   var vh = innerHeight, k = 0, t = 0;
   gaps.forEach(function(g, i){
-    var r = g.gap.getBoundingClientRect(), c = clamp((vh * .6 - r.top) / (vh * .8));
+    /* 英字が画面の下から入ってきて、上から 4 割の高さに来るまでに色を変え終える（メニューで飛んだ先が中間の色にならないように） */
+    var r = g.gap.getBoundingClientRect(), c = clamp((vh - r.top) / (vh * .6));
     if (c > 0){ k = i; t = c; }
   });
   var a = PAL[k], b = PAL[k + 1], root = document.documentElement.style;
