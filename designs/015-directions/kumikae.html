@@ -27,12 +27,12 @@ nav a.on{color:var(--ink)}
 
 /* 組み方：ポスター・雑誌の誌面。12 列のグリッドに左右非対称に置く。英字は画面の幅を超えるほど大きく、本文は小さく、余白は思い切り取る */
 main{position:relative; z-index:1}
-section{--pad:clamp(16px,4vw,56px); display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:clamp(12px,2vw,28px); padding:clamp(120px,26vh,280px) var(--pad) 0; align-items:start}
+section{--pad:clamp(16px,4vw,56px); display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:clamp(12px,2vw,28px); padding:clamp(220px,55vh,560px) var(--pad) 0; align-items:start}   /* 節と節の間を大きく空けて、大きな英字が続けて来ないように */
 section > *{grid-column:1 / -1}
 .in{display:grid; grid-template-columns:subgrid; align-items:start}
 .in > *{grid-column:1 / -1}
 #top{min-height:100vh; padding-top:clamp(90px,14vh,140px); align-content:space-between}
-#contact{padding-bottom:clamp(140px,28vh,300px)}
+#contact{padding-bottom:clamp(200px,40vh,420px)}
 
 /* 大きな英字：語ごとに画面の幅の 1.06 倍。奇数の節は左の端、偶数の節は右の端で切れる。画面に入ってきたときに一回回って、左から順に止まる */
 .big{margin:0 calc(-1 * var(--pad)) clamp(56px,12vh,140px)}
@@ -45,19 +45,19 @@ section > *{grid-column:1 / -1}
 .big .cap{margin-top:2.2em; padding:0 var(--pad); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.5em; color:var(--sub)}
 
 /* 節の番号と名前：小さく、誌面のノンブルのように */
-.side{display:flex; align-items:center; gap:16px; margin-bottom:clamp(40px,8vh,90px); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.35em; color:var(--sub)}
+.side{display:flex; align-items:center; gap:16px; margin-bottom:clamp(40px,8vh,90px); font-family:"Archivo",sans-serif; font-weight:600; font-size:12.5px; letter-spacing:.35em; color:var(--sub)}
 .side .n{color:var(--ink)}
 .side .n::after{content:""; display:inline-block; width:48px; height:1px; background:var(--ink); vertical-align:middle; margin-left:16px}
 section.r .side{justify-content:flex-end}
 
 /* 文字：大きさの差を極端に。見出しは太いゴシック、本文は小さく */
 .min,h1,h2{font-family:"Zen Kaku Gothic New",sans-serif; font-weight:900}
-h2{font-size:13px; letter-spacing:.24em; margin-bottom:28px}
-h3{font-size:15px; line-height:1.7; margin-bottom:.8em}
-p{font-size:12.5px; line-height:2.15; letter-spacing:.04em}
+h2{font-size:15px; letter-spacing:.22em; margin-bottom:32px}
+h3{font-size:17px; line-height:1.7; margin-bottom:.8em}
+p{font-size:14.5px; line-height:2.1; letter-spacing:.04em}
 b{font-weight:700}
 .lead{grid-column:7 / -1; padding-bottom:clamp(40px,8vh,80px)}
-.lead h1{font-size:clamp(18px,1.9vw,26px); line-height:1.7; letter-spacing:.04em}
+.lead h1{font-size:clamp(20px,2.2vw,30px); line-height:1.7; letter-spacing:.04em}
 .lead p{margin-top:1.8em; color:var(--sub)}
 
 /* 01 企業理念：日本語の一行を大きく、本文は右の半分 */
@@ -67,17 +67,17 @@ b{font-weight:700}
 #services h2{grid-column:1 / 7}
 .svc{grid-column:1 / 9; display:grid; grid-template-columns:1fr 1fr; gap:clamp(48px,9vh,88px) clamp(24px,3vw,48px); counter-reset:s}
 .svc li{list-style:none; counter-increment:s; border-top:1px solid var(--ink); padding-top:16px}
-.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.3em; color:var(--li); margin-bottom:22px}
-.svc p{font-size:12px; color:var(--sub)}
+.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo",sans-serif; font-weight:600; font-size:12.5px; letter-spacing:.3em; color:var(--li); margin-bottom:22px}
+.svc p{font-size:13.5px; color:var(--sub)}
 /* 03 会社概要：右の半分に、細い罫線の表 */
 #company h2,#company dl{grid-column:7 / -1}
-dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:14px 0; font-size:12.5px; line-height:2}
+dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:16px 0; font-size:14.5px; line-height:2}
 dl:last-child{border-bottom:1px solid var(--line)}
-dt{font-weight:700; font-size:11px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
-.acc{font-size:11.5px; color:var(--sub); margin-top:.6em}
+dt{font-weight:700; font-size:12.5px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
+.acc{font-size:13px; color:var(--sub); margin-top:.6em}
 /* 04 お問い合わせ：左に寄せ、ボタンは下線の文字 */
 #contact h2,#contact p,#contact .btn{grid-column:1 / 7; justify-self:start}
-.btn{display:inline-flex; align-items:center; gap:40px; margin-top:2.6em; padding:12px 0; border-bottom:1px solid var(--ink); color:var(--ink); text-decoration:none; font-size:13px; letter-spacing:.24em; transition:color .2s, border-color .2s}
+.btn{display:inline-flex; align-items:center; gap:40px; margin-top:2.6em; padding:12px 0; border-bottom:1px solid var(--ink); color:var(--ink); text-decoration:none; font-size:15px; letter-spacing:.22em; transition:color .2s, border-color .2s}
 .btn::after{content:"→"; font-family:"Archivo",sans-serif}
 .btn:hover{color:var(--pu); border-color:var(--pu)}
 footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:28px clamp(16px,4vw,56px); font-size:11px; letter-spacing:.08em; color:var(--sub); border-top:1px solid var(--line)}
