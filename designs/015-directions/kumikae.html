@@ -32,12 +32,12 @@ nav a.on{color:var(--ink)}
 .word{position:absolute; left:0; right:0; top:56%; height:0}
 .word{perspective:800px}
 .ch{position:absolute; top:0; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:1; transform:translate(var(--x),-50%) rotateX(var(--rx,0deg));
-  transition:transform .45s cubic-bezier(.3,0,.1,1), opacity .18s, color .3s; will-change:transform; white-space:pre; backface-visibility:hidden}
+  transition:transform .22s cubic-bezier(.3,0,.1,1), opacity .1s, color .2s; will-change:transform; white-space:pre; backface-visibility:hidden}
 .ch.new{color:var(--li)}
 /* 消える文字：その場で上へ倒れて消える（遠くへ飛ばない） */
-.ch.out{--rx:90deg; opacity:0; transition:transform .18s ease-in, opacity .18s}
+.ch.out{--rx:90deg; opacity:0; transition:transform .1s ease-in, opacity .1s}
 /* 現れる文字：その場で縦にパタッと替わる（発車標のように） */
-.ch.flip{animation:flip .07s linear}
+.ch.flip{animation:flip .045s linear}
 @keyframes flip{from{transform:translate(var(--x),-50%) rotateX(-80deg)} to{transform:translate(var(--x),-50%) rotateX(0deg)}}
 .cap{position:absolute; left:0; right:0; top:calc(56% + var(--fs) * .62); text-align:center; font-size:13px; letter-spacing:.3em; color:var(--sub); transition:opacity .4s}
 
@@ -172,23 +172,23 @@ function lcs(a, b){
   while (i < m && j < n){ if (a[i] === b[j]){ out.push([i, j]); i++; j++; } else if (t[i + 1][j] >= t[i][j + 1]) i++; else j++; }
   return out;
 }
-/* その場で縦にパタッと 3 回替わって、決まる */
+/* その場で縦にパタッと 2 回替わって、決まる */
 function flipIn(it, to, delay){
-  var tk = ++it.tk, k = 0, n = RM ? 0 : 3;
+  var tk = ++it.tk, k = 0, n = RM ? 0 : 2;
   setTimeout(function step(){
     if (tk !== it.tk) return;
     it.el.style.opacity = 1;
     it.el.textContent = k < n ? AZ[Math.floor(Math.random() * 26)] : to;
     if (!RM){ it.el.classList.remove('flip'); void it.el.offsetWidth; it.el.classList.add('flip'); }
-    if (k++ < n) setTimeout(step, 70);
-    else setTimeout(function(){ if (tk === it.tk) it.el.classList.remove('new'); }, 140);
+    if (k++ < n) setTimeout(step, 45);
+    else setTimeout(function(){ if (tk === it.tk) it.el.classList.remove('new'); }, 80);
   }, RM ? 0 : delay);
 }
 
 /* いまの語から次の語へ：持ち越す文字は順番のまま横へ滑り、要らない文字はその場で倒れて消え、足りない文字はその場でパタッと現れる */
 function morph(w, cap){
   if (w === now) return; now = w;
-  capEl.style.opacity = 0; setTimeout(function(){ capEl.textContent = cap; capEl.style.opacity = 1; }, 300);
+  capEl.textContent = cap;   /* 日本語の名前は待たずにすぐ替える（英字が動いている途中でも、どこにいるか読める） */
   var xs = layout(w), next = new Array(w.length).fill(null), kept = new Array(cur.length).fill(false);
   lcs(cur.map(function(it){ return it.c; }).join(''), w).forEach(function(p){
     var it = cur[p[0]]; kept[p[0]] = true; next[p[1]] = it;
@@ -198,14 +198,14 @@ function morph(w, cap){
   cur.forEach(function(it, j){
     if (kept[j]) return;
     it.tk++; it.el.classList.remove('flip'); it.el.classList.add('out');
-    setTimeout(function(){ it.el.remove(); }, 220);
+    setTimeout(function(){ it.el.remove(); }, 120);
   });
   var order = 0;
   w.split('').forEach(function(c, i){
     if (next[i]) return;
     var el = document.createElement('span'); el.className = 'ch new'; el.style.opacity = 0; place(el, xs[i]); wordEl.appendChild(el);
     var it = { el:el, c:c, tk:0 }; next[i] = it;
-    flipIn(it, c, 260 + order++ * 40);   /* 滑る文字が着いてから */
+    flipIn(it, c, 120 + order++ * 12);   /* 滑る文字がほぼ着いてから */
   });
   cur = next;
 }
