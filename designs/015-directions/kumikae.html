@@ -88,9 +88,11 @@ b{font-weight:700}
 /* サービスの横：4 つの一覧を画面に留め、いま読んでいるものだけ濃くする */
 .svcwrap{display:grid; grid-template-columns:subgrid; align-items:start}
 .svcwrap .svc{grid-column:1 / 8}
-.idxbox{grid-column:9 / -1; position:sticky; top:24vh; margin-top:clamp(40px,8vh,90px)}
-/* 右の大きな番号：いま読んでいるサービスの番号。替わるときに英字と同じように回って決まる */
-.idxnum{display:flex; font-family:"Archivo Black",sans-serif; font-size:clamp(110px,13vw,210px); line-height:.8; letter-spacing:-.02em; color:var(--li); perspective:600px}
+.idxbox{grid-column:9 / -1; position:sticky; top:34vh; margin-top:clamp(40px,8vh,90px)}
+/* 右の大きな番号：いま読んでいるサービスの番号。英字と同じく、明度を地に近づけた大きな背景。替わるときに回って決まる */
+.idxnum{position:absolute; z-index:0; right:calc(-1 * var(--pad)); top:50%; transform:translateY(-46%); display:flex; font-family:"Archivo Black",sans-serif; font-size:clamp(260px,36vw,560px); line-height:.8; letter-spacing:-.03em; color:color-mix(in srgb, var(--ink) 12%, var(--bg)); perspective:600px; pointer-events:none}
+.idxnum b.new{color:color-mix(in srgb, var(--li) 40%, var(--bg))}
+.idxline,.idx{position:relative; z-index:1}
 .idxnum b{display:inline-block; width:.62em; text-align:center; font-weight:400}
 .idxnum b.flip{animation:flip .035s linear}
 /* 左と右をつなぐ線：読んでいるサービスの番号の下の線と同じ高さで、左の本文の端から右の番号の下まで、左から右へ引かれる */
@@ -416,7 +418,7 @@ function follow(){
   var to = ('0' + (best + 1)).split('');
   digits.forEach(function(d, k){
     var tk = d.tk = (d.tk || 0) + 1, t0 = performance.now(), lock = RM ? 0 : 160 + k * 120;
-    (function step(){ if (tk !== d.tk) return; var done = performance.now() - t0 >= lock; d.textContent = done ? to[k] : String(Math.floor(Math.random() * 10)); if (!RM){ d.classList.remove('flip'); void d.offsetWidth; d.classList.add('flip'); } if (!done) setTimeout(step, 40); })();
+    (function step(){ if (tk !== d.tk) return; var done = performance.now() - t0 >= lock; d.textContent = done ? to[k] : String(Math.floor(Math.random() * 10)); d.classList.toggle('new', !done); if (!RM){ d.classList.remove('flip'); void d.offsetWidth; d.classList.add('flip'); } if (!done) setTimeout(step, 40); })();
   });
   /* つなぐ線：左の本文の端から、右の番号の下まで引き直す */
   var lr = items[best].getBoundingClientRect(), br = box.getBoundingClientRect();
