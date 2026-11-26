@@ -4,8 +4,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 線のオープニング（2026-11-26）。昔のニュース番組のオープニングから借りるのは「一本の線が切れずに形を変える」仕組みだけ
-     濃い紫の地に明るい線が一本。画面の下から左の縦の罫線として上がり、見出しと一文の間の区切り線、右の縦の罫線、ヘッダーの下の区切り線になって、左上でロゴの輪に閉じる
-     通ったところはそのまま残り、ページの罫線とロゴになる。線が横を通ったところから公式の文が出る。文は公式のまま -->
+     生成りの地に濃い紫の線が一本。長さを変えずに、このページにある物へ化ける：見出しの上の区切り線 → 一筆書きの「Alter」 → 輪 → ヘッダーのロゴ
+     文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
 <style>
@@ -16,20 +16,20 @@ body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",s
 a{color:inherit}
 
 /* オープニング：濃い紫の一画面。線は canvas に描く。見出し・一文・メニュー・ロゴは、線が描き終えたところから出る */
-#top{position:relative; height:100vh; height:100svh; min-height:480px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse 80% 70% at 50% 50%, #2b1340 0%, #1d0a2c 70%); color:#f4eefa}
+#top{position:relative; height:100vh; height:100svh; min-height:480px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse 80% 70% at 50% 50%, #f7f4ee 30%, #ece6da 100%); color:var(--ink)}
 #top canvas{position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:2}
 header{position:absolute; top:0; left:0; right:0; z-index:3; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,56px)}
 .logo{display:flex; align-items:center; gap:10px; text-decoration:none; line-height:1.1}
 .logo i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
 .logo span{font-size:17px}
-.logo small{display:block; font-size:10px; margin-left:4.4em; color:#b9a8cc}
+.logo small{display:block; font-size:10px; margin-left:4.4em; color:var(--sub)}
 nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
-nav a{text-decoration:none; font-size:11px; letter-spacing:.24em; color:#c9b8dc; transition:color .2s}
-nav a:hover{color:var(--ac)}
-.lead{position:relative; z-index:1; text-align:center; padding:0 clamp(46px,8vw,80px); max-width:1040px}   /* 左右の縦の罫線の内側に収める */
-.lead .en{font-family:"Archivo",sans-serif; font-weight:600; font-size:clamp(10px,1.2vw,13px); letter-spacing:.6em; color:#b9a8cc; margin-right:-.6em}
+nav a{text-decoration:none; font-size:11px; letter-spacing:.24em; color:var(--sub); transition:color .2s}
+nav a:hover{color:var(--pu)}
+.lead{position:relative; z-index:1; text-align:center; padding:0 16px; max-width:960px; margin-top:clamp(60px,14vh,140px)}   /* 上に、線が文字を書く場所を空ける */
+.lead .en{font-family:"Archivo",sans-serif; font-weight:600; font-size:clamp(10px,1.2vw,13px); letter-spacing:.6em; color:var(--sub); margin-right:-.6em}
 .lead h1{margin-top:clamp(14px,3vh,28px); font-weight:900; font-size:clamp(15px,3vw,42px); line-height:1.6; letter-spacing:.02em; text-wrap:balance}
-.lead p{margin-top:clamp(18px,3.4vh,32px); font-size:clamp(12.5px,1.2vw,15px); color:#c9b8dc}
+.lead p{margin-top:clamp(18px,3.4vh,32px); font-size:clamp(12.5px,1.2vw,15px); color:var(--sub)}
 /* 出方：線が描き終えたところから、すっと出る */
 @media (max-width:480px){ .lead h1 br{display:none} }   /* 狭い幅では改行を外して、行の長さをそろえる */
 .rv{opacity:0; transition:opacity .5s}   /* 位置は動かさない（線が描く位置と文の位置をそろえる） */
@@ -140,79 +140,121 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 (function(){
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var hero = document.getElementById('top'), cv = hero.querySelector('canvas'), cx = cv.getContext('2d');
-var W = 0, H = 0, DPR = 1, TAU = Math.PI * 2;
-var AC = '#d7ff3a';
+var W = 0, H = 0, DPR = 1, N = 1200, TAU = Math.PI * 2;
+var INK = '#654087';
 var rv = [].slice.call(hero.querySelectorAll('.rv'));
 function show(k){ rv.forEach(function(el){ if (el.dataset.k === k) el.classList.add('on'); }); }
 function rect(el){ var r = el.getBoundingClientRect(), h = hero.getBoundingClientRect(); return { l:r.left - h.left, t:r.top - h.top, r:r.right - h.left, b:r.bottom - h.top, w:r.width, h:r.height }; }
 
-/* 一本の線の道筋：画面の下から左の縦の罫線として上がる → 見出しと一文の間を横切る区切り線 → 右の縦の罫線として上がる
-   → ヘッダーの下の区切り線として左へ → 左上でロゴの輪になって閉じる。通ったところはそのまま残る */
-var path = [], L = [], marks = [];
-function corner(a, b, c, r){
-  var la = Math.hypot(b[0] - a[0], b[1] - a[1]), lc = Math.hypot(c[0] - b[0], c[1] - b[1]), rr = Math.min(r, la / 2, lc / 2), out = [];
-  var p0 = [b[0] + (a[0] - b[0]) * rr / la, b[1] + (a[1] - b[1]) * rr / la], p1 = [b[0] + (c[0] - b[0]) * rr / lc, b[1] + (c[1] - b[1]) * rr / lc];
-  for (var k = 0; k <= 8; k++){ var t = k / 8, u = 1 - t; out.push([u * u * p0[0] + 2 * u * t * b[0] + t * t * p1[0], u * u * p0[1] + 2 * u * t * b[1] + t * t * p1[1]]); }
+/* 一筆書きの「Alter」：基準の線が y=0、x の高さが 40、上に伸びる字が 100。通る点を並べ、なめらかにつなぐ
+   A の左の払い → 頂点 → 右の払い → 横棒 → l の輪 → t の縦 → e の輪 → r の肩 → 最後に左へ払って t の横棒を兼ねる */
+var GLYPH = [
+  [-4, 2], [6, -30], [20, -72], [32, -100], [40, -72], [50, -30], [58, 0],
+  [52, -14], [34, -34], [18, -40], [40, -42], [64, -40],
+  [78, -62], [92, -98], [86, -110], [78, -96], [78, -50], [80, -8], [90, 0],
+  [100, -6], [106, -40], [110, -78], [111, -40], [112, -6], [122, 0],
+  [138, -10], [152, -26], [148, -40], [136, -38], [130, -20], [140, -3], [160, 0],
+  [172, -14], [174, -36], [182, -42], [194, -32], [206, -36],
+  [218, -48], [212, -58], [180, -58], [136, -56], [98, -54]
+];
+/* なめらかにつなぐ（Catmull-Rom） */
+function smooth(pts, seg){
+  var out = [];
+  for (var i = 0; i < pts.length - 1; i++){
+    var p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    for (var k = 0; k < seg; k++){
+      var t = k / seg, t2 = t * t, t3 = t2 * t;
+      out.push([0, 1].map(function(d){ return .5 * (2 * p1[d] + (-p0[d] + p2[d]) * t + (2 * p0[d] - 5 * p1[d] + 4 * p2[d] - p3[d]) * t2 + (-p0[d] + 3 * p1[d] - 3 * p2[d] + p3[d]) * t3); }));
+    }
+  }
+  out.push(pts[pts.length - 1]);
   return out;
 }
+function length(p){ var l = 0; for (var i = 1; i < p.length; i++) l += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); return l; }
+function resample(path, n){
+  var L = [0];
+  for (var i = 1; i < path.length; i++) L.push(L[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
+  var tot = L[L.length - 1] || 1, out = [], j = 0;
+  for (i = 0; i < n; i++){
+    var t = tot * i / (n - 1);
+    while (j < L.length - 2 && L[j + 1] < t) j++;
+    var seg = L[j + 1] - L[j] || 1, f = (t - L[j]) / seg;
+    out.push([path[j][0] + (path[j + 1][0] - path[j][0]) * f, path[j][1] + (path[j + 1][1] - path[j][1]) * f]);
+  }
+  return out;
+}
+
+var line0, glyph, ring, logo, LEN, marks = {};
+var GL = smooth(GLYPH, 12), GLEN = length(GL);
 function size(){
   DPR = Math.min(2, devicePixelRatio || 1);
   W = hero.clientWidth; H = hero.clientHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  var h1 = rect(hero.querySelector('h1')), pp = rect(hero.querySelector('.lead p')), ring = rect(hero.querySelector('.logo i')), hd = rect(hero.querySelector('header'));
-  var xr = (ring.l + ring.r) / 2, yr = (ring.t + ring.b) / 2, rr = ring.w / 2 - 2.5;
-  var xR = W - (xr - 0), yl = (h1.b + pp.t) / 2, yh = hd.b;
-  var c = 10;
-  /* 角の点 */
-  var P = [[xr, H + 20], [xr, yl], [xR, yl], [xR, yh], [xr, yh], [xr, yr + rr]];
-  path = [P[0]];
-  for (var i = 1; i < P.length - 1; i++) path = path.concat(corner(P[i - 1], P[i], P[i + 1], c));
-  path.push(P[P.length - 1]);
-  /* 輪：いちばん下から一周 */
-  for (var j = 1; j <= 120; j++){ var a = Math.PI / 2 + TAU * j / 120; path.push([xr + Math.cos(a) * rr, yr + Math.sin(a) * rr]); }
-  L = [0];
-  for (i = 1; i < path.length; i++) L.push(L[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
-  /* 文が出るところ：線が見出しの下を通るとき・一文の上を抜けるとき・ヘッダーの下を通るとき・輪を閉じたとき */
-  var at = function(x, y){ var best = 0, bd = 1e18; path.forEach(function(p, k){ var d = (p[0] - x) * (p[0] - x) + (p[1] - y) * (p[1] - y); if (d < bd){ bd = d; best = k; } }); return L[best]; };
-  marks = [
-    { k:'h1', at:at((h1.l + h1.r) / 2, yl) },
-    { k:'p', at:at(pp.r, yl) },
-    { k:'nav', at:at(W * .6, yh) },
-    { k:'logo', at:L[L.length - 1] - 4 }
-  ];
+  var en = rect(hero.querySelector('.en')), lg = rect(hero.querySelector('.logo i'));
+  /* 線の長さは最後まで同じ */
+  LEN = Math.min(W * .86, 820);
+  var yd = en.t - Math.max(18, H * .035), xc = W / 2;
+  /* 1：見出しの上の区切り線 */
+  line0 = resample([[xc - LEN / 2, yd], [xc + LEN / 2, yd]], N);
+  /* 2：一筆書きの「Alter」。線の長さが同じになる大きさで、区切り線の上に */
+  var k = LEN / GLEN, gw = 222 * k, gb = yd - Math.max(14, H * .025);
+  glyph = resample(GL.map(function(p){ return [xc - gw / 2 + (p[0] + 2) * k, gb + p[1] * k]; }), N);
+  /* 3：輪。「Alter」と同じ高さの真ん中に */
+  var rr = 56 * k, ry = gb - 50 * k, rp = [];   /* 「Alter」の高さに収まる輪（画面からはみ出さない） */
+  for (var j = 0; j <= 240; j++){ var a = Math.PI + TAU * j / 240; rp.push([xc + Math.cos(a) * rr, ry + Math.sin(a) * rr]); }
+  ring = { p:resample(rp, N), x:xc, y:ry, r:rr };
+  /* 4：ヘッダーのロゴの輪（線の真ん中が、ロゴの輪の太さの真ん中に来る） */
+  logo = { x:(lg.l + lg.r) / 2, y:(lg.t + lg.b) / 2, r:lg.w / 2 - 2.5 };
 }
 
-/* 時間（ms）：線は 3.4 秒で道筋を走り抜ける。走り出しは速く、最後の輪でゆるむ */
-var START = 250, RUN = 3400, END = START + RUN + 300;
+/* 時間（ms） */
+var T = { draw0:300, draw1:1100, g0:1700, g1:3100, r0:3700, r1:4700, f0:4700, f1:5500 };
+var END = T.f1 + 400;
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
-function run(v){ return 1 - Math.pow(1 - v, 2.2); }
+function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
+function mix(a, b, q){ return [a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q]; }
 
+function stroke(pts, upto){
+  cx.beginPath();
+  var n = upto == null ? pts.length : Math.max(2, Math.round(pts.length * upto));
+  for (var i = 0; i < n; i++){ if (i) cx.lineTo(pts[i][0], pts[i][1]); else cx.moveTo(pts[i][0], pts[i][1]); }
+  cx.stroke();
+}
 function render(t){
-  var tot = L[L.length - 1], want = tot * run(clamp((t - START) / RUN));
-  marks.forEach(function(m){ if (want >= m.at) show(m.k); });
   cx.setTransform(DPR, 0, 0, DPR, 0, 0);
   cx.clearRect(0, 0, W, H);
-  if (want <= 0) return;
-  cx.lineJoin = cx.lineCap = 'round'; cx.strokeStyle = AC; cx.lineWidth = 1.6;
-  cx.beginPath(); cx.moveTo(path[0][0], path[0][1]);
-  var head = path[0];
-  for (var i = 1; i < path.length; i++){
-    if (L[i] <= want){ cx.lineTo(path[i][0], path[i][1]); head = path[i]; continue; }
-    var f = (want - L[i - 1]) / (L[i] - L[i - 1] || 1);
-    head = [path[i - 1][0] + (path[i][0] - path[i - 1][0]) * f, path[i - 1][1] + (path[i][1] - path[i - 1][1]) * f];
-    cx.lineTo(head[0], head[1]); break;
+  cx.lineJoin = cx.lineCap = 'round'; cx.strokeStyle = INK; cx.lineWidth = 2.2;
+  if (t < T.draw0) return;
+  if (t < T.g0){
+    /* 1：区切り線をペンで左から引く。引き終えたら見出しが出る */
+    stroke(line0, ease(clamp((t - T.draw0) / (T.draw1 - T.draw0))));
+    if (t >= T.draw1 - 100) show('h1');
+    return;
   }
-  cx.stroke();
-  /* 線の先：走っているあいだだけ光る */
-  if (want < tot){
-    var gr = cx.createRadialGradient(head[0], head[1], 0, head[0], head[1], 14);
-    gr.addColorStop(0, 'rgba(215,255,58,.9)'); gr.addColorStop(1, 'rgba(215,255,58,0)');
-    cx.fillStyle = gr; cx.beginPath(); cx.arc(head[0], head[1], 14, 0, TAU); cx.fill();
+  show('h1');
+  if (t < T.r0){
+    /* 2：区切り線が持ち上がって「Alter」を書く（書き始めの側から順に） */
+    var p = clamp((t - T.g0) / (T.g1 - T.g0)), out = [];
+    for (var i = 0; i < N; i++) out.push(mix(line0[i], glyph[i], ease(clamp(p * 1.3 - i / N * .3))));
+    stroke(out); return;
   }
+  if (t < T.f0){
+    /* 3：書いた線がほどけて輪になる */
+    var p2 = clamp((t - T.r0) / (T.r1 - T.r0)), o2 = [];
+    for (var j = 0; j < N; j++) o2.push(mix(glyph[j], ring.p[j], ease(clamp(p2 * 1.3 - j / N * .3))));
+    stroke(o2); return;
+  }
+  /* 4：輪がそのまま左上へ移って小さくなり、ヘッダーのロゴになる */
+  var f = ease(clamp((t - T.f0) / (T.f1 - T.f0)));
+  var x = ring.x + (logo.x - ring.x) * f, y = ring.y + (logo.y - ring.y) * f, r = ring.r + (logo.r - ring.r) * f;
+  if (f >= 1){ show('logo'); show('nav'); show('p'); }
+  cx.globalAlpha = f >= 1 ? 1 - clamp((t - T.f1) / 300) : 1;
+  cx.lineWidth = 2.2 + 2.8 * f;
+  cx.beginPath(); cx.arc(x, y, r, 0, TAU); cx.stroke(); cx.globalAlpha = 1;
 }
 
 var t0 = 0, raf = 0, ended = false;
-function finish(){ ended = true; cancelAnimationFrame(raf); rv.forEach(function(el){ el.classList.add('on'); }); render(1e9); }
+function finish(){ ended = true; cancelAnimationFrame(raf); rv.forEach(function(el){ el.classList.add('on'); }); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); }
 function loop(){
   var t = performance.now() - t0;
   if (t >= END){ finish(); return; }
@@ -221,7 +263,7 @@ function loop(){
 }
 /* オープニングの途中で押したら、最後まで飛ばす */
 hero.addEventListener('click', function(){ if (!ended) finish(); });
-addEventListener('resize', function(){ size(); if (ended) render(1e9); });
+addEventListener('resize', function(){ size(); });
 
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(function(){
   size();
