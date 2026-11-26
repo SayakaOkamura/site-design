@@ -80,7 +80,7 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 <svg id="pen" aria-hidden="true"><path/><circle class="ro"/><circle class="ri"/></svg>
 <div id="top">
   <header>
-    <a class="logo" href="#top"><i class="rv" data-k="logo"></i><span class="rv" data-k="logo">Alter Design<small>consulting</small></span></a>
+    <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
     <nav class="rv" data-k="nav"><ul>
       <li><a href="#philosophy">企業理念</a></li>
       <li><a href="#services">サービス</a></li>
@@ -215,7 +215,7 @@ function frame(now){
   if (want > drawn) drawn = Math.min(want, drawn + dt * (t < 1200 ? 9e9 : 2.4));   /* ペンの速さは 1 秒に 2400px まで */
   path.style.strokeDashoffset = total - drawn;
   if (drawn >= heroEnd - 1) show('h1');
-  if (t > 1500){ show('p'); show('nav'); show('logo'); }
+  if (t > 1500){ show('p'); show('nav'); }
   if (drawn >= total - .5 && !done){ done = true; svg.classList.add('closed'); }
   requestAnimationFrame(frame);
 }
