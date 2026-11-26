@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 線のオープニング（2026-11-26）。昔のニュース番組のオープニング（一本の糸が切れずに形を変える）の形だけ借りる
-     具体物は描かない。紙に一本張った線（地面）から形が立ち上がり、何重にも絡んでから少しずつほどけ、地面に立つロゴの輪になる
+     紙に一本張った線（地面）から迷路の壁が立ち上がり（複雑）、入口から出口までの一本道だけが残り（わかりやすく）、地面に立つロゴの輪になる
      絡まったものをほどいて設計し直す＝Alter（変える）。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
@@ -140,25 +140,153 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 (function(){
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var hero = document.getElementById('top'), cv = hero.querySelector('canvas'), cx = cv.getContext('2d');
-var W = 0, H = 0, DPR = 1, G = 0, R = 0, CX = 0, NP = 2000;
+var W = 0, H = 0, DPR = 1, G = 0, R = 0, CX = 0, NP = 3000;
 var INK = '#654087', LI = '#bb7eea', TAU = Math.PI * 2;
+var GROUND = 290;   /* 下絵の中の地面の高さ */
 
-/* 線はいつも画面の端から端まで張っている（地面）。形は地面から立ち上がり、地面に戻る */
-/* 複雑な形：地面から立ち上がった線が、何重にも輪を描いて交差する。L は輪の数、c は乱れの強さ */
-function tangle(L, c){
-  var span = Math.min(W * .36, H * .9), x0 = CX - span, x1 = CX + span, hh = Math.min(H * .42, span * .9);
-  var path = [[-30, G], [x0, G]], M = 900;
-  for (var j = 1; j < M; j++){
-    var u = j / M, env = Math.pow(Math.sin(Math.PI * u), .7);
-    var x = x0 + (x1 - x0) * u
-      + span * .2 * Math.min(1, (L - 1) / 3) * env * Math.sin(TAU * L * u)   /* 輪が一つなら横には揺らさない（なだらかな山） */
-      + span * .16 * c * env * Math.sin(TAU * L * 1.63 * u + .7);
-    var y = G - hh * env * (
-        .42 * (1 - Math.cos(TAU * L * u)) / 2 + .2
-      + c * .38 * (.5 + .5 * Math.sin(TAU * L * .57 * u + 1.1)));
-    path.push([x, y]);
+/* 迷路：8×8 のます。決まった乱数で一度だけ作る。入口は左下、出口は右上 */
+var COLS = 8, ROWS = 8, CELL = 35, OX = 60, OY = GROUND - COLS * CELL;
+var seed = 11; function rnd(){ seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+var walls = [];   /* walls[y][x] = { t, r, b, l } */
+for (var y = 0; y < ROWS; y++){ walls.push([]); for (var x = 0; x < COLS; x++) walls[y].push({ t:1, r:1, b:1, l:1 }); }
+(function(){
+  var seen = {}, st = [[0, ROWS - 1]]; seen[[0, ROWS - 1]] = 1;
+  while (st.length){
+    var c = st[st.length - 1], nb = [];
+    [[0, -1, 't', 'b'], [1, 0, 'r', 'l'], [0, 1, 'b', 't'], [-1, 0, 'l', 'r']].forEach(function(d){
+      var nx = c[0] + d[0], ny = c[1] + d[1];
+      if (nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && !seen[[nx, ny]]) nb.push([nx, ny, d[2], d[3]]);
+    });
+    if (!nb.length){ st.pop(); continue; }
+    var n = nb[Math.floor(rnd() * nb.length)];
+    walls[c[1]][c[0]][n[2]] = 0; walls[n[1]][n[0]][n[3]] = 0;
+    seen[[n[0], n[1]]] = 1; st.push([n[0], n[1]]);
   }
-  path.push([x1, G], [W + 30, G]);
+  walls[ROWS - 1][0].b = 0; walls[0][COLS - 1].t = 0;
+})();
+/* 入口から出口までの道（幅優先で探す） */
+var route = (function(){
+  var from = {}, q = [[0, ROWS - 1]], k0 = [0, ROWS - 1].join(); from[k0] = null;
+  while (q.length){
+    var c = q.shift(); if (c[0] === COLS - 1 && c[1] === 0) break;
+    var w = walls[c[1]][c[0]];
+    [[0, -1, 't'], [1, 0, 'r'], [0, 1, 'b'], [-1, 0, 'l']].forEach(function(d){
+      var nx = c[0] + d[0], ny = c[1] + d[1], k = [nx, ny].join();
+      if (!w[d[2]] && nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && !(k in from)){ from[k] = c; q.push([nx, ny]); }
+    });
+  }
+  var out = [], c = [COLS - 1, 0];
+  while (c){ out.unshift(c); c = from[c.join()]; }
+  return out;
+})();
+function cc(c){ return [OX + (c[0] + .5) * CELL, OY + (c[1] + .5) * CELL]; }
+
+var SCENES = [
+  /* 迷路の壁 */
+  { w:400, h:300, draw:function(g){
+    g.lineCap = 'square'; g.lineWidth = 7;
+    for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++){
+      var w = walls[y][x], x0 = OX + x * CELL, y0 = OY + y * CELL;
+      g.beginPath();
+      if (w.t){ g.moveTo(x0, y0); g.lineTo(x0 + CELL, y0); }
+      if (w.l){ g.moveTo(x0, y0); g.lineTo(x0, y0 + CELL); }
+      if (y === ROWS - 1 && w.b){ g.moveTo(x0, y0 + CELL); g.lineTo(x0 + CELL, y0 + CELL); }
+      if (x === COLS - 1 && w.r){ g.moveTo(x0 + CELL, y0); g.lineTo(x0 + CELL, y0 + CELL); }
+      g.stroke();
+    }
+  }},
+  /* 一本道：迷路の入口から出口までの道だけが残る */
+  { w:400, h:300, draw:function(g){
+    var pts = [[cc(route[0])[0], GROUND + 6]].concat(route.map(cc)); pts.push([cc(route[route.length - 1])[0], OY - 6]);
+    g.lineWidth = CELL * .42; g.lineJoin = 'round'; g.lineCap = 'butt';
+    g.beginPath(); pts.forEach(function(p, i){ if (i) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }); g.stroke();
+  }}
+];
+
+/* 影の輪郭を拾う（marching squares）。輪になった点の列を、入れ子の木にして返す */
+function outline(sc){
+  var c = document.createElement('canvas'); c.width = sc.w; c.height = sc.h;
+  var g = c.getContext('2d'); g.fillStyle = g.strokeStyle = '#000';
+  sc.draw(g);
+  var d = g.getImageData(0, 0, sc.w, sc.h).data, w = sc.w, h = sc.h;
+  function at(x, y){ return x < 0 || y < 0 || x >= w || y >= h ? 0 : d[(y * w + x) * 4 + 3] > 127 ? 1 : 0; }
+  var adj = {};
+  function key(x, y){ return (x * 2) + ',' + (y * 2); }
+  function link(a, b){ var ka = key(a[0], a[1]), kb = key(b[0], b[1]); (adj[ka] = adj[ka] || { p:a, n:[] }).n.push(kb); (adj[kb] = adj[kb] || { p:b, n:[] }).n.push(ka); }
+  for (var y = -1; y < h; y++) for (var x = -1; x < w; x++){
+    var tl = at(x, y), tr = at(x + 1, y), br = at(x + 1, y + 1), bl = at(x, y + 1), k = tl * 8 + tr * 4 + br * 2 + bl;
+    if (k === 0 || k === 15) continue;
+    var T = [x + .5, y], R_ = [x + 1, y + .5], B = [x + .5, y + 1], L = [x, y + .5];
+    switch (k){
+      case 1: case 14: link(L, B); break;
+      case 2: case 13: link(B, R_); break;
+      case 3: case 12: link(L, R_); break;
+      case 4: case 11: link(T, R_); break;
+      case 6: case 9: link(T, B); break;
+      case 7: case 8: link(T, L); break;
+      case 5: link(T, R_); link(L, B); break;
+      case 10: link(L, T); link(B, R_); break;
+    }
+  }
+  var seen = {}, loops = [];
+  Object.keys(adj).forEach(function(k0){
+    if (seen[k0]) return;
+    var loop = [], prev = null, cur = k0;
+    while (cur && !seen[cur]){
+      seen[cur] = 1; loop.push(adj[cur].p);
+      var nx = adj[cur].n.filter(function(q){ return q !== prev && !seen[q]; })[0];
+      prev = cur; cur = nx;
+    }
+    if (loop.length < 12) return;
+    var n = loop.length, sm = [];
+    for (var i = 0; i < n; i += 2){
+      var sx = 0, sy = 0;
+      for (var j = -2; j <= 2; j++){ var q = loop[(i + j + n) % n]; sx += q[0]; sy += q[1]; }
+      sm.push([sx / 5, sy / 5]);
+    }
+    loops.push(sm);
+  });
+  var info = loops.map(function(l){ return { l:l, a:Math.abs(area(l)), kids:[], parent:null }; });
+  info.forEach(function(o){
+    var best = null;
+    info.forEach(function(p){ if (p !== o && p.a > o.a && inPoly(o.l[0], p.l) && (!best || p.a < best.a)) best = p; });
+    o.parent = best; if (best) best.kids.push(o);
+  });
+  return info.filter(function(o){ return !o.parent; });
+}
+function area(l){ var s = 0; for (var i = 0; i < l.length; i++){ var a = l[i], b = l[(i + 1) % l.length]; s += a[0] * b[1] - b[0] * a[1]; } return s / 2; }
+function inPoly(p, l){ var c = false; for (var i = 0, j = l.length - 1; i < l.length; j = i++){ var a = l[i], b = l[j]; if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; }
+function d2(a, b){ return (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]); }
+
+/* 一本の線：地面を左から右へ進み、形のところで地面から上がって輪郭をひと回りなぞり、また地面へ戻る */
+function thread(sc){
+  var s = Math.min(W * .9 / sc.w, H * .56 / GROUND);
+  var ox = W / 2 - sc.w / 2 * s;
+  function P(p){ return [ox + p[0] * s, G + (p[1] - GROUND) * s]; }
+  function walk(o, e){
+    var pts = o.pts, n = pts.length, at = {}, seq = [];
+    o.kids.forEach(function(kd){
+      var bi = 0, bj = 0, bd = 1e18;
+      for (var i = 0; i < n; i += 2) for (var j = 0; j < kd.pts.length; j += 2){ var dd = d2(pts[i], kd.pts[j]); if (dd < bd){ bd = dd; bi = i; bj = j; } }
+      (at[bi] = at[bi] || []).push({ o:kd, j:bj });
+    });
+    for (var k = 0; k <= n; k++){
+      var idx = (e + k) % n; seq.push(pts[idx]);
+      if (k < n && at[idx]) at[idx].forEach(function(h){ seq = seq.concat(walk(h.o, h.j)); seq.push(pts[idx]); });
+    }
+    return seq;
+  }
+  function prep(o){ o.pts = o.l.map(P); o.kids.forEach(prep); }
+  var parts = sc.loops.map(function(o){
+    prep(o);
+    var pts = o.pts;
+    var md = Math.min.apply(null, pts.map(function(p){ return Math.abs(p[1] - G); })), e = -1;
+    pts.forEach(function(p, i){ if (Math.abs(p[1] - G) <= md + 2 && (e < 0 || p[0] < pts[e][0])) e = i; });
+    return { x:pts[e][0], seq:walk(o, e) };
+  }).sort(function(a, b){ return a.x - b.x; });
+  var path = [[-30, G]];
+  parts.forEach(function(pt){ path.push([pt.x, G]); path = path.concat(pt.seq); path.push([pt.x, G]); });
+  path.push([W + 30, G]);
   return path;
 }
 /* 輪：地面の上に立つ。線は左から来て、輪の下から一周して、右へ抜ける */
@@ -187,14 +315,14 @@ function size(){
   DPR = Math.min(2, devicePixelRatio || 1);
   W = hero.clientWidth; H = hero.clientHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  G = H * .6; CX = W / 2; R = Math.min(W * .13, H * .17);
-  /* 横一本 → 複雑に絡む → 少しほどける → さらにほどける → 地面に立つ輪 */
-  shapes = [flat(), tangle(7, 1), tangle(4, .45), tangle(1, 0), ring()].map(function(p){ return resample(p, NP); });
+  G = H * .64; CX = W / 2; R = Math.min(W * .13, H * .17);
+  /* 横一本 → 迷路 → 一本道 → 地面に立つ輪 */
+  shapes = [flat()].concat(SCENES.map(thread), [ring()]).map(function(p){ return resample(p, NP); });
   hero.style.setProperty('--capy', (G + Math.max(36, H * .07)) + 'px');
 }
 
-/* 時間（ms）：はじめは横一本 → 一つ形を変えるのに 1.3 秒、とどまるのは 1.0 秒 */
-var START = 700, MORPH = 1300, STEP = 2300, COUNT = 4;
+/* 時間（ms）：はじめは横一本 → 一つ形を変えるのに 1.4 秒、とどまるのは 1.4 秒 */
+var START = 700, MORPH = 1400, STEP = 2800, COUNT = 3;
 var LAST = START + (COUNT - 1) * STEP + MORPH, LOGO1 = LAST + 900, CAPS = LOGO1, END = LOGO1 + 600;
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
@@ -207,20 +335,20 @@ function render(t){
   cx.setTransform(DPR, 0, 0, DPR, 0, 0);
   cx.clearRect(0, 0, W, H);
   cx.lineJoin = cx.lineCap = 'round';
-  cx.strokeStyle = INK; cx.lineWidth = 1.8;
+  cx.strokeStyle = INK; cx.lineWidth = 1.6;
   var s = t / 1000;
   cx.beginPath();
   for (var i = 0; i < NP; i++){
     /* 左から順に少し遅れて動く（糸が引かれていくように） */
     var q = ease(clamp(p * 1.35 - i / NP * .35));
     var x = a[i][0] + (b[i][0] - a[i][0]) * q, y = a[i][1] + (b[i][1] - a[i][1]) * q;
-    y += Math.sin(i * .03 + s * 1.6) * .4 * (1 - g);   /* 糸のわずかな揺れ */
+    y += Math.sin(i * .03 + s * 1.6) * .35 * (1 - g);   /* 糸のわずかな揺れ */
     if (i) cx.lineTo(x, y); else cx.moveTo(x, y);
   }
   cx.stroke();
   if (g > 0){
     /* 輪：外側の縁を半径 R にそろえて太くし、内側に薄紫の細い輪（ロゴの組み方を、線の太さのまま） */
-    var th = 1.8 + (R * .16 - 1.8) * g, li = R * .06 * g;
+    var th = 1.6 + (R * .16 - 1.6) * g, li = R * .06 * g;
     cx.lineWidth = th; cx.beginPath(); cx.arc(CX, G - R, R - th / 2, 0, TAU); cx.stroke();
     cx.strokeStyle = LI; cx.lineWidth = li; cx.globalAlpha = g;
     cx.beginPath(); cx.arc(CX, G - R, R - th - li / 2, 0, TAU); cx.stroke(); cx.globalAlpha = 1;
@@ -244,6 +372,7 @@ function loop(){
 hero.addEventListener('click', function(){ if (!ended) finish(); });
 addEventListener('resize', function(){ size(); if (ended) render(END); });
 
+SCENES.forEach(function(sc){ sc.loops = outline(sc); });
 size();
 if (RM) finish();
 else { t0 = performance.now(); loop(); }
