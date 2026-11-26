@@ -32,6 +32,11 @@ nav a:hover{color:var(--pu)}
 .lead p{margin-top:clamp(18px,3.4vh,32px); font-size:clamp(12.5px,1.2vw,15px); color:var(--sub)}
 /* 出方：線が描き終えたところから、すっと出る */
 @media (max-width:480px){ .lead h1 br{display:none} }   /* 狭い幅では改行を外して、行の長さをそろえる */
+/* 印の下に出るサービス名（公式の見出しのまま）。紐の動きに合わせて位置を動かす */
+.lab{position:absolute; left:0; top:0; z-index:3; transform:translate(-50%,0); text-align:center; white-space:nowrap; opacity:0; transition:opacity .4s; pointer-events:none}
+.lab.on{opacity:1}
+.lab b{display:block; font-family:"Archivo Black",sans-serif; font-weight:400; font-size:clamp(18px,2vw,26px); line-height:1; color:var(--pu)}
+.lab span{display:block; margin-top:.5em; font-weight:700; font-size:clamp(13px,1.4vw,17px); letter-spacing:.04em}
 .rv{opacity:0; transition:opacity .5s}   /* 位置は動かさない（線が描く位置と文の位置をそろえる） */
 .rv.on{opacity:1}
 
@@ -81,6 +86,10 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
     </ul></nav>
   </header>
   <canvas aria-hidden="true"></canvas>
+  <div class="lab" aria-hidden="true"><b>01</b><span>人間中心の次世代業務システム開発</span></div>
+  <div class="lab" aria-hidden="true"><b>02</b><span>AI による意思決定支援と事業変革支援</span></div>
+  <div class="lab" aria-hidden="true"><b>03</b><span>自律型・共創型の組織設計支援</span></div>
+  <div class="lab" aria-hidden="true"><b>04</b><span>地域格差の解消を目指したデジタル支援</span></div>
   <div class="lead">
     <div class="en rv" data-k="h1">ALTER DESIGN CONSULTING</div>
     <h1 class="rv" data-k="h1">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
@@ -140,21 +149,21 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 (function(){
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var hero = document.getElementById('top'), cv = hero.querySelector('canvas'), cx = cv.getContext('2d');
+var labs = [].slice.call(hero.querySelectorAll('.lab'));
 var W = 0, H = 0, DPR = 1, TAU = Math.PI * 2;
 var INK = '#654087', LI = '#bb7eea', PAPER = '#f5f2eb';
 var rv = [].slice.call(hero.querySelectorAll('.rv'));
 function show(k){ rv.forEach(function(el){ if (el.dataset.k === k) el.classList.add('on'); }); }
 
-/* 世界：一本の紐は、半径 RW の大きな円の上にある（近くで見るとほぼ横一直線）。円のてっぺんのあたりに結び目が四つ並ぶ
+/* 世界：一本の紐は、半径 RW の大きな円の上にある（近くで見るとほぼ横一直線）。てっぺんのあたりに結び目が四つ、広い間をあけて並ぶ
    単位：印の大きさ（半径）が 1 */
-var RW = 14, GAPS = 3.6, SPAN = 3.0, M = 520, K = 4;
+var RW = 26, GAPS = 6.4, SPAN = 3.4, K = 4, LIFT = 1.25, LOOP = 420;
 var TH = []; for (var k = 0; k < K; k++) TH.push(((k - (K - 1) / 2) * GAPS) / RW);
 function C(th){ return [RW * Math.sin(th), RW - RW * Math.cos(th)]; }
-function Tn(th){ return [Math.cos(th), Math.sin(th)]; }
-function No(th){ return [Math.sin(th), -Math.cos(th)]; }   /* 円の外向き（てっぺんでは上） */
+function No(th){ return [Math.sin(th), -Math.cos(th)]; }
 
-/* 印（一筆書き、y は下向き、中心 (0,0)、半径 1） */
 function arc(cx0, cy0, r, a0, a1, n){ var o = []; for (var i = 0; i <= n; i++){ var a = a0 + (a1 - a0) * i / n; o.push([cx0 + Math.cos(a) * r, cy0 + Math.sin(a) * r]); } return o; }
+/* 印（一筆書き、y は下向き、中心 (0,0)、半径 1） */
 var ICONS = [
   function(){   /* 01 人を中心にした画面 */
     var x0 = -1, x1 = 1, y0 = -.72, by = .72, r = .12, sh = .42, hr = .22, o = [[0, y0], [x1 - r, y0]];
@@ -195,112 +204,131 @@ function resample(path, n){
   }
   return out;
 }
-/* 結び目のそばの紐（局所の座標：x は紐の向き、y は上向き）。左から来て、輪の下に入り、形をなぞって、右へ抜ける
-   どの状態も同じ点の数・同じ並びにして、あいだを混ぜられるようにする */
-var LIFT = 1.15, LOOP = 360;
-function wrap(loop){   /* loop：輪の下から始まる、閉じた形（y 上向き）。2 周ぶん */
-  var start = loop[0], a = [[-SPAN / 2, 0], [start[0] * .3, 0]], b = [[start[0] * .3, 0], [SPAN / 2, 0]];
-  return resample(a, 80).concat(loop, resample(b, 80));
-}
-function knotLoop(q, amp){
+/* ひと結び（三つ葉の結び目を一か所で切り、両端を左右へ引いた形）。局所の座標：x は紐の向き、y は上向き。z は上下 */
+var T0 = 1.05;   /* 切るところ（いちばん下の近く） */
+function trefoil(t){ return [Math.sin(t) + 2 * Math.sin(2 * t), -(Math.cos(t) - 2 * Math.cos(2 * t)), -Math.sin(3 * t)]; }
+var KNOT = (function(){
   var o = [];
-  for (var i = 0; i < LOOP; i++){
-    var t = TAU * i / (LOOP - 1), r = 1 + amp * Math.cos(q * t), th = 2 * t - Math.PI / 2;
-    o.push([Math.cos(th) * r * .62, LIFT + Math.sin(th) * r * .62, Math.sin(q * t) * amp]);
-  }
+  for (var i = 0; i < LOOP; i++){ var t = T0 + TAU * i / (LOOP - 1), p = trefoil(t); o.push([p[0] * .36, LIFT + .1 + p[1] * .36, p[2]]); }
   return o;
-}
+})();
+var RING = (function(){   /* ゆるんだ輪：結び目の切り口と同じところから始まる一周 */
+  var s = KNOT[0], c = [0, LIFT], r = Math.hypot(s[0] - c[0], s[1] - c[1]), a0 = Math.atan2(s[1] - c[1], s[0] - c[0]), o = [];
+  for (var i = 0; i < LOOP; i++){ var a = a0 - TAU * i / (LOOP - 1); o.push([c[0] + Math.cos(a) * r * 1.4, c[1] + Math.sin(a) * r * 1.4, 0]); }
+  return o;
+})();
 var iconLoops = ICONS.map(function(f){
-  var p = f(), n = p.length, bi = 0;
-  /* 輪の下に一番近い点から始める（形の下の真ん中） */
+  var p = resample(f(), 600), bi = 0;   /* 細かく分けてから、紐が入る点（形の下の真ん中）を選ぶ */
   p.forEach(function(q, i){ if (q[1] - Math.abs(q[0]) * .6 > p[bi][1] - Math.abs(p[bi][0]) * .6) bi = i; });
   var closed = p.slice(bi).concat(p.slice(1, bi + 1));
-  var one = resample(closed, LOOP / 2).map(function(q){ return [q[0] * .8, LIFT - q[1] * .8, 0]; });
-  return one.concat(one);
+  return resample(closed, LOOP).map(function(q){ return [q[0] * .85, LIFT - q[1] * .85, 0]; });
 });
-function local(k, st){   /* st：{ a:結び目の深さ, m:印への混ぜ具合, f:たたまれ具合 } */
-  var kl = knotLoop([7, 5, 5, 3][k], st.a), il = iconLoops[k], loop = [];
-  for (var i = 0; i < LOOP; i++){
-    var p = kl[i], q = il[i], x = p[0] + (q[0] - p[0]) * st.m, y = p[1] + (q[1] - p[1]) * st.m, z = p[2] * (1 - st.m);
-    loop.push([x * (1 - st.f), y * (1 - st.f), z]);
-  }
+function wrap(loop){
+  var s = loop[0], e = loop[loop.length - 1];
+  return resample([[-SPAN / 2, 0], [s[0] - .25, 0], [s[0], s[1]]], 90).concat(loop, resample([[e[0], e[1]], [e[0] + .25, 0], [SPAN / 2, 0]], 90));
+}
+function mixL(a, b, q){ return a.map(function(p, i){ return [p[0] + (b[i][0] - p[0]) * q, p[1] + (b[i][1] - p[1]) * q, (p[2] || 0) * (1 - q) + (b[i][2] || 0) * q]; }); }
+function local(k, st){   /* st.l：ゆるみ（0=固い結び目、1=輪）、st.m：印への混ぜ具合、st.f：たたまれ具合 */
+  var loop = mixL(KNOT, RING, st.l);
+  if (st.m > 0) loop = mixL(loop, iconLoops[k], st.m);
+  if (st.f > 0) loop = loop.map(function(p, i){ var x = -SPAN * .1 + SPAN * .2 * i / (LOOP - 1); return [p[0] + (x - p[0]) * st.f, p[1] * (1 - st.f), (p[2] || 0) * (1 - st.f)]; });
   return wrap(loop);
 }
 
-/* 時間（ms）：カメラが紐に沿って左から右へ進む（だんだん速く）。近づいた結び目から順にほどけて印になる
-   後半はだんだん引いていき、紐全体が一つの大きな円だと分かる。最後に印は紐にたたまれ、きれいな円がロゴになる */
-var T = { pan0:300, pan1:6200, zoom0:3200, zoom1:7600, fold0:6600, fold1:7600, logo1:8400 };
-var END = T.logo1 + 300;
+/* 時間（ms）：カメラが一つ目の結び目へ進み、止まる。結び目がゆるんで印になり、サービス名が出る。読めるあいだ止まって、次へ
+   後ろほど進むのも止まるのも短くなる（だんだん速く）。最後はだんだん引いて、紐全体が一つの大きな円に。印はたたまれ、円がロゴになる */
+var MOVE = [1000, 900, 700, 500], HOLD = [1900, 1700, 1400, 1100], START = 300;
+var ARR = [], tt = START;
+for (k = 0; k < K; k++){ tt += MOVE[k]; ARR.push(tt); tt += HOLD[k]; }
+var Z0T = ARR[K - 1] + 500, Z1T = Z0T + 1900, F0T = Z0T + 600, F1T = Z1T - 100, L1T = Z1T + 700, END = L1T + 300;
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
-function easeIn(v){ return v * v * (1.6 - .6 * v); }
+function eio(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
 
 var Z0 = 1, ZF = 1, RL = 1, OX = 0, OY = 0;
 function size(){
   DPR = Math.min(2, devicePixelRatio || 1);
   W = hero.clientWidth; H = hero.clientHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  Z0 = Math.min(W * .16, H * .14); RL = Math.min(W * .2, H * .17); ZF = RL / RW;
-  OX = W / 2; OY = H * .38;
+  Z0 = Math.min(W * .16, H * .15); RL = Math.min(W * .2, H * .17); ZF = RL / RW;
+  OX = W / 2; OY = H * .4;
   hero.style.setProperty('--lt', (OY + RL * 1.5) + 'px');
 }
-
+function phiAt(t){
+  var from = TH[0] - 2.2 / RW, at = START;
+  if (t < START) return from;
+  for (var k = 0; k < K; k++){
+    if (t < at + MOVE[k]) return from + (TH[k] - from) * eio((t - at) / MOVE[k]);
+    at += MOVE[k];
+    if (t < at + HOLD[k]) return TH[k];
+    at += HOLD[k]; from = TH[k];
+  }
+  return TH[K - 1];
+}
 function frame(t){
-  var u = easeIn(clamp((t - T.pan0) / (T.pan1 - T.pan0)));
-  var phiS = TH[0] - 2.4 / RW, phiE = TH[K - 1] + .6 / RW, phi = phiS + (phiE - phiS) * u;
-  var zu = ease(clamp((t - T.zoom0) / (T.zoom1 - T.zoom0))), zoom = Math.exp(Math.log(Z0) + (Math.log(ZF) - Math.log(Z0)) * zu);
-  var fold = ease(clamp((t - T.fold0) / (T.fold1 - T.fold0)));
-  /* カメラ：紐の少し上（印の真ん中）を見る。引くにつれて円の真ん中へ。傾きは紐に合わせ、引くにつれてまっすぐに */
-  var c = C(phi), no = No(phi), cam = [c[0] + no[0] * LIFT, c[1] + no[1] * LIFT];
+  var phi = phiAt(t);
+  var zu = eio(clamp((t - Z0T) / (Z1T - Z0T))), zoom = Math.exp(Math.log(Z0) + (Math.log(ZF) - Math.log(Z0)) * zu);
+  var fold = ease(clamp((t - F0T) / (F1T - F0T)));
+  var c = C(phi), no = No(phi), cam = [c[0] + no[0] * LIFT * .7, c[1] + no[1] * LIFT * .7];
   cam = [cam[0] + (0 - cam[0]) * zu, cam[1] + (RW - cam[1]) * zu];
-  var rho = phi * (1 - zu);
-  /* 結び目ごとの進み具合：カメラが近づくとゆるみ、印になる */
-  var st = TH.map(function(th){
-    var p = clamp((phi - (th - 1.7 / RW)) / (1.5 / RW));
-    return { a:.42 * (1 - ease(clamp(p / .45))), m:ease(clamp((p - .45) / .55)), f:fold };
-  });
-  /* 紐全体：円のいちばん下から一周。結び目のところだけ局所の形に差しかえる */
+  var rho = phi * (1 - zu), cr = Math.cos(-rho), sr = Math.sin(-rho);
+  function S(q){ var x = q[0] - cam[0], y = q[1] - cam[1]; return [OX + (x * cr - y * sr) * zoom, OY + (x * sr + y * cr) * zoom, q[2] || 0]; }
+  /* 結び目ごと：着いてから 0.55 秒でゆるみ、0.6 秒で印になる */
+  var st = ARR.map(function(a){ var d = t - a; return { l:ease(clamp(d / 550)), m:ease(clamp((d - 500) / 600)), f:fold, d:d }; });
   var pts = [], half = SPAN / 2 / RW;
-  function circSeg(a0, a1){ var n = Math.max(2, Math.ceil(Math.abs(a1 - a0) * RW / .06)); for (var i = 0; i < n; i++){ var a = a0 + (a1 - a0) * i / n, q = C(a); pts.push([q[0], q[1], 0]); } }
+  function circSeg(a0, a1){ var n = Math.max(2, Math.ceil(Math.abs(a1 - a0) * RW / .05)); for (var i = 0; i < n; i++){ var a = a0 + (a1 - a0) * i / n, q = C(a); pts.push(S([q[0], q[1], 0])); } }
   var a = -Math.PI;
   for (var k = 0; k < K; k++){
     circSeg(a, TH[k] - half);
-    /* 局所の形は円に沿わせて置く（x は円周に沿った長さ、y は円の外向き）。つなぎ目に段がつかない */
-    local(k, st[k]).forEach(function(q){ var b = TH[k] + q[0] / RW, o = C(b), nn = No(b); pts.push([o[0] + nn[0] * q[1], o[1] + nn[1] * q[1], q[2] || 0]); });
+    local(k, st[k]).forEach(function(q){ var b = TH[k] + q[0] / RW, o = C(b), nn = No(b); pts.push(S([o[0] + nn[0] * q[1], o[1] + nn[1] * q[1], q[2]])); });
     a = TH[k] + half;
   }
-  circSeg(a, Math.PI); var e = C(Math.PI); pts.push([e[0], e[1], 0]);
-  /* 画面へ */
-  var cr = Math.cos(-rho), sr = Math.sin(-rho);
-  return { zu:zu, p:pts.map(function(q){ var x = q[0] - cam[0], y = q[1] - cam[1]; return [OX + (x * cr - y * sr) * zoom, OY + (x * sr + y * cr) * zoom, q[2]]; }) };
+  circSeg(a, Math.PI); var e = C(Math.PI); pts.push(S([e[0], e[1], 0]));
+  /* サービス名：紐の下、印の真下 */
+  labs.forEach(function(el, k){
+    var o = C(TH[k]), nn = No(TH[k]), q = S([o[0] - nn[0] * .45, o[1] - nn[1] * .45]);
+    el.style.transform = 'translate(' + (q[0]) + 'px,' + q[1] + 'px) translate(-50%,0)';
+    el.classList.toggle('on', st[k].m > .85 && zu < .15 && Math.abs(phi - TH[k]) < GAPS * .3 / RW);   /* 見ている印の名前だけ */
+  });
+  return { p:pts, zu:zu };
 }
 
 function render(t){
   cx.setTransform(DPR, 0, 0, DPR, 0, 0);
   cx.clearRect(0, 0, W, H);
-  var fr = frame(t), p = fr.p, n = p.length, g = ease(clamp((t - T.zoom1) / (T.logo1 - T.zoom1)));
-  /* 低いところから描き、上を通るところは下の紐を紙の色で少し消してから描く */
-  var CH = 16, chunks = [];
+  var fr = frame(t), p = fr.p, n = p.length, g = ease(clamp((t - Z1T) / (L1T - Z1T)));
+  /* ロープ：縁が紫、中が紙の色の太い線。低いところから描くので、上を通るロープが下のロープを覆い、交わりがはっきりする */
+  var rope = Math.max(2.2, Math.min(9, Z0 * .07)) * (1 - fr.zu) + 2.2 * fr.zu;
+  var CH = 10, flat = [], knots = [];
   for (var i = 0; i < n - 1; i += CH){
-    var j = Math.min(n - 1, i + CH), z = 0, vis = false;
+    var j = Math.min(n - 1, i + CH + 1), z = 0, vis = false;
     for (var k = i; k <= j; k++){ z += p[k][2]; if (p[k][0] > -40 && p[k][0] < W + 40 && p[k][1] > -40 && p[k][1] < H + 40) vis = true; }
-    if (vis) chunks.push({ i:i, j:j, z:z / (j - i + 1) });
+    if (!vis) continue;
+    z /= (j - i + 1);
+    if (Math.abs(z) > .02) knots.push({ i:i, j:j, z:z }); else flat.push({ i:i, j:j });
   }
-  chunks.sort(function(a, b){ return a.z - b.z; });
-  cx.lineJoin = 'round';
-  chunks.forEach(function(c){
-    cx.beginPath(); cx.moveTo(p[c.i][0], p[c.i][1]); for (var k = c.i + 1; k <= c.j; k++) cx.lineTo(p[k][0], p[k][1]);
-    if (Math.abs(c.z) > .02){ cx.lineCap = 'butt'; cx.strokeStyle = PAPER; cx.lineWidth = 10; cx.stroke(); }
-    cx.lineCap = 'round'; cx.strokeStyle = INK; cx.lineWidth = 2.2 + (RL * .16 - 2.2) * g; cx.stroke();
+  function path(c){ cx.moveTo(p[c.i][0], p[c.i][1]); for (var k = c.i + 1; k <= c.j; k++) cx.lineTo(p[k][0], p[k][1]); }
+  var w = rope + (RL * .16 - rope) * g, inner = rope > 3 && g < 1 ? Math.max(0, rope - 3.4) * (1 - g) : 0;
+  cx.lineJoin = 'round'; cx.lineCap = 'round';
+  /* 平らなところ：まとめて一度に描く（縁と中の境目に刻みが出ない） */
+  cx.beginPath(); flat.forEach(path); cx.strokeStyle = INK; cx.lineWidth = w; cx.stroke();
+  if (inner){ cx.beginPath(); flat.forEach(path); cx.strokeStyle = PAPER; cx.lineWidth = inner; cx.stroke(); }
+  /* 結び目のところ：低いところから。上を通るロープは、先に紙の色で下のロープを覆ってから描く */
+  knots.sort(function(a, b){ return a.z - b.z; });
+  cx.lineCap = 'butt';
+  knots.forEach(function(c){
+    cx.beginPath(); path(c);
+    cx.strokeStyle = PAPER; cx.lineWidth = w + 6; cx.stroke();
+    cx.strokeStyle = INK; cx.lineWidth = w; cx.stroke();
+    if (inner){ cx.strokeStyle = PAPER; cx.lineWidth = inner; cx.stroke(); }
   });
   if (g > 0){
-    /* ロゴの組み方：外の太い紫の内側に、薄紫の細い輪 */
     var th = 2.2 + (RL * .16 - 2.2) * g;
     cx.strokeStyle = LI; cx.globalAlpha = g; cx.lineWidth = RL * .06 * g;
     cx.beginPath(); cx.arc(OX, OY, RL - th / 2 - RL * .03 * g, 0, TAU); cx.stroke(); cx.globalAlpha = 1;
   }
-  if (t >= T.zoom1){ show('h1'); }
-  if (t >= T.logo1 - 200){ show('p'); show('nav'); }
+  if (t >= Z1T) show('h1');
+  if (t >= L1T - 200){ show('p'); show('nav'); }
 }
 
 var t0 = 0, raf = 0, ended = false;
