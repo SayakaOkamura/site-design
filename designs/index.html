@@ -4,20 +4,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>デザイン案</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
 <style>
-:root{ --bg:#1d0a2c; --pu:#654087; --li:#bb7eea; --wh:#fbf8ff; --ac:#d7ff3a; }
+/* 一覧は案の邪魔をしない：白に近い地、灰色の字、差し色なし */
+:root{ --bg:#f7f7f5; --ink:#222; --sub:#888; --line:#e2e2df; }
 *{box-sizing:border-box; margin:0; padding:0}
-body{background:var(--bg); color:var(--wh); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.6; padding:clamp(32px,7vh,72px) 16px 64px}
+body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.6; padding:clamp(32px,7vh,72px) 16px 64px}
 main{max-width:720px; margin:0 auto}
-h1{font-family:"Dela Gothic One",sans-serif; font-weight:400; font-size:clamp(28px,5vw,44px); color:var(--li); margin-bottom:clamp(20px,4vh,36px)}
+h1{font-weight:700; font-size:clamp(20px,3vw,26px); letter-spacing:.04em; margin-bottom:clamp(20px,4vh,32px)}
 ol{list-style:none; counter-reset:n}
-li{counter-increment:n; border-top:1px solid rgba(187,126,234,.25)}
-li:last-child{border-bottom:1px solid rgba(187,126,234,.25)}
-a{display:flex; align-items:baseline; gap:16px; padding:14px 4px; color:var(--wh); text-decoration:none; font-weight:700; font-size:clamp(17px,2.4vw,22px); transition:color .12s, padding-left .2s cubic-bezier(.2,.8,.2,1)}
-a::before{content:counter(n, decimal-leading-zero); font-size:12px; letter-spacing:.15em; color:var(--pu); min-width:2em}
-a:hover,a:focus-visible{color:var(--ac); padding-left:12px; outline:none}
-a:hover::before,a:focus-visible::before{color:var(--ac)}
+li{counter-increment:n; border-top:1px solid var(--line)}
+li:last-child{border-bottom:1px solid var(--line)}
+a{display:flex; align-items:baseline; gap:16px; padding:14px 4px; color:var(--ink); text-decoration:none; font-size:clamp(15px,2vw,18px); transition:background .15s}
+a::before{content:counter(n, decimal-leading-zero); font-size:12px; letter-spacing:.1em; color:var(--sub); min-width:2em}
+a:hover,a:focus-visible{background:#eeeeeb; outline:none}
 </style>
 <main>
   <h1>デザイン案</h1>
