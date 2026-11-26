@@ -224,8 +224,8 @@ function size(){
   DPR = Math.min(2, devicePixelRatio || 1);
   W = hero.clientWidth; H = hero.clientHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  G = H * .64; CX = W / 2; R = Math.min(W * .13, H * .17);
-  S = Math.min(W * .86 / 400, H * .56 / GROUND); MX = W / 2 - 200 * S;
+  G = H * .66; CX = W / 2; R = Math.min(W * .13, H * .17);
+  S = Math.min(W * .92 / 400, H * .54 / ROWS / CELL); MX = W / 2 - 200 * S;   /* 迷路を画面の主役に、大きく */
   tr = trail(); trL = lens(tr);
   /* 輪へ変わるときの、糸一本ぶんの形：左の地面 → 迷路の道 → 右の地面 */
   full = resample([[-30, G]].concat(tr, [[W + 30, G]]), NP);
@@ -234,7 +234,8 @@ function size(){
 }
 
 /* 時間（ms） */
-var MAZE0 = 500, MAZE1 = 1400, TRACE0 = 1700, TRACE1 = 5200, FADE0 = 5900, FADE1 = 6700, MORPH0 = 6700, MORPH1 = 8100, LOGO1 = 9000, CAPS = 9000, END = 9600;
+/* 迷路が出る → 糸が約 1 秒で一気に抜ける（だんだん速く） → 抜けた瞬間にピンと張って震える → 止まらずに線全体で輪へ */
+var MAZE0 = 400, MAZE1 = 1100, TRACE0 = 1200, TRACE1 = 2300, TWANG = 420, FADE0 = 2300, FADE1 = 3100, MORPH0 = TRACE1 + TWANG, MORPH1 = MORPH0 + 1200, LOGO1 = MORPH1 + 700, CAPS = LOGO1, END = LOGO1 + 600;
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
 function eio(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
@@ -265,10 +266,22 @@ function render(t){
     /* 迷路の下の地面は、迷路と一緒に消える（糸は迷路の中を通っているので） */
     var xa = tr[0][0], xb = tr[tr.length - 1][0];
     cx.beginPath(); cx.moveTo(-30, G); cx.lineTo(xa, G); cx.moveTo(xb, G); cx.lineTo(W + 30, G); cx.stroke();
-    cx.globalAlpha = 1 - clamp((t - FADE0) / (FADE1 - FADE0));
+    cx.globalAlpha = 1 - clamp((t - TRACE1) / TWANG);
     cx.beginPath(); cx.moveTo(xa, G); cx.lineTo(xb, G); cx.stroke(); cx.globalAlpha = 1;
-    var want = trL[trL.length - 1] * eio(clamp((t - TRACE0) / (TRACE1 - TRACE0)));
-    if (want > 0){
+    var v = clamp((t - TRACE0) / (TRACE1 - TRACE0)), want = trL[trL.length - 1] * v * v;
+    if (t >= TRACE1){
+      /* ピンと張る：抜けた瞬間に糸全体が弦のように震えて、すぐ収まる */
+      var dt = t - TRACE1, amp = Math.min(12, 16 * S) * Math.exp(-dt / 110), tot = trL[trL.length - 1];
+      cx.lineWidth = 1.8 + 1.6 * Math.exp(-dt / 160);
+      cx.beginPath();
+      for (var m = 0; m < tr.length; m++){
+        var a0 = tr[Math.max(0, m - 1)], a1 = tr[Math.min(tr.length - 1, m + 1)], dx = a1[0] - a0[0], dy = a1[1] - a0[1], l = Math.hypot(dx, dy) || 1;
+        var o = amp * Math.sin(Math.PI * trL[m] / tot * 3) * Math.cos(dt / 1000 * TAU * 11);
+        var px = tr[m][0] - dy / l * o, py = tr[m][1] + dx / l * o;
+        if (m) cx.lineTo(px, py); else cx.moveTo(px, py);
+      }
+      cx.stroke(); cx.lineWidth = 1.8;
+    } else if (want > 0){
       cx.beginPath(); cx.moveTo(tr[0][0], tr[0][1]);
       for (var i = 1; i < tr.length; i++){
         if (trL[i] <= want){ cx.lineTo(tr[i][0], tr[i][1]); continue; }
@@ -279,10 +292,10 @@ function render(t){
     }
   } else {
     /* 迷路を抜けた糸が、左から順に引かれて、地面に立つ輪になる */
-    var p = clamp((t - MORPH0) / (MORPH1 - MORPH0));
+    var p = clamp((t - MORPH0) / (MORPH1 - MORPH0));   /* 抜けた勢いのまま、止まらずに */
     cx.beginPath();
     for (var j = 0; j < NP; j++){
-      var q = ease(clamp(p * 1.35 - j / NP * .35));
+      var q = 1 - Math.pow(1 - clamp(p * 1.35 - j / NP * .35), 3);   /* 出だしから速く、最後にすっと収まる */
       var x = full[j][0] + (ringP[j][0] - full[j][0]) * q, y = full[j][1] + (ringP[j][1] - full[j][1]) * q;
       y += Math.sin(j * .03 + s * 1.6) * .35 * q * (1 - g);
       if (j) cx.lineTo(x, y); else cx.moveTo(x, y);
