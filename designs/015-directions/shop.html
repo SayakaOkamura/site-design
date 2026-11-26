@@ -146,17 +146,57 @@ button{font:inherit}
 .talk .nx{position:absolute; right:calc(var(--p)*2); bottom:var(--p); color:var(--A); animation:blink .7s steps(1) infinite; display:none}
 .talk.done .nx{display:block}
 
-/* 質問バー：レトロにしないが、地の色に馴染ませる */
-.ask{position:fixed; left:0; right:0; bottom:0; height:68px; background:var(--D);
-  display:flex; align-items:center; gap:10px; padding:0 max(16px,calc(50% - 360px));
-  font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic UI",sans-serif; transition:opacity .3s}
-.ask input{flex:1; min-width:0; height:42px; border:1px solid color-mix(in srgb,var(--L) 22%,transparent); border-radius:21px;
-  background:color-mix(in srgb,var(--L) 8%,transparent); padding:0 18px; font:inherit; font-size:15px; color:var(--L); outline:none}
-.ask input::placeholder{color:color-mix(in srgb,var(--L) 45%,transparent)}
-.ask input:focus{border-color:var(--A); background:color-mix(in srgb,var(--L) 12%,transparent)}
-.ask button{height:42px; padding:0 20px; border:0; border-radius:21px; background:var(--A); color:var(--D); font-size:14px; font-weight:600; cursor:pointer}
-.ask button:disabled{opacity:.3; cursor:default}
-body.outside .ask{opacity:0; pointer-events:none}
+/* コマンドの窓：ゲームの窓にそろえる（みる／はなす／でる）。はなすを選ぶと、その場で聞きたいことを打てる */
+.cmd{position:fixed; left:0; right:0; bottom:0; height:68px; background:var(--D); display:flex; align-items:center; justify-content:center; padding:0 16px; transition:opacity .3s steps(3)}
+.cmd .win{width:min(100%,760px); height:calc(100% - var(--p)*2); border:var(--p) solid var(--L); box-shadow:0 0 0 var(--p) var(--D); display:flex; align-items:center; padding:0 calc(var(--p)*3)}
+.cmd .row{display:flex; gap:calc(var(--p)*8); align-items:center; width:100%}
+.cmd .row[hidden]{display:none}
+.cmd button{background:none; border:0; color:var(--L); cursor:pointer; padding:0 0 0 1.2em; position:relative; outline:none}
+.cmd button::before{content:"▶"; position:absolute; left:0; color:var(--A); visibility:hidden}
+.cmd button:hover::before,.cmd button:focus-visible::before,.cmd button.sel::before{visibility:visible}
+.cmd button:disabled{opacity:.4; cursor:default}
+.cmd .say{display:flex; align-items:center; gap:calc(var(--p)*2); width:100%}
+.cmd .say .pr{color:var(--A)}
+.cmd .say input{flex:1; min-width:0; background:none; border:0; border-bottom:3px solid var(--M); color:var(--L); font:inherit; padding:0; outline:none; caret-color:var(--A)}
+.cmd .say input::placeholder{color:var(--M)}
+.cmd .say input:focus{border-bottom-color:var(--A)}
+.cmd .say[hidden]{display:none}
+body.outside .cmd{opacity:0; pointer-events:none}
+.cmd .key{margin-left:auto; color:var(--M); white-space:nowrap}
+/* 触れる物の上に ▼ */
+.grp::after,.poster::after{content:"▼"; position:absolute; left:50%; bottom:calc(100% + var(--p)); translate:-50% 0; color:var(--A); visibility:hidden; animation:bob .8s steps(2) infinite; z-index:5}
+.grp:hover::after,.poster:hover::after,.grp:focus-visible::after,.poster:focus-visible::after{visibility:visible}
+.look .card{grid-template-columns:1fr; justify-items:center; text-align:center}
+.look .card p,.look .card h2{display:none}   /* 中身と名前は会話の窓に出す */
+.look.show{align-content:start; padding-top:calc(var(--p)*4)}
+.look .card{max-height:calc(100vh - 290px)}   /* 下の会話の窓とコマンドの窓の上に収める */
+
+/* ===== タイトル画面 ===== */
+.title{position:fixed; inset:0; z-index:30; background:var(--D); display:grid; place-items:center; text-align:center; transition:opacity .5s steps(5)}
+.title.fade{opacity:0; pointer-events:none}
+.title[hidden]{display:none}
+.title .ring{margin:0 auto calc(var(--p)*6)}
+.title h1{font-weight:400; font-size:48px; line-height:1.2; letter-spacing:.08em; color:var(--L)}
+.title .sub{margin-top:calc(var(--p)*2); color:var(--S); letter-spacing:.5em; margin-right:-.5em}
+.title .menu{margin-top:calc(var(--p)*14); display:grid; gap:var(--p); justify-items:center}
+.title .menu button{background:none; border:0; color:var(--L); cursor:pointer; padding:0 0 0 1.4em; position:relative; outline:none}
+.title .menu button::before{content:"▶"; position:absolute; left:0; color:var(--A); animation:blink .8s steps(1) infinite}
+.title .cr{position:absolute; left:0; right:0; bottom:calc(var(--p)*4); color:var(--M)}
+@media (max-width:600px){ .title h1{font-size:32px} }
+
+/* ===== エンディング（出口の先） ===== */
+.ending{position:fixed; inset:0; z-index:25; background:var(--D); overflow:hidden; display:grid; place-items:center; text-align:center}
+.ending[hidden]{display:none}
+.roll{display:grid; gap:calc(var(--p)*6); justify-items:center; padding:0 16px}
+.roll > *{opacity:0; transform:translateY(calc(var(--p)*4)); transition:opacity .6s steps(4), transform .6s steps(4)}
+.roll > .on{opacity:1; transform:none}
+.roll h2{font-weight:400; font-size:32px; color:var(--A); letter-spacing:.1em}
+.roll .co{color:var(--L)}
+.roll .msg{color:var(--S)}
+.roll .menu{display:flex; gap:calc(var(--p)*8); justify-content:center; flex-wrap:wrap}
+.roll .menu a,.roll .menu button{background:none; border:0; color:var(--L); text-decoration:none; cursor:pointer; padding:0 0 0 1.4em; position:relative; outline:none; font:inherit}
+.roll .menu a::before,.roll .menu button::before{content:"▶"; position:absolute; left:0; color:var(--A); visibility:hidden}
+.roll .menu a:hover::before,.roll .menu button:hover::before,.roll .menu a:focus-visible::before,.roll .menu button:focus-visible::before,.roll .menu .sel::before{visibility:visible}
 
 /* ===== 店の外（入口・出口） ===== */
 .front{position:fixed; inset:0; z-index:10; display:grid; justify-items:center; align-content:end; transition:opacity .4s steps(4)}
@@ -208,8 +248,7 @@ body.outside .ask{opacity:0; pointer-events:none}
 @media (max-height:460px){
   .sign{display:none}
   .talk .txt{min-height:2.6em}
-  .ask{height:54px} .game{bottom:54px}
-  .ask input,.ask button{height:36px}
+  .cmd{height:54px} .game{bottom:54px}
 }
 @media (max-width:600px){
   .card{grid-template-columns:1fr; justify-items:center; text-align:center}
@@ -218,6 +257,17 @@ body.outside .ask{opacity:0; pointer-events:none}
 </style>
 </head>
 <body class="outside">
+
+<!-- タイトル画面 -->
+<div class="title" id="title">
+  <div>
+    <svg class="sprite ring" id="ring"></svg>
+    <h1>ALTER DESIGN</h1>
+    <div class="sub">CONSULTING</div>
+    <div class="menu"><button id="start">はじめる</button></div>
+  </div>
+  <div class="cr">© 2025 Alter Design Consulting Co., Ltd.</div>
+</div>
 
 <div class="game" id="game">
   <div class="strip" id="strip">
@@ -247,10 +297,11 @@ body.outside .ask{opacity:0; pointer-events:none}
   <div class="talk" id="talk"><div class="who" id="who"></div><div class="txt" id="txt"></div><span class="nx">▼</span></div>
 </div>
 
-<form class="ask" id="ask" autocomplete="off">
-  <input id="q" type="text" placeholder="店主に聞く">
-  <button id="send" type="submit" disabled>送信</button>
-</form>
+<div class="cmd" id="cmd"><div class="win">
+  <div class="row" id="main"><button data-c="look">みる</button><button data-c="talk">はなす</button><button data-c="exit">でる</button><span class="key">◀ ▶ みまわす</span></div>
+  <div class="row" id="lookm" hidden><button data-c="shelf">たな</button><button data-c="keeper">みせのひと</button><button data-c="wall">かべ</button><button data-c="back">もどる</button></div>
+  <form class="say" id="ask" autocomplete="off" hidden><span class="pr">▶</span><input id="q" type="text" placeholder="なにを きく？（Esc でもどる）"><button id="send" type="submit" disabled>きく</button></form>
+</div></div>
 
 <!-- 入口 -->
 <div class="front wallbg" id="enterF">
@@ -265,23 +316,13 @@ body.outside .ask{opacity:0; pointer-events:none}
   <div class="post" aria-hidden="true"><b></b><i></i></div>
 </div>
 
-<!-- 出口：フッターの役 -->
-<div class="front wallbg" id="exitF" hidden>
-  <div class="ground"></div>
-  <div class="facade">
-    <div class="roof"></div><div class="wallf"></div>
-    <div class="win l"></div><div class="win r"></div>
-    <div class="fdoor" aria-hidden="true"><span class="leaf"></span></div>
-  </div>
-  <div class="post" aria-hidden="true"><b></b><i></i></div>
-  <div class="bye">
-    <h2>またどうぞ。</h2>
+<!-- 出口の先：エンディング（フッターの役） -->
+<div class="ending" id="exitF" hidden>
+  <div class="roll" id="roll">
+    <h2>THANK YOU FOR VISITING</h2>
     <p class="co">株式会社アルターデザインコンサルティング<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</p>
     <p class="msg">サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
-    <div class="btns">
-      <a class="main" href="mailto:contact@alt-dsgn.co.jp">お問い合わせ</a>
-      <button id="again">もう一度入る</button>
-    </div>
+    <div class="menu"><a class="sel" href="mailto:contact@alt-dsgn.co.jp">おといあわせ</a><button id="again">もういちど</button></div>
   </div>
 </div>
 
@@ -489,7 +530,9 @@ document.querySelectorAll('.panel').forEach(p=>p.addEventListener('click', ()=>{
 $('tl').onclick = ()=>look(view-1);
 $('tr').onclick = ()=>look(view+1);
 document.addEventListener('keydown', e=>{
-  if (document.activeElement === $('q') || document.body.classList.contains('outside')) return;
+  if (!$('title').hidden){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); start(); } return; }
+  if (document.activeElement === $('q')){ if (e.key === 'Escape') menu('main'); return; }
+  if (document.body.classList.contains('outside')) return;
   if (e.key === 'Escape') { closeLook(); return; }
   if ($('look').classList.contains('show')) return;
   if (e.key === 'ArrowLeft') look(view-1);
@@ -519,6 +562,8 @@ function show(id){
   $('look').classList.toggle('kr', view === 0); $('look').classList.toggle('kl', view === 2);
   $('look').classList.add('show');
   seen.add(id);
+  /* 中身は会話の窓に一文字ずつ（公式の文のまま。長いものはページを分ける） */
+  talk(pagesOf(curItem.desc).map(t=>({who:curItem.name, text:t})));
 }
 function closeLook(){
   $('look').classList.remove('show'); hideTalk();
@@ -534,6 +579,19 @@ $('askk').onclick = ()=>talk([{who:'店主', text:curItem.talk}]);
 /* ---------- 会話 ---------- */
 let pages = [], typeT = 0;
 function talk(list){ pages = list.slice(); next(); }
+/* 長い文はページを分ける：空行で区切り、さらに 3 行・70 字ごと */
+function pagesOf(text){
+  const out = [];
+  text.split(/\n\n/).forEach(block=>{
+    let cur = [];
+    block.split(/\n|(?<=。)/).filter(x=>x.trim()).forEach(line=>{
+      if (cur.length && (cur.length >= 3 || (cur.join('').length + line.length) > 70)){ out.push(cur.join('\n')); cur = []; }
+      cur.push(line);
+    });
+    if (cur.length) out.push(cur.join('\n'));
+  });
+  return out;
+}
 function hideTalk(){ pages = []; clearInterval(typeT); $('talk').classList.remove('show','done'); }
 function next(){
   clearInterval(typeT);
@@ -548,7 +606,7 @@ function next(){
 $('talk').onclick = next;
 document.addEventListener('click', e=>{
   if (!$('talk').classList.contains('show')) return;
-  if ($('talk').contains(e.target) || e.target.closest('#askk,#moya,#ask')) return;
+  if ($('talk').contains(e.target) || e.target.closest('#askk,#moya,#cmd')) return;
   hideTalk();
 }, true);
 $('moya').onclick = e=>{ e.stopPropagation(); talk([{who:'店主', text:moyaLines[moyaN++ % moyaLines.length]}]); };
@@ -558,7 +616,7 @@ $('q').addEventListener('input', ()=>{ $('send').disabled = !$('q').value.trim()
 $('ask').addEventListener('submit', e=>{
   e.preventDefault();
   const v = $('q').value.trim(); if (!v) return;
-  $('q').value = ''; $('send').disabled = true; $('q').blur();
+  $('q').value = ''; $('send').disabled = true; $('q').blur(); menu('main');
   const hit = keys.find(([re]) => re.test(v));
   const ans = hit ? (typeof hit[1] === 'function' ? hit[1]() : hit[1]) : idle[idleN++ % idle.length];
   const item = ALL.find(x=>x.id === ans);
@@ -579,16 +637,46 @@ function enter(){
   }, 700);
 }
 $('fdoor').onclick = enter;
-$('door').onclick = e=>{
-  e.stopPropagation(); hideTalk();
+/* 出口：エンディング。社名とお問い合わせが一つずつ流れて出て、最後に「おといあわせ」「もういちど」 */
+function ending(){
+  hideTalk(); closeLook();
   document.body.classList.add('outside');
-  const x = $('exitF'); x.hidden = false; x.classList.add('fade');
-  requestAnimationFrame(()=>requestAnimationFrame(()=>x.classList.remove('fade')));
-};
+  const x = $('exitF'), items = [...$('roll').children];
+  items.forEach(el=>el.classList.remove('on')); x.hidden = false;
+  items.forEach((el, i)=>setTimeout(()=>el.classList.add('on'), 400 + i * 900));
+}
+$('door').onclick = e=>{ e.stopPropagation(); ending(); };
 $('again').onclick = ()=>{
-  $('exitF').hidden = true; document.body.classList.remove('outside'); look(1);
-  talk([{who:'店主', text:'…おかえり。'}]);
+  $('exitF').hidden = true; seen.clear(); allDone = false; $('door').classList.remove('ready');
+  $('fdoor').classList.remove('open'); $('bell').classList.remove('show');
+  $('enterF').hidden = false; $('enterF').classList.remove('fade');
+  $('title').hidden = false; $('title').classList.remove('fade'); $('start').focus();
 };
+
+/* ---------- コマンド ---------- */
+function menu(m){
+  $('main').hidden = m !== 'main'; $('lookm').hidden = m !== 'look'; $('ask').hidden = m !== 'talk';
+  if (m === 'talk') setTimeout(()=>$('q').focus(), 0);
+}
+$('cmd').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-c]'); if (!b) return;
+  e.stopPropagation();
+  ({ look:()=>menu('look'), talk:()=>{ closeLook(); look(1); menu('talk'); }, exit:()=>ending(),
+     shelf:()=>{ closeLook(); look(0); }, keeper:()=>{ closeLook(); look(1); }, wall:()=>{ closeLook(); look(2); }, back:()=>menu('main') })[b.dataset.c]();
+});
+
+/* ---------- タイトル ---------- */
+(function(){
+  const n = 15, rows = [];
+  for (let y = 0; y < n; y++){ let r = ''; for (let x = 0; x < n; x++){ const d = Math.hypot(x - 7, y - 7); r += d <= 7.3 && d > 5.2 ? 'w' : d <= 5.2 && d > 4.2 ? 's' : '.'; } rows.push(r); }
+  px($('ring'), rows); $('ring').dataset.k = 1; sizeOf($('ring'));
+})();
+function start(){
+  const t = $('title'); if (t.classList.contains('fade')) return;
+  t.classList.add('fade'); setTimeout(()=>{ t.hidden = true; t.classList.remove('fade'); $('fdoor').focus(); }, 500);
+}
+$('start').onclick = start;
+$('start').focus();
 
 look(1);
 </script>
