@@ -4,8 +4,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 紐解く（2026-11-26）。昔のニュース番組のオープニングから借りるのは「一本の紐が切れずに形を変える」仕組みだけ
-     生成りの地に濃い紫の紐一本。紐には固い結び目が横に並んでいて、カメラが左から右へ進む（だんだん速く）。近づいた結び目から順にほどけてサービスの印になる
-     後半はだんだん引いていき、紐全体が一つの大きな円だと分かる。印は紐にたたまれ、円がロゴの組み方になる。複雑なものを紐解く。文は公式のまま -->
+     生成りの地に紫のロープ一本。ロープは大きな円で、まわりに固い結び目が四つ。カメラは止まらずにロープに沿って進み、だんだん速くなる
+     結び目は画面に入ってきたところでほどけてサービスの印になる。終わりにだんだん引いて、円のまわりに印が並ぶのが見え、印はたたまれて円がロゴになる。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
 <style>
@@ -147,8 +147,9 @@ function show(k){ rv.forEach(function(el){ if (el.dataset.k === k) el.classList.
 
 /* 世界：一本の紐は、半径 RW の大きな円の上にある（近くで見るとほぼ横一直線）。てっぺんのあたりに結び目が四つ、広い間をあけて並ぶ
    単位：印の大きさ（半径）が 1 */
-var RW = 26, GAPS = 6.4, SPAN = 3.4, K = 4, LIFT = 1.15, LOOP = 420;
-var TH = []; for (var k = 0; k < K; k++) TH.push(((k - (K - 1) / 2) * GAPS) / RW);
+/* 結び目は円のまわりに均等に四つ（左上・右上・右下・左下）。最後に引いたとき、円のまわり全体に印が並ぶ */
+var RW = 7, SPAN = 3.4, K = 4, LIFT = 1.15, LOOP = 420;
+var TH = []; for (var k = 0; k < K; k++) TH.push(-Math.PI / 4 + k * Math.PI / 2);
 function C(th){ return [RW * Math.sin(th), RW - RW * Math.cos(th)]; }
 function No(th){ return [Math.sin(th), -Math.cos(th)]; }
 
@@ -226,12 +227,10 @@ function local(k, st){   /* st.l：ゆるみ（0=固い結び目、1=輪）、st
   return wrap(loop);
 }
 
-/* 時間（ms）：カメラが一つ目の結び目へ進み、止まる。結び目がゆるんで印になり、サービス名が出る。読めるあいだ止まって、次へ
-   後ろほど進むのも止まるのも短くなる（だんだん速く）。最後はだんだん引いて、紐全体が一つの大きな円に。印はたたまれ、円がロゴになる */
-var MOVE = [550, 450, 380, 300], HOLD = [1150, 1000, 900, 800], START = 250;   /* 止まるのは、ほどけて形が見て取れるまで */
-var ARR = [], tt = START;
-for (k = 0; k < K; k++){ tt += MOVE[k]; ARR.push(tt); tt += HOLD[k]; }
-var Z0T = ARR[K - 1] + 650, Z1T = Z0T + 1400, F0T = Z0T + 350, F1T = Z1T - 100, L1T = Z1T + 550, END = L1T + 250;
+/* 時間（ms）：カメラは止まらずに紐に沿って進み、だんだん速くなる。結び目は画面に入ってきたところでほどけ始め、真ん中に来るまでに印になる
+   印は画面を横切るあいだ見えている。終わりに近づくとだんだん引いて、紐全体が一つの大きな円に。印はたたまれ、円がロゴになる */
+var PAN0 = 200, PAN1 = 4400, Z0T = 3500, Z1T = 5300, F0T = 4500, F1T = 5300, L1T = 5900, END = 6200;
+var PHI0 = TH[0] - .75, PHI1 = TH[K - 1] + .15;
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
 function eio(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
@@ -241,20 +240,14 @@ function size(){
   DPR = Math.min(2, devicePixelRatio || 1);
   W = hero.clientWidth; H = hero.clientHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  Z0 = Math.min(W * .21, H * .22);   /* 画面を広く使う */ RL = Math.min(W * .2, H * .17); ZF = RL / RW;
+  Z0 = Math.min(W * .17, H * .2); RL = Math.min(W * .2, H * .17); ZF = RL / RW;
   OX = W / 2; OY = H * .4;
   hero.style.setProperty('--lt', (OY + RL * 1.5) + 'px');
 }
 function phiAt(t){
-  var from = TH[0] - 2.2 / RW, at = START;
-  if (t < START) return from;
-  for (var k = 0; k < K; k++){
-    if (t < at + MOVE[k]) return from + (TH[k] - from) * eio((t - at) / MOVE[k]);
-    at += MOVE[k];
-    if (t < at + HOLD[k]) return TH[k];
-    at += HOLD[k]; from = TH[k];
-  }
-  return TH[K - 1];
+  /* ゆっくり出て、だんだん速く（最後は引きながら少しゆるむ） */
+  var u = clamp((t - PAN0) / (PAN1 - PAN0));
+  return PHI0 + (PHI1 - PHI0) * (u * u * (1.75 - .75 * u));
 }
 function frame(t){
   var phi = phiAt(t);
@@ -262,19 +255,24 @@ function frame(t){
   var fold = ease(clamp((t - F0T) / (F1T - F0T)));
   var c = C(phi), no = No(phi), cam = [c[0] + no[0] * LIFT * .8, c[1] + no[1] * LIFT * .8];
   cam = [cam[0] + (0 - cam[0]) * zu, cam[1] + (RW - cam[1]) * zu];
-  var rho = phi * (1 - zu), cr = Math.cos(-rho), sr = Math.sin(-rho);
+  var rt = Math.round(phi / TAU) * TAU, rho = phi + (rt - phi) * zu, cr = Math.cos(-rho), sr = Math.sin(-rho);   /* 引くにつれて、いちばん近い向きでまっすぐに */
   function S(q){ var x = q[0] - cam[0], y = q[1] - cam[1]; return [OX + (x * cr - y * sr) * zoom, OY + (x * sr + y * cr) * zoom, q[2] || 0]; }
-  /* 結び目ごと：着いてから 0.55 秒でゆるみ、0.6 秒で印になる */
-  var st = ARR.map(function(a){ var d = t - a; return { l:ease(clamp(d / 380)), m:ease(clamp((d - 300) / 420)), f:fold, d:d }; });
+  /* 結び目ごと：画面の右に入ってきたところでゆるみ始め、真ん中の手前で印になる（速く進むほど早くほどける） */
+  var st = TH.map(function(th){ var p = clamp((phi - (th - .62)) / .5); return { l:ease(clamp(p / .45)), m:ease(clamp((p - .35) / .65)), f:fold }; });
   var pts = [], half = SPAN / 2 / RW;
   function circSeg(a0, a1){ var n = Math.max(2, Math.ceil(Math.abs(a1 - a0) * RW / .05)); for (var i = 0; i < n; i++){ var a = a0 + (a1 - a0) * i / n, q = C(a); pts.push(S([q[0], q[1], 0])); } }
-  var a = -Math.PI;
+  var a = -Math.PI / 2;
   for (var k = 0; k < K; k++){
     circSeg(a, TH[k] - half);
-    local(k, st[k]).forEach(function(q){ var b = TH[k] + q[0] / RW, o = C(b), nn = No(b); pts.push(S([o[0] + nn[0] * q[1], o[1] + nn[1] * q[1], q[2]])); });
+    /* 左右の紐の部分は円に沿わせ、結び目と印はゆがめずにそのまま置く */
+    var lp = local(k, st[k]), o0 = C(TH[k]), t0 = [Math.cos(TH[k]), Math.sin(TH[k])], n0 = No(TH[k]);
+    lp.forEach(function(q, i){
+      if (i < 90 || i >= lp.length - 90){ var b = TH[k] + q[0] / RW, o = C(b), nn = No(b); pts.push(S([o[0] + nn[0] * q[1], o[1] + nn[1] * q[1], q[2]])); }
+      else pts.push(S([o0[0] + t0[0] * q[0] + n0[0] * q[1], o0[1] + t0[1] * q[0] + n0[1] * q[1], q[2]]));
+    });
     a = TH[k] + half;
   }
-  circSeg(a, Math.PI); var e = C(Math.PI); pts.push(S([e[0], e[1], 0]));
+  circSeg(a, Math.PI * 1.5); var e = C(Math.PI * 1.5); pts.push(S([e[0], e[1], 0]));
   return { p:pts, zu:zu };
 }
 
