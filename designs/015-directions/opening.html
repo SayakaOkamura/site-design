@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 線のオープニング（2026-11-26）。昔のニュース番組のオープニング（一本の糸が切れずに形を変える）の形だけ借りる
-     具体物は描かない。画面の真ん中で絡まった一本の線がほどけ、整い、回り込んでロゴの輪に閉じる
+     具体物は描かない。紙に一本張った線が真ん中で絡まり、またほどけて整い、回り込んでロゴの輪に閉じる
      絡まったものをほどいて設計し直す＝Alter（変える）。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
@@ -153,7 +153,8 @@ function size(){
 }
 
 /* 時間（ms） */
-var PULL0 = 700, PULL1 = 5400, BEND1 = 7300, LOGO1 = 8300, CAPS = 8300, END = 9000;
+/* はじめは紙に一本まっすぐ張った線 → 真ん中へ寄り集まって玉になる → 両端から引かれてほどける → 輪に閉じる */
+var GATH0 = 800, GATH1 = 3000, PULL0 = 3400, PULL1 = 6900, BEND1 = 8700, LOGO1 = 9600, CAPS = 9600, END = 10300;
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
 function eio(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
@@ -172,13 +173,15 @@ function jit(i, k){ return Math.sin(i * .37 + k) * .6 + Math.sin(i * .113 + k * 
 function points(t){
   var s = t / 1000;
   /* ほどける：両端から玉の外へ引き出される。f は引き出した割合 */
-  var f = eio(clamp((t - PULL0) / (PULL1 - PULL0)));
+  var f, ds;
+  if (t < PULL0){ f = 1 - eio(clamp((t - GATH0) / (GATH1 - GATH0))); ds = (W + 60) / N; }   /* 寄り集まる：両端が真ん中へ引き込まれる */
+  else { f = eio(clamp((t - PULL0) / (PULL1 - PULL0))); ds = TAU * R / N; }
   var fL = f * HALF, fR = N - f * HALF, m = (fR - fL) / N;   /* m：玉に残っている割合 */
   var rb = R * .8 * Math.sqrt(m), rot = s * .35;
   var cr = Math.cos(rot), sr = Math.sin(rot);
   /* 回り込む：線の真ん中を下にして、両端が上へ回り、輪に閉じる */
   var e = ease(clamp((t - PULL1) / (BEND1 - PULL1))), k = e / R;
-  var ds = TAU * R / N, wave = (1 - e) * R * .1;
+  var wave = (1 - e) * R * .1 * (t < PULL0 ? 0 : 1);
   var rough = Math.pow(m, .6) * 1.8 + (1 - e) * .25;   /* 絡まっているほど線ががたつく */
   var out = [];
   for (var i = 0; i < N; i++){
