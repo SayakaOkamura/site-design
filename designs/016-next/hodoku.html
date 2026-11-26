@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+:root{ --ink:#1d1526; --sub:#6d6478; --bg:#f6f4f8; --ac:#654087; --ac2:#9b6fd0; --pale:#e9e2f1; --line:#ddd5e6; --board:#ecebef; }
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9; overflow-x:hidden}
+a{color:inherit}
+
+/* e8 縮むヘッダー */
+header{position:fixed; inset:0 0 auto; z-index:20; display:flex; align-items:center; justify-content:space-between; padding:26px clamp(16px,4vw,48px); transition:padding .35s, background .35s, box-shadow .35s}
+header.small{padding:12px clamp(16px,4vw,48px); background:rgba(246,244,248,.88); backdrop-filter:blur(8px); box-shadow:0 1px 0 var(--line)}
+.logo{display:flex; align-items:center; gap:10px; text-decoration:none; font-weight:500; line-height:1.1}
+.logo i{width:28px; height:28px; border-radius:50%; border:5px solid var(--ac); box-shadow:inset 0 0 0 2px var(--pale)}
+.logo small{display:block; font-size:10px; color:var(--sub); text-align:right}
+nav ul{display:flex; gap:clamp(12px,2.4vw,32px); list-style:none; font-size:13px; letter-spacing:.08em}
+nav a{text-decoration:none}
+@media (max-width:640px){ nav{display:none} }
+
+section{position:relative; padding:clamp(80px,14vh,140px) clamp(16px,6vw,96px)}
+.in{max-width:880px; margin:0 auto; position:relative; z-index:1}
+h2{font-size:clamp(22px,3vw,30px); font-weight:900; margin-bottom:24px}
+h3{font-size:17px; font-weight:700; margin-bottom:8px}
+.kick{font-size:12px; letter-spacing:.2em; color:var(--ac); margin-bottom:12px}
+
+/* ヒーロー */
+#top{min-height:100vh; display:flex; align-items:center; overflow:hidden}
+/* e2 動く色のにじみ */
+.blobs{position:absolute; inset:0; overflow:hidden}
+.blobs i{position:absolute; border-radius:50%; filter:blur(70px); opacity:.55}
+.blobs i:nth-child(1){width:46vw; height:46vw; left:46%; top:6%; background:var(--ac2); animation:dr1 14s ease-in-out infinite alternate}
+.blobs i:nth-child(2){width:34vw; height:34vw; left:62%; top:44%; background:#c9a8ef; animation:dr2 11s ease-in-out infinite alternate}
+.blobs i:nth-child(3){width:28vw; height:28vw; left:10%; top:58%; background:#d8c9ea; animation:dr1 17s ease-in-out infinite alternate-reverse}
+@keyframes dr1{to{transform:translate(-12vw,8vh) scale(1.15)}}
+@keyframes dr2{to{transform:translate(8vw,-10vh) scale(.9)}}
+/* e1 一文字ずつ出る見出し */
+h1{font-size:clamp(28px,5vw,58px); font-weight:900; line-height:1.45; margin-bottom:24px}
+h1 .ch{display:inline-block; opacity:0; transform:translateY(.4em); animation:chIn .5s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes chIn{to{opacity:1; transform:none}}
+#top p{color:var(--sub)}
+
+/* e3 回る輪 */
+.ring{position:absolute; right:-8vw; top:10%; width:clamp(240px,38vw,520px); aspect-ratio:1; border-radius:50%; border:clamp(28px,4.6vw,64px) solid var(--ac); opacity:.12; z-index:0; pointer-events:none}
+.ring::after{content:""; position:absolute; inset:18%; border-radius:50%; border:6px dashed var(--ac)}
+#philosophy{overflow:hidden}
+#philosophy h3{font-size:clamp(18px,2.4vw,24px); font-weight:900; margin-bottom:20px}
+
+/* e4 下から現れる節 */
+.rv{opacity:0; transform:translateY(48px); transition:opacity .9s, transform .9s cubic-bezier(.2,.8,.2,1)}
+.rv.on{opacity:1; transform:none}
+
+/* e5 流れる帯 */
+.band{overflow:hidden; border-block:1px solid var(--line); padding:14px 0; margin-bottom:48px; white-space:nowrap; font-weight:700; color:var(--ac)}
+.band div{display:inline-block; animation:mq 26s linear infinite}
+.band span{margin-right:48px}
+.band span::before{content:"●"; font-size:8px; vertical-align:middle; margin-right:16px; color:var(--ac2)}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* e6 傾くカード */
+.svc{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr)); gap:20px; list-style:none; perspective:900px}
+.svc li{background:#fff; border-radius:14px; padding:26px; box-shadow:0 1px 2px rgba(40,20,60,.06),0 10px 30px rgba(40,20,60,.06); transition:transform .25s, box-shadow .25s; transform-style:preserve-3d}
+.svc li p{font-size:14px; color:var(--sub)}
+.svc li:hover{box-shadow:0 1px 2px rgba(40,20,60,.08),0 18px 40px rgba(40,20,60,.12)}
+
+/* 会社概要 */
+dl{display:grid; grid-template-columns:8em 1fr; gap:4px 24px; padding:16px 0; border-bottom:1px solid var(--line); font-size:14px}
+dt{color:var(--sub)}
+/* e7 数え上がる数字 */
+.num{font-size:28px; font-weight:900; color:var(--ac); font-variant-numeric:tabular-nums; line-height:1}
+@media (max-width:560px){ dl{grid-template-columns:1fr} }
+
+#contact{text-align:center}
+.btn{display:inline-block; margin-top:28px; padding:16px 40px; border-radius:40px; background:var(--ac); color:#fff; text-decoration:none; font-weight:700}
+footer{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:28px clamp(16px,4vw,48px); font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
+
+/* 紐解く／もどす */
+#tog{position:fixed; right:clamp(16px,3vw,32px); bottom:clamp(16px,3vw,32px); z-index:60; padding:14px 26px; border:0; border-radius:40px; background:var(--ink); color:#fff; font:inherit; font-weight:700; letter-spacing:.1em; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,.2)}
+#tog:focus-visible{outline:3px solid var(--ac2); outline-offset:3px}
+body.open .lift{opacity:.12; transition:opacity .4s}
+.flash{animation:flash 1.4s}
+@keyframes flash{0%,60%{outline:3px solid var(--ac2); outline-offset:8px} 100%{outline:3px solid transparent; outline-offset:8px}}
+
+#board{position:fixed; inset:0; z-index:50; overflow-x:hidden; overflow-y:scroll; visibility:hidden; background:transparent; transition:background .45s, visibility 0s .7s}
+body.open #board{visibility:visible; background:var(--board); transition:background .45s}
+#board::before{content:""; position:absolute; inset:0; background:radial-gradient(#cfcbd6 1px, transparent 1.2px) 0 0/22px 22px; opacity:0; transition:opacity .45s; pointer-events:none}
+body.open #board::before{opacity:1}
+.bd{position:relative}
+.gh{position:absolute; font-size:13px; font-weight:700; letter-spacing:.16em; color:var(--ac); opacity:0; transition:opacity .4s}
+.gh b{display:inline-block; min-width:1.8em; color:var(--sub); font-weight:500}
+body.shown .gh,body.shown #arrows{opacity:1}
+#arrows{position:absolute; left:0; top:0; overflow:visible; opacity:0; transition:opacity .5s; pointer-events:none}
+#arrows path{fill:none; stroke:var(--ac); stroke-width:1.6}
+#arrows .hd{fill:var(--ac); stroke:none}
+.card{position:absolute; background:#fff; border-radius:12px; padding:14px 16px 16px; box-shadow:0 1px 2px rgba(40,20,60,.08),0 8px 22px rgba(40,20,60,.08); cursor:pointer; transform-origin:0 0; opacity:0; font-size:13px; line-height:1.7}
+.card:hover{box-shadow:0 0 0 2px var(--ac2),0 8px 22px rgba(40,20,60,.12)}
+.card:focus-visible{outline:3px solid var(--ac2)}
+.card b{display:block; font-size:15px; margin:10px 0 4px}
+.card p{color:var(--sub)}
+.card p span{color:var(--ink); font-weight:700; margin-right:.6em}
+.end{position:absolute; display:flex; align-items:center; justify-content:center; border-radius:40px; background:var(--ac); color:#fff; font-weight:700; text-decoration:none; opacity:0; transition:opacity .4s}
+body.shown .end{opacity:1}
+
+/* カードの中の小さな実演 */
+.demo{position:relative; height:64px; border-radius:8px; background:var(--bg); overflow:hidden}
+.d1{display:flex; align-items:center; padding-left:12px; font-weight:900; font-size:15px}
+.d1 i{font-style:normal; opacity:0; animation:d1 3s infinite}
+@keyframes d1{0%{opacity:0; transform:translateY(6px)} 12%,80%{opacity:1; transform:none} 100%{opacity:0}}
+.d2 i{position:absolute; width:60px; height:60px; border-radius:50%; filter:blur(14px); background:var(--ac2); opacity:.7; animation:d2 4s ease-in-out infinite alternate}
+.d2 i:nth-child(2){background:#d8c9ea; left:50%; animation-duration:5s; animation-direction:alternate-reverse}
+@keyframes d2{from{transform:translate(10px,0)} to{transform:translate(110px,10px)}}
+.d3 i{position:absolute; left:50%; top:50%; width:44px; height:44px; margin:-22px; border-radius:50%; border:7px solid var(--ac); animation:d3 4s linear infinite}
+.d3 i::after{content:""; position:absolute; inset:5px; border-radius:50%; border:2px dashed var(--ac)}
+@keyframes d3{to{transform:rotate(360deg)}}
+.d4{display:flex; flex-direction:column; justify-content:center; gap:6px; padding:0 14px}
+.d4 i{height:8px; border-radius:4px; background:var(--pale); animation:d4 3s infinite}
+.d4 i:nth-child(2){animation-delay:.3s; width:80%} .d4 i:nth-child(3){animation-delay:.6s; width:60%}
+@keyframes d4{0%{opacity:0; transform:translateY(10px)} 20%,85%{opacity:1; transform:none; background:var(--ac2)} 100%{opacity:0}}
+.d5{display:flex; align-items:center; white-space:nowrap; font-weight:700; color:var(--ac); font-size:12px}
+.d5 span{display:inline-block; animation:mq 8s linear infinite}
+.d6{perspective:300px; display:flex; align-items:center; justify-content:center}
+.d6 i{width:70px; height:40px; border-radius:6px; background:#fff; box-shadow:0 4px 10px rgba(40,20,60,.15); animation:d6 2.6s ease-in-out infinite alternate}
+@keyframes d6{from{transform:rotateY(-18deg) rotateX(8deg)} to{transform:rotateY(18deg) rotateX(-8deg)}}
+.d7{display:flex; align-items:center; padding-left:14px; font-weight:900; font-size:26px; color:var(--ac); font-variant-numeric:tabular-nums}
+.d8 i{position:absolute; left:8px; right:8px; top:8px; border-radius:4px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.1); animation:d8 3s ease-in-out infinite alternate}
+@keyframes d8{from{height:28px} to{height:12px}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important}
+  h1 .ch,.rv{opacity:1; transform:none}
+}
+</style>
+
+<header id="hd">
+  <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy">企業理念</a></li>
+    <li><a href="#services">サービス</a></li>
+    <li><a href="#company">会社概要</a></li>
+    <li><a href="#contact">お問い合わせ</a></li>
+  </ul></nav>
+</header>
+
+<main>
+  <section id="top">
+    <div class="blobs" id="blobs"><i></i><i></i><i></i></div>
+    <div class="in">
+      <h1 id="h1">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+      <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+    </div>
+  </section>
+
+  <section id="philosophy">
+    <div class="ring" id="ring"></div>
+    <div class="in rv" id="phil">
+      <p class="kick">PHILOSOPHY</p>
+      <h2>アルターデザインコンサルティングの企業理念</h2>
+      <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+      <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+      子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+      このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+      それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="in rv">
+      <p class="kick">SERVICE</p>
+      <h2>私たちが提供するサービス</h2>
+    </div>
+    <div class="band" id="band"><div></div></div>
+    <ul class="svc in rv" id="svc">
+      <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section id="company">
+    <div class="in rv">
+      <p class="kick">COMPANY</p>
+      <h2>会社概要</h2>
+      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd></dl>
+      <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+      <dl><dt>資本金</dt><dd id="cap"><span class="num" data-to="60">0</span>百万円</dd></dl>
+      <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="in rv">
+      <p class="kick">CONTACT</p>
+      <h2>お問い合わせ</h2>
+      <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>
+
+<div id="board" aria-hidden="true"><div class="bd" id="bd"><svg id="arrows"></svg></div></div>
+<button id="tog" type="button" aria-pressed="false">紐解く</button>
+
+<script>
+(function(){
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- サイトの演出 ---------- */
+/* e1 */
+(function(){
+  var h = $('h1'), n = 0, out = '';
+  h.innerHTML.split(/(<br>)/).forEach(function(part){
+    if (part === '<br>'){ out += part; return; }
+    part.split('').forEach(function(c){ out += c === ' ' ? ' ' : '<span class="ch" style="animation-delay:' + (300 + n++ * 45) + 'ms">' + c + '</span>'; });
+  });
+  h.innerHTML = out;
+})();
+/* e5 */
+(function(){
+  var names = ['人間中心の次世代業務システム開発', 'AI による意思決定支援と事業変革支援', '自律型・共創型の組織設計支援', '地域格差の解消を目指したデジタル支援'];
+  var s = names.map(function(t){ return '<span>' + t + '</span>'; }).join('');
+  $('band').firstChild.innerHTML = s + s;
+})();
+/* e4・e7 */
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if (!e.isIntersecting) return;
+    e.target.classList.add('on'); io.unobserve(e.target);
+    var num = e.target.querySelector('.num'); if (num) count(num);
+  });
+}, { threshold:.18 });
+document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+function count(el){
+  var to = +el.dataset.to, t0 = performance.now();
+  (function f(t){ var k = Math.min(1, (t - t0) / 1400); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); })(t0);
+}
+/* e3・e8 */
+function onScroll(){
+  $('hd').classList.toggle('small', scrollY > 40);
+  var r = $('philosophy').getBoundingClientRect();
+  $('ring').style.transform = 'translateY(' + (r.top * -.15) + 'px) rotate(' + (scrollY * .12) + 'deg)';
+}
+addEventListener('scroll', onScroll, { passive:true }); onScroll();
+/* e6 */
+$('svc').querySelectorAll('li').forEach(function(li){
+  li.addEventListener('mousemove', function(e){
+    var r = li.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    li.style.transform = 'rotateY(' + (x * 10) + 'deg) rotateX(' + (-y * 10) + 'deg) translateZ(6px)';
+  });
+  li.addEventListener('mouseleave', function(){ li.style.transform = ''; });
+});
+
+/* ---------- 紐解く ---------- */
+var GROUPS = [
+  { name:'目を止める', items:['e2', 'e1'] },
+  { name:'読ませる', items:['e4', 'e8'] },
+  { name:'覚えてもらう', items:['e3', 'e5', 'e7'] },
+  { name:'触ってもらう', items:['e6'] }
+];
+var E = {
+  e1:{ src:'h1',   demo:'<div class="demo d1">' + 'AI × ローコード'.split('').map(function(c, i){ return '<i style="animation-delay:' + i * 80 + 'ms">' + (c === ' ' ? '&nbsp;' : c) + '</i>'; }).join('') + '</div>',
+       n:'一文字ずつ出る見出し', d:'最初の一文が、一文字ずつ現れる', w:'最初の一文を、最後まで読んでもらう' },
+  e2:{ src:'blobs', demo:'<div class="demo d2"><i></i><i></i></div>',
+       n:'動く色のにじみ', d:'紫のにじみが、ゆっくり漂う', w:'開いた瞬間に、会社の色を覚えてもらう' },
+  e3:{ src:'ring', demo:'<div class="demo d3"><i></i></div>',
+       n:'回る輪', d:'スクロールに合わせて、ロゴの輪が回る', w:'ロゴの形を、何度も目に入れる' },
+  e4:{ src:'phil', demo:'<div class="demo d4"><i></i><i></i><i></i></div>',
+       n:'下から現れる節', d:'スクロールすると、節が一つずつ浮かび上がる', w:'読む順番を、一つずつに区切る' },
+  e5:{ src:'band', demo:'<div class="demo d5"><span>人間中心の次世代業務システム開発　●　AI による意思決定支援と事業変革支援　●　</span></div>',
+       n:'流れる帯', d:'サービスの名前が、横に流れ続ける', w:'サービスが四つあると、一目で分かる' },
+  e6:{ src:'svc', demo:'<div class="demo d6"><i></i></div>',
+       n:'傾く札', d:'カーソルを乗せると、サービスの札が傾く', w:'読むだけでなく、触ってもらう' },
+  e7:{ src:'cap', demo:'<div class="demo d7"><span class="dn">0</span></div>',
+       n:'数え上がる数字', d:'資本金の数字が、0 から数え上がる', w:'数字に目を止めてもらう' },
+  e8:{ src:'hd', demo:'<div class="demo d8"><i></i></div>',
+       n:'縮むヘッダー', d:'読み始めると、上の帯が細くなる', w:'読む場所を広く取り、いつでも戻れるようにする' }
+};
+var bd = $('bd'), svg = $('arrows'), board = $('board'), tog = $('tog'), heads = [], cards = {}, end, open = false, timers = [];
+GROUPS.forEach(function(g, gi){
+  var h = document.createElement('div'); h.className = 'gh'; h.innerHTML = '<b>0' + (gi + 1) + '</b>' + g.name; bd.appendChild(h); heads.push(h);
+  g.items.forEach(function(k){
+    var e = E[k], c = document.createElement('div'); c.className = 'card'; c.tabIndex = 0; c.setAttribute('role', 'button');
+    c.innerHTML = e.demo + '<b>' + e.n + '</b><p><span>すること</span>' + e.d + '</p><p><span>ねらい</span>' + e.w + '</p>';
+    c.addEventListener('click', function(){ back(k); });
+    c.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); back(k); } });
+    bd.appendChild(c); cards[k] = c;
+  });
+});
+end = document.createElement('a'); end.className = 'end'; end.href = '#contact'; end.textContent = 'お問い合わせ';
+end.addEventListener('click', function(ev){ ev.preventDefault(); back(null, 'contact'); });
+bd.appendChild(end);
+/* 数字の実演 */
+setInterval(function(){ var el = bd.querySelector('.dn'); if (!el || !open) return; var t0 = performance.now();
+  (function f(t){ var k = Math.min(1, (t - t0) / 1200); el.textContent = Math.round(60 * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); })(t0); }, 2600);
+
+function layout(){
+  var W = board.clientWidth, M = Math.max(16, Math.min(48, W * .04)), G = 56, endW = 150;
+  var colW = (W - M * 2 - G * 4 - endW) / 4, wide = colW >= 190, pos = {}, y, P = [];
+  if (wide){
+    var top = Math.max(90, innerHeight * .12), maxY = 0;
+    GROUPS.forEach(function(g, gi){
+      var x = M + gi * (colW + G);
+      heads[gi].style.cssText = 'left:' + x + 'px; top:' + top + 'px; width:' + colW + 'px';
+      y = top + 40;
+      g.items.forEach(function(k){ var c = cards[k]; c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.width = colW + 'px'; pos[k] = { x:x, y:y }; y += c.offsetHeight + 18; });
+      maxY = Math.max(maxY, y);
+    });
+    var ex = M + 4 * (colW + G);
+    end.style.cssText = 'left:' + ex + 'px; top:' + (top - 12) + 'px; width:' + endW + 'px; height:44px';
+    for (var i = 0; i < 4; i++){
+      var x1 = M + i * (colW + G) + colW + 8, x2 = (i < 3 ? M + (i + 1) * (colW + G) : ex) - 10, yy = top + 10;
+      P.push([x1, yy, x2, yy]);
+    }
+    bd.style.height = (maxY + 120) + 'px';
+  } else {
+    var x = M, w = W - M * 2; y = 84;
+    GROUPS.forEach(function(g, gi){
+      if (gi) { P.push([x + 20, y - 4, x + 20, y + 30]); y += 40; }
+      heads[gi].style.cssText = 'left:' + x + 'px; top:' + y + 'px; width:' + w + 'px'; y += 36;
+      g.items.forEach(function(k){ var c = cards[k]; c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.width = w + 'px'; pos[k] = { x:x, y:y }; y += c.offsetHeight + 14; });
+    });
+    P.push([x + 20, y - 4, x + 20, y + 30]); y += 40;
+    end.style.cssText = 'left:' + x + 'px; top:' + y + 'px; width:' + Math.min(w, 260) + 'px; height:48px';
+    bd.style.height = (y + 140) + 'px';
+  }
+  svg.setAttribute('width', W); svg.setAttribute('height', bd.style.height);
+  svg.innerHTML = P.map(function(p){
+    var a = Math.atan2(p[3] - p[1], p[2] - p[0]), hx = p[2], hy = p[3], s = 7;
+    return '<path d="M' + p[0] + ' ' + p[1] + 'L' + (hx - Math.cos(a) * s) + ' ' + (hy - Math.sin(a) * s) + '"/>' +
+      '<polygon class="hd" points="' + hx + ',' + hy + ' ' + (hx - Math.cos(a) * s - Math.sin(a) * s * .6) + ',' + (hy - Math.sin(a) * s + Math.cos(a) * s * .6) + ' ' + (hx - Math.cos(a) * s + Math.sin(a) * s * .6) + ',' + (hy - Math.sin(a) * s - Math.cos(a) * s * .6) + '"/>';
+  }).join('');
+}
+function srcRect(k, c){
+  var r = $(E[k].src).getBoundingClientRect(), vis = r.bottom > 0 && r.top < innerHeight && r.width > 0;
+  if (!vis) return { left:c.offsetLeft, top:innerHeight + 40, width:c.offsetWidth, height:c.offsetHeight, off:true };
+  return { left:Math.max(-r.width * .5, r.left), top:Math.max(-40, r.top), width:Math.min(r.width, innerWidth * 1.2), height:Math.min(r.height, innerHeight * 1.2) };
+}
+function flipFrom(c, s){
+  /* 元の場所の真ん中から、縦横同じ倍率で（字が歪まないように） */
+  var w = c.offsetWidth, h = c.offsetHeight, k = Math.max(.7, Math.min(1.4, Math.min(s.width / w, s.height / h)));
+  var cx = s.left + s.width / 2 - w * k / 2, cy = s.top + s.height / 2 - h * k / 2;
+  return 'translate(' + (cx - c.offsetLeft + board.scrollLeft) + 'px,' + (cy - c.offsetTop + board.scrollTop) + 'px) scale(' + k + ')';
+}
+function clear(){ timers.forEach(clearTimeout); timers = []; }
+function show(){
+  clear(); open = true; board.scrollTop = 0;
+  document.body.classList.add('open'); tog.textContent = 'もどす'; tog.setAttribute('aria-pressed', 'true'); board.setAttribute('aria-hidden', 'false');
+  Object.keys(E).forEach(function(k){ $(E[k].src).classList.add('lift'); });
+  layout();
+  var order = [].concat.apply([], GROUPS.map(function(g){ return g.items; }));
+  order.forEach(function(k, i){
+    var c = cards[k], s = srcRect(k, c);
+    c.style.transition = 'none'; c.style.opacity = s.off ? 0 : .6; c.style.transform = RM ? 'none' : flipFrom(c, s);
+    void c.offsetWidth;
+    timers.push(setTimeout(function(){
+      c.style.transition = 'transform .8s cubic-bezier(.2,.8,.2,1), opacity .5s';
+      c.style.transform = 'none'; c.style.opacity = 1;
+    }, RM ? 0 : 120 + i * 70));
+  });
+  timers.push(setTimeout(function(){ document.body.classList.add('shown'); }, RM ? 0 : 120 + order.length * 70 + 500));
+}
+function hide(cb){
+  clear(); open = false;
+  document.body.classList.remove('shown');
+  tog.textContent = '紐解く'; tog.setAttribute('aria-pressed', 'false'); board.setAttribute('aria-hidden', 'true');
+  Object.keys(E).forEach(function(k, i){
+    var c = cards[k], s = srcRect(k, c);
+    c.style.transition = 'transform .6s cubic-bezier(.6,0,.4,1), opacity .5s .15s';
+    c.style.transform = RM ? 'none' : flipFrom(c, s); c.style.opacity = 0;
+  });
+  timers.push(setTimeout(function(){
+    document.body.classList.remove('open');
+    Object.keys(E).forEach(function(k){ $(E[k].src).classList.remove('lift'); });
+    if (cb) cb();
+  }, RM ? 0 : 520));
+}
+function back(k, id){
+  hide(function(){
+    var el = k ? $(E[k].src) : $(id);
+    if (k === 'e8' || k === 'e2' || k === 'e1'){ scrollTo({ top:k === 'e8' ? 300 : 0, behavior:'smooth' }); }
+    else el.scrollIntoView({ behavior:'smooth', block:'center' });
+    if (k){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+  });
+}
+tog.addEventListener('click', function(){ open ? hide() : show(); });
+addEventListener('keydown', function(e){ if (e.key === 'Escape' && open) hide(); });
+addEventListener('resize', function(){ if (open){ layout(); } });
+})();
+</script>
