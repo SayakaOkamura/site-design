@@ -160,45 +160,41 @@ function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 
 function eio(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
 var TAU = Math.PI * 2;
 
-/* 絡まった玉：一本の線がいくつもの周期で行き来する。半径 1 の中に収まる */
-function knot(u){
+/* 複雑な形：一本の線が画面を大きく使って、長いなめらかな曲線で何重にも交差する。ゆっくり形が揺らぐ */
+function knot(u, s){
   return [
-    Math.sin(TAU * 37 * u + 1.3) * .55 + Math.sin(TAU * 13 * u + .4) * .3 + Math.sin(TAU * 71 * u + 2) * .15,
-    Math.cos(TAU * 41 * u + .7) * .55 + Math.cos(TAU * 17 * u + 2.2) * .3 + Math.cos(TAU * 67 * u + 1) * .15
+    Math.sin(TAU * 3 * u + .3 + s * .18) * .6 + Math.sin(TAU * 7 * u + 1.1 - s * .1) * .4,
+    Math.sin(TAU * 4 * u + 1.9 + s * .14) * .55 + Math.sin(TAU * 9 * u + .5 + s * .08) * .45
   ];
 }
-/* 不揃いさ：決まった揺れ */
-function jit(i, k){ return Math.sin(i * .37 + k) * .6 + Math.sin(i * .113 + k * 2.1) * 1.1 + Math.sin(i * 1.7 + k * .7) * .4; }
 
 function points(t){
-  var s = t / 1000;
-  /* ほどける：両端から玉の外へ引き出される。f は引き出した割合 */
-  var f, ds;
-  if (t < PULL0){ f = 1 - eio(clamp((t - GATH0) / (GATH1 - GATH0))); ds = (W + 60) / N; }   /* 寄り集まる：両端が真ん中へ引き込まれる */
-  else { f = eio(clamp((t - PULL0) / (PULL1 - PULL0))); ds = TAU * R / N; }
-  var fL = f * HALF, fR = N - f * HALF, m = (fR - fL) / N;   /* m：玉に残っている割合 */
-  var rb = R * .8 * Math.sqrt(m), rot = s * .35;
-  var cr = Math.cos(rot), sr = Math.sin(rot);
+  var s = t / 1000, sx = Math.min(W * .44, H * .8), sy = Math.min(H * .3, W * .5);
   /* 回り込む：線の真ん中を下にして、両端が上へ回り、輪に閉じる */
-  var e = ease(clamp((t - PULL1) / (BEND1 - PULL1))), k = e / R;
-  var wave = (1 - e) * R * .1 * (t < PULL0 ? 0 : 1);
-  var rough = Math.pow(m, .6) * 1.8 + (1 - e) * .25;   /* 絡まっているほど線ががたつく */
+  var e = ease(clamp((t - PULL1) / (BEND1 - PULL1))), k = e / R, ds = TAU * R / N;
+  var wave = (1 - e) * R * .1;
+  /* 寄り集まる：真ん中から先に複雑な形へ。ほどける：両端から先に一本の線へ */
+  var gp = eio(clamp((t - GATH0) / (GATH1 - GATH0))), pp = eio(clamp((t - PULL0) / (PULL1 - PULL0)));
   var out = [];
   for (var i = 0; i < N; i++){
+    var d = 1 - Math.abs(i - HALF) / HALF;   /* 端が 0、真ん中が 1 */
+    var q = knot(i / N, s), C = [CX + q[0] * sx, CY + q[1] * sy];
     var x, y;
-    if (i >= fL && i <= fR && m > 0){
-      var q = knot(i / N); x = CX + (q[0] * cr - q[1] * sr) * rb; y = CY + (q[0] * sr + q[1] * cr) * rb;
+    if (t < PULL0){
+      var w = ease(clamp((gp * 1.3 - (1 - d)) / .3));
+      x = CX + (i - HALF) * (W + 60) / N; y = CY;
+      x += (C[0] - x) * w; y += (C[1] - y) * w;
     } else {
-      /* 引き出された線：玉の縁から外へ。弧の長さ sl（真ん中が 0） */
-      var sl = i < fL ? -(rb + (fL - i) * ds) : (rb + (i - fR) * ds);
-      if (k < 1e-6){ x = CX + sl; y = CY; }
-      else { x = CX + Math.sin(k * sl) / k; y = CY - (1 - Math.cos(k * sl)) / k + R * e; }
-      /* 宙に浮いた糸のゆるい波。回り込むにつれて消える */
-      y += Math.sin(sl / R * 2.2 - s * 2) * wave * clamp(Math.abs(sl) / (R * .6));
+      var sl = (i - HALF) * ds, lx, ly;
+      if (k < 1e-6){ lx = CX + sl; ly = CY; }
+      else { lx = CX + Math.sin(k * sl) / k; ly = CY - (1 - Math.cos(k * sl)) / k + R * e; }
+      ly += Math.sin(sl / R * 2.2 - s * 2) * wave;   /* ほどけた線のゆるい波。回り込むにつれて消える */
+      var w2 = ease(clamp((pp * 1.3 - d) / .3));
+      x = C[0] + (lx - C[0]) * w2; y = C[1] + (ly - C[1]) * w2;
     }
-    out.push([x + jit(i, 0) * rough, y + jit(i, 3) * rough]);
+    out.push([x, y]);
   }
-  return { p:out, m:m };
+  return { p:out };
 }
 
 function render(t){
@@ -209,11 +205,7 @@ function render(t){
   cx.strokeStyle = INK;
   var g = ease(clamp((t - BEND1) / (LOGO1 - BEND1)));   /* ロゴの太さへ */
   function trace(dx, dy){ cx.beginPath(); for (var i = 0; i < N; i++){ if (i) cx.lineTo(p[i][0] + dx, p[i][1] + dy); else cx.moveTo(p[i][0] + dx, p[i][1] + dy); } if (g > 0) cx.closePath(); cx.stroke(); }
-  if (o.m > .02){
-    /* 絡まっているあいだは、少しずれた細い線を重ねて不揃いに */
-    cx.globalAlpha = .35 * o.m; cx.lineWidth = 1; trace(1.2, -.8); cx.globalAlpha = 1;
-  }
-  cx.lineWidth = 1.8 + .6 * o.m + (R * .16 - 1.8) * g;
+  cx.lineWidth = 1.8 + (R * .16 - 1.8) * g;
   if (g > 0){
     /* 輪：外側の縁を半径 R にそろえ、内側に薄紫の細い輪（ロゴの組み方を、線の太さのまま） */
     var th = cx.lineWidth;
