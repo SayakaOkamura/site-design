@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 お洒落・文字が組み替わる（2026-11-24）。大きな英字の見出しが各節の頭にあり、画面に入るたびに回って左から止まる。
+     ALTER → PHILOSOPHY → SERVICE → COMPANY → CONTACT。全部の文字が一斉に回り出し、左から一文字ずつ止まる。同じ文字は順番のまま横へ滑り、要らない文字はその場で消える。
+     社名の Alter（変える）が動きの理由。文は公式のまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+:root{ --bg:#f2eee6; --ink:#1b1022; --sub:#6f6676; --pu:#654087; --li:#bb7eea; --line:rgba(27,16,34,.16); }   /* 生成りの地に黒い文字、差し色は薄紫だけ */
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth; overflow-x:clip}
+body{overflow-x:clip}
+body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.95}
+a{color:inherit}
+
+header{position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,56px); background:var(--bg)}   /* 本文と見出しが下を流れるので地を敷く */
+.logo{display:flex; align-items:center; gap:10px; text-decoration:none; line-height:1.1}
+.logo i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
+.logo span{font-size:17px}
+.logo small{display:block; font-size:10px; margin-left:4.4em; color:var(--sub)}
+nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
+nav a{text-decoration:none; font-size:11px; letter-spacing:.24em; color:var(--sub); transition:color .2s}
+nav a.on{color:var(--ink)}
+
+/* 組み方：ポスター・雑誌の誌面。12 列のグリッドに左右非対称に置く。英字は画面の幅を超えるほど大きく、本文は小さく、余白は思い切り取る */
+main{position:relative; z-index:1}
+section{--pad:clamp(16px,4vw,56px); display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:clamp(12px,2vw,28px); padding:0 var(--pad); align-items:start}   /* 節と節の間を大きく空けて、大きな英字が続けて来ないように */
+section > *{grid-column:1 / -1}
+.in{display:grid; grid-template-columns:subgrid; align-items:start}
+.in > *{grid-column:1 / -1}
+#top{min-height:100vh; padding-top:clamp(90px,14vh,140px); align-content:space-between}
+#contact{padding-bottom:clamp(200px,40vh,420px)}
+
+/* 大きな英字：語ごとに画面の幅の 1.06 倍。奇数の節は左の端、偶数の節は右の端で切れる。画面に入ってきたときに一回回って、左から順に止まる */
+.big{margin:0 calc(-1 * var(--pad)) clamp(80px,20vh,220px); pointer-events:none}
+/* 英字は背景の層：透かさずに、色の明度を地に近づけて奥に下げる。手前の日本語の見出しと本文が主役 */
+.big .ch,.pin .ch{color:color-mix(in srgb, var(--ink) 12%, var(--bg)) !important}
+.big .ch.new,.pin .ch.new{color:color-mix(in srgb, var(--li) 40%, var(--bg)) !important}
+.big .ws{display:flex; justify-content:flex-start; perspective:900px}   /* 左右どちらの端で切るかは、はみ出す幅を測って決める */
+.big .ch{display:inline-block; width:var(--sw); text-align:center; font-family:"Archivo Black",sans-serif; font-size:var(--fs); line-height:.78; color:var(--ink); transition:color .2s; backface-visibility:hidden; white-space:pre}
+.big .ch.new{color:var(--li)}
+/* 回っている文字：替わるたびに縦にパタッと */
+.big .ch.flip{animation:flip .035s linear}
+@keyframes flip{from{transform:rotateX(-80deg)} to{transform:none}}
+.big .cap{margin-top:2.2em; padding:0 var(--pad); font-family:"Archivo",sans-serif; font-weight:600; font-size:11px; letter-spacing:.5em; color:var(--sub)}
+
+/* 節の前の余白＝組み替わりの通り道。英字は余白のあいだ画面に留まり（sticky）、留まる位置に着くと前の語から次の語へ勝手に組み替わる */
+.gap{position:relative; z-index:0; pointer-events:none; margin:clamp(200px,40vh,440px) calc(-1 * var(--pad)) calc(-.5 * var(--ph))}   /* 止めない。英字は本文と一緒に流れ、上の余白で地の色が移り変わる。下半分は次の見出しの後ろに潜る */
+section > :not(.gap):not(.big):not(.ripwrap){position:relative; z-index:1}
+.pin{position:relative; height:var(--ph); opacity:0; transition:opacity .25s}
+.pin .ch{position:absolute; left:0; bottom:0; text-align:center; font-family:"Archivo Black",sans-serif; line-height:.78; color:var(--ink); white-space:pre; will-change:transform}
+
+/* 見出しと本文：画面に入ってくるまでは隠しておき、入ったらちらついて決まる */
+.rv{opacity:0}
+.rv.on{opacity:1; transition:opacity .15s}
+@media (prefers-reduced-motion:reduce){ .rv{opacity:1} }
+/* 地の色は余白を通るあいだに移り変わる（JS で --bg・--ink・--sub を混ぜる） */
+body{transition:none}
+
+/* 節の番号と名前：小さく、誌面のノンブルのように */
+.side{display:flex; align-items:center; gap:16px; margin-bottom:clamp(40px,8vh,90px); font-family:"Archivo",sans-serif; font-weight:600; font-size:12.5px; letter-spacing:.35em; color:var(--sub)}
+.side .n{color:var(--ink)}
+.side .n::after{content:""; display:inline-block; width:48px; height:1px; background:var(--ink); vertical-align:middle; margin-left:16px}
+section.r .side{justify-content:flex-end}
+
+/* 文字：大きさの差を極端に。見出しは太いゴシック、本文は小さく */
+.min,h1,h2{font-family:"Zen Kaku Gothic New",sans-serif; font-weight:900}
+h1,h2,h3{text-wrap:balance}   /* 見出しは行の長さをそろえて、最後の一字だけ落ちないように */
+h2{font-size:clamp(26px,3.2vw,46px); line-height:1.35; letter-spacing:.04em; margin-bottom:clamp(36px,6vh,64px)}
+#philosophy h2{font-size:15px; letter-spacing:.22em; margin-bottom:32px}
+h3{font-size:17px; line-height:1.7; margin-bottom:.8em}
+p{font-size:14.5px; line-height:2.1; letter-spacing:.04em}
+b{font-weight:700}
+.lead{grid-column:5 / -1; padding-bottom:clamp(40px,8vh,80px)}
+.lead h1{font-size:clamp(26px,3.6vw,52px); line-height:1.5; letter-spacing:.03em}
+.lead p{margin-top:1.8em; color:var(--sub)}
+
+/* 01 企業理念：日本語の一行を大きく、本文は右の半分 */
+#philosophy h2,#philosophy p{grid-column:5 / -1}
+#philosophy h3{grid-column:1 / 12; order:-1; font-size:clamp(28px,4vw,60px); font-weight:900; line-height:1.4; letter-spacing:.01em; margin:0 0 clamp(200px,45vh,480px)}   /* 一言は一画面に一つ */
+/* 02 サービス：左の 8 列に、小さな番号つきで 2×2 */
+#services h2{grid-column:1 / 7}
+.svc{grid-column:1 / -1; display:grid; grid-template-columns:1fr; gap:0; counter-reset:s; margin-top:clamp(40px,8vh,90px)}   /* サービスは一つずつ一画面に。左右交互 */
+.svc li{list-style:none; counter-increment:s; width:min(100%,560px); min-height:clamp(420px,80vh,820px); display:flex; flex-direction:column; justify-content:center}
+/* サービスの横：4 つの一覧を画面に留め、いま読んでいるものだけ濃くする */
+.svcwrap{display:grid; grid-template-columns:subgrid; align-items:start}
+.svcwrap .svc{grid-column:1 / 8}
+.idxbox{grid-column:9 / -1; position:sticky; top:34vh; margin-top:clamp(40px,8vh,90px)}
+/* 右の大きな番号：いま読んでいるサービスの番号。英字と同じく、明度を地に近づけた大きな背景。替わるときに回って決まる */
+.idxnum{position:absolute; z-index:0; right:calc(-1 * var(--pad)); top:50%; transform:translateY(-46%); display:flex; font-family:"Archivo Black",sans-serif; font-size:clamp(260px,36vw,560px); line-height:.8; letter-spacing:-.03em; color:color-mix(in srgb, var(--ink) 12%, var(--bg)); perspective:600px; pointer-events:none}
+.idxnum b.new{color:color-mix(in srgb, var(--li) 40%, var(--bg))}
+.idxline,.idx{position:relative; z-index:1}
+.idxnum b{display:inline-block; width:.62em; text-align:center; font-weight:400}
+/* 左と右をつなぐ線：読んでいるサービスの番号の下の線と同じ高さで、左の本文の端から右の番号の下まで、左から右へ引かれる */
+.idxline{position:relative; height:1px; margin:clamp(14px,2.4vh,24px) 0 clamp(28px,5vh,52px)}
+.idxline i{position:absolute; top:0; height:1px; right:0; left:var(--from,0px); background:var(--ink); transform:scaleX(0); transform-origin:left center}
+.idxline i.go{transform:scaleX(1); transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.idx{list-style:none}
+.idx li{display:grid; grid-template-columns:3.2em 1fr; gap:4px; padding:12px 0; border-top:1px solid var(--line); font-size:13.5px; line-height:1.6; color:var(--sub); opacity:.45; transition:opacity .3s, color .3s, padding-left .3s cubic-bezier(.2,.8,.2,1)}
+.idx li:last-child{border-bottom:1px solid var(--line)}
+.idx li span{font-family:"Archivo",sans-serif; font-weight:600; letter-spacing:.2em; font-size:12px; padding-top:.15em}
+.idx li.on{opacity:1; color:var(--ink); padding-left:12px}
+.idx li.on span{color:var(--li)}
+/* 一覧の横線：濃くなった項目の下に、左から右へ線が引かれる。離れるときは右へ抜けて消える */
+.idx li{position:relative}
+.idx li::after{content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--li); transform:scaleX(0); transform-origin:right center; transition:transform .5s cubic-bezier(.6,0,.2,1)}
+.idx li.on::after{transform:scaleX(1); transform-origin:left center; transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(44px,5vw,72px); line-height:.8; letter-spacing:-.01em; color:var(--li); margin-bottom:clamp(24px,4vh,44px); padding-bottom:clamp(16px,3vh,28px); background:linear-gradient(var(--ink),var(--ink)) left bottom / 0% 1px no-repeat; transition:background-size 1.1s cubic-bezier(.2,.8,.2,1) .15s}
+/* 番号の下の横線：サービスが画面に入ってくると、左から右へ引かれる */
+.svc li.on::before{background-size:100% 1px}
+@media (prefers-reduced-motion:reduce){ .svc li::before{background-size:100% 1px; transition:none} }
+.svc p{font-size:13.5px; color:var(--sub)}
+/* 03 会社概要：右の半分に、細い罫線の表 */
+#company h2,#company dl{grid-column:7 / -1}
+/* 会社概要の後ろ：スクロールにつれて、左の方から薄い色の円が波紋のように広がる（止めると止まる） */
+#company{position:relative}
+.ripwrap{position:absolute; inset:0 calc(-1 * var(--pad)); z-index:0; pointer-events:none; overflow:clip; -webkit-mask:linear-gradient(transparent, #000 18%, #000 88%, transparent); mask:linear-gradient(transparent, #000 18%, #000 88%, transparent)}
+.ripbox{position:absolute; inset:0}   /* 画面に留めない。本文と一緒に流れる */
+.ripbox i{position:absolute; left:22%; top:0; width:0; height:0; border-radius:50%; border:4px solid color-mix(in srgb, var(--li) 40%, var(--bg)); transform:translate(-50%,-50%);   /* 始まった場所を中心に、四方へ広がる */ will-change:width,height,opacity}
+dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:clamp(28px,6vh,56px) 0; font-size:14.5px; line-height:2}   /* 行の間を広く、ゆっくり流れる */
+dl:last-child{border-bottom:1px solid var(--line)}
+dt{font-weight:700; font-size:12.5px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
+.acc{font-size:13px; color:var(--sub); margin-top:.6em}
+/* 04 お問い合わせ：左に寄せ、ボタンは下線の文字 */
+#contact h2,#contact p,#contact .btn{grid-column:1 / 7; justify-self:start}
+.btn{display:inline-flex; align-items:center; gap:40px; margin-top:2.6em; padding:12px 0; border-bottom:1px solid var(--ink); color:var(--ink); text-decoration:none; font-size:15px; letter-spacing:.22em; transition:color .2s, border-color .2s}
+.btn::after{content:"→"; font-family:"Archivo",sans-serif}
+.btn:hover{color:var(--pu); border-color:var(--pu)}
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:28px clamp(16px,4vw,56px); font-size:11px; letter-spacing:.08em; color:var(--sub); border-top:1px solid var(--line)}
+
+@media (max-width:760px){
+  nav{display:none}
+  section > *,.in > *,#philosophy h3,.lead,.svc{grid-column:1 / -1 !important}
+  .svc{grid-template-columns:1fr}
+  .idx,.idxbox{display:none}
+  dl{grid-template-columns:1fr; gap:2px}
+  section.r .side{justify-content:flex-start}
+}
+@media (prefers-reduced-motion:reduce){ .ch{transition:none} html{scroll-behavior:auto} }
+</style>
+
+<header>
+  <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy">企業理念</a></li>
+    <li><a href="#services">サービス</a></li>
+    <li><a href="#company">会社概要</a></li>
+    <li><a href="#contact">お問い合わせ</a></li>
+  </ul></nav>
+</header>
+
+
+<main>
+  <section id="top" data-w="ALTER" data-c="ALTER DESIGN CONSULTING">
+    <div class="in lead">
+      <h1 class="min">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+      <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+    </div>
+  </section>
+
+  <section id="philosophy" data-n="01" data-j="企業理念" data-w="PHILOSOPHY">
+    <div class="in">
+      <h2 class="min">アルターデザインコンサルティングの企業理念</h2>
+      <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+      <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+      子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+      このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+      それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+    </div>
+  </section>
+
+  <section id="services" class="r" data-n="02" data-j="サービス" data-w="SERVICE">
+    <h2 class="min">私たちが提供するサービス</h2>
+    <ul class="svc">
+      <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section id="company" data-n="03" data-j="会社概要" data-w="COMPANY">
+    <div class="in">
+      <h2 class="min">会社概要</h2>
+      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+        <p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+      <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+      <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+      <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+    </div>
+  </section>
+
+  <section id="contact" data-n="04" data-j="お問い合わせ" class="contact r" data-w="CONTACT">
+    <div class="in">
+      <h2 class="min">お問い合わせ</h2>
+      <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>
+
+<script>
+(function(){
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var secs = [].slice.call(document.querySelectorAll('main section')), navs = [].slice.call(document.querySelectorAll('nav a'));
+var AZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+var ctx = document.createElement('canvas').getContext('2d');
+var fs = 0, bigs = [];
+
+function size(){
+  fs = Math.max(36, Math.min(200, innerWidth * 0.86 / 7.6, innerHeight * 0.2));
+  /* 英字は語ごとに、画面の幅の 1.06 倍（端で少し切れる）。高すぎるときは画面の高さの 6 割まで */
+  bigs.forEach(function(b){
+    ctx.font = '100px "Archivo Black"';
+    var w100 = b.w.split('').reduce(function(t, c){ return t + ctx.measureText(c).width; }, 0);
+    b.fs = Math.min(innerWidth * 1.06 * 100 / w100, innerHeight * .6);
+    b.box.style.setProperty('--fs', b.fs + 'px');
+    ctx.font = b.fs + 'px "Archivo Black"';
+    /* 文字は自分の枠（決まる文字の幅）の真ん中にそろえる */
+    b.chs.forEach(function(el, i){ el.fz = b.fs; el.sw = ctx.measureText(b.w[i]).width; el.style.setProperty('--sw', el.sw + 'px'); });
+    /* 奇数の節は左の端で切れて右にそろう、偶数の節（.r）は左にそろって右の端で切れる */
+    var over = w100 * b.fs / 100 - b.box.clientWidth;
+    b.box.firstChild.style.marginLeft = (b.box.parentNode.classList.contains('r') ? 0 : -over) + 'px';
+  });
+}
+
+/* 回る：ちらちらと別の文字に替わり続け、lockAt（ms）で決まった文字にカチッと止まる */
+function roll(el, to, lockAt){
+  var tk = el.tk = (el.tk || 0) + 1, t0 = performance.now();
+  if (RM){ el.textContent = to; return; }
+  el.classList.add('new');
+  (function step(){
+    if (tk !== el.tk) return;
+    var done = performance.now() - t0 >= lockAt;
+    /* 回っているあいだは、枠に収まる幅の文字だけ（隣と重ならない） */
+    ctx.font = (el.fz || fs) + 'px "Archivo Black"';
+    var fit = AZ.split('').filter(function(a){ return ctx.measureText(a).width <= (el.sw || fs) * 1.04 && a !== el.textContent; });
+    el.textContent = done || !fit.length ? to : fit[Math.floor(Math.random() * fit.length)];
+    el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip');
+    if (!done) setTimeout(step, 38);
+    else setTimeout(function(){ if (tk === el.tk) el.classList.remove('new'); }, 90);
+  })();
+}
+/* 一語ぶん：全部の文字が一斉に回り出し、左から一文字ずつ止まる（最初 0.14 秒、最後 0.46 秒） */
+function spin(b){
+  var n = b.w.length, gap = n > 1 ? Math.min(50, 320 / (n - 1)) : 0;
+  b.chs.forEach(function(el, i){ roll(el, b.w[i], 140 + i * gap); });
+}
+
+/* 最初の節：ALTER は本文と同じ流れに置き、開いたときに一回回って止まる */
+var top0 = secs[0];
+(function(){
+  var w = top0.dataset.w, box = document.createElement('div'); box.className = 'big'; box.setAttribute('aria-hidden', 'true');
+  var ws = document.createElement('div'); ws.className = 'ws'; box.appendChild(ws);
+  var chs = w.split('').map(function(c){ var el = document.createElement('span'); el.className = 'ch'; el.textContent = c; ws.appendChild(el); return el; });
+  if (top0.dataset.c){ var cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = top0.dataset.c; box.appendChild(cap); }
+  top0.insertBefore(box, top0.firstChild);
+  bigs.push({ w:w, chs:chs, box:box });
+})();
+
+/* ほかの節：画面はいつも「変わる途中」。節の前の余白は、前の語が次の語へ組み替わる通り道
+   余白に入ると英字が画面に留まり、勝手に組み替わる。組み上がったら本文と一緒に流れ出す */
+var gaps = [];
+secs.slice(1).forEach(function(sec, k){
+  var gap = document.createElement('div'); gap.className = 'gap'; gap.setAttribute('aria-hidden', 'true');
+  var pin = document.createElement('div'); pin.className = 'pin'; gap.appendChild(pin);
+  sec.insertBefore(gap, sec.firstChild);
+  if (sec.dataset.n){ var sd = document.createElement('div'); sd.className = 'side'; sd.setAttribute('aria-hidden', 'true'); sd.innerHTML = '<span class="n">' + sec.dataset.n + '</span><span class="j">' + sec.dataset.j + '</span>'; gap.after(sd); }
+  gaps.push({ sec:sec, gap:gap, pin:pin, from:secs[k].dataset.w, to:sec.dataset.w, r:sec.classList.contains('r'), fromR:secs[k].classList.contains('r'), k:k, p:-1 });
+});
+
+/* 語の置き方：画面の幅の 1.06 倍。.r の節は左にそろって右の端で切れ、それ以外は左の端で切れて右にそろう */
+function lay(w, r){
+  var W = document.documentElement.clientWidth;
+  ctx.font = '100px "Archivo Black"';
+  var ws = w.split('').map(function(c){ return ctx.measureText(c).width; }), w100 = ws.reduce(function(a, b){ return a + b; }, 0);
+  var f = Math.min(innerWidth * 1.06 * 100 / w100, innerHeight * .6), x = r ? 0 : W - w100 * f / 100;
+  return { f:f, xs:ws.map(function(wd){ var o = { x:x, w:wd * f / 100 }; x += o.w; return o; }) };
+}
+/* いちばん長い共通の並び：順番を崩さずに持ち越す文字の組 */
+function lcs(a, b){
+  var m = a.length, n = b.length, t = [];
+  for (var i = 0; i <= m; i++) t.push(new Array(n + 1).fill(0));
+  for (i = m - 1; i >= 0; i--) for (var j = n - 1; j >= 0; j--) t[i][j] = a[i] === b[j] ? t[i + 1][j + 1] + 1 : Math.max(t[i + 1][j], t[i][j + 1]);
+  var out = []; i = 0; j = 0;
+  while (i < m && j < n){ if (a[i] === b[j]){ out.push([i, j]); i++; j++; } else if (t[i + 1][j] >= t[i][j + 1]) i++; else j++; }
+  return out;
+}
+function build(g){
+  var A = lay(g.from, g.fromR), B = lay(g.to, g.r), keep = lcs(g.from, g.to), kf = {}, kt = {};
+  keep.forEach(function(p){ kf[p[0]] = p[1]; kt[p[1]] = p[0]; });
+  g.pin.innerHTML = ''; g.items = []; g.fB = B.f;
+  g.gap.style.setProperty('--ph', B.f * .78 + 'px');
+  function mk(){ var el = document.createElement('span'); el.className = 'ch'; g.pin.appendChild(el); return el; }
+  /* 消える文字：前の語にあって、次の語にない */
+  g.from.split('').forEach(function(c, i){ if (i in kf) return; g.items.push({ t:'out', el:mk(), c:c, a:A.xs[i], f:A.f }); });
+  /* 持ち越す文字：前の位置・大きさから、次の位置・大きさへ滑る */
+  keep.forEach(function(p){ g.items.push({ t:'keep', el:mk(), c:g.to[p[1]], a:A.xs[p[0]], b:B.xs[p[1]], fa:A.f, fb:B.f }); });
+  /* 現れる文字：その場で回り、左から順に決まる */
+  var n = g.to.length;
+  g.to.split('').forEach(function(c, i){ if (i in kt) return; g.items.push({ t:'new', el:mk(), c:c, b:B.xs[i], f:B.f, lock:.52 + .42 * (n > 1 ? i / (n - 1) : 0), i:i }); });
+  g.p = -1;
+}
+function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+function ease(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
+function put(el, x, f, w){ el.style.transform = 'translateX(' + x + 'px)'; el.style.fontSize = f + 'px'; el.style.width = w + 'px'; }
+/* 英字が流れてきて画面の 6 割の高さまで来たら、勝手に組み上がる（1.3 秒）。止めない。下へ戻って画面の外へ出たら元に戻り、次に来たときにまた組み上がる */
+var DUR = 1300;
+function draw(g){
+  var r = g.gap.getBoundingClientRect(), top = innerHeight * .62;   /* 英字が画面の下から 4 割ほど上がってきたら */
+  if (RM){ g.pin.style.opacity = 1; render(g, 1, 0); return; }
+  /* そこまでは何も出さない（前の本文に被らないように）。来たら薄く現れて、組み替わり始める */
+  g.pin.style.opacity = r.top <= top + 1 || g.t0 ? 1 : 0;
+  if (r.top <= top + 1){
+    if (!g.t0){ g.t0 = performance.now(); (function loop(){ if (!g.t0) return; var t = performance.now() - g.t0; render(g, clamp(t / DUR), Math.floor(t / 45)); if (t < DUR) requestAnimationFrame(loop); })(); }
+  } else if (g.t0 && r.top > innerHeight + 20){ g.t0 = 0; render(g, 0, 0); }   /* 画面の下へ出たら元に戻る */
+  else if (!g.t0 && g.p !== 0) render(g, 0, 0);
+}
+function render(g, p, tick){
+  if (p === g.p && p !== 0 && p !== 1 && tick === g.tick) return; g.p = p; g.tick = tick;
+  g.items.forEach(function(it){
+    var el = it.el;
+    if (it.t === 'out'){
+      /* 変わる前の文字は薄く残っていて、組み替わり始めると消える */
+      var o = .14 * (1 - clamp((p - .08) / .22));
+      put(el, it.a.x, it.f, it.a.w); el.textContent = it.c; el.style.opacity = o; el.style.color = '';
+    } else if (it.t === 'keep'){
+      var e = ease(clamp((p - .08) / .34)), f = it.fa + (it.fb - it.fa) * e;   /* 持ち越す文字が先に着いてから、新しい文字が出る（重ならないように） */
+      /* 持ち越す文字は、薄いところから、滑りながら濃くなる */
+      put(el, it.a.x + (it.b.x - it.a.x) * e, f, it.a.w + (it.b.w - it.a.w) * e); el.textContent = it.c; el.style.opacity = .14 + .86 * e; el.style.color = '';
+    } else {
+      var on = clamp((p - .36) / .12), done = p >= it.lock;
+      put(el, it.b.x, it.f, it.b.w); el.style.opacity = on;
+      if (done){ el.textContent = it.c; el.classList.remove('new'); }
+      else {
+        ctx.font = it.f + 'px "Archivo Black"';
+        var fit = AZ.split('').filter(function(a){ return ctx.measureText(a).width <= it.b.w * 1.04; });
+        el.textContent = fit[(tick * 7 + it.i * 13) % fit.length]; el.classList.add('new');
+      }
+    }
+  });
+}
+
+/* 地の色：節の前の余白を通るあいだに、前の節の色から次の節の色へ移り変わる（変わる途中）
+   生成り → 薄紫 → 濃い紫 → 黒 → 灰色。地が暗くなると文字は明るくなる */
+var PAL = [
+  { bg:[242,238,230], ink:[27,16,34],   sub:[111,102,118] },   /* ALTER */
+  { bg:[228,218,238], ink:[27,16,34],   sub:[95,83,112] },     /* PHILOSOPHY */
+  { bg:[58,31,85],    ink:[244,238,250], sub:[199,182,220] },  /* SERVICE */
+  { bg:[22,16,28],    ink:[242,238,230], sub:[157,147,166] },  /* COMPANY */
+  { bg:[230,228,232], ink:[27,16,34],   sub:[96,90,102] }  /* CONTACT：黒から一気に明るくならない中間の明るさ。色はほとんど入れない灰色（落ち着いた、ニュートラルな場所） */
+];
+function mix(a, b, t){ return 'rgb(' + a.map(function(v, i){ return Math.round(v + (b[i] - v) * t); }).join(',') + ')'; }
+function tint(){
+  var vh = innerHeight, k = 0, t = 0;
+  gaps.forEach(function(g, i){
+    /* 英字が画面の下から入ってきて、上から 4 割の高さに来るまでに色を変え終える（メニューで飛んだ先が中間の色にならないように） */
+    var r = g.gap.getBoundingClientRect(), c = clamp((vh - r.top) / (vh * .6));
+    if (c > 0){ k = i; t = c; }
+  });
+  var a = PAL[k], b = PAL[k + 1], root = document.documentElement.style;
+  if (t >= 1){ a = b; t = 0; }
+  root.setProperty('--bg', mix(a.bg, b.bg, t)); root.setProperty('--ink', mix(a.ink, b.ink, t)); root.setProperty('--sub', mix(a.sub, b.sub, t));
+  root.setProperty('--line', 'rgba(' + (t < .5 ? a : b).ink.join(',') + ',.18)');
+}
+
+/* 現れ方を一つにそろえる：見出しも本文も、画面に入ってくるときに一瞬ちらついて、左から決まる（英字と同じ手触りで、小さく） */
+var KANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン', LAT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+function texts(el){ var out = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); while (w.nextNode()) if (w.currentNode.nodeValue.trim()) out.push(w.currentNode); return out; }
+function flick(el){
+  el.classList.add('on');
+  if (RM) return;
+  el.classList.add('fx');
+  var nodes = texts(el).map(function(n){ return { n:n, s:n.nodeValue }; }), total = nodes.reduce(function(t, o){ return t + o.s.length; }, 0);
+  var dur = Math.min(700, 260 + total * 6), t0 = performance.now();
+  (function step(){
+    var done = clamp((performance.now() - t0) / dur), edge = done * total, seen = 0;
+    nodes.forEach(function(o){
+      var out = '';
+      for (var i = 0; i < o.s.length; i++){
+        var c = o.s[i];
+        if (seen + i < edge || /[\s、。・「」（）()【】,.\-–]/.test(c)) out += c;
+        else out += /[\x00-\x7f]/.test(c) ? LAT[Math.floor(Math.random() * LAT.length)] : KANA[Math.floor(Math.random() * KANA.length)];
+      }
+      seen += o.s.length; o.n.nodeValue = out;
+    });
+    if (done < 1) setTimeout(step, 40); else { nodes.forEach(function(o){ o.n.nodeValue = o.s; }); el.classList.remove('fx'); }
+  })();
+}
+var RV = '.lead h1, .lead p, .side, main h2, main h3, main p, .svc li, dl, .btn';
+var rvs = [].slice.call(document.querySelectorAll(RV)).filter(function(el){ return !el.parentNode.closest || !el.parentNode.closest('.svc li, dl'); });
+rvs.forEach(function(el){ el.classList.add('rv'); });
+var rio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ rio.unobserve(e.target); flick(e.target); } }); }, { threshold:.25 });
+rvs.forEach(function(el){ rio.observe(el); });
+
+/* サービスの一覧：4 つの見出しを公式の文のまま並べ、いま画面の真ん中にあるものを濃くする */
+var svc = document.querySelector('.svc'), wrap = document.createElement('div'), box = document.createElement('div'), idx = document.createElement('ol');
+wrap.className = 'svcwrap'; box.className = 'idxbox'; box.setAttribute('aria-hidden', 'true'); idx.className = 'idx';
+box.innerHTML = '<div class="idxnum"><b>0</b><b>1</b></div><div class="idxline"><i></i></div>'; box.appendChild(idx);
+svc.parentNode.insertBefore(wrap, svc); wrap.appendChild(svc); wrap.appendChild(box);
+var digits = [].slice.call(box.querySelectorAll('.idxnum b')), conn = box.querySelector('.idxline i'), cur = -1;
+var items = [].slice.call(svc.children);
+items.forEach(function(li, i){ var o = document.createElement('li'); o.innerHTML = '<span>' + ('0' + (i + 1)) + '</span>' + li.querySelector('h3').textContent; idx.appendChild(o); });
+var marks = [].slice.call(idx.children);
+/* 替わるサービスは、その番号の下の線が、右の線の高さまで上がってきたとき */
+function follow(){
+  var y = conn.getBoundingClientRect().top, best = 0;
+  items.forEach(function(li, i){ var h = li.querySelector('h3'), mb = parseFloat(getComputedStyle(li, '::before').marginBottom) || 0; if (h.getBoundingClientRect().top - mb <= y + 2) best = i; });
+  if (best === cur) return; cur = best;
+  marks.forEach(function(m, i){ m.classList.toggle('on', i === best); });
+  /* 右の番号：回って決まる */
+  var to = ('0' + (best + 1)).split('');
+  digits.forEach(function(d, k){
+    /* 大きいので控えめに：倒れる動きはなし、2 回ほど替わってすぐ決まる */
+    var tk = d.tk = (d.tk || 0) + 1, t0 = performance.now(), lock = RM ? 0 : 110 + k * 70;
+    (function step(){ if (tk !== d.tk) return; var done = performance.now() - t0 >= lock; d.textContent = done ? to[k] : String(Math.floor(Math.random() * 10)); d.classList.toggle('new', !done); if (!done) setTimeout(step, 60); })();
+  });
+  /* つなぐ線：左の本文の端から、右の番号の下まで引き直す */
+  var lr = items[best].getBoundingClientRect(), br = box.getBoundingClientRect();
+  conn.style.setProperty('--from', (Math.min(lr.left + Math.min(lr.width, 560), lr.right) - br.left) + 'px');
+  conn.classList.remove('go'); void conn.offsetWidth; if (!RM) conn.classList.add('go'); else conn.style.transform = 'scaleX(1)';
+}
+/* 会社概要の波紋 */
+var ripSec = document.getElementById('company'), rips = [];
+(function(){
+  if (!ripSec) return;
+  var w = document.createElement('div'), b = document.createElement('div'); w.className = 'ripwrap'; b.className = 'ripbox'; w.setAttribute('aria-hidden', 'true');
+  var c = document.createElement('i'); b.appendChild(c); rips.push(c);   /* 円は一つ */
+  w.appendChild(b); ripSec.insertBefore(w, ripSec.firstChild);
+})();
+/* 波紋：「会社概要」の見出しの横を中心に、見出しが画面の 8 割の高さに来たら始まる。広がるのはスクロールに合わせて
+   直径はスクロールした量の 2 倍（半径がスクロールと同じ速さ）。円の下の端は画面の同じ高さ（下から 2 割）に留まったまま、円だけが大きくなる
+   薄れるのはゆっくり。節の下の端が画面の下を過ぎてから消えていく */
+function ripple(){
+  if (!rips.length) return;
+  var c = rips[0], r = ripSec.getBoundingClientRect(), h = ripSec.querySelector('h2');
+  var cy = h ? h.getBoundingClientRect().top + h.offsetHeight / 2 : r.top;
+  c.style.top = (cy - r.top) + 'px';
+  var sd = Math.max(0, innerHeight * .8 - cy), d = RM ? innerHeight : sd * 2, max = Math.hypot(innerWidth, innerHeight) * 4;
+  var o = .85 * clamp(sd / (innerHeight * .25)) * (1 - .5 * clamp(d / max)) * clamp(r.bottom / innerHeight);   /* 出始めは薄いところから */
+  c.style.width = c.style.height = d + 'px'; c.style.opacity = o;
+}
+var queued = false;
+function frame(){ queued = false; gaps.forEach(draw); tint(); follow(); ripple(); active(); }
+function onScroll(){ if (!queued){ queued = true; requestAnimationFrame(frame); } }
+
+/* メニューで飛んだときは、組み上がった英字のところに着く */
+navs.concat([].slice.call(document.querySelectorAll('.logo'))).forEach(function(a){
+  a.addEventListener('click', function(e){
+    var id = a.getAttribute('href').slice(1), g = gaps.filter(function(x){ return x.sec.id === id; })[0];
+    if (!g) return;
+    e.preventDefault();
+    var y = g.gap.getBoundingClientRect().top + scrollY - innerHeight * .22;
+    scrollTo({ top:y, behavior:RM ? 'auto' : 'smooth' });
+    history.replaceState(null, '', '#' + id);
+  });
+});
+
+function active(){
+  var mid = innerHeight * .4, hit = secs[0];
+  secs.forEach(function(s){ var c = s.querySelector('.side') || s; if (c.getBoundingClientRect().top < mid) hit = s; });
+  navs.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + hit.id); });
+}
+addEventListener('scroll', onScroll, {passive:true});
+addEventListener('resize', function(){ size(); gaps.forEach(build); frame(); });
+
+(document.fonts ? document.fonts.load('100px "Archivo Black"') : Promise.resolve()).catch(function(){}).then(function(){
+  size(); gaps.forEach(build); frame(); spin(bigs[0]);
+});
+})();
+</script>
