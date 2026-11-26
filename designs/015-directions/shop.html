@@ -575,41 +575,10 @@ function show(id){
   $('look').classList.add('show');
   seen.add(id);
   /* 中身は会話の窓に一文字ずつ（公式の文のまま。長いものはページを分ける） */
-  const pg = pagesOf(curItem.desc).map(t=>({who:curItem.name, text:t}));
-  if (id === pending) talk(pg.concat([{who:'店主', text:curItem.talk}]), ()=>solve(id));   /* 勧められた品なら、店主のひとことのあと困りごとが片づく */
-  else talk(pg);
+  talk(pagesOf(curItem.desc).map(t=>({who:curItem.name, text:t})));
 }
 function closeLook(){ $('look').classList.remove('show'); hideTalk(); }
 
-/* ---------- 店主の話（このゲームの目的） ----------
-   プレイヤーはなんとなく店に来た客。返事はしない。店主が勝手に聞いている風に話を進め、客を読んで棚の品を一つ勧める（来るたびに変わる）
-   s1 道具・手間／s2 迷う・決める／s3 人・言われたこと／s4 場所 */
-const READ = {
-  s1:['…手、よく動かしてそうだね。', '…うん、うん。道具が合ってないだけかもね。'],
-  s2:['…考えごとしてる顔だね。', '…うん、うん。決める材料があれば、速いよ。'],
-  s3:['…一人で抱えてる感じ？', '…うん、うん。人と一緒のほうが伸びるね、たぶん。'],
-  s4:['…遠くから来た？', '…うん、うん。そこで使えるものもあるよ。'],
-};
-let pending = null, lastPick = null;
-function chat(){
-  const keys = Object.keys(READ).filter(k=>k !== lastPick), best = keys[Math.floor(Math.random() * keys.length)];
-  lastPick = best;
-  const r = READ[best];
-  talk([{who:'店主', text:r[0]}, {who:'店主', text:r[1]}, {who:'店主', text:'じゃあ、これかな。左の棚の、▼ が付いてるやつ。'}], ()=>{
-    pending = best;
-    document.querySelectorAll('.grp').forEach(g=>g.classList.toggle('hl', g.dataset.id === best));   /* 棚へは連れていかない。見に行くかは客しだい */
-  });
-}
-function solve(id){
-  pending = null;
-  document.querySelectorAll('.grp').forEach(g=>g.classList.remove('hl'));
-  closeLook(); look(1);
-  setTimeout(finale, 300);
-}
-function finale(){
-  $('door').classList.add('ready');
-  talk([{who:'店主', text:'…ちょっと、いい顔になったね。'}, {who:'店主', text:'ほかの棚も見てっていいよ。…帰りはそこの扉から。'}]);
-}
 $('x').onclick = closeLook;
 $('look').addEventListener('click', e=>{ if (e.target === $('look')) closeLook(); });
 $('askk').onclick = ()=>talk([{who:'店主', text:curItem.talk}]);
@@ -675,7 +644,7 @@ function enter(){
     $('enterF').classList.add('fade'); document.body.classList.remove('outside'); look(1);
     setTimeout(()=>{
       $('enterF').hidden = true;
-      talk([{who:'店主', text:'いらっしゃい。'}], chat);
+      talk([{who:'店主', text:'いらっしゃい。'}]);
     }, 400);
   }, 700);
 }
@@ -690,7 +659,7 @@ function ending(){
 }
 $('door').onclick = e=>{ e.stopPropagation(); ending(); };
 $('again').onclick = ()=>{
-  $('exitF').hidden = true; seen.clear(); pending = null; document.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl')); $('door').classList.remove('ready');
+  $('exitF').hidden = true; seen.clear(); document.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl')); $('door').classList.remove('ready');
   $('fdoor').classList.remove('open'); $('bell').classList.remove('show');
   $('enterF').hidden = false; $('enterF').classList.remove('fade');
   $('title').hidden = false; $('title').classList.remove('fade'); $('start').focus();
