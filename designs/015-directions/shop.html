@@ -362,23 +362,24 @@ function fitDot(){
 function sizeOf(svg){ svg.style.width = (svg.dataset.w * P * (+svg.dataset.k || 1)) + 'px'; }
 function svgOf(rows, k){ const s = document.createElementNS('http://www.w3.org/2000/svg','svg'); s.classList.add('sprite'); px(s, rows); if (k) s.dataset.k = k; sizeOf(s); return s; }
 
-const KEEPER = [
-  "............oooooooo......",
-  "..........oowwwwwwwwoo....",
-  "........oowwwwwwwwwwwwo...",
-  ".......owwwwwwwwwwwwwwwo..",
-  "......owwwwwwwwwwwwwwwwo..",
-  ".......owwwwwwwwwwwwwwo...",
-  "......oowwllllllllwwwo....",
-  "......ollllllllllllllo....",
-  "......loooooollooooool....",
-  "......lolooooololooooll...",
-  "......lllooolllllooolll...",
-  "......lllllllllllllllll...",
-  "......lloooooooooooooll...",
-  "......lllollllllllolll....",
-  ".......lllooooooooolll....",
-  "........lllllllllllll.....",
+/* 店主：頭がランプ。話しているあいだだけ灯る（F の所が、灯ると橙、消えると暗い紫） */
+const KEEPER_SRC = [
+  "...........oooo...........",
+  "..........o....o..........",
+  "..........o....o..........",
+  ".........oooooooo.........",
+  "........owwwwwwwwo........",
+  ".......oooooooooooo.......",
+  ".......ollllllllllo.......",
+  ".......ollllFFllllo.......",
+  ".......olllFFFFlllo.......",
+  ".......olllFFFFlllo.......",
+  ".......ollllFFllllo.......",
+  ".......ollllmmllllo.......",
+  ".......ollllllllllo.......",
+  ".......oooooooooooo.......",
+  "........owwwwwwwwo........",
+  "..........oooooo..........",
   ".......ssssssssssssssss...",
   "......sssssssssssssssssss.",
   "....ooooollllllllllooooo..",
@@ -387,6 +388,8 @@ const KEEPER = [
   "..oollloooooooooooooollloo",
   "..oollloooooooooooooollloo",
 ];
+const KEEPER = KEEPER_SRC.map(r=>r.replace(/F/g,'m'));
+const KEEPER_LIT = KEEPER_SRC.map(r=>r.replace(/F/g,'a'));
 const MOYA = [
   ".lll.lll.",
   "lllllllll",
@@ -629,7 +632,9 @@ function pagesOf(text){
   });
   return out;
 }
-function hideTalk(){ pages = []; after = null; clearInterval(typeT); $('talk').classList.remove('show','done','choose'); }
+function hideTalk(){ pages = []; after = null; clearInterval(typeT); $('talk').classList.remove('show','done','choose'); lamp(false); }
+let lit = null;
+function lamp(on){ if (lit === on) return; lit = on; px($('keeper'), on ? KEEPER_LIT : KEEPER); sizeOf($('keeper')); }
 function next(){
   clearInterval(typeT);
   const el = $('talk');
@@ -637,6 +642,7 @@ function next(){
   if (!pages.length){ const cb = after; hideTalk(); if (cb) cb(); return; }
   const p = pages.shift();
   $('who').textContent = p.who || '';
+  lamp(p.who === '店主');
   el.classList.add('show'); el.classList.remove('done');
   const t = p.text; let k = 0; $('txt').textContent = '';
   typeT = setInterval(()=>{ $('txt').textContent = t.slice(0, ++k); if (k >= t.length){ clearInterval(typeT); el.classList.add('done'); } }, 26);
