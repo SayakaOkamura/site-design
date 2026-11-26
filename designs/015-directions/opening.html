@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 線のオープニング（2026-11-26）。昔のニュース番組のオープニング（一本の糸が切れずに形を変える）の形だけ借りる
-     具体物は描かない。紙に一本張った線が真ん中で絡まり、またほどけて整い、回り込んでロゴの輪に閉じる
+     具体物は描かない。紙に一本張った線（地面）から形が立ち上がり、何重にも絡んでから少しずつほどけ、地面に立つロゴの輪になる
      絡まったものをほどいて設計し直す＝Alter（変える）。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
@@ -140,80 +140,91 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 (function(){
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var hero = document.getElementById('top'), cv = hero.querySelector('canvas'), cx = cv.getContext('2d');
-var W = 0, H = 0, DPR = 1, R = 0, CX = 0, CY = 0, N = 2400, HALF = N / 2;
-var INK = '#654087', LI = '#bb7eea';
+var W = 0, H = 0, DPR = 1, G = 0, R = 0, CX = 0, NP = 2000;
+var INK = '#654087', LI = '#bb7eea', TAU = Math.PI * 2;
 
+/* 線はいつも画面の端から端まで張っている（地面）。形は地面から立ち上がり、地面に戻る */
+/* 複雑な形：地面から立ち上がった線が、何重にも輪を描いて交差する。L は輪の数、c は乱れの強さ */
+function tangle(L, c){
+  var span = Math.min(W * .36, H * .9), x0 = CX - span, x1 = CX + span, hh = Math.min(H * .42, span * .9);
+  var path = [[-30, G], [x0, G]], M = 900;
+  for (var j = 1; j < M; j++){
+    var u = j / M, env = Math.pow(Math.sin(Math.PI * u), .7);
+    var x = x0 + (x1 - x0) * u
+      + span * .2 * Math.min(1, (L - 1) / 3) * env * Math.sin(TAU * L * u)   /* 輪が一つなら横には揺らさない（なだらかな山） */
+      + span * .16 * c * env * Math.sin(TAU * L * 1.63 * u + .7);
+    var y = G - hh * env * (
+        .42 * (1 - Math.cos(TAU * L * u)) / 2 + .2
+      + c * .38 * (.5 + .5 * Math.sin(TAU * L * .57 * u + 1.1)));
+    path.push([x, y]);
+  }
+  path.push([x1, G], [W + 30, G]);
+  return path;
+}
+/* 輪：地面の上に立つ。線は左から来て、輪の下から一周して、右へ抜ける */
+function ring(){
+  var path = [[-30, G], [CX, G]], M = 400;
+  for (var j = 1; j <= M; j++){ var a = Math.PI / 2 + TAU * j / M; path.push([CX + Math.cos(a) * R, G - R + Math.sin(a) * R]); }
+  path.push([W + 30, G]);
+  return path;
+}
+function flat(){ return [[-30, G], [W + 30, G]]; }
+function resample(path, n){
+  var L = [0];
+  for (var i = 1; i < path.length; i++) L.push(L[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
+  var tot = L[L.length - 1], out = [], j = 0;
+  for (i = 0; i < n; i++){
+    var t = tot * i / (n - 1);
+    while (j < L.length - 2 && L[j + 1] < t) j++;
+    var seg = L[j + 1] - L[j] || 1, f = (t - L[j]) / seg;
+    out.push([path[j][0] + (path[j + 1][0] - path[j][0]) * f, path[j][1] + (path[j + 1][1] - path[j][1]) * f]);
+  }
+  return out;
+}
+
+var shapes = [];
 function size(){
   DPR = Math.min(2, devicePixelRatio || 1);
   W = hero.clientWidth; H = hero.clientHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  R = Math.min(W * .14, H * .16);   /* 輪の半径。ほどけた線の長さ（2πR）が画面の幅に収まる */
-  CX = W / 2; CY = H * .4;
-  hero.style.setProperty('--capy', (CY + R * 1.25 + Math.max(28, H * .05)) + 'px');
+  G = H * .6; CX = W / 2; R = Math.min(W * .13, H * .17);
+  /* 横一本 → 複雑に絡む → 少しほどける → さらにほどける → 地面に立つ輪 */
+  shapes = [flat(), tangle(7, 1), tangle(4, .45), tangle(1, 0), ring()].map(function(p){ return resample(p, NP); });
+  hero.style.setProperty('--capy', (G + Math.max(36, H * .07)) + 'px');
 }
 
-/* 時間（ms） */
-/* はじめは紙に一本まっすぐ張った線 → 真ん中へ寄り集まって玉になる → 両端から引かれてほどける → 輪に閉じる */
-var GATH0 = 800, GATH1 = 3000, PULL0 = 3400, PULL1 = 6900, BEND1 = 8700, LOGO1 = 9600, CAPS = 9600, END = 10300;
+/* 時間（ms）：はじめは横一本 → 一つ形を変えるのに 1.3 秒、とどまるのは 1.0 秒 */
+var START = 700, MORPH = 1300, STEP = 2300, COUNT = 4;
+var LAST = START + (COUNT - 1) * STEP + MORPH, LOGO1 = LAST + 900, CAPS = LOGO1, END = LOGO1 + 600;
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
-function eio(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
-var TAU = Math.PI * 2;
-
-/* 複雑な形：一本の線が画面を大きく使って、長いなめらかな曲線で何重にも交差する。ゆっくり形が揺らぐ */
-function knot(u, s){
-  return [
-    Math.sin(TAU * 3 * u + .3 + s * .18) * .6 + Math.sin(TAU * 7 * u + 1.1 - s * .1) * .4,
-    Math.sin(TAU * 4 * u + 1.9 + s * .14) * .55 + Math.sin(TAU * 9 * u + .5 + s * .08) * .45
-  ];
-}
-
-function points(t){
-  var s = t / 1000, sx = Math.min(W * .44, H * .8), sy = Math.min(H * .3, W * .5);
-  /* 回り込む：線の真ん中を下にして、両端が上へ回り、輪に閉じる */
-  var e = ease(clamp((t - PULL1) / (BEND1 - PULL1))), k = e / R, ds = TAU * R / N;
-  var wave = (1 - e) * R * .1;
-  /* 寄り集まる：真ん中から先に複雑な形へ。ほどける：両端から先に一本の線へ */
-  var gp = eio(clamp((t - GATH0) / (GATH1 - GATH0))), pp = eio(clamp((t - PULL0) / (PULL1 - PULL0)));
-  var out = [];
-  for (var i = 0; i < N; i++){
-    var d = 1 - Math.abs(i - HALF) / HALF;   /* 端が 0、真ん中が 1 */
-    var q = knot(i / N, s), C = [CX + q[0] * sx, CY + q[1] * sy];
-    var x, y;
-    if (t < PULL0){
-      var w = ease(clamp((gp * 1.3 - (1 - d)) / .3));
-      x = CX + (i - HALF) * (W + 60) / N; y = CY;
-      x += (C[0] - x) * w; y += (C[1] - y) * w;
-    } else {
-      var sl = (i - HALF) * ds, lx, ly;
-      if (k < 1e-6){ lx = CX + sl; ly = CY; }
-      else { lx = CX + Math.sin(k * sl) / k; ly = CY - (1 - Math.cos(k * sl)) / k + R * e; }
-      ly += Math.sin(sl / R * 2.2 - s * 2) * wave;   /* ほどけた線のゆるい波。回り込むにつれて消える */
-      var w2 = ease(clamp((pp * 1.3 - d) / .3));
-      x = C[0] + (lx - C[0]) * w2; y = C[1] + (ly - C[1]) * w2;
-    }
-    out.push([x, y]);
-  }
-  return { p:out };
-}
 
 function render(t){
-  var o = points(t), p = o.p;
+  var k = 0, p = 0;
+  if (t >= START){ k = Math.min(Math.floor((t - START) / STEP), COUNT - 1); p = clamp((t - START - k * STEP) / MORPH); }
+  var a = shapes[k], b = shapes[t < START ? 0 : k + 1];
+  var g = ease(clamp((t - LAST) / (LOGO1 - LAST)));   /* 輪がロゴの太さへ */
   cx.setTransform(DPR, 0, 0, DPR, 0, 0);
   cx.clearRect(0, 0, W, H);
   cx.lineJoin = cx.lineCap = 'round';
-  cx.strokeStyle = INK;
-  var g = ease(clamp((t - BEND1) / (LOGO1 - BEND1)));   /* ロゴの太さへ */
-  function trace(dx, dy){ cx.beginPath(); for (var i = 0; i < N; i++){ if (i) cx.lineTo(p[i][0] + dx, p[i][1] + dy); else cx.moveTo(p[i][0] + dx, p[i][1] + dy); } if (g > 0) cx.closePath(); cx.stroke(); }
-  cx.lineWidth = 1.8 + (R * .16 - 1.8) * g;
+  cx.strokeStyle = INK; cx.lineWidth = 1.8;
+  var s = t / 1000;
+  cx.beginPath();
+  for (var i = 0; i < NP; i++){
+    /* 左から順に少し遅れて動く（糸が引かれていくように） */
+    var q = ease(clamp(p * 1.35 - i / NP * .35));
+    var x = a[i][0] + (b[i][0] - a[i][0]) * q, y = a[i][1] + (b[i][1] - a[i][1]) * q;
+    y += Math.sin(i * .03 + s * 1.6) * .4 * (1 - g);   /* 糸のわずかな揺れ */
+    if (i) cx.lineTo(x, y); else cx.moveTo(x, y);
+  }
+  cx.stroke();
   if (g > 0){
-    /* 輪：外側の縁を半径 R にそろえ、内側に薄紫の細い輪（ロゴの組み方を、線の太さのまま） */
-    var th = cx.lineWidth;
-    cx.beginPath(); cx.arc(CX, CY, R - th / 2 * g, 0, TAU); cx.globalAlpha = g; cx.stroke(); cx.globalAlpha = 1 - g;
-    trace(0, 0); cx.globalAlpha = 1;
-    cx.strokeStyle = LI; cx.lineWidth = R * .06 * g; cx.globalAlpha = g;
-    cx.beginPath(); cx.arc(CX, CY, R - th - R * .06 * g / 2, 0, TAU); cx.stroke(); cx.globalAlpha = 1;
-  } else trace(0, 0);
+    /* 輪：外側の縁を半径 R にそろえて太くし、内側に薄紫の細い輪（ロゴの組み方を、線の太さのまま） */
+    var th = 1.8 + (R * .16 - 1.8) * g, li = R * .06 * g;
+    cx.lineWidth = th; cx.beginPath(); cx.arc(CX, G - R, R - th / 2, 0, TAU); cx.stroke();
+    cx.strokeStyle = LI; cx.lineWidth = li; cx.globalAlpha = g;
+    cx.beginPath(); cx.arc(CX, G - R, R - th - li / 2, 0, TAU); cx.stroke(); cx.globalAlpha = 1;
+  }
 }
 
 var t0 = 0, raf = 0, ended = false;
