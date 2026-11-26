@@ -578,42 +578,21 @@ function show(id){
 }
 function closeLook(){ $('look').classList.remove('show'); hideTalk(); }
 
-/* ---------- 世間話（このゲームの目的） ----------
-   プレイヤーはなんとなく店に来た客。店主は困りごとを名指しで聞かず、世間話を三つ投げる。ゆるい返事の傾向から店主が客を読み、棚の品を一つ勧める
+/* ---------- 店主の話（このゲームの目的） ----------
+   プレイヤーはなんとなく店に来た客。返事はしない。店主が勝手に聞いている風に話を進め、客を読んで棚の品を一つ勧める（来るたびに変わる）
    s1 道具・手間／s2 迷う・決める／s3 人・言われたこと／s4 場所 */
-const QS = [
-  {q:'最近、仕事どう？', a:[['手間ばっかりで', {s1:2}], ['迷ってばっかり', {s2:2}], ['言われたこと、やってる', {s3:2}], ['まあ、のんびり', {s4:2}]]},
-  {q:'一人で進めるほう？　みんなで？', a:[['一人で、黙々と', {s1:1, s2:1}], ['みんなで', {s3:2}], ['その日による', {s2:1, s4:1}]]},
-  {q:'いまいるところ、好き？', a:[['わりと好き', {s4:2}], ['ふつう', {s1:1}], ['ちょっと変えたいかも', {s3:1, s2:1}]]},
-];
 const READ = {
-  s1:'…手を動かすのは嫌いじゃないんだね。道具が合ってないだけかも。',
-  s2:'…考えるほうでしょ。決める材料があれば、速いよ。',
-  s3:'…人と一緒のほうが伸びるね、たぶん。',
-  s4:'…そこが好きなんだ。いいね。そこで使えるものもあるよ。',
+  s1:['…手、よく動かしてそうだね。', '…うん、うん。道具が合ってないだけかもね。'],
+  s2:['…考えごとしてる顔だね。', '…うん、うん。決める材料があれば、速いよ。'],
+  s3:['…一人で抱えてる感じ？', '…うん、うん。人と一緒のほうが伸びるね、たぶん。'],
+  s4:['…遠くから来た？', '…うん、うん。そこで使えるものもあるよ。'],
 };
-let pending = null;
-function choose(list){
-  const el = $('talk'); clearInterval(typeT);
-  $('who').textContent = 'あなた'; $('txt').textContent = '';
-  const box = $('chs'); box.replaceChildren();
-  list.forEach(([label, fn])=>{ const b = document.createElement('button'); b.textContent = label; b.onclick = e=>{ e.stopPropagation(); el.classList.remove('choose'); fn(); }; box.append(b); });
-  el.classList.add('show','choose'); el.classList.remove('done');
-  setTimeout(()=>box.firstChild && box.firstChild.focus(), 0);
-}
+let pending = null, lastPick = null;
 function chat(){
-  const score = {s1:0, s2:0, s3:0, s4:0};
-  (function ask(i){
-    if (i >= QS.length){ recommend(score); return; }
-    talk([{who:'店主', text:QS[i].q}], ()=>choose(QS[i].a.map(([label, w])=>[label, ()=>{
-      for (const k in w) score[k] += w[k];
-      talk([{who:'あなた', text:label + '。'}, {who:'店主', text:['ふうん。', 'へえ。', 'そう。'][i % 3]}], ()=>ask(i + 1));
-    }])));
-  })(0);
-}
-function recommend(score){
-  const best = Object.keys(score).sort((a, b)=>score[b] - score[a])[0];
-  talk([{who:'店主', text:READ[best]}, {who:'店主', text:'じゃあ、これかな。左の棚の、▼ が付いてるやつ。'}], ()=>{
+  const keys = Object.keys(READ).filter(k=>k !== lastPick), best = keys[Math.floor(Math.random() * keys.length)];
+  lastPick = best;
+  const r = READ[best];
+  talk([{who:'店主', text:r[0]}, {who:'あなた', text:'……'}, {who:'店主', text:r[1]}, {who:'店主', text:'じゃあ、これかな。左の棚の、▼ が付いてるやつ。'}], ()=>{
     pending = best;
     document.querySelectorAll('.grp').forEach(g=>g.classList.toggle('hl', g.dataset.id === best));
     look(0);
@@ -691,7 +670,7 @@ function enter(){
     $('enterF').classList.add('fade'); document.body.classList.remove('outside'); look(1);
     setTimeout(()=>{
       $('enterF').hidden = true;
-      talk([{who:'店主', text:'いらっしゃい。'}, {who:'店主', text:'…まあ、座ってく？　ちょっと話そうよ。'}], chat);
+      talk([{who:'店主', text:'いらっしゃい。'}], chat);
     }, 400);
   }, 700);
 }
