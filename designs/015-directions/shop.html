@@ -597,8 +597,7 @@ function chat(){
   const r = READ[best];
   talk([{who:'店主', text:r[0]}, {who:'店主', text:r[1]}, {who:'店主', text:'じゃあ、これかな。左の棚の、▼ が付いてるやつ。'}], ()=>{
     pending = best;
-    document.querySelectorAll('.grp').forEach(g=>g.classList.toggle('hl', g.dataset.id === best));
-    look(0);
+    document.querySelectorAll('.grp').forEach(g=>g.classList.toggle('hl', g.dataset.id === best));   /* 棚へは連れていかない。見に行くかは客しだい */
   });
 }
 function solve(id){
