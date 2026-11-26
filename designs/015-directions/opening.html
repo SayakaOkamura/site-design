@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 紐のオープニング（2026-11-26）。昔のニュース番組のオープニングの形だけ借りる（ロゴ・曲・映像は使わない）
+     色のついた紐が奥から手前へうねりながら流れ、絡んだり離れたりして、最後にまっすぐな横の線にそろって ALTER の文字を結ぶ。文は公式のまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+:root{ --bg:#12081b; --ink:#f4eefa; --sub:#a99bb8; --pu:#654087; --li:#bb7eea; --ac:#d7ff3a; --line:rgba(244,238,250,.14); }
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.95; overflow-x:clip}
+a{color:inherit}
+
+header{position:absolute; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,56px)}
+.logo{display:flex; align-items:center; gap:10px; text-decoration:none; line-height:1.1}
+.logo i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
+.logo span{font-size:17px}
+.logo small{display:block; font-size:10px; margin-left:4.4em; color:var(--sub)}
+nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
+nav a{text-decoration:none; font-size:11px; letter-spacing:.24em; color:var(--sub); transition:color .2s}
+nav a:hover{color:var(--ink)}
+header,nav{transition:opacity .8s}
+.op header{opacity:0}   /* オープニングのあいだは出さない */
+
+/* オープニング：一画面。紐は canvas に描く */
+#top{position:relative; height:100vh; height:100svh; min-height:480px; overflow:hidden; cursor:default}
+#top canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+.cap{position:absolute; left:0; right:0; top:var(--capy,70%); padding:0 16px; text-align:center; opacity:0; transform:translateY(8px); transition:opacity .9s, transform .9s cubic-bezier(.2,.8,.2,1)}
+.cap .en{font-family:"Archivo",sans-serif; font-weight:600; font-size:clamp(10px,1.2vw,13px); letter-spacing:.6em; color:var(--sub); margin-right:-.6em}
+.cap h1{margin-top:clamp(14px,3vh,28px); font-weight:900; font-size:clamp(17px,2.4vw,32px); line-height:1.6; letter-spacing:.02em; text-wrap:balance}
+.cap p{margin-top:.8em; font-size:clamp(12.5px,1.2vw,14.5px); color:var(--sub)}
+.done .cap{opacity:1; transform:none}
+.done .cap p{transition-delay:.25s}
+
+/* 本文：公式サイトの文のまま */
+main{position:relative}
+section{max-width:1080px; margin:0 auto; padding:clamp(96px,16vh,180px) clamp(16px,4vw,56px) 0}
+.side{display:flex; align-items:center; gap:16px; margin-bottom:clamp(28px,5vh,52px); font-family:"Archivo",sans-serif; font-weight:600; font-size:12.5px; letter-spacing:.35em; color:var(--sub)}
+.side .n{color:var(--ac)}
+.side .n::after{content:""; display:inline-block; width:48px; height:1px; background:var(--ink); vertical-align:middle; margin-left:16px}
+h2{font-weight:900; font-size:clamp(24px,3vw,40px); line-height:1.4; letter-spacing:.04em; margin-bottom:clamp(28px,5vh,52px); text-wrap:balance}
+h3{font-weight:900; font-size:17px; line-height:1.7; margin-bottom:.6em; text-wrap:balance}
+p{font-size:14.5px; line-height:2.1; letter-spacing:.04em}
+b{font-weight:700}
+#philosophy h3{font-size:clamp(24px,3.4vw,46px); line-height:1.45; margin-bottom:clamp(28px,5vh,52px)}
+#philosophy p{max-width:44em; color:var(--sub)}
+#philosophy p b{color:var(--ink)}
+.svc{list-style:none; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 clamp(24px,4vw,56px); counter-reset:s}
+.svc li{counter-increment:s; padding:clamp(24px,4vh,40px) 0; border-top:1px solid var(--line)}
+.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(30px,3.4vw,44px); line-height:1; color:var(--li); margin-bottom:.5em}
+.svc p{font-size:13.5px; color:var(--sub)}
+dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:clamp(18px,3.4vh,30px) 0; font-size:14.5px; line-height:2}
+dl:last-child{border-bottom:1px solid var(--line)}
+dt{font-weight:700; font-size:12.5px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
+.acc{font-size:13px; color:var(--sub); margin-top:.6em}
+#contact{padding-bottom:clamp(96px,16vh,180px)}
+#contact p{color:var(--sub)}
+.btn{display:inline-flex; align-items:center; gap:40px; margin-top:2.4em; padding:12px 0; border-bottom:1px solid var(--ink); text-decoration:none; font-size:15px; letter-spacing:.22em; transition:color .2s, border-color .2s}
+.btn::after{content:"→"; font-family:"Archivo",sans-serif}
+.btn:hover{color:var(--ac); border-color:var(--ac)}
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:28px clamp(16px,4vw,56px); font-size:11px; letter-spacing:.08em; color:var(--sub); border-top:1px solid var(--line)}
+
+@media (max-width:760px){
+  nav{display:none}
+  .svc{grid-template-columns:1fr}
+  dl{grid-template-columns:1fr; gap:2px}
+}
+</style>
+
+<body class="op">
+<header>
+  <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+  <nav><ul>
+    <li><a href="#philosophy">企業理念</a></li>
+    <li><a href="#services">サービス</a></li>
+    <li><a href="#company">会社概要</a></li>
+    <li><a href="#contact">お問い合わせ</a></li>
+  </ul></nav>
+</header>
+
+<div id="top">
+  <canvas aria-hidden="true"></canvas>
+  <div class="cap">
+    <div class="en">ALTER DESIGN CONSULTING</div>
+    <h1>AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div>
+</div>
+
+<main>
+  <section id="philosophy">
+    <div class="side"><span class="n">01</span><span>企業理念</span></div>
+    <h2>アルターデザインコンサルティングの企業理念</h2>
+    <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+    <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+    子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+    このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+    それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+  </section>
+
+  <section id="services">
+    <div class="side"><span class="n">02</span><span>サービス</span></div>
+    <h2>私たちが提供するサービス</h2>
+    <ul class="svc">
+      <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section id="company">
+    <div class="side"><span class="n">03</span><span>会社概要</span></div>
+    <h2>会社概要</h2>
+    <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+    <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+    <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+      <p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+    <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+    <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+    <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+    <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+  </section>
+
+  <section id="contact">
+    <div class="side"><span class="n">04</span><span>お問い合わせ</span></div>
+    <h2>お問い合わせ</h2>
+    <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+    <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+  </section>
+</main>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>
+
+<script>
+(function(){
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var hero = document.getElementById('top'), cv = hero.querySelector('canvas'), cx = cv.getContext('2d');
+var L = document.createElement('canvas'), lx = L.getContext('2d');   /* 紐だけの層 */
+var M = document.createElement('canvas'), mx = M.getContext('2d');   /* 文字の形で切り抜いた紐 */
+var W = 0, H = 0, DPR = 1, F = 1, txt = null;
+var WORD = 'ALTER', N = 18, U = 140;
+var BG = [18, 8, 27];
+
+/* 紐の色：013 の紫の段と差し色の黄緑、白に近い薄紫 */
+var COLS = [[187,126,234], [101,64,135], [215,255,58], [236,224,250], [150,96,200], [187,126,234], [120,78,165]];
+
+/* 決まった乱数（開くたびに同じ流れ） */
+var seed = 7; function rnd(){ seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+var rs = [];
+for (var i = 0; i < N; i++){
+  rs.push({
+    col: COLS[i % COLS.length],
+    len: 7 + rnd() * 6,            /* 奥行きの長さ */
+    turns: .35 + rnd() * .8,       /* 長さのあいだに何回うねるか */
+    sp: (.25 + rnd() * .35) * (rnd() < .5 ? -1 : 1),   /* うねりが流れる速さと向き */
+    R: .5 + rnd() * .9,            /* うねりの大きさ */
+    ell: .55 + rnd() * .6,
+    ox: (rnd() - .5) * 1.4, oy: (rnd() - .5) * 1.0,
+    ph: rnd() * Math.PI * 2, ph2: rnd() * Math.PI * 2,
+    tw: (.6 + rnd() * 1.6) * (rnd() < .5 ? -1 : 1),     /* ねじれ */
+    w: .045 + rnd() * .05,         /* 幅 */
+    rev: rnd() < .5,               /* 最後に横の線になるとき、どちらから伸びるか */
+    line: 0, start: 0
+  });
+}
+/* 横の線になる順：真ん中の線から外へ */
+var order = rs.map(function(r, i){ return i; });
+order.forEach(function(k, j){ rs[k].line = j; });
+rs.forEach(function(r){ var c = Math.abs(r.line - (N - 1) / 2); r.start = 4300 + c * 110; });
+
+/* 時間（ms） */
+var MORPH = 2300, MASK0 = 7000, MASK1 = 8200, CAPS = 7900, END = 8600;
+
+function size(){
+  DPR = Math.min(2, devicePixelRatio || 1);
+  W = hero.clientWidth; H = hero.clientHeight;
+  [cv, L, M].forEach(function(c){ c.width = Math.round(W * DPR); c.height = Math.round(H * DPR); });
+  F = Math.max(W, H) * .62;   /* 焦点距離：画面の大きさに合わせる */
+  /* 文字：画面の幅の 86%、高さは画面の 34% まで */
+  cx.font = '100px "Archivo Black"';
+  var m = cx.measureText(WORD), w100 = m.width, a100 = m.actualBoundingBoxAscent || 72;
+  var fs = Math.min(W * .86 / w100 * 100, H * .34 / a100 * 100);
+  var cap = a100 * fs / 100, top = H * .44 - cap / 2;
+  /* 線は文字の上の端から下の端まで、N 本を等間隔に */
+  var gap = cap / (N - .4);
+  txt = { fs:fs, x:(W - w100 * fs / 100) / 2, base:top + cap, top:top, cap:cap, gap:gap };
+  hero.style.setProperty('--capy', (top + cap + Math.max(28, H * .06)) + 'px');
+}
+
+function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
+function sub(a, b){ return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+function cross(a, b){ return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function norm(a){ var l = Math.hypot(a[0], a[1], a[2]); return l < 1e-6 ? null : [a[0] / l, a[1] / l, a[2] / l]; }
+
+/* 一本の紐の、u（0〜1）の位置。流れている形と、横の線の形を e で混ぜる */
+function point(r, u, t, e){
+  var s = t / 1000;
+  var phi = r.turns * u * Math.PI * 2 + s * r.sp * Math.PI * 2 + r.ph;
+  var R = r.R * (.6 + .4 * Math.sin(u * 3 + s * .7 + r.ph2));
+  var fx = r.ox + R * Math.cos(phi), fy = r.oy + R * Math.sin(phi) * r.ell, fz = .42 + u * r.len;
+  /* 横の線：画面の手前（z=1）に、左右にはみ出す長さで */
+  var span = W * 1.3 / F, lu = r.rev ? 1 - u : u;
+  var gx = (lu - .5) * span, gy = (txt.top + txt.gap * (r.line + .3) - H / 2) / F, gz = 1;
+  return [fx + (gx - fx) * e, fy + (gy - fy) * e, fz + (gz - fz) * e];
+}
+
+function drawRibbons(ctx, t){
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  /* 奥の紐から描く */
+  var list = rs.map(function(r){
+    var e = ease(clamp((t - r.start) / MORPH));
+    var P = [], z = 0;
+    for (var j = 0; j <= U; j++){ var p = point(r, j / U, t, e); P.push(p); z += p[2]; }
+    return { r:r, e:e, P:P, z:z / (U + 1) };
+  }).sort(function(a, b){ return b.z - a.z; });
+
+  list.forEach(function(o){
+    var r = o.r, e = o.e, P = o.P, s = t / 1000;
+    var ref = norm([0, 1 - e, e]) || [0, 0, 1];
+    var gw = txt.gap * .62 / F, w = r.w + (gw - r.w) * e;
+    var E1 = [], E2 = [], sh = [], fog = [], prevN = null;
+    for (var j = 0; j <= U; j++){
+      var u = j / U, T = sub(P[Math.min(U, j + 1)], P[Math.max(0, j - 1)]);
+      var Nn = norm(cross(T, ref)) || prevN || [0, 1, 0]; prevN = Nn;
+      var B = norm(cross(Nn, T)) || [0, 0, 1];
+      var tau = (r.tw * u * Math.PI * 2 + s * 1.3 * r.tw) * (1 - e);
+      var c = Math.cos(tau), sn = Math.sin(tau);
+      var D = [Nn[0] * c + B[0] * sn, Nn[1] * c + B[1] * sn, Nn[2] * c + B[2] * sn];
+      var p = P[j], a = [p[0] + D[0] * w / 2, p[1] + D[1] * w / 2, p[2] + D[2] * w / 2], b = [p[0] - D[0] * w / 2, p[1] - D[1] * w / 2, p[2] - D[2] * w / 2];
+      E1.push(proj(a)); E2.push(proj(b));
+      sh.push(Math.abs(c));
+      /* 手前すぎるところと、奥のほうは地に溶ける */
+      fog.push(clamp((p[2] - .45) / .35) * (1 - clamp((p[2] - 2.5) / 9)));
+    }
+    for (j = 0; j < U; j++){
+      var k = Math.min(U, j + 2);   /* 継ぎ目が見えないよう、一つ先まで重ねる */
+      if (!E1[j] || !E1[k] || !E2[j] || !E2[k]) continue;
+      var f = Math.min(fog[j], fog[k]); if (f <= .01) continue;
+      var lit = .38 + .62 * sh[j], spec = Math.pow(sh[j], 14) * .45 * (1 - e * .6);
+      var col = r.col.map(function(v, ci){ var x = v * lit + 255 * spec; x = Math.min(255, x); return Math.round(BG[ci] + (x - BG[ci]) * f); });
+      ctx.fillStyle = 'rgb(' + col.join(',') + ')';
+      ctx.beginPath();
+      ctx.moveTo(E1[j][0], E1[j][1]); ctx.lineTo(E1[k][0], E1[k][1]); ctx.lineTo(E2[k][0], E2[k][1]); ctx.lineTo(E2[j][0], E2[j][1]);
+      ctx.closePath(); ctx.fill();
+    }
+  });
+}
+function proj(p){ if (p[2] < .2) return null; var k = F / p[2]; return [W / 2 + p[0] * k, H / 2 + p[1] * k]; }
+
+function render(t){
+  drawRibbons(lx, t);
+  cx.setTransform(1, 0, 0, 1, 0, 0);
+  cx.fillStyle = 'rgb(' + BG.join(',') + ')'; cx.fillRect(0, 0, cv.width, cv.height);
+  var m = clamp((t - MASK0) / (MASK1 - MASK0)), fade = clamp(t / 900);
+  /* 文字の外の紐は薄く、文字の中の紐はそのまま */
+  cx.globalAlpha = fade * (1 - .86 * ease(m));
+  cx.drawImage(L, 0, 0);
+  cx.globalAlpha = 1;
+  if (m > 0){
+    mx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    mx.globalCompositeOperation = 'source-over';
+    mx.clearRect(0, 0, W, H);
+    mx.fillStyle = '#fff'; mx.font = txt.fs + 'px "Archivo Black"'; mx.textBaseline = 'alphabetic';
+    mx.fillText(WORD, txt.x, txt.base);
+    mx.globalCompositeOperation = 'source-in';
+    mx.setTransform(1, 0, 0, 1, 0, 0);
+    mx.drawImage(L, 0, 0);
+    cx.drawImage(M, 0, 0);
+  }
+}
+
+var t0 = 0, raf = 0, ended = false;
+function finish(){
+  ended = true; cancelAnimationFrame(raf);
+  document.body.classList.remove('op'); hero.classList.add('done');
+  render(END + 2000);
+}
+function loop(){
+  var t = performance.now() - t0;
+  if (t >= END){ finish(); return; }
+  render(t);
+  if (t >= CAPS){ hero.classList.add('done'); document.body.classList.remove('op'); }
+  raf = requestAnimationFrame(loop);
+}
+/* オープニングの途中で押したら、最後まで飛ばす */
+hero.addEventListener('click', function(){ if (!ended) finish(); });
+addEventListener('resize', function(){ size(); if (ended) render(END + 2000); });
+
+(document.fonts ? document.fonts.load('100px "Archivo Black"') : Promise.resolve()).catch(function(){}).then(function(){
+  size();
+  if (RM){ finish(); return; }
+  t0 = performance.now(); loop();
+});
+})();
+</script>
+</body>
+</html>
