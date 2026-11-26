@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Archivo+Black&display=swap">
 <style>
 :root{ --ink:#1d1526; --sub:#6d6478; --bg:#f6f4f8; --ac:#654087; --ac2:#9b6fd0; --pale:#e9e2f1; --line:#ddd5e6; --board:#ecebef; }
 *{box-sizing:border-box; margin:0; padding:0}
@@ -12,14 +12,13 @@ html{scroll-behavior:smooth}
 body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9; overflow-x:hidden}
 a{color:inherit}
 
-/* e8 縮むヘッダー */
 header{position:fixed; inset:0 0 auto; z-index:20; display:flex; align-items:center; justify-content:space-between; padding:26px clamp(16px,4vw,48px); transition:padding .35s, background .35s, box-shadow .35s}
 header.small{padding:12px clamp(16px,4vw,48px); background:rgba(246,244,248,.88); backdrop-filter:blur(8px); box-shadow:0 1px 0 var(--line)}
 .logo{display:flex; align-items:center; gap:10px; text-decoration:none; font-weight:500; line-height:1.1}
 .logo i{width:28px; height:28px; border-radius:50%; border:5px solid var(--ac); box-shadow:inset 0 0 0 2px var(--pale)}
 .logo small{display:block; font-size:10px; color:var(--sub); text-align:right}
 nav ul{display:flex; gap:clamp(12px,2.4vw,32px); list-style:none; font-size:13px; letter-spacing:.08em}
-nav a{text-decoration:none}
+nav a{display:inline-block; text-decoration:none; transition:transform .2s}
 @media (max-width:640px){ nav{display:none} }
 
 section{position:relative; padding:clamp(80px,14vh,140px) clamp(16px,6vw,96px)}
@@ -27,10 +26,25 @@ section{position:relative; padding:clamp(80px,14vh,140px) clamp(16px,6vw,96px)}
 h2{font-size:clamp(22px,3vw,30px); font-weight:900; margin-bottom:24px}
 h3{font-size:17px; font-weight:700; margin-bottom:8px}
 .kick{font-size:12px; letter-spacing:.2em; color:var(--ac); margin-bottom:12px}
-
-/* ヒーロー */
 #top{min-height:100vh; display:flex; align-items:center; overflow:hidden}
-/* e2 動く色のにじみ */
+#top p{color:var(--sub)}
+h1{font-size:clamp(28px,5vw,58px); font-weight:900; line-height:1.45; margin-bottom:24px}
+#philosophy{overflow:hidden}
+#philosophy h3{font-size:clamp(18px,2.4vw,24px); font-weight:900; margin-bottom:20px}
+.svc{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr)); gap:20px; list-style:none; perspective:900px}
+.svc li{background:#fff; border-radius:14px; padding:26px; box-shadow:0 1px 2px rgba(40,20,60,.06),0 10px 30px rgba(40,20,60,.06); transition:transform .25s}
+.svc li p{font-size:14px; color:var(--sub)}
+#company{overflow:hidden}
+dl{display:grid; grid-template-columns:8em 1fr; gap:4px 24px; padding:16px 0; border-bottom:1px solid var(--line); font-size:14px}
+dt{color:var(--sub)}
+.num{font-size:28px; font-weight:900; color:var(--ac); font-variant-numeric:tabular-nums; line-height:1}
+@media (max-width:560px){ dl{grid-template-columns:1fr} }
+#contact{text-align:center}
+.btn{display:inline-block; margin-top:28px; padding:16px 40px; border-radius:40px; background:var(--ac); color:#fff; text-decoration:none; font-weight:700; transition:transform .2s}
+footer{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:28px clamp(16px,4vw,48px); font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
+
+/* ===== 演出（それぞれ body.off-〇〇 で消える） ===== */
+/* blob */
 .blobs{position:absolute; inset:0; overflow:hidden}
 .blobs i{position:absolute; border-radius:50%; filter:blur(70px); opacity:.55}
 .blobs i:nth-child(1){width:46vw; height:46vw; left:46%; top:6%; background:var(--ac2); animation:dr1 14s ease-in-out infinite alternate}
@@ -38,47 +52,69 @@ h3{font-size:17px; font-weight:700; margin-bottom:8px}
 .blobs i:nth-child(3){width:28vw; height:28vw; left:10%; top:58%; background:#d8c9ea; animation:dr1 17s ease-in-out infinite alternate-reverse}
 @keyframes dr1{to{transform:translate(-12vw,8vh) scale(1.15)}}
 @keyframes dr2{to{transform:translate(8vw,-10vh) scale(.9)}}
-/* e1 一文字ずつ出る見出し */
-h1{font-size:clamp(28px,5vw,58px); font-weight:900; line-height:1.45; margin-bottom:24px}
+.off-blob .blobs{display:none}
+/* chars */
 h1 .ch{display:inline-block; opacity:0; transform:translateY(.4em); animation:chIn .5s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes chIn{to{opacity:1; transform:none}}
-#top p{color:var(--sub)}
-
-/* e3 回る輪 */
+.off-chars h1 .ch{animation:none; opacity:1; transform:none}
+/* hue */
+#hue{position:fixed; inset:0; z-index:15; pointer-events:none; background:linear-gradient(120deg,#b98cff,#ff9ec7,#8fd3ff,#ffe08a,#b98cff); background-size:400% 400%; mix-blend-mode:multiply; opacity:.28; animation:hue 9s linear infinite}
+@keyframes hue{to{background-position:400% 0}}
+.off-hue #hue{display:none}
+/* glitch */
+h1{animation:gl 4.5s infinite}
+@keyframes gl{0%,86%,100%{transform:none; text-shadow:none} 88%{transform:translate(-4px,2px) skewX(-6deg); text-shadow:4px 0 #ff4fa3,-4px 0 #3fd0ff} 90%{transform:translate(5px,-2px); text-shadow:-5px 0 #ff4fa3,5px 0 #3fd0ff} 92%{transform:translate(-2px,0) skewX(4deg); text-shadow:2px 0 #ff4fa3,-2px 0 #3fd0ff} 94%{transform:none; text-shadow:none}}
+.off-glitch h1{animation:none}
+/* confetti */
+#conf{position:fixed; inset:0; z-index:16; pointer-events:none}
+.off-confetti #conf{display:none}
+/* toast */
+#toast{position:fixed; left:clamp(16px,3vw,32px); bottom:clamp(16px,3vw,32px); z-index:25; max-width:min(360px,70vw); padding:14px 18px 14px 46px; border-radius:14px; background:#fff; box-shadow:0 10px 30px rgba(40,20,60,.18); font-size:13px; line-height:1.6; transform:translateY(140%); transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+#toast::before{content:""; position:absolute; left:16px; top:16px; width:18px; height:18px; border-radius:50%; border:4px solid var(--ac)}
+#toast.on{transform:none}
+#toast small{display:block; color:var(--sub); font-size:11px}
+.off-toast #toast{display:none}
+/* reveal */
+.rv{opacity:0; transform:translateY(48px); transition:opacity .9s, transform .9s cubic-bezier(.2,.8,.2,1)}
+.rv.on,.off-reveal .rv{opacity:1; transform:none}
+/* marker */
+#philosophy b{background:linear-gradient(transparent 58%, #e6d2ff 58%) no-repeat 0 0/0% 100%; transition:background-size 1.2s .4s}
+#philosophy .rv.on b{background-size:100% 100%}
+.off-marker #philosophy b{background:none}
+/* progress */
+#prog{position:fixed; left:0; top:0; height:4px; width:0; z-index:30; background:linear-gradient(90deg,var(--ac),#ff7ac1,#ffd36e)}
+.off-progress #prog{display:none}
+/* spotlight */
+#spot{position:fixed; inset:0; z-index:14; pointer-events:none; background:radial-gradient(circle at var(--x,50%) var(--y,50%), transparent 0 120px, rgba(25,12,40,.5) 230px)}
+.off-spotlight #spot{display:none}
+@media (pointer:coarse){ #spot{display:none} }
+/* ring */
 .ring{position:absolute; right:-8vw; top:10%; width:clamp(240px,38vw,520px); aspect-ratio:1; border-radius:50%; border:clamp(28px,4.6vw,64px) solid var(--ac); opacity:.12; z-index:0; pointer-events:none}
 .ring::after{content:""; position:absolute; inset:18%; border-radius:50%; border:6px dashed var(--ac)}
-#philosophy{overflow:hidden}
-#philosophy h3{font-size:clamp(18px,2.4vw,24px); font-weight:900; margin-bottom:20px}
-
-/* e4 下から現れる節 */
-.rv{opacity:0; transform:translateY(48px); transition:opacity .9s, transform .9s cubic-bezier(.2,.8,.2,1)}
-.rv.on{opacity:1; transform:none}
-
-/* e5 流れる帯 */
+.off-ring .ring{display:none}
+/* band */
 .band{overflow:hidden; border-block:1px solid var(--line); padding:14px 0; margin-bottom:48px; white-space:nowrap; font-weight:700; color:var(--ac)}
 .band div{display:inline-block; animation:mq 26s linear infinite}
 .band span{margin-right:48px}
 .band span::before{content:"●"; font-size:8px; vertical-align:middle; margin-right:16px; color:var(--ac2)}
 @keyframes mq{to{transform:translateX(-50%)}}
+.off-band .band{display:none}
+/* bigtext */
+.big{position:absolute; left:0; top:50%; z-index:0; white-space:nowrap; font-family:"Archivo Black",sans-serif; font-size:clamp(120px,22vw,320px); line-height:1; color:transparent; -webkit-text-stroke:2px rgba(101,64,135,.18); pointer-events:none}
+.off-bigtext .big{display:none}
+/* bounce */
+#bounce{position:fixed; left:0; top:0; z-index:17; width:64px; height:64px; border-radius:50%; border:12px solid var(--ac); pointer-events:none; opacity:.85}
+.off-bounce #bounce{display:none}
+/* cursor */
+#cur{position:fixed; left:0; top:0; z-index:40; width:36px; height:36px; margin:-18px; border-radius:50%; border:2px solid var(--ac); pointer-events:none; transition:width .2s, height .2s, margin .2s}
+#cur.big{width:64px; height:64px; margin:-32px; background:rgba(155,111,208,.15)}
+.off-cursor #cur{display:none}
+@media (pointer:coarse){ #cur{display:none} }
+/* ripple */
+.rp{position:fixed; z-index:41; width:16px; height:16px; margin:-8px; border-radius:50%; border:2px solid var(--ac2); pointer-events:none; animation:rp .8s ease-out forwards}
+@keyframes rp{to{transform:scale(14); opacity:0}}
 
-/* e6 傾くカード */
-.svc{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr)); gap:20px; list-style:none; perspective:900px}
-.svc li{background:#fff; border-radius:14px; padding:26px; box-shadow:0 1px 2px rgba(40,20,60,.06),0 10px 30px rgba(40,20,60,.06); transition:transform .25s, box-shadow .25s; transform-style:preserve-3d}
-.svc li p{font-size:14px; color:var(--sub)}
-.svc li:hover{box-shadow:0 1px 2px rgba(40,20,60,.08),0 18px 40px rgba(40,20,60,.12)}
-
-/* 会社概要 */
-dl{display:grid; grid-template-columns:8em 1fr; gap:4px 24px; padding:16px 0; border-bottom:1px solid var(--line); font-size:14px}
-dt{color:var(--sub)}
-/* e7 数え上がる数字 */
-.num{font-size:28px; font-weight:900; color:var(--ac); font-variant-numeric:tabular-nums; line-height:1}
-@media (max-width:560px){ dl{grid-template-columns:1fr} }
-
-#contact{text-align:center}
-.btn{display:inline-block; margin-top:28px; padding:16px 40px; border-radius:40px; background:var(--ac); color:#fff; text-decoration:none; font-weight:700}
-footer{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:28px clamp(16px,4vw,48px); font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
-
-/* 紐解く／もどす */
+/* ===== 紐解く ===== */
 #tog{position:fixed; right:clamp(16px,3vw,32px); bottom:clamp(16px,3vw,32px); z-index:60; padding:14px 26px; border:0; border-radius:40px; background:var(--ink); color:#fff; font:inherit; font-weight:700; letter-spacing:.1em; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,.2)}
 #tog:focus-visible{outline:3px solid var(--ac2); outline-offset:3px}
 body.open .lift{opacity:.12; transition:opacity .4s}
@@ -92,48 +128,87 @@ body.open #board::before{opacity:1}
 .bd{position:relative}
 .gh{position:absolute; font-size:13px; font-weight:700; letter-spacing:.16em; color:var(--ac); opacity:0; transition:opacity .4s}
 .gh b{display:inline-block; min-width:1.8em; color:var(--sub); font-weight:500}
-body.shown .gh,body.shown #arrows{opacity:1}
+body.shown .gh,body.shown #arrows,body.shown .end,body.shown #reset{opacity:1}
 #arrows{position:absolute; left:0; top:0; overflow:visible; opacity:0; transition:opacity .5s; pointer-events:none}
 #arrows path{fill:none; stroke:var(--ac); stroke-width:1.6}
 #arrows .hd{fill:var(--ac); stroke:none}
-.card{position:absolute; background:#fff; border-radius:12px; padding:14px 16px 16px; box-shadow:0 1px 2px rgba(40,20,60,.08),0 8px 22px rgba(40,20,60,.08); cursor:pointer; transform-origin:0 0; opacity:0; font-size:13px; line-height:1.7}
+.card{position:absolute; background:#fff; border-radius:12px; padding:10px 12px 12px; box-shadow:0 1px 2px rgba(40,20,60,.08),0 8px 22px rgba(40,20,60,.08); cursor:pointer; transform-origin:0 0; opacity:0; font-size:12px; line-height:1.65}
 .card:hover{box-shadow:0 0 0 2px var(--ac2),0 8px 22px rgba(40,20,60,.12)}
 .card:focus-visible{outline:3px solid var(--ac2)}
-.card b{display:block; font-size:15px; margin:10px 0 4px}
+.card b{display:block; font-size:14px; margin:8px 0 2px}
 .card p{color:var(--sub)}
 .card p span{color:var(--ink); font-weight:700; margin-right:.6em}
+.card .x{display:block; width:100%; margin-top:10px; padding:7px 0; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); font:inherit; font-weight:700; letter-spacing:.2em; cursor:pointer}
+.card .x:hover{border-color:var(--ac2); background:var(--pale)}
+.card.gone{background:#e2e0e6; box-shadow:none}
+.card.gone .demo,.card.gone b,.card.gone p{opacity:.35}
+.card.gone .demo *{animation-play-state:paused!important}
+.card.gone b{text-decoration:line-through}
+.card.gone .x{background:transparent; border-style:dashed}
 .end{position:absolute; display:flex; align-items:center; justify-content:center; border-radius:40px; background:var(--ac); color:#fff; font-weight:700; text-decoration:none; opacity:0; transition:opacity .4s}
-body.shown .end{opacity:1}
+#reset{position:absolute; border:0; background:none; font:inherit; font-size:12px; color:var(--sub); text-decoration:underline; cursor:pointer; opacity:0; transition:opacity .4s}
 
 /* カードの中の小さな実演 */
-.demo{position:relative; height:64px; border-radius:8px; background:var(--bg); overflow:hidden}
-.d1{display:flex; align-items:center; padding-left:12px; font-weight:900; font-size:15px}
-.d1 i{font-style:normal; opacity:0; animation:d1 3s infinite}
-@keyframes d1{0%{opacity:0; transform:translateY(6px)} 12%,80%{opacity:1; transform:none} 100%{opacity:0}}
-.d2 i{position:absolute; width:60px; height:60px; border-radius:50%; filter:blur(14px); background:var(--ac2); opacity:.7; animation:d2 4s ease-in-out infinite alternate}
-.d2 i:nth-child(2){background:#d8c9ea; left:50%; animation-duration:5s; animation-direction:alternate-reverse}
-@keyframes d2{from{transform:translate(10px,0)} to{transform:translate(110px,10px)}}
-.d3 i{position:absolute; left:50%; top:50%; width:44px; height:44px; margin:-22px; border-radius:50%; border:7px solid var(--ac); animation:d3 4s linear infinite}
-.d3 i::after{content:""; position:absolute; inset:5px; border-radius:50%; border:2px dashed var(--ac)}
-@keyframes d3{to{transform:rotate(360deg)}}
-.d4{display:flex; flex-direction:column; justify-content:center; gap:6px; padding:0 14px}
-.d4 i{height:8px; border-radius:4px; background:var(--pale); animation:d4 3s infinite}
-.d4 i:nth-child(2){animation-delay:.3s; width:80%} .d4 i:nth-child(3){animation-delay:.6s; width:60%}
-@keyframes d4{0%{opacity:0; transform:translateY(10px)} 20%,85%{opacity:1; transform:none; background:var(--ac2)} 100%{opacity:0}}
-.d5{display:flex; align-items:center; white-space:nowrap; font-weight:700; color:var(--ac); font-size:12px}
-.d5 span{display:inline-block; animation:mq 8s linear infinite}
-.d6{perspective:300px; display:flex; align-items:center; justify-content:center}
-.d6 i{width:70px; height:40px; border-radius:6px; background:#fff; box-shadow:0 4px 10px rgba(40,20,60,.15); animation:d6 2.6s ease-in-out infinite alternate}
-@keyframes d6{from{transform:rotateY(-18deg) rotateX(8deg)} to{transform:rotateY(18deg) rotateX(-8deg)}}
-.d7{display:flex; align-items:center; padding-left:14px; font-weight:900; font-size:26px; color:var(--ac); font-variant-numeric:tabular-nums}
-.d8 i{position:absolute; left:8px; right:8px; top:8px; border-radius:4px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.1); animation:d8 3s ease-in-out infinite alternate}
-@keyframes d8{from{height:28px} to{height:12px}}
+.demo{position:relative; height:52px; border-radius:8px; background:var(--bg); overflow:hidden}
+.demo i{font-style:normal}
+.d-chars{display:flex; align-items:center; padding-left:10px; font-weight:900; font-size:14px}
+.d-chars i{opacity:0; animation:dch 3s infinite}
+@keyframes dch{0%{opacity:0; transform:translateY(6px)} 12%,80%{opacity:1; transform:none} 100%{opacity:0}}
+.d-blob i{position:absolute; width:50px; height:50px; border-radius:50%; filter:blur(12px); background:var(--ac2); opacity:.7; animation:dbl 4s ease-in-out infinite alternate}
+.d-blob i+i{background:#d8c9ea; left:50%; animation-direction:alternate-reverse}
+@keyframes dbl{from{transform:translate(10px,0)} to{transform:translate(110px,6px)}}
+.d-hue{background:linear-gradient(120deg,#b98cff,#ff9ec7,#8fd3ff,#ffe08a,#b98cff); background-size:400% 400%; animation:hue 3s linear infinite}
+.d-glitch{display:flex; align-items:center; justify-content:center; font-family:"Archivo Black",sans-serif; font-size:20px; animation:gl 1.6s infinite}
+.d-conf i{position:absolute; top:-8px; width:6px; height:9px; animation:dcf 1.6s linear infinite}
+@keyframes dcf{to{transform:translateY(70px) rotate(360deg)}}
+.d-toast i{position:absolute; left:8px; right:30%; bottom:8px; height:20px; border-radius:6px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.12); animation:dts 3s infinite}
+@keyframes dts{0%,10%{transform:translateY(40px)} 25%,75%{transform:none} 90%,100%{transform:translateY(40px)}}
+.d-reveal{display:flex; flex-direction:column; justify-content:center; gap:5px; padding:0 12px}
+.d-reveal i{height:7px; border-radius:4px; background:var(--ac2); animation:drv 3s infinite}
+.d-reveal i:nth-child(2){animation-delay:.3s; width:80%} .d-reveal i:nth-child(3){animation-delay:.6s; width:60%}
+@keyframes drv{0%{opacity:0; transform:translateY(10px)} 20%,85%{opacity:1; transform:none} 100%{opacity:0}}
+.d-header i{position:absolute; left:8px; right:8px; top:6px; border-radius:4px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.1); animation:dhd 3s ease-in-out infinite alternate}
+@keyframes dhd{from{height:26px} to{height:10px}}
+.d-marker{display:flex; align-items:center; padding-left:12px; font-weight:700; font-size:13px}
+.d-marker i{background:linear-gradient(transparent 58%, #e6d2ff 58%) no-repeat 0 0/0% 100%; animation:dmk 2.6s infinite}
+@keyframes dmk{0%{background-size:0% 100%} 50%,100%{background-size:100% 100%}}
+.d-progress i{position:absolute; left:0; top:0; height:5px; background:linear-gradient(90deg,var(--ac),#ff7ac1,#ffd36e); animation:dpg 3s ease-in-out infinite}
+@keyframes dpg{from{width:0} to{width:100%}}
+.d-spot{background:#3a2a4a}
+.d-spot i{position:absolute; top:6px; width:40px; height:40px; border-radius:50%; background:var(--bg); filter:blur(4px); animation:dsp 3s ease-in-out infinite alternate}
+@keyframes dsp{from{left:8px} to{left:calc(100% - 48px)}}
+.d-ring i{position:absolute; left:50%; top:50%; width:38px; height:38px; margin:-19px; border-radius:50%; border:6px solid var(--ac); animation:drg 4s linear infinite}
+@keyframes drg{to{transform:rotate(360deg)}}
+.d-ring i::after{content:""; position:absolute; inset:4px; border-radius:50%; border:2px dashed var(--ac)}
+.d-band{display:flex; align-items:center; white-space:nowrap; font-weight:700; color:var(--ac); font-size:11px}
+.d-band i{display:inline-block; animation:mq 8s linear infinite}
+.d-count{display:flex; align-items:center; padding-left:12px; font-weight:900; font-size:22px; color:var(--ac); font-variant-numeric:tabular-nums}
+.d-bigtext{font-family:"Archivo Black",sans-serif; font-size:44px; line-height:52px; color:transparent; -webkit-text-stroke:1.5px rgba(101,64,135,.4); white-space:nowrap}
+.d-bigtext i{display:inline-block; animation:dbt 5s linear infinite alternate}
+@keyframes dbt{to{transform:translateX(-120px)}}
+.d-bounce i{position:absolute; width:20px; height:20px; border-radius:50%; border:4px solid var(--ac); animation:dbx 2.3s linear infinite alternate, dby 1.3s linear infinite alternate}
+@keyframes dbx{from{left:0} to{left:calc(100% - 20px)}}
+@keyframes dby{from{top:0} to{top:32px}}
+.d-tilt{perspective:300px; display:flex; align-items:center; justify-content:center}
+.d-tilt i{width:64px; height:34px; border-radius:6px; background:#fff; box-shadow:0 4px 10px rgba(40,20,60,.15); animation:dtl 2.6s ease-in-out infinite alternate}
+@keyframes dtl{from{transform:rotateY(-20deg) rotateX(8deg)} to{transform:rotateY(20deg) rotateX(-8deg)}}
+.d-cursor i{position:absolute; top:14px; width:20px; height:20px; border-radius:50%; border:2px solid var(--ac); animation:dcu 2.4s ease-in-out infinite alternate}
+.d-cursor i+i{width:6px; height:6px; top:21px; background:var(--ink); border:0; margin-left:7px; animation-duration:2s}
+@keyframes dcu{from{left:10px} to{left:calc(100% - 30px)}}
+.d-magnet{display:flex; align-items:center; justify-content:center}
+.d-magnet i{padding:4px 14px; border-radius:20px; background:var(--ac); color:#fff; font-size:10px; animation:dmg 2s ease-in-out infinite alternate}
+@keyframes dmg{from{transform:translate(-14px,4px)} to{transform:translate(14px,-4px)}}
+.d-ripple i{position:absolute; left:50%; top:50%; width:10px; height:10px; margin:-5px; border-radius:50%; border:2px solid var(--ac2); animation:drp 1.6s ease-out infinite}
+@keyframes drp{from{transform:scale(1); opacity:1} to{transform:scale(9); opacity:0}}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important; transition:none!important}
   h1 .ch,.rv{opacity:1; transform:none}
 }
 </style>
+
+<div id="hue"></div><div id="spot"></div><canvas id="conf"></canvas><div id="prog"></div><div id="bounce"></div><div id="cur"></div>
+<div id="toast" role="status"></div>
 
 <header id="hd">
   <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
@@ -160,7 +235,7 @@ body.shown .end{opacity:1}
       <p class="kick">PHILOSOPHY</p>
       <h2>アルターデザインコンサルティングの企業理念</h2>
       <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
-      <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+      <p><b id="mark">「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
       子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
       このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
       それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
@@ -182,6 +257,7 @@ body.shown .end{opacity:1}
   </section>
 
   <section id="company">
+    <div class="big" id="big">ALTER DESIGN CONSULTING</div>
     <div class="in rv">
       <p class="kick">COMPANY</p>
       <h2>会社概要</h2>
@@ -200,7 +276,7 @@ body.shown .end{opacity:1}
       <p class="kick">CONTACT</p>
       <h2>お問い合わせ</h2>
       <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
-      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+      <a class="btn" id="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
     </div>
   </section>
 </main>
@@ -215,11 +291,19 @@ body.shown .end{opacity:1}
 
 <script>
 (function(){
-var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches, FINE = matchMedia('(pointer:fine)').matches;
 var $ = function(id){ return document.getElementById(id); };
+var B = document.body;
 
-/* ---------- サイトの演出 ---------- */
-/* e1 */
+/* ---------- 消した演出（この人の形として残す） ---------- */
+var OFF = {};
+try { (JSON.parse(localStorage.getItem('hodoku-off') || '[]')).forEach(function(k){ OFF[k] = 1; }); } catch(e){}
+function on(k){ return !OFF[k]; }
+function save(){ try { localStorage.setItem('hodoku-off', JSON.stringify(Object.keys(OFF))); } catch(e){} }
+function apply(){ Object.keys(E).forEach(function(k){ B.classList.toggle('off-' + k, !!OFF[k]); }); }
+
+/* ---------- 演出 ---------- */
+/* chars */
 (function(){
   var h = $('h1'), n = 0, out = '';
   h.innerHTML.split(/(<br>)/).forEach(function(part){
@@ -228,13 +312,12 @@ var $ = function(id){ return document.getElementById(id); };
   });
   h.innerHTML = out;
 })();
-/* e5 */
+/* band */
 (function(){
-  var names = ['人間中心の次世代業務システム開発', 'AI による意思決定支援と事業変革支援', '自律型・共創型の組織設計支援', '地域格差の解消を目指したデジタル支援'];
-  var s = names.map(function(t){ return '<span>' + t + '</span>'; }).join('');
+  var s = ['人間中心の次世代業務システム開発', 'AI による意思決定支援と事業変革支援', '自律型・共創型の組織設計支援', '地域格差の解消を目指したデジタル支援'].map(function(t){ return '<span>' + t + '</span>'; }).join('');
   $('band').firstChild.innerHTML = s + s;
 })();
-/* e4・e7 */
+/* reveal・count */
 var io = new IntersectionObserver(function(es){
   es.forEach(function(e){
     if (!e.isIntersecting) return;
@@ -244,159 +327,232 @@ var io = new IntersectionObserver(function(es){
 }, { threshold:.18 });
 document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
 function count(el){
-  var to = +el.dataset.to, t0 = performance.now();
+  var to = +el.dataset.to; if (!on('count') || RM){ el.textContent = to; return; }
+  var t0 = performance.now();
   (function f(t){ var k = Math.min(1, (t - t0) / 1400); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); })(t0);
 }
-/* e3・e8 */
+/* header・ring・progress・bigtext */
 function onScroll(){
-  $('hd').classList.toggle('small', scrollY > 40);
+  $('hd').classList.toggle('small', !on('header') || scrollY > 40);
   var r = $('philosophy').getBoundingClientRect();
   $('ring').style.transform = 'translateY(' + (r.top * -.15) + 'px) rotate(' + (scrollY * .12) + 'deg)';
+  var max = document.documentElement.scrollHeight - innerHeight;
+  $('prog').style.width = (max > 0 ? scrollY / max * 100 : 0) + '%';
+  var c = $('company').getBoundingClientRect();
+  $('big').style.transform = 'translate(' + (c.top * .6 - 200) + 'px,-50%)';
 }
-addEventListener('scroll', onScroll, { passive:true }); onScroll();
-/* e6 */
+addEventListener('scroll', onScroll, { passive:true });
+/* tilt */
 $('svc').querySelectorAll('li').forEach(function(li){
   li.addEventListener('mousemove', function(e){
+    if (!on('tilt')) return;
     var r = li.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-    li.style.transform = 'rotateY(' + (x * 10) + 'deg) rotateX(' + (-y * 10) + 'deg) translateZ(6px)';
+    li.style.transform = 'rotateY(' + (x * 14) + 'deg) rotateX(' + (-y * 14) + 'deg) translateZ(8px)';
   });
   li.addEventListener('mouseleave', function(){ li.style.transform = ''; });
 });
+/* spotlight・cursor・magnet */
+var mx = innerWidth / 2, my = innerHeight / 2, cx = mx, cy = my;
+var mags = [].slice.call(document.querySelectorAll('nav a')).concat([$('btn')]);
+addEventListener('mousemove', function(e){
+  mx = e.clientX; my = e.clientY;
+  $('spot').style.setProperty('--x', mx + 'px'); $('spot').style.setProperty('--y', my + 'px');
+  mags.forEach(function(m){
+    if (!on('magnet') || B.classList.contains('open')){ m.style.transform = ''; return; }
+    var r = m.getBoundingClientRect(), dx = mx - (r.left + r.width / 2), dy = my - (r.top + r.height / 2), d = Math.hypot(dx, dy);
+    m.style.transform = d < 140 ? 'translate(' + dx * .35 + 'px,' + dy * .35 + 'px)' : '';
+  });
+  $('cur').classList.toggle('big', !!e.target.closest && !!e.target.closest('a,button,.svc li,.card'));
+});
+/* ripple */
+addEventListener('pointerdown', function(e){
+  if (!on('ripple') || RM) return;
+  var r = document.createElement('i'); r.className = 'rp'; r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px';
+  B.appendChild(r); setTimeout(function(){ r.remove(); }, 900);
+});
+/* confetti */
+var cv = $('conf'), cx2 = cv.getContext('2d'), bits = [], COLS = ['#654087', '#9b6fd0', '#ff7ac1', '#ffd36e', '#8fd3ff'];
+function sizeCv(){ cv.width = innerWidth; cv.height = innerHeight; }
+function burst(){
+  if (!on('confetti') || RM || B.classList.contains('open')) return;
+  for (var i = 0; i < 70; i++) bits.push({ x:Math.random() * innerWidth, y:-20 - Math.random() * 200, vx:(Math.random() - .5) * 2, vy:2 + Math.random() * 3, r:Math.random() * 6, vr:(Math.random() - .5) * .3, c:COLS[i % COLS.length], w:6 + Math.random() * 6, h:8 + Math.random() * 8 });
+}
+/* bounce */
+var bx = 80, by = 120, bvx = 2.2, bvy = 1.7;
+/* toast */
+var TOASTS = [
+  ['お知らせ', 'AI × ローコードで、「上流工程中心のシステム開発」に革新を'],
+  ['企業理念', '経営の力で「遊ぶように働く世界」をデザインする'],
+  ['サービス', '人間中心の次世代業務システム開発'],
+  ['サービス', 'AI による意思決定支援と事業変革支援'],
+  ['お問い合わせ', 'お気軽にお問い合わせください']
+], ti = 0;
+function toast(){
+  if (!on('toast') || B.classList.contains('open')) return;
+  var t = TOASTS[ti++ % TOASTS.length]; $('toast').innerHTML = '<small>' + t[0] + '</small>' + t[1];
+  $('toast').classList.add('on'); setTimeout(function(){ $('toast').classList.remove('on'); }, 4200);
+}
+setTimeout(toast, 2500); setInterval(toast, 9000);
+setTimeout(burst, 900); setInterval(burst, 7000);
+/* まいフレーム */
+function frame(){
+  cx2.clearRect(0, 0, cv.width, cv.height);
+  if (on('confetti')){
+    bits = bits.filter(function(b){ return b.y < innerHeight + 30; });
+    bits.forEach(function(b){ b.x += b.vx; b.y += b.vy; b.r += b.vr; cx2.save(); cx2.translate(b.x, b.y); cx2.rotate(b.r); cx2.fillStyle = b.c; cx2.fillRect(-b.w / 2, -b.h / 2, b.w, b.h * Math.abs(Math.cos(b.r * 2))); cx2.restore(); });
+  } else bits = [];
+  if (on('bounce') && !RM){
+    bx += bvx; by += bvy;
+    if (bx < 0 || bx > innerWidth - 64){ bvx *= -1; bx = Math.max(0, Math.min(innerWidth - 64, bx)); }
+    if (by < 0 || by > innerHeight - 64){ bvy *= -1; by = Math.max(0, Math.min(innerHeight - 64, by)); }
+    $('bounce').style.transform = 'translate(' + bx + 'px,' + by + 'px)';
+  }
+  cx += (mx - cx) * .14; cy += (my - cy) * .14;
+  $('cur').style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
+  requestAnimationFrame(frame);
+}
 
-/* ---------- 紐解く ---------- */
+/* ---------- カード ---------- */
 var GROUPS = [
-  { name:'目を止める', items:['e2', 'e1'] },
-  { name:'読ませる', items:['e4', 'e8'] },
-  { name:'覚えてもらう', items:['e3', 'e5', 'e7'] },
-  { name:'触ってもらう', items:['e6'] }
+  { name:'目を止める',   items:['blob', 'chars', 'hue', 'glitch', 'confetti', 'toast'] },
+  { name:'読ませる',     items:['reveal', 'header', 'marker', 'progress', 'spotlight'] },
+  { name:'覚えてもらう', items:['ring', 'band', 'count', 'bigtext', 'bounce'] },
+  { name:'触ってもらう', items:['tilt', 'cursor', 'magnet', 'ripple'] }
 ];
+function rep(n, f){ var s = ''; for (var i = 0; i < n; i++) s += f(i); return s; }
 var E = {
-  e1:{ src:'h1',   demo:'<div class="demo d1">' + 'AI × ローコード'.split('').map(function(c, i){ return '<i style="animation-delay:' + i * 80 + 'ms">' + (c === ' ' ? '&nbsp;' : c) + '</i>'; }).join('') + '</div>',
-       n:'一文字ずつ出る見出し', d:'最初の一文が、一文字ずつ現れる', w:'最初の一文を、最後まで読んでもらう' },
-  e2:{ src:'blobs', demo:'<div class="demo d2"><i></i><i></i></div>',
-       n:'動く色のにじみ', d:'紫のにじみが、ゆっくり漂う', w:'開いた瞬間に、会社の色を覚えてもらう' },
-  e3:{ src:'ring', demo:'<div class="demo d3"><i></i></div>',
-       n:'回る輪', d:'スクロールに合わせて、ロゴの輪が回る', w:'ロゴの形を、何度も目に入れる' },
-  e4:{ src:'phil', demo:'<div class="demo d4"><i></i><i></i><i></i></div>',
-       n:'下から現れる節', d:'スクロールすると、節が一つずつ浮かび上がる', w:'読む順番を、一つずつに区切る' },
-  e5:{ src:'band', demo:'<div class="demo d5"><span>人間中心の次世代業務システム開発　●　AI による意思決定支援と事業変革支援　●　</span></div>',
-       n:'流れる帯', d:'サービスの名前が、横に流れ続ける', w:'サービスが四つあると、一目で分かる' },
-  e6:{ src:'svc', demo:'<div class="demo d6"><i></i></div>',
-       n:'傾く札', d:'カーソルを乗せると、サービスの札が傾く', w:'読むだけでなく、触ってもらう' },
-  e7:{ src:'cap', demo:'<div class="demo d7"><span class="dn">0</span></div>',
-       n:'数え上がる数字', d:'資本金の数字が、0 から数え上がる', w:'数字に目を止めてもらう' },
-  e8:{ src:'hd', demo:'<div class="demo d8"><i></i></div>',
-       n:'縮むヘッダー', d:'読み始めると、上の帯が細くなる', w:'読む場所を広く取り、いつでも戻れるようにする' }
+  blob:{ src:'blobs', demo:'<i></i><i></i>', n:'動く色のにじみ', d:'紫のにじみが、ゆっくり漂う', w:'開いた瞬間に、会社の色を覚えてもらう' },
+  chars:{ src:'h1', demo:'AI × ローコード'.split('').map(function(c, i){ return '<i style="animation-delay:' + i * 80 + 'ms">' + (c === ' ' ? '&nbsp;' : c) + '</i>'; }).join(''), n:'一文字ずつ出る見出し', d:'最初の一文が、一文字ずつ現れる', w:'最初の一文を、最後まで読んでもらう' },
+  hue:{ src:'hue', demo:'', n:'色が変わり続ける画面', d:'画面全体の色味が、ずっと移り変わる', w:'止まっている画面より、目を引く' },
+  glitch:{ src:'h1', demo:'ALTER', n:'震える見出し', d:'見出しが、ときどきぶれて色がずれる', w:'見出しに、もう一度目を戻してもらう' },
+  confetti:{ src:'conf', demo:rep(8, function(i){ return '<i style="left:' + (8 + i * 12) + '%; background:' + ['#654087', '#ff7ac1', '#ffd36e', '#8fd3ff'][i % 4] + '; animation-delay:' + (i * .2) + 's"></i>'; }), n:'紙吹雪', d:'ときどき、上から紙吹雪が降る', w:'楽しい会社だと思ってもらう' },
+  toast:{ src:'toast', demo:'<i></i>', n:'出てくる通知', d:'左下に、通知のように一言が出る', w:'読み飛ばした言葉を、もう一度届ける' },
+  reveal:{ src:'phil', demo:'<i></i><i></i><i></i>', n:'下から現れる節', d:'スクロールすると、節が一つずつ浮かび上がる', w:'読む順番を、一つずつに区切る' },
+  header:{ src:'hd', demo:'<i></i>', n:'縮むヘッダー', d:'読み始めると、上の帯が細くなる', w:'読む場所を広く取り、いつでも戻れるようにする' },
+  marker:{ src:'mark', demo:'<i>遊ぶように働く</i>', n:'引かれるマーカー', d:'太字に、蛍光ペンが引かれていく', w:'大事な言葉に、先に目を止めてもらう' },
+  progress:{ src:'prog', demo:'<i></i>', n:'読んだ量のバー', d:'画面の上端に、どこまで読んだかが伸びる', w:'あとどれくらいか分かると、最後まで読める' },
+  spotlight:{ src:'spot', demo:'<i></i>', n:'懐中電灯', d:'カーソルのまわりだけが明るい', w:'見ている場所に、集中してもらう' },
+  ring:{ src:'ring', demo:'<i></i>', n:'回る輪', d:'スクロールに合わせて、ロゴの輪が回る', w:'ロゴの形を、何度も目に入れる' },
+  band:{ src:'band', demo:'<i>人間中心の次世代業務システム開発　●　AI による意思決定支援と事業変革支援　●　</i>', n:'流れる帯', d:'サービスの名前が、横に流れ続ける', w:'サービスが四つあると、一目で分かる' },
+  count:{ src:'cap', demo:'<i class="dn">0</i>', n:'数え上がる数字', d:'資本金の数字が、0 から数え上がる', w:'数字に目を止めてもらう' },
+  bigtext:{ src:'big', demo:'<i>ALTER DESIGN</i>', n:'背景の巨大な英字', d:'社名の英字が、背景を横切っていく', w:'社名を、絵として覚えてもらう' },
+  bounce:{ src:'bounce', demo:'<i></i>', n:'跳ね回る輪', d:'ロゴの輪が、画面の端で跳ね返り続ける', w:'ロゴを、ずっと視界に置いておく' },
+  tilt:{ src:'svc', demo:'<i></i>', n:'傾く札', d:'カーソルを乗せると、サービスの札が傾く', w:'読むだけでなく、触ってもらう' },
+  cursor:{ src:'cur', demo:'<i></i><i></i>', n:'付いてくる輪', d:'カーソルのあとを、輪が追いかける', w:'押せるところで大きくなり、押せると分かる' },
+  magnet:{ src:'btn', demo:'<i>お問い合わせ</i>', n:'吸い寄せるボタン', d:'カーソルが近づくと、ボタンが寄ってくる', w:'押してもらいやすくする' },
+  ripple:{ src:'', demo:'<i></i>', n:'押すと広がる波', d:'どこを押しても、そこから波紋が広がる', w:'押したことが、手応えとして返る' }
 };
-var bd = $('bd'), svg = $('arrows'), board = $('board'), tog = $('tog'), heads = [], cards = {}, end, open = false, timers = [];
+var bd = $('bd'), svg = $('arrows'), board = $('board'), tog = $('tog'), heads = [], cards = {}, end, reset, open = false, timers = [];
 GROUPS.forEach(function(g, gi){
   var h = document.createElement('div'); h.className = 'gh'; h.innerHTML = '<b>0' + (gi + 1) + '</b>' + g.name; bd.appendChild(h); heads.push(h);
   g.items.forEach(function(k){
     var e = E[k], c = document.createElement('div'); c.className = 'card'; c.tabIndex = 0; c.setAttribute('role', 'button');
-    c.innerHTML = e.demo + '<b>' + e.n + '</b><p><span>すること</span>' + e.d + '</p><p><span>ねらい</span>' + e.w + '</p>';
-    c.addEventListener('click', function(){ back(k); });
-    c.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); back(k); } });
+    c.innerHTML = '<div class="demo d-' + k + '">' + e.demo + '</div><b>' + e.n + '</b><p><span>すること</span>' + e.d + '</p><p><span>ねらい</span>' + e.w + '</p><button class="x" type="button"></button>';
+    c.addEventListener('click', function(ev){ if (ev.target.closest('.x')) return; back(k); });
+    c.addEventListener('keydown', function(ev){ if (ev.target === c && (ev.key === 'Enter' || ev.key === ' ')){ ev.preventDefault(); back(k); } });
+    c.querySelector('.x').addEventListener('click', function(){ if (OFF[k]) delete OFF[k]; else OFF[k] = 1; save(); apply(); mark(); onScroll(); });
     bd.appendChild(c); cards[k] = c;
   });
 });
 end = document.createElement('a'); end.className = 'end'; end.href = '#contact'; end.textContent = 'お問い合わせ';
 end.addEventListener('click', function(ev){ ev.preventDefault(); back(null, 'contact'); });
-bd.appendChild(end);
-/* 数字の実演 */
+reset = document.createElement('button'); reset.id = 'reset'; reset.type = 'button'; reset.textContent = 'ぜんぶ元に戻す';
+reset.addEventListener('click', function(){ OFF = {}; save(); apply(); mark(); onScroll(); });
+bd.appendChild(end); bd.appendChild(reset);
+function mark(){ Object.keys(cards).forEach(function(k){ cards[k].classList.toggle('gone', !!OFF[k]); cards[k].querySelector('.x').textContent = OFF[k] ? '残す' : '消す'; }); }
 setInterval(function(){ var el = bd.querySelector('.dn'); if (!el || !open) return; var t0 = performance.now();
   (function f(t){ var k = Math.min(1, (t - t0) / 1200); el.textContent = Math.round(60 * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); })(t0); }, 2600);
 
 function layout(){
-  var W = board.clientWidth, M = Math.max(16, Math.min(48, W * .04)), G = 56, endW = 150;
-  var colW = (W - M * 2 - G * 4 - endW) / 4, wide = colW >= 190, pos = {}, y, P = [];
+  var W = board.clientWidth, M = Math.max(16, Math.min(48, W * .04)), G = 52, endW = 150;
+  var colW = (W - M * 2 - G * 4 - endW) / 4, wide = colW >= 190, y, P = [];
   if (wide){
-    var top = Math.max(90, innerHeight * .12), maxY = 0;
+    var top = Math.max(90, innerHeight * .1), maxY = 0;
     GROUPS.forEach(function(g, gi){
       var x = M + gi * (colW + G);
       heads[gi].style.cssText = 'left:' + x + 'px; top:' + top + 'px; width:' + colW + 'px';
       y = top + 40;
-      g.items.forEach(function(k){ var c = cards[k]; c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.width = colW + 'px'; pos[k] = { x:x, y:y }; y += c.offsetHeight + 18; });
+      g.items.forEach(function(k){ var c = cards[k]; c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.width = colW + 'px'; y += c.offsetHeight + 16; });
       maxY = Math.max(maxY, y);
     });
     var ex = M + 4 * (colW + G);
     end.style.cssText = 'left:' + ex + 'px; top:' + (top - 12) + 'px; width:' + endW + 'px; height:44px';
-    for (var i = 0; i < 4; i++){
-      var x1 = M + i * (colW + G) + colW + 8, x2 = (i < 3 ? M + (i + 1) * (colW + G) : ex) - 10, yy = top + 10;
-      P.push([x1, yy, x2, yy]);
-    }
+    reset.style.cssText = 'left:' + ex + 'px; top:' + (top + 50) + 'px; width:' + endW + 'px';
+    for (var i = 0; i < 4; i++) P.push([M + i * (colW + G) + colW + 8, top + 10, (i < 3 ? M + (i + 1) * (colW + G) : ex) - 10, top + 10]);
     bd.style.height = (maxY + 120) + 'px';
   } else {
     var x = M, w = W - M * 2; y = 84;
     GROUPS.forEach(function(g, gi){
-      if (gi) { P.push([x + 20, y - 4, x + 20, y + 30]); y += 40; }
+      if (gi){ P.push([x + 20, y - 4, x + 20, y + 30]); y += 40; }
       heads[gi].style.cssText = 'left:' + x + 'px; top:' + y + 'px; width:' + w + 'px'; y += 36;
-      g.items.forEach(function(k){ var c = cards[k]; c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.width = w + 'px'; pos[k] = { x:x, y:y }; y += c.offsetHeight + 14; });
+      g.items.forEach(function(k){ var c = cards[k]; c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.width = w + 'px'; y += c.offsetHeight + 12; });
     });
     P.push([x + 20, y - 4, x + 20, y + 30]); y += 40;
     end.style.cssText = 'left:' + x + 'px; top:' + y + 'px; width:' + Math.min(w, 260) + 'px; height:48px';
-    bd.style.height = (y + 140) + 'px';
+    reset.style.cssText = 'left:' + x + 'px; top:' + (y + 64) + 'px';
+    bd.style.height = (y + 180) + 'px';
   }
   svg.setAttribute('width', W); svg.setAttribute('height', bd.style.height);
   svg.innerHTML = P.map(function(p){
-    var a = Math.atan2(p[3] - p[1], p[2] - p[0]), hx = p[2], hy = p[3], s = 7;
-    return '<path d="M' + p[0] + ' ' + p[1] + 'L' + (hx - Math.cos(a) * s) + ' ' + (hy - Math.sin(a) * s) + '"/>' +
-      '<polygon class="hd" points="' + hx + ',' + hy + ' ' + (hx - Math.cos(a) * s - Math.sin(a) * s * .6) + ',' + (hy - Math.sin(a) * s + Math.cos(a) * s * .6) + ' ' + (hx - Math.cos(a) * s + Math.sin(a) * s * .6) + ',' + (hy - Math.sin(a) * s - Math.cos(a) * s * .6) + '"/>';
+    var a = Math.atan2(p[3] - p[1], p[2] - p[0]), hx = p[2], hy = p[3], s = 7, ca = Math.cos(a), sa = Math.sin(a);
+    return '<path d="M' + p[0] + ' ' + p[1] + 'L' + (hx - ca * s) + ' ' + (hy - sa * s) + '"/>' +
+      '<polygon class="hd" points="' + hx + ',' + hy + ' ' + (hx - ca * s - sa * s * .6) + ',' + (hy - sa * s + ca * s * .6) + ' ' + (hx - ca * s + sa * s * .6) + ',' + (hy - sa * s - ca * s * .6) + '"/>';
   }).join('');
 }
 function srcRect(k, c){
-  var r = $(E[k].src).getBoundingClientRect(), vis = r.bottom > 0 && r.top < innerHeight && r.width > 0;
+  var el = E[k].src && $(E[k].src), r = el ? el.getBoundingClientRect() : null;
+  var vis = r && r.bottom > 0 && r.top < innerHeight && r.width > 0 && getComputedStyle(el).display !== 'none';
   if (!vis) return { left:c.offsetLeft, top:innerHeight + 40, width:c.offsetWidth, height:c.offsetHeight, off:true };
-  return { left:Math.max(-r.width * .5, r.left), top:Math.max(-40, r.top), width:Math.min(r.width, innerWidth * 1.2), height:Math.min(r.height, innerHeight * 1.2) };
+  return { left:r.left, top:r.top, width:r.width, height:r.height };
 }
 function flipFrom(c, s){
-  /* 元の場所の真ん中から、縦横同じ倍率で（字が歪まないように） */
   var w = c.offsetWidth, h = c.offsetHeight, k = Math.max(.7, Math.min(1.4, Math.min(s.width / w, s.height / h)));
-  var cx = s.left + s.width / 2 - w * k / 2, cy = s.top + s.height / 2 - h * k / 2;
-  return 'translate(' + (cx - c.offsetLeft + board.scrollLeft) + 'px,' + (cy - c.offsetTop + board.scrollTop) + 'px) scale(' + k + ')';
+  var x = s.left + s.width / 2 - w * k / 2, y = s.top + s.height / 2 - h * k / 2;
+  return 'translate(' + (x - c.offsetLeft) + 'px,' + (y - c.offsetTop + board.scrollTop) + 'px) scale(' + k + ')';
 }
 function clear(){ timers.forEach(clearTimeout); timers = []; }
+function each(f){ GROUPS.forEach(function(g){ g.items.forEach(f); }); }
 function show(){
   clear(); open = true; board.scrollTop = 0;
-  document.body.classList.add('open'); tog.textContent = 'もどす'; tog.setAttribute('aria-pressed', 'true'); board.setAttribute('aria-hidden', 'false');
-  Object.keys(E).forEach(function(k){ $(E[k].src).classList.add('lift'); });
-  layout();
-  var order = [].concat.apply([], GROUPS.map(function(g){ return g.items; }));
-  order.forEach(function(k, i){
-    var c = cards[k], s = srcRect(k, c);
+  B.classList.add('open'); tog.textContent = 'もどす'; tog.setAttribute('aria-pressed', 'true'); board.setAttribute('aria-hidden', 'false');
+  each(function(k){ if (E[k].src) $(E[k].src).classList.add('lift'); });
+  mark(); layout();
+  var i = 0;
+  each(function(k){
+    var c = cards[k], s = srcRect(k, c), n = i++;
     c.style.transition = 'none'; c.style.opacity = s.off ? 0 : .6; c.style.transform = RM ? 'none' : flipFrom(c, s);
     void c.offsetWidth;
-    timers.push(setTimeout(function(){
-      c.style.transition = 'transform .8s cubic-bezier(.2,.8,.2,1), opacity .5s';
-      c.style.transform = 'none'; c.style.opacity = 1;
-    }, RM ? 0 : 120 + i * 70));
+    timers.push(setTimeout(function(){ c.style.transition = 'transform .8s cubic-bezier(.2,.8,.2,1), opacity .5s'; c.style.transform = 'none'; c.style.opacity = 1; }, RM ? 0 : 120 + n * 45));
   });
-  timers.push(setTimeout(function(){ document.body.classList.add('shown'); }, RM ? 0 : 120 + order.length * 70 + 500));
+  timers.push(setTimeout(function(){ B.classList.add('shown'); }, RM ? 0 : 120 + i * 45 + 500));
 }
 function hide(cb){
   clear(); open = false;
-  document.body.classList.remove('shown');
+  B.classList.remove('shown');
   tog.textContent = '紐解く'; tog.setAttribute('aria-pressed', 'false'); board.setAttribute('aria-hidden', 'true');
-  Object.keys(E).forEach(function(k, i){
+  each(function(k){
     var c = cards[k], s = srcRect(k, c);
     c.style.transition = 'transform .6s cubic-bezier(.6,0,.4,1), opacity .5s .15s';
     c.style.transform = RM ? 'none' : flipFrom(c, s); c.style.opacity = 0;
   });
   timers.push(setTimeout(function(){
-    document.body.classList.remove('open');
-    Object.keys(E).forEach(function(k){ $(E[k].src).classList.remove('lift'); });
+    B.classList.remove('open');
+    each(function(k){ if (E[k].src) $(E[k].src).classList.remove('lift'); });
     if (cb) cb();
   }, RM ? 0 : 520));
 }
 function back(k, id){
   hide(function(){
-    var el = k ? $(E[k].src) : $(id);
-    if (k === 'e8' || k === 'e2' || k === 'e1'){ scrollTo({ top:k === 'e8' ? 300 : 0, behavior:'smooth' }); }
-    else el.scrollIntoView({ behavior:'smooth', block:'center' });
-    if (k){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+    var el = k ? (E[k].src && $(E[k].src)) : $(id), fixed = el && getComputedStyle(el).position === 'fixed';
+    if (!el || fixed || k === 'blob' || k === 'chars' || k === 'glitch') { if (k === 'blob' || k === 'chars' || k === 'glitch') scrollTo({ top:0, behavior:'smooth' }); return; }
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
   });
 }
 tog.addEventListener('click', function(){ open ? hide() : show(); });
 addEventListener('keydown', function(e){ if (e.key === 'Escape' && open) hide(); });
-addEventListener('resize', function(){ if (open){ layout(); } });
+addEventListener('resize', function(){ sizeCv(); if (open) layout(); });
+
+apply(); sizeCv(); onScroll(); requestAnimationFrame(frame);
 })();
 </script>
