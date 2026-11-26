@@ -307,7 +307,7 @@ body.outside .cmd{opacity:0; pointer-events:none}
 </div>
 
 <div class="cmd" id="cmd"><div class="win">
-  <div class="row" id="main"><button data-c="look">みる</button><button data-c="soudan">そうだん</button><button data-c="talk">はなす</button><button data-c="exit">でる</button><span class="key">◀ ▶ みまわす</span></div>
+  <div class="row" id="main"><button data-c="look">みる</button><button data-c="talk">はなす</button><button data-c="exit">でる</button><span class="key">◀ ▶ みまわす</span></div>
   <div class="row" id="lookm" hidden><button data-c="shelf">たな</button><button data-c="keeper">みせのひと</button><button data-c="wall">かべ</button><button data-c="back">もどる</button></div>
   <form class="say" id="ask" autocomplete="off" hidden><span class="pr">▶</span><input id="q" type="text" placeholder="なにを きく？（Esc でもどる）"><button id="send" type="submit" disabled>きく</button></form>
 </div></div>
@@ -609,7 +609,7 @@ function solve(id){
 }
 function finale(){
   $('door').classList.add('ready');
-  talk([{who:'店主', text:'…ちょっと、いい顔になったね。'}, {who:'店主', text:'ほかの棚も見てっていいよ。また話したくなったら「そうだん」から。…帰りはそこの扉から。'}]);
+  talk([{who:'店主', text:'…ちょっと、いい顔になったね。'}, {who:'店主', text:'ほかの棚も見てっていいよ。…帰りはそこの扉から。'}]);
 }
 $('x').onclick = closeLook;
 $('look').addEventListener('click', e=>{ if (e.target === $('look')) closeLook(); });
@@ -705,7 +705,7 @@ function menu(m){
 $('cmd').addEventListener('click', e=>{
   const b = e.target.closest('button[data-c]'); if (!b) return;
   e.stopPropagation();
-  ({ look:()=>menu('look'), soudan:()=>{ closeLook(); look(1); chat(); }, talk:()=>{ closeLook(); look(1); menu('talk'); }, exit:()=>ending(),
+  ({ look:()=>menu('look'), talk:()=>{ closeLook(); look(1); menu('talk'); }, exit:()=>ending(),
      shelf:()=>{ closeLook(); look(0); }, keeper:()=>{ closeLook(); look(1); }, wall:()=>{ closeLook(); look(2); }, back:()=>menu('main') })[b.dataset.c]();
 });
 
