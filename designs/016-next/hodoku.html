@@ -128,6 +128,42 @@ body.split .pl.gone>*{visibility:hidden}
 .why b{color:var(--ink)}
 .why span{color:var(--ink); font-weight:700; margin-right:.6em}
 
+#board{position:fixed; inset:0; z-index:55; overflow-x:hidden; overflow-y:scroll; visibility:hidden; background:transparent; font-family:"Zen Kaku Gothic New",sans-serif; text-align:left; transition:background .45s, visibility 0s .7s}
+body.cardview #board{visibility:visible; transition:none}
+#board::before{content:""; position:absolute; inset:0; background:radial-gradient(#cfcbd6 1px, transparent 1.2px) 0 0/22px 22px; opacity:0; transition:opacity .45s; pointer-events:none}
+body.cardview.shown #board::before{opacity:1}
+.bd{position:relative}
+.gh{position:absolute; font-size:13px; font-weight:700; letter-spacing:.16em; color:var(--ac); opacity:0; transition:opacity .4s}
+.gh b{display:inline-block; min-width:1.8em; color:var(--sub); font-weight:500}
+body.shown .gh,body.shown .ctl{opacity:1}
+.card{position:absolute; background:#fff; border-radius:12px; padding:10px 12px 12px; box-shadow:0 1px 2px rgba(40,20,60,.08),0 8px 22px rgba(40,20,60,.08); cursor:pointer; transform-origin:0 0; opacity:0; font-size:12px; line-height:1.65; color:var(--ink)}
+.card:hover{box-shadow:0 0 0 2px var(--ac2),0 8px 22px rgba(40,20,60,.12)}
+.card:focus-visible{outline:3px solid var(--ac2)}
+.card b{display:block; font-size:14px; margin:8px 0 2px}
+.card p{color:var(--sub)}
+.card p span{color:var(--ink); font-weight:700; margin-right:.6em}
+.card .x{display:block; width:100%; margin-top:10px; padding:7px 0; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); font:inherit; font-weight:700; letter-spacing:.2em; cursor:pointer}
+.card .x:hover{border-color:var(--ac2); background:var(--pale)}
+.card.gone{background:#e2e0e6; box-shadow:none}
+.card.gone .demo,.card.gone b,.card.gone p{opacity:.35}
+.card.gone .demo *{animation-play-state:paused!important}
+.card.gone b{text-decoration:line-through}
+.card.gone .x{background:transparent; border-style:dashed}
+
+/* カードの中の小さな見本 */
+.demo{position:relative; height:52px; border-radius:8px; background:var(--bg); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700}
+.demo i{font-style:normal}
+
+.ctl{position:absolute; opacity:0; transition:opacity .4s; font-size:13px}
+.ctl p{font-size:12px; font-weight:700; letter-spacing:.16em; color:var(--ac); margin-bottom:8px}
+.tolayers,.tocards{display:block; width:100%; margin-top:14px; padding:10px 0; border:1px solid var(--ac); border-radius:40px; background:#fff; color:var(--ac); font:inherit; font-weight:700; letter-spacing:.08em; cursor:pointer}
+.tocards{margin:0 0 16px}
+.tolayers:hover,.tocards:hover{background:var(--pale)}
+body.away #stack .scene{opacity:0; transition:opacity .6s}
+#stack .legend{opacity:0; visibility:hidden; transition:opacity .3s}
+body.layers #stack .legend{opacity:1; visibility:visible}
+body:not(.layers) #stack .legend{position:absolute}
+body:not(.layers) #stack .scene{grid-column:1 / -1}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important; transition:none!important}
   .rv{opacity:1!important; transform:none!important}
@@ -248,18 +284,44 @@ var io = new IntersectionObserver(function(es){
 }, { threshold:.15 });
 document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
 
-/* ---------- 層 ---------- */
+/* ---------- 斜めの層とカード ---------- */
 var GROUPS = [
-  { name:'色',   items:['purple', 'frame', 'bevel', 'shadow', 'rainbow', 'colors'] },
+  { name:'色',   items:['purple', 'rainbow', 'colors', 'bevel', 'shadow', 'frame'] },
   { name:'文字', items:['slant', 'wordart', 'popfont', 'red', 'center', 'kome'] },
   { name:'飾り', items:['bullets', 'clipart', 'arrows', 'balloon', 'burst', 'marquee'] },
   { name:'動き', items:['spinin', 'bounce', 'blink', 'spinlogo'] }
 ];
+var P = 'font-family:var(--pop); font-weight:400';
+var E = {
+  purple:{ src:'top', demo:'<div class="demo" style="background:#a678de"></div>', n:'紫の背景', d:'背景を、紫一色にする', w:'会社の色を、全面に出したい' },
+  rainbow:{ src:'oval', demo:'<div class="demo"><i style="padding:4px 22px; border-radius:50%; background:linear-gradient(90deg,#a6d4ff,#7cd36b,#ffd23f,#ff5a1f)">見出し</i></div>', n:'虹色の楕円', d:'見出しの下に、虹色の楕円を敷く', w:'見出しを、とにかく目立たせたい' },
+  colors:{ src:'svc', demo:'<div class="demo"><i style="color:#e60012">大事</i>　<i style="color:#0050d8">大事</i>　<i style="color:#00953a">大事</i></div>', n:'色だらけの文字', d:'見出しごとに、赤・青・緑と色を変える', w:'全部大事なので、全部目立たせたい' },
+  bevel:{ src:'svc', demo:'<div class="demo"><i style="padding:4px 18px; border:5px outset #d8c4f5; background:#fff">囲み</i></div>', n:'立体の囲み', d:'囲みを、ボタンのような立体にする', w:'区切りを、はっきりさせたい' },
+  shadow:{ src:'h1', demo:'<div class="demo"><i style="filter:drop-shadow(3px 3px 0 rgba(0,0,0,.6)); font-size:18px; font-weight:900">影</i></div>', n:'濃い影', d:'文字にも箱にも、濃い影を付ける', w:'浮き上がって見せたい' },
+  frame:{ src:'philosophy', demo:'<div class="demo" style="border:5px double #ff3fa4"></div>', n:'二重の枠', d:'節を、ピンクの二重線で囲む', w:'どこまでが一つの話か、分かってほしい' },
+  slant:{ src:'hero', demo:'<div class="demo"><i style="transform:rotate(-10deg) skewX(-8deg); font-weight:900">斜め</i></div>', n:'斜めの見出し', d:'一番大きい見出しを、斜めに傾ける', w:'勢いを出したい' },
+  wordart:{ src:'h1', demo:'<div class="demo"><i style="background:linear-gradient(#fff36b,#ff8a00 55%,#ff2e63); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-stroke:1px #1d1526; font-size:20px; font-weight:900">ALTER</i></div>', n:'ワードアート', d:'見出しを、縁取りとグラデーションの文字にする', w:'見出しを、特別なものにしたい' },
+  popfont:{ src:'phil', demo:'<div class="demo"><i style="' + P + '">ポップな書体</i></div>', n:'ポップな書体', d:'全部の文字を、丸くて太い書体にする', w:'親しみやすくしたい' },
+  red:{ src:'phil', demo:'<div class="demo"><i style="color:#e60012; text-decoration:underline wavy; text-underline-offset:4px">ここ大事</i></div>', n:'赤い太字と波線', d:'大事な言葉を、赤い太字と波線にする', w:'ここだけは、読んでほしい' },
+  center:{ src:'phil', demo:'<div class="demo" style="flex-direction:column; gap:4px"><i style="width:60%; height:5px; background:#bbb"></i><i style="width:35%; height:5px; background:#bbb"></i><i style="width:50%; height:5px; background:#bbb"></i></div>', n:'全部まんなか', d:'全部の行を、真ん中にそろえる', w:'整って見せたい' },
+  kome:{ src:'kome', demo:'<div class="demo" style="font-size:11px; font-weight:500">※ 念のため</div>', n:'※ の注釈', d:'※ の注釈を、あちこちに足す', w:'念のため、補足しておきたい' },
+  bullets:{ src:'svc', demo:'<div class="demo"><i style="color:#ffb400">★</i>&nbsp;見出し　☆&nbsp;項目</div>', n:'★ と ☆', d:'見出しの頭に、★ や ☆ を付ける', w:'箇条書きだと、分かってほしい' },
+  clipart:{ src:'', demo:'<div class="demo" style="font-size:28px">🧑‍💼💻</div>', n:'絵を置く', d:'人やパソコンの絵を、空いたところに置く', w:'空白が寂しいので、埋めたい' },
+  arrows:{ src:'arw', demo:'<div class="demo"><i style="border-left:22px solid transparent; border-right:22px solid transparent; border-top:20px solid #ffd23f"></i></div>', n:'大きな矢印', d:'節と節の間に、大きな矢印を置く', w:'話の流れを、示したい' },
+  balloon:{ src:'bal', demo:'<div class="demo"><i style="padding:2px 10px; border:2px solid #e60012; border-radius:10px; color:#e60012; background:#fff; font-size:11px">ここがポイント！</i></div>', n:'吹き出し', d:'「ここがポイント！」の吹き出しを付ける', w:'大事なところを、教えたい' },
+  burst:{ src:'burst', demo:'<div class="demo"><i style="width:44px; height:44px; background:#ffd23f; clip-path:polygon(50% 0,61% 20%,82% 9%,79% 32%,100% 35%,84% 52%,98% 70%,76% 72%,79% 95%,59% 83%,50% 100%,41% 83%,21% 95%,24% 72%,2% 70%,16% 52%,0 35%,21% 32%,18% 9%,39% 20%)"></i></div>', n:'ギザギザの図形', d:'ギザギザの図形に「2025年6月設立！」', w:'新しい会社だと、伝えたい' },
+  marquee:{ src:'dots', demo:'<div class="demo" style="background:#111; color:#ff9a1f; ' + P + '; font-size:12px; overflow:hidden; justify-content:flex-start"><i style="display:inline-block; white-space:nowrap; padding-left:100%; animation:dots 5s linear infinite">★サービス　★サービス</i></div>', n:'電光掲示板', d:'サービス名を、電光掲示板のように流す', w:'サービスを、全部見せたい' },
+  spinin:{ src:'phil', demo:'<div class="demo"><i style="width:26px; height:26px; background:var(--ac2); animation:sl 1.4s linear infinite"></i></div>', n:'回って出てくる節', d:'節が、回転しながら現れる', w:'見ていて、飽きないようにしたい' },
+  bounce:{ src:'svch', demo:'<div class="demo"><i style="animation:bn 1.6s ease-out infinite">見出し</i></div>', n:'弾む見出し', d:'見出しが、弾みながら落ちてくる', w:'見出しに、目を向けてほしい' },
+  blink:{ src:'btn', demo:'<div class="demo"><i style="padding:4px 14px; border-radius:20px; background:var(--ac); color:#fff; font-size:11px; animation:bl 1s steps(2) infinite">お問い合わせ</i></div>', n:'点滅するボタン', d:'お問い合わせのボタンが、点滅する', w:'押してほしい' },
+  spinlogo:{ src:'hd', demo:'<div class="demo"><i style="width:28px; height:28px; border-radius:50%; border:5px dashed var(--ac); animation:sl 1.6s linear infinite"></i></div>', n:'回るロゴ', d:'左上のロゴが、回り続ける', w:'ロゴを、覚えてほしい' }
+};
+
 var POP = 'font-family:var(--pop);';
 var H1 = 'AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を';
 var STAR = 'clip-path:polygon(50% 0,61% 20%,82% 9%,79% 32%,100% 35%,84% 52%,98% 70%,76% 72%,79% 95%,59% 83%,50% 100%,41% 83%,21% 95%,24% 72%,2% 70%,16% 52%,0 35%,21% 32%,18% 9%,39% 20%)';
 function tx(css, html){ return '<i style="' + css + '">' + html + '</i>'; }
-var E = {
+var LE = {
   purple:{ n:'紫の背景', d:'背景を、紫一色にする', w:'会社の色を、全面に出したい', pl:'<i style="inset:0; background:#a678de"></i>' },
   frame:{ n:'二重の枠', d:'節を、ピンクの二重線で囲む', w:'どこまでが一つの話か、分かってほしい', pl:'<i style="inset:2.5%; border:calc(var(--u)*.9px) double #ff3fa4"></i>' },
   bevel:{ n:'立体の囲み', d:'囲みを、ボタンのような立体にする', w:'区切りを、はっきりさせたい', pl:'<i style="left:8%; top:70%; width:34%; height:16%; border:calc(var(--u)*.8px) outset #d8c4f5; background:#fff"></i><i style="left:56%; top:70%; width:34%; height:16%; border:calc(var(--u)*.8px) outset #d8c4f5; background:#fff"></i>' },
@@ -283,20 +345,37 @@ var E = {
   blink:{ n:'点滅するボタン', d:'お問い合わせのボタンが、点滅する', w:'押してほしい', pl:tx('left:40%; top:80%; padding:.4em 1.2em; border-radius:2em; background:#654087; color:#fff; font-size:calc(var(--u)*1.5px); animation:bl 1s steps(2) infinite', 'お問い合わせフォームへ') },
   spinlogo:{ n:'回るロゴ', d:'左上のロゴが、回り続ける', w:'ロゴを、覚えてほしい', pl:'<i style="left:2.5%; top:3%; width:4%; aspect-ratio:1; border-radius:50%; border:calc(var(--u)*.6px) dashed #654087; animation:sl 1.6s linear infinite"></i>' }
 };
+
+Object.keys(E).forEach(function(k){ E[k].pl = LE[k].pl; });
 var WAYS = [
   ['静かに', function(){ return Object.keys(E); }],
   ['色は残す', function(){ return Object.keys(E).filter(function(k){ return ['purple', 'rainbow', 'colors'].indexOf(k) < 0; }); }],
   ['遊びは残す', function(){ return Object.keys(E).filter(function(k){ return ['clipart', 'balloon', 'burst', 'bounce', 'spinlogo'].indexOf(k) < 0; }); }],
   ['元に戻す', function(){ return []; }]
 ];
+var tog = $('tog'), timers = [], view = null, wayBtns = [];
+function clear(){ timers.forEach(clearTimeout); timers = []; }
+function later(f, ms){ timers.push(setTimeout(f, RM ? 0 : ms)); }
+function each(f){ GROUPS.forEach(function(g){ g.items.forEach(f); }); }
+function toggle(k){ if (OFF[k]) delete OFF[k]; else OFF[k] = 1; save(); apply(); mark(); }
+function ways(box){
+  WAYS.forEach(function(w){
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = w[0];
+    b.addEventListener('click', function(){ OFF = {}; w[1]().forEach(function(k){ OFF[k] = 1; }); save(); apply(); mark(); });
+    box.appendChild(b); wayBtns.push([b, w]);
+  });
+}
+
+/* 斜めの層 */
 var stack = document.createElement('div'); stack.id = 'stack'; stack.setAttribute('aria-hidden', 'true');
 stack.innerHTML = '<div class="scene"><div class="stage" id="stage"><div class="pl base" style="--i:0">' +
   tx('left:7%; top:3.6%; font-size:calc(var(--u)*1.5px); font-weight:500', 'Alter Design') +
   tx('left:12%; top:28%; width:78%; font-size:calc(var(--u)*4.6px); font-weight:900; line-height:1.4; text-align:center', H1) +
   tx('left:21%; top:58%; width:60%; text-align:center; font-size:calc(var(--u)*1.7px); color:#6d6478', 'コンサルティングによる業務設計からエンジニアリングまでを行います') +
-  '</div></div></div><div class="legend"><h4>整え方</h4><div class="ways" id="ways"></div><div class="rows" id="rows"></div><div class="why" id="why"></div></div>';
+  '</div></div></div><div class="legend"><button class="tocards" type="button" id="tocards">カードに並べる</button><h4>整え方</h4><div class="ways" id="ways"></div><div class="rows" id="rows"></div><div class="why" id="why"></div></div>';
 B.appendChild(stack);
-var stage = $('stage'), rows = $('rows'), why = $('why'), tog = $('tog'), PL = {}, RW = {}, n = 1, open = false, tm = [];
+var stage = $('stage'), rows = $('rows'), why = $('why'), PL = {}, RW = {}, n = 1;
+each(function(){});
 GROUPS.forEach(function(g){
   var h = document.createElement('h4'); h.textContent = g.name; rows.appendChild(h);
   g.items.forEach(function(k){
@@ -305,41 +384,141 @@ GROUPS.forEach(function(g){
     function hl(on){ p.classList.toggle('hl', on); r.classList.toggle('hl', on); if (on) why.innerHTML = '<b>' + E[k].n + '</b><br><span>すること</span>' + E[k].d + '<br><span>ねらい</span>' + E[k].w; }
     [p, r].forEach(function(el){
       el.addEventListener('mouseenter', function(){ hl(true); }); el.addEventListener('mouseleave', function(){ hl(false); });
-      el.addEventListener('click', function(){ if (OFF[k]) delete OFF[k]; else OFF[k] = 1; save(); apply(); mark(); });
+      el.addEventListener('click', function(){ toggle(k); });
     });
     r.addEventListener('focus', function(){ hl(true); }); r.addEventListener('blur', function(){ hl(false); });
   });
 });
-WAYS.forEach(function(w){
-  var b = document.createElement('button'); b.type = 'button'; b.textContent = w[0];
-  b.addEventListener('click', function(){ OFF = {}; w[1]().forEach(function(k){ OFF[k] = 1; }); save(); apply(); mark(); });
-  $('ways').appendChild(b);
-});
-function mark(){
-  Object.keys(E).forEach(function(k){ PL[k].classList.toggle('gone', !!OFF[k]); RW[k].classList.toggle('gone', !!OFF[k]); });
-  var cur = Object.keys(OFF).sort().join();
-  [].forEach.call($('ways').children, function(b, i){ b.classList.toggle('on', WAYS[i][1]().sort().join() === cur); });
-}
+ways($('ways'));
+$('tocards').addEventListener('click', function(){ toCards(); });
 function size(){
   var r = stack.querySelector('.scene').getBoundingClientRect();
   var w = Math.min(r.width * .66, (r.height || 360) * .95, 780), h = w * .6;
   stage.style.width = w + 'px'; stage.style.height = h + 'px';
   stage.style.setProperty('--u', w / 100); stage.style.setProperty('--gap', Math.max(10, w / 46) + 'px');
 }
-function show(){
-  tm.forEach(clearTimeout); tm = []; open = true;
+
+/* カード */
+var board = document.createElement('div'); board.id = 'board'; board.setAttribute('aria-hidden', 'true');
+board.innerHTML = '<div class="bd" id="bd"></div>'; B.appendChild(board);
+var bd = $('bd'), heads = [], cards = {}, ctl;
+GROUPS.forEach(function(g, gi){
+  var h = document.createElement('div'); h.className = 'gh'; h.innerHTML = '<b>0' + (gi + 1) + '</b>' + g.name; bd.appendChild(h); heads.push(h);
+  g.items.forEach(function(k){
+    var e = E[k], c = document.createElement('div'); c.className = 'card'; c.tabIndex = 0; c.setAttribute('role', 'button');
+    c.innerHTML = e.demo + '<b>' + e.n + '</b><p><span>すること</span>' + e.d + '</p><p><span>ねらい</span>' + e.w + '</p><button class="x" type="button"></button>';
+    c.addEventListener('click', function(ev){ if (ev.target.closest('.x')) return; back(k); });
+    c.addEventListener('keydown', function(ev){ if (ev.target === c && (ev.key === 'Enter' || ev.key === ' ')){ ev.preventDefault(); back(k); } });
+    c.querySelector('.x').addEventListener('click', function(){ toggle(k); });
+    bd.appendChild(c); cards[k] = c;
+  });
+});
+ctl = document.createElement('div'); ctl.className = 'ctl';
+ctl.innerHTML = '<p>整え方</p><div class="ways"></div><button class="tolayers" type="button">斜めから見る</button>';
+ways(ctl.querySelector('.ways'));
+ctl.querySelector('.tolayers').addEventListener('click', function(){ toLayers(true); });
+bd.appendChild(ctl);
+
+function mark(){
+  each(function(k){
+    var off = !!OFF[k];
+    cards[k].classList.toggle('gone', off); cards[k].querySelector('.x').textContent = off ? '残す' : '消す';
+    PL[k].classList.toggle('gone', off); RW[k].classList.toggle('gone', off);
+  });
+  var cur = Object.keys(OFF).sort().join();
+  wayBtns.forEach(function(p){ p[0].classList.toggle('on', p[1][1]().sort().join() === cur); });
+}
+function layout(){
+  var W = board.clientWidth, M = Math.max(16, Math.min(48, W * .04)), G = 28, cw = 170;
+  var colW = (W - M * 2 - G * 4 - cw) / 4, wide = colW >= 190, y;
+  if (wide){
+    var top = Math.max(80, innerHeight * .1), maxY = 0;
+    GROUPS.forEach(function(g, gi){
+      var x = M + gi * (colW + G);
+      heads[gi].style.cssText = 'left:' + x + 'px; top:' + top + 'px; width:' + colW + 'px';
+      y = top + 34;
+      g.items.forEach(function(k){ var c = cards[k]; c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.width = colW + 'px'; y += c.offsetHeight + 14; });
+      maxY = Math.max(maxY, y);
+    });
+    ctl.style.cssText = 'left:' + (M + 4 * (colW + G)) + 'px; top:' + top + 'px; width:' + cw + 'px';
+    bd.style.height = (maxY + 120) + 'px';
+  } else {
+    var x = M, w = W - M * 2; y = 64;
+    ctl.style.cssText = 'left:' + x + 'px; top:' + y + 'px; width:' + w + 'px'; y += ctl.offsetHeight + 24;
+    GROUPS.forEach(function(g, gi){
+      heads[gi].style.cssText = 'left:' + x + 'px; top:' + y + 'px; width:' + w + 'px'; y += 32;
+      g.items.forEach(function(k){ var c = cards[k]; c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.width = w + 'px'; y += c.offsetHeight + 12; });
+      y += 20;
+    });
+    bd.style.height = (y + 120) + 'px';
+  }
+}
+/* 層の、画面の上での四角 */
+function plRect(k){
+  var r = PL[k].getBoundingClientRect();
+  return { left:r.left, top:r.top, width:r.width, height:r.height };
+}
+function flipFrom(c, s){
+  var w = c.offsetWidth, h = c.offsetHeight, k = Math.max(.35, Math.min(1.2, Math.min(s.width / w, s.height / h)));
+  var x = s.left + s.width / 2 - w * k / 2, y = s.top + s.height / 2 - h * k / 2;
+  return 'translate(' + (x - c.offsetLeft) + 'px,' + (y - c.offsetTop + board.scrollTop) + 'px) scale(' + k + ')';
+}
+
+/* 開く → 傾いて層に → カードに */
+function open(){
+  clear(); view = 'layers';
   B.classList.add('open'); stack.setAttribute('aria-hidden', 'false'); tog.textContent = 'もどす'; tog.setAttribute('aria-pressed', 'true');
   size(); mark();
-  tm.push(setTimeout(function(){ B.classList.add('split'); }, RM ? 0 : 450));
+  later(function(){ B.classList.add('split'); }, 450);
+  later(function(){ toCards(); }, 2300);
 }
-function hide(){
-  tm.forEach(clearTimeout); tm = []; open = false;
-  B.classList.remove('split'); tog.textContent = '整理する'; tog.setAttribute('aria-pressed', 'false');
-  tm.push(setTimeout(function(){ B.classList.remove('open'); stack.setAttribute('aria-hidden', 'true'); }, RM ? 0 : 1000));
+function toCards(){
+  clear(); view = 'cards';
+  B.classList.remove('layers'); B.classList.add('cardview'); board.setAttribute('aria-hidden', 'false'); board.scrollTop = 0;
+  mark(); layout();
+  var i = 0;
+  each(function(k){
+    var c = cards[k], s = plRect(k), n = i++;
+    c.style.transition = 'none'; c.style.opacity = OFF[k] ? .3 : .9; c.style.transform = RM ? 'none' : flipFrom(c, s);
+    void c.offsetWidth;
+    later(function(){ c.style.transition = 'transform .8s cubic-bezier(.2,.8,.2,1), opacity .5s'; c.style.transform = 'none'; c.style.opacity = 1; }, 60 + n * 40);
+  });
+  later(function(){ B.classList.add('away'); }, 200);
+  later(function(){ B.classList.add('shown'); }, 60 + i * 40 + 400);
 }
-tog.addEventListener('click', function(){ open ? hide() : show(); });
-addEventListener('keydown', function(e){ if (e.key === 'Escape' && open) hide(); });
-addEventListener('resize', function(){ if (open) size(); });
+function toLayers(stay, cb){
+  clear(); view = 'layers';
+  B.classList.remove('shown', 'away');
+  if (stay){ B.classList.add('layers'); size(); }
+  each(function(k){
+    var c = cards[k], s = plRect(k);
+    c.style.transition = 'transform .65s cubic-bezier(.6,0,.4,1), opacity .45s .2s';
+    c.style.transform = RM ? 'none' : flipFrom(c, s); c.style.opacity = 0;
+  });
+  later(function(){
+    B.classList.remove('cardview'); board.setAttribute('aria-hidden', 'true');
+    if (cb) cb();
+  }, 650);
+}
+function close(cb){
+  clear();
+  function fin(){
+    B.classList.remove('split', 'layers'); tog.textContent = '整理する'; tog.setAttribute('aria-pressed', 'false');
+    later(function(){ B.classList.remove('open'); stack.setAttribute('aria-hidden', 'true'); view = null; if (cb) cb(); }, 1000);
+  }
+  if (view === 'cards') toLayers(false, fin); else fin();
+}
+function back(k){
+  close(function(){
+    var el = E[k].src && $(E[k].src);
+    if (!el || getComputedStyle(el).position === 'fixed' || el.id === 'hd') return;
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  });
+}
+tog.addEventListener('click', function(){ view ? close() : open(); });
+addEventListener('keydown', function(e){ if (e.key === 'Escape' && view) close(); });
+addEventListener('resize', function(){ if (!view) return; size(); if (view === 'cards') layout(); });
 apply();
 })();
 </script>
