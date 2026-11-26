@@ -145,6 +145,15 @@ button{font:inherit}
 .talk .txt{min-height:3.5em; white-space:pre-wrap}
 .talk .nx{position:absolute; right:calc(var(--p)*2); bottom:var(--p); color:var(--A); animation:blink .7s steps(1) infinite; display:none}
 .talk.done .nx{display:block}
+/* 選ぶとき：会話の窓に選択肢を並べる */
+.talk .chs{display:none; margin-top:var(--p); gap:calc(var(--p)*.5); flex-direction:column}
+.talk.choose .chs{display:flex}
+.talk.choose .nx{display:none}
+.talk .chs button{background:none; border:0; color:var(--L); text-align:left; cursor:pointer; padding:0 0 0 1.4em; position:relative; outline:none}
+.talk .chs button::before{content:"▶"; position:absolute; left:0; color:var(--A); visibility:hidden}
+.talk .chs button:hover::before,.talk .chs button:focus-visible::before{visibility:visible}
+/* 店主が勧めた品：▼ が出たまま */
+.grp.hl::after,.poster.hl::after{visibility:visible}
 
 /* コマンドの窓：ゲームの窓にそろえる（みる／はなす／でる）。はなすを選ぶと、その場で聞きたいことを打てる */
 .cmd{position:fixed; left:0; right:0; bottom:0; height:68px; background:var(--D); display:flex; align-items:center; justify-content:center; padding:0 16px; transition:opacity .3s steps(3)}
@@ -294,11 +303,11 @@ body.outside .cmd{opacity:0; pointer-events:none}
     <button class="askb" id="askk" aria-label="店主に聞く"><svg class="sprite" id="askmoya"></svg><span>…</span></button>
   </div>
 
-  <div class="talk" id="talk"><div class="who" id="who"></div><div class="txt" id="txt"></div><span class="nx">▼</span></div>
+  <div class="talk" id="talk"><div class="who" id="who"></div><div class="txt" id="txt"></div><div class="chs" id="chs"></div><span class="nx">▼</span></div>
 </div>
 
 <div class="cmd" id="cmd"><div class="win">
-  <div class="row" id="main"><button data-c="look">みる</button><button data-c="talk">はなす</button><button data-c="exit">でる</button><span class="key">◀ ▶ みまわす</span></div>
+  <div class="row" id="main"><button data-c="look">みる</button><button data-c="soudan">そうだん</button><button data-c="talk">はなす</button><button data-c="exit">でる</button><span class="key">◀ ▶ みまわす</span></div>
   <div class="row" id="lookm" hidden><button data-c="shelf">たな</button><button data-c="keeper">みせのひと</button><button data-c="wall">かべ</button><button data-c="back">もどる</button></div>
   <form class="say" id="ask" autocomplete="off" hidden><span class="pr">▶</span><input id="q" type="text" placeholder="なにを きく？（Esc でもどる）"><button id="send" type="submit" disabled>きく</button></form>
 </div></div>
@@ -481,7 +490,7 @@ function posterOf(it){
 [[GOODS[0],GOODS[1]],[GOODS[2],GOODS[3]]].forEach(row=>{
   const tier = document.createElement('div'); tier.className = 'tier';
   row.forEach(it=>{
-    const g = document.createElement('button'); g.className = 'grp'; g.setAttribute('aria-label', it.name);
+    const g = document.createElement('button'); g.className = 'grp'; g.dataset.id = it.id; g.setAttribute('aria-label', it.name);
     const i = GOODS.indexOf(it);
     for (let k=0; k<3; k++) g.append(boxOf(it, i));
     const tg = document.createElement('span'); tg.className = 'ptag'; tg.textContent = it.short.replace(/\n/g,''); g.append(tg);
@@ -563,14 +572,62 @@ function show(id){
   $('look').classList.add('show');
   seen.add(id);
   /* 中身は会話の窓に一文字ずつ（公式の文のまま。長いものはページを分ける） */
-  talk(pagesOf(curItem.desc).map(t=>({who:curItem.name, text:t})));
+  const pg = pagesOf(curItem.desc).map(t=>({who:curItem.name, text:t}));
+  if (id === pending) talk(pg.concat([{who:'店主', text:curItem.talk}]), ()=>solve(id));   /* 勧められた品なら、店主のひとことのあと困りごとが片づく */
+  else talk(pg);
 }
-function closeLook(){
-  $('look').classList.remove('show'); hideTalk();
-  if (!allDone && seen.size === ALL.length){
-    allDone = true; look(1); $('door').classList.add('ready');
-    setTimeout(()=>talk([{who:'店主', text:'…それで全部。見てくれて、どうも。'}, {who:'店主', text:'帰りはそこの扉から。'}]), 450);
-  }
+function closeLook(){ $('look').classList.remove('show'); hideTalk(); }
+
+/* ---------- 世間話（このゲームの目的） ----------
+   プレイヤーはなんとなく店に来た客。店主は困りごとを名指しで聞かず、世間話を三つ投げる。ゆるい返事の傾向から店主が客を読み、棚の品を一つ勧める
+   s1 道具・手間／s2 迷う・決める／s3 人・言われたこと／s4 場所 */
+const QS = [
+  {q:'最近、仕事どう？', a:[['手間ばっかりで', {s1:2}], ['迷ってばっかり', {s2:2}], ['言われたこと、やってる', {s3:2}], ['まあ、のんびり', {s4:2}]]},
+  {q:'一人で進めるほう？　みんなで？', a:[['一人で、黙々と', {s1:1, s2:1}], ['みんなで', {s3:2}], ['その日による', {s2:1, s4:1}]]},
+  {q:'いまいるところ、好き？', a:[['わりと好き', {s4:2}], ['ふつう', {s1:1}], ['ちょっと変えたいかも', {s3:1, s2:1}]]},
+];
+const READ = {
+  s1:'…手を動かすのは嫌いじゃないんだね。道具が合ってないだけかも。',
+  s2:'…考えるほうでしょ。決める材料があれば、速いよ。',
+  s3:'…人と一緒のほうが伸びるね、たぶん。',
+  s4:'…そこが好きなんだ。いいね。そこで使えるものもあるよ。',
+};
+let pending = null;
+function choose(list){
+  const el = $('talk'); clearInterval(typeT);
+  $('who').textContent = 'あなた'; $('txt').textContent = '';
+  const box = $('chs'); box.replaceChildren();
+  list.forEach(([label, fn])=>{ const b = document.createElement('button'); b.textContent = label; b.onclick = e=>{ e.stopPropagation(); el.classList.remove('choose'); fn(); }; box.append(b); });
+  el.classList.add('show','choose'); el.classList.remove('done');
+  setTimeout(()=>box.firstChild && box.firstChild.focus(), 0);
+}
+function chat(){
+  const score = {s1:0, s2:0, s3:0, s4:0};
+  (function ask(i){
+    if (i >= QS.length){ recommend(score); return; }
+    talk([{who:'店主', text:QS[i].q}], ()=>choose(QS[i].a.map(([label, w])=>[label, ()=>{
+      for (const k in w) score[k] += w[k];
+      talk([{who:'あなた', text:label + '。'}, {who:'店主', text:['ふうん。', 'へえ。', 'そう。'][i % 3]}], ()=>ask(i + 1));
+    }])));
+  })(0);
+}
+function recommend(score){
+  const best = Object.keys(score).sort((a, b)=>score[b] - score[a])[0];
+  talk([{who:'店主', text:READ[best]}, {who:'店主', text:'じゃあ、これかな。左の棚の、▼ が付いてるやつ。'}], ()=>{
+    pending = best;
+    document.querySelectorAll('.grp').forEach(g=>g.classList.toggle('hl', g.dataset.id === best));
+    look(0);
+  });
+}
+function solve(id){
+  pending = null;
+  document.querySelectorAll('.grp').forEach(g=>g.classList.remove('hl'));
+  closeLook(); look(1);
+  setTimeout(finale, 300);
+}
+function finale(){
+  $('door').classList.add('ready');
+  talk([{who:'店主', text:'…ちょっと、いい顔になったね。'}, {who:'店主', text:'ほかの棚も見てっていいよ。また話したくなったら「そうだん」から。…帰りはそこの扉から。'}]);
 }
 $('x').onclick = closeLook;
 $('look').addEventListener('click', e=>{ if (e.target === $('look')) closeLook(); });
@@ -578,7 +635,8 @@ $('askk').onclick = ()=>talk([{who:'店主', text:curItem.talk}]);
 
 /* ---------- 会話 ---------- */
 let pages = [], typeT = 0;
-function talk(list){ pages = list.slice(); next(); }
+let after = null;
+function talk(list, cb){ pages = list.slice(); after = cb || null; next(); }
 /* 長い文はページを分ける：空行で区切り、さらに 3 行・70 字ごと */
 function pagesOf(text){
   const out = [];
@@ -592,11 +650,12 @@ function pagesOf(text){
   });
   return out;
 }
-function hideTalk(){ pages = []; clearInterval(typeT); $('talk').classList.remove('show','done'); }
+function hideTalk(){ pages = []; after = null; clearInterval(typeT); $('talk').classList.remove('show','done','choose'); }
 function next(){
   clearInterval(typeT);
   const el = $('talk');
-  if (!pages.length){ hideTalk(); return; }
+  if (el.classList.contains('choose')) return;
+  if (!pages.length){ const cb = after; hideTalk(); if (cb) cb(); return; }
   const p = pages.shift();
   $('who').textContent = p.who || '';
   el.classList.add('show'); el.classList.remove('done');
@@ -632,7 +691,7 @@ function enter(){
     $('enterF').classList.add('fade'); document.body.classList.remove('outside'); look(1);
     setTimeout(()=>{
       $('enterF').hidden = true;
-      talk([{who:'店主', text:'いらっしゃい。…左は売り物で、右は貼り紙。'}, {who:'店主', text:'気になるのがあったら、手に取って見てって。帰りはそこの扉から。'}]);
+      talk([{who:'店主', text:'いらっしゃい。'}, {who:'店主', text:'…まあ、座ってく？　ちょっと話そうよ。'}], chat);
     }, 400);
   }, 700);
 }
@@ -647,7 +706,7 @@ function ending(){
 }
 $('door').onclick = e=>{ e.stopPropagation(); ending(); };
 $('again').onclick = ()=>{
-  $('exitF').hidden = true; seen.clear(); allDone = false; $('door').classList.remove('ready');
+  $('exitF').hidden = true; seen.clear(); pending = null; document.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl')); $('door').classList.remove('ready');
   $('fdoor').classList.remove('open'); $('bell').classList.remove('show');
   $('enterF').hidden = false; $('enterF').classList.remove('fade');
   $('title').hidden = false; $('title').classList.remove('fade'); $('start').focus();
@@ -661,7 +720,7 @@ function menu(m){
 $('cmd').addEventListener('click', e=>{
   const b = e.target.closest('button[data-c]'); if (!b) return;
   e.stopPropagation();
-  ({ look:()=>menu('look'), talk:()=>{ closeLook(); look(1); menu('talk'); }, exit:()=>ending(),
+  ({ look:()=>menu('look'), soudan:()=>{ closeLook(); look(1); chat(); }, talk:()=>{ closeLook(); look(1); menu('talk'); }, exit:()=>ending(),
      shelf:()=>{ closeLook(); look(0); }, keeper:()=>{ closeLook(); look(1); }, wall:()=>{ closeLook(); look(2); }, back:()=>menu('main') })[b.dataset.c]();
 });
 
