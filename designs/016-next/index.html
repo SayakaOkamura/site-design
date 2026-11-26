@@ -1,36 +1,6 @@
 <!doctype html>
 <html lang="ja">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>デザイン案</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
-<style>
-/* 一覧は案の邪魔をしない：白に近い地、灰色の字、差し色なし */
-:root{ --bg:#f7f7f5; --ink:#222; --sub:#888; --line:#e2e2df; }
-*{box-sizing:border-box; margin:0; padding:0}
-body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.6; padding:clamp(32px,7vh,72px) 16px 64px}
-main{max-width:720px; margin:0 auto}
-h1{font-weight:700; font-size:clamp(20px,3vw,26px); letter-spacing:.04em; margin-bottom:clamp(20px,4vh,32px)}
-ol{list-style:none; counter-reset:n}
-li{counter-increment:n; border-top:1px solid var(--line)}
-li:last-child{border-bottom:1px solid var(--line)}
-a{display:flex; align-items:baseline; gap:16px; padding:14px 4px; color:var(--ink); text-decoration:none; font-size:clamp(15px,2vw,18px); transition:background .15s}
-a::before{content:counter(n, decimal-leading-zero); font-size:12px; letter-spacing:.1em; color:var(--sub); min-width:2em}
-a:hover,a:focus-visible{background:#eeeeeb; outline:none}
-.pg{display:block; margin-top:28px; padding:0; font-size:14px; color:var(--sub)}
-.pg::before{content:none}
-.pg:hover,.pg:focus-visible{background:none; color:var(--ink)}
-.pg{display:block; margin-top:28px; padding:0; font-size:14px; color:var(--sub)}
-.pg::before{content:none}
-.pg:hover,.pg:focus-visible{background:none; color:var(--ink)}
-</style>
-<main>
-  <h1>デザイン案</h1>
-  <ol>
-    <li><a href="bodoge.html">ボードゲームの卓</a></li>
-    <li><a href="kumikae.html">英字が組み替わる誌面</a></li>
-    <li><a href="window.html">時間で変わる作業部屋</a></li>
-  </ol>
-  <a class="pg" href="../index.html">← 前のデザイン案</a>
-</main>
+<script>location.replace('../index.html');</script>
+<meta http-equiv="refresh" content="0; url=../index.html">
