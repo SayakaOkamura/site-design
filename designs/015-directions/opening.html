@@ -4,8 +4,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>株式会社アルターデザインコンサルティング</title>
 <!-- 015 線のオープニング（2026-11-26）。昔のニュース番組のオープニングから借りるのは「一本の線が切れずに形を変える」仕組みだけ
-     濃い紫の地に明るい線が一本走り込み、止まらずにこのページの骨組みを描いていく：見出しの枠 → 一文の下線 → メニューの下線 → ロゴの輪
-     描いたところに公式の文が出る。線の意味は「一本の線から、人が使う画面や仕組みを設計して組み上げる」。文は公式のまま -->
+     濃い紫の地に明るい線が一本。画面の下から左の縦の罫線として上がり、見出しと一文の間の区切り線、右の縦の罫線、ヘッダーの下の区切り線になって、左上でロゴの輪に閉じる
+     通ったところはそのまま残り、ページの罫線とロゴになる。線が横を通ったところから公式の文が出る。文は公式のまま -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
 <style>
@@ -26,11 +26,12 @@ header{position:absolute; top:0; left:0; right:0; z-index:3; display:flex; justi
 nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
 nav a{text-decoration:none; font-size:11px; letter-spacing:.24em; color:#c9b8dc; transition:color .2s}
 nav a:hover{color:var(--ac)}
-.lead{position:relative; z-index:1; text-align:center; padding:0 16px; max-width:960px}
+.lead{position:relative; z-index:1; text-align:center; padding:0 clamp(46px,8vw,80px); max-width:1040px}   /* 左右の縦の罫線の内側に収める */
 .lead .en{font-family:"Archivo",sans-serif; font-weight:600; font-size:clamp(10px,1.2vw,13px); letter-spacing:.6em; color:#b9a8cc; margin-right:-.6em}
-.lead h1{margin-top:clamp(14px,3vh,28px); font-weight:900; font-size:clamp(17px,3vw,42px); line-height:1.6; letter-spacing:.02em; text-wrap:balance}
+.lead h1{margin-top:clamp(14px,3vh,28px); font-weight:900; font-size:clamp(15px,3vw,42px); line-height:1.6; letter-spacing:.02em; text-wrap:balance}
 .lead p{margin-top:clamp(18px,3.4vh,32px); font-size:clamp(12.5px,1.2vw,15px); color:#c9b8dc}
 /* 出方：線が描き終えたところから、すっと出る */
+@media (max-width:480px){ .lead h1 br{display:none} }   /* 狭い幅では改行を外して、行の長さをそろえる */
 .rv{opacity:0; transition:opacity .5s}   /* 位置は動かさない（線が描く位置と文の位置をそろえる） */
 .rv.on{opacity:1}
 
@@ -139,108 +140,88 @@ footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; pad
 (function(){
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var hero = document.getElementById('top'), cv = hero.querySelector('canvas'), cx = cv.getContext('2d');
-var W = 0, H = 0, DPR = 1, N = 1400, TAU = Math.PI * 2;
+var W = 0, H = 0, DPR = 1, TAU = Math.PI * 2;
 var AC = '#d7ff3a';
 var rv = [].slice.call(hero.querySelectorAll('.rv'));
 function show(k){ rv.forEach(function(el){ if (el.dataset.k === k) el.classList.add('on'); }); }
-
 function rect(el){ var r = el.getBoundingClientRect(), h = hero.getBoundingClientRect(); return { l:r.left - h.left, t:r.top - h.top, r:r.right - h.left, b:r.bottom - h.top, w:r.width, h:r.height }; }
-function resample(path, n){
-  var L = [0];
-  for (var i = 1; i < path.length; i++) L.push(L[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
-  var tot = L[L.length - 1] || 1, out = [], j = 0;
-  for (i = 0; i < n; i++){
-    var t = tot * i / (n - 1);
-    while (j < L.length - 2 && L[j + 1] < t) j++;
-    var seg = L[j + 1] - L[j] || 1, f = (t - L[j]) / seg;
-    out.push([path[j][0] + (path[j + 1][0] - path[j][0]) * f, path[j][1] + (path[j + 1][1] - path[j][1]) * f]);
-  }
+
+/* 一本の線の道筋：画面の下から左の縦の罫線として上がる → 見出しと一文の間を横切る区切り線 → 右の縦の罫線として上がる
+   → ヘッダーの下の区切り線として左へ → 左上でロゴの輪になって閉じる。通ったところはそのまま残る */
+var path = [], L = [], marks = [];
+function corner(a, b, c, r){
+  var la = Math.hypot(b[0] - a[0], b[1] - a[1]), lc = Math.hypot(c[0] - b[0], c[1] - b[1]), rr = Math.min(r, la / 2, lc / 2), out = [];
+  var p0 = [b[0] + (a[0] - b[0]) * rr / la, b[1] + (a[1] - b[1]) * rr / la], p1 = [b[0] + (c[0] - b[0]) * rr / lc, b[1] + (c[1] - b[1]) * rr / lc];
+  for (var k = 0; k <= 8; k++){ var t = k / 8, u = 1 - t; out.push([u * u * p0[0] + 2 * u * t * b[0] + t * t * p1[0], u * u * p0[1] + 2 * u * t * b[1] + t * t * p1[1]]); }
   return out;
 }
-/* 角を少し丸めた四角：左の辺の真ん中から出て、上・右・下と回って戻る */
-function frame(l, t, r, b, rad){
-  var pts = [[l, (t + b) / 2]], c = [[l, t, 0, -1, 1, 0], [r, t, 1, 0, 0, 1], [r, b, 0, 1, -1, 0], [l, b, -1, 0, 0, -1]];
-  c.forEach(function(k){ for (var j = 0; j <= 8; j++) pts.push(corner(k, k[0], k[1], rad, j / 8)); });   /* 角の手前 → 角を回る → 角の先 */
-  pts.push([l, (t + b) / 2]);
-  return pts;
-}
-function corner(k, x, y, rad, u){
-  /* k[2],k[3]：入ってくる向き　k[4],k[5]：出ていく向き。二次ベジェで角を回る */
-  var p0 = [x - k[2] * rad, y - k[3] * rad], p2 = [x + k[4] * rad, y + k[5] * rad], v = 1 - u;
-  return [v * v * p0[0] + 2 * v * u * x + u * u * p2[0], v * v * p0[1] + 2 * v * u * y + u * u * p2[1]];
-}
-
-var steps = [];
 function size(){
   DPR = Math.min(2, devicePixelRatio || 1);
   W = hero.clientWidth; H = hero.clientHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  var h1 = rect(hero.querySelector('h1')), en = rect(hero.querySelector('.en')), pp = rect(hero.querySelector('.lead p'));
-  var nav = rect(hero.querySelector('nav ul')), ring = rect(hero.querySelector('.logo i'));
-  var px = Math.min(36, W * .05), py = Math.min(24, H * .03);
-  var fl = Math.max(8, Math.min(h1.l, en.l) - px), fr = Math.min(W - 8, Math.max(h1.r, en.r) + px), ft = en.t - py, fb = h1.b + py;
-  var fpath = frame(fl, ft, fr, fb, 6), y0 = (ft + fb) / 2;
-  steps = [];
-  /* 0：画面の左の外から走り込んでくる線 */
-  steps.push({ p:resample([[-W * .9, y0], [-20, y0]], N) });
-  /* 1：見出しを囲む枠 */
-  steps.push({ p:resample(fpath, N), k:'h1' });
-  /* 2：一文の下線 */
-  var uy = pp.b + 10, uw = Math.min(pp.w, W - 32) / 2 + 12, ucx = (pp.l + pp.r) / 2;
-  steps.push({ p:resample([[ucx - uw, uy], [ucx + uw, uy]], N), k:'p' });
-  /* 3：メニューの下線（メニューが出ていない幅では飛ばす） */
-  if (nav.w > 0) steps.push({ p:resample([[nav.l, nav.b + 8], [nav.r, nav.b + 8]], N), k:'nav' });
-  /* 4：ロゴの輪（線の真ん中が、輪の太さの真ん中に来る） */
-  var rcx = (ring.l + ring.r) / 2, rcy = (ring.t + ring.b) / 2, rr = ring.w / 2 - 2.5, rp = [];
-  for (var j = 0; j <= 120; j++){ var a = Math.PI + TAU * j / 120; rp.push([rcx + Math.cos(a) * rr, rcy + Math.sin(a) * rr]); }
-  steps.push({ p:resample(rp, N), k:'logo' });
+  var h1 = rect(hero.querySelector('h1')), pp = rect(hero.querySelector('.lead p')), ring = rect(hero.querySelector('.logo i')), hd = rect(hero.querySelector('header'));
+  var xr = (ring.l + ring.r) / 2, yr = (ring.t + ring.b) / 2, rr = ring.w / 2 - 2.5;
+  var xR = W - (xr - 0), yl = (h1.b + pp.t) / 2, yh = hd.b;
+  var c = 10;
+  /* 角の点 */
+  var P = [[xr, H + 20], [xr, yl], [xR, yl], [xR, yh], [xr, yh], [xr, yr + rr]];
+  path = [P[0]];
+  for (var i = 1; i < P.length - 1; i++) path = path.concat(corner(P[i - 1], P[i], P[i + 1], c));
+  path.push(P[P.length - 1]);
+  /* 輪：いちばん下から一周 */
+  for (var j = 1; j <= 120; j++){ var a = Math.PI / 2 + TAU * j / 120; path.push([xr + Math.cos(a) * rr, yr + Math.sin(a) * rr]); }
+  L = [0];
+  for (i = 1; i < path.length; i++) L.push(L[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
+  /* 文が出るところ：線が見出しの下を通るとき・一文の上を抜けるとき・ヘッダーの下を通るとき・輪を閉じたとき */
+  var at = function(x, y){ var best = 0, bd = 1e18; path.forEach(function(p, k){ var d = (p[0] - x) * (p[0] - x) + (p[1] - y) * (p[1] - y); if (d < bd){ bd = d; best = k; } }); return L[best]; };
+  marks = [
+    { k:'h1', at:at((h1.l + h1.r) / 2, yl) },
+    { k:'p', at:at(pp.r, yl) },
+    { k:'nav', at:at(W * .6, yh) },
+    { k:'logo', at:L[L.length - 1] - 4 }
+  ];
 }
 
-/* 時間（ms）：一つ描くのに 0.8 秒、描き終えたところで文が出て 0.45 秒とどまる */
-var START = 350, MORPH = 800, STEP = 1250, FADE = 350;
-function total(){ return START + (steps.length - 1) * STEP + FADE + 100; }
+/* 時間（ms）：線は 3.4 秒で道筋を走り抜ける。走り出しは速く、最後の輪でゆるむ */
+var START = 250, RUN = 3400, END = START + RUN + 300;
 function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
-function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
+function run(v){ return 1 - Math.pow(1 - v, 2.2); }
 
 function render(t){
-  var n = steps.length - 1, k = 0, p = 0;
-  if (t >= START){ k = Math.min(Math.floor((t - START) / STEP), n - 1); p = clamp((t - START - k * STEP) / MORPH); }
-  var a = steps[k].p, b = steps[k + 1].p;
-  /* 描き終えたものの文を出す */
-  for (var i = 1; i <= n; i++) if (t >= START + (i - 1) * STEP + MORPH - 80) show(steps[i].k);
-  var end = START + (n - 1) * STEP + MORPH, fade = clamp((t - end) / FADE);
+  var tot = L[L.length - 1], want = tot * run(clamp((t - START) / RUN));
+  marks.forEach(function(m){ if (want >= m.at) show(m.k); });
   cx.setTransform(DPR, 0, 0, DPR, 0, 0);
   cx.clearRect(0, 0, W, H);
-  if (fade >= 1) return;
-  cx.globalAlpha = 1 - fade;
-  cx.lineJoin = cx.lineCap = 'round'; cx.strokeStyle = AC; cx.lineWidth = 2;
-  cx.shadowColor = 'rgba(215,255,58,.55)'; cx.shadowBlur = 8;
-  cx.beginPath();
-  for (var j = 0; j < N; j++){
-    /* 線の先（後ろの点）から先に動き、尾がついてくる */
-    var q = ease(clamp(p * 1.45 - (1 - j / (N - 1)) * .45));
-    var x = a[j][0] + (b[j][0] - a[j][0]) * q, y = a[j][1] + (b[j][1] - a[j][1]) * q;
-    if (j) cx.lineTo(x, y); else cx.moveTo(x, y);
+  if (want <= 0) return;
+  cx.lineJoin = cx.lineCap = 'round'; cx.strokeStyle = AC; cx.lineWidth = 1.6;
+  cx.beginPath(); cx.moveTo(path[0][0], path[0][1]);
+  var head = path[0];
+  for (var i = 1; i < path.length; i++){
+    if (L[i] <= want){ cx.lineTo(path[i][0], path[i][1]); head = path[i]; continue; }
+    var f = (want - L[i - 1]) / (L[i] - L[i - 1] || 1);
+    head = [path[i - 1][0] + (path[i][0] - path[i - 1][0]) * f, path[i - 1][1] + (path[i][1] - path[i - 1][1]) * f];
+    cx.lineTo(head[0], head[1]); break;
   }
   cx.stroke();
-  cx.globalAlpha = 1; cx.shadowBlur = 0;
+  /* 線の先：走っているあいだだけ光る */
+  if (want < tot){
+    var gr = cx.createRadialGradient(head[0], head[1], 0, head[0], head[1], 14);
+    gr.addColorStop(0, 'rgba(215,255,58,.9)'); gr.addColorStop(1, 'rgba(215,255,58,0)');
+    cx.fillStyle = gr; cx.beginPath(); cx.arc(head[0], head[1], 14, 0, TAU); cx.fill();
+  }
 }
 
 var t0 = 0, raf = 0, ended = false;
-function finish(){
-  ended = true; cancelAnimationFrame(raf);
-  rv.forEach(function(el){ el.classList.add('on'); });
-  cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cv.width, cv.height);
-}
+function finish(){ ended = true; cancelAnimationFrame(raf); rv.forEach(function(el){ el.classList.add('on'); }); render(1e9); }
 function loop(){
   var t = performance.now() - t0;
-  if (t >= total()){ finish(); return; }
+  if (t >= END){ finish(); return; }
   render(t);
   raf = requestAnimationFrame(loop);
 }
 /* オープニングの途中で押したら、最後まで飛ばす */
 hero.addEventListener('click', function(){ if (!ended) finish(); });
-addEventListener('resize', function(){ size(); if (ended) finish(); });
+addEventListener('resize', function(){ size(); if (ended) render(1e9); });
 
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(function(){
   size();
