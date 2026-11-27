@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{ --ink:#2a0e3e; --sub:#715189; --btn:#654087 }
+*{box-sizing:border-box}
+html,body{height:100%; margin:0}
+body{background:#1e1814; color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.8; overflow:hidden; display:flex; flex-direction:column}
+h1,h2,h3,p,dl,dd,ul{margin:0}
+ul{padding:0; list-style:none}
+b{font-weight:700}
+.serif{font-family:"Zen Antique",serif; font-weight:400}
+
+#stage{position:relative; flex:1; min-height:0}
+#stage canvas{display:block; width:100%; height:100%; outline:none}
+body.hover #stage canvas{cursor:pointer}
+
+/* メニュー：主な情報はいつでもここから。項目に乗ると卓の上の対応する物が光る */
+#menu{flex:none; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px clamp(14px,3vw,32px); background:#fffdf8; box-shadow:0 2px 10px rgba(0,0,0,.25); z-index:7; position:relative}
+.logo{display:flex; align-items:center; gap:10px; line-height:1.1; white-space:nowrap}
+.logo i{width:28px; height:28px; border-radius:50%; border:5px solid var(--btn); box-shadow:inset 0 0 0 2px #bb7eea}
+.logo span{font-size:16px}
+.logo small{display:block; font-size:10px; margin-left:4.4em}
+#menu ul{display:flex; gap:clamp(4px,1.6vw,22px); overflow-x:auto}
+#menu button{border:0; background:none; padding:6px 8px; font:inherit; font-size:14px; color:var(--ink); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent}
+#menu button:hover, #menu button:focus-visible, #menu button[aria-current="true"]{color:var(--btn); border-bottom-color:var(--btn); outline:none}
+
+/* 中身の札 */
+#card{position:fixed; z-index:5; top:calc(50% + 28px); right:clamp(16px,4vw,56px); width:min(440px, 44vw); max-height:calc(100vh - 100px); overflow:auto; transform:translateY(-50%) rotateY(90deg); opacity:0;
+  background:#fffdf8; border-radius:14px; box-shadow:0 30px 70px rgba(0,0,0,.45); transition:transform .45s cubic-bezier(.3,1.3,.5,1), opacity .2s; pointer-events:none}
+#card.on{transform:translateY(-50%) rotateY(0); opacity:1; pointer-events:auto}
+#card .band{height:12px; border-radius:14px 14px 0 0}
+#card .in{padding:22px 26px 24px}
+#card .kind{font-size:12px; color:var(--sub); letter-spacing:.1em}
+#card h2{font-size:clamp(20px,2.2vw,26px); line-height:1.5; margin:.2em 0 .8em}
+#card h3{font-size:16px; font-weight:500; line-height:1.6; margin-bottom:.6em}
+#card p{font-size:14px}
+#card p + p{margin-top:.8em}
+#card dl{display:grid; grid-template-columns:6em 1fr; gap:4px 12px; font-size:13.5px}
+#card dt{color:var(--sub)}
+#card .acc{font-size:12.5px; color:var(--sub); margin-top:.4em}
+#card a.mail{display:inline-flex; margin-top:1.2em; padding:10px 26px; background:var(--btn); color:#fff; text-decoration:none}
+#back{position:fixed; z-index:6; top:72px; left:16px; padding:8px 16px; border:0; border-radius:20px; background:rgba(255,253,248,.92); color:var(--ink); font:inherit; font-size:14px; cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s}
+body.zoom #back{opacity:1; pointer-events:auto}
+#hint{position:fixed; left:50%; bottom:14px; transform:translateX(-50%); margin:0; color:rgba(255,255,255,.7); font-size:12px; letter-spacing:.1em; transition:opacity .3s; white-space:nowrap; pointer-events:none}
+body.zoom #hint{opacity:0}
+#loading{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.5); font-size:13px; letter-spacing:.2em; transition:opacity .6s; pointer-events:none}
+body.ready #loading{opacity:0}
+
+@media (max-width:760px){ .logo small{display:none} .logo span{font-size:14px} #menu button{font-size:13px; padding:6px 4px} #menu{gap:8px} }
+@media (max-width:540px){ #menu{flex-wrap:wrap; row-gap:4px; padding-bottom:4px} #menu ul{width:100%; justify-content:space-between; scrollbar-width:none} #menu button{padding:6px 2px} #back{top:100px} }
+@media (max-aspect-ratio:1/1){
+  #card{top:auto; bottom:12px; right:12px; left:12px; width:auto; max-height:50vh; transform:rotateX(90deg)}
+  #card.on{transform:none}
+}
+@media (prefers-reduced-motion:reduce){ #card{transition:none} }
+</style>
+
+<nav id="menu" aria-label="メニュー">
+  <div class="logo"><i></i><span>Alter Design<small>consulting</small></span></div>
+  <ul>
+    <li><button type="button" data-k="board">事業内容</button></li>
+    <li><button type="button" data-k="svc">サービス</button></li>
+    <li><button type="button" data-k="book">企業理念</button></li>
+    <li><button type="button" data-k="box">会社概要</button></li>
+    <li><button type="button" data-k="seat">お問い合わせ</button></li>
+  </ul>
+</nav>
+<div id="stage" aria-label="打ち合わせの机でボードゲームをしているところ"><p id="loading">準備しています</p></div>
+
+<button id="back" type="button">‹ 机にもどる</button>
+<p id="hint">気になるものを押してください</p>
+<div id="card" role="dialog" aria-modal="false" aria-labelledby="card-h"><div class="band"></div><div class="in"><p class="kind"></p><h2 id="card-h" class="serif"></h2><div class="body"></div></div></div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const B = document.body, stage = document.getElementById('stage');
+const CC = ['#2f8fa8', '#d99a2b', '#d0708a', '#4a9d6a'];
+
+/* ── 中身（公式の文のまま） ── */
+const C = {
+  board:{ c:'#654087', kind:'盤', n:'事業内容', h:'<h3>AI × ローコードで、「上流工程中心のシステム開発」に革新を</h3><p>コンサルティングによる業務設計からエンジニアリングまでを行います</p><p>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</p>' },
+  book:{ c:'#654087', kind:'ルールブック', n:'企業理念', h:'<h3>経営の力で「遊ぶように働く世界」をデザインする</h3><p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
+  box:{ c:'#654087', kind:'箱のうら', n:'会社概要', h:'<dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd><dt>代表者</dt><dd>藤田 靖広</dd><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）<p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd><dt>資本金</dt><dd>60百万円</dd><dt>設立年月日</dt><dd>2025年6月</dd><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>' },
+  a:{ c:CC[0], kind:'基本デッキ', n:'人間中心の次世代業務システム開発', h:'<p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>' },
+  b:{ c:CC[1], kind:'基本デッキ', n:'AI による意思決定支援と事業変革支援', h:'<p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' },
+  c:{ c:CC[2], kind:'基本デッキ', n:'自律型・共創型の組織設計支援', h:'<p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' },
+  d:{ c:CC[3], kind:'基本デッキ', n:'地域格差の解消を目指したデジタル支援', h:'<p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
+  svc:{ c:'linear-gradient(90deg,#2f8fa8 25%,#d99a2b 25% 50%,#d0708a 50% 75%,#4a9d6a 75%)', kind:'基本デッキ', n:'私たちが提供するサービス', h:'' },
+  seat:{ c:'#654087', kind:'空いている席', n:'お問い合わせ', h:'<p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p><a class="mail" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>' }
+};
+C.svc.h = 'abcd'.split('').map(k => '<h3 style="border-left:4px solid ' + C[k].c + '; padding-left:10px">' + C[k].n + '</h3>' + C[k].h).join('<div style="height:14px"></div>');
+
+await Promise.all([document.fonts.load('40px "Zen Antique"'), document.fonts.load('500 40px "Zen Kaku Gothic New"'), document.fonts.load('700 40px "Zen Kaku Gothic New"')]).catch(() => {});
+
+/* ── 基本の道具 ── */
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#1e1814');
+scene.fog = new THREE.Fog('#1e1814', 320, 620);
+const camera = new THREE.PerspectiveCamera(36, 1, 1, 2000);
+
+/* 光：卓の上の吊り灯りと、部屋のやわらかい光 */
+scene.add(new THREE.HemisphereLight('#fff3e0', '#3a2c22', .75));
+const lamp = new THREE.SpotLight('#ffe7c4', 2.2, 0, Math.PI / 4.2, .55, 0);
+lamp.position.set(-20, 210, 40); lamp.target.position.set(0, 0, 0);
+lamp.castShadow = true; lamp.shadow.mapSize.set(2048, 2048); lamp.shadow.bias = -.0004; lamp.shadow.radius = 6;
+lamp.shadow.camera.near = 80; lamp.shadow.camera.far = 400;
+scene.add(lamp, lamp.target);
+const fill = new THREE.DirectionalLight('#cfd8ff', .35); fill.position.set(120, 90, 160); scene.add(fill);
+
+/* 絵を描いて貼る */
+function tex(w, h, draw){
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  draw(cv.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+function rr(g, x, y, w, h, r){ g.beginPath(); g.roundRect(x, y, w, h, r); }
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color:c, roughness:.75, metalness:0 }, o));
+function shadowy(o){ o.traverse(m => { if (m.isMesh){ m.castShadow = true; m.receiveShadow = true; } }); return o; }
+
+/* ── 部屋と机 ── */
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), mat('#2a211b', { roughness:.95 }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = -74; floor.receiveShadow = true; scene.add(floor);
+
+const woodTex = tex(1024, 640, (g, w, h) => {
+  g.fillStyle = '#b88a5e'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 90; i++){
+    const y = Math.random() * h, a = .05 + Math.random() * .12;
+    g.strokeStyle = Math.random() < .5 ? `rgba(120,78,40,${a})` : `rgba(230,190,140,${a})`;
+    g.lineWidth = 1 + Math.random() * 3; g.beginPath(); g.moveTo(0, y);
+    for (let x = 0; x <= w; x += 64) g.lineTo(x, y + Math.sin(x / 140 + i) * 5 + (Math.random() - .5) * 2);
+    g.stroke();
+  }
+  /* 板の継ぎ目 */
+  g.strokeStyle = 'rgba(90,56,28,.35)'; g.lineWidth = 2;
+  [h * .25, h * .5, h * .75].forEach(y => { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); });
+});
+const table = new THREE.Group(); scene.add(table);
+const top = new THREE.Mesh(new THREE.BoxGeometry(184, 4, 114), [mat('#9c7048'), mat('#9c7048'), mat('#fff', { map:woodTex, roughness:.6 }), mat('#9c7048'), mat('#a87b51'), mat('#a87b51')]);
+top.position.y = -2; table.add(top);
+[[-84, -50], [84, -50], [-84, 50], [84, 50]].forEach(([x, z]) => { const l = new THREE.Mesh(new THREE.BoxGeometry(5, 70, 5), mat('#7d5636')); l.position.set(x, -39, z); table.add(l); });
+shadowy(table);
+
+/* ── 押せる物 ── */
+const PICK = [];     /* 当たり判定の物 → 群れ */
+const ITEMS = {};    /* k → 群れの配列 */
+function pickable(grp, k){
+  grp.userData.k = k; grp.userData.lift = 0; grp.userData.y0 = grp.position.y; grp.userData.glow = 0;
+  grp.traverse(m => { if (m.isMesh){ m.material = Array.isArray(m.material) ? m.material.map(x => x.clone()) : m.material.clone(); m.userData.grp = grp; PICK.push(m); } });
+  (ITEMS[k] = ITEMS[k] || []).push(grp);
+  return grp;
+}
+
+/* 盤：題は公式の見出し。まわりにマス、駒が進む */
+const BW = 76, BD = 54;
+const CELLS = [];
+for (let i = 0; i < 9; i++) CELLS.push([90 + i * 137.5, 90]);
+for (let i = 1; i < 5; i++) CELLS.push([1190, 90 + i * 128]);
+for (let i = 0; i < 9; i++) CELLS.push([1190 - i * 137.5, 730]);
+for (let i = 4; i > 0; i--) CELLS.push([90, 90 + i * 128]);
+const boardTex = tex(1280, 820, (g, w, h) => {
+  g.fillStyle = '#fbf6ec'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#e8dcc9'; g.lineWidth = 6; g.strokeRect(14, 14, w - 28, h - 28);
+  CELLS.forEach(([x, y], j) => {
+    rr(g, x - 52, y - 52, 104, 104, 14); g.fillStyle = j % 6 === 0 ? '#efe6f6' : '#fff'; g.fill();
+    g.strokeStyle = '#dccfe6'; g.lineWidth = 4; g.stroke();
+    if (j % 6 === 0){ g.fillStyle = CC[(j / 6) % 4]; g.beginPath(); g.arc(x, y, 12, 0, 7); g.fill(); }
+  });
+  g.fillStyle = '#2a0e3e'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '62px "Zen Antique"'; g.fillText('AI × ローコードで、', w / 2, 352);
+  g.font = '58px "Zen Antique"'; g.fillText('「上流工程中心のシステム開発」に革新を', w / 2, 452);
+  g.fillStyle = '#715189'; g.font = '500 28px "Zen Kaku Gothic New"'; g.fillText('A L T E R   D E S I G N   C O N S U L T I N G', w / 2, 552);
+});
+const board = new THREE.Group();
+const bmesh = new THREE.Mesh(new THREE.BoxGeometry(BW, 1.4, BD), [mat('#e9ddc8'), mat('#e9ddc8'), mat('#fff', { map:boardTex, roughness:.55 }), mat('#e9ddc8'), mat('#e9ddc8'), mat('#e9ddc8')]);
+bmesh.position.y = .7; board.add(bmesh);
+board.position.set(0, 0, -2); table.add(pickable(shadowy(board), 'board'));
+const cellPos = j => { const [x, y] = CELLS[j % CELLS.length]; return new THREE.Vector3((x / 1280 - .5) * BW, 1.4, (y / 820 - .5) * BD); };
+
+/* 駒 */
+const pawnGeo = new THREE.LatheGeometry([[0, 0], [2.2, 0], [2.2, .5], [1.4, 1], [.9, 2.6], [.8, 3.4], [1.5, 4.4], [1.4, 5.4], [.8, 6], [0, 6.2]].map(p => new THREE.Vector2(p[0], p[1])), 24);
+const PCOL = ['#5b6f8f', '#8f5b6f', '#5b8f78'];
+const pawns = [0, 7, 15].map((at, j) => {
+  const m = new THREE.Mesh(pawnGeo, mat(PCOL[j], { roughness:.35 })); m.castShadow = true;
+  const p = cellPos(at); p.x += (j - 1) * 1.4; m.position.copy(p); board.add(m);
+  return { m, at };
+});
+
+/* 箱（ふた）＝会社概要 */
+const lidTex = tex(720, 480, (g, w, h) => {
+  g.fillStyle = '#654087'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 3; g.strokeRect(26, 26, w - 52, h - 52);
+  g.strokeStyle = '#fff'; g.lineWidth = 20; g.beginPath(); g.arc(200, 240, 70, 0, 7); g.stroke();
+  g.strokeStyle = '#bb7eea'; g.lineWidth = 6; g.beginPath(); g.arc(200, 240, 48, 0, 7); g.stroke();
+  g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.font = '500 56px "Zen Kaku Gothic New"'; g.fillText('Alter Design', 300, 222);
+  g.font = '500 30px "Zen Kaku Gothic New"'; g.fillText('consulting', 420, 282);
+});
+const box = new THREE.Group();
+const lm = mat('#55357a', { roughness:.5 });
+const lid = new THREE.Mesh(new THREE.BoxGeometry(36, 6, 24), [lm, lm, mat('#fff', { map:lidTex, roughness:.45 }), lm, lm, lm]);
+lid.position.y = 3; box.add(lid);
+box.position.set(-58, 0, -32); box.rotation.y = .12; table.add(pickable(shadowy(box), 'box'));
+
+/* ルールブック＝企業理念 */
+const bookTex = tex(480, 620, (g, w, h) => {
+  g.fillStyle = '#fbf6ec'; g.fillRect(0, 0, w, h); g.fillStyle = '#e4d7ee'; g.fillRect(0, 0, 34, h);
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = '#715189'; g.font = '500 34px "Zen Kaku Gothic New"'; g.fillText('ル ー ル ブ ッ ク', w / 2 + 16, 170);
+  g.fillStyle = '#2a0e3e'; g.font = '68px "Zen Antique"'; g.fillText('遊ぶように', w / 2 + 16, 320); g.fillText('働く', w / 2 + 16, 410);
+});
+const book = new THREE.Group();
+const pages = mat('#f3ecdf'), cov = mat('#e4d7ee');
+const bk = new THREE.Mesh(new THREE.BoxGeometry(17, 2, 22), [pages, cov, mat('#fff', { map:bookTex, roughness:.6 }), cov, pages, pages]);
+bk.position.y = 1; book.add(bk);
+book.position.set(58, 0, -30); book.rotation.y = -.14; table.add(pickable(shadowy(book), 'book'));
+
+/* 基本デッキ四つ＝サービス */
+const DECK = [
+  { k:'a', n:'業務システム', x:-55, z:-2, r:.1 },
+  { k:'b', n:'意思決定',     x:-52, z:30, r:-.08 },
+  { k:'c', n:'組織設計',     x:55,  z:2,  r:-.12 },
+  { k:'d', n:'地域デジタル', x:52,  z:32, r:.09 }
+];
+const ICON = {
+  a:'M-22 -8h14v12h-14z M8 -8h14v12h-14z M-8 -2h16 M0 4v10 M-8 14h16',
+  b:'M-24 14 L-12 2 L-2 8 L10 -8 L22 -14 M14 -14h8v8',
+  c:'M0 -14a6 6 0 1 0 .1 0 M-18 10a6 6 0 1 0 .1 0 M18 10a6 6 0 1 0 .1 0 M0 -2 L-14 10 M0 -2 L14 10 M-12 16h24',
+  d:'M0 16 C-14 0 -14 -16 0 -16 C14 -16 14 0 0 16 Z M0 -10a4 4 0 1 0 .1 0'
+};
+const cardSide = mat('#efe8dc');
+DECK.forEach((d, j) => {
+  const col = CC[j];
+  const face = tex(440, 600, (g, w, h) => {
+    rr(g, 0, 0, w, h, 30); g.fillStyle = '#fffdf8'; g.fill();
+    g.strokeStyle = col; g.lineWidth = 12; rr(g, 6, 6, w - 12, h - 12, 26); g.stroke();
+    g.fillStyle = col; rr(g, 6, 6, w - 12, 104, 26); g.fill(); g.fillRect(6, 60, w - 12, 50);
+    g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 40px "Zen Kaku Gothic New"'; g.fillText('サ ー ビ ス', w / 2, 62);
+    g.save(); g.translate(w / 2, 300); g.scale(4.6, 4.6); g.strokeStyle = col; g.lineWidth = 2.6; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(new Path2D(ICON[d.k])); g.restore();
+    g.fillStyle = '#2a0e3e'; g.font = '500 46px "Zen Kaku Gothic New"'; g.fillText(d.n, w / 2, 510);
+  });
+  const deck = new THREE.Group();
+  const n = 7;
+  for (let s = 0; s < n; s++){
+    const top = s === n - 1;
+    const c = new THREE.Mesh(new THREE.BoxGeometry(16, .35, 22), [cardSide, cardSide, top ? mat('#fff', { map:face, roughness:.5 }) : cardSide, cardSide, cardSide, cardSide]);
+    c.position.set((Math.random() - .5) * .5, .18 + s * .36, (Math.random() - .5) * .5); c.rotation.y = (Math.random() - .5) * .05;
+    deck.add(c);
+  }
+  deck.position.set(d.x, 0, d.z); deck.rotation.y = d.r;
+  table.add(pickable(shadowy(deck), d.k));
+});
+
+/* 人と椅子：Blender で作った形（assets/bodoge3d.glb）。服と髪の色だけ人ごとに変える */
+const glb = await new GLTFLoader().loadAsync('assets/bodoge3d.glb');
+const PERSON = glb.scene.getObjectByName('person'), CHAIR = glb.scene.getObjectByName('chair');
+const HANDS = [];
+function dress(o, shirt, hairC){
+  o.traverse(m => { if (!m.isMesh) return;
+    const n = m.material.name, src = m.material;
+    m.material = new THREE.MeshStandardMaterial({ color:n === 'shirt' ? shirt : n === 'hair' ? hairC : src.color, roughness:src.roughness });
+  });
+  return o;
+}
+function chair(x, z, ry){
+  const c = dress(CHAIR.clone(true), '#000', '#000');
+  c.position.set(x, 0, z); c.rotation.y = ry; scene.add(shadowy(c)); return c;
+}
+function person(x, z, ry, shirt, hairC){
+  const p = dress(PERSON.clone(true), shirt, hairC);
+  p.position.set(x, 0, z); p.rotation.y = ry; scene.add(shadowy(p));
+  chair(x, z, ry);
+  HANDS.push([p.getObjectByName('armL'), p.getObjectByName('armR')]);
+  return p;
+}
+person(0, -82, Math.PI, '#5b6f8f', '#2a1c14');
+person(-112, 0, -Math.PI / 2, '#8f5b6f', '#4a2e1c');
+person(112, 0, Math.PI / 2, '#5b8f78', '#16100c');
+
+/* 手元の札（三人とも何枚か持っている） */
+[[0, -46, 0], [-76, 0, Math.PI / 2], [76, 0, -Math.PI / 2]].forEach(([x, z, ry], j) => {
+  const g = new THREE.Group();
+  for (let s = -1; s <= 1; s++){
+    const c = new THREE.Mesh(new THREE.BoxGeometry(6, .25, 8.4), [cardSide, cardSide, mat(CC[(j + s + 4) % 4], { roughness:.5 }), cardSide, cardSide, cardSide]);
+    c.position.set(s * 4, .2 + (s + 1) * .26, 0); c.rotation.y = s * .25; g.add(c);
+  }
+  g.position.set(x, 0, z); g.rotation.y = ry; table.add(shadowy(g));
+});
+
+/* 空いている席＝お問い合わせ：手前の空いた椅子と、席札 */
+const seatGrp = new THREE.Group();
+const tentTex = tex(600, 260, (g, w, h) => {
+  g.fillStyle = '#fffdf8'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#654087'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 66px "Zen Kaku Gothic New"'; g.fillText('お問い合わせ', w / 2, h / 2 + 4);
+});
+const paper = mat('#fffdf8', { roughness:.7, side:THREE.DoubleSide });
+const tentFace = mat('#fff', { map:tentTex, roughness:.7 });
+[-1, 1].forEach(s => {
+  const pl = new THREE.Mesh(new THREE.BoxGeometry(24, 10.4, .3), [paper, paper, paper, paper, s > 0 ? tentFace : paper, s > 0 ? paper : tentFace]);
+  pl.position.set(0, 5 * Math.cos(.28), s * 1.4); pl.rotation.x = s * .28; seatGrp.add(pl);
+});
+seatGrp.position.set(0, 0, 42);
+table.add(pickable(shadowy(seatGrp), 'seat'));
+const empty = chair(0, 84, 0);
+pickable(empty, 'seat');
+
+/* ── 画面の大きさ ── */
+function resize(){
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  camera.fov = w < h ? 50 : 36; camera.updateProjectionMatrix();
+  home = homeView();
+  if (!zoomed){ cam.copy(home.pos); look.copy(home.at); }
+}
+/* 卓全体：手前の空いた席の側から、斜めに見下ろす */
+function homeView(){
+  const portrait = stage.clientWidth < stage.clientHeight;
+  return portrait ? { pos:new THREE.Vector3(0, 300, 250), at:new THREE.Vector3(0, -10, 8) } : { pos:new THREE.Vector3(0, 150, 205), at:new THREE.Vector3(0, -6, 6) };
+}
+let home = homeView(), zoomed = false;
+const cam = home.pos.clone(), look = home.at.clone();
+
+/* ── 寄る ── */
+let tw = null;
+function fly(pos, at, ms){
+  if (RM){ cam.copy(pos); look.copy(at); return; }
+  tw = { p0:cam.clone(), a0:look.clone(), p1:pos, a1:at, t0:performance.now(), ms };
+}
+function focusOf(k){
+  const bb = new THREE.Box3();
+  (k === 'svc' ? ['a', 'b', 'c', 'd'] : [k]).forEach(kk => ITEMS[kk].forEach(g => { if (g.parent === table || k !== 'seat') bb.expandByObject(g); }));
+  if (k === 'seat') bb.setFromObject(seatGrp).expandByObject(empty);
+  const c = bb.getCenter(new THREE.Vector3()), s = bb.getSize(new THREE.Vector3());
+  const portrait = stage.clientWidth < stage.clientHeight;
+  const r = Math.max(s.x, s.z, s.y * 1.5);
+  const dist = (portrait ? 2.6 : 2.1) * r + 30;
+  const dir = new THREE.Vector3(0, 1.15, 1).normalize();
+  const at = c.clone();
+  /* 札の反対側に寄せる：横長なら左へ、縦長なら上へ */
+  if (portrait) at.z += dist * .62; else at.x += dist * .3;
+  return { pos:at.clone().add(dir.multiplyScalar(dist)), at };
+}
+
+/* ── 札 ── */
+const card = document.getElementById('card'), menu = [...document.querySelectorAll('#menu button')];
+let opener = null, current = null;
+function mark(k){ menu.forEach(b => b.setAttribute('aria-current', String(b.dataset.k === k || (k && 'abcd'.includes(k) && b.dataset.k === 'svc')))); }
+function open(k, from){
+  const c = C[k]; opener = from || null; zoomed = true; current = k;
+  B.classList.add('zoom'); mark(k);
+  const f = focusOf(k); fly(f.pos, f.at, 1000);
+  card.querySelector('.band').style.background = c.c;
+  card.querySelector('.kind').textContent = c.kind;
+  card.querySelector('h2').textContent = c.n;
+  card.querySelector('.body').innerHTML = c.h;
+  card.classList.remove('on'); setTimeout(() => { card.classList.add('on'); card.scrollTop = 0; }, RM ? 0 : 520);
+}
+function close(){
+  card.classList.remove('on'); B.classList.remove('zoom'); mark(null); zoomed = false; current = null;
+  fly(home.pos.clone(), home.at.clone(), 900);
+  if (opener) opener.focus({ preventScroll:true });
+}
+
+/* ── 指した物 ── */
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), par = new THREE.Vector2();
+let hov = null, lit = null, downAt = null;
+function hit(e){
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const h = ray.intersectObjects(PICK, false)[0];
+  return h ? h.object.userData.grp : null;
+}
+renderer.domElement.addEventListener('pointermove', e => {
+  const r = renderer.domElement.getBoundingClientRect();
+  par.set((e.clientX - r.left) / r.width - .5, (e.clientY - r.top) / r.height - .5);
+  hov = zoomed ? null : hit(e); B.classList.toggle('hover', !!hov);
+});
+renderer.domElement.addEventListener('pointerleave', () => { hov = null; B.classList.remove('hover'); par.set(0, 0); });
+renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('click', e => {
+  if (downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
+  if (zoomed){ close(); return; }
+  const g = hit(e); if (g) open(g.userData.k);
+});
+menu.forEach(b => {
+  const k = b.dataset.k;
+  const on = v => { lit = v ? k : null; };
+  b.addEventListener('mouseenter', () => on(true)); b.addEventListener('mouseleave', () => on(false));
+  b.addEventListener('focus', () => on(true)); b.addEventListener('blur', () => on(false));
+  b.addEventListener('click', () => { on(false); open(k, b); });
+});
+document.getElementById('back').addEventListener('click', close);
+addEventListener('keydown', e => { if (e.key === 'Escape' && zoomed) close(); });
+
+/* ── 手番：一マスずつ。ときどき、通ったマスを飛ぶ ── */
+let turn = 0, hop = null;
+function play(){
+  const j = turn % 3, pw = pawns[j], big = Math.random() < .25, steps = big ? 6 : 1 + (Math.random() * 3 | 0);
+  const from = pw.m.position.clone(); pw.at += steps;
+  const to = cellPos(pw.at); to.x += (j - 1) * 1.4;
+  hop = { pw, from, to, big, steps, t0:performance.now(), ms:big ? 900 : 380 * steps, hand:HANDS[j], j };
+  turn++;
+}
+if (!RM) setInterval(() => { if (!zoomed && !document.hidden) play(); }, 1900);
+
+/* ── 毎こま ── */
+const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const sway = new THREE.Vector3(), tmp = new THREE.Vector3();
+function frame(now){
+  requestAnimationFrame(frame);
+  if (tw){
+    const k = Math.min(1, (now - tw.t0) / tw.ms), e = ease(k);
+    cam.lerpVectors(tw.p0, tw.p1, e); look.lerpVectors(tw.a0, tw.a1, e);
+    if (k >= 1) tw = null;
+  }
+  /* 指の位置で、少しだけ回り込む */
+  const t = now / 1000;
+  sway.set(zoomed || RM ? 0 : par.x * 34 + Math.sin(t * .25) * 6, zoomed || RM ? 0 : -par.y * 18, 0);
+  camera.position.lerp(tmp.copy(cam).add(sway), RM ? 1 : .08);
+  camera.lookAt(look);
+
+  /* 乗った物は少し浮く／メニューで指した物は光る */
+  Object.keys(ITEMS).forEach(k => ITEMS[k].forEach(g => {
+    const up = (hov === g || (hov && hov.userData.k === k)) ? 1 : 0;
+    const gl = lit === k || (lit === 'svc' && 'abcd'.includes(k)) ? 1 : 0;
+    g.userData.lift += (up - g.userData.lift) * .18; g.userData.glow += (gl - g.userData.glow) * .15;
+    if (g.parent === table) g.position.y = g.userData.y0 + g.userData.lift * 2.2;
+    g.traverse(m => { if (m.isMesh){ (Array.isArray(m.material) ? m.material : [m.material]).forEach(x => { x.emissive.set('#ffe9a0'); x.emissiveIntensity = g.userData.glow * .35 + g.userData.lift * .06; }); } });
+  }));
+
+  /* 駒が進む。手番の人の手が盤へ伸びる */
+  if (hop){
+    const k = Math.min(1, (now - hop.t0) / hop.ms), e = k * (2 - k);
+    const h = hop.big ? Math.sin(k * Math.PI) * 14 : Math.abs(Math.sin(k * Math.PI * hop.steps)) * 2.2;
+    hop.pw.m.position.lerpVectors(hop.from, hop.to, e); hop.pw.m.position.y = 1.4 + h;
+    hop.pw.m.rotation.y = hop.big ? k * Math.PI * 2 : 0;
+    const reach = Math.sin(Math.min(1, k * 1.6) * Math.PI) * .22;
+    hop.hand.forEach(a => { a.rotation.x = reach; });
+    if (k >= 1){ hop.hand.forEach(a => { a.rotation.x = 0; }); hop = null; }
+  }
+  renderer.render(scene, camera);
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+camera.position.copy(cam); camera.lookAt(look);
+requestAnimationFrame(frame);
+B.classList.add('ready');
+</script>
+</html>
