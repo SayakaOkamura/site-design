@@ -2,7 +2,7 @@
 <html lang="ja">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>株式会社アルターデザインコンサルティング</title>
+<title>株式会社アルターデザインコンサルティング（Alter Design Consulting）｜上流工程から伴走するAI ×ローコード開発支援</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
 <style>
@@ -37,56 +37,68 @@ dl{display:grid; grid-template-columns:7em 1fr; gap:12px; padding:16px 0; border
 dt{color:var(--sub)}
 .btn{display:inline-block; margin-top:28px; padding:14px 34px; border-radius:40px; background:var(--ac); color:#fff; text-decoration:none; font-weight:700; letter-spacing:.08em}
 footer{padding:28px clamp(16px,4vw,56px) 40px; display:flex; flex-wrap:wrap; gap:12px 24px; justify-content:space-between; font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
+.news{display:flex; flex-wrap:wrap; gap:4px 16px; align-items:baseline; margin-top:44px; padding-top:18px; border-top:1px solid var(--line); font-size:13.5px}
+.news time{color:var(--sub)}
+.news .k{font-size:11.5px; padding:1px 10px; border:1px solid var(--ac); color:var(--ac); border-radius:20px}
+.acc{font-size:13px; color:var(--sub); margin-top:.4em}
+b{color:var(--ink)}
 @media (max-width:720px){ .svc{grid-template-columns:1fr} }
 </style>
 
 <header>
     <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
     <nav><ul>
-      <li><a href="#philosophy">企業理念</a></li><li><a href="#services">サービス</a></li><li><a href="#company">会社概要</a></li><li><a href="#contact">お問い合わせ</a></li>
+      <li><a href="#philosophy">企業理念</a></li><li><a href="#services">サービス</a></li><li><a href="#company">会社概要</a></li><li><a href="#ai-policy">AIポリシー</a></li><li><a href="#contact">お問い合わせ</a></li>
     </ul></nav>
   </header>
 
 <section id="top" class="o top"><div class="pad"><div class="in">
-    <h1>AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
-    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+    <h1 data-c="catch"></h1>
+    <p data-c="lead"></p>
+    <div id="news"></div>
   </div></div></section>
 <section id="philosophy" class="o alt philo"><div class="pad"><div class="in">
     <p class="kick">PHILOSOPHY</p>
-    <h2>アルターデザインコンサルティングの企業理念</h2>
-    <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
-    <p>「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと<br>
-    子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
-    このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
-    それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+    <h2 data-c="philosophy.title"></h2>
+    <h3 data-c="philosophy.head"></h3>
+    <p data-c="philosophy.body"></p>
   </div></div></section>
 <section id="services" class="o"><div class="pad"><div class="in">
     <p class="kick">SERVICE</p>
-    <h2>私たちが提供するサービス</h2>
-    <ul class="svc">
-      <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
-      <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
-      <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
-      <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
-    </ul>
+    <h2 data-c="servicesTitle"></h2>
+    <ul class="svc" id="svc"></ul>
   </div></div></section>
 <section id="company" class="o alt"><div class="pad"><div class="in">
     <p class="kick">COMPANY</p>
     <h2>会社概要</h2>
-    <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
-    <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
-    <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd></dl>
-    <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
-    <dl><dt>資本金</dt><dd>60百万円</dd></dl>
-    <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
-    <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+    <div id="co"></div>
   </div></div></section>
-<section id="contact" class="o"><div class="pad"><div class="in">
+<section id="ai-policy" class="o"><div class="pad"><div class="in">
+    <p class="kick">AI POLICY</p>
+    <h2 data-c="aiPolicy.title"></h2>
+    <p data-c="aiPolicy.body"></p>
+  </div></div></section>
+<section id="contact" class="o alt"><div class="pad"><div class="in">
     <p class="kick">CONTACT</p>
     <h2>お問い合わせ</h2>
-    <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
-    <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+    <p data-c="contact.body"></p>
+    <a class="btn" id="mail"></a>
   </div></div></section>
 
-<footer><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a><small>© 2025 Alter Design Consulting Co., Ltd.</small></footer>
+<footer><a id="privacy" target="_blank" rel="noopener"></a><small data-c="copyright"></small></footer>
+
+<script src="../content.js"></script>
+<script>
+/* 中身は ../content.js から（どの案も同じ文を使う） */
+(function(){
+  var A = window.ADC;
+  function get(path){ return path.split('.').reduce(function(o, k){ return o[k]; }, A); }
+  [].forEach.call(document.querySelectorAll('[data-c]'), function(e){ e.innerHTML = get(e.getAttribute('data-c')); });
+  document.getElementById('news').innerHTML = A.news.map(function(n){ return '<p class="news"><time>' + n.date + '</time><span class="k">' + n.kind + '</span><a href="' + n.href + '" target="_blank" rel="noopener">' + n.title + '</a></p>'; }).join('');
+  document.getElementById('svc').innerHTML = A.services.map(function(s){ return '<li><h3>' + s.title + '</h3><p>' + s.body + '</p></li>'; }).join('');
+  document.getElementById('co').innerHTML = A.company.map(function(r){ return '<dl><dt>' + r[0] + '</dt><dd>' + r[1] + (r[0] === '所在地' ? '<p class="acc">【アクセス】<br>' + A.access.join('<br>') + '</p>' : '') + '</dd></dl>'; }).join('');
+  var m = document.getElementById('mail'); m.href = A.contact.href; m.textContent = A.contact.button;
+  var pv = document.getElementById('privacy'); pv.href = A.privacy.href; pv.textContent = A.privacy.label;
+})();
+</script>
 </html>
