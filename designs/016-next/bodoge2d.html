@@ -8,8 +8,8 @@
      上から見た卓。三人が囲んで一席空いている。押すと寄って、横に中身。
      箱＝会社概要／ルールブック＝企業理念／盤＝事業内容（題は公式の見出し）／基本デッキ四つ＝サービス／空いている席＝お問い合わせ。文は公式のまま。
      上に普通のメニュー。項目に乗ると卓の上の対応する物が光り、押すとそこへ寄る（本人「そもそも主に知りたい情報ってそっちじゃない？」）。付箋の名札は外した
-     016 2D 版（2026-11-27）：bodoge.html を写して質感を詰めた。素材（板の卓・紙の厚み・布）／光と影（左上から一つの明かり）／
-     置かれ方（ずれて積まれた札・擦れた角）／触ったときの動き（持ち上がる・押し込む）。押した物は、空いた席の手元に札としてたまる -->
+     016 2D 版（2026-11-27）：bodoge.html の平らな絵のまま整えた。厚みは右下に（盤・箱・本・札の束・卓）、札の束はずれて積まれる、
+     乗ると持ち上がって影が離れる、押すと押し込まれる。押した物は、空いた席の手元に札としてたまる -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
 <style>
@@ -88,48 +88,21 @@ body.zoom #hint{opacity:0}
 <svg id="scene" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet" aria-label="打ち合わせの机でボードゲームをしているところ">
   <defs>
     <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="6" dy="9" stdDeviation="8" flood-color="#140a04" flood-opacity=".45"/></filter>
-    <!-- 木目：横に伸ばしたノイズを茶色の筋に -->
-    <filter id="grain" x="0" y="0" width="100%" height="100%">
-      <feTurbulence type="fractalNoise" baseFrequency=".0025 .09" numOctaves="3" seed="4"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 .36  0 0 0 0 .2  0 0 0 0 .08  0 0 0 2.2 -.75"/>
-    </filter>
-    <!-- 紙：細かいざらつき -->
-    <filter id="paper" x="0" y="0" width="100%" height="100%">
-      <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="2" result="n"/>
-      <feColorMatrix in="n" type="matrix" values="0 0 0 0 .42  0 0 0 0 .34  0 0 0 0 .26  0 0 0 .55 -.18" result="g"/>
-      <feComposite in="g" in2="SourceGraphic" operator="in" result="gi"/>
-      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="gi"/></feMerge>
-    </filter>
-    <!-- 布：粗めのざらつき -->
-    <filter id="cloth" x="-10%" y="-10%" width="120%" height="120%">
-      <feTurbulence type="fractalNoise" baseFrequency=".5 .9" numOctaves="2" seed="7" result="n"/>
-      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .5 -.12" result="g"/>
-      <feComposite in="g" in2="SourceGraphic" operator="in" result="gi"/>
-      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="gi"/></feMerge>
-    </filter>
-    <clipPath id="top"><rect x="90" y="90" width="1020" height="620" rx="26"/></clipPath>
-    <!-- 明かり：左上から一つ。卓の上は暖かく、端は少し落ちる -->
-    <radialGradient id="lamp" gradientUnits="userSpaceOnUse" cx="500" cy="300" r="900">
-      <stop offset="0" stop-color="#fff3d6" stop-opacity=".16"/>
-      <stop offset=".55" stop-color="#fff3d6" stop-opacity="0"/>
-      <stop offset="1" stop-color="#140a04" stop-opacity=".45"/>
-    </radialGradient>
-    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/>
-    </linearGradient>
+    <pattern id="woodp" width="240" height="40" patternUnits="userSpaceOnUse">
+      <rect width="240" height="40" fill="#b88a5e"/>
+      <path d="M0 8 C60 4 120 12 240 7 M0 22 C80 26 160 18 240 23 M0 34 C70 31 150 37 240 33" stroke="#a87b51" stroke-width="2" fill="none"/>
+    </pattern>
   </defs>
   <rect width="1200" height="800" fill="#2b2420"/>
   <!-- 人（上から）。三人と、空いている椅子 -->
   <g id="people"></g>
-  <!-- 卓：板を六枚つないだ天板 -->
-  <rect x="90" y="90" width="1020" height="620" rx="26" fill="#6e4b2e" filter="url(#sh)" transform="translate(0,6)"/>
-  <g id="wood" clip-path="url(#top)"></g>
-  <rect x="91.5" y="91.5" width="1017" height="617" rx="25" fill="none" stroke="url(#edge)" stroke-width="3"/>
+  <!-- 卓：天板と、手前に見える厚み -->
+  <rect x="90" y="96" width="1020" height="620" rx="26" fill="#8f6743" filter="url(#sh)"/>
+  <rect x="90" y="90" width="1020" height="620" rx="26" fill="url(#woodp)"/>
   <g id="hands"></g>
   <g id="table"></g>
   <!-- 空いている席の手元：押した物が札になってたまる -->
   <g id="mine"></g>
-  <rect x="-3000" y="-3000" width="7200" height="6800" fill="url(#lamp)" pointer-events="none"/>
 </svg>
 
 <button id="back" type="button">‹ 机にもどる</button>
@@ -144,51 +117,24 @@ function el(p, tag, a){ var e = document.createElementNS(NS, tag); for (var k in
 function tx(p, x, y, s, a){ var t = el(p,'text',Object.assign({x:x,y:y,'text-anchor':'middle'}, a || {})); t.textContent = s; return t; }
 var svg = document.getElementById('scene'), T = document.getElementById('table'), Pp = document.getElementById('people'), HL = document.getElementById('hands'), MINE = document.getElementById('mine');
 var defs = svg.querySelector('defs');
-/* 明かりは左上。丸い物は左上が明るく、右下が落ちる */
-var gid = 0;
-function shade(base){
-  var id = 'g' + (gid++), g = el(defs,'radialGradient',{id:id,cx:'38%',cy:'32%',r:'75%'});
-  el(g,'stop',{offset:0,'stop-color':mix(base,'#ffffff',.22)});
-  el(g,'stop',{offset:.6,'stop-color':base}); el(g,'stop',{offset:1,'stop-color':mix(base,'#000000',.35)});
-  return 'url(#' + id + ')';
-}
-function mix(a, b, t){
-  var p = function(h, i){ return parseInt(h.substr(1 + i * 2, 2), 16); };
-  return '#' + [0,1,2].map(function(i){ return ('0' + Math.round(p(a, i) + (p(b, i) - p(a, i)) * t).toString(16)).slice(-2); }).join('');
-}
 /* 揺らぎ（毎回同じ置かれ方になるよう、決まった並びの乱数） */
 var seed = 11; function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
 function jit(a){ return (rnd() * 2 - 1) * a; }
 
-/* ── 卓：板を六枚。板ごとに色を少し変え、木目と継ぎ目 ── */
-(function(){
-  var W = document.getElementById('wood'), PL = ['#b98b5d','#b3845a','#bd9163','#b0835a','#ba8c5f','#b5875b'];
-  for (var i = 0; i < 6; i++){
-    var y = 90 + i * 620 / 6;
-    el(W,'rect',{x:90,y:y,width:1020,height:620 / 6 + 1,fill:PL[i]});
-    el(W,'rect',{x:90,y:y,width:1020,height:620 / 6 + 1,filter:'url(#grain)',opacity:.95,transform:'translate('+ (i * 137 % 300 - 150) +',0)'});
-    if (i){ el(W,'line',{x1:90,y1:y,x2:1110,y2:y,stroke:'#5f3f24','stroke-width':2.2,opacity:.75}); el(W,'line',{x1:90,y1:y + 2,x2:1110,y2:y + 2,stroke:'#f3d3a8','stroke-width':1,opacity:.3}); }
-  }
-  /* 節を二つ */
-  [[330,500,26,10],[880,180,20,8]].forEach(function(k){ el(W,'ellipse',{cx:k[0],cy:k[1],rx:k[2],ry:k[3],fill:'none',stroke:'#7b5434','stroke-width':2,opacity:.45}); el(W,'ellipse',{cx:k[0],cy:k[1],rx:k[2] * .45,ry:k[3] * .45,fill:'#7b5434',opacity:.35}); });
-})();
-
-/* ── 人：服は布、髪は丸みのある影 ── */
+/* ── 人 ── */
 function person(x, y, rot, col){
   var g = el(Pp,'g',{transform:'translate('+ x +','+ y +') rotate('+ rot +')'});
   el(g,'ellipse',{cx:4,cy:6,rx:94,ry:48,fill:'#000',opacity:.35,filter:'url(#sh)'});
-  el(g,'ellipse',{cx:0,cy:0,rx:92,ry:46,fill:shade(col),filter:'url(#cloth)'});              // 肩
-  el(g,'path',{d:'M-60 -18 Q-40 6 -54 30 M58 -16 Q42 8 52 32 M-14 36 Q0 28 14 36',fill:'none',stroke:mix(col,'#000000',.3),'stroke-width':2,opacity:.5,'stroke-linecap':'round'});   // しわ
-  el(g,'circle',{cx:0,cy:-6,r:34,fill:shade('#3a2a22')});                // 頭（髪）
-  el(g,'path',{d:'M-20 -24 Q0 -34 20 -24 M-26 -10 Q0 -22 26 -10',fill:'none',stroke:'#6a5244','stroke-width':1.6,opacity:.6,'stroke-linecap':'round'});   // 髪の流れ
+  el(g,'ellipse',{cx:0,cy:0,rx:92,ry:46,fill:col});              // 肩
+  el(g,'circle',{cx:0,cy:-6,r:34,fill:'#3a2a22'});                // 頭（髪）
   var hands = el(HL,'g',{transform:'translate('+ x +','+ y +') rotate('+ rot +')'}).appendChild(document.createElementNS(NS,'g'));   /* 手は机より上に描く */
-  [-50, 50].forEach(function(hx){ el(hands,'circle',{cx:hx + 2,cy:61,r:14,fill:'#2a1608',opacity:.3}); el(hands,'circle',{cx:hx,cy:58,r:14,fill:shade('#e9c7a6')}); });
+  [-50, 50].forEach(function(hx){ el(hands,'circle',{cx:hx + 2,cy:61,r:14,fill:'#2a1608',opacity:.3}); el(hands,'circle',{cx:hx,cy:58,r:14,fill:'#e9c7a6'}); });
   return hands;
 }
 var H = [person(600, 46, 0, '#5b6f8f'), person(46, 400, -90, '#8f5b6f'), person(1154, 400, 90, '#5b8f78')];   /* 手が机の上に来る向き */
-/* 空いている椅子（手前）：座面は布張り */
+/* 空いている椅子（手前） */
 var chair = el(Pp,'g',{transform:'translate(600,770)'});
-el(chair,'rect',{x:-80,y:-36,width:160,height:70,rx:16,fill:shade('#4a3a32'),stroke:'#5e4a40','stroke-width':3,filter:'url(#cloth)'});
+el(chair,'rect',{x:-80,y:-36,width:160,height:70,rx:16,fill:'#4a3a32',stroke:'#5e4a40','stroke-width':3});
 
 /* 卓の上の物：外の .it が位置と傾き、中の .lf が持ち上がる */
 function item(attrs, flat){ var o = el(T,'g',attrs); el(o,'g',{'class':'lf' + (flat ? ' flat' : '')}); return o.firstChild; }
@@ -196,7 +142,7 @@ function item(attrs, flat){ var o = el(T,'g',attrs); el(o,'g',{'class':'lf' + (f
 /* ── 盤：題は公式の見出し。まわりにマス、駒が進む ── */
 var board = item({'class':'it',tabindex:0,role:'button','aria-label':'盤（事業内容）','data-k':'board',transform:'rotate(-1.2 600 370)'}, true);
 el(board,'rect',{x:392,y:223,width:420,height:300,rx:10,fill:'#cbbfa9'});   // 盤の厚み（右下に見える）
-el(board,'rect',{x:390,y:220,width:420,height:300,rx:10,fill:'#fbf6ec',filter:'url(#paper)'});
+el(board,'rect',{x:390,y:220,width:420,height:300,rx:10,fill:'#fbf6ec'});
 el(board,'rect',{x:398,y:228,width:404,height:284,rx:6,fill:'none',stroke:'#e6dbc8','stroke-width':1.5});
 var cells = [], n = 0;
 for (var i = 0; i < 9; i++) cells.push([410 + i * 47.5, 240]);
@@ -228,9 +174,7 @@ if (!RM) setInterval(function(){ if (!document.body.classList.contains('zoom')) 
 /* ── 箱（ふた）＝会社概要 ── */
 var box = item({'class':'it',tabindex:0,role:'button','aria-label':'箱（会社概要）','data-k':'box',transform:'rotate(-7 250 200)'});
 el(box,'rect',{x:145,y:137,width:230,height:150,rx:8,fill:'#3f2656'});   // 箱の側面
-el(box,'rect',{x:140,y:130,width:230,height:150,rx:8,fill:'#654087',filter:'url(#paper)'});
-el(box,'rect',{x:140,y:130,width:230,height:150,rx:8,fill:'url(#edge)',opacity:.5});
-el(box,'path',{d:'M146 134 h12 M140 140 v10 M364 276 h-12 M370 270 v-10',stroke:'#c9b3dd','stroke-width':2,opacity:.55,'stroke-linecap':'round'});   // 擦れた角
+el(box,'rect',{x:140,y:130,width:230,height:150,rx:8,fill:'#654087'});
 el(box,'rect',{x:150,y:140,width:210,height:130,rx:4,fill:'none',stroke:'rgba(255,255,255,.35)'});
 el(box,'circle',{cx:200,cy:205,r:22,fill:'none',stroke:'#fff','stroke-width':6}); el(box,'circle',{cx:200,cy:205,r:15,fill:'none',stroke:'#bb7eea','stroke-width':2});
 tx(box, 290, 200, 'Alter Design', {'font-size':19,fill:'#fff'}); tx(box, 300, 220, 'consulting', {'font-size':11,fill:'#fff'});
@@ -239,10 +183,9 @@ tx(box, 290, 200, 'Alter Design', {'font-size':19,fill:'#fff'}); tx(box, 300, 22
 var book = item({'class':'it',tabindex:0,role:'button','aria-label':'ルールブック（企業理念）','data-k':'book',transform:'rotate(6 930 210)'});
 el(book,'rect',{x:864,y:124,width:150,height:190,rx:3,fill:'#e9e0cf'});   // 紙の束（右と下に小口）
 for (var pg = 1; pg < 5; pg++){ el(book,'line',{x1:1010 + pg * .9,y1:126,x2:1010 + pg * .9,y2:310 + pg * .9,stroke:'#cfc3ae','stroke-width':.7}); el(book,'line',{x1:864,y1:310 + pg * .9,x2:1012,y2:310 + pg * .9,stroke:'#cfc3ae','stroke-width':.7}); }
-el(book,'rect',{x:860,y:120,width:150,height:190,rx:4,fill:'#fbf6ec',filter:'url(#paper)'});
+el(book,'rect',{x:860,y:120,width:150,height:190,rx:4,fill:'#fbf6ec'});
 el(book,'rect',{x:860,y:120,width:12,height:190,fill:'#e4d7ee'});
 el(book,'line',{x1:872,y1:120,x2:872,y2:310,stroke:'#c9b6da','stroke-width':1.2});
-el(book,'path',{d:'M1010 128 v-4 a4 4 0 0 0 -4 -4 h-6',fill:'none',stroke:'#fff','stroke-width':2,opacity:.8});   // 擦れた角
 tx(book, 940, 175, 'ルールブック', {'font-size':13,fill:'#715189','letter-spacing':'.1em'});
 tx(book, 940, 222, '遊ぶように', {'class':'serif','font-size':20,fill:'#2a0e3e'}); tx(book, 940, 250, '働く', {'class':'serif','font-size':20,fill:'#2a0e3e'});
 
@@ -263,9 +206,8 @@ DECK.forEach(function(d, j){
   var c = CC[j], g = item({'class':'it',tabindex:0,role:'button','aria-label':'サービス（' + d.n + '）','data-k':d.k,transform:'translate('+ d.x +','+ d.y +') rotate('+ d.r +')'});
   /* 束：一枚ずつ少しずれて積まれている。明かりが左上なので、厚みは右下に見える */
   for (var s = 7; s >= 1; s--) el(g,'rect',{x:-55,y:-75,width:110,height:150,rx:8,fill:s % 2 ? '#ece4d6' : '#f4ede2',stroke:'#cbbfad','stroke-width':.8,transform:'translate('+ (s * 1.1 + jit(1.6)) +','+ (s * 1.5 + jit(1.2)) +') rotate('+ jit(2.2) +')'});
-  el(g,'rect',{x:-55,y:-75,width:110,height:150,rx:8,fill:'#fffdf8',stroke:c,'stroke-width':3,filter:'url(#paper)'});
+  el(g,'rect',{x:-55,y:-75,width:110,height:150,rx:8,fill:'#fffdf8',stroke:c,'stroke-width':3});
   el(g,'rect',{x:-55,y:-75,width:110,height:26,rx:8,fill:c}); el(g,'rect',{x:-55,y:-58,width:110,height:9,fill:c});
-  el(g,'path',{d:'M-53 -66 a7 7 0 0 1 6 -7 M53 66 a7 7 0 0 1 -6 7',fill:'none',stroke:'#fff','stroke-width':2.2,opacity:.65,'stroke-linecap':'round'});   // 擦れた角
   tx(g, 0, -57, 'サービス', {'font-size':11,fill:'#fff','letter-spacing':'.15em'});
   el(g,'path',{d:ICON[d.k],fill:'none',stroke:c,'stroke-width':2.6,'stroke-linecap':'round','stroke-linejoin':'round',transform:'translate(0,6)'});
   tx(g, 0, 58, d.n, {'font-size':13,fill:'#2a0e3e'});
@@ -278,7 +220,7 @@ DECK.forEach(function(d, j){
 
 /* ── 空いている席＝お問い合わせ（手元の札の場所をあけるため、少し奥へ） ── */
 var seat = item({'class':'it',tabindex:0,role:'button','aria-label':'お問い合わせ','data-k':'seat',transform:'rotate(1.5 600 585)'}, true);
-el(seat,'rect',{x:540,y:555,width:120,height:60,rx:6,fill:'#fffdf8',filter:'url(#paper)'});
+el(seat,'rect',{x:540,y:555,width:120,height:60,rx:6,fill:'#fffdf8'});
 tx(seat, 600, 591, 'お問い合わせ', {'font-size':15,fill:'#654087','font-weight':700});
 
 /* ── 手元：押した物が札になって、空いている席の前にたまる。まだの分は点線の枠 ── */
@@ -294,7 +236,7 @@ var KC = { board:'#654087', book:'#654087', box:'#654087', a:CC[0], b:CC[1], c:C
 ORDER.forEach(function(k, i){ el(MINE,'rect',{'class':'slot',x:-21,y:-30,width:42,height:60,rx:4,transform:slotT(i)}); });
 function mini(k){
   var o = el(MINE,'g',{'class':'it',tabindex:0,role:'button','aria-label':'手元の札（' + C[k].n + '）','data-k':k}), g = el(o,'g',{'class':'lf flat'});
-  el(g,'rect',{x:-21,y:-30,width:42,height:60,rx:4,fill:'#fffdf8',stroke:KC[k],'stroke-width':2,filter:'url(#paper)'});
+  el(g,'rect',{x:-21,y:-30,width:42,height:60,rx:4,fill:'#fffdf8',stroke:KC[k],'stroke-width':2});
   el(g,'rect',{x:-21,y:-30,width:42,height:10,rx:4,fill:KC[k]}); el(g,'rect',{x:-21,y:-24,width:42,height:4,fill:KC[k]});
   var ic = el(g,'g',{transform:'translate(0,6)'});
   if (MI[k]) MI[k](ic); else el(ic,'path',{d:ICON[k],fill:'none',stroke:KC[k],'stroke-width':2.6,'stroke-linecap':'round','stroke-linejoin':'round',transform:'scale(.5)'});
