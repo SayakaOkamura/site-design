@@ -6,30 +6,21 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
-:root{ --bar:#e4e0ea; --tab:#d6d0de; --act:#fbfafc; --ink:#1d1526; --sub:#6d6478; --ac:#654087; --h:44px }
+:root{ --ink:#1d1526; --sub:#6d6478; --ac:#654087; --h:0px }
 *{box-sizing:border-box; margin:0; padding:0}
 html,body{height:100%; overflow:hidden}
-body{background:var(--bar); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif}
+body{background:#fbfafc; color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif}
 
-/* ===== タブの帯 ===== */
-#bar{position:fixed; inset:0 0 auto; height:var(--h); z-index:10; display:flex; align-items:flex-end; gap:8px; padding:0 8px 0 10px; background:var(--bar)}
-#tabs{flex:1; display:flex; align-items:flex-end; gap:2px; min-width:0; overflow-x:auto; scrollbar-width:none}
-#tabs::-webkit-scrollbar{display:none}
-.tab{position:relative; flex:0 1 190px; min-width:120px; height:36px; display:flex; align-items:center; gap:8px; padding:0 14px; border:0; border-radius:10px 10px 0 0; background:none; color:var(--sub); font:500 12.5px "Zen Kaku Gothic New",sans-serif; text-align:left; cursor:pointer; white-space:nowrap; transition:background .15s, color .15s}
-.tab span{overflow:hidden; text-overflow:ellipsis}
-.tab i{flex:none; width:12px; height:12px; border-radius:4px; background:var(--c)}
-.tab:hover{background:var(--tab); color:var(--ink)}
-.tab[aria-selected="true"]{background:var(--act); color:var(--ink); font-weight:700}
-.tab[aria-selected="true"]::before,.tab[aria-selected="true"]::after{content:""; position:absolute; bottom:0; width:10px; height:10px; background:radial-gradient(circle at var(--k) 0, transparent 9.5px, var(--act) 10px)}
-.tab[aria-selected="true"]::before{left:-10px; --k:0}
-.tab[aria-selected="true"]::after{right:-10px; --k:100%}
-.tab:not([aria-selected="true"]):not(:hover)+.tab:not([aria-selected="true"]):not(:hover) span::before{content:""; position:absolute; left:-1px; top:11px; bottom:11px; border-left:1px solid #bdb5c8}
-.tab:focus-visible{outline:2px solid var(--ac); outline-offset:-2px}
-#all{flex:none; align-self:center; display:flex; align-items:center; gap:8px; height:32px; padding:0 14px; border:0; border-radius:16px; background:var(--ink); color:#fff; font:700 12.5px "Zen Kaku Gothic New",sans-serif; letter-spacing:.06em; cursor:pointer}
-#all b{display:grid; grid-template-columns:repeat(2,5px); gap:2px}
-#all b::before,#all b::after,#all b i,#all b s{content:""; display:block; width:5px; height:5px; border-radius:1px; background:currentColor}
-#all:focus-visible{outline:2px solid var(--ac); outline-offset:2px}
-body.grid #all{background:var(--ac)}
+/* ===== 見た目を変えるボタン（どの見た目でも左下） ===== */
+#all{position:fixed; left:clamp(16px,3vw,32px); bottom:clamp(16px,3vw,32px); z-index:30; display:flex; align-items:center; gap:10px; padding:11px 18px 11px 12px; border:1px solid rgba(255,255,255,.6); border-radius:40px; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); color:var(--ink); font:700 13px "Zen Kaku Gothic New",sans-serif; letter-spacing:.08em; cursor:pointer; box-shadow:0 6px 20px rgba(29,21,38,.18)}
+#all b{position:relative; width:26px; height:18px}
+#all b i{position:absolute; top:0; width:14px; height:18px; border-radius:4px; background:var(--c); box-shadow:0 0 0 1.5px #fff; transition:transform .3s}
+#all b i:nth-child(1){left:0} #all b i:nth-child(2){left:6px} #all b i:nth-child(3){left:12px}
+#all:hover b i:nth-child(1){transform:translateX(-3px) rotate(-8deg)} #all:hover b i:nth-child(3){transform:translateX(3px) rotate(8deg)}
+#all:focus-visible{outline:3px solid var(--ac); outline-offset:3px}
+body.grid #all{background:var(--ink); color:#fff; border-color:var(--ink)}
+#ttl{position:fixed; left:0; right:0; top:0; z-index:5; padding:22px clamp(16px,4vw,48px) 0; color:#fff; font-size:13px; font-weight:700; letter-spacing:.16em; opacity:0; pointer-events:none; transition:opacity .3s}
+body.grid.shown #ttl{opacity:.7}
 
 /* ===== 画面 ===== */
 #view{position:fixed; left:0; right:0; top:var(--h); bottom:0; overflow:hidden}
@@ -50,11 +41,9 @@ body.moving .win{visibility:visible}
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
 
-<header id="bar">
-  <div id="tabs" role="tablist" aria-label="見た目"></div>
-  <button id="all" type="button" aria-pressed="false"><b><i></i><s></s></b>並べる</button>
-</header>
 <div id="view"><div id="lay"></div></div>
+<p id="ttl">見た目を選ぶ</p>
+<button id="all" type="button" aria-pressed="false"><b><i></i><i></i><i></i></b><span>見た目を変える</span></button>
 
 <script>
 (function(){
@@ -71,14 +60,10 @@ var SITES = [
   ['../015-directions/rosen.html',  '伸びていく路線図',       '#2f9e6e'],
   ['../015-directions/status.html', 'RPG のステータス画面',   '#3a4fd0']
 ];
-var B = document.body, tabs = document.getElementById('tabs'), lay = document.getElementById('lay'), view = document.getElementById('view');
-var all = document.getElementById('all'), T = [], W = [], C = [], cur = 0, grid = false, timer;
+var B = document.body, lay = document.getElementById('lay'), view = document.getElementById('view');
+var all = document.getElementById('all'), W = [], C = [], cur = 0, grid = false, timer;
 
 SITES.forEach(function(s, i){
-  var t = document.createElement('button'); t.type = 'button'; t.className = 'tab'; t.setAttribute('role', 'tab');
-  t.style.setProperty('--c', s[2]); t.innerHTML = '<i></i><span></span>'; t.querySelector('span').textContent = s[1]; t.title = s[1];
-  t.addEventListener('click', function(){ pick(i); });
-  tabs.appendChild(t); T.push(t);
   var w = document.createElement('div'); w.className = 'win'; w.tabIndex = -1; w.setAttribute('aria-label', s[1]);
   w.addEventListener('click', function(){ if (grid) pick(i); });
   w.addEventListener('keydown', function(e){ if (grid && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); pick(i); } });
@@ -91,19 +76,19 @@ function load(i){ if (W[i].firstChild) return; var f = document.createElement('i
 
 /* 並べたときの、それぞれの四角 */
 function slots(){
-  var vw = view.clientWidth, vh = innerHeight - 44, n = SITES.length;
+  var vw = view.clientWidth, vh = innerHeight, n = SITES.length;
   var cols = vw > 1300 ? 4 : vw > 860 ? 3 : 2;
-  var M = Math.max(16, Math.min(48, vw * .04)), G = Math.max(16, Math.min(32, vw * .025)), CAP = 30;
+  var M = Math.max(16, Math.min(48, vw * .04)), G = Math.max(16, Math.min(32, vw * .025)), CAP = 30, TOP = 44;
   var sw = (vw - M * 2 - G * (cols - 1)) / cols, s = sw / vw, sh = vh * s, out = [];
   for (var i = 0; i < n; i++){
     var c = i % cols, r = Math.floor(i / cols);
-    out.push({ x:M + c * (sw + G), y:M + CAP + r * (sh + CAP + G), s:s, w:sw });
+    out.push({ x:M + c * (sw + G), y:TOP + M + CAP + r * (sh + CAP + G), s:s, w:sw });
   }
-  lay.style.height = (M * 2 + Math.ceil(n / cols) * (sh + CAP + G)) + 'px';
+  lay.style.height = (TOP + M * 2 + Math.ceil(n / cols) * (sh + CAP + G)) + 'px';
   return out;
 }
 function size(){
-  var vw = view.clientWidth, vh = innerHeight - 44;
+  var vw = view.clientWidth, vh = innerHeight;
   W.forEach(function(w){ w.style.width = vw + 'px'; w.style.height = vh + 'px'; });
 }
 function place(){
@@ -117,9 +102,10 @@ function place(){
   W.forEach(function(w, i){ var p = S[i]; w.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px) scale(' + p.s + ')'; w.style.setProperty('--s', p.s); });
   C.forEach(function(c, i){ var p = S[i]; c.style.transform = 'translate(' + p.x + 'px,' + (p.y - 26) + 'px)'; c.style.width = p.w + 'px'; });
 }
+/* ボタンの三枚の色：いまの見た目と、その次の二つ */
 function mark(){
-  T.forEach(function(t, i){ t.setAttribute('aria-selected', String(i === cur)); t.tabIndex = i === cur ? 0 : -1; });
-  T[cur].scrollIntoView({ block:'nearest', inline:'nearest' });
+  [].forEach.call(all.querySelectorAll('b i'), function(el, k){ el.style.setProperty('--c', SITES[(cur + 2 - k) % SITES.length][2]); });
+  all.querySelector('span').textContent = grid ? 'もどる' : '見た目を変える';
 }
 
 /* タブを押す：その見た目に切り替える（並べていたら、選んだものが大きくなる） */
@@ -131,12 +117,12 @@ function pick(i){
 /* 並べる／戻す */
 function toggle(on){
   clearTimeout(timer);
-  grid = on; all.setAttribute('aria-pressed', String(on));
+  grid = on; all.setAttribute('aria-pressed', String(on)); mark();
   if (on){
     SITES.forEach(function(s, i){ load(i); });
     B.classList.add('grid', 'moving'); W.forEach(function(w){ w.tabIndex = 0; });
     place();
-    var S = slots(), y = S[cur].y - (innerHeight - 44) * .3;
+    var S = slots(), y = S[cur].y - innerHeight * .3;
     view.scrollTop = Math.max(0, y);
     timer = setTimeout(function(){ B.classList.add('shown'); }, 350);
   } else {
@@ -153,10 +139,6 @@ function toggle(on){
   }
 }
 all.addEventListener('click', function(){ toggle(!grid); });
-tabs.addEventListener('keydown', function(e){
-  var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
-  e.preventDefault(); pick((cur + d + SITES.length) % SITES.length); T[cur].focus();
-});
 addEventListener('keydown', function(e){ if (e.key === 'Escape' && grid) toggle(false); });
 addEventListener('resize', place);
 
