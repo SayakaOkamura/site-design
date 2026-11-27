@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 015 E ボドゲ（2026-11-20）。本人が選んだのは「見るボドゲ」（遊べる一局ではなく、めくる・手に取るまで）。
+     メモ「みんなでデスクでボドゲしてるところからカードにフォーカスして」「拡張デッキ扱いする」。
+     上から見た卓。三人が囲んで一席空いている。押すと寄って、横に中身。
+     箱＝会社概要／ルールブック＝企業理念／盤＝事業内容（題は公式の見出し）／基本デッキ四つ＝サービス／空いている席＝お問い合わせ。文は公式のまま。
+     上に普通のメニュー。項目に乗ると卓の上の対応する物が光り、押すとそこへ寄る（本人「そもそも主に知りたい情報ってそっちじゃない？」）。付箋の名札は外した
+     016 2D 版（2026-11-27）：bodoge.html を写して質感を詰めた。素材（板の卓・紙の厚み・布）／光と影（左上から一つの明かり）／
+     置かれ方（ずれて積まれた札・擦れた角）／触ったときの動き（持ち上がる・押し込む）。押した物は、空いた席の手元に札としてたまる -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap">
+<style>
+:root{ --ink:#2a0e3e; --sub:#715189; --btn:#654087 }
+*{box-sizing:border-box}
+html,body{height:100%; margin:0}
+body{background:#2b2420; color:var(--ink); font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:300; line-height:1.8; overflow:hidden; display:flex; flex-direction:column}
+h1,h2,h3,p,dl,dd,ul{margin:0}
+ul{padding:0; list-style:none}
+b{font-weight:700}
+.serif{font-family:"Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif; font-weight:400}
+
+#scene{display:block; width:100%; flex:1; min-height:0}
+/* メニュー：主な情報はいつでもここから。項目に乗ると、卓の上の対応する物が光る */
+#menu{flex:none; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px clamp(14px,3vw,32px); background:#fffdf8; box-shadow:0 2px 10px rgba(0,0,0,.25); z-index:7; position:relative}
+.logo{display:flex; align-items:center; gap:10px; line-height:1.1; white-space:nowrap}
+.logo i{width:28px; height:28px; border-radius:50%; border:5px solid var(--btn); box-shadow:inset 0 0 0 2px #bb7eea}
+.logo span{font-size:16px; font-weight:400}
+.logo small{display:block; font-size:10px; margin-left:4.4em}
+#menu ul{display:flex; gap:clamp(4px,1.6vw,22px); overflow-x:auto}
+#menu button{border:0; background:none; padding:6px 8px; font:inherit; font-size:14px; font-weight:400; color:var(--ink); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent}
+#menu button:hover, #menu button:focus-visible, #menu button[aria-current="true"]{color:var(--btn); border-bottom-color:var(--btn); outline:none}
+.it.lit{filter:drop-shadow(0 0 6px #fff7c2) drop-shadow(0 0 14px #ffe98a) brightness(1.08)}
+.it{cursor:pointer; transition:filter .2s ease}
+/* 位置と傾きは .it の transform 属性で持っているので、.it に CSS の transform は使わない（上書きされて左上へ飛んでいた）
+   持ち上げるのは中の .lf。明かりは左上なので、持ち上がると影は右下へ離れて薄く広がる */
+.lf{transition:transform .22s cubic-bezier(.3,1.4,.5,1), filter .22s;
+  filter:drop-shadow(1.5px 2px 1px rgba(40,20,8,.38)) drop-shadow(7px 10px 9px rgba(40,20,8,.26))}
+.lf.flat{filter:drop-shadow(1px 1.5px .8px rgba(40,20,8,.32)) drop-shadow(5px 7px 7px rgba(40,20,8,.2))}
+.it:hover .lf, .it:focus-visible .lf{transform:translate(-3px,-8px); filter:drop-shadow(5px 9px 3px rgba(40,20,8,.22)) drop-shadow(18px 26px 18px rgba(40,20,8,.24))}
+.it.press .lf{transform:translate(0,1px); filter:drop-shadow(1px 1px .5px rgba(40,20,8,.4)) drop-shadow(3px 4px 4px rgba(40,20,8,.2)); transition-duration:.08s}
+.it:focus{outline:none}
+.slot{fill:none; stroke:rgba(255,248,230,.35); stroke-width:1.5; stroke-dasharray:4 4}
+body.zoom .it{pointer-events:none}
+.lbl{font-size:13px; fill:#fff; font-weight:400}
+
+/* 中身の札 */
+#card{position:fixed; z-index:5; top:calc(50% + 28px); right:clamp(16px,4vw,56px); width:min(440px, 44vw); max-height:calc(100vh - 100px); overflow:auto; transform:translateY(-50%) rotateY(90deg); opacity:0;
+  background:#fffdf8; border-radius:14px; box-shadow:0 30px 70px rgba(0,0,0,.45); transition:transform .45s cubic-bezier(.3,1.3,.5,1), opacity .2s; pointer-events:none}
+#card.on{transform:translateY(-50%) rotateY(0); opacity:1; pointer-events:auto}
+#card .band{height:12px; border-radius:14px 14px 0 0}
+#card .in{padding:22px 26px 24px}
+#card .kind{font-size:12px; color:var(--sub); letter-spacing:.1em}
+#card h2{font-size:clamp(20px,2.2vw,26px); line-height:1.5; margin:.2em 0 .8em}
+#card h3{font-size:16px; font-weight:400; line-height:1.6; margin-bottom:.6em}
+#card p{font-size:14px}
+#card p + p{margin-top:.8em}
+#card dl{display:grid; grid-template-columns:6em 1fr; gap:4px 12px; font-size:13.5px}
+#card dt{color:var(--sub)}
+#card .acc{font-size:12.5px; color:var(--sub); margin-top:.4em}
+#card a.mail{display:inline-flex; margin-top:1.2em; padding:10px 26px; background:var(--btn); color:#fff; text-decoration:none; font-weight:400}
+#back{position:fixed; z-index:6; top:72px; left:16px; padding:8px 16px; border:0; border-radius:20px; background:rgba(255,253,248,.92); color:var(--ink); font:inherit; font-size:14px; cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s}
+body.zoom #back{opacity:1; pointer-events:auto}
+#hint{position:fixed; left:50%; bottom:14px; transform:translateX(-50%); color:rgba(255,255,255,.7); font-size:12px; letter-spacing:.1em; transition:opacity .3s}
+body.zoom #hint{opacity:0}
+
+@media (max-width:760px){ .logo small{display:none} .logo span{font-size:14px} #menu button{font-size:13px; padding:6px 4px} #menu{gap:8px} }
+@media (max-width:540px){ #menu{flex-wrap:wrap; row-gap:4px; padding-bottom:4px} #menu ul{width:100%; justify-content:space-between; scrollbar-width:none} #menu button{padding:6px 2px} #back{top:100px} }
+@media (max-aspect-ratio:1/1){
+  #card{top:auto; bottom:12px; right:12px; left:12px; width:auto; max-height:52vh; transform:rotateX(90deg)}
+  #card.on{transform:none}
+}
+@media (prefers-reduced-motion:reduce){ #card,.it,.lf{transition:none} }
+</style>
+
+<nav id="menu" aria-label="メニュー">
+  <div class="logo"><i></i><span>Alter Design<small>consulting</small></span></div>
+  <ul>
+    <li><button type="button" data-k="board">事業内容</button></li>
+    <li><button type="button" data-k="svc">サービス</button></li>
+    <li><button type="button" data-k="book">企業理念</button></li>
+    <li><button type="button" data-k="box">会社概要</button></li>
+    <li><button type="button" data-k="seat">お問い合わせ</button></li>
+  </ul>
+</nav>
+<svg id="scene" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet" aria-label="打ち合わせの机でボードゲームをしているところ">
+  <defs>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="6" dy="9" stdDeviation="8" flood-color="#140a04" flood-opacity=".45"/></filter>
+    <!-- 木目：横に伸ばしたノイズを茶色の筋に -->
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".0025 .09" numOctaves="3" seed="4"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 .36  0 0 0 0 .2  0 0 0 0 .08  0 0 0 2.2 -.75"/>
+    </filter>
+    <!-- 紙：細かいざらつき -->
+    <filter id="paper" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="2" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 .42  0 0 0 0 .34  0 0 0 0 .26  0 0 0 .55 -.18" result="g"/>
+      <feComposite in="g" in2="SourceGraphic" operator="in" result="gi"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="gi"/></feMerge>
+    </filter>
+    <!-- 布：粗めのざらつき -->
+    <filter id="cloth" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".5 .9" numOctaves="2" seed="7" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .5 -.12" result="g"/>
+      <feComposite in="g" in2="SourceGraphic" operator="in" result="gi"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="gi"/></feMerge>
+    </filter>
+    <clipPath id="top"><rect x="90" y="90" width="1020" height="620" rx="26"/></clipPath>
+    <!-- 明かり：左上から一つ。卓の上は暖かく、端は少し落ちる -->
+    <radialGradient id="lamp" gradientUnits="userSpaceOnUse" cx="500" cy="300" r="900">
+      <stop offset="0" stop-color="#fff3d6" stop-opacity=".16"/>
+      <stop offset=".55" stop-color="#fff3d6" stop-opacity="0"/>
+      <stop offset="1" stop-color="#140a04" stop-opacity=".45"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="#2b2420"/>
+  <!-- 人（上から）。三人と、空いている椅子 -->
+  <g id="people"></g>
+  <!-- 卓：板を六枚つないだ天板 -->
+  <rect x="90" y="90" width="1020" height="620" rx="26" fill="#6e4b2e" filter="url(#sh)" transform="translate(0,6)"/>
+  <g id="wood" clip-path="url(#top)"></g>
+  <rect x="91.5" y="91.5" width="1017" height="617" rx="25" fill="none" stroke="url(#edge)" stroke-width="3"/>
+  <g id="hands"></g>
+  <g id="table"></g>
+  <!-- 空いている席の手元：押した物が札になってたまる -->
+  <g id="mine"></g>
+  <rect x="-3000" y="-3000" width="7200" height="6800" fill="url(#lamp)" pointer-events="none"/>
+</svg>
+
+<button id="back" type="button">‹ 机にもどる</button>
+<p id="hint">気になるものを押してください</p>
+<div id="card" role="dialog" aria-modal="false" aria-labelledby="card-h"><div class="band"></div><div class="in"><p class="kind"></p><h2 id="card-h" class="serif"></h2><div class="body"></div></div></div>
+
+<script>
+(function(){
+var NS = 'http://www.w3.org/2000/svg';
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function el(p, tag, a){ var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; }
+function tx(p, x, y, s, a){ var t = el(p,'text',Object.assign({x:x,y:y,'text-anchor':'middle'}, a || {})); t.textContent = s; return t; }
+var svg = document.getElementById('scene'), T = document.getElementById('table'), Pp = document.getElementById('people'), HL = document.getElementById('hands'), MINE = document.getElementById('mine');
+var defs = svg.querySelector('defs');
+/* 明かりは左上。丸い物は左上が明るく、右下が落ちる */
+var gid = 0;
+function shade(base){
+  var id = 'g' + (gid++), g = el(defs,'radialGradient',{id:id,cx:'38%',cy:'32%',r:'75%'});
+  el(g,'stop',{offset:0,'stop-color':mix(base,'#ffffff',.22)});
+  el(g,'stop',{offset:.6,'stop-color':base}); el(g,'stop',{offset:1,'stop-color':mix(base,'#000000',.35)});
+  return 'url(#' + id + ')';
+}
+function mix(a, b, t){
+  var p = function(h, i){ return parseInt(h.substr(1 + i * 2, 2), 16); };
+  return '#' + [0,1,2].map(function(i){ return ('0' + Math.round(p(a, i) + (p(b, i) - p(a, i)) * t).toString(16)).slice(-2); }).join('');
+}
+/* 揺らぎ（毎回同じ置かれ方になるよう、決まった並びの乱数） */
+var seed = 11; function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+function jit(a){ return (rnd() * 2 - 1) * a; }
+
+/* ── 卓：板を六枚。板ごとに色を少し変え、木目と継ぎ目 ── */
+(function(){
+  var W = document.getElementById('wood'), PL = ['#b98b5d','#b3845a','#bd9163','#b0835a','#ba8c5f','#b5875b'];
+  for (var i = 0; i < 6; i++){
+    var y = 90 + i * 620 / 6;
+    el(W,'rect',{x:90,y:y,width:1020,height:620 / 6 + 1,fill:PL[i]});
+    el(W,'rect',{x:90,y:y,width:1020,height:620 / 6 + 1,filter:'url(#grain)',opacity:.95,transform:'translate('+ (i * 137 % 300 - 150) +',0)'});
+    if (i){ el(W,'line',{x1:90,y1:y,x2:1110,y2:y,stroke:'#5f3f24','stroke-width':2.2,opacity:.75}); el(W,'line',{x1:90,y1:y + 2,x2:1110,y2:y + 2,stroke:'#f3d3a8','stroke-width':1,opacity:.3}); }
+  }
+  /* 節を二つ */
+  [[330,500,26,10],[880,180,20,8]].forEach(function(k){ el(W,'ellipse',{cx:k[0],cy:k[1],rx:k[2],ry:k[3],fill:'none',stroke:'#7b5434','stroke-width':2,opacity:.45}); el(W,'ellipse',{cx:k[0],cy:k[1],rx:k[2] * .45,ry:k[3] * .45,fill:'#7b5434',opacity:.35}); });
+})();
+
+/* ── 人：服は布、髪は丸みのある影 ── */
+function person(x, y, rot, col){
+  var g = el(Pp,'g',{transform:'translate('+ x +','+ y +') rotate('+ rot +')'});
+  el(g,'ellipse',{cx:4,cy:6,rx:94,ry:48,fill:'#000',opacity:.35,filter:'url(#sh)'});
+  el(g,'ellipse',{cx:0,cy:0,rx:92,ry:46,fill:shade(col),filter:'url(#cloth)'});              // 肩
+  el(g,'path',{d:'M-60 -18 Q-40 6 -54 30 M58 -16 Q42 8 52 32 M-14 36 Q0 28 14 36',fill:'none',stroke:mix(col,'#000000',.3),'stroke-width':2,opacity:.5,'stroke-linecap':'round'});   // しわ
+  el(g,'circle',{cx:0,cy:-6,r:34,fill:shade('#3a2a22')});                // 頭（髪）
+  el(g,'path',{d:'M-20 -24 Q0 -34 20 -24 M-26 -10 Q0 -22 26 -10',fill:'none',stroke:'#6a5244','stroke-width':1.6,opacity:.6,'stroke-linecap':'round'});   // 髪の流れ
+  var hands = el(HL,'g',{transform:'translate('+ x +','+ y +') rotate('+ rot +')'}).appendChild(document.createElementNS(NS,'g'));   /* 手は机より上に描く */
+  [-50, 50].forEach(function(hx){ el(hands,'circle',{cx:hx + 2,cy:61,r:14,fill:'#2a1608',opacity:.3}); el(hands,'circle',{cx:hx,cy:58,r:14,fill:shade('#e9c7a6')}); });
+  return hands;
+}
+var H = [person(600, 46, 0, '#5b6f8f'), person(46, 400, -90, '#8f5b6f'), person(1154, 400, 90, '#5b8f78')];   /* 手が机の上に来る向き */
+/* 空いている椅子（手前）：座面は布張り */
+var chair = el(Pp,'g',{transform:'translate(600,770)'});
+el(chair,'rect',{x:-80,y:-36,width:160,height:70,rx:16,fill:shade('#4a3a32'),stroke:'#5e4a40','stroke-width':3,filter:'url(#cloth)'});
+
+/* 卓の上の物：外の .it が位置と傾き、中の .lf が持ち上がる */
+function item(attrs, flat){ var o = el(T,'g',attrs); el(o,'g',{'class':'lf' + (flat ? ' flat' : '')}); return o.firstChild; }
+
+/* ── 盤：題は公式の見出し。まわりにマス、駒が進む ── */
+var board = item({'class':'it',tabindex:0,role:'button','aria-label':'盤（事業内容）','data-k':'board',transform:'rotate(-1.2 600 370)'}, true);
+el(board,'rect',{x:392,y:223,width:420,height:300,rx:10,fill:'#cbbfa9'});   // 盤の厚み（右下に見える）
+el(board,'rect',{x:390,y:220,width:420,height:300,rx:10,fill:'#fbf6ec',filter:'url(#paper)'});
+el(board,'rect',{x:398,y:228,width:404,height:284,rx:6,fill:'none',stroke:'#e6dbc8','stroke-width':1.5});
+var cells = [], n = 0;
+for (var i = 0; i < 9; i++) cells.push([410 + i * 47.5, 240]);
+for (i = 1; i < 6; i++) cells.push([790, 240 + i * 46]);
+for (i = 1; i < 9; i++) cells.push([790 - i * 47.5, 470]);
+for (i = 5; i > 0; i--) cells.push([410, 240 + i * 46 - 46]);
+var CC = ['#2f8fa8','#d99a2b','#d0708a','#4a9d6a'];
+cells.forEach(function(c, j){ el(board,'rect',{x:c[0]-17,y:c[1]-17,width:34,height:34,rx:5,fill:j % 6 === 0 ? '#efe6f6' : '#fff',stroke:'#dccfe6','stroke-width':1.5}); });
+tx(board, 600, 340, 'AI × ローコードで、', {'class':'serif','font-size':22,fill:'#2a0e3e'});
+tx(board, 600, 374, '「上流工程中心のシステム開発」に革新を', {'class':'serif','font-size':22,fill:'#2a0e3e'});
+tx(board, 600, 410, 'Alter Design consulting', {'font-size':12,fill:'#715189','letter-spacing':'.12em'});
+var tokens = [0, 7, 15].map(function(at, j){ var t = el(board,'g',{}); el(t,'circle',{r:11,fill:['#5b6f8f','#8f5b6f','#5b8f78'][j],stroke:'#fff','stroke-width':2.5}); return { g:t, at:at, x:0, y:0 }; });
+function place(t){ var c = cells[t.at % cells.length]; t.x = c[0] + (tokens.indexOf(t) - 1) * 6; t.y = c[1]; t.g.setAttribute('transform','translate('+ t.x +','+ t.y +')'); }
+tokens.forEach(place);
+/* 手番：一マスずつ。ときどき、通ったマスを飛ぶ */
+var turn = 0;
+function play(){
+  var t = tokens[turn % 3], hop = !RM && Math.random() < .25, steps = hop ? 6 : 1 + (Math.random() * 3 | 0);
+  var from = [t.x, t.y]; t.at += steps; var c = cells[t.at % cells.length], to = [c[0] + (turn % 3 - 1) * 6, c[1]];
+  var t0 = performance.now(), dur = hop ? 900 : 380 * steps;
+  (function f(now){ var k = Math.min(1, (now - t0) / dur), e = k * (2 - k), h = hop ? Math.sin(k * Math.PI) * 70 : Math.abs(Math.sin(k * Math.PI * steps)) * 10;
+    t.g.setAttribute('transform','translate('+ (from[0] + (to[0] - from[0]) * e) +','+ (from[1] + (to[1] - from[1]) * e - h) +')' + (hop ? ' scale('+ (1 + Math.sin(k * Math.PI) * .35) +')' : ''));
+    if (k < 1) requestAnimationFrame(f); else { t.x = to[0]; t.y = to[1]; } })(t0);
+  var hd = H[turn % 3]; hd.style.transition = 'transform .3s'; hd.style.transform = 'translate(0,14px)'; setTimeout(function(){ hd.style.transform = ''; }, 400);
+  turn++;
+}
+if (!RM) setInterval(function(){ if (!document.body.classList.contains('zoom')) play(); }, 1900);
+
+/* ── 箱（ふた）＝会社概要 ── */
+var box = item({'class':'it',tabindex:0,role:'button','aria-label':'箱（会社概要）','data-k':'box',transform:'rotate(-7 250 200)'});
+el(box,'rect',{x:145,y:137,width:230,height:150,rx:8,fill:'#3f2656'});   // 箱の側面
+el(box,'rect',{x:140,y:130,width:230,height:150,rx:8,fill:'#654087',filter:'url(#paper)'});
+el(box,'rect',{x:140,y:130,width:230,height:150,rx:8,fill:'url(#edge)',opacity:.5});
+el(box,'path',{d:'M146 134 h12 M140 140 v10 M364 276 h-12 M370 270 v-10',stroke:'#c9b3dd','stroke-width':2,opacity:.55,'stroke-linecap':'round'});   // 擦れた角
+el(box,'rect',{x:150,y:140,width:210,height:130,rx:4,fill:'none',stroke:'rgba(255,255,255,.35)'});
+el(box,'circle',{cx:200,cy:205,r:22,fill:'none',stroke:'#fff','stroke-width':6}); el(box,'circle',{cx:200,cy:205,r:15,fill:'none',stroke:'#bb7eea','stroke-width':2});
+tx(box, 290, 200, 'Alter Design', {'font-size':19,fill:'#fff'}); tx(box, 300, 220, 'consulting', {'font-size':11,fill:'#fff'});
+
+/* ── ルールブック＝企業理念 ── */
+var book = item({'class':'it',tabindex:0,role:'button','aria-label':'ルールブック（企業理念）','data-k':'book',transform:'rotate(6 930 210)'});
+el(book,'rect',{x:864,y:124,width:150,height:190,rx:3,fill:'#e9e0cf'});   // 紙の束（右と下に小口）
+for (var pg = 1; pg < 5; pg++){ el(book,'line',{x1:1010 + pg * .9,y1:126,x2:1010 + pg * .9,y2:310 + pg * .9,stroke:'#cfc3ae','stroke-width':.7}); el(book,'line',{x1:864,y1:310 + pg * .9,x2:1012,y2:310 + pg * .9,stroke:'#cfc3ae','stroke-width':.7}); }
+el(book,'rect',{x:860,y:120,width:150,height:190,rx:4,fill:'#fbf6ec',filter:'url(#paper)'});
+el(book,'rect',{x:860,y:120,width:12,height:190,fill:'#e4d7ee'});
+el(book,'line',{x1:872,y1:120,x2:872,y2:310,stroke:'#c9b6da','stroke-width':1.2});
+el(book,'path',{d:'M1010 128 v-4 a4 4 0 0 0 -4 -4 h-6',fill:'none',stroke:'#fff','stroke-width':2,opacity:.8});   // 擦れた角
+tx(book, 940, 175, 'ルールブック', {'font-size':13,fill:'#715189','letter-spacing':'.1em'});
+tx(book, 940, 222, '遊ぶように', {'class':'serif','font-size':20,fill:'#2a0e3e'}); tx(book, 940, 250, '働く', {'class':'serif','font-size':20,fill:'#2a0e3e'});
+
+/* ── 基本デッキ四つ＝サービス（いまある四つ。増えたら拡張デッキ） ── */
+var DECK = [
+  { k:'a', n:'業務システム', x:285, y:372, r:-6 },
+  { k:'b', n:'意思決定', x:300, y:570, r:5 },
+  { k:'c', n:'組織設計', x:915, y:400, r:7 },
+  { k:'d', n:'地域デジタル', x:900, y:590, r:-5 }
+];
+var ICON = {
+  a:'M-22 -8h14v12h-14z M8 -8h14v12h-14z M-8 -2h16 M0 4v10 M-8 14h16',
+  b:'M-24 14 L-12 2 L-2 8 L10 -8 L22 -14 M14 -14h8v8',
+  c:'M0 -14a6 6 0 1 0 .1 0 M-18 10a6 6 0 1 0 .1 0 M18 10a6 6 0 1 0 .1 0 M0 -2 L-14 10 M0 -2 L14 10 M-12 16h24',
+  d:'M0 16 C-14 0 -14 -16 0 -16 C14 -16 14 0 0 16 Z M0 -10a4 4 0 1 0 .1 0'
+};
+DECK.forEach(function(d, j){
+  var c = CC[j], g = item({'class':'it',tabindex:0,role:'button','aria-label':'サービス（' + d.n + '）','data-k':d.k,transform:'translate('+ d.x +','+ d.y +') rotate('+ d.r +')'});
+  /* 束：一枚ずつ少しずれて積まれている。明かりが左上なので、厚みは右下に見える */
+  for (var s = 7; s >= 1; s--) el(g,'rect',{x:-55,y:-75,width:110,height:150,rx:8,fill:s % 2 ? '#ece4d6' : '#f4ede2',stroke:'#cbbfad','stroke-width':.8,transform:'translate('+ (s * 1.1 + jit(1.6)) +','+ (s * 1.5 + jit(1.2)) +') rotate('+ jit(2.2) +')'});
+  el(g,'rect',{x:-55,y:-75,width:110,height:150,rx:8,fill:'#fffdf8',stroke:c,'stroke-width':3,filter:'url(#paper)'});
+  el(g,'rect',{x:-55,y:-75,width:110,height:26,rx:8,fill:c}); el(g,'rect',{x:-55,y:-58,width:110,height:9,fill:c});
+  el(g,'path',{d:'M-53 -66 a7 7 0 0 1 6 -7 M53 66 a7 7 0 0 1 -6 7',fill:'none',stroke:'#fff','stroke-width':2.2,opacity:.65,'stroke-linecap':'round'});   // 擦れた角
+  tx(g, 0, -57, 'サービス', {'font-size':11,fill:'#fff','letter-spacing':'.15em'});
+  el(g,'path',{d:ICON[d.k],fill:'none',stroke:c,'stroke-width':2.6,'stroke-linecap':'round','stroke-linejoin':'round',transform:'translate(0,6)'});
+  tx(g, 0, 58, d.n, {'font-size':13,fill:'#2a0e3e'});
+});
+/* 手元の札（三人とも何枚か持っている） */
+[[600,140,180],[160,400,90],[1040,400,-90]].forEach(function(p, j){
+  var g = el(T,'g',{transform:'translate('+ p[0] +','+ p[1] +') rotate('+ p[2] +')'}), lf = el(g,'g',{'class':'lf flat'});
+  for (var s = -1; s <= 1; s++) el(lf,'rect',{x:-16 + s * 22,y:-22,width:32,height:44,rx:4,fill:'#fffdf8',stroke:CC[(j + s + 4) % 4],'stroke-width':2,transform:'rotate('+ (s * 10 + jit(3)) +')'});
+});
+
+/* ── 空いている席＝お問い合わせ（手元の札の場所をあけるため、少し奥へ） ── */
+var seat = item({'class':'it',tabindex:0,role:'button','aria-label':'お問い合わせ','data-k':'seat',transform:'rotate(1.5 600 585)'}, true);
+el(seat,'rect',{x:540,y:555,width:120,height:60,rx:6,fill:'#fffdf8',filter:'url(#paper)'});
+tx(seat, 600, 591, 'お問い合わせ', {'font-size':15,fill:'#654087','font-weight':700});
+
+/* ── 手元：押した物が札になって、空いている席の前にたまる。まだの分は点線の枠 ── */
+var ORDER = ['board','book','box','a','b','c','d','seat'], got = {};
+function slotT(i){ var a = (i - 3.5) * 7.5; return 'translate(600,860) rotate('+ a +') translate(0,-205)'; }
+var MI = {
+  board:function(g){ el(g,'rect',{x:-11,y:-8,width:22,height:16,rx:2,fill:'none',stroke:'#654087','stroke-width':1.6}); for (var i = 0; i < 4; i++) el(g,'rect',{x:-9 + i * 5,y:-6,width:3.5,height:3.5,fill:'#cbb8dc'}); },
+  book:function(g){ el(g,'path',{d:'M-10 -9 h17 v18 h-17 z M-7 -9 v18',fill:'none',stroke:'#654087','stroke-width':1.6,'stroke-linejoin':'round'}); },
+  box:function(g){ el(g,'circle',{r:8,fill:'none',stroke:'#654087','stroke-width':3}); el(g,'circle',{r:5,fill:'none',stroke:'#bb7eea','stroke-width':1}); },
+  seat:function(g){ el(g,'path',{d:'M-10 -7 h20 v14 h-20 z M-10 -7 l10 8 l10 -8',fill:'none',stroke:'#654087','stroke-width':1.6,'stroke-linejoin':'round'}); }
+};
+var KC = { board:'#654087', book:'#654087', box:'#654087', a:CC[0], b:CC[1], c:CC[2], d:CC[3], seat:'#654087' };
+ORDER.forEach(function(k, i){ el(MINE,'rect',{'class':'slot',x:-21,y:-30,width:42,height:60,rx:4,transform:slotT(i)}); });
+function mini(k){
+  var o = el(MINE,'g',{'class':'it',tabindex:0,role:'button','aria-label':'手元の札（' + C[k].n + '）','data-k':k}), g = el(o,'g',{'class':'lf flat'});
+  el(g,'rect',{x:-21,y:-30,width:42,height:60,rx:4,fill:'#fffdf8',stroke:KC[k],'stroke-width':2,filter:'url(#paper)'});
+  el(g,'rect',{x:-21,y:-30,width:42,height:10,rx:4,fill:KC[k]}); el(g,'rect',{x:-21,y:-24,width:42,height:4,fill:KC[k]});
+  var ic = el(g,'g',{transform:'translate(0,6)'});
+  if (MI[k]) MI[k](ic); else el(ic,'path',{d:ICON[k],fill:'none',stroke:KC[k],'stroke-width':2.6,'stroke-linecap':'round','stroke-linejoin':'round',transform:'scale(.5)'});
+  bind(o);
+  return o;
+}
+/* 押した物の場所から、手元の枠へ飛んでくる */
+var queue = [];
+function collect(k, from){
+  if (got[k]) return; got[k] = true;
+  var o = mini(k), i = ORDER.indexOf(k), m = slotT(i).match(/rotate\(([-\d.]+)\)/), ang = +m[1], rad = ang * Math.PI / 180;
+  var tx1 = 600 + Math.sin(rad) * 205, ty1 = 860 - Math.cos(rad) * 205;
+  var p = from || [tx1, ty1 - 200];
+  if (RM){ o.setAttribute('transform', slotT(i)); return; }
+  var t0 = performance.now(), dur = 650;
+  (function f(now){ var k2 = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k2, 3), lift = Math.sin(k2 * Math.PI) * 60;
+    var x = p[0] + (tx1 - p[0]) * e, y = p[1] + (ty1 - p[1]) * e - lift, r = (1 - e) * 25 + ang * e, sc = 1 + Math.sin(k2 * Math.PI) * .25;
+    o.setAttribute('transform','translate('+ x +','+ y +') rotate('+ r +') scale('+ sc +')');
+    if (k2 < 1) requestAnimationFrame(f); else o.setAttribute('transform', slotT(i)); })(t0);
+}
+
+/* ── 中身（公式の文のまま） ── */
+var C = {
+  board:{ c:'#654087', kind:'盤', n:'事業内容', h:'<h3>AI × ローコードで、「上流工程中心のシステム開発」に革新を</h3><p>コンサルティングによる業務設計からエンジニアリングまでを行います</p><p>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</p>' },
+  book:{ c:'#654087', kind:'ルールブック', n:'企業理念', h:'<h3>経営の力で「遊ぶように働く世界」をデザインする</h3><p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>' },
+  box:{ c:'#654087', kind:'箱のうら', n:'会社概要', h:'<dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd><dt>代表者</dt><dd>藤田 靖広</dd><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）<p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd><dt>資本金</dt><dd>60百万円</dd><dt>設立年月日</dt><dd>2025年6月</dd><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>' },
+  a:{ c:CC[0], kind:'基本デッキ', n:'人間中心の次世代業務システム開発', h:'<p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p>' },
+  b:{ c:CC[1], kind:'基本デッキ', n:'AI による意思決定支援と事業変革支援', h:'<p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p>' },
+  c:{ c:CC[2], kind:'基本デッキ', n:'自律型・共創型の組織設計支援', h:'<p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p>' },
+  d:{ c:CC[3], kind:'基本デッキ', n:'地域格差の解消を目指したデジタル支援', h:'<p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p>' },
+  svc:{ c:'linear-gradient(90deg,#2f8fa8 25%,#d99a2b 25% 50%,#d0708a 50% 75%,#4a9d6a 75%)', kind:'基本デッキ', n:'私たちが提供するサービス', h:'' },
+  seat:{ c:'#654087', kind:'空いている席', n:'お問い合わせ', h:'<p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p><a class="mail" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>' }
+};
+
+C.svc.h = 'abcd'.split('').map(function(k){ return '<h3 style="border-left:4px solid ' + C[k].c + '; padding-left:10px">' + C[k].n + '</h3>' + C[k].h; }).join('<div style="height:14px"></div>');
+/* ── 寄る（viewBox を動かす）と札 ── */
+var VB0 = [0,0,1200,800], vb = VB0.slice(), anim = 0, card = document.getElementById('card'), opener = null;
+function setVB(v){ vb = v; svg.setAttribute('viewBox', v.join(' ')); }
+function tween(to, ms){
+  cancelAnimationFrame(anim); var from = vb.slice(), t0 = performance.now();
+  if (RM){ setVB(to); return; }
+  (function f(now){ var k = Math.min(1, (now - t0) / ms), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    setVB(from.map(function(a, i){ return a + (to[i] - a) * e; })); if (k < 1) anim = requestAnimationFrame(f); })(t0);
+}
+function focusOn(g){
+  var bb = g.getBoundingClientRect(), inv = svg.getScreenCTM().inverse(), p1 = svg.createSVGPoint(), p2 = svg.createSVGPoint();   // 画面上の箱 → viewBox 座標
+  p1.x = bb.left; p1.y = bb.top; p2.x = bb.right; p2.y = bb.bottom; p1 = p1.matrixTransform(inv); p2 = p2.matrixTransform(inv);
+  var x = p1.x, y = p1.y, w = p2.x - p1.x, h = p2.y - p1.y;
+  var portrait = innerWidth <= innerHeight, ar = innerWidth / innerHeight;
+  var W = Math.max(w, h * ar) * (portrait ? 1.6 : 2.6), Hh = W / ar;
+  var cx = x + w / 2, cy = y + h / 2;
+  if (portrait){ Hh = Math.max(Hh, h * 2.6); W = Hh * ar; cy += Hh * .22; } else cx += W * .22;   // 札の反対側に寄せる
+  return [cx - W / 2, cy - Hh / 2, W, Hh];
+}
+function groups(k){ return [].slice.call(document.querySelectorAll(k === 'svc' ? '.it[data-k="a"],.it[data-k="b"],.it[data-k="c"],.it[data-k="d"]' : '.it[data-k="' + k + '"]')); }
+var menu = [].slice.call(document.querySelectorAll('#menu button'));
+function current(k){ menu.forEach(function(b){ b.setAttribute('aria-current', b.getAttribute('data-k') === k || (k && 'abcd'.indexOf(k) >= 0 && b.getAttribute('data-k') === 'svc') ? 'true' : 'false'); }); }
+var pending = [];
+function open(k, from){
+  var c = C[k]; opener = from || null;
+  (k === 'svc' ? ['a','b','c','d'] : [k]).forEach(function(q){ if (!got[q] && pending.indexOf(q) < 0) pending.push(q); });
+  document.body.classList.add('zoom'); current(k);
+  /* サービスは四つ全部なので寄らない（卓全体のまま） */
+  tween(k === 'svc' ? fitAll() : focusOn(groups(k)[0]), 700);
+  card.querySelector('.band').style.background = c.c;
+  card.querySelector('.kind').textContent = c.kind;
+  card.querySelector('h2').textContent = c.n;
+  card.querySelector('.body').innerHTML = c.h;
+  card.classList.remove('on'); setTimeout(function(){ card.classList.add('on'); card.scrollTop = 0; }, RM ? 0 : 420);
+}
+/* 札の反対側に卓が寄るように、全体を少しずらす */
+function fitAll(){ var portrait = innerWidth <= innerHeight; return portrait ? [0, 200, 1200, 800] : [260, -60, 1500, 920]; }
+function close(){
+  card.classList.remove('on'); document.body.classList.remove('zoom'); current(null);
+  tween(VB0, 600); if (opener) opener.focus({ preventScroll:true });
+  /* 机にもどったら、見た物が札になって手元へ（いくつかなら少しずつずらして） */
+  var list = pending; pending = [];
+  setTimeout(function(){ list.forEach(function(q, n){ setTimeout(function(){ collect(q, center(groups(q)[0])); }, n * 160); }); }, RM ? 0 : 620);
+}
+function center(g){
+  var bb = g.getBoundingClientRect(), p = svg.createSVGPoint(); p.x = bb.left + bb.width / 2; p.y = bb.top + bb.height / 2;
+  p = p.matrixTransform(svg.getScreenCTM().inverse()); return [p.x, p.y];
+}
+/* 押すと一瞬押し込まれてから開く */
+function bind(g){
+  function go(){ g.classList.add('press'); setTimeout(function(){ g.classList.remove('press'); open(g.getAttribute('data-k'), g); }, RM ? 0 : 110); }
+  g.addEventListener('click', go);
+  g.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+}
+[].forEach.call(document.querySelectorAll('.it'), bind);
+menu.forEach(function(b){
+  var k = b.getAttribute('data-k');
+  function lit(on){ groups(k).forEach(function(g){ g.classList.toggle('lit', on); }); }
+  b.addEventListener('mouseenter', function(){ lit(true); }); b.addEventListener('mouseleave', function(){ lit(false); });
+  b.addEventListener('focus', function(){ lit(true); }); b.addEventListener('blur', function(){ lit(false); });
+  b.addEventListener('click', function(){ lit(false); open(k, b); });
+});
+document.getElementById('back').addEventListener('click', close);
+svg.addEventListener('click', function(e){ if (document.body.classList.contains('zoom') && !e.target.closest('.it')) close(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && document.body.classList.contains('zoom')) close(); });
+})();
+</script>
