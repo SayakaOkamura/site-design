@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{ --bar:#e4e0ea; --tab:#d6d0de; --act:#fbfafc; --ink:#1d1526; --sub:#6d6478; --ac:#654087; --h:44px }
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%; overflow:hidden}
+body{background:var(--bar); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif}
+
+/* ===== タブの帯 ===== */
+#bar{position:fixed; inset:0 0 auto; height:var(--h); z-index:10; display:flex; align-items:flex-end; gap:8px; padding:0 8px 0 10px; background:var(--bar)}
+#tabs{flex:1; display:flex; align-items:flex-end; gap:2px; min-width:0; overflow-x:auto; scrollbar-width:none}
+#tabs::-webkit-scrollbar{display:none}
+.tab{position:relative; flex:0 1 190px; min-width:120px; height:36px; display:flex; align-items:center; gap:8px; padding:0 14px; border:0; border-radius:10px 10px 0 0; background:none; color:var(--sub); font:500 12.5px "Zen Kaku Gothic New",sans-serif; text-align:left; cursor:pointer; white-space:nowrap; transition:background .15s, color .15s}
+.tab span{overflow:hidden; text-overflow:ellipsis}
+.tab i{flex:none; width:12px; height:12px; border-radius:4px; background:var(--c)}
+.tab:hover{background:var(--tab); color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--act); color:var(--ink); font-weight:700}
+.tab[aria-selected="true"]::before,.tab[aria-selected="true"]::after{content:""; position:absolute; bottom:0; width:10px; height:10px; background:radial-gradient(circle at var(--k) 0, transparent 9.5px, var(--act) 10px)}
+.tab[aria-selected="true"]::before{left:-10px; --k:0}
+.tab[aria-selected="true"]::after{right:-10px; --k:100%}
+.tab:not([aria-selected="true"]):not(:hover)+.tab:not([aria-selected="true"]):not(:hover) span::before{content:""; position:absolute; left:-1px; top:11px; bottom:11px; border-left:1px solid #bdb5c8}
+.tab:focus-visible{outline:2px solid var(--ac); outline-offset:-2px}
+#all{flex:none; align-self:center; display:flex; align-items:center; gap:8px; height:32px; padding:0 14px; border:0; border-radius:16px; background:var(--ink); color:#fff; font:700 12.5px "Zen Kaku Gothic New",sans-serif; letter-spacing:.06em; cursor:pointer}
+#all b{display:grid; grid-template-columns:repeat(2,5px); gap:2px}
+#all b::before,#all b::after,#all b i,#all b s{content:""; display:block; width:5px; height:5px; border-radius:1px; background:currentColor}
+#all:focus-visible{outline:2px solid var(--ac); outline-offset:2px}
+body.grid #all{background:var(--ac)}
+
+/* ===== 画面 ===== */
+#view{position:fixed; left:0; right:0; top:var(--h); bottom:0; overflow:hidden}
+body.grid #view{overflow-y:auto; background:#2a2233}
+#lay{position:relative}
+.win{position:absolute; left:0; top:0; transform-origin:0 0; background:#fff; visibility:hidden; transition:transform .55s cubic-bezier(.3,.7,.2,1), border-radius .55s, box-shadow .55s}
+.win iframe{display:block; width:100%; height:100%; border:0}
+.win.on{visibility:visible; z-index:2}
+body.grid .win{visibility:visible; cursor:pointer; border-radius:calc(10px / var(--s)); overflow:hidden; box-shadow:0 0 0 calc(1px / var(--s)) rgba(255,255,255,.12), 0 calc(10px / var(--s)) calc(30px / var(--s)) rgba(0,0,0,.4)}
+body.grid .win iframe{pointer-events:none}
+body.grid .win:hover,body.grid .win:focus-visible{box-shadow:0 0 0 calc(3px / var(--s)) #ffd23f, 0 calc(10px / var(--s)) calc(30px / var(--s)) rgba(0,0,0,.4); outline:none}
+body.grid .win.on{z-index:1}
+.cap{position:absolute; left:0; color:#fff; font-size:13px; white-space:nowrap; overflow:hidden; font-weight:700; letter-spacing:.06em; opacity:0; transition:opacity .3s; pointer-events:none; display:flex; align-items:center; gap:8px}
+.cap i{width:12px; height:12px; border-radius:4px; background:var(--c)}
+body.grid.shown .cap{opacity:1}
+body.moving .win{visibility:visible}
+
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+
+<header id="bar">
+  <div id="tabs" role="tablist" aria-label="見た目"></div>
+  <button id="all" type="button" aria-pressed="false"><b><i></i><s></s></b>並べる</button>
+</header>
+<div id="view"><div id="lay"></div></div>
+
+<script>
+(function(){
+var SITES = [
+  ['bodoge.html',                   'ボードゲームの卓',       '#7a5c3a'],
+  ['kumikae.html',                  '英字が組み替わる誌面',   '#1d1526'],
+  ['window.html',                   '時間で変わる作業部屋',   '#9bd34a'],
+  ['hodoku.html',                   '整理できるダサいサイト', '#a678de'],
+  ['reversible.html',               '裏返せるサイト',         '#ffd23f'],
+  ['../015-directions/shop.html',   'ゲームのお店',           '#ff7ab6'],
+  ['../015-directions/site.html',   'ミニゲーム付きのサイト', '#8fd0ff'],
+  ['../015-directions/ikaga.html',  'いかがでしたかブログ',   '#ff9a3c'],
+  ['../015-directions/rosen.html',  '伸びていく路線図',       '#2f9e6e'],
+  ['../015-directions/status.html', 'RPG のステータス画面',   '#3a4fd0']
+];
+var B = document.body, tabs = document.getElementById('tabs'), lay = document.getElementById('lay'), view = document.getElementById('view');
+var all = document.getElementById('all'), T = [], W = [], C = [], cur = 0, grid = false, timer;
+try { var saved = +localStorage.getItem('tabs-cur'); if (saved >= 0 && saved < SITES.length) cur = saved; } catch(e){}
+
+SITES.forEach(function(s, i){
+  var t = document.createElement('button'); t.type = 'button'; t.className = 'tab'; t.setAttribute('role', 'tab');
+  t.style.setProperty('--c', s[2]); t.innerHTML = '<i></i><span></span>'; t.querySelector('span').textContent = s[1]; t.title = s[1];
+  t.addEventListener('click', function(){ pick(i); });
+  tabs.appendChild(t); T.push(t);
+  var w = document.createElement('div'); w.className = 'win'; w.tabIndex = -1; w.setAttribute('aria-label', s[1]);
+  w.addEventListener('click', function(){ if (grid) pick(i); });
+  w.addEventListener('keydown', function(e){ if (grid && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); pick(i); } });
+  lay.appendChild(w); W.push(w);
+  var c = document.createElement('div'); c.className = 'cap'; c.style.setProperty('--c', s[2]); c.innerHTML = '<i></i><span></span>'; c.querySelector('span').textContent = s[1];
+  lay.appendChild(c); C.push(c);
+});
+/* 開いたことのある見た目だけ読み込む（並べたときは全部） */
+function load(i){ if (W[i].firstChild) return; var f = document.createElement('iframe'); f.src = SITES[i][0]; f.title = SITES[i][1]; W[i].appendChild(f); }
+
+/* 並べたときの、それぞれの四角 */
+function slots(){
+  var vw = view.clientWidth, vh = innerHeight - 44, n = SITES.length;
+  var cols = vw > 1300 ? 4 : vw > 860 ? 3 : 2;
+  var M = Math.max(16, Math.min(48, vw * .04)), G = Math.max(16, Math.min(32, vw * .025)), CAP = 30;
+  var sw = (vw - M * 2 - G * (cols - 1)) / cols, s = sw / vw, sh = vh * s, out = [];
+  for (var i = 0; i < n; i++){
+    var c = i % cols, r = Math.floor(i / cols);
+    out.push({ x:M + c * (sw + G), y:M + CAP + r * (sh + CAP + G), s:s, w:sw });
+  }
+  lay.style.height = (M * 2 + Math.ceil(n / cols) * (sh + CAP + G)) + 'px';
+  return out;
+}
+function size(){
+  var vw = view.clientWidth, vh = innerHeight - 44;
+  W.forEach(function(w){ w.style.width = vw + 'px'; w.style.height = vh + 'px'; });
+}
+function place(){
+  size();
+  if (!grid){
+    lay.style.height = '100%';
+    W.forEach(function(w, i){ w.style.transform = 'none'; w.style.setProperty('--s', 1); w.classList.toggle('on', i === cur); });
+    return;
+  }
+  var S = slots();
+  W.forEach(function(w, i){ var p = S[i]; w.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px) scale(' + p.s + ')'; w.style.setProperty('--s', p.s); });
+  C.forEach(function(c, i){ var p = S[i]; c.style.transform = 'translate(' + p.x + 'px,' + (p.y - 26) + 'px)'; c.style.width = p.w + 'px'; });
+}
+function mark(){
+  T.forEach(function(t, i){ t.setAttribute('aria-selected', String(i === cur)); t.tabIndex = i === cur ? 0 : -1; });
+  T[cur].scrollIntoView({ block:'nearest', inline:'nearest' });
+  try { localStorage.setItem('tabs-cur', cur); } catch(e){}
+}
+
+/* タブを押す：その見た目に切り替える（並べていたら、選んだものが大きくなる） */
+function pick(i){
+  cur = i; load(i); mark();
+  if (grid){ toggle(false); return; }
+  W.forEach(function(w, j){ w.classList.toggle('on', j === cur); });
+}
+/* 並べる／戻す */
+function toggle(on){
+  clearTimeout(timer);
+  grid = on; all.setAttribute('aria-pressed', String(on));
+  if (on){
+    SITES.forEach(function(s, i){ load(i); });
+    B.classList.add('grid', 'moving'); W.forEach(function(w){ w.tabIndex = 0; });
+    place();
+    var S = slots(), y = S[cur].y - (innerHeight - 44) * .3;
+    view.scrollTop = Math.max(0, y);
+    timer = setTimeout(function(){ B.classList.add('shown'); }, 350);
+  } else {
+    var top = view.scrollTop;
+    B.classList.remove('shown'); W.forEach(function(w){ w.tabIndex = -1; });
+    /* 選んだものを、いま見えている位置から画面いっぱいへ */
+    var S = slots(), p = S[cur];
+    W[cur].style.transform = 'translate(' + p.x + 'px,' + (p.y - top) + 'px) scale(' + p.s + ')';
+    B.classList.remove('grid', 'moving'); view.scrollTop = 0;
+    void W[cur].offsetWidth;
+    W.forEach(function(w, j){ w.classList.toggle('on', j === cur); });
+    W[cur].style.transform = 'none'; W[cur].style.setProperty('--s', 1);
+    timer = setTimeout(place, 560);
+  }
+}
+all.addEventListener('click', function(){ toggle(!grid); });
+tabs.addEventListener('keydown', function(e){
+  var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+  e.preventDefault(); pick((cur + d + SITES.length) % SITES.length); T[cur].focus();
+});
+addEventListener('keydown', function(e){ if (e.key === 'Escape' && grid) toggle(false); });
+addEventListener('resize', place);
+
+load(cur); mark(); place();
+})();
+</script>
+</html>
