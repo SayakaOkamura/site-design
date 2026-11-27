@@ -11,63 +11,74 @@
   --u-bg:#2b1a44; --u-ink:#fff8ec; --u-sub:#cdbfe0; --y:#ffd23f; --p:#ff7ab6; --g:#8ad66f; --s:#8fd0ff; --o:#ff9a3c;
 }
 *{box-sizing:border-box; margin:0; padding:0}
-html,body{height:100%}
-body{overflow:hidden; background:#18102a; color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9}
+html{scroll-behavior:smooth}
+body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9; overflow-x:hidden}
 a{color:inherit}
 
-/* ===== 一枚の紙の表と裏 ===== */
-#sheet{position:fixed; inset:0; perspective:2400px}
-#card{position:absolute; inset:0; transform-style:preserve-3d}
-.face{position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden}
-#ura{transform:rotateY(180deg)}
-body.flipping .face{overflow:hidden}
+/* ===== 一枚の紙の表と裏：節ごとに左右に並ぶ ===== */
+.row{display:grid; grid-template-columns:1fr 1fr; position:relative}
+.o,.u{min-width:0; container-type:inline-size}
+.u{background:var(--u-bg); color:var(--u-ink); font-family:"Zen Maru Gothic",sans-serif;
+  background-image:radial-gradient(rgba(255,255,255,.07) 1.4px, transparent 1.6px); background-size:26px 26px}
+body.m-o .row,body.m-u .row{grid-template-columns:1fr}
+body.m-o .u,body.m-u .o{display:none}
+/* 両面のときの折り目 */
+body.m-both .row::after{content:""; position:absolute; top:0; bottom:0; left:50%; width:36px; margin-left:-18px; pointer-events:none;
+  background:linear-gradient(90deg, transparent, rgba(0,0,0,.10) 44%, rgba(0,0,0,.28) 50%, rgba(255,255,255,.06) 52%, transparent)}
+@media (max-width:760px){
+  body.m-both .row{grid-template-columns:1fr}
+  body.m-both .row::after{display:none}
+  body.m-both .row>.u{box-shadow:inset 0 14px 14px -10px rgba(0,0,0,.45)}
+  body.m-both .hdr>.u{display:none}
+}
 
-/* ===== 表：きちんとした会社のサイト ===== */
-#omote{background:var(--bg)}
-.hd{position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; padding:16px clamp(16px,4vw,56px)}
-#omote .hd{background:rgba(251,250,252,.92); backdrop-filter:blur(8px); box-shadow:0 1px 0 var(--line)}
-.logo{display:flex; align-items:center; gap:10px; text-decoration:none; font-weight:500; line-height:1.1}
+/* 見出しの帯 */
+.hdr{position:sticky; top:0; z-index:5}
+.hd{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px clamp(16px,4cqi,56px); height:62px}
+.o.hd{background:rgba(251,250,252,.94); backdrop-filter:blur(8px); box-shadow:0 1px 0 var(--line)}
+.u.hd{background:rgba(43,26,68,.94); backdrop-filter:blur(8px)}
+.logo{display:flex; align-items:center; gap:10px; text-decoration:none; font-weight:500; line-height:1.1; white-space:nowrap}
 .logo i{width:26px; height:26px; border-radius:50%; border:5px solid var(--ac); box-shadow:inset 0 0 0 2px var(--pale)}
 .logo small{display:block; font-size:10px; color:var(--sub); text-align:right}
-.hd ul{display:flex; gap:clamp(14px,2.4vw,36px); list-style:none; font-size:13px; letter-spacing:.08em}
+.u .logo i{border-color:var(--y); box-shadow:none; border-style:dashed}
+.u .logo small{color:var(--u-sub)}
+.hd ul{display:flex; gap:clamp(10px,2.4cqi,36px); list-style:none; font-size:13px; letter-spacing:.08em; white-space:nowrap}
 .hd ul a{text-decoration:none}
-@media (max-width:680px){ .hd ul{display:none} }
-#omote section{padding:clamp(80px,14vh,150px) clamp(16px,6vw,96px)}
-#omote .in{max-width:880px; margin:0 auto}
-#omote .kick{font-size:12px; letter-spacing:.22em; color:var(--ac); margin-bottom:14px}
-#omote h1{font-size:clamp(28px,4.8vw,54px); font-weight:900; line-height:1.45; margin-bottom:24px}
-#omote h2{font-size:clamp(22px,3vw,30px); font-weight:900; margin-bottom:28px}
-#omote h3{font-size:18px; font-weight:700; margin-bottom:10px}
-#omote p{color:var(--sub)}
-#omote .top{min-height:calc(100vh - 62px); display:flex; align-items:center}
-#omote .philo h3{font-size:clamp(19px,2.4vw,24px); color:var(--ink); margin-bottom:18px}
-#omote .svc{list-style:none; display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line)}
-#omote .svc li{background:var(--bg); padding:28px}
-#omote .svc p{font-size:14px}
-#omote .alt{background:#fff}
-#omote dl{display:grid; grid-template-columns:8em 1fr; gap:12px; padding:16px 0; border-bottom:1px solid var(--line); font-size:14px}
-#omote dt{color:var(--sub)}
-#omote .btn{display:inline-block; margin-top:28px; padding:14px 34px; border-radius:40px; background:var(--ac); color:#fff; text-decoration:none; font-weight:700; letter-spacing:.08em}
-#omote footer{padding:28px clamp(16px,4vw,56px) 110px; display:flex; flex-wrap:wrap; gap:12px 24px; justify-content:space-between; font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
+.u.hd ul{gap:8px}
+.u.hd ul a{padding:4px 12px; border-radius:20px; background:rgba(255,255,255,.08)}
+.u.hd ul a:hover{background:var(--y); color:var(--u-bg)}
+@container (max-width:720px){ .hd ul{display:none} }
+
+/* ===== 表：きちんとした会社のサイト ===== */
+.o .pad,.u .pad{padding:clamp(72px,12vh,140px) clamp(16px,6cqi,96px)}
+.o .in{max-width:880px; margin:0 auto}
+.o .kick{font-size:12px; letter-spacing:.22em; color:var(--ac); margin-bottom:14px}
+.o h1{font-size:clamp(24px,4.8cqi,54px); font-weight:900; line-height:1.45; margin-bottom:24px}
+.o h2{font-size:clamp(21px,3cqi,30px); font-weight:900; margin-bottom:28px}
+.o h3{font-size:18px; font-weight:700; margin-bottom:10px}
+.o p{color:var(--sub)}
+.top .pad{min-height:calc(100vh - 62px); display:flex; align-items:center}
+.top .in{width:100%}
+.o.philo h3{font-size:clamp(18px,2.4cqi,24px); color:var(--ink); margin-bottom:18px}
+.o .svc{list-style:none; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr)); gap:1px; background:var(--line); border:1px solid var(--line)}
+.o .svc li{background:var(--bg); padding:26px}
+.o .svc p{font-size:14px}
+.o.alt{background:#fff}
+.o dl{display:grid; grid-template-columns:7em 1fr; gap:12px; padding:16px 0; border-bottom:1px solid var(--line); font-size:14px}
+.o dt{color:var(--sub)}
+.o .btn{display:inline-block; margin-top:28px; padding:14px 34px; border-radius:40px; background:var(--ac); color:#fff; text-decoration:none; font-weight:700; letter-spacing:.08em}
+.ft{padding:28px clamp(16px,4cqi,56px) 120px; display:flex; flex-wrap:wrap; gap:12px 24px; justify-content:space-between; font-size:12px}
+.o.ft{color:var(--sub); border-top:1px solid var(--line)}
+.u.ft{color:var(--u-sub)}
 
 /* ===== 裏：遊ぶように働く側 ===== */
-#ura{background:var(--u-bg); color:var(--u-ink); font-family:"Zen Maru Gothic",sans-serif;
-  background-image:radial-gradient(rgba(255,255,255,.07) 1.4px, transparent 1.6px); background-size:26px 26px}
-#ura .hd{background:rgba(43,26,68,.88); backdrop-filter:blur(8px)}
-#ura .logo i{border-color:var(--y); box-shadow:none; border-style:dashed}
-#ura .logo small{color:var(--u-sub)}
-#ura .hd ul a{padding:4px 12px; border-radius:20px; background:rgba(255,255,255,.08)}
-#ura .hd ul a:hover{background:var(--y); color:var(--u-bg)}
-#ura section{position:relative; padding:clamp(72px,12vh,130px) clamp(16px,6vw,96px)}
-#ura .in{max-width:960px; margin:0 auto; position:relative}
-#ura .kick{display:inline-block; margin-bottom:18px; padding:2px 14px; border-radius:20px; background:var(--y); color:var(--u-bg); font-size:12px; font-weight:900; letter-spacing:.18em}
-#ura h2{font-size:clamp(24px,3.4vw,34px); font-weight:900; margin-bottom:28px}
-#ura p{color:var(--u-sub)}
-#ura .top{min-height:calc(100vh - 62px); display:flex; align-items:center}
-#ura .hint{margin-top:22px; font-size:13px; color:var(--u-sub)}
+.u .in{max-width:960px; margin:0 auto; position:relative}
+.u .kick{display:inline-block; margin-bottom:18px; padding:2px 14px; border-radius:20px; background:var(--y); color:var(--u-bg); font-size:12px; font-weight:900; letter-spacing:.18em}
+.u h2{font-size:clamp(22px,3.4cqi,34px); font-weight:900; margin-bottom:28px}
+.u p{color:var(--u-sub)}
 
 /* 積み木の見出し：押すと跳ねる */
-.blocks{font-size:clamp(22px,4.2vw,46px); font-weight:900; line-height:1.15; margin-bottom:26px; color:var(--u-bg)}
+.blocks{font-size:clamp(20px,4.4cqi,46px); font-weight:900; line-height:1.15; margin-bottom:26px; color:var(--u-bg)}
 .blocks .ln{display:flex; flex-wrap:wrap; gap:.12em; margin-bottom:.14em}
 .bk{display:inline-flex; align-items:center; justify-content:center; min-width:1.25em; height:1.3em; padding:0 .08em; border-radius:.22em; background:var(--c); box-shadow:inset 0 -.12em 0 rgba(0,0,0,.18); transform:rotate(var(--r)); cursor:pointer; user-select:none; transition:transform .25s}
 .bk.sp{background:none; box-shadow:none; min-width:.4em}
@@ -76,189 +87,177 @@ body.flipping .face{overflow:hidden}
 @keyframes hop{0%{transform:rotate(var(--r))} 35%{transform:translateY(-.7em) rotate(200deg)} 70%{transform:translateY(0) rotate(360deg)} 85%{transform:translateY(-.12em) rotate(360deg)} 100%{transform:rotate(var(--r))}}
 
 /* 理念：ことばにクレヨンの線 */
-.philo h3{font-size:clamp(20px,2.8vw,28px); font-weight:900; line-height:1.6; margin-bottom:22px}
-.philo h3 em{font-style:normal; color:var(--y)}
+.u.philo h3{font-size:clamp(19px,2.8cqi,28px); font-weight:900; line-height:1.6; margin-bottom:22px}
+.u.philo h3 em{font-style:normal; color:var(--y)}
 .crayon{color:var(--u-ink); font-weight:700; background:linear-gradient(transparent 62%, rgba(255,122,182,.55) 62%, rgba(255,122,182,.55) 88%, transparent 88%)}
-.philo p{font-size:15px; line-height:2.1}
+.u.philo p{font-size:15px; line-height:2.1}
 
 /* サービス：動かせるシール */
-.board{position:relative; display:grid; grid-template-columns:repeat(2,1fr); gap:28px}
-@media (max-width:720px){ .board{grid-template-columns:1fr} }
+.board{position:relative; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:28px}
 .stk{position:relative; padding:26px 26px 24px; border-radius:22px; background:var(--c); color:var(--u-bg); transform:translate(var(--x,0),var(--y,0)) rotate(var(--r)); box-shadow:0 6px 0 rgba(0,0,0,.25); touch-action:pan-y; cursor:grab; transition:box-shadow .2s}
 .stk.drag{cursor:grabbing; box-shadow:0 18px 30px rgba(0,0,0,.35); z-index:3; transition:none}
-.stk h3{font-size:19px; font-weight:900; margin-bottom:10px; line-height:1.5}
-#ura .stk p{color:rgba(29,21,38,.82); font-size:14px; line-height:1.9}
+.stk h3{font-size:18px; font-weight:900; margin-bottom:10px; line-height:1.5}
+.u .stk p{color:rgba(29,21,38,.82); font-size:14px; line-height:1.9}
 .stk b{position:absolute; right:18px; top:-16px; width:40px; height:40px; border-radius:50%; background:var(--u-ink); display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 3px 0 rgba(0,0,0,.2)}
 
 /* 会社概要：名札 */
-.tag{position:relative; max-width:720px; margin:0 auto; padding:44px clamp(20px,4vw,48px) 30px; border-radius:24px; background:var(--u-ink); color:var(--ink); transform:rotate(-1.2deg); box-shadow:0 8px 0 rgba(0,0,0,.25)}
+.tag{position:relative; max-width:720px; margin:0 auto; padding:44px clamp(20px,4cqi,48px) 30px; border-radius:24px; background:var(--u-ink); color:var(--ink); transform:rotate(-1.2deg); box-shadow:0 8px 0 rgba(0,0,0,.25)}
 .tag::before{content:""; position:absolute; left:50%; top:-22px; width:70px; height:34px; margin-left:-35px; border-radius:10px; background:var(--s); box-shadow:inset 0 -6px 0 rgba(0,0,0,.15)}
 .tag::after{content:""; position:absolute; left:50%; top:-6px; width:30px; height:6px; margin-left:-15px; border-radius:4px; background:var(--u-bg)}
 .tag h2{color:var(--ac)}
-.tag dl{display:grid; grid-template-columns:7em 1fr; gap:10px; padding:12px 0; border-bottom:2px dotted #d9cfe5; font-size:14px; font-family:"Zen Kaku Gothic New",sans-serif}
+.tag dl{display:grid; grid-template-columns:6.5em 1fr; gap:10px; padding:12px 0; border-bottom:2px dotted #d9cfe5; font-size:14px; font-family:"Zen Kaku Gothic New",sans-serif}
 .tag dt{color:var(--ac); font-weight:700}
 
 /* お問い合わせ：押せるおもちゃのボタン */
-.contact{text-align:center}
-.toy{display:inline-flex; align-items:center; justify-content:center; margin-top:34px; width:200px; height:200px; border-radius:50%; background:var(--p); color:var(--u-bg); text-decoration:none; font-size:17px; font-weight:900; line-height:1.5; box-shadow:0 14px 0 #c2417f, 0 22px 30px rgba(0,0,0,.3); transition:transform .12s, box-shadow .12s}
+.u.contact{text-align:center}
+.toy{display:inline-flex; align-items:center; justify-content:center; margin-top:34px; width:190px; height:190px; border-radius:50%; background:var(--p); color:var(--u-bg); text-decoration:none; font-size:17px; font-weight:900; line-height:1.5; box-shadow:0 14px 0 #c2417f, 0 22px 30px rgba(0,0,0,.3); transition:transform .12s, box-shadow .12s}
 .toy:hover{transform:translateY(4px); box-shadow:0 10px 0 #c2417f, 0 16px 24px rgba(0,0,0,.3)}
 .toy:active{transform:translateY(13px); box-shadow:0 1px 0 #c2417f, 0 4px 10px rgba(0,0,0,.3)}
-#ura footer{padding:28px clamp(16px,4vw,56px) 110px; display:flex; flex-wrap:wrap; gap:12px 24px; justify-content:space-between; font-size:12px; color:var(--u-sub)}
 
-/* ===== 裏返すボタン ===== */
-#flip{position:fixed; right:clamp(16px,3vw,32px); bottom:clamp(16px,3vw,32px); z-index:20; display:flex; align-items:center; gap:10px; padding:14px 24px 14px 18px; border:0; border-radius:40px; background:var(--ink); color:#fff; font:700 15px "Zen Kaku Gothic New",sans-serif; letter-spacing:.1em; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,.25); transition:background .4s, color .4s}
-#flip i{position:relative; width:22px; height:22px; border-radius:4px; background:linear-gradient(135deg, #fff 50%, var(--y) 50%); transition:transform .6s}
-body.u #flip{background:var(--y); color:var(--u-bg)}
-body.u #flip i{background:linear-gradient(135deg, var(--u-bg) 50%, #fff 50%); transform:rotateY(180deg)}
-#flip:focus-visible{outline:3px solid var(--p); outline-offset:3px}
+/* ===== めくる紙 ===== */
+#flap{position:fixed; top:0; bottom:0; z-index:15; pointer-events:none; transform-style:preserve-3d; visibility:hidden}
+#flap i{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden}
+#flap i:last-child{transform:rotateY(180deg)}
+.lt{background:linear-gradient(90deg, var(--bg), #ebe6f0)}
+.dk{background:linear-gradient(90deg, #3a2659, var(--u-bg))}
 
-@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none!important; transition:none!important} }
+/* ===== 表・両面・裏 の切り替え ===== */
+#mode{position:fixed; right:clamp(16px,3vw,32px); bottom:clamp(16px,3vw,32px); z-index:20; display:flex; padding:5px; border-radius:40px; background:var(--ink); box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#mode button{padding:10px 18px; border:0; border-radius:30px; background:none; color:#fff; font:700 14px "Zen Kaku Gothic New",sans-serif; letter-spacing:.1em; cursor:pointer; transition:background .3s, color .3s}
+#mode button[aria-pressed="true"]{background:var(--y); color:var(--u-bg)}
+#mode button:focus-visible{outline:3px solid var(--p); outline-offset:2px}
+
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none!important; transition:none!important} html{scroll-behavior:auto} }
 </style>
 
-<div id="sheet"><div id="card">
+<body class="m-o">
 
-<!-- 表 -->
-<div class="face" id="omote">
-  <header class="hd">
-    <a class="logo" href="#o-top"><i></i><span>Alter Design<small>consulting</small></span></a>
+<header class="row hdr">
+  <div class="o hd">
+    <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
     <nav><ul>
-      <li><a href="#o-philosophy">企業理念</a></li>
-      <li><a href="#o-services">サービス</a></li>
-      <li><a href="#o-company">会社概要</a></li>
-      <li><a href="#o-contact">お問い合わせ</a></li>
+      <li><a href="#philosophy">企業理念</a></li><li><a href="#services">サービス</a></li><li><a href="#company">会社概要</a></li><li><a href="#contact">お問い合わせ</a></li>
     </ul></nav>
-  </header>
-  <section class="top" id="o-top" data-s="top">
-    <div class="in">
-      <h1>AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
-      <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
-    </div>
-  </section>
-  <section class="alt philo" id="o-philosophy" data-s="philosophy">
-    <div class="in">
-      <p class="kick">PHILOSOPHY</p>
-      <h2>アルターデザインコンサルティングの企業理念</h2>
-      <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
-      <p>「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと<br>
-      子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
-      このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
-      それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
-    </div>
-  </section>
-  <section id="o-services" data-s="services">
-    <div class="in">
-      <p class="kick">SERVICE</p>
-      <h2>私たちが提供するサービス</h2>
-      <ul class="svc">
-        <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
-        <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
-        <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
-        <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
-      </ul>
-    </div>
-  </section>
-  <section class="alt" id="o-company" data-s="company">
-    <div class="in">
-      <p class="kick">COMPANY</p>
-      <h2>会社概要</h2>
-      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
-      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
-      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd></dl>
-      <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
-      <dl><dt>資本金</dt><dd>60百万円</dd></dl>
-      <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
-      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
-    </div>
-  </section>
-  <section id="o-contact" data-s="contact">
-    <div class="in">
-      <p class="kick">CONTACT</p>
-      <h2>お問い合わせ</h2>
-      <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
-      <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
-    </div>
-  </section>
-  <footer>
-    <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
-    <small>© 2025 Alter Design Consulting Co., Ltd.</small>
-  </footer>
+  </div>
+  <div class="u hd">
+    <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+    <nav><ul>
+      <li><a href="#philosophy">企業理念</a></li><li><a href="#services">サービス</a></li><li><a href="#company">会社概要</a></li><li><a href="#contact">お問い合わせ</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<div class="row top" id="top">
+  <section class="o"><div class="pad"><div class="in">
+    <h1>AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div></div></section>
+  <section class="u"><div class="pad"><div class="in">
+    <h1 class="blocks" id="blocks" aria-label="AI × ローコードで、「上流工程中心のシステム開発」に革新を"></h1>
+    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div></div></section>
 </div>
 
-<!-- 裏 -->
-<div class="face" id="ura" aria-hidden="true">
-  <header class="hd">
-    <a class="logo" href="#u-top"><i></i><span>Alter Design<small>consulting</small></span></a>
-    <nav><ul>
-      <li><a href="#u-philosophy">企業理念</a></li>
-      <li><a href="#u-services">サービス</a></li>
-      <li><a href="#u-company">会社概要</a></li>
-      <li><a href="#u-contact">お問い合わせ</a></li>
-    </ul></nav>
-  </header>
-  <section class="top" id="u-top" data-s="top">
-    <div class="in">
-      <h1 class="blocks" id="blocks" aria-label="AI × ローコードで、「上流工程中心のシステム開発」に革新を"></h1>
-      <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
-    </div>
-  </section>
-  <section class="philo" id="u-philosophy" data-s="philosophy">
-    <div class="in">
-      <p class="kick">PHILOSOPHY</p>
-      <h2>アルターデザインコンサルティングの企業理念</h2>
-      <h3>経営の力で<em>「遊ぶように働く世界」</em>をデザインする</h3>
-      <p><span class="crayon">「遊ぶように働く」</span>とは、楽をすることではなく、<span class="crayon">人が夢中になり自発的に創造する状態で働く</span>こと<br>
-      子供が遊びに没頭するように、大人も「やらされる」でなく<span class="crayon">「やりたい」</span>仕事に向き合うこと<br>
-      このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
-      それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
-    </div>
-  </section>
-  <section id="u-services" data-s="services">
-    <div class="in">
-      <p class="kick">SERVICE</p>
-      <h2>私たちが提供するサービス</h2>
-      <div class="board">
-        <div class="stk" style="--c:var(--y); --r:-2deg"><b>01</b><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></div>
-        <div class="stk" style="--c:var(--s); --r:1.5deg"><b>02</b><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></div>
-        <div class="stk" style="--c:var(--g); --r:1deg"><b>03</b><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></div>
-        <div class="stk" style="--c:var(--o); --r:-1.5deg"><b>04</b><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></div>
-      </div>
-    </div>
-  </section>
-  <section id="u-company" data-s="company">
-    <div class="tag">
-      <h2>会社概要</h2>
-      <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
-      <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
-      <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd></dl>
-      <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
-      <dl><dt>資本金</dt><dd>60百万円</dd></dl>
-      <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
-      <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
-    </div>
-  </section>
-  <section class="contact" id="u-contact" data-s="contact">
-    <div class="in">
-      <p class="kick">CONTACT</p>
-      <h2>お問い合わせ</h2>
-      <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
-      <a class="toy" href="mailto:contact@alt-dsgn.co.jp">お問い合わせ<br>フォームへ</a>
-    </div>
-  </section>
-  <footer>
-    <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
-    <small>© 2025 Alter Design Consulting Co., Ltd.</small>
-  </footer>
+<div class="row" id="philosophy">
+  <section class="o alt philo"><div class="pad"><div class="in">
+    <p class="kick">PHILOSOPHY</p>
+    <h2>アルターデザインコンサルティングの企業理念</h2>
+    <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+    <p>「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと<br>
+    子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+    このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+    それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+  </div></div></section>
+  <section class="u philo"><div class="pad"><div class="in">
+    <p class="kick">PHILOSOPHY</p>
+    <h2>アルターデザインコンサルティングの企業理念</h2>
+    <h3>経営の力で<em>「遊ぶように働く世界」</em>をデザインする</h3>
+    <p><span class="crayon">「遊ぶように働く」</span>とは、楽をすることではなく、<span class="crayon">人が夢中になり自発的に創造する状態で働く</span>こと<br>
+    子供が遊びに没頭するように、大人も「やらされる」でなく<span class="crayon">「やりたい」</span>仕事に向き合うこと<br>
+    このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+    それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+  </div></div></section>
 </div>
 
-</div></div>
+<div class="row" id="services">
+  <section class="o"><div class="pad"><div class="in">
+    <p class="kick">SERVICE</p>
+    <h2>私たちが提供するサービス</h2>
+    <ul class="svc">
+      <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </div></div></section>
+  <section class="u"><div class="pad"><div class="in">
+    <p class="kick">SERVICE</p>
+    <h2>私たちが提供するサービス</h2>
+    <div class="board">
+      <div class="stk" style="--c:var(--y); --r:-2deg"><b>01</b><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></div>
+      <div class="stk" style="--c:var(--s); --r:1.5deg"><b>02</b><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></div>
+      <div class="stk" style="--c:var(--g); --r:1deg"><b>03</b><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></div>
+      <div class="stk" style="--c:var(--o); --r:-1.5deg"><b>04</b><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></div>
+    </div>
+  </div></div></section>
+</div>
 
-<button id="flip" type="button" aria-pressed="false"><i></i><span>裏返す</span></button>
+<div class="row" id="company">
+  <section class="o alt"><div class="pad"><div class="in">
+    <p class="kick">COMPANY</p>
+    <h2>会社概要</h2>
+    <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+    <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+    <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd></dl>
+    <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+    <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+    <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+    <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+  </div></div></section>
+  <section class="u"><div class="pad"><div class="tag">
+    <h2>会社概要</h2>
+    <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+    <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+    <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd></dl>
+    <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+    <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+    <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+    <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+  </div></div></section>
+</div>
+
+<div class="row" id="contact">
+  <section class="o"><div class="pad"><div class="in">
+    <p class="kick">CONTACT</p>
+    <h2>お問い合わせ</h2>
+    <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+    <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+  </div></div></section>
+  <section class="u contact"><div class="pad"><div class="in">
+    <p class="kick">CONTACT</p>
+    <h2>お問い合わせ</h2>
+    <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+    <a class="toy" href="mailto:contact@alt-dsgn.co.jp">お問い合わせ<br>フォームへ</a>
+  </div></div></section>
+</div>
+
+<footer class="row">
+  <div class="o ft"><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a><small>© 2025 Alter Design Consulting Co., Ltd.</small></div>
+  <div class="u ft"><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a><small>© 2025 Alter Design Consulting Co., Ltd.</small></div>
+</footer>
+
+<div id="flap" aria-hidden="true"><i></i><i></i></div>
+
+<div id="mode" role="group" aria-label="表と裏">
+  <button type="button" data-m="o" aria-pressed="true">表</button>
+  <button type="button" data-m="both" aria-pressed="false">両面</button>
+  <button type="button" data-m="u" aria-pressed="false">裏</button>
+</div>
 
 <script>
 (function(){
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
-var B = document.body, card = document.getElementById('card'), btn = document.getElementById('flip');
-var omote = document.getElementById('omote'), ura = document.getElementById('ura');
+var B = document.body;
 var C = ['var(--y)', 'var(--p)', 'var(--g)', 'var(--s)', 'var(--o)'];
 
 /* 積み木の見出し */
@@ -291,36 +290,54 @@ document.querySelectorAll('.stk').forEach(function(s){
   s.addEventListener('pointerup', up); s.addEventListener('pointercancel', up);
 });
 
-/* 裏返す：いま見ている節の、反対側の同じ節へ */
-function current(face){
-  var secs = face.querySelectorAll('section'), mid = innerHeight * .4, hit = secs[0];
-  secs.forEach(function(s){ if (s.getBoundingClientRect().top <= mid) hit = s; });
+/* 表・両面・裏：いま見ている節を同じ高さに保ったまま切り替える */
+var rows = [].slice.call(document.querySelectorAll('.row[id]')), flap = document.getElementById('flap');
+var btns = [].slice.call(document.querySelectorAll('#mode button')), mode = 'o', busy = false;
+function where(){
+  var mid = innerHeight * .4, hit = rows[0];
+  rows.forEach(function(r){ if (r.getBoundingClientRect().top <= mid) hit = r; });
   var r = hit.getBoundingClientRect();
-  return { s:hit.dataset.s, k:(mid - r.top) / r.height };
+  return { el:hit, k:(mid - r.top) / r.height };
 }
-function go(face, at){
-  var s = face.querySelector('[data-s="' + at.s + '"]');
-  face.scrollTop = Math.max(0, s.offsetTop + at.k * s.offsetHeight - innerHeight * .4);
+function keep(at){
+  var r = at.el.getBoundingClientRect();
+  var y = scrollY + r.top + at.k * r.height - innerHeight * .4;
+  document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, Math.max(0, y)); document.documentElement.style.scrollBehavior = '';
 }
-var isU = false, busy = false;
-function flip(){
-  if (busy) return;
-  var from = isU ? ura : omote, to = isU ? omote : ura;
-  go(to, current(from));
-  isU = !isU; B.classList.toggle('u', isU);
-  btn.querySelector('span').textContent = isU ? '表に戻す' : '裏返す'; btn.setAttribute('aria-pressed', String(isU));
-  from.setAttribute('aria-hidden', 'true'); to.removeAttribute('aria-hidden');
-  var a = isU ? 0 : 180, z = isU ? 180 : 360;
-  if (RM){ card.style.transform = 'rotateY(' + (isU ? 180 : 0) + 'deg)'; return; }
-  busy = true; B.classList.add('flipping');
-  var an = card.animate([
-    { transform:'rotateY(' + a + 'deg) scale(1)' },
-    { transform:'rotateY(' + (a + 90) + 'deg) scale(.78)', offset:.5 },
-    { transform:'rotateY(' + z + 'deg) scale(1)' }
-  ], { duration:1000, easing:'cubic-bezier(.5,0,.3,1)' });
-  an.onfinish = function(){ card.style.transform = 'rotateY(' + (isU ? 180 : 0) + 'deg)'; busy = false; B.classList.remove('flipping'); };
+/* めくる紙：side は覆う側（r＝右半分、l＝左半分、f＝全体）、face は覆う紙の色 */
+function turn(side, face, back){
+  var w = innerWidth, half = side !== 'f';
+  flap.style.left = (side === 'r' ? w / 2 : 0) + 'px'; flap.style.width = (half ? w / 2 : w) + 'px';
+  flap.style.transformOrigin = side === 'r' ? '0 50%' : side === 'l' ? '100% 50%' : '50% 50%';
+  flap.children[0].className = face; flap.children[1].className = back;
+  flap.style.visibility = 'visible';
+  var end = side === 'r' ? -180 : 180;
+  var an = flap.animate([
+    { transform:'perspective(2400px) rotateY(0deg)', opacity:1 },
+    { transform:'perspective(2400px) rotateY(' + end * .7 + 'deg)', opacity:1, offset:.7 },
+    { transform:'perspective(2400px) rotateY(' + end + 'deg)', opacity:0 }
+  ], { duration:half ? 850 : 1000, easing:'cubic-bezier(.45,0,.3,1)' });
+  return an;
 }
-btn.addEventListener('click', flip);
+function set(m){
+  if (m === mode || busy) return;
+  var at = where(), from = mode, narrow = innerWidth <= 760, side, face, back;
+  if (narrow || (from === 'o' && m === 'u') || (from === 'u' && m === 'o')){ side = 'f'; face = from === 'u' ? 'dk' : 'lt'; back = m === 'u' ? 'dk' : 'lt'; }
+  else if (from === 'o'){ side = 'r'; face = 'lt'; back = 'dk'; }        /* 表 → 両面：右半分をめくると裏 */
+  else if (m === 'u'){ side = 'l'; face = 'lt'; back = 'dk'; }           /* 両面 → 裏：左の表もめくる */
+  else if (from === 'u'){ side = 'l'; face = 'dk'; back = 'lt'; }        /* 裏 → 両面：左に表が戻る */
+  else { side = 'r'; face = 'dk'; back = 'lt'; }                          /* 両面 → 表 */
+  mode = m;
+  btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.m === m)); });
+  function swap(){ B.classList.remove('m-o', 'm-both', 'm-u'); B.classList.add('m-' + m); keep(at); }
+  if (RM){ swap(); return; }
+  busy = true;
+  var an = turn(side, face, back);
+  requestAnimationFrame(swap);
+  an.onfinish = function(){ flap.style.visibility = 'hidden'; busy = false; };
+}
+btns.forEach(function(b){ b.addEventListener('click', function(){ set(b.dataset.m); }); });
 })();
 </script>
+</body>
 </html>
