@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<!-- 016 円のやつ（2026-11-27）。015 の opening.html を写した。ホールディングスを文字なしの雰囲気で
+     生成りの地に紫のロープ一本。ロープは大きな円で、まわりに固い結び目が五つ。カメラは止まらずにロープに沿って進み、だんだん速くなる
+     結び目は画面に入ってきたところでほどけて、ロゴと同じ組み方の二重の輪になる。終わりにだんだん引いて、円のまわりに輪が並ぶのが見え、輪はたたまれて円がロゴになる
+     線は一本のまま。文は公式のまま -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600&family=Archivo+Black&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+:root{ --bg:#f2eee6; --ink:#1b1022; --sub:#6f6676; --pu:#654087; --li:#bb7eea; --ac:#d7ff3a; --line:rgba(27,16,34,.14); }
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.95; overflow-x:clip}
+a{color:inherit}
+
+/* 開いた画面：生成りの一画面。紐は canvas に描く */
+#top{position:relative; height:100vh; height:100svh; min-height:520px; overflow:hidden; background:radial-gradient(ellipse 80% 70% at 50% 50%, #f7f4ee 30%, #ece6da 100%); color:var(--ink)}
+#top canvas{position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:2}
+header{position:absolute; top:0; left:0; right:0; z-index:3; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,56px)}
+.logo{display:flex; align-items:center; gap:10px; text-decoration:none; line-height:1.1}
+.logo i{width:30px; height:30px; border-radius:50%; border:5px solid var(--pu); box-shadow:inset 0 0 0 2px var(--li)}
+.logo span{font-size:17px}
+.logo small{display:block; font-size:10px; margin-left:4.4em; color:var(--sub)}
+nav ul{display:flex; gap:clamp(12px,2.4vw,36px); list-style:none}
+nav a{text-decoration:none; font-size:11px; letter-spacing:.24em; color:var(--sub); transition:color .2s}
+nav a:hover{color:var(--pu)}
+.lead{position:absolute; left:0; right:0; top:var(--lt,60%); z-index:1; text-align:center; padding:0 16px; margin:0 auto; max-width:960px}   /* 結び目の下 */
+.lead .en{font-family:"Archivo",sans-serif; font-weight:600; font-size:clamp(10px,1.2vw,13px); letter-spacing:.6em; color:var(--sub); margin-right:-.6em}
+.lead h1{margin-top:clamp(14px,3vh,28px); font-weight:900; font-size:clamp(15px,3vw,42px); line-height:1.6; letter-spacing:.02em; text-wrap:balance}
+.lead p{margin-top:clamp(18px,3.4vh,32px); font-size:clamp(12.5px,1.2vw,15px); color:var(--sub)}
+/* 出方：線が描き終えたところから、すっと出る */
+@media (max-width:480px){ .lead h1 br{display:none} }   /* 狭い幅では改行を外して、行の長さをそろえる */
+.rv{opacity:0; transition:opacity .5s}   /* 位置は動かさない（線が描く位置と文の位置をそろえる） */
+.rv.on{opacity:1}
+
+/* 本文：公式サイトの文のまま */
+section{max-width:1080px; margin:0 auto; padding:clamp(96px,16vh,180px) clamp(16px,4vw,56px) 0}
+.side{display:flex; align-items:center; gap:16px; margin-bottom:clamp(28px,5vh,52px); font-family:"Archivo",sans-serif; font-weight:600; font-size:12.5px; letter-spacing:.35em; color:var(--sub)}
+.side .n{color:var(--pu)}
+.side .n::after{content:""; display:inline-block; width:48px; height:1px; background:var(--pu); vertical-align:middle; margin-left:16px}
+h2{font-weight:900; font-size:clamp(24px,3vw,40px); line-height:1.4; letter-spacing:.04em; margin-bottom:clamp(28px,5vh,52px); text-wrap:balance}
+h3{font-weight:900; font-size:17px; line-height:1.7; margin-bottom:.6em; text-wrap:balance}
+p{font-size:14.5px; line-height:2.1; letter-spacing:.04em}
+b{font-weight:700}
+#philosophy h3{font-size:clamp(24px,3.4vw,46px); line-height:1.45; margin-bottom:clamp(28px,5vh,52px)}
+#philosophy p{max-width:44em; color:var(--sub)}
+#philosophy p b{color:var(--ink)}
+.svc{list-style:none; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 clamp(24px,4vw,56px); counter-reset:s}
+.svc li{counter-increment:s; padding:clamp(24px,4vh,40px) 0; border-top:1px solid var(--line)}
+.svc li::before{content:counter(s, decimal-leading-zero); display:block; font-family:"Archivo Black",sans-serif; font-size:clamp(30px,3.4vw,44px); line-height:1; color:var(--pu); margin-bottom:.5em}
+.svc p{font-size:13.5px; color:var(--sub)}
+dl{display:grid; grid-template-columns:9em 1fr; border-top:1px solid var(--line); padding:clamp(18px,3.4vh,30px) 0; font-size:14.5px; line-height:2}
+dl:last-child{border-bottom:1px solid var(--line)}
+dt{font-weight:700; font-size:12.5px; letter-spacing:.2em; color:var(--sub); padding-top:.2em}
+.acc{font-size:13px; color:var(--sub); margin-top:.6em}
+#contact{padding-bottom:clamp(96px,16vh,180px)}
+#contact p{color:var(--sub)}
+.btn{display:inline-flex; align-items:center; gap:40px; margin-top:2.4em; padding:12px 0; border-bottom:1px solid var(--ink); text-decoration:none; font-size:15px; letter-spacing:.22em; transition:color .2s, border-color .2s}
+.btn::after{content:"→"; font-family:"Archivo",sans-serif}
+.btn:hover{color:var(--pu); border-color:var(--pu)}
+footer{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:28px clamp(16px,4vw,56px); font-size:11px; letter-spacing:.08em; color:var(--sub); border-top:1px solid var(--line)}
+
+@media (max-width:760px){
+  nav{display:none}
+  .svc{grid-template-columns:1fr}
+  dl{grid-template-columns:1fr; gap:2px}
+}
+</style>
+
+<body>
+<div id="top">
+  <header>
+    <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+    <nav class="rv" data-k="nav"><ul>
+      <li><a href="#philosophy">企業理念</a></li>
+      <li><a href="#services">サービス</a></li>
+      <li><a href="#company">会社概要</a></li>
+      <li><a href="#contact">お問い合わせ</a></li>
+    </ul></nav>
+  </header>
+  <canvas aria-hidden="true"></canvas>
+  <div class="lead">
+    <div class="en rv" data-k="h1">ALTER DESIGN CONSULTING</div>
+    <h1 class="rv" data-k="h1">AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p class="rv" data-k="p">コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div>
+</div>
+
+<main>
+  <section id="philosophy">
+    <div class="side"><span class="n">01</span><span>企業理念</span></div>
+    <h2>アルターデザインコンサルティングの企業理念</h2>
+    <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+    <p><b>「遊ぶように働く」</b>とは、楽をすることではなく、<b>人が夢中になり自発的に創造する状態で働く</b>こと<br>
+    子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+    このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+    それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+  </section>
+
+  <section id="services">
+    <div class="side"><span class="n">02</span><span>サービス</span></div>
+    <h2>私たちが提供するサービス</h2>
+    <ul class="svc">
+      <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </section>
+
+  <section id="company">
+    <div class="side"><span class="n">03</span><span>会社概要</span></div>
+    <h2>会社概要</h2>
+    <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+    <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+    <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）
+      <p class="acc">【アクセス】<br>御成門駅 徒歩2分（都営地下鉄三田線）<br>大門駅 徒歩10分（都営地下鉄浅草線・大江戸線）<br>神谷町駅 徒歩10分（東京メトロ日比谷線）<br>汐留駅 徒歩12分（都営大江戸線・ゆりかもめ）<br>虎ノ門ヒルズ駅 徒歩12分（東京メトロ日比谷線）<br>虎ノ門駅 徒歩12分（東京メトロ銀座線）<br>新橋駅 徒歩12分（JR山手線・京浜東北線）<br>浜松町駅 徒歩14分（JR山手線・京浜東北線）</p></dd></dl>
+    <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+    <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+    <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+    <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+  </section>
+
+  <section id="contact">
+    <div class="side"><span class="n">04</span><span>お問い合わせ</span></div>
+    <h2>お問い合わせ</h2>
+    <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+    <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+  </section>
+</main>
+
+<footer>
+  <a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a>
+  <small>© 2025 Alter Design Consulting Co., Ltd.</small>
+</footer>
+
+<script>
+(function(){
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var hero = document.getElementById('top'), cv = hero.querySelector('canvas'), cx = cv.getContext('2d');
+var W = 0, H = 0, DPR = 1, TAU = Math.PI * 2;
+var INK = '#654087', LI = '#bb7eea', PAPER = '#f5f2eb';
+var rv = [].slice.call(hero.querySelectorAll('.rv'));
+function show(k){ rv.forEach(function(el){ if (el.dataset.k === k) el.classList.add('on'); }); }
+
+/* 世界：一本の紐は、半径 RW の大きな円の上にある（近くで見るとほぼ横一直線）。てっぺんのあたりに結び目が四つ、広い間をあけて並ぶ
+   単位：印の大きさ（半径）が 1 */
+/* 結び目は円のまわりに均等に五つ。最後に引いたとき、円のまわり全体に輪が並ぶ */
+var RW = 7, SPAN = 3.4, K = 5, LIFT = 1.15, LOOP = 420;
+var TH = []; for (var k = 0; k < K; k++) TH.push(-Math.PI / 4 + k * TAU / K);
+function C(th){ return [RW * Math.sin(th), RW - RW * Math.cos(th)]; }
+function No(th){ return [Math.sin(th), -Math.cos(th)]; }
+
+function arc(cx0, cy0, r, a0, a1, n){ var o = []; for (var i = 0; i <= n; i++){ var a = a0 + (a1 - a0) * i / n; o.push([cx0 + Math.cos(a) * r, cy0 + Math.sin(a) * r]); } return o; }
+function resample(path, n){
+  var L = [0];
+  for (var i = 1; i < path.length; i++) L.push(L[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
+  var tot = L[L.length - 1] || 1, out = [], j = 0;
+  for (i = 0; i < n; i++){
+    var t = tot * i / (n - 1);
+    while (j < L.length - 2 && L[j + 1] < t) j++;
+    var seg = L[j + 1] - L[j] || 1, f = (t - L[j]) / seg;
+    out.push([path[j][0] + (path[j + 1][0] - path[j][0]) * f, path[j][1] + (path[j + 1][1] - path[j][1]) * f]);
+  }
+  return out;
+}
+/* ひと結び（三つ葉の結び目を一か所で切り、両端を左右へ引いた形）。局所の座標：x は紐の向き、y は上向き。z は上下 */
+/* 固い結び目：ロープの太さに比べて小さく締まったこぶ。紐の上に乗り、左右の紐がこぶに入って出ていく */
+function trefoil(t){ return [Math.sin(t) + 2 * Math.sin(2 * t), -(Math.cos(t) - 2 * Math.cos(2 * t)), -Math.sin(3 * t)]; }
+var KS = .12, T0 = (function(){ var best = 0, by = 1e9; for (var i = 0; i < 720; i++){ var t = TAU * i / 720, y = trefoil(t)[1]; if (y < by){ by = y; best = t; } } return best; })();
+var KNOT = (function(){
+  var o = [], gap = .32, y0 = -trefoil(T0)[1] * KS + .02;   /* いちばん下の点で切り、少し開いて左右の紐につなぐ */
+  for (var i = 0; i < LOOP; i++){ var t = T0 + gap + (TAU - 2 * gap) * i / (LOOP - 1), p = trefoil(t); o.push([p[0] * KS, y0 + p[1] * KS, p[2]]); }
+  return o;
+})();
+var RING = (function(){   /* ゆるんだ輪：結び目の切り口と同じところから始まる一周 */
+  var c = [0, LIFT], r = 1, o = [];
+  for (var i = 0; i < LOOP; i++){ var a = -Math.PI / 2 + TAU * i / (LOOP - 1); o.push([c[0] + Math.cos(a) * r, c[1] + Math.sin(a) * r, 0]); }
+  return o;
+})();
+/* ほどけた先は、どれもロゴと同じ組み方の二重の輪（外を一周、内へ寄って一周、外へ戻る）。一本のロープのまま */
+function twoRings(){
+  var o = arc(0, 0, 1, Math.PI / 2, Math.PI / 2 + TAU, 64);
+  o = o.concat(arc(0, 0, .66, Math.PI / 2, Math.PI / 2 + TAU, 48));
+  o.push([0, 1]);
+  return o;
+}
+var ICONS = []; for (var k = 0; k < K; k++) ICONS.push(twoRings);
+var iconLoops = ICONS.map(function(f){
+  var p = resample(f(), 600), bi = 0;   /* 細かく分けてから、紐が入る点（形の下の真ん中）を選ぶ */
+  p.forEach(function(q, i){ if (q[1] - Math.abs(q[0]) * .6 > p[bi][1] - Math.abs(p[bi][0]) * .6) bi = i; });
+  var closed = p.slice(bi).concat(p.slice(1, bi + 1));
+  return resample(closed, LOOP).map(function(q){ return [q[0] * .85, LIFT - q[1] * .85, 0]; });
+});
+function wrap(loop){
+  var s = loop[0], e = loop[loop.length - 1];
+  return resample([[-SPAN / 2, 0], [s[0] - .25, 0], [s[0], s[1]]], 90).concat(loop, resample([[e[0], e[1]], [e[0] + .25, 0], [SPAN / 2, 0]], 90));
+}
+function mixL(a, b, q){ return a.map(function(p, i){ return [p[0] + (b[i][0] - p[0]) * q, p[1] + (b[i][1] - p[1]) * q, (p[2] || 0) * (1 - q) + (b[i][2] || 0) * q]; }); }
+function local(k, st){   /* st.l：ゆるみ（0=固い結び目、1=輪）、st.m：印への混ぜ具合、st.f：たたまれ具合 */
+  var loop = mixL(KNOT, RING, st.l);
+  if (st.m > 0) loop = mixL(loop, iconLoops[k], st.m);
+  if (st.f > 0) loop = loop.map(function(p, i){ var x = -SPAN * .1 + SPAN * .2 * i / (LOOP - 1); return [p[0] + (x - p[0]) * st.f, p[1] * (1 - st.f), (p[2] || 0) * (1 - st.f)]; });
+  return wrap(loop);
+}
+
+/* 時間（ms）：カメラは止まらずに紐に沿って進み、だんだん速くなる。結び目は画面に入ってきたところでほどけ始め、真ん中に来るまでに印になる
+   印は画面を横切るあいだ見えている。終わりに近づくとだんだん引いて、紐全体が一つの大きな円に。印はたたまれ、円がロゴになる */
+var PAN0 = 200, PAN1 = 4800, Z0T = 3900, Z1T = 5700, F0T = 6000, F1T = 6800, L1T = 7400, END = 7700;   /* 引ききって輪が円のまわりに並んだところで少しとどまってから、たたむ */
+var PHI0 = TH[0] - .75, PHI1 = TH[K - 1] + .15;
+function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+function ease(v){ return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; }
+function eio(v){ return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
+
+var Z0 = 1, ZF = 1, RL = 1, OX = 0, OY = 0;
+function size(){
+  DPR = Math.min(2, devicePixelRatio || 1);
+  W = hero.clientWidth; H = hero.clientHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  Z0 = Math.min(W * .17, H * .2); RL = Math.min(W * .2, H * .17); ZF = RL / RW;
+  OX = W / 2; OY = H * .4;
+  hero.style.setProperty('--lt', (OY + RL * 1.5) + 'px');
+}
+function phiAt(t){
+  /* ゆっくり出て、だんだん速く（最後は引きながら少しゆるむ） */
+  var u = clamp((t - PAN0) / (PAN1 - PAN0));
+  return PHI0 + (PHI1 - PHI0) * (u * u * (1.75 - .75 * u));
+}
+function frame(t){
+  var phi = phiAt(t);
+  var zu = eio(clamp((t - Z0T) / (Z1T - Z0T))), zoom = Math.exp(Math.log(Z0) + (Math.log(ZF) - Math.log(Z0)) * zu);
+  var fold = ease(clamp((t - F0T) / (F1T - F0T)));
+  var c = C(phi), no = No(phi), cam = [c[0] + no[0] * LIFT * .8, c[1] + no[1] * LIFT * .8];
+  cam = [cam[0] + (0 - cam[0]) * zu, cam[1] + (RW - cam[1]) * zu];
+  var rt = Math.round(phi / TAU) * TAU, rho = phi + (rt - phi) * zu, cr = Math.cos(-rho), sr = Math.sin(-rho);   /* 引くにつれて、いちばん近い向きでまっすぐに */
+  function S(q){ var x = q[0] - cam[0], y = q[1] - cam[1]; return [OX + (x * cr - y * sr) * zoom, OY + (x * sr + y * cr) * zoom, q[2] || 0]; }
+  /* 結び目ごと：画面の右に入ってきたところでゆるみ始め、真ん中の手前で印になる（速く進むほど早くほどける） */
+  var st = TH.map(function(th){ var p = clamp((phi - (th - .62)) / .5); return { l:ease(clamp(p / .45)), m:ease(clamp((p - .35) / .65)), f:fold }; });
+  var pts = [], half = SPAN / 2 / RW;
+  function circSeg(a0, a1){ var n = Math.max(2, Math.ceil(Math.abs(a1 - a0) * RW / .05)); for (var i = 0; i < n; i++){ var a = a0 + (a1 - a0) * i / n, q = C(a); pts.push(S([q[0], q[1], 0])); } }
+  var a = -Math.PI / 2;
+  for (var k = 0; k < K; k++){
+    circSeg(a, TH[k] - half);
+    /* 左右の紐の部分は円に沿わせ、結び目と印はゆがめずにそのまま置く */
+    var lp = local(k, st[k]), o0 = C(TH[k]), t0 = [Math.cos(TH[k]), Math.sin(TH[k])], n0 = No(TH[k]);
+    lp.forEach(function(q, i){
+      if (i < 90 || i >= lp.length - 90){ var b = TH[k] + q[0] / RW, o = C(b), nn = No(b); pts.push(S([o[0] + nn[0] * q[1], o[1] + nn[1] * q[1], q[2]])); }
+      else pts.push(S([o0[0] + t0[0] * q[0] + n0[0] * q[1], o0[1] + t0[1] * q[0] + n0[1] * q[1], q[2]]));
+    });
+    a = TH[k] + half;
+  }
+  circSeg(a, Math.PI * 1.5); var e = C(Math.PI * 1.5); pts.push(S([e[0], e[1], 0]));
+  return { p:pts, zu:zu };
+}
+
+function render(t){
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  cx.clearRect(0, 0, W, H);
+  var fr = frame(t), p = fr.p, n = p.length, g = ease(clamp((t - F1T) / (L1T - F1T)));
+  /* ロープ：紫の太い線に、薄紫の細い筋。低いところから描くので、上を通るロープが下のロープを覆い、交わりがはっきりする */
+  var rope = Math.max(3, Math.min(16, Z0 * .1)) * (1 - fr.zu) + 2.2 * fr.zu;   /* ロープの太さ */
+  var CH = 10, flat = [], knots = [];
+  for (var i = 0; i < n - 1; i += CH){
+    var j = Math.min(n - 1, i + CH + 1), z = 0, vis = false;
+    for (var k = i; k <= j; k++){ z += p[k][2]; if (p[k][0] > -40 && p[k][0] < W + 40 && p[k][1] > -40 && p[k][1] < H + 40) vis = true; }
+    if (!vis) continue;
+    z /= (j - i + 1);
+    if (Math.abs(z) > .02) knots.push({ i:i, j:j, z:z }); else flat.push({ i:i, j:j });
+  }
+  function path(c){ cx.moveTo(p[c.i][0], p[c.i][1]); for (var k = c.i + 1; k <= c.j; k++) cx.lineTo(p[k][0], p[k][1]); }
+  var w = rope + (RL * .16 - rope) * g, inner = rope > 4 && g < 1 ? rope * .28 * (1 - g) : 0;   /* 中に細い薄紫の筋（ロープのつや） */
+  cx.lineJoin = 'round'; cx.lineCap = 'round';
+  /* 平らなところ：まとめて一度に描く（縁と中の境目に刻みが出ない） */
+  cx.beginPath(); flat.forEach(path); cx.strokeStyle = INK; cx.lineWidth = w; cx.stroke();
+  if (inner){ cx.beginPath(); flat.forEach(path); cx.strokeStyle = LI; cx.lineWidth = inner; cx.stroke(); }
+  /* 結び目のところ：低いところから。上を通るロープは、先に紙の色で下のロープを覆ってから描く */
+  knots.sort(function(a, b){ return a.z - b.z; });
+  cx.lineCap = 'butt';
+  knots.forEach(function(c){
+    cx.beginPath(); path(c);
+    cx.strokeStyle = PAPER; cx.lineWidth = w + 6; cx.stroke();
+    cx.strokeStyle = INK; cx.lineWidth = w; cx.stroke();
+    if (inner){ cx.strokeStyle = LI; cx.lineWidth = inner; cx.stroke(); }
+  });
+  if (g > 0){
+    var th = 2.2 + (RL * .16 - 2.2) * g;
+    cx.strokeStyle = LI; cx.globalAlpha = g; cx.lineWidth = RL * .06 * g;
+    cx.beginPath(); cx.arc(OX, OY, RL - th / 2 - RL * .03 * g, 0, TAU); cx.stroke(); cx.globalAlpha = 1;
+  }
+  if (t >= F1T) show('h1');
+  if (t >= L1T - 200){ show('p'); show('nav'); }
+}
+
+var t0 = 0, raf = 0, ended = false;
+function finish(){ ended = true; cancelAnimationFrame(raf); rv.forEach(function(el){ el.classList.add('on'); }); render(END); }
+function loop(){
+  var t = performance.now() - t0;
+  if (t >= END){ finish(); return; }
+  render(t);
+  raf = requestAnimationFrame(loop);
+}
+/* オープニングの途中で押したら、最後まで飛ばす */
+hero.addEventListener('click', function(){ if (!ended) finish(); });
+addEventListener('resize', function(){ size(); if (ended) render(END); });
+
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(function(){
+  size();
+  if (RM){ finish(); return; }
+  t0 = performance.now(); loop();
+});
+})();
+</script>
+</body>
+</html>
