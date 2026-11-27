@@ -59,6 +59,7 @@ body.moving .win{visibility:visible}
 <script>
 (function(){
 var SITES = [
+  ['futsu.html',                    '普通のサイト',           '#654087'],
   ['bodoge.html',                   'ボードゲームの卓',       '#7a5c3a'],
   ['kumikae.html',                  '英字が組み替わる誌面',   '#1d1526'],
   ['window.html',                   '時間で変わる作業部屋',   '#9bd34a'],
@@ -72,7 +73,6 @@ var SITES = [
 ];
 var B = document.body, tabs = document.getElementById('tabs'), lay = document.getElementById('lay'), view = document.getElementById('view');
 var all = document.getElementById('all'), T = [], W = [], C = [], cur = 0, grid = false, timer;
-try { var saved = +localStorage.getItem('tabs-cur'); if (saved >= 0 && saved < SITES.length) cur = saved; } catch(e){}
 
 SITES.forEach(function(s, i){
   var t = document.createElement('button'); t.type = 'button'; t.className = 'tab'; t.setAttribute('role', 'tab');
@@ -120,7 +120,6 @@ function place(){
 function mark(){
   T.forEach(function(t, i){ t.setAttribute('aria-selected', String(i === cur)); t.tabIndex = i === cur ? 0 : -1; });
   T[cur].scrollIntoView({ block:'nearest', inline:'nearest' });
-  try { localStorage.setItem('tabs-cur', cur); } catch(e){}
 }
 
 /* タブを押す：その見た目に切り替える（並べていたら、選んだものが大きくなる） */

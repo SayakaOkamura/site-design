@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>株式会社アルターデザインコンサルティング</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+:root{ --ink:#1d1526; --sub:#6d6478; --bg:#fbfafc; --ac:#654087; --pale:#efe9f5; --line:#e3dcea }
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg); color:var(--ink); font-family:"Zen Kaku Gothic New",sans-serif; line-height:1.9; overflow-x:hidden}
+a{color:inherit}
+header{position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px clamp(16px,4vw,56px); height:62px; background:rgba(251,250,252,.94); backdrop-filter:blur(8px); box-shadow:0 1px 0 var(--line)}
+.logo{display:flex; align-items:center; gap:10px; text-decoration:none; font-weight:500; line-height:1.1; white-space:nowrap}
+.logo i{width:26px; height:26px; border-radius:50%; border:5px solid var(--ac); box-shadow:inset 0 0 0 2px var(--pale)}
+.logo small{display:block; font-size:10px; color:var(--sub); text-align:right}
+header ul{display:flex; gap:clamp(10px,2.4vw,36px); list-style:none; font-size:13px; letter-spacing:.08em; white-space:nowrap}
+header ul a{text-decoration:none}
+@media (max-width:720px){ header ul{display:none} }
+section{scroll-margin-top:62px}
+.pad{padding:clamp(72px,12vh,140px) clamp(16px,6vw,96px)}
+.in{max-width:880px; margin:0 auto}
+.kick{font-size:12px; letter-spacing:.22em; color:var(--ac); margin-bottom:14px}
+h1{font-size:clamp(26px,4.8vw,54px); font-weight:900; line-height:1.45; margin-bottom:24px}
+h2{font-size:clamp(21px,3vw,30px); font-weight:900; margin-bottom:28px}
+h3{font-size:18px; font-weight:700; margin-bottom:10px}
+p{color:var(--sub)}
+.top .pad{min-height:calc(100vh - 62px); display:flex; align-items:center}
+.top .in{width:100%}
+.philo h3{font-size:clamp(18px,2.4vw,24px); color:var(--ink); margin-bottom:18px}
+.svc{list-style:none; display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line); border:1px solid var(--line)}
+.svc li{background:var(--bg); padding:26px}
+.svc p{font-size:14px}
+.alt{background:#fff}
+dl{display:grid; grid-template-columns:7em 1fr; gap:12px; padding:16px 0; border-bottom:1px solid var(--line); font-size:14px}
+dt{color:var(--sub)}
+.btn{display:inline-block; margin-top:28px; padding:14px 34px; border-radius:40px; background:var(--ac); color:#fff; text-decoration:none; font-weight:700; letter-spacing:.08em}
+footer{padding:28px clamp(16px,4vw,56px) 40px; display:flex; flex-wrap:wrap; gap:12px 24px; justify-content:space-between; font-size:12px; color:var(--sub); border-top:1px solid var(--line)}
+@media (max-width:720px){ .svc{grid-template-columns:1fr} }
+</style>
+
+<header>
+    <a class="logo" href="#top"><i></i><span>Alter Design<small>consulting</small></span></a>
+    <nav><ul>
+      <li><a href="#philosophy">企業理念</a></li><li><a href="#services">サービス</a></li><li><a href="#company">会社概要</a></li><li><a href="#contact">お問い合わせ</a></li>
+    </ul></nav>
+  </header>
+
+<section id="top" class="o top"><div class="pad"><div class="in">
+    <h1>AI × ローコードで、<br>「上流工程中心のシステム開発」に革新を</h1>
+    <p>コンサルティングによる業務設計からエンジニアリングまでを行います</p>
+  </div></div></section>
+<section id="philosophy" class="o alt philo"><div class="pad"><div class="in">
+    <p class="kick">PHILOSOPHY</p>
+    <h2>アルターデザインコンサルティングの企業理念</h2>
+    <h3>経営の力で「遊ぶように働く世界」をデザインする</h3>
+    <p>「遊ぶように働く」とは、楽をすることではなく、人が夢中になり自発的に創造する状態で働くこと<br>
+    子供が遊びに没頭するように、大人も「やらされる」でなく「やりたい」仕事に向き合うこと<br>
+    このような働き方が自然に生まれる組織を、経営の意思と創造の力で意図的に構想し設計していく<br>
+    それが「経営の力で遊ぶように働く世界をデザインする」という当社の企業理念の本質です</p>
+  </div></div></section>
+<section id="services" class="o"><div class="pad"><div class="in">
+    <p class="kick">SERVICE</p>
+    <h2>私たちが提供するサービス</h2>
+    <ul class="svc">
+      <li><h3>人間中心の次世代業務システム開発</h3><p>業務を効率化するだけでなく、「使う人」を中心に据えて再設計された業務システムを提供<br>ノーコードやローコードなど最新の技術を活用し、直感的で創造性を刺激するワークフローを構築します</p></li>
+      <li><h3>AI による意思決定支援と事業変革支援</h3><p>経営判断や業務プロセスの高度化を目的に、企業の持つデータ資産を活用した AI 導入を支援<br>未来予測や需要分析など、戦略的な意思決定を加速させるための環境を整備します</p></li>
+      <li><h3>自律型・共創型の組織設計支援</h3><p>テクノロジーによる分業・協業の再定義を通じて、フラットかつ柔軟な組織体制を実現<br>個人の自律とチームの共創を両立させる、新しい働き方のプラットフォームを提案します</p></li>
+      <li><h3>地域格差の解消を目指したデジタル支援</h3><p>都市部に偏在するデジタル機会を全国へと広げるため、地方企業・自治体に対するノーコードツールやクラウド AI の導入支援、DX 人材の育成など、地域に根差したデジタル変革を推進します</p></li>
+    </ul>
+  </div></div></section>
+<section id="company" class="o alt"><div class="pad"><div class="in">
+    <p class="kick">COMPANY</p>
+    <h2>会社概要</h2>
+    <dl><dt>会社名</dt><dd>株式会社アルターデザインコンサルティング</dd></dl>
+    <dl><dt>代表者</dt><dd>藤田 靖広</dd></dl>
+    <dl><dt>所在地</dt><dd>本社<br>東京都港区西新橋3-23-5 ANYZ304（御成門郵船ビル）</dd></dl>
+    <dl><dt>事業内容</dt><dd>AI技術を活用した組織最適化に関するコンサルティング事業<br>AIとローコードを組み合わせた次世代型のシステム開発事業</dd></dl>
+    <dl><dt>資本金</dt><dd>60百万円</dd></dl>
+    <dl><dt>設立年月日</dt><dd>2025年6月</dd></dl>
+    <dl><dt>株主</dt><dd>株式会社ＢｌｕｅＭｅｍｅ<br>株式会社ハイ・アベイラビリティ・システムズ<br>株式会社サーバーワークス・キャピタル<br>リックソフト株式会社</dd></dl>
+  </div></div></section>
+<section id="contact" class="o"><div class="pad"><div class="in">
+    <p class="kick">CONTACT</p>
+    <h2>お問い合わせ</h2>
+    <p>サービスに関するご相談や、掲載のご依頼、<br>その他ご質問などがございましたら<br>お気軽にお問い合わせください</p>
+    <a class="btn" href="mailto:contact@alt-dsgn.co.jp">お問い合わせフォームへ</a>
+  </div></div></section>
+
+<footer><a href="https://www.bluememe.jp/privacy-policy/" target="_blank" rel="noopener">プライバシーポリシー</a><small>© 2025 Alter Design Consulting Co., Ltd.</small></footer>
+</html>
